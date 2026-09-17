@@ -1,5 +1,10 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.classfile.ClassPath;
+import io.github.jabrena.juno.classfile.JavaClass;
+import io.github.jabrena.juno.linker.Linker;
+import io.github.jabrena.juno.linker.Program;
+
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.IOException;
@@ -7,12 +12,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
-final class CompilerTestSupport {
+public final class CompilerTestSupport {
     private CompilerTestSupport() {
     }
 
-    static Path compileJava(Path directory, String className, String source) throws IOException {
+    public static Path compileJava(Path directory, String className, String source) throws IOException {
         Path sourceFile = directory.resolve(className.replace('.', '/') + ".java");
         Files.createDirectories(sourceFile.getParent());
         Files.writeString(sourceFile, source, StandardCharsets.UTF_8);
@@ -28,7 +34,12 @@ final class CompilerTestSupport {
         return directory;
     }
 
-    static String compileJuno(Path classes, String mainClass) {
+    public static String compileJuno(Path classes, String mainClass) {
         return new JunoCompiler().compile(List.of(classes, Path.of("target/classes")), mainClass);
+    }
+
+    public static Program link(Path classes, String mainClass) {
+        Map<String, JavaClass> loaded = new ClassPath().load(List.of(classes, Path.of("target/classes")));
+        return new Linker().link(loaded, mainClass);
     }
 }
