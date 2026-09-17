@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.linker;
 
 import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.analysis.ControlFlowGraph;
+import io.github.jabrena.juno.analysis.ControlFlowGraphBuilder;
 import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.JavaClass;
@@ -13,12 +15,11 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /** Performs closed-world reachability and resolves every static call before code generation. */
 public final class Linker {
     private final BytecodeDecoder decoder = new BytecodeDecoder();
+    private final ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilder();
 
     public Program link(Map<String, JavaClass> classes, String mainClassName) {
         String internalName = mainClassName.replace('.', '/');
@@ -47,8 +48,8 @@ public final class Linker {
             }
             validateMethod(method, reference.equals(entryPoint));
             List<Instruction> instructions = decoder.decode(method);
-            validateBranchTargets(method, instructions);
-            reachable.put(reference, new LinkedMethod(owner, method, instructions));
+            ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions);
+            reachable.put(reference, new LinkedMethod(owner, method, instructions, cfg));
 
             for (Instruction instruction : instructions) {
                 if (instruction.opcode() == 182 || instruction.opcode() == 184) {
@@ -91,21 +92,6 @@ public final class Linker {
         if (!conventionalMain && !descriptor.usesOnlyV01Types()) {
             throw new CompileException("Juno v0.1 methods may use only int-like parameters and return values: "
                     + method.reference().displayName());
-        }
-    }
-
-    private void validateBranchTargets(JavaMethod method, List<Instruction> instructions) {
-        Set<Integer> offsets = instructions.stream()
-                .map(Instruction::offset)
-                .collect(Collectors.toUnmodifiableSet());
-        for (Instruction instruction : instructions) {
-            if (instruction.opcode() >= 153 && instruction.opcode() <= 167) {
-                int target = instruction.offset() + instruction.operandA();
-                if (!offsets.contains(target)) {
-                    throw new CompileException(method.reference().displayName() + " at bytecode offset "
-                            + instruction.offset() + ": invalid branch target " + target);
-                }
-            }
         }
     }
 }

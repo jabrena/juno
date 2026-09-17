@@ -126,3 +126,5 @@ Generates the `juno` module's Javadoc HTML into `docs/javadocs/<version>/apidocs
 
 - https://dev.java/
 - https://store.arduino.cc/products/uno-r4-wifi
+- https://sunspotdev.org/
+- https://sunspotdev.org/docs/index.html
