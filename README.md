@@ -60,67 +60,8 @@ public final class Blink {
 }
 ```
 
-Available v0.1 intrinsics are:
-
-- `Gpio.pinMode`, `digitalWrite`, `digitalRead`, `analogRead`, `analogWrite`, and `toggle`
-- zero-allocation `DigitalOutput.of`, `high`, `low`, `toggle`, and `isHigh`
-- `Delay.millis` and `Delay.micros`
-- `Clock.millis` and `Clock.micros`
-- `Serial.begin`, `print`, and `println` for USB serial output of integers, readable on the
-  development machine with `arduino-cli monitor` (see
-  [`juno-examples/src/main/java/SerialCounter.java`](juno-examples/src/main/java/SerialCounter.java), which
-  counts up once a second)
-- `LedMatrix.begin`, `loadFrame`, and `clear` for the UNO R4 WiFi's built-in 12x8 LED matrix
-  (see [`juno-examples/src/main/java/LedMatrixHeart.java`](juno-examples/src/main/java/LedMatrixHeart.java),
-  the self-playing
-  [`juno-examples/src/main/java/LedMatrixSnake.java`](juno-examples/src/main/java/LedMatrixSnake.java), and
-  the classic
-  [`juno-examples/src/main/java/LedMatrixBouncingBall.java`](juno-examples/src/main/java/LedMatrixBouncingBall.java));
-  each frame is 96 pixels packed MSB-first into three 32-bit words, matching
-  `Arduino_LED_Matrix::loadFrame(const uint32_t[3])`
-
-On top of the intrinsics, `io.github.jabrena.juno.api` also has plain (non-intrinsic) Java helpers
-for the LED matrix, since Juno v0.1 has no arrays to hold a font table:
-
-- `LedCanvas` — pixel/frame-word addressing (`setPixel`, `inBounds`, `packPos`) shared by every
-  LED matrix example
-- `LedMatrixFont` — a classic 5x7 dot-matrix font for digits (`digitPixel`) and uppercase letters
-  (`letterPixel`), encoded as small per-glyph functions instead of an array
-- `LedMatrixText` — `drawDigit`/`drawLetter`/`drawChar`, which OR a glyph into a frame word at a
-  given origin; two glyphs fit side by side (5 + 1 gap + 5 = 11 of the 12 columns)
-- `LedMatrixFontAscii` — the full printable ASCII range (32 space .. 126 `~`) as 5x7 glyphs
-  (`charPixel`), reusing `LedMatrixFont`'s digits/uppercase and adding punctuation/symbols and
-  distinct lowercase shapes; since Juno has no `String`, `drawChar` prints one character at a time
-- `LedMatrixFontSmall` — a compact 3x5 digit-only font (`digitPixel`, `pointPixel`), offered as a
-  smaller alternative to `LedMatrixFont` rather than a replacement for it
-- `LedMatrixSmallText` — `drawSmallDigit`, and `drawDecimal` for a one-decimal-digit reading like
-  "2.5" (digit + point + digit = 9 of the 12 columns, e.g. `drawDecimal(word, idx, 2, 5, 1, 1)`)
-- `LedMatrixShapes` — `fillRect`/`drawRect` for a solid or 1-pixel-border-outline `width x height`
-  rectangle at a given origin (a square is just a rectangle with `width == height`);
-  `fillTriangle`/`drawTriangle` for a solid or outlined triangle given three vertices; `drawLine`
-  (Bresenham) for a straight line between two points; `fillCircle`/`drawCircle` (midpoint circle
-  algorithm) for a solid or outlined circle given a center and radius
-- `LedMatrixTransform` — `rotateX`/`rotateY` rotate a point 90/180/270 degrees around a pivot using
-  an integer 2D rotation matrix (no `float` needed, since `cos`/`sin` are always -1, 0, or 1 at
-  those angles); apply it to a shape's vertices before calling `LedMatrixShapes` to rotate it
-
-Because linking is closed-world, a program that only calls `drawDigit` never pulls the 26-letter
-table into flash — see
-[`juno-examples/src/main/java/LedMatrixCountUp.java`](juno-examples/src/main/java/LedMatrixCountUp.java),
-which counts 1 to 10 on the matrix,
-[`juno-examples/src/main/java/LedMatrixDecimalCountUp.java`](juno-examples/src/main/java/LedMatrixDecimalCountUp.java),
-which counts 0.0 to 9.9 with the smaller font,
-[`juno-examples/src/main/java/LedMatrixRectangles.java`](juno-examples/src/main/java/LedMatrixRectangles.java),
-which cycles filled and outlined squares and rectangles,
-[`juno-examples/src/main/java/LedMatrixSpinningTriangle.java`](juno-examples/src/main/java/LedMatrixSpinningTriangle.java),
-which rotates a triangle through its four 90-degree orientations,
-[`juno-examples/src/main/java/LedMatrixCircles.java`](juno-examples/src/main/java/LedMatrixCircles.java),
-which cycles a filled and an outlined circle,
-[`juno-examples/src/main/java/LedMatrixAsciiScroll.java`](juno-examples/src/main/java/LedMatrixAsciiScroll.java),
-which cycles digits, uppercase, lowercase, then punctuation one character at a time with
-`drawChar`, and
-[`juno-examples/src/main/java/LedMatrixScrollingText.java`](juno-examples/src/main/java/LedMatrixScrollingText.java),
-which scrolls "Juno, Java for Arduino ONE R4" across the matrix from right to left.
+See the [Javadoc](https://jabrena.github.io/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html)
+for the complete Java API reference.
 
 ## Supported Java subset
 
@@ -183,4 +124,5 @@ Generates the `juno` module's Javadoc HTML into `docs/javadocs/<version>/apidocs
 
 ## References
 
+- https://dev.java/
 - https://store.arduino.cc/products/uno-r4-wifi

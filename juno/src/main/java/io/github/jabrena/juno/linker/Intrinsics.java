@@ -27,7 +27,9 @@ public final class Intrinsics {
             new MethodRef("io/github/jabrena/juno/api/LedMatrix", "clear", "()V"),
             new MethodRef("io/github/jabrena/juno/api/Serial", "begin", "(I)V"),
             new MethodRef("io/github/jabrena/juno/api/Serial", "print", "(I)V"),
-            new MethodRef("io/github/jabrena/juno/api/Serial", "println", "(I)V"));
+            new MethodRef("io/github/jabrena/juno/api/Serial", "println", "(I)V"),
+            new MethodRef("io/github/jabrena/juno/api/Mouse", "begin", "()V"),
+            new MethodRef("io/github/jabrena/juno/api/Mouse", "move", "(II)V"));
 
     private Intrinsics() {
     }

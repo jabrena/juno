@@ -327,6 +327,41 @@ class GeneratedCppSyntaxTest {
         assertEquals(0, process.exitValue(), diagnostics);
     }
 
+    @Test
+    void generatedRatonLocoSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.DigitalOutput;
+                import io.github.jabrena.juno.api.Mouse;
+                public final class RatonLoco {
+                    public static void main(String[] args) {
+                        DigitalOutput led = DigitalOutput.of(13);
+                        Mouse.begin();
+                        led.high();
+                        Delay.millis(100);
+                        led.low();
+                        Mouse.move(50, 0);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.RatonLoco", source);
+        Path sketch = temporaryDirectory.resolve("RatonLoco.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.RatonLoco"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
     private String availableCompiler() {
         for (String candidate : new String[]{"clang++", "g++"}) {
             try {

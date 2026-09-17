@@ -41,7 +41,7 @@ is example programs written against it.
 - `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `ArduinoCppBackend`, the
   C++ emitter and intrinsic lowering (`intrinsicExpression`), plus `CppNames`.
 - `juno/src/main/java/io/github/jabrena/juno/api/` – WRITE here: the Java-facing hardware API
-  (`Gpio`, `Delay`, `Clock`, `DigitalOutput`, `LedMatrix`, `Serial`, …). Every `native` method here
+  (`Gpio`, `Delay`, `Clock`, `DigitalOutput`, `LedMatrix`, `Serial`, `Mouse`, …). Every `native` method here
   must have a matching entry in `linker/Intrinsics.java` and
   `backend/ArduinoCppBackend#intrinsicExpression`.
 - `juno/src/test/java/io/github/jabrena/juno/` – WRITE here: compiler unit tests and the

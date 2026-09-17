@@ -61,6 +61,7 @@ vocabulary (`unsigned long`, `uint32_t`, `bool`, `int`). Juno's intrinsic loweri
 | `Serial.begin(int baudRate)`               | `Serial.begin(static_cast<unsigned long>(call_arg0))`  | same unsigned/signed mismatch as `Delay.millis` |
 | `Serial.println(int value)`                | `Serial.println(call_arg0)`                            | prints a signed decimal `int32_t`; there is no `String` overload because Juno has no `String` |
 | `LedMatrix.loadFrame(int, int, int)`       | `juno_led_matrix_load_frame(...)` → `const uint32_t frame[3]` | each Java `int` is reinterpreted bit-for-bit as `uint32_t` (a packed pixel bitmask, not a numeric value) |
+| `Mouse.move(int x, int y)`                 | `Mouse.move(static_cast<signed char>(call_arg0), static_cast<signed char>(call_arg1))` | Arduino's `Mouse.move` takes `signed char` (-128..127); each Java `int` is narrowed to its low 8 bits, sign-extended — out-of-range values wrap instead of clamping |
 
 The recurring pattern: Java's type system has no `unsigned` and no distinct `bool` at the ABI
 level, so every Arduino API that expects `unsigned long`, `uint32_t`, or a `HIGH`/`LOW`/`bool`

@@ -111,3 +111,40 @@ Any of the `LedMatrix*` example classes (see the main README's Java API section 
 list) follow the same pattern as `Blink` above — just swap in the class name, e.g. `--main
 LedMatrixHeart`. They all draw on the UNO R4 WiFi's built-in 12x8 LED matrix and are not supported
 on the UNO R4 Minima, which lacks that matrix.
+
+### Example: RatonLoco (USB mouse control)
+
+[`juno-examples/src/main/java/RatonLoco.java`](../juno-examples/src/main/java/RatonLoco.java) is a
+port of [raton-loco.ino](https://github.com/jabrena/raton-loco/blob/main/arduino/raton-loco.ino):
+it blinks the built-in LED, then drags the host computer's mouse cursor in a square (right, down,
+left, up) over USB HID.
+
+**Warning:** once uploaded, this sketch takes control of the real mouse cursor on whatever
+computer the board's USB cable is plugged into — unplug the board or re-flash it with a different
+sketch to stop it.
+
+It needs the `Mouse` library (not bundled with the `arduino:renesas_uno` core) and a board with
+native USB (UNO R4 WiFi/Minima):
+
+```bash
+arduino-cli lib install Mouse
+
+java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+  --main RatonLoco \
+  --classpath juno-examples/target/classes:juno/target/classes
+
+arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/RatonLoco
+arduino-cli upload \
+  --port /dev/cu.YOUR_PORT \
+  --fqbn arduino:renesas_uno:unor4wifi \
+  build/juno/RatonLoco
+```
+
+**Re-uploading over a running HID sketch:** `arduino-cli upload` normally resets the board into
+its bootloader by opening the serial port at 1200 baud and closing it again. That trick relies on
+the sketch promptly servicing the USB connection, but `RatonLoco`'s `loop()` is busy driving the
+mouse (`Mouse.move` + `delay`), so the automatic reset can be missed. The board may also
+re-enumerate under a different `/dev/cu.*` path once it drops into the bootloader. If the upload
+hangs or fails, double-tap the board's physical reset button to force it into the bootloader
+manually (the onboard LED pulses), then immediately re-run the `arduino-cli upload` command — and
+run `arduino-cli board list` first if you're unsure which port it came back on.

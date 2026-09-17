@@ -153,6 +153,43 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersMouseIntrinsicsAndOmitsUnusedHeader() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Mouse;
+                public final class Wiggle {
+                    public static void main(String[] args) {
+                        Mouse.begin();
+                        Mouse.move(50, -50);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Wiggle", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Wiggle");
+
+        assertTrue(generated.contains("#include <Mouse.h>"));
+        assertTrue(generated.contains("Mouse.begin()"));
+        assertTrue(generated.contains(
+                "Mouse.move(static_cast<signed char>(call_arg0), static_cast<signed char>(call_arg1))"));
+
+        String plainSource = """
+                package demo;
+                import io.github.jabrena.juno.api.Gpio;
+                public final class Plain {
+                    public static void main(String[] args) {
+                        Gpio.pinMode(13, Gpio.OUTPUT);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Plain", plainSource);
+
+        String plainGenerated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Plain");
+
+        assertFalse(plainGenerated.contains("Mouse.h"));
+    }
+
+    @Test
     void reportsUnsupportedBytecodeWithMethodAndOffset() throws Exception {
         String source = """
                 package demo;
