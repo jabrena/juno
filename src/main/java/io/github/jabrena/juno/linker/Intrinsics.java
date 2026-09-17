@@ -21,7 +21,10 @@ public final class Intrinsics {
             new MethodRef("io/github/jabrena/juno/api/DigitalOutput", "high", "()V"),
             new MethodRef("io/github/jabrena/juno/api/DigitalOutput", "low", "()V"),
             new MethodRef("io/github/jabrena/juno/api/DigitalOutput", "toggle", "()V"),
-            new MethodRef("io/github/jabrena/juno/api/DigitalOutput", "isHigh", "()Z"));
+            new MethodRef("io/github/jabrena/juno/api/DigitalOutput", "isHigh", "()Z"),
+            new MethodRef("io/github/jabrena/juno/api/LedMatrix", "begin", "()V"),
+            new MethodRef("io/github/jabrena/juno/api/LedMatrix", "loadFrame", "(III)V"),
+            new MethodRef("io/github/jabrena/juno/api/LedMatrix", "clear", "()V"));
 
     private Intrinsics() {
     }

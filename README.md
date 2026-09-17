@@ -5,6 +5,8 @@ Arduino UNO R4 WiFi and UNO R4 Minima. It keeps `javac` as the Java frontend, pe
 closed-world linking on the development machine, and emits an Arduino C++ sketch which the
 Renesas toolchain compiles to native Cortex-M4 code.
 
+![](./docs/boards/arduino-one-r4-wifi.png)
+
 This repository contains a working v0.1 compiler, not a JVM interpreter. The first milestone
 supports 32-bit integer code, static methods, branches, loops, and GPIO/time intrinsics. It can
 compile [`examples/Blink.java`](examples/Blink.java) all the way to a `.ino` sketch.
@@ -15,7 +17,7 @@ Java source -> javac -> .class -> Juno linker/AOT -> .ino -> Arduino toolchain -
 
 ## Quick start
 
-Requirements: JDK 17+ and Maven 3.9+.
+Requirements: JDK 25+ and Maven 3.9+.
 
 ### Install Arduino CLI on macOS
 
@@ -99,6 +101,24 @@ Available v0.1 intrinsics are:
 - zero-allocation `DigitalOutput.of`, `high`, `low`, `toggle`, and `isHigh`
 - `Delay.millis` and `Delay.micros`
 - `Clock.millis` and `Clock.micros`
+- `LedMatrix.begin`, `loadFrame`, and `clear` for the UNO R4 WiFi's built-in 12x8 LED matrix
+  (see [`examples/LedMatrixHeart.java`](examples/LedMatrixHeart.java) and the self-playing
+  [`examples/LedMatrixSnake.java`](examples/LedMatrixSnake.java)); each frame is 96 pixels
+  packed MSB-first into three 32-bit words, matching `Arduino_LED_Matrix::loadFrame(const uint32_t[3])`
+
+On top of the intrinsics, `io.github.jabrena.juno.api` also has plain (non-intrinsic) Java helpers
+for the LED matrix, since Juno v0.1 has no arrays to hold a font table:
+
+- `LedCanvas` — pixel/frame-word addressing (`setPixel`, `inBounds`, `packPos`) shared by every
+  LED matrix example
+- `LedMatrixFont` — a classic 5x7 dot-matrix font for digits (`digitPixel`) and uppercase letters
+  (`letterPixel`), encoded as small per-glyph functions instead of an array
+- `LedMatrixText` — `drawDigit`/`drawLetter`, which OR a glyph into a frame word at a given origin;
+  two glyphs fit side by side (5 + 1 gap + 5 = 11 of the 12 columns)
+
+Because linking is closed-world, a program that only calls `drawDigit` never pulls the 26-letter
+table into flash — see [`examples/LedMatrixCountUp.java`](examples/LedMatrixCountUp.java), which
+counts 1 to 10 on the matrix.
 
 ## Supported Java subset
 
@@ -147,3 +167,7 @@ mvn test
 
 The tests compile Java fixtures, check reachability and failure diagnostics, and pass generated
 C++ through `clang++` or `g++` with a minimal Arduino compatibility header when one is available.
+
+## References
+
+- https://store.arduino.cc/products/uno-r4-wifi

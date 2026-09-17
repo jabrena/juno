@@ -29,6 +29,6 @@ final class CompilerTestSupport {
     }
 
     static String compileJuno(Path classes, String mainClass) {
-        return new JunoCompiler().compile(List.of(classes), mainClass);
+        return new JunoCompiler().compile(List.of(classes, Path.of("target/classes")), mainClass);
     }
 }

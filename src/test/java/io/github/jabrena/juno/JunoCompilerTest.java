@@ -68,6 +68,69 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersLedMatrixIntrinsicsAndOmitsUnusedHeader() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.LedMatrix;
+                public final class Heart {
+                    public static void main(String[] args) {
+                        LedMatrix.begin();
+                        LedMatrix.loadFrame(0x3184a444, 0x44042081, 0x100a0040);
+                        LedMatrix.clear();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Heart", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Heart");
+
+        assertTrue(generated.contains("#include \"Arduino_LED_Matrix.h\""));
+        assertTrue(generated.contains("ArduinoLEDMatrix juno_led_matrix;"));
+        assertTrue(generated.contains("juno_led_matrix_begin()"));
+        assertTrue(generated.contains("juno_led_matrix_load_frame(call_arg0, call_arg1, call_arg2)"));
+        assertTrue(generated.contains("juno_led_matrix_clear()"));
+
+        String plainSource = """
+                package demo;
+                import io.github.jabrena.juno.api.Gpio;
+                public final class Plain {
+                    public static void main(String[] args) {
+                        Gpio.pinMode(13, Gpio.OUTPUT);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Plain", plainSource);
+
+        String plainGenerated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Plain");
+
+        assertFalse(plainGenerated.contains("Arduino_LED_Matrix.h"));
+        assertFalse(plainGenerated.contains("ArduinoLEDMatrix"));
+    }
+
+    @Test
+    void rendersDigitsAndTrimsUnusedLetterGlyphs() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.LedMatrix;
+                import io.github.jabrena.juno.api.LedMatrixText;
+                public final class Digits {
+                    public static void main(String[] args) {
+                        int word0 = LedMatrixText.drawDigit(0, 0, 7, 4, 0);
+                        LedMatrix.loadFrame(word0, 0, 0);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Digits", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Digits");
+
+        assertTrue(generated.contains("juno_io_github_jabrena_juno_api_LedMatrixText_drawDigit"));
+        assertTrue(generated.contains("juno_io_github_jabrena_juno_api_LedCanvas_setPixel"));
+        assertFalse(generated.contains("letterARowBits"));
+        assertFalse(generated.contains("LedMatrixFont_letterPixel"));
+    }
+
+    @Test
     void reportsUnsupportedBytecodeWithMethodAndOffset() throws Exception {
         String source = """
                 package demo;
