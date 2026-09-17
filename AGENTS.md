@@ -29,46 +29,61 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 
 ## File structure
 
-- `src/main/java/io/github/jabrena/juno/classfile/` – WRITE here: `.class` parsing and constant
-  pool resolution.
-- `src/main/java/io/github/jabrena/juno/bytecode/` – WRITE here: the admitted opcode subset
-  (`BytecodeDecoder`). Extending this expands what Java syntax compiles.
-- `src/main/java/io/github/jabrena/juno/linker/` – WRITE here: closed-world reachability,
+This is a multi-module Maven build: the `juno` module is the compiler, the `juno-examples` module
+is example programs written against it.
+
+- `juno/src/main/java/io/github/jabrena/juno/classfile/` – WRITE here: `.class` parsing and
+  constant pool resolution.
+- `juno/src/main/java/io/github/jabrena/juno/bytecode/` – WRITE here: the admitted opcode
+  subset (`BytecodeDecoder`). Extending this expands what Java syntax compiles.
+- `juno/src/main/java/io/github/jabrena/juno/linker/` – WRITE here: closed-world reachability,
   `Intrinsics` registry, `Descriptor` type checks.
-- `src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `ArduinoCppBackend`, the C++
-  emitter and intrinsic lowering (`intrinsicExpression`), plus `CppNames`.
-- `src/main/java/io/github/jabrena/juno/api/` – WRITE here: the Java-facing hardware API
-  (`Gpio`, `Delay`, `Clock`, `DigitalOutput`, `LedMatrix`, …). Every `native` method here must have
-  a matching entry in `linker/Intrinsics.java` and `backend/ArduinoCppBackend#intrinsicExpression`.
-- `src/test/java/io/github/jabrena/juno/` – WRITE here: compiler unit tests and the generated-C++
-  syntax check (`GeneratedCppSyntaxTest`, requires `clang++`/`g++` locally; skips otherwise).
-- `src/test/resources/` – WRITE here: minimal Arduino header stubs (`Arduino.h`,
+- `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `ArduinoCppBackend`, the
+  C++ emitter and intrinsic lowering (`intrinsicExpression`), plus `CppNames`.
+- `juno/src/main/java/io/github/jabrena/juno/api/` – WRITE here: the Java-facing hardware API
+  (`Gpio`, `Delay`, `Clock`, `DigitalOutput`, `LedMatrix`, `Serial`, …). Every `native` method here
+  must have a matching entry in `linker/Intrinsics.java` and
+  `backend/ArduinoCppBackend#intrinsicExpression`.
+- `juno/src/test/java/io/github/jabrena/juno/` – WRITE here: compiler unit tests and the
+  generated-C++ syntax check (`GeneratedCppSyntaxTest`, requires `clang++`/`g++` locally; skips
+  otherwise).
+- `juno/src/test/resources/` – WRITE here: minimal Arduino header stubs (`Arduino.h`,
   `Arduino_LED_Matrix.h`) used only to syntax-check generated sketches offline.
-- `examples/` – WRITE here: example Java programs (`Blink.java`, `LedMatrixHeart.java`,
-  `LedMatrixSnake.java`) demonstrating the supported API; keep them buildable end-to-end.
-- `docs/` – WRITE here: supporting documentation and images (`roadmap.md`, board photos).
-- `build/` – **READ only / generated**: `javac` output and Juno-generated `.ino` sketches
-  (`build/example-classes/`, `build/juno/<Main>/<Main>.ino`). Gitignored; never hand-edit.
-- `target/` – **READ only / generated**: Maven build output. Gitignored.
-- `pom.xml`, `README.md` – WRITE here: build configuration and top-level documentation.
+- `juno-examples/src/main/java/` – WRITE here: example Java programs (`Blink.java`,
+  `LedMatrixHeart.java`, `LedMatrixSnake.java`, `SerialCounter.java`, …) demonstrating the
+  supported API; they are a normal Maven module (depends on the `juno` module's `juno` artifact)
+  so `mvn compile` checks they still build. Keep them buildable end-to-end via `arduino-cli` too.
+- `docs/` – WRITE here: supporting documentation (`ARDUINO.md` for the `arduino-cli` workflow,
+  `TYPES.md` for the Java/Arduino type mapping).
+- `docs/javadocs/<version>/` – **generated, currently tracked**: Javadoc HTML for the `juno`
+  module (`./mvnw -pl juno javadoc:javadoc`). Not gitignored by request — regenerate rather
+  than hand-edit, and expect it to be committed for release versions.
+- `documentation/` – WRITE here: images and video assets (board photos, demo clips).
+- `build/` – **READ only / generated**: Juno-generated `.ino` sketches (`build/juno/<Main>/<Main>.ino`).
+  Gitignored; never hand-edit.
+- `target/`, `juno/target/`, `juno-examples/target/` – **READ only / generated**: Maven build output.
+  Gitignored.
+- `pom.xml` (root, `juno/`, `juno-examples/`), `README.md`, `docs/ARDUINO.md` – WRITE here: build
+  configuration and documentation.
 
 ## Commands
 
 ```bash
-# Run the full test suite (unit tests + generated-C++ syntax check)
+# Run the full test suite (unit tests + generated-C++ syntax check), all modules
 ./mvnw test
 
-# Build the executable jar (skip tests for a fast iteration loop)
+# Build both modules (skip tests for a fast iteration loop)
 ./mvnw clean package -DskipTests
 
 # Full verify, matching CI (.github/workflows/maven.yaml)
 ./mvnw --batch-mode --no-transfer-progress verify
 
-# Compile an example Java program to .class
-javac --release 17 -cp target/juno-0.1.0-SNAPSHOT.jar -d build/example-classes examples/<Name>.java
+# Generate the juno module's Javadoc HTML into docs/javadocs/<version>/apidocs
+./mvnw -pl juno javadoc:javadoc
 
-# Run Juno: link + emit the Arduino sketch
-java -jar target/juno-0.1.0-SNAPSHOT.jar compile --main <Name> --classpath build/example-classes
+# Run Juno: link + emit the Arduino sketch for an example already built by `mvn package`
+java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+  --main <Name> --classpath juno-examples/target/classes:juno/target/classes
 
 # Compile the generated sketch against the real Arduino toolchain (must be installed separately)
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/<Name>
@@ -79,6 +94,9 @@ arduino-cli board list
 # Flash the sketch to a connected board (overwrites its current firmware)
 arduino-cli upload --port <PORT> --fqbn arduino:renesas_uno:unor4wifi build/juno/<Name>
 ```
+
+See [docs/ARDUINO.md](docs/ARDUINO.md) for the full `arduino-cli` install/build/upload/monitor
+walkthrough.
 
 ## Git workflow
 
