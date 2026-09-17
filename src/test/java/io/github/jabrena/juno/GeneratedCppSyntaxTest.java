@@ -259,6 +259,41 @@ class GeneratedCppSyntaxTest {
         assertEquals(0, process.exitValue(), diagnostics);
     }
 
+    @Test
+    void generatedAsciiFontSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.LedMatrix;
+                import io.github.jabrena.juno.api.LedMatrixText;
+                public final class Ascii {
+                    public static void main(String[] args) {
+                        LedMatrix.begin();
+                        int word0 = LedMatrixText.drawChar(0, 0, 'H', 4, 0);
+                        int word1 = LedMatrixText.drawChar(0, 1, 'i', 4, 0);
+                        int word2 = LedMatrixText.drawChar(0, 2, '!', 4, 0);
+                        LedMatrix.loadFrame(word0, word1, word2);
+                        Delay.millis(500);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Ascii", source);
+        Path sketch = temporaryDirectory.resolve("Ascii.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Ascii"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
     private String availableCompiler() {
         for (String candidate : new String[]{"clang++", "g++"}) {
             try {

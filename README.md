@@ -114,8 +114,11 @@ for the LED matrix, since Juno v0.1 has no arrays to hold a font table:
   LED matrix example
 - `LedMatrixFont` — a classic 5x7 dot-matrix font for digits (`digitPixel`) and uppercase letters
   (`letterPixel`), encoded as small per-glyph functions instead of an array
-- `LedMatrixText` — `drawDigit`/`drawLetter`, which OR a glyph into a frame word at a given origin;
-  two glyphs fit side by side (5 + 1 gap + 5 = 11 of the 12 columns)
+- `LedMatrixText` — `drawDigit`/`drawLetter`/`drawChar`, which OR a glyph into a frame word at a
+  given origin; two glyphs fit side by side (5 + 1 gap + 5 = 11 of the 12 columns)
+- `LedMatrixFontAscii` — the full printable ASCII range (32 space .. 126 `~`) as 5x7 glyphs
+  (`charPixel`), reusing `LedMatrixFont`'s digits/uppercase and adding punctuation/symbols and
+  distinct lowercase shapes; since Juno has no `String`, `drawChar` prints one character at a time
 - `LedMatrixFontSmall` — a compact 3x5 digit-only font (`digitPixel`, `pointPixel`), offered as a
   smaller alternative to `LedMatrixFont` rather than a replacement for it
 - `LedMatrixSmallText` — `drawSmallDigit`, and `drawDecimal` for a one-decimal-digit reading like
@@ -135,9 +138,12 @@ counts 1 to 10 on the matrix, [`examples/LedMatrixDecimalCountUp.java`](examples
 which counts 0.0 to 9.9 with the smaller font, [`examples/LedMatrixRectangles.java`](examples/LedMatrixRectangles.java),
 which cycles filled and outlined squares and rectangles,
 [`examples/LedMatrixSpinningTriangle.java`](examples/LedMatrixSpinningTriangle.java), which rotates
-a triangle through its four 90-degree orientations, and
+a triangle through its four 90-degree orientations,
 [`examples/LedMatrixCircles.java`](examples/LedMatrixCircles.java), which cycles a filled and an
-outlined circle.
+outlined circle, [`examples/LedMatrixAsciiScroll.java`](examples/LedMatrixAsciiScroll.java), which
+cycles digits, uppercase, lowercase, then punctuation one character at a time with `drawChar`, and
+[`examples/LedMatrixScrollingText.java`](examples/LedMatrixScrollingText.java), which scrolls
+"Juno, Java for Arduino ONE R4" across the matrix from left to right.
 
 ## Supported Java subset
 
