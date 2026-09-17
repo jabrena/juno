@@ -102,9 +102,10 @@ Available v0.1 intrinsics are:
 - `Delay.millis` and `Delay.micros`
 - `Clock.millis` and `Clock.micros`
 - `LedMatrix.begin`, `loadFrame`, and `clear` for the UNO R4 WiFi's built-in 12x8 LED matrix
-  (see [`examples/LedMatrixHeart.java`](examples/LedMatrixHeart.java) and the self-playing
-  [`examples/LedMatrixSnake.java`](examples/LedMatrixSnake.java)); each frame is 96 pixels
-  packed MSB-first into three 32-bit words, matching `Arduino_LED_Matrix::loadFrame(const uint32_t[3])`
+  (see [`examples/LedMatrixHeart.java`](examples/LedMatrixHeart.java), the self-playing
+  [`examples/LedMatrixSnake.java`](examples/LedMatrixSnake.java), and the classic
+  [`examples/LedMatrixBouncingBall.java`](examples/LedMatrixBouncingBall.java)); each frame is 96
+  pixels packed MSB-first into three 32-bit words, matching `Arduino_LED_Matrix::loadFrame(const uint32_t[3])`
 
 On top of the intrinsics, `io.github.jabrena.juno.api` also has plain (non-intrinsic) Java helpers
 for the LED matrix, since Juno v0.1 has no arrays to hold a font table:
@@ -119,11 +120,24 @@ for the LED matrix, since Juno v0.1 has no arrays to hold a font table:
   smaller alternative to `LedMatrixFont` rather than a replacement for it
 - `LedMatrixSmallText` — `drawSmallDigit`, and `drawDecimal` for a one-decimal-digit reading like
   "2.5" (digit + point + digit = 9 of the 12 columns, e.g. `drawDecimal(word, idx, 2, 5, 1, 1)`)
+- `LedMatrixShapes` — `fillRect`/`drawRect` for a solid or 1-pixel-border-outline `width x height`
+  rectangle at a given origin (a square is just a rectangle with `width == height`);
+  `fillTriangle`/`drawTriangle` for a solid or outlined triangle given three vertices; `drawLine`
+  (Bresenham) for a straight line between two points; `fillCircle`/`drawCircle` (midpoint circle
+  algorithm) for a solid or outlined circle given a center and radius
+- `LedMatrixTransform` — `rotateX`/`rotateY` rotate a point 90/180/270 degrees around a pivot using
+  an integer 2D rotation matrix (no `float` needed, since `cos`/`sin` are always -1, 0, or 1 at
+  those angles); apply it to a shape's vertices before calling `LedMatrixShapes` to rotate it
 
 Because linking is closed-world, a program that only calls `drawDigit` never pulls the 26-letter
 table into flash — see [`examples/LedMatrixCountUp.java`](examples/LedMatrixCountUp.java), which
-counts 1 to 10 on the matrix, and [`examples/LedMatrixDecimalCountUp.java`](examples/LedMatrixDecimalCountUp.java),
-which counts 0.0 to 9.9 with the smaller font.
+counts 1 to 10 on the matrix, [`examples/LedMatrixDecimalCountUp.java`](examples/LedMatrixDecimalCountUp.java),
+which counts 0.0 to 9.9 with the smaller font, [`examples/LedMatrixRectangles.java`](examples/LedMatrixRectangles.java),
+which cycles filled and outlined squares and rectangles,
+[`examples/LedMatrixSpinningTriangle.java`](examples/LedMatrixSpinningTriangle.java), which rotates
+a triangle through its four 90-degree orientations, and
+[`examples/LedMatrixCircles.java`](examples/LedMatrixCircles.java), which cycles a filled and an
+outlined circle.
 
 ## Supported Java subset
 

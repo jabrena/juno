@@ -151,6 +151,114 @@ class GeneratedCppSyntaxTest {
         assertEquals(0, process.exitValue(), diagnostics);
     }
 
+    @Test
+    void generatedShapesSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.LedMatrix;
+                import io.github.jabrena.juno.api.LedMatrixShapes;
+                public final class Shapes {
+                    public static void main(String[] args) {
+                        LedMatrix.begin();
+                        int word0 = LedMatrixShapes.fillRect(0, 0, 1, 1, 4, 4);
+                        int word1 = LedMatrixShapes.drawRect(0, 1, 1, 1, 4, 4);
+                        int word2 = LedMatrixShapes.drawRect(0, 2, 0, 0, 10, 6);
+                        LedMatrix.loadFrame(word0, word1, word2);
+                        Delay.millis(500);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Shapes", source);
+        Path sketch = temporaryDirectory.resolve("Shapes.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Shapes"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
+    @Test
+    void generatedTriangleSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.LedMatrix;
+                import io.github.jabrena.juno.api.LedMatrixShapes;
+                import io.github.jabrena.juno.api.LedMatrixTransform;
+                public final class Triangle {
+                    public static void main(String[] args) {
+                        LedMatrix.begin();
+                        int x1 = LedMatrixTransform.rotateX(5, 0, 5, 3, 1);
+                        int y1 = LedMatrixTransform.rotateY(5, 0, 5, 3, 1);
+                        int word0 = LedMatrixShapes.fillTriangle(0, 0, x1, y1, 2, 6, 8, 6);
+                        int word1 = LedMatrixShapes.drawTriangle(0, 1, x1, y1, 2, 6, 8, 6);
+                        int word2 = LedMatrixShapes.drawLine(0, 2, 0, 0, 11, 7);
+                        LedMatrix.loadFrame(word0, word1, word2);
+                        Delay.millis(500);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Triangle", source);
+        Path sketch = temporaryDirectory.resolve("Triangle.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Triangle"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
+    @Test
+    void generatedCircleSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.LedMatrix;
+                import io.github.jabrena.juno.api.LedMatrixShapes;
+                public final class Circle {
+                    public static void main(String[] args) {
+                        LedMatrix.begin();
+                        int word0 = LedMatrixShapes.fillCircle(0, 0, 5, 3, 3);
+                        int word1 = LedMatrixShapes.drawCircle(0, 1, 5, 3, 3);
+                        int word2 = LedMatrixShapes.drawCircle(0, 2, 5, 3, 0);
+                        LedMatrix.loadFrame(word0, word1, word2);
+                        Delay.millis(500);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Circle", source);
+        Path sketch = temporaryDirectory.resolve("Circle.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Circle"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
     private String availableCompiler() {
         for (String candidate : new String[]{"clang++", "g++"}) {
             try {
