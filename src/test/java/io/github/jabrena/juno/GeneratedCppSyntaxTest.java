@@ -116,6 +116,41 @@ class GeneratedCppSyntaxTest {
         assertEquals(0, process.exitValue(), diagnostics);
     }
 
+    @Test
+    void generatedSmallFontSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.LedMatrix;
+                import io.github.jabrena.juno.api.LedMatrixSmallText;
+                public final class Decimal {
+                    public static void main(String[] args) {
+                        LedMatrix.begin();
+                        int word0 = LedMatrixSmallText.drawDecimal(0, 0, 2, 5, 1, 1);
+                        int word1 = LedMatrixSmallText.drawDecimal(0, 1, 2, 5, 1, 1);
+                        int word2 = LedMatrixSmallText.drawDecimal(0, 2, 2, 5, 1, 1);
+                        LedMatrix.loadFrame(word0, word1, word2);
+                        Delay.millis(500);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Decimal", source);
+        Path sketch = temporaryDirectory.resolve("Decimal.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Decimal"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
     private String availableCompiler() {
         for (String candidate : new String[]{"clang++", "g++"}) {
             try {

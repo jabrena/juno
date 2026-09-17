@@ -115,10 +115,15 @@ for the LED matrix, since Juno v0.1 has no arrays to hold a font table:
   (`letterPixel`), encoded as small per-glyph functions instead of an array
 - `LedMatrixText` — `drawDigit`/`drawLetter`, which OR a glyph into a frame word at a given origin;
   two glyphs fit side by side (5 + 1 gap + 5 = 11 of the 12 columns)
+- `LedMatrixFontSmall` — a compact 3x5 digit-only font (`digitPixel`, `pointPixel`), offered as a
+  smaller alternative to `LedMatrixFont` rather than a replacement for it
+- `LedMatrixSmallText` — `drawSmallDigit`, and `drawDecimal` for a one-decimal-digit reading like
+  "2.5" (digit + point + digit = 9 of the 12 columns, e.g. `drawDecimal(word, idx, 2, 5, 1, 1)`)
 
 Because linking is closed-world, a program that only calls `drawDigit` never pulls the 26-letter
 table into flash — see [`examples/LedMatrixCountUp.java`](examples/LedMatrixCountUp.java), which
-counts 1 to 10 on the matrix.
+counts 1 to 10 on the matrix, and [`examples/LedMatrixDecimalCountUp.java`](examples/LedMatrixDecimalCountUp.java),
+which counts 0.0 to 9.9 with the smaller font.
 
 ## Supported Java subset
 
