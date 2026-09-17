@@ -60,7 +60,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ObjectStyleApi");
 
-        assertTrue(generated.contains("stack[sp++] = juno_digital_output_of(call_arg0)"));
+        assertTrue(generated.contains("= juno_digital_output_of(call_arg0);"));
         assertTrue(generated.contains("pinMode(pin, OUTPUT)"));
         assertTrue(generated.contains("digitalWrite(call_receiver, HIGH)"));
         assertTrue(generated.contains("digitalWrite(call_receiver, LOW)"));
@@ -221,7 +221,7 @@ class JunoCompilerTest {
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MathProgram");
 
         assertTrue(generated.contains("static_cast<uint32_t>(a) + static_cast<uint32_t>(b)"));
-        assertTrue(generated.contains("juno_imul(lhs, rhs)"));
-        assertTrue(generated.contains("juno_ineg(stack[sp - 1])"));
+        assertTrue(generated.contains("juno_imul(v"));
+        assertTrue(generated.contains("juno_ineg(v"));
     }
 }

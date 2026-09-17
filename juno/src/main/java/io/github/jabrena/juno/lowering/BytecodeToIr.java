@@ -120,7 +120,7 @@ public final class BytecodeToIr {
             }
             blocks.add(new IrBasicBlock(block.start(), List.copyOf(instructions), terminator));
         }
-        return new IrMethod(linked.method().reference(), List.copyOf(blocks));
+        return new IrMethod(linked.method().reference(), linked.method().maxLocals(), nextValueId, List.copyOf(blocks));
     }
 
     private int lowerCall(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,

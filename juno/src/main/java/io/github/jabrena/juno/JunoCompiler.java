@@ -3,8 +3,10 @@ package io.github.jabrena.juno;
 import io.github.jabrena.juno.backend.ArduinoCppBackend;
 import io.github.jabrena.juno.classfile.ClassPath;
 import io.github.jabrena.juno.classfile.JavaClass;
+import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.Linker;
 import io.github.jabrena.juno.linker.Program;
+import io.github.jabrena.juno.lowering.BytecodeToIr;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +19,8 @@ public final class JunoCompiler {
     public String compile(List<Path> classPath, String mainClass) {
         Map<String, JavaClass> classes = new ClassPath().load(classPath);
         Program program = new Linker().link(classes, mainClass);
-        return new ArduinoCppBackend().generate(program);
+        IrProgram ir = new BytecodeToIr().lower(program);
+        return new ArduinoCppBackend().generate(ir);
     }
 
     public void compileTo(List<Path> classPath, String mainClass, Path output) {
