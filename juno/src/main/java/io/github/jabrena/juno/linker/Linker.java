@@ -6,6 +6,7 @@ import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -52,12 +53,12 @@ public final class Linker {
             for (Instruction instruction : instructions) {
                 if (instruction.opcode() == 182 || instruction.opcode() == 184) {
                     MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                    if (instruction.opcode() == 182 && !Intrinsics.contains(called)) {
+                    if (instruction.opcode() == 182 && !IntrinsicRegistry.isIntrinsic(called)) {
                         throw new CompileException(method.reference().displayName() + " at bytecode offset "
                                 + instruction.offset() + ": instance call is not a Juno intrinsic: "
                                 + called.displayName());
                     }
-                    if (!Intrinsics.contains(called)) {
+                    if (!IntrinsicRegistry.isIntrinsic(called)) {
                         work.addLast(called);
                     }
                 }

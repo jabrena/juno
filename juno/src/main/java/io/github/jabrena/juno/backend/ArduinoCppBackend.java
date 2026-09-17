@@ -1,12 +1,14 @@
 package io.github.jabrena.juno.backend;
 
-import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.Intrinsic;
+import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 import io.github.jabrena.juno.linker.Descriptor;
-import io.github.jabrena.juno.linker.Intrinsics;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.Program;
+
+import java.util.Optional;
 
 /** Emits portable Arduino C++ which the Renesas core compiles to Cortex-M4 machine code. */
 public final class ArduinoCppBackend {
@@ -144,52 +146,40 @@ public final class ArduinoCppBackend {
         if (!descriptor.returnsVoid()) {
             output.append("stack[sp++] = ");
         }
-        if (Intrinsics.contains(called)) {
-            output.append(intrinsicExpression(called));
+        Optional<Intrinsic> intrinsic = IntrinsicRegistry.resolve(called);
+        if (intrinsic.isPresent()) {
+            output.append(intrinsicExpression(intrinsic.get()));
         } else {
             output.append(CppNames.method(called)).append('(').append(arguments(descriptor.parameters().size())).append(')');
         }
         output.append(";\n  }\n");
     }
 
-    private String intrinsicExpression(MethodRef method) {
-        String key = method.owner() + "." + method.name() + method.descriptor();
-        return switch (key) {
-            case "io/github/jabrena/juno/api/Gpio.pinMode(II)V" -> "pinMode(call_arg0, call_arg1)";
-            case "io/github/jabrena/juno/api/Gpio.digitalWrite(IZ)V" ->
-                    "digitalWrite(call_arg0, call_arg1 ? HIGH : LOW)";
-            case "io/github/jabrena/juno/api/Gpio.digitalRead(I)Z" ->
-                    "static_cast<int32_t>(digitalRead(call_arg0) == HIGH)";
-            case "io/github/jabrena/juno/api/Gpio.analogRead(I)I" -> "static_cast<int32_t>(analogRead(call_arg0))";
-            case "io/github/jabrena/juno/api/Gpio.analogWrite(II)V" -> "analogWrite(call_arg0, call_arg1)";
-            case "io/github/jabrena/juno/api/Gpio.toggle(I)V" ->
-                    "digitalWrite(call_arg0, digitalRead(call_arg0) == HIGH ? LOW : HIGH)";
-            case "io/github/jabrena/juno/api/Delay.millis(I)V" -> "delay(static_cast<unsigned long>(call_arg0))";
-            case "io/github/jabrena/juno/api/Delay.micros(I)V" -> "delayMicroseconds(static_cast<unsigned int>(call_arg0))";
-            case "io/github/jabrena/juno/api/Clock.millis()I" -> "static_cast<int32_t>(millis())";
-            case "io/github/jabrena/juno/api/Clock.micros()I" -> "static_cast<int32_t>(micros())";
-            case "io/github/jabrena/juno/api/DigitalOutput.of(I)Lio/github/jabrena/juno/api/DigitalOutput;" ->
-                    "juno_digital_output_of(call_arg0)";
-            case "io/github/jabrena/juno/api/DigitalOutput.high()V" ->
-                    "digitalWrite(call_receiver, HIGH)";
-            case "io/github/jabrena/juno/api/DigitalOutput.low()V" ->
-                    "digitalWrite(call_receiver, LOW)";
-            case "io/github/jabrena/juno/api/DigitalOutput.toggle()V" ->
-                    "digitalWrite(call_receiver, digitalRead(call_receiver) == HIGH ? LOW : HIGH)";
-            case "io/github/jabrena/juno/api/DigitalOutput.isHigh()Z" ->
-                    "static_cast<int32_t>(digitalRead(call_receiver) == HIGH)";
-            case "io/github/jabrena/juno/api/LedMatrix.begin()V" -> "juno_led_matrix_begin()";
-            case "io/github/jabrena/juno/api/LedMatrix.loadFrame(III)V" ->
-                    "juno_led_matrix_load_frame(call_arg0, call_arg1, call_arg2)";
-            case "io/github/jabrena/juno/api/LedMatrix.clear()V" -> "juno_led_matrix_clear()";
-            case "io/github/jabrena/juno/api/Serial.begin(I)V" ->
-                    "Serial.begin(static_cast<unsigned long>(call_arg0))";
-            case "io/github/jabrena/juno/api/Serial.print(I)V" -> "Serial.print(call_arg0)";
-            case "io/github/jabrena/juno/api/Serial.println(I)V" -> "Serial.println(call_arg0)";
-            case "io/github/jabrena/juno/api/Mouse.begin()V" -> "Mouse.begin()";
-            case "io/github/jabrena/juno/api/Mouse.move(II)V" ->
-                    "Mouse.move(static_cast<signed char>(call_arg0), static_cast<signed char>(call_arg1))";
-            default -> throw new CompileException("Missing C++ lowering for intrinsic " + method.displayName());
+    private String intrinsicExpression(Intrinsic intrinsic) {
+        return switch (intrinsic) {
+            case GPIO_PIN_MODE -> "pinMode(call_arg0, call_arg1)";
+            case GPIO_DIGITAL_WRITE -> "digitalWrite(call_arg0, call_arg1 ? HIGH : LOW)";
+            case GPIO_DIGITAL_READ -> "static_cast<int32_t>(digitalRead(call_arg0) == HIGH)";
+            case GPIO_ANALOG_READ -> "static_cast<int32_t>(analogRead(call_arg0))";
+            case GPIO_ANALOG_WRITE -> "analogWrite(call_arg0, call_arg1)";
+            case GPIO_TOGGLE -> "digitalWrite(call_arg0, digitalRead(call_arg0) == HIGH ? LOW : HIGH)";
+            case DELAY_MILLIS -> "delay(static_cast<unsigned long>(call_arg0))";
+            case DELAY_MICROS -> "delayMicroseconds(static_cast<unsigned int>(call_arg0))";
+            case CLOCK_MILLIS -> "static_cast<int32_t>(millis())";
+            case CLOCK_MICROS -> "static_cast<int32_t>(micros())";
+            case DIGITAL_OUTPUT_OF -> "juno_digital_output_of(call_arg0)";
+            case DIGITAL_OUTPUT_HIGH -> "digitalWrite(call_receiver, HIGH)";
+            case DIGITAL_OUTPUT_LOW -> "digitalWrite(call_receiver, LOW)";
+            case DIGITAL_OUTPUT_TOGGLE -> "digitalWrite(call_receiver, digitalRead(call_receiver) == HIGH ? LOW : HIGH)";
+            case DIGITAL_OUTPUT_IS_HIGH -> "static_cast<int32_t>(digitalRead(call_receiver) == HIGH)";
+            case LED_MATRIX_BEGIN -> "juno_led_matrix_begin()";
+            case LED_MATRIX_LOAD_FRAME -> "juno_led_matrix_load_frame(call_arg0, call_arg1, call_arg2)";
+            case LED_MATRIX_CLEAR -> "juno_led_matrix_clear()";
+            case SERIAL_BEGIN -> "Serial.begin(static_cast<unsigned long>(call_arg0))";
+            case SERIAL_PRINT -> "Serial.print(call_arg0)";
+            case SERIAL_PRINTLN -> "Serial.println(call_arg0)";
+            case MOUSE_BEGIN -> "Mouse.begin()";
+            case MOUSE_MOVE -> "Mouse.move(static_cast<signed char>(call_arg0), static_cast<signed char>(call_arg1))";
         };
     }
 
