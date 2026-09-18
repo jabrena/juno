@@ -103,7 +103,13 @@ Then open the serial monitor at the same baud rate the sketch uses (`Serial.begi
 arduino-cli monitor -p /dev/cu.YOUR_PORT -c baudrate=9600
 ```
 
-You should see `0`, `1`, `2`, ... printed once a second. Press `Ctrl+C` to exit the monitor.
+The intended output is `0`, `1`, `2`, ... once a second. Press `Ctrl+C` to exit the monitor.
+
+Known limitation: USB serial output is not currently reliable when the Java entry point never
+returns. Juno invokes the entry point from Arduino `setup()`, and an infinite Java loop can prevent
+the UNO R4 USB service from being polled normally. During the runtime-risk board test the monitor
+connected successfully but received no bytes. LED-based examples remain reliable while this backend
+integration issue is addressed.
 
 ### LED matrix examples
 

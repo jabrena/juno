@@ -69,6 +69,20 @@ class MainTest {
     }
 
     @Test
+    void inspectWithRisksPrintsResourceEstimatesAndStructuredFindings() throws Exception {
+        compileRiskFixture();
+
+        Main.run(new String[]{"inspect", "--main", "demo.Risky", "--classpath", classPath(), "--risks"});
+
+        String output = captured.toString(StandardCharsets.UTF_8);
+        assertTrue(output.contains("Runtime risk analysis:"));
+        assertTrue(output.contains("Arena:"));
+        assertTrue(output.contains("JUNO-RISK-001"));
+        assertTrue(output.contains("JUNO-RISK-005"));
+        assertTrue(output.contains("conservative source-level estimates"));
+    }
+
+    @Test
     void inspectWithoutMainThrows() {
         assertThrows(CompileException.class, () -> Main.run(new String[]{"inspect"}));
     }
@@ -88,5 +102,23 @@ class MainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Fixture", source);
+    }
+
+    private void compileRiskFixture() throws Exception {
+        String source = """
+                package demo;
+                public final class Risky {
+                    static final class Box { int value; }
+                    static Box create() { return new Box(); }
+                    static int divide(int value, int divisor) { return value / divisor; }
+                    public static void main() {
+                        while (true) {
+                            Box box = create();
+                            divide(10, box.value);
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Risky", source);
     }
 }

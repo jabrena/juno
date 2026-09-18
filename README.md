@@ -70,6 +70,21 @@ subset. Diagnostics identify the method, bytecode offset, and unsupported opcode
 [docs/FEATURES.md](docs/FEATURES.md) for the full, up-to-date inventory of what's supported and
 what isn't.
 
+Before generating or uploading a sketch, inspect conservative runtime-risk and resource estimates:
+
+```bash
+java -jar juno/target/juno-0.1.0-SNAPSHOT.jar inspect \
+  --main ArenaFeaturesPulse \
+  --classpath juno-examples/target/classes:juno/target/classes \
+  --risks
+```
+
+The report includes the fixed-arena budget, estimated static RAM and generated local storage,
+maximum call depth, emitted array bounds checks, and stable `JUNO-RISK-*` findings for allocation
+inside loops, recursion, possible integer division by zero, unchecked array access, and
+compile-time-null dereferences. These are conservative source-level checks; the Arduino linker's
+memory report remains authoritative for final RAM and flash use.
+
 ## Architecture
 
 - `classfile` parses standard JVM class files and resolves constant-pool references.

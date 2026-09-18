@@ -12,10 +12,12 @@ Supported today:
 - `private/static final` primitive constants (`boolean`/`byte`/`char`/`short`/`int`) initialized
   with a compile-time constant expression, same class or a different one — `javac` inlines these
   as ordinary literals (JLS 4.12.4), so Juno never sees a field read
-- mutable static primitive fields with JVM default-zero initialization. A class that declares a
-  reachable `<clinit>` is rejected because general static-initializer execution is not supported.
+- mutable static primitive fields with JVM default-zero initialization. Reachable `<clinit>` methods
+  that use the supported subset execute during generated startup; full JVM initialization ordering
+  and cycle semantics are not yet modeled.
 - arrays of `boolean`/`byte`/`char`/`short`/`int`/`long`/`float`/`double`: `new T[N]` with a compile-time-constant `N`
-  (there is no heap, so every array is a fixed-size local C array, stored at its natural width —
+  (there is no general heap, so every array is allocated from the fixed program-lifetime arena at
+  its natural width —
   `byte[]`/`boolean[]` as `int8_t`, `char[]` as `uint16_t`, `short[]` as `int16_t`, `int[]` as
   `int32_t`, `long[]` as `int64_t`, `float[]` as `float`, and `double[]` as `double`); passing an array
   to another static method (pointer semantics); returning an array is
@@ -46,6 +48,37 @@ Supported today:
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
 - `.class` inputs from directories, individual files, or JARs
+
+## Runtime-risk inspection
+
+`juno inspect --main <class> --classpath <paths> --risks` analyzes the optimized, closed-world IR
+without running or uploading the program. The resulting `CompilationReport.runtimeRisks()` data is
+also available programmatically as immutable records with stable diagnostic codes.
+
+The first analysis slice reports:
+
+| Code | Meaning |
+|------|---------|
+| `JUNO-RISK-001` | Arena allocation occurs directly or transitively inside a control-flow loop. |
+| `JUNO-RISK-002` | The conservative startup allocation estimate exceeds the fixed arena capacity. |
+| `JUNO-RISK-003` | A recursive call cycle makes generated call depth and stack usage unbounded. |
+| `JUNO-RISK-004` | Array accesses exist for which Juno cannot emit a bounds check. |
+| `JUNO-RISK-005` | Integer/long division or remainder may receive a zero divisor and panic. |
+| `JUNO-RISK-006` | A dereference uses a value proven null at compile time. |
+
+The 8 KiB arena capacity and the counts of emitted bounds checks are exact compiler facts. Arena,
+static-RAM, and stack figures are conservative source-level estimates: alignment is overestimated,
+branch feasibility is not modeled, and the downstream C++ compiler may optimize stack locals. The
+Arduino linker's final memory report is authoritative. Risk findings warn; they do not currently
+reject compilation.
+
+Two board examples make the distinction observable:
+
+- `RuntimeRiskSafePulse` allocates once, has generated bounds checks, and should report no findings;
+  it blinks alternating 120/360 ms pulses indefinitely.
+- `RuntimeRiskArenaExhaustion` is intentionally unsafe. It allocates 1 KiB on every loop iteration,
+  shows a one-second startup light, flashes eight more times, and then stops when the ninth allocation
+  exhausts the 8 KiB arena. Its `JUNO-RISK-001` warning predicts that failure before upload.
 
 Not yet supported:
 

@@ -289,6 +289,8 @@ class JunoCompilerTest {
         assertEquals(2, result.report().reachableMethods(), "main and addTo, both reachable");
         assertTrue(result.report().irBlocks() > 2, "addTo's loop needs more than one block per method");
         assertEquals(Set.of(Intrinsic.GPIO_PIN_MODE, Intrinsic.DELAY_MILLIS), result.report().intrinsics());
+        assertEquals(8192, result.report().runtimeRisks().arenaCapacityBytes());
+        assertTrue(result.report().runtimeRisks().estimatedMaxStackBytes() > 0);
     }
 
     @Test

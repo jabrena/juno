@@ -1,14 +1,15 @@
 # Java types vs. Arduino types
 
 Juno only accepts a small slice of Java's type system (see [FEATURES.md](FEATURES.md)). Its IR now
-records an explicit `JunoType` for every `Value`; the currently accepted bytecodes lower to `INT32` and
-`FLOAT32`. This note explains the current representations and where the Java and Arduino type systems meet.
+records an explicit `JunoType` for every `Value`; accepted bytecodes lower to `INT32`, `INT64`,
+`FLOAT32`, and `FLOAT64` values. This note explains the current representations and where the Java
+and Arduino type systems meet.
 
 ## Supported Java types
 
 Method descriptor validation (in
 [`juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java`](../juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java))
-admits six primitive JVM descriptor types as ordinary scalar method parameters/results:
+admits eight primitive JVM descriptor types as ordinary scalar method parameters/results:
 
 | Java type | JVM descriptor |
 |-----------|-----------------|
@@ -17,11 +18,13 @@ admits six primitive JVM descriptor types as ordinary scalar method parameters/r
 | `char`    | `C` |
 | `short`   | `S` |
 | `int`     | `I` |
+| `long`    | `J` |
 | `float`   | `F` |
+| `double`  | `D` |
 
-Primitive arrays and simple enums are also supported as parameters/results under the restrictions in
-[FEATURES.md](FEATURES.md). `long` parameters and results, `double`, and general reference types remain
-rejected at link time; `DigitalOutput` is a compiler-erased handle rather than a real object.
+Primitive arrays, simple enums, records, and final closed-world object types are also supported as
+parameters/results under the restrictions in [FEATURES.md](FEATURES.md). `DigitalOutput` remains a
+compiler-erased handle rather than an arena object.
 
 ## Typed IR scalar lanes
 
@@ -30,12 +33,11 @@ representation — bytecode always computes with them as a 32-bit `int` on the s
 narrowing on store (`i2b`, `i2s`) or when a `char` needs zero-extension.
 
 Juno represents every symbolic IR register as `Value(id, JunoType)`. `JunoType` defines `INT32`,
-`FLOAT32`, and `FLOAT64`, and the backend declares each value using its recorded type. The classfile
-frontend currently produces `INT32` and `FLOAT32`; `FLOAT64` reserves the typed lane for a later
-`double` implementation.
+`INT64`, `FLOAT32`, and `FLOAT64`, and the backend declares each value using its recorded type.
 
-Integer-only methods retain an `int32_t` local-slot array. A method containing float values uses a
-typed `JunoSlot` union so the same JVM slot can safely hold either lane at different points in the method.
+Integer-only methods retain an `int32_t` local-slot array. A method containing `long`, `float`, or
+`double` values uses a typed `JunoSlot` union so the same JVM slot can safely hold different lanes at
+different points in the method.
 Array references remain 32-bit handles on Cortex-M4, enums are ordinals, and each half of Juno's split
 `long` representation is 32 bits.
 
@@ -43,8 +45,8 @@ Array references remain 32-bit handles on Cortex-M4, enums are ordinals, and eac
 int32_t locals[N] = {};
 int32_t v0, v1, v2;
 
-// In a method containing float values:
-union JunoSlot { int32_t i32; float f32; double f64; };
+// In a method containing wide or floating-point values:
+union JunoSlot { int32_t i32; int64_t i64; float f32; double f64; };
 JunoSlot locals[N] = {};
 float v3, v4;
 ```

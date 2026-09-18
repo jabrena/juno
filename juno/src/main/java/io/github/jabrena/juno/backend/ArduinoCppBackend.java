@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
@@ -861,7 +862,7 @@ public final class ArduinoCppBackend {
                   for (;;) {}
                 }
 
-                static uint8_t juno_arena[8192] __attribute__((aligned(8)));
+                static uint8_t juno_arena[${JUNO_ARENA_CAPACITY}] __attribute__((aligned(8)));
                 static uint32_t juno_arena_used = 0;
 
                 static void* juno_alloc(uint32_t size, uint32_t alignment) {
@@ -961,7 +962,7 @@ public final class ArduinoCppBackend {
                 static int64_t juno_lor(int64_t a, int64_t b) { return a | b; }
                 static int64_t juno_lxor(int64_t a, int64_t b) { return a ^ b; }
 
-                """;
+                """.replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES));
     }
 
     private String ledMatrixHelpers() {

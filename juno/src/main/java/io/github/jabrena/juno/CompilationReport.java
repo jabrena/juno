@@ -1,5 +1,7 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.analysis.RuntimeRiskAnalyzer;
+import io.github.jabrena.juno.analysis.RuntimeRiskReport;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrBasicBlock;
@@ -11,8 +13,9 @@ import io.github.jabrena.juno.linker.Program;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-/** What the compiler found while producing a {@link CompilationResult}: reachability and intrinsic usage. */
-public record CompilationReport(MethodRef entryPoint, int reachableMethods, int irBlocks, Set<Intrinsic> intrinsics) {
+/** What the compiler found while producing a {@link CompilationResult}. */
+public record CompilationReport(MethodRef entryPoint, int reachableMethods, int irBlocks, Set<Intrinsic> intrinsics,
+                                RuntimeRiskReport runtimeRisks) {
     static CompilationReport from(Program program, IrProgram optimized) {
         int irBlocks = optimized.methods().stream().mapToInt(method -> method.blocks().size()).sum();
         Set<Intrinsic> intrinsics = new LinkedHashSet<>();
@@ -25,6 +28,8 @@ public record CompilationReport(MethodRef entryPoint, int reachableMethods, int 
                 }
             }
         }
-        return new CompilationReport(program.entryPoint(), program.methods().size(), irBlocks, Set.copyOf(intrinsics));
+        RuntimeRiskReport runtimeRisks = new RuntimeRiskAnalyzer().analyze(program, optimized);
+        return new CompilationReport(program.entryPoint(), program.methods().size(), irBlocks,
+                Set.copyOf(intrinsics), runtimeRisks);
     }
 }
