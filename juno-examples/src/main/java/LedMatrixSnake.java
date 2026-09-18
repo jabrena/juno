@@ -1,13 +1,14 @@
 import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
 
 /**
- * A self-playing Snake on the UNO R4 WiFi's 12x8 LED matrix. Juno v0.1 has no arrays, objects, or
- * static fields, so the body is a fixed-size shift register of local variables in {@code main},
- * always shifted by one cell per tick; {@code length} controls how many of those trailing cells
- * are actually lit, which is what makes the snake grow each time it eats food. Each cell is a
- * single packed {@code y * WIDTH + x} position (matching the LED matrix's own bit index) instead
- * of an (x, y) pair, so a deeper body only costs one extra local/parameter per segment.
+ * A self-playing Snake on the UNO R4 WiFi's 12x8 LED matrix. The body is a fixed-size shift
+ * register of local variables in {@code main}, always shifted by one cell per tick; {@code length}
+ * controls how many of those trailing cells are actually lit, which is what makes the snake grow
+ * each time it eats food. Each cell is a single packed {@code y * WIDTH + x} position (matching the
+ * LED matrix's own bit index) instead of an (x, y) pair, so a deeper body only costs one extra
+ * local/parameter per segment.
  */
 public final class LedMatrixSnake {
     private static final int WIDTH = 12;
@@ -44,6 +45,7 @@ public final class LedMatrixSnake {
         int rngState = 12345;
 
         LedMatrix.begin();
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
 
         while (true) {
             int headX = posX(headPos);
@@ -160,97 +162,59 @@ public final class LedMatrixSnake {
                 }
             }
 
-            int word0 = 0;
-            int word1 = 0;
-            int word2 = 0;
-            word0 = setPixel(word0, 0, headPos);
-            word1 = setPixel(word1, 1, headPos);
-            word2 = setPixel(word2, 2, headPos);
+            LedCanvas.clear(frame);
+            LedCanvas.setPixel(frame, posX(headPos), posY(headPos));
             if (length >= 1) {
-                word0 = setPixel(word0, 0, s1);
-                word1 = setPixel(word1, 1, s1);
-                word2 = setPixel(word2, 2, s1);
+                LedCanvas.setPixel(frame, posX(s1), posY(s1));
             }
             if (length >= 2) {
-                word0 = setPixel(word0, 0, s2);
-                word1 = setPixel(word1, 1, s2);
-                word2 = setPixel(word2, 2, s2);
+                LedCanvas.setPixel(frame, posX(s2), posY(s2));
             }
             if (length >= 3) {
-                word0 = setPixel(word0, 0, s3);
-                word1 = setPixel(word1, 1, s3);
-                word2 = setPixel(word2, 2, s3);
+                LedCanvas.setPixel(frame, posX(s3), posY(s3));
             }
             if (length >= 4) {
-                word0 = setPixel(word0, 0, s4);
-                word1 = setPixel(word1, 1, s4);
-                word2 = setPixel(word2, 2, s4);
+                LedCanvas.setPixel(frame, posX(s4), posY(s4));
             }
             if (length >= 5) {
-                word0 = setPixel(word0, 0, s5);
-                word1 = setPixel(word1, 1, s5);
-                word2 = setPixel(word2, 2, s5);
+                LedCanvas.setPixel(frame, posX(s5), posY(s5));
             }
             if (length >= 6) {
-                word0 = setPixel(word0, 0, s6);
-                word1 = setPixel(word1, 1, s6);
-                word2 = setPixel(word2, 2, s6);
+                LedCanvas.setPixel(frame, posX(s6), posY(s6));
             }
             if (length >= 7) {
-                word0 = setPixel(word0, 0, s7);
-                word1 = setPixel(word1, 1, s7);
-                word2 = setPixel(word2, 2, s7);
+                LedCanvas.setPixel(frame, posX(s7), posY(s7));
             }
             if (length >= 8) {
-                word0 = setPixel(word0, 0, s8);
-                word1 = setPixel(word1, 1, s8);
-                word2 = setPixel(word2, 2, s8);
+                LedCanvas.setPixel(frame, posX(s8), posY(s8));
             }
             if (length >= 9) {
-                word0 = setPixel(word0, 0, s9);
-                word1 = setPixel(word1, 1, s9);
-                word2 = setPixel(word2, 2, s9);
+                LedCanvas.setPixel(frame, posX(s9), posY(s9));
             }
             if (length >= 10) {
-                word0 = setPixel(word0, 0, s10);
-                word1 = setPixel(word1, 1, s10);
-                word2 = setPixel(word2, 2, s10);
+                LedCanvas.setPixel(frame, posX(s10), posY(s10));
             }
             if (length >= 11) {
-                word0 = setPixel(word0, 0, s11);
-                word1 = setPixel(word1, 1, s11);
-                word2 = setPixel(word2, 2, s11);
+                LedCanvas.setPixel(frame, posX(s11), posY(s11));
             }
             if (length >= 12) {
-                word0 = setPixel(word0, 0, s12);
-                word1 = setPixel(word1, 1, s12);
-                word2 = setPixel(word2, 2, s12);
+                LedCanvas.setPixel(frame, posX(s12), posY(s12));
             }
             if (length >= 13) {
-                word0 = setPixel(word0, 0, s13);
-                word1 = setPixel(word1, 1, s13);
-                word2 = setPixel(word2, 2, s13);
+                LedCanvas.setPixel(frame, posX(s13), posY(s13));
             }
             if (length >= 14) {
-                word0 = setPixel(word0, 0, s14);
-                word1 = setPixel(word1, 1, s14);
-                word2 = setPixel(word2, 2, s14);
+                LedCanvas.setPixel(frame, posX(s14), posY(s14));
             }
             if (length >= 15) {
-                word0 = setPixel(word0, 0, s15);
-                word1 = setPixel(word1, 1, s15);
-                word2 = setPixel(word2, 2, s15);
+                LedCanvas.setPixel(frame, posX(s15), posY(s15));
             }
             if (length >= 16) {
-                word0 = setPixel(word0, 0, s16);
-                word1 = setPixel(word1, 1, s16);
-                word2 = setPixel(word2, 2, s16);
+                LedCanvas.setPixel(frame, posX(s16), posY(s16));
             }
-            word0 = setPixel(word0, 0, foodPos);
-            word1 = setPixel(word1, 1, foodPos);
-            word2 = setPixel(word2, 2, foodPos);
+            LedCanvas.setPixel(frame, posX(foodPos), posY(foodPos));
 
-            LedMatrix.loadFrame(word0, word1, word2);
+            LedCanvas.show(frame);
             Delay.millis(220);
         }
     }
@@ -370,15 +334,5 @@ public final class LedMatrixSnake {
             remainder = remainder + modulus;
         }
         return remainder;
-    }
-
-    private static int setPixel(int word, int wordIndex, int pos) {
-        int targetWord = pos / 32;
-        if (targetWord != wordIndex) {
-            return word;
-        }
-        int bitFromTop = pos - targetWord * 32;
-        int shift = 31 - bitFromTop;
-        return word | (1 << shift);
     }
 }

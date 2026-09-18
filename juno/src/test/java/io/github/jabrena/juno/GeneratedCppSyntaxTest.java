@@ -139,16 +139,15 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.led.LedCanvas;
                 import io.github.jabrena.juno.api.led.LedMatrix;
-                import io.github.jabrena.juno.api.led.LedMatrixText;
                 public final class Digits {
                     public static void main(String[] args) {
                         LedMatrix.begin();
-                        int word0 = LedMatrixText.drawDigit(0, 0, 1, 4, 0);
-                        int word1 = LedMatrixText.drawDigit(0, 1, 1, 4, 0);
-                        int word2 = LedMatrixText.drawDigit(0, 2, 1, 4, 0);
-                        word0 = LedMatrixText.drawLetter(word0, 0, 0, 0, 0);
-                        LedMatrix.loadFrame(word0, word1, word2);
+                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+                        LedCanvas.drawDigit(frame, 1, 4, 0);
+                        LedCanvas.drawLetter(frame, 0, 0, 0);
+                        LedCanvas.show(frame);
                         Delay.millis(500);
                     }
                 }
@@ -175,15 +174,14 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.led.LedCanvas;
                 import io.github.jabrena.juno.api.led.LedMatrix;
-                import io.github.jabrena.juno.api.led.LedMatrixSmallText;
                 public final class Decimal {
                     public static void main(String[] args) {
                         LedMatrix.begin();
-                        int word0 = LedMatrixSmallText.drawDecimal(0, 0, 2, 5, 1, 1);
-                        int word1 = LedMatrixSmallText.drawDecimal(0, 1, 2, 5, 1, 1);
-                        int word2 = LedMatrixSmallText.drawDecimal(0, 2, 2, 5, 1, 1);
-                        LedMatrix.loadFrame(word0, word1, word2);
+                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+                        LedCanvas.drawDecimal(frame, 2, 5, 1, 1);
+                        LedCanvas.show(frame);
                         Delay.millis(500);
                     }
                 }
@@ -210,15 +208,15 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.led.LedCanvas;
                 import io.github.jabrena.juno.api.led.LedMatrix;
-                import io.github.jabrena.juno.api.led.LedMatrixShapes;
                 public final class Shapes {
                     public static void main(String[] args) {
                         LedMatrix.begin();
-                        int word0 = LedMatrixShapes.fillRect(0, 0, 1, 1, 4, 4);
-                        int word1 = LedMatrixShapes.drawRect(0, 1, 1, 1, 4, 4);
-                        int word2 = LedMatrixShapes.drawRect(0, 2, 0, 0, 10, 6);
-                        LedMatrix.loadFrame(word0, word1, word2);
+                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+                        LedCanvas.fillRect(frame, 1, 1, 4, 4);
+                        LedCanvas.drawRect(frame, 0, 0, 10, 6);
+                        LedCanvas.show(frame);
                         Delay.millis(500);
                     }
                 }
@@ -245,18 +243,16 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.led.LedCanvas;
                 import io.github.jabrena.juno.api.led.LedMatrix;
-                import io.github.jabrena.juno.api.led.LedMatrixShapes;
-                import io.github.jabrena.juno.api.led.LedMatrixTransform;
                 public final class Triangle {
                     public static void main(String[] args) {
                         LedMatrix.begin();
-                        int x1 = LedMatrixTransform.rotateX(5, 0, 5, 3, 1);
-                        int y1 = LedMatrixTransform.rotateY(5, 0, 5, 3, 1);
-                        int word0 = LedMatrixShapes.fillTriangle(0, 0, x1, y1, 2, 6, 8, 6);
-                        int word1 = LedMatrixShapes.drawTriangle(0, 1, x1, y1, 2, 6, 8, 6);
-                        int word2 = LedMatrixShapes.drawLine(0, 2, 0, 0, 11, 7);
-                        LedMatrix.loadFrame(word0, word1, word2);
+                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+                        LedCanvas.fillTriangle(frame, 5, 0, 2, 6, 8, 6);
+                        LedCanvas.drawTriangle(frame, 5, 0, 2, 6, 8, 6);
+                        LedCanvas.drawLine(frame, 0, 0, 11, 7);
+                        LedCanvas.show(frame);
                         Delay.millis(500);
                     }
                 }
@@ -283,15 +279,15 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.led.LedCanvas;
                 import io.github.jabrena.juno.api.led.LedMatrix;
-                import io.github.jabrena.juno.api.led.LedMatrixShapes;
                 public final class Circle {
                     public static void main(String[] args) {
                         LedMatrix.begin();
-                        int word0 = LedMatrixShapes.fillCircle(0, 0, 5, 3, 3);
-                        int word1 = LedMatrixShapes.drawCircle(0, 1, 5, 3, 3);
-                        int word2 = LedMatrixShapes.drawCircle(0, 2, 5, 3, 0);
-                        LedMatrix.loadFrame(word0, word1, word2);
+                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+                        LedCanvas.fillCircle(frame, 5, 3, 3);
+                        LedCanvas.drawCircle(frame, 5, 3, 0);
+                        LedCanvas.show(frame);
                         Delay.millis(500);
                     }
                 }
@@ -318,15 +314,14 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.led.LedCanvas;
                 import io.github.jabrena.juno.api.led.LedMatrix;
-                import io.github.jabrena.juno.api.led.LedMatrixText;
                 public final class Ascii {
                     public static void main(String[] args) {
                         LedMatrix.begin();
-                        int word0 = LedMatrixText.drawChar(0, 0, 'H', 4, 0);
-                        int word1 = LedMatrixText.drawChar(0, 1, 'i', 4, 0);
-                        int word2 = LedMatrixText.drawChar(0, 2, '!', 4, 0);
-                        LedMatrix.loadFrame(word0, word1, word2);
+                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+                        LedCanvas.drawChar(frame, 'H', 4, 0);
+                        LedCanvas.show(frame);
                         Delay.millis(500);
                     }
                 }

@@ -1,10 +1,10 @@
 import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
-import io.github.jabrena.juno.api.led.LedMatrixShapes;
 
 /**
  * Cycles a filled circle and an outlined circle, centered on the UNO R4 WiFi's 12x8 LED matrix,
- * using {@code LedMatrixShapes}.
+ * using {@code LedCanvas}.
  */
 public final class LedMatrixCircles {
     private static final int CENTER_X = 5;
@@ -13,19 +13,18 @@ public final class LedMatrixCircles {
 
     public static void main(String[] args) {
         LedMatrix.begin();
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
 
         while (true) {
-            int word0 = LedMatrixShapes.fillCircle(0, 0, CENTER_X, CENTER_Y, RADIUS);
-            int word1 = LedMatrixShapes.fillCircle(0, 1, CENTER_X, CENTER_Y, RADIUS);
-            int word2 = LedMatrixShapes.fillCircle(0, 2, CENTER_X, CENTER_Y, RADIUS);
-            LedMatrix.loadFrame(word0, word1, word2);
+            LedCanvas.clear(frame);
+            LedCanvas.fillCircle(frame, CENTER_X, CENTER_Y, RADIUS);
+            LedCanvas.show(frame);
             Delay.millis(800);
             LedMatrix.clear();
 
-            word0 = LedMatrixShapes.drawCircle(0, 0, CENTER_X, CENTER_Y, RADIUS);
-            word1 = LedMatrixShapes.drawCircle(0, 1, CENTER_X, CENTER_Y, RADIUS);
-            word2 = LedMatrixShapes.drawCircle(0, 2, CENTER_X, CENTER_Y, RADIUS);
-            LedMatrix.loadFrame(word0, word1, word2);
+            LedCanvas.clear(frame);
+            LedCanvas.drawCircle(frame, CENTER_X, CENTER_Y, RADIUS);
+            LedCanvas.show(frame);
             Delay.millis(800);
             LedMatrix.clear();
         }

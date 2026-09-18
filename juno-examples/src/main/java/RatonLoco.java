@@ -2,7 +2,6 @@ import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.DigitalOutput;
 import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
-import io.github.jabrena.juno.api.led.LedMatrixShapes;
 import io.github.jabrena.juno.api.Mouse;
 
 /**
@@ -25,10 +24,9 @@ public final class RatonLoco {
         Mouse.begin();
 
         LedMatrix.begin();
-        int word0 = drawMouseIcon(0, 0);
-        int word1 = drawMouseIcon(0, 1);
-        int word2 = drawMouseIcon(0, 2);
-        LedMatrix.loadFrame(word0, word1, word2);
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+        drawMouseIcon(frame);
+        LedCanvas.show(frame);
 
         while (true) {
             led.high();
@@ -69,20 +67,17 @@ public final class RatonLoco {
 
     /**
      * A 12x8 mouse face — round ears, an outlined head, two eyes, and a nose — built from
-     * {@link LedMatrixShapes#fillRect} strips and {@link LedCanvas#setPixel} dots since Juno has
-     * no arrays to hold a bitmap.
+     * {@link LedCanvas#fillRect} strips and {@link LedCanvas#setPixel} dots.
      */
-    private static int drawMouseIcon(int word, int wordIndex) {
-        int result = word;
-        result = LedMatrixShapes.fillRect(result, wordIndex, 1, 0, 2, 2); // left ear
-        result = LedMatrixShapes.fillRect(result, wordIndex, 9, 0, 2, 2); // right ear
-        result = LedMatrixShapes.fillRect(result, wordIndex, 2, 2, 8, 1); // head top edge
-        result = LedMatrixShapes.fillRect(result, wordIndex, 2, 3, 1, 2); // left side of head
-        result = LedMatrixShapes.fillRect(result, wordIndex, 9, 3, 1, 2); // right side of head
-        result = LedCanvas.setPixel(result, wordIndex, 4, 3);             // left eye
-        result = LedCanvas.setPixel(result, wordIndex, 7, 3);             // right eye
-        result = LedMatrixShapes.fillRect(result, wordIndex, 2, 5, 8, 1); // chin
-        result = LedMatrixShapes.fillRect(result, wordIndex, 5, 7, 2, 1); // nose
-        return result;
+    private static void drawMouseIcon(boolean[][] frame) {
+        LedCanvas.fillRect(frame, 1, 0, 2, 2); // left ear
+        LedCanvas.fillRect(frame, 9, 0, 2, 2); // right ear
+        LedCanvas.fillRect(frame, 2, 2, 8, 1); // head top edge
+        LedCanvas.fillRect(frame, 2, 3, 1, 2); // left side of head
+        LedCanvas.fillRect(frame, 9, 3, 1, 2); // right side of head
+        LedCanvas.setPixel(frame, 4, 3);       // left eye
+        LedCanvas.setPixel(frame, 7, 3);       // right eye
+        LedCanvas.fillRect(frame, 2, 5, 8, 1); // chin
+        LedCanvas.fillRect(frame, 5, 7, 2, 1); // nose
     }
 }

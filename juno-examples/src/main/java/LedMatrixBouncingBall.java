@@ -1,11 +1,11 @@
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
-import io.github.jabrena.juno.api.led.LedMatrixShapes;
 
 /**
  * The classic bouncing-ball animation on the UNO R4 WiFi's 12x8 LED matrix: a small circle, drawn
- * with {@code LedMatrixShapes.fillCircle} at radius 1, moves diagonally one pixel per tick and
+ * with {@code LedCanvas.fillCircle} at radius 1, moves diagonally one pixel per tick and
  * reverses direction whenever it reaches an edge of the matrix.
  *
  * <p>The starting position and the starting diagonal (one of the four 45-degree "angles" reachable
@@ -24,6 +24,7 @@ public final class LedMatrixBouncingBall {
 
     public static void main(String[] args) {
         LedMatrix.begin();
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
 
         int rngState = Clock.micros();
         rngState = rngState * 1103515245 + 12345;
@@ -42,10 +43,9 @@ public final class LedMatrixBouncingBall {
         }
 
         while (true) {
-            int word0 = LedMatrixShapes.fillCircle(0, 0, ballX, ballY, RADIUS);
-            int word1 = LedMatrixShapes.fillCircle(0, 1, ballX, ballY, RADIUS);
-            int word2 = LedMatrixShapes.fillCircle(0, 2, ballX, ballY, RADIUS);
-            LedMatrix.loadFrame(word0, word1, word2);
+            LedCanvas.clear(frame);
+            LedCanvas.fillCircle(frame, ballX, ballY, RADIUS);
+            LedCanvas.show(frame);
             Delay.millis(120);
             LedMatrix.clear();
 

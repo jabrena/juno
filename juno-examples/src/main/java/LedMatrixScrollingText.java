@@ -1,11 +1,11 @@
 import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
-import io.github.jabrena.juno.api.led.LedMatrixText;
 
 /**
  * Scrolls "Juno, Java for Arduino ONE R4" across the UNO R4 WiFi's 12x8 LED matrix from right to
- * left, one pixel column per tick, using {@code LedMatrixText.drawChar}. Juno v0.1 has no arrays
- * or {@code String}, so the message is a fixed sequence of {@code drawCharAt} calls, one per
+ * left, one pixel column per tick, using {@code LedCanvas.drawChar}. Juno v0.1 has no
+ * {@code String}, so the message is a fixed sequence of {@code drawCharAt} calls, one per
  * character, each placed 6 columns apart (5-wide glyph + 1-column gap) and shifted by the current
  * scroll offset; {@code LedCanvas.setPixel} already clips anything outside the 12x8 frame, so
  * characters simply appear at the right edge and disappear off the left edge as the offset shrinks.
@@ -19,14 +19,14 @@ public final class LedMatrixScrollingText {
 
     public static void main(String[] args) {
         LedMatrix.begin();
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
 
         while (true) {
             int offset = START_OFFSET;
             while (offset >= END_OFFSET) {
-                int word0 = drawMessage(0, 0, offset);
-                int word1 = drawMessage(0, 1, offset);
-                int word2 = drawMessage(0, 2, offset);
-                LedMatrix.loadFrame(word0, word1, word2);
+                LedCanvas.clear(frame);
+                drawMessage(frame, offset);
+                LedCanvas.show(frame);
                 Delay.millis(80);
                 LedMatrix.clear();
                 offset = offset - 1;
@@ -35,36 +35,34 @@ public final class LedMatrixScrollingText {
     }
 
     /** "Juno, Java for Arduino ONE R4", one drawCharAt per character (spaces are skipped: they draw nothing). */
-    private static int drawMessage(int word, int wordIndex, int offset) {
-        int result = word;
-        result = drawCharAt(result, wordIndex, 'J', 0, offset);
-        result = drawCharAt(result, wordIndex, 'u', 6, offset);
-        result = drawCharAt(result, wordIndex, 'n', 12, offset);
-        result = drawCharAt(result, wordIndex, 'o', 18, offset);
-        result = drawCharAt(result, wordIndex, ',', 24, offset);
-        result = drawCharAt(result, wordIndex, 'J', 36, offset);
-        result = drawCharAt(result, wordIndex, 'a', 42, offset);
-        result = drawCharAt(result, wordIndex, 'v', 48, offset);
-        result = drawCharAt(result, wordIndex, 'a', 54, offset);
-        result = drawCharAt(result, wordIndex, 'f', 66, offset);
-        result = drawCharAt(result, wordIndex, 'o', 72, offset);
-        result = drawCharAt(result, wordIndex, 'r', 78, offset);
-        result = drawCharAt(result, wordIndex, 'A', 90, offset);
-        result = drawCharAt(result, wordIndex, 'r', 96, offset);
-        result = drawCharAt(result, wordIndex, 'd', 102, offset);
-        result = drawCharAt(result, wordIndex, 'u', 108, offset);
-        result = drawCharAt(result, wordIndex, 'i', 114, offset);
-        result = drawCharAt(result, wordIndex, 'n', 120, offset);
-        result = drawCharAt(result, wordIndex, 'o', 126, offset);
-        result = drawCharAt(result, wordIndex, 'O', 138, offset);
-        result = drawCharAt(result, wordIndex, 'N', 144, offset);
-        result = drawCharAt(result, wordIndex, 'E', 150, offset);
-        result = drawCharAt(result, wordIndex, 'R', 162, offset);
-        result = drawCharAt(result, wordIndex, '4', 168, offset);
-        return result;
+    private static void drawMessage(boolean[][] frame, int offset) {
+        drawCharAt(frame, 'J', 0, offset);
+        drawCharAt(frame, 'u', 6, offset);
+        drawCharAt(frame, 'n', 12, offset);
+        drawCharAt(frame, 'o', 18, offset);
+        drawCharAt(frame, ',', 24, offset);
+        drawCharAt(frame, 'J', 36, offset);
+        drawCharAt(frame, 'a', 42, offset);
+        drawCharAt(frame, 'v', 48, offset);
+        drawCharAt(frame, 'a', 54, offset);
+        drawCharAt(frame, 'f', 66, offset);
+        drawCharAt(frame, 'o', 72, offset);
+        drawCharAt(frame, 'r', 78, offset);
+        drawCharAt(frame, 'A', 90, offset);
+        drawCharAt(frame, 'r', 96, offset);
+        drawCharAt(frame, 'd', 102, offset);
+        drawCharAt(frame, 'u', 108, offset);
+        drawCharAt(frame, 'i', 114, offset);
+        drawCharAt(frame, 'n', 120, offset);
+        drawCharAt(frame, 'o', 126, offset);
+        drawCharAt(frame, 'O', 138, offset);
+        drawCharAt(frame, 'N', 144, offset);
+        drawCharAt(frame, 'E', 150, offset);
+        drawCharAt(frame, 'R', 162, offset);
+        drawCharAt(frame, '4', 168, offset);
     }
 
-    private static int drawCharAt(int word, int wordIndex, int asciiCode, int baseX, int offset) {
-        return LedMatrixText.drawChar(word, wordIndex, asciiCode, baseX + offset, 0);
+    private static void drawCharAt(boolean[][] frame, int asciiCode, int baseX, int offset) {
+        LedCanvas.drawChar(frame, asciiCode, baseX + offset, 0);
     }
 }
