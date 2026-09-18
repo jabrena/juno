@@ -607,6 +607,13 @@ public final class ArduinoCppBackend {
         }
     }
 
+    /**
+     * Emits a {@code yield()} call before any terminator that closes a loop (a jump/branch/switch target at or
+     * before the current block's start). Arduino's {@code delay()} already polls the runtime via its own
+     * internal {@code yield()} calls, but a tight loop with no {@code delay()} — or one that never touches
+     * {@code Serial} at all — would otherwise starve UNO R4's USB servicing (see the generated {@code yield()}
+     * in {@link #runtimeHelpers()}) until the loop happens to exit.
+     */
     private void emitRuntimePollForBackedge(StringBuilder output, int blockStart, List<Integer> targets) {
         if (targets.stream().anyMatch(target -> target <= blockStart)) {
             output.append("  yield();\n");
@@ -871,6 +878,9 @@ public final class ArduinoCppBackend {
 
     private String runtimeHelpers() {
         return """
+                // Overrides the core's weak yield(): Serial's bool conversion is UNO R4's supported hook into
+                // TinyUSB's tud_task(), so this keeps USB serviced from every yield() call site (delay() and
+                // loop backedges), not just programs that call Serial directly.
                 void yield() {
                 #ifndef NO_USB
                   static_cast<void>(static_cast<bool>(Serial));
