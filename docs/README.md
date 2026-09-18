@@ -1,5 +1,7 @@
 # Documentation
 
+- [FEATURES.md](FEATURES.md) — the current inventory of Juno's supported Java subset (what
+  compiles today, and what's explicitly not yet supported).
 - [ARDUINO.md](ARDUINO.md) — installing `arduino-cli` and using it to build, upload, and monitor
   Juno-generated sketches on real UNO R4 hardware.
 - [ARDUINO-ONE-R4.md](ARDUINO-ONE-R4.md) — UNO R4 Minima/WiFi hardware specifications,

@@ -18,7 +18,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ## Tech stack
 
 - **Language:** Java, `maven.compiler.release=17` (bytecode subset Juno accepts is far narrower —
-  see `README.md` → "Supported Java subset"). Build/dev JDK is pinned to 25 (GraalVM CE) via
+  see `docs/FEATURES.md`). Build/dev JDK is pinned to 25 (GraalVM CE) via
   `.sdkmanrc` and CI (`.github/workflows/maven.yaml`).
 - **Build:** Maven 3.9.14 via the `./mvnw` wrapper (`.mvn/wrapper/maven-wrapper.properties`).
 - **Test framework:** JUnit 5 (Jupiter) 5.11.4.

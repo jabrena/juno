@@ -1,6 +1,6 @@
 # Java types vs. Arduino types
 
-Juno only accepts a small slice of Java's type system (see the README's "Supported Java subset"),
+Juno only accepts a small slice of Java's type system (see [FEATURES.md](FEATURES.md)),
 and maps all of it onto a single C++ representation. This note explains why, and where the two
 type systems still show through at the API boundary.
 
@@ -101,4 +101,4 @@ Because everything collapses to `int32_t`, Juno cannot (yet) represent:
 - real objects/fields — `DigitalOutput` is the only reference type, and it is erased entirely by
   link time
 
-See the README's "Supported Java subset" section for the full, authoritative list.
+See [FEATURES.md](FEATURES.md) for the full, authoritative list.
