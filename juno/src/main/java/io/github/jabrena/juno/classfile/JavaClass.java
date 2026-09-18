@@ -47,4 +47,11 @@ public record JavaClass(String name, int accessFlags, String superClassName, Con
                 .findFirst()
                 .orElse(null);
     }
+
+    public FieldInfo findField(String fieldName, String descriptor) {
+        return fields.stream()
+                .filter(field -> field.name().equals(fieldName) && field.descriptor().equals(descriptor))
+                .findFirst()
+                .orElse(null);
+    }
 }

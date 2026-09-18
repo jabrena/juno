@@ -104,11 +104,11 @@ method calls (`led.high()` instead of `Gpio.digitalWrite(13, true)`).
 
 ## What this rules out
 
-Juno supports the `FLOAT32` lane for local computation and static method calls, but it still does not accept:
+Juno supports typed `INT64`, `FLOAT32`, and `FLOAT64` boundary values in addition to its normal
+`INT32` values. JVM `long` stack/local values remain paired 32-bit halves and are packed when crossing
+a call, field, or array boundary. Remaining exclusions include:
 
-- `float` fields or arrays
-- any `double` source operations; `FLOAT64` is an internal type reservation, not language support
-- `long` method parameters/results, fields, or arrays (`long` locals and arithmetic use paired `INT32` halves)
+- nontrivial static-field initialization through `<clinit>`
 - `String` — so no `Serial.print(String)`; only the `int` overloads exist, and multi-character
   display (see [`LedMatrixText`](../juno/src/main/java/io/github/jabrena/juno/api/LedMatrixText.java))
   works character-by-character with hand-encoded font tables instead of string data

@@ -92,6 +92,18 @@ public final class ConstantPool {
         throw new CompileException("Only long constants are supported by ldc2_w (constant pool entry " + index + ")");
     }
 
+    public boolean isDouble(int index) {
+        return entry(index) instanceof Double;
+    }
+
+    public double doubleValue(int index) {
+        Object value = entry(index);
+        if (value instanceof Double doubleValue) {
+            return doubleValue;
+        }
+        throw new CompileException("Constant pool entry " + index + " is not a double");
+    }
+
     private Object entry(int index) {
         if (index <= 0 || index >= entries.length || entries[index] == null) {
             throw new CompileException("Invalid constant pool index " + index);

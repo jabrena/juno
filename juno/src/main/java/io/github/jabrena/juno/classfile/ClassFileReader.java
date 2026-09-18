@@ -52,9 +52,9 @@ public final class ClassFileReader {
                     yield value;
                 }
                 case 6 -> {
-                    input.readLong(); // double: not supported, but still consumed to keep later indices aligned
+                    double value = Double.longBitsToDouble(input.readLong());
                     index++;
-                    yield new Object();
+                    yield value;
                 }
                 case 7 -> new ConstantPool.ClassEntry(input.readUnsignedShort());
                 case 8, 16, 19, 20 -> {

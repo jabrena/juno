@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.ArrayDeclaration;
@@ -21,6 +22,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 
 /** Emits portable Arduino C++ from Juno IR, which the Renesas core compiles to Cortex-M4 machine code. */
 public final class ArduinoCppBackend {
@@ -54,6 +56,15 @@ public final class ArduinoCppBackend {
             output.append(ledMatrixHelpers());
         }
 
+        List<FieldRef> staticFields = usedStaticFields(program);
+        for (FieldRef field : staticFields) {
+            output.append("static ").append(cppScalarType(field.descriptor())).append(' ')
+                    .append(CppNames.field(field)).append(" = {};\n");
+        }
+        if (!staticFields.isEmpty()) {
+            output.append('\n');
+        }
+
         for (IrMethod method : program.methods()) {
             output.append(prototype(method.reference())).append(";\n");
         }
@@ -85,19 +96,47 @@ public final class ArduinoCppBackend {
         return false;
     }
 
+    private List<FieldRef> usedStaticFields(IrProgram program) {
+        TreeMap<String, FieldRef> fields = new TreeMap<>();
+        for (IrMethod method : program.methods()) {
+            for (IrBasicBlock block : method.blocks()) {
+                for (IrInstruction instruction : block.instructions()) {
+                    FieldRef field = switch (instruction) {
+                        case IrInstruction.LoadStatic load -> load.field();
+                        case IrInstruction.StoreStatic store -> store.field();
+                        default -> null;
+                    };
+                    if (field != null) {
+                        fields.put(field.displayName(), field);
+                    }
+                }
+            }
+        }
+        return List.copyOf(fields.values());
+    }
+
     private boolean usesFloatingPoint(IrMethod method) {
         Descriptor descriptor = Descriptor.parse(method.reference().descriptor());
-        return Descriptor.isFloat(descriptor.returnType())
-                || descriptor.parameters().stream().anyMatch(Descriptor::isFloat)
-                || method.values().stream().anyMatch(value -> value.type() != JunoType.INT32);
+        return Descriptor.isFloat(descriptor.returnType()) || Descriptor.isDouble(descriptor.returnType())
+                || descriptor.parameters().stream().anyMatch(
+                        type -> Descriptor.isFloat(type) || Descriptor.isDouble(type))
+                || method.values().stream().anyMatch(
+                        value -> value.type() == JunoType.FLOAT32 || value.type() == JunoType.FLOAT64);
+    }
+
+    private boolean usesTypedValues(IrMethod method) {
+        return method.values().stream().anyMatch(value -> value.type() != JunoType.INT32)
+                || Descriptor.parse(method.reference().descriptor()).parameters().stream()
+                        .anyMatch(type -> Descriptor.isLong(type) || Descriptor.isFloat(type)
+                                || Descriptor.isDouble(type));
     }
 
     private void emitMethod(StringBuilder output, IrMethod method) {
         Descriptor descriptor = Descriptor.parse(method.reference().descriptor());
-        boolean typedLocals = usesFloatingPoint(method);
+        boolean typedLocals = usesTypedValues(method);
         output.append(prototype(method.reference())).append(" {\n");
         if (typedLocals) {
-            output.append("  union JunoSlot { int32_t i32; float f32; double f64; };\n")
+            output.append("  union JunoSlot { int32_t i32; int64_t i64; float f32; double f64; };\n")
                     .append("  JunoSlot locals[").append(Math.max(1, method.maxLocals())).append("] = {};\n");
         } else {
             output.append("  int32_t locals[").append(Math.max(1, method.maxLocals())).append("] = {};\n");
@@ -107,16 +146,28 @@ public final class ArduinoCppBackend {
                     .append('[').append(array.length()).append("] = {};\n");
         }
         List<String> parameterTypes = descriptor.parameters();
+        int localSlot = 0;
         for (int index = 0; index < parameterTypes.size(); index++) {
             String parameterType = parameterTypes.get(index);
-            JunoType junoType = Descriptor.isFloat(parameterType) ? JunoType.FLOAT32 : JunoType.INT32;
-            output.append("  ").append(localRef(index, junoType, typedLocals)).append(" = ");
+            if (Descriptor.isLong(parameterType)) {
+                output.append("  ").append(localRef(localSlot, JunoType.INT32, typedLocals)).append(" = ")
+                        .append(splitLow("arg" + index)).append(";\n")
+                        .append("  ").append(localRef(localSlot + 1, JunoType.INT32, typedLocals)).append(" = ")
+                        .append(splitHigh("arg" + index)).append(";\n");
+                localSlot += 2;
+                continue;
+            }
+            JunoType junoType = Descriptor.isDouble(parameterType)
+                    ? JunoType.FLOAT64
+                    : Descriptor.isFloat(parameterType) ? JunoType.FLOAT32 : JunoType.INT32;
+            output.append("  ").append(localRef(localSlot, junoType, typedLocals)).append(" = ");
             if (Descriptor.isArrayType(parameterType)) {
                 output.append(handleOf("arg" + index));
             } else {
                 output.append("arg").append(index);
             }
             output.append(";\n");
+            localSlot += Descriptor.jvmSlots(parameterType);
         }
         emitValueDeclarations(output, method.values());
         Optional<ArrayElementType> returnArrayType = arrayElementTypeOf(descriptor.returnType());
@@ -127,6 +178,8 @@ public final class ArduinoCppBackend {
             output.append("  return;\n");
         } else if (Descriptor.isFloat(descriptor.returnType())) {
             output.append("  juno_panic();\n  return 0.0f;\n");
+        } else if (Descriptor.isDouble(descriptor.returnType())) {
+            output.append("  juno_panic();\n  return 0.0;\n");
         } else {
             output.append("  juno_panic();\n  return 0;\n");
         }
@@ -155,9 +208,20 @@ public final class ArduinoCppBackend {
     private String cppType(JunoType type) {
         return switch (type) {
             case INT32 -> "int32_t";
+            case INT64 -> "int64_t";
             case FLOAT32 -> "float";
             case FLOAT64 -> "double";
         };
+    }
+
+    private String cppScalarType(String descriptor) {
+        if (Descriptor.isDouble(descriptor)) {
+            return "double";
+        }
+        if (Descriptor.isLong(descriptor)) {
+            return "int64_t";
+        }
+        return Descriptor.isFloat(descriptor) ? "float" : "int32_t";
     }
 
     private void emitBlock(StringBuilder output, IrBasicBlock block, Optional<ArrayElementType> returnArrayType,
@@ -185,11 +249,16 @@ public final class ArduinoCppBackend {
                     assign(output, constant.target(), Integer.toString(constant.value()));
             case IrInstruction.FloatConst constant ->
                     assign(output, constant.target(), floatLiteral(constant.value()));
+            case IrInstruction.DoubleConst constant ->
+                    assign(output, constant.target(), doubleLiteral(constant.value()));
             case IrInstruction.LoadLocal load ->
                     assign(output, load.target(), localRef(load.local(), load.target().type(), typedLocals));
             case IrInstruction.StoreLocal store ->
                     output.append("  ").append(localRef(store.local(), store.value().type(), typedLocals))
                             .append(" = ").append(ref(store.value())).append(";\n");
+            case IrInstruction.LoadStatic load -> assign(output, load.target(), CppNames.field(load.field()));
+            case IrInstruction.StoreStatic store -> output.append("  ").append(CppNames.field(store.field()))
+                    .append(" = ").append(ref(store.value())).append(";\n");
             case IrInstruction.Binary binary -> assign(output, binary.target(),
                     helperFor(binary.operation()) + "(" + ref(binary.left()) + ", " + ref(binary.right()) + ")");
             case IrInstruction.Unary unary -> assign(output, unary.target(), unaryExpression(unary));
@@ -262,6 +331,49 @@ public final class ArduinoCppBackend {
                     "static_cast<float>(" + ref(conversion.value()) + ")");
             case IrInstruction.FloatToInt conversion -> assign(output, conversion.target(),
                     "juno_f2i(" + ref(conversion.value()) + ")");
+            case IrInstruction.DoubleBinary binary -> assign(output, binary.target(),
+                    doubleBinaryExpression(binary.operation(), binary.left(), binary.right()));
+            case IrInstruction.DoubleNegate negate -> assign(output, negate.target(), "-" + ref(negate.value()));
+            case IrInstruction.DoubleCompare compare -> assign(output, compare.target(),
+                    "(isnan(" + ref(compare.left()) + ") || isnan(" + ref(compare.right()) + ")) ? "
+                            + compare.nanResult() + " : ((" + ref(compare.left()) + " > " + ref(compare.right())
+                            + ") - (" + ref(compare.left()) + " < " + ref(compare.right()) + "))");
+            case IrInstruction.IntToDouble conversion -> assign(output, conversion.target(),
+                    "static_cast<double>(" + ref(conversion.value()) + ")");
+            case IrInstruction.DoubleToInt conversion -> assign(output, conversion.target(),
+                    "juno_d2i(" + ref(conversion.value()) + ")");
+            case IrInstruction.FloatToDouble conversion -> assign(output, conversion.target(),
+                    "static_cast<double>(" + ref(conversion.value()) + ")");
+            case IrInstruction.DoubleToFloat conversion -> assign(output, conversion.target(),
+                    "static_cast<float>(" + ref(conversion.value()) + ")");
+            case IrInstruction.LongToDouble conversion -> assign(output, conversion.target(),
+                    "static_cast<double>(" + combineLong(conversion.valueLow(), conversion.valueHigh()) + ")");
+            case IrInstruction.DoubleToLong conversion -> {
+                output.append("  {\n")
+                        .append("    int64_t juno_res = juno_d2l(").append(ref(conversion.value())).append(");\n")
+                        .append("    ").append(ref(conversion.targetLow())).append(" = ")
+                        .append(splitLow("juno_res")).append(";\n")
+                        .append("    ").append(ref(conversion.targetHigh())).append(" = ")
+                        .append(splitHigh("juno_res")).append(";\n")
+                        .append("  }\n");
+            }
+            case IrInstruction.PackLong packed -> assign(output, packed.target(),
+                    combineLong(packed.valueLow(), packed.valueHigh()));
+            case IrInstruction.UnpackLong unpacked -> {
+                assign(output, unpacked.targetLow(), splitLow(ref(unpacked.value())));
+                assign(output, unpacked.targetHigh(), splitHigh(ref(unpacked.value())));
+            }
+            case IrInstruction.LongToFloat conversion -> assign(output, conversion.target(),
+                    "static_cast<float>(" + combineLong(conversion.valueLow(), conversion.valueHigh()) + ")");
+            case IrInstruction.FloatToLong conversion -> {
+                output.append("  {\n")
+                        .append("    int64_t juno_res = juno_f2l(").append(ref(conversion.value())).append(");\n")
+                        .append("    ").append(ref(conversion.targetLow())).append(" = ")
+                        .append(splitLow("juno_res")).append(";\n")
+                        .append("    ").append(ref(conversion.targetHigh())).append(" = ")
+                        .append(splitHigh("juno_res")).append(";\n")
+                        .append("  }\n");
+            }
         }
     }
 
@@ -271,6 +383,7 @@ public final class ArduinoCppBackend {
         }
         String member = switch (type) {
             case INT32 -> "i32";
+            case INT64 -> "i64";
             case FLOAT32 -> "f32";
             case FLOAT64 -> "f64";
         };
@@ -290,9 +403,36 @@ public final class ArduinoCppBackend {
         return Float.toHexString(value) + "f";
     }
 
+    private String doubleLiteral(double value) {
+        if (Double.isNaN(value)) {
+            return "NAN";
+        }
+        if (value == Double.POSITIVE_INFINITY) {
+            return "INFINITY";
+        }
+        if (value == Double.NEGATIVE_INFINITY) {
+            return "-INFINITY";
+        }
+        return Double.toHexString(value);
+    }
+
     private String floatBinaryExpression(FloatBinaryOp operation, Value left, Value right) {
         if (operation == FloatBinaryOp.REMAINDER) {
             return "fmodf(" + ref(left) + ", " + ref(right) + ")";
+        }
+        String operator = switch (operation) {
+            case ADD -> "+";
+            case SUBTRACT -> "-";
+            case MULTIPLY -> "*";
+            case DIVIDE -> "/";
+            case REMAINDER -> throw new IllegalStateException("handled above");
+        };
+        return ref(left) + " " + operator + " " + ref(right);
+    }
+
+    private String doubleBinaryExpression(FloatBinaryOp operation, Value left, Value right) {
+        if (operation == FloatBinaryOp.REMAINDER) {
+            return "fmod(" + ref(left) + ", " + ref(right) + ")";
         }
         String operator = switch (operation) {
             case ADD -> "+";
@@ -504,8 +644,12 @@ public final class ArduinoCppBackend {
         String returnType;
         if (descriptor.returnsVoid()) {
             returnType = "void";
+        } else if (Descriptor.isLong(descriptor.returnType())) {
+            returnType = "int64_t";
         } else if (Descriptor.isFloat(descriptor.returnType())) {
             returnType = "float";
+        } else if (Descriptor.isDouble(descriptor.returnType())) {
+            returnType = "double";
         } else {
             Optional<ArrayElementType> arrayReturn = arrayElementTypeOf(descriptor.returnType());
             returnType = arrayReturn.map(type -> cppType(type) + "*").orElse("int32_t");
@@ -519,9 +663,13 @@ public final class ArduinoCppBackend {
             }
             String parameterType = parameterTypes.get(i);
             Optional<ArrayElementType> arrayParam = arrayElementTypeOf(parameterType);
-            String cppParameter = Descriptor.isFloat(parameterType)
-                    ? "float arg"
-                    : arrayParam.map(type -> cppType(type) + "* arg").orElse("int32_t arg");
+            String cppParameter = Descriptor.isLong(parameterType)
+                    ? "int64_t arg"
+                    : Descriptor.isDouble(parameterType)
+                    ? "double arg"
+                    : Descriptor.isFloat(parameterType)
+                            ? "float arg"
+                            : arrayParam.map(type -> cppType(type) + "* arg").orElse("int32_t arg");
             result.append(cppParameter).append(i);
         }
         return result.append(')').toString();
@@ -540,6 +688,9 @@ public final class ArduinoCppBackend {
             case CHAR -> "uint16_t";
             case SHORT -> "int16_t";
             case INT -> "int32_t";
+            case LONG -> "int64_t";
+            case FLOAT -> "float";
+            case DOUBLE -> "double";
         };
     }
 
@@ -550,6 +701,25 @@ public final class ArduinoCppBackend {
                   if (value >= 0x1.0p31f) return INT32_MAX;
                   if (value <= -0x1.0p31f) return INT32_MIN;
                   return static_cast<int32_t>(value);
+                }
+
+                static int32_t juno_d2i(double value) {
+                  if (isnan(value)) return 0;
+                  if (value >= 0x1.0p31) return INT32_MAX;
+                  if (value <= -0x1.0p31) return INT32_MIN;
+                  return static_cast<int32_t>(value);
+                }
+                static int64_t juno_f2l(float value) {
+                  if (isnan(value)) return 0;
+                  if (value >= 0x1.0p63f) return INT64_MAX;
+                  if (value <= -0x1.0p63f) return INT64_MIN;
+                  return static_cast<int64_t>(value);
+                }
+                static int64_t juno_d2l(double value) {
+                  if (isnan(value)) return 0;
+                  if (value >= 0x1.0p63) return INT64_MAX;
+                  if (value <= -0x1.0p63) return INT64_MIN;
+                  return static_cast<int64_t>(value);
                 }
 
                 """;

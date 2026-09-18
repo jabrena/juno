@@ -45,7 +45,9 @@ public record Descriptor(List<String> parameters, String returnType) {
      */
     public boolean usesOnlyV01Types(Set<String> enumClassNames) {
         return parameters.stream().allMatch(type -> isSupportedParameterType(type, enumClassNames))
-                && (returnsVoid() || isIntegerLike(returnType) || isFloat(returnType) || isArrayType(returnType)
+                && (returnsVoid() || isIntegerLike(returnType) || isLong(returnType) || isFloat(returnType)
+                        || isDouble(returnType)
+                        || isArrayType(returnType)
                         || isEnumType(returnType, enumClassNames));
     }
 
@@ -57,13 +59,28 @@ public record Descriptor(List<String> parameters, String returnType) {
         return type.equals("F");
     }
 
+    public static boolean isLong(String type) {
+        return type.equals("J");
+    }
+
+    public static boolean isDouble(String type) {
+        return type.equals("D");
+    }
+
+    public static int jvmSlots(String type) {
+        if (type.equals("V")) {
+            return 0;
+        }
+        return type.equals("J") || type.equals("D") ? 2 : 1;
+    }
+
     /**
      * Arrays are pointer-passed; there is no heap, so an array parameter/return is only ever a handle to
      * storage that outlives the call — see {@link io.github.jabrena.juno.lowering.BytecodeToIr} for the
      * (narrow, always-sound) rules on when returning one is actually accepted.
      */
     public static boolean isArrayType(String type) {
-        return type.length() == 2 && type.charAt(0) == '[' && "ZBCSI".indexOf(type.charAt(1)) >= 0;
+        return type.length() == 2 && type.charAt(0) == '[' && "ZBCSIJFD".indexOf(type.charAt(1)) >= 0;
     }
 
     /** The element type character of an array descriptor, e.g. {@code B} for {@code [B}. */
@@ -78,7 +95,8 @@ public record Descriptor(List<String> parameters, String returnType) {
     }
 
     private static boolean isSupportedParameterType(String type, Set<String> enumClassNames) {
-        return isIntegerLike(type) || isFloat(type) || isArrayType(type) || isEnumType(type, enumClassNames);
+        return isIntegerLike(type) || isLong(type) || isFloat(type) || isDouble(type) || isArrayType(type)
+                || isEnumType(type, enumClassNames);
     }
 
     private static ParsedType parseType(String descriptor, int start) {

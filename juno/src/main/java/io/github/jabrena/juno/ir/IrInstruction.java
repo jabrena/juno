@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.ir;
 
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 
 import java.util.List;
@@ -14,10 +15,19 @@ public sealed interface IrInstruction {
     record FloatConst(Value target, float value) implements IrInstruction {
     }
 
+    record DoubleConst(Value target, double value) implements IrInstruction {
+    }
+
     record LoadLocal(Value target, int local) implements IrInstruction {
     }
 
     record StoreLocal(int local, Value value) implements IrInstruction {
+    }
+
+    record LoadStatic(Value target, FieldRef field) implements IrInstruction {
+    }
+
+    record StoreStatic(FieldRef field, Value value) implements IrInstruction {
     }
 
     record Binary(Value target, BinaryOp operation, Value left, Value right) implements IrInstruction {
@@ -103,5 +113,52 @@ public sealed interface IrInstruction {
     }
 
     record FloatToInt(Value target, Value value) implements IrInstruction {
+    }
+
+    record DoubleBinary(Value target, FloatBinaryOp operation, Value left, Value right) implements IrInstruction {
+    }
+
+    record DoubleNegate(Value target, Value value) implements IrInstruction {
+    }
+
+    /** JVM {@code dcmpl}/{@code dcmpg}; {@code nanResult} is respectively -1 or 1. */
+    record DoubleCompare(Value target, Value left, Value right, int nanResult) implements IrInstruction {
+        public DoubleCompare {
+            if (nanResult != -1 && nanResult != 1) {
+                throw new IllegalArgumentException("Double comparison NaN result must be -1 or 1");
+            }
+        }
+    }
+
+    record IntToDouble(Value target, Value value) implements IrInstruction {
+    }
+
+    record DoubleToInt(Value target, Value value) implements IrInstruction {
+    }
+
+    record FloatToDouble(Value target, Value value) implements IrInstruction {
+    }
+
+    record DoubleToFloat(Value target, Value value) implements IrInstruction {
+    }
+
+    record LongToDouble(Value target, Value valueLow, Value valueHigh) implements IrInstruction {
+    }
+
+    record DoubleToLong(Value targetLow, Value targetHigh, Value value) implements IrInstruction {
+    }
+
+    /** Packs Juno's two stack/local halves into a native 64-bit call/field/array boundary value. */
+    record PackLong(Value target, Value valueLow, Value valueHigh) implements IrInstruction {
+    }
+
+    /** Splits a native 64-bit boundary value back into Juno's two stack/local halves. */
+    record UnpackLong(Value targetLow, Value targetHigh, Value value) implements IrInstruction {
+    }
+
+    record LongToFloat(Value target, Value valueLow, Value valueHigh) implements IrInstruction {
+    }
+
+    record FloatToLong(Value targetLow, Value targetHigh, Value value) implements IrInstruction {
     }
 }

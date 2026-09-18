@@ -21,6 +21,14 @@ public record Value(int id, JunoType type) {
         return new Value(id, JunoType.FLOAT32);
     }
 
+    public static Value int64(int id) {
+        return new Value(id, JunoType.INT64);
+    }
+
+    public static Value float64(int id) {
+        return new Value(id, JunoType.FLOAT64);
+    }
+
     public static List<Value> int32Values(int count) {
         if (count < 0) {
             throw new IllegalArgumentException("Value count must be non-negative: " + count);

@@ -132,9 +132,19 @@ public final class BytecodeToIr {
                                 (float) (opcode - 11), tracking);
                         depth++;
                     }
+                    case 14, 15 -> {
+                        nextValueId = pushDoubleConst(instructions, stackBase, depth, nextValueId,
+                                (double) (opcode - 14), tracking);
+                        depth += 2;
+                    }
                     case 20 -> {
-                        long value = linked.owner().constantPool().longValue(instruction.operandA());
-                        nextValueId = pushWideConst(instructions, stackBase, depth, nextValueId, value, tracking);
+                        if (linked.owner().constantPool().isDouble(instruction.operandA())) {
+                            nextValueId = pushDoubleConst(instructions, stackBase, depth, nextValueId,
+                                    linked.owner().constantPool().doubleValue(instruction.operandA()), tracking);
+                        } else {
+                            long value = linked.owner().constantPool().longValue(instruction.operandA());
+                            nextValueId = pushWideConst(instructions, stackBase, depth, nextValueId, value, tracking);
+                        }
                         depth += 2;
                     }
                     case 16, 17 -> {
@@ -166,6 +176,11 @@ public final class BytecodeToIr {
                                 instruction.operandA(), tracking);
                         depth++;
                     }
+                    case 24 -> {
+                        nextValueId = pushDoubleLoad(instructions, stackBase, depth, nextValueId,
+                                instruction.operandA(), tracking);
+                        depth += 2;
+                    }
                     case 30, 31, 32, 33 -> {
                         nextValueId = pushWideLoad(instructions, stackBase, depth, nextValueId, opcode - 30, tracking);
                         depth += 2;
@@ -174,6 +189,11 @@ public final class BytecodeToIr {
                         nextValueId = pushFloatLoad(instructions, stackBase, depth, nextValueId,
                                 opcode - 34, tracking);
                         depth++;
+                    }
+                    case 38, 39, 40, 41 -> {
+                        nextValueId = pushDoubleLoad(instructions, stackBase, depth, nextValueId,
+                                opcode - 38, tracking);
+                        depth += 2;
                     }
                     case 26, 27, 28, 29 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, opcode - 26,
@@ -204,6 +224,12 @@ public final class BytecodeToIr {
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), popped.value()));
                     }
+                    case 57 -> {
+                        depth -= 2;
+                        Popped popped = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = popped.nextValueId();
+                        instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), popped.value()));
+                    }
                     case 59, 60, 61, 62 -> {
                         Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
@@ -224,6 +250,12 @@ public final class BytecodeToIr {
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(opcode - 67, popped.value()));
                     }
+                    case 71, 72, 73, 74 -> {
+                        depth -= 2;
+                        Popped popped = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = popped.nextValueId();
+                        instructions.add(new IrInstruction.StoreLocal(opcode - 71, popped.value()));
+                    }
                     case 75, 76, 77, 78 -> {
                         Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
@@ -232,6 +264,7 @@ public final class BytecodeToIr {
                                 singleAssignmentLocals, slotRecordInstance);
                     }
                     case 87 -> depth--;
+                    case 88 -> depth -= 2;
                     case 89 -> {
                         JunoType type = tracking.stackSlotType(stackBase + depth - 1);
                         Value top = new Value(nextValueId++, type == null ? JunoType.INT32 : type);
@@ -253,6 +286,11 @@ public final class BytecodeToIr {
                                 FloatBinaryOp.ADD, tracking);
                         depth--;
                     }
+                    case 99 -> {
+                        nextValueId = pushDoubleBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.ADD, tracking);
+                        depth -= 2;
+                    }
                     case 100 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SUBTRACT, tracking);
                         depth--;
@@ -265,6 +303,11 @@ public final class BytecodeToIr {
                         nextValueId = pushFloatBinary(instructions, stackBase, depth, nextValueId,
                                 FloatBinaryOp.SUBTRACT, tracking);
                         depth--;
+                    }
+                    case 103 -> {
+                        nextValueId = pushDoubleBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.SUBTRACT, tracking);
+                        depth -= 2;
                     }
                     case 104 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.MULTIPLY, tracking);
@@ -279,6 +322,11 @@ public final class BytecodeToIr {
                                 FloatBinaryOp.MULTIPLY, tracking);
                         depth--;
                     }
+                    case 107 -> {
+                        nextValueId = pushDoubleBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.MULTIPLY, tracking);
+                        depth -= 2;
+                    }
                     case 108 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
                         depth--;
@@ -291,6 +339,11 @@ public final class BytecodeToIr {
                         nextValueId = pushFloatBinary(instructions, stackBase, depth, nextValueId,
                                 FloatBinaryOp.DIVIDE, tracking);
                         depth--;
+                    }
+                    case 111 -> {
+                        nextValueId = pushDoubleBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.DIVIDE, tracking);
+                        depth -= 2;
                     }
                     case 112 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);
@@ -305,9 +358,15 @@ public final class BytecodeToIr {
                                 FloatBinaryOp.REMAINDER, tracking);
                         depth--;
                     }
+                    case 115 -> {
+                        nextValueId = pushDoubleBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.REMAINDER, tracking);
+                        depth -= 2;
+                    }
                     case 116 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.NEGATE, tracking);
                     case 117 -> nextValueId = pushLongNegate(instructions, stackBase, depth, nextValueId, tracking);
                     case 118 -> nextValueId = pushFloatNegate(instructions, stackBase, depth, nextValueId, tracking);
+                    case 119 -> nextValueId = pushDoubleNegate(instructions, stackBase, depth, nextValueId, tracking);
                     case 120 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_LEFT, tracking);
                         depth--;
@@ -375,6 +434,14 @@ public final class BytecodeToIr {
                         storeToStack(instructions, stackBase, depth, target, tracking);
                         depth++;
                     }
+                    case 135 -> {
+                        Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value target = Value.float64(nextValueId++);
+                        instructions.add(new IrInstruction.IntToDouble(target, value.value()));
+                        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+                        depth += 2;
+                    }
                     case 136 -> {
                         depth -= 2;
                         WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
@@ -384,11 +451,74 @@ public final class BytecodeToIr {
                         storeToStack(instructions, stackBase, depth, target, tracking);
                         depth++;
                     }
+                    case 137 -> {
+                        depth -= 2;
+                        WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value target = Value.float32(nextValueId++);
+                        instructions.add(new IrInstruction.LongToFloat(target, value.low(), value.high()));
+                        storeToStack(instructions, stackBase, depth, target, tracking);
+                        depth++;
+                    }
+                    case 138 -> {
+                        depth -= 2;
+                        WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value target = Value.float64(nextValueId++);
+                        instructions.add(new IrInstruction.LongToDouble(target, value.low(), value.high()));
+                        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+                        depth += 2;
+                    }
                     case 139 -> {
                         Popped value = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = value.nextValueId();
                         Value target = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.FloatToInt(target, value.value()));
+                        storeToStack(instructions, stackBase, depth, target, tracking);
+                        depth++;
+                    }
+                    case 140 -> {
+                        Popped value = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value targetLow = Value.int32(nextValueId++);
+                        Value targetHigh = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.FloatToLong(targetLow, targetHigh, value.value()));
+                        storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
+                        depth += 2;
+                    }
+                    case 141 -> {
+                        Popped value = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value target = Value.float64(nextValueId++);
+                        instructions.add(new IrInstruction.FloatToDouble(target, value.value()));
+                        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+                        depth += 2;
+                    }
+                    case 142 -> {
+                        depth -= 2;
+                        Popped value = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value target = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.DoubleToInt(target, value.value()));
+                        storeToStack(instructions, stackBase, depth, target, tracking);
+                        depth++;
+                    }
+                    case 143 -> {
+                        depth -= 2;
+                        Popped value = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value targetLow = Value.int32(nextValueId++);
+                        Value targetHigh = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.DoubleToLong(targetLow, targetHigh, value.value()));
+                        storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
+                        depth += 2;
+                    }
+                    case 144 -> {
+                        depth -= 2;
+                        Popped value = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value target = Value.float32(nextValueId++);
+                        instructions.add(new IrInstruction.DoubleToFloat(target, value.value()));
                         storeToStack(instructions, stackBase, depth, target, tracking);
                         depth++;
                     }
@@ -416,6 +546,19 @@ public final class BytecodeToIr {
                         storeToStack(instructions, stackBase, depth, result, tracking);
                         depth++;
                     }
+                    case 151, 152 -> {
+                        depth -= 2;
+                        Popped right = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = right.nextValueId();
+                        depth -= 2;
+                        Popped left = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = left.nextValueId();
+                        Value result = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.DoubleCompare(
+                                result, left.value(), right.value(), opcode == 151 ? -1 : 1));
+                        storeToStack(instructions, stackBase, depth, result, tracking);
+                        depth++;
+                    }
                     case 132 -> {
                         Value loaded = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.LoadLocal(loaded, instruction.operandA()));
@@ -427,9 +570,47 @@ public final class BytecodeToIr {
                     }
                     case 178 -> {
                         FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
-                        int ordinal = resolveEnumOrdinal(linked, instruction, field, classes);
-                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, ordinal, tracking);
-                        depth++;
+                        Integer ordinal = resolveEnumOrdinal(field, classes);
+                        if (ordinal != null) {
+                            nextValueId = pushConst(instructions, stackBase, depth, nextValueId, ordinal, tracking);
+                            depth++;
+                        } else {
+                            JunoType type = validateStaticField(linked, instruction, field, classes);
+                            Value target = new Value(nextValueId++, type);
+                            instructions.add(new IrInstruction.LoadStatic(target, field));
+                            if (type == JunoType.INT64) {
+                                Value low = Value.int32(nextValueId++);
+                                Value high = Value.int32(nextValueId++);
+                                instructions.add(new IrInstruction.UnpackLong(low, high, target));
+                                storeWideToStack(instructions, stackBase, depth, low, high, tracking);
+                            } else if (type == JunoType.FLOAT64) {
+                                storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+                            } else {
+                                storeToStack(instructions, stackBase, depth, target, tracking);
+                            }
+                            depth += type.jvmSlots();
+                        }
+                    }
+                    case 179 -> {
+                        FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
+                        JunoType type = validateStaticField(linked, instruction, field, classes);
+                        depth -= type.jvmSlots();
+                        if (type == JunoType.INT64) {
+                            WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                            nextValueId = value.nextValueId();
+                            Value packed = Value.int64(nextValueId++);
+                            instructions.add(new IrInstruction.PackLong(packed, value.low(), value.high()));
+                            instructions.add(new IrInstruction.StoreStatic(field, packed));
+                        } else {
+                            Popped value = switch (type) {
+                                case INT32 -> pop(instructions, stackBase, depth, nextValueId, tracking);
+                                case FLOAT32 -> popFloat(instructions, stackBase, depth, nextValueId, tracking);
+                                case FLOAT64 -> popDouble(instructions, stackBase, depth, nextValueId, tracking);
+                                case INT64 -> throw new IllegalStateException("handled above");
+                            };
+                            nextValueId = value.nextValueId();
+                            instructions.add(new IrInstruction.StoreStatic(field, value.value()));
+                        }
                     }
                     case 145 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_BYTE, tracking);
                     case 146 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_CHAR, tracking);
@@ -474,8 +655,22 @@ public final class BytecodeToIr {
                         nextValueId = returned.nextValueId();
                         terminator = new IrTerminator.Return(Optional.of(returned.value()));
                     }
+                    case 173 -> {
+                        depth -= 2;
+                        WidePopped returned = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = returned.nextValueId();
+                        Value packed = Value.int64(nextValueId++);
+                        instructions.add(new IrInstruction.PackLong(packed, returned.low(), returned.high()));
+                        terminator = new IrTerminator.Return(Optional.of(packed));
+                    }
                     case 174 -> {
                         Popped returned = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = returned.nextValueId();
+                        terminator = new IrTerminator.Return(Optional.of(returned.value()));
+                    }
+                    case 175 -> {
+                        depth -= 2;
+                        Popped returned = popDouble(instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = returned.nextValueId();
                         terminator = new IrTerminator.Return(Optional.of(returned.value()));
                     }
@@ -523,6 +718,24 @@ public final class BytecodeToIr {
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
+                    case 47 -> {
+                        Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.LONG);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 48 -> {
+                        Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.FLOAT);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 49 -> {
+                        Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.DOUBLE);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
                     case 51 -> {
                         Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
                                 tracking, ArrayElementType.BYTE);
@@ -544,6 +757,24 @@ public final class BytecodeToIr {
                     case 79 -> {
                         Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
                                 tracking, ArrayElementType.INT);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 80 -> {
+                        Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.LONG);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 81 -> {
+                        Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.FLOAT);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 82 -> {
+                        Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.DOUBLE);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
@@ -569,8 +800,7 @@ public final class BytecodeToIr {
                         ArrayElementType elementType = ArrayElementType.fromAtype(instruction.operandA())
                                 .orElseThrow(() -> new CompileException(linked.method().reference().displayName()
                                         + " at bytecode offset " + instruction.offset()
-                                        + ": newarray only supports boolean[]/byte[]/char[]/short[]/int[] (atype "
-                                        + "4/8/5/9/10), got atype " + instruction.operandA()));
+                                        + ": unsupported primitive array atype " + instruction.operandA()));
                         ConstPop length = popKnownConstant(instructions, stackBase, depth, linked, instruction, tracking);
                         depth = length.depth();
                         Value handle = Value.int32(nextValueId++);
@@ -608,11 +838,12 @@ public final class BytecodeToIr {
 
     private Set<Integer> arrayParameterSlots(Descriptor methodDescriptor) {
         Set<Integer> slots = new HashSet<>();
-        List<String> parameters = methodDescriptor.parameters();
-        for (int index = 0; index < parameters.size(); index++) {
-            if (Descriptor.isArrayType(parameters.get(index))) {
-                slots.add(index);
+        int slot = 0;
+        for (String parameter : methodDescriptor.parameters()) {
+            if (Descriptor.isArrayType(parameter)) {
+                slots.add(slot);
             }
+            slot += Descriptor.jvmSlots(parameter);
         }
         return slots;
     }
@@ -744,26 +975,36 @@ public final class BytecodeToIr {
     private int stackDelta(LinkedMethod linked, Instruction instruction) {
         int opcode = instruction.opcode();
         return switch (opcode) {
-            case 0, 132, 134, 139, 145, 146, 147, 116, 117, 118, 167, 177, 188, 190 -> 0;
+            case 0, 132, 134, 138, 139, 143, 145, 146, 147, 116, 117, 118, 119, 167, 177, 188,
+                    190 -> 0;
             case 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 16, 17, 18, 19, 21, 23, 25,
                     26, 27, 28, 29, 34, 35, 36, 37, 42, 43, 44, 45, 89 -> 1;
-            case 133, 178, 187 -> 1;
-            case 9, 10, 20, 22, 30, 31, 32, 33 -> 2;
+            case 133, 135, 140, 141, 187 -> 1;
+            case 9, 10, 14, 15, 20, 22, 24, 30, 31, 32, 33, 38, 39, 40, 41 -> 2;
             case 54, 56, 58, 59, 60, 61, 62, 67, 68, 69, 70, 75, 76, 77, 78,
                     87, 153, 154, 155, 156, 157, 158, 172, 174, 176 -> -1;
-            case 46, 51, 52, 53 -> -1;
+            case 46, 48, 51, 52, 53 -> -1;
+            case 47, 49 -> 0;
             case 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 120, 122, 124, 126, 128, 130,
                     149, 150 -> -1;
-            case 121, 123, 125, 136 -> -1;
-            case 55, 63, 64, 65, 66, 97, 101, 105, 109, 113, 127, 129, 131 -> -2;
+            case 121, 123, 125, 136, 137, 142, 144 -> -1;
+            case 55, 57, 63, 64, 65, 66, 71, 72, 73, 74, 88, 97, 99, 101, 103, 105, 107, 109, 111,
+                    113, 115, 127, 129, 131, 173, 175 -> -2;
             case 159, 160, 161, 162, 163, 164, 165, 166 -> -2;
-            case 148 -> -3;
-            case 79, 84, 85, 86 -> -3;
+            case 148, 151, 152 -> -3;
+            case 79, 81, 84, 85, 86 -> -3;
+            case 80, 82 -> -4;
+            case 178, 179 -> {
+                FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
+                int slots = Descriptor.jvmSlots(field.descriptor());
+                yield opcode == 178 ? slots : -slots;
+            }
             case 182, 183, 184 -> {
                 MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                 Descriptor descriptor = Descriptor.parse(called.descriptor());
-                int consumed = descriptor.parameters().size() + (opcode == 182 || opcode == 183 ? 1 : 0);
-                int produced = descriptor.returnsVoid() ? 0 : 1;
+                int consumed = descriptor.parameters().stream().mapToInt(Descriptor::jvmSlots).sum()
+                        + (opcode == 182 || opcode == 183 ? 1 : 0);
+                int produced = Descriptor.jvmSlots(descriptor.returnType());
                 yield produced - consumed;
             }
             default -> throw new CompileException("Juno IR lowering does not support opcode " + opcode);
@@ -776,11 +1017,23 @@ public final class BytecodeToIr {
         Descriptor descriptor = Descriptor.parse(called.descriptor());
         Value[] arguments = new Value[descriptor.parameters().size()];
         for (int index = arguments.length - 1; index >= 0; index--) {
-            Popped popped = Descriptor.isFloat(descriptor.parameters().get(index))
-                    ? popFloat(instructions, stackBase, --depth, nextValueId, tracking)
-                    : pop(instructions, stackBase, --depth, nextValueId, tracking);
-            nextValueId = popped.nextValueId();
-            arguments[index] = popped.value();
+            String parameterType = descriptor.parameters().get(index);
+            depth -= Descriptor.jvmSlots(parameterType);
+            if (Descriptor.isLong(parameterType)) {
+                WidePopped popped = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                nextValueId = popped.nextValueId();
+                Value packed = Value.int64(nextValueId++);
+                instructions.add(new IrInstruction.PackLong(packed, popped.low(), popped.high()));
+                arguments[index] = packed;
+            } else {
+                Popped popped = Descriptor.isDouble(parameterType)
+                        ? popDouble(instructions, stackBase, depth, nextValueId, tracking)
+                        : Descriptor.isFloat(parameterType)
+                                ? popFloat(instructions, stackBase, depth, nextValueId, tracking)
+                                : pop(instructions, stackBase, depth, nextValueId, tracking);
+                nextValueId = popped.nextValueId();
+                arguments[index] = popped.value();
+            }
         }
         Optional<Value> receiver = Optional.empty();
         if (instruction.opcode() == 182) {
@@ -791,9 +1044,13 @@ public final class BytecodeToIr {
 
         Value target = null;
         if (!descriptor.returnsVoid()) {
-            target = Descriptor.isFloat(descriptor.returnType())
-                    ? Value.float32(nextValueId++)
-                    : Value.int32(nextValueId++);
+            target = Descriptor.isLong(descriptor.returnType())
+                    ? Value.int64(nextValueId++)
+                    : Descriptor.isDouble(descriptor.returnType())
+                    ? Value.float64(nextValueId++)
+                    : Descriptor.isFloat(descriptor.returnType())
+                            ? Value.float32(nextValueId++)
+                            : Value.int32(nextValueId++);
         }
 
         Optional<Intrinsic> intrinsic = IntrinsicRegistry.resolve(called);
@@ -804,8 +1061,17 @@ public final class BytecodeToIr {
             instructions.add(new IrInstruction.Call(Optional.ofNullable(target), called, List.of(arguments)));
         }
         if (target != null) {
-            storeToStack(instructions, stackBase, depth, target, tracking);
-            depth++;
+            if (target.type() == JunoType.INT64) {
+                Value low = Value.int32(nextValueId++);
+                Value high = Value.int32(nextValueId++);
+                instructions.add(new IrInstruction.UnpackLong(low, high, target));
+                storeWideToStack(instructions, stackBase, depth, low, high, tracking);
+            } else if (target.type() == JunoType.FLOAT64) {
+                storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+            } else {
+                storeToStack(instructions, stackBase, depth, target, tracking);
+            }
+            depth += target.type().jvmSlots();
         }
         return new Lowered(nextValueId, depth);
     }
@@ -820,17 +1086,41 @@ public final class BytecodeToIr {
         if (knownLength != null) {
             instructions.add(new IrInstruction.BoundsCheck(index.value(), knownLength));
         }
-        Value target = Value.int32(nextValueId++);
+        Value target = new Value(nextValueId++, elementType.valueType());
         instructions.add(new IrInstruction.ArrayLoad(target, elementType, array.value(), index.value()));
-        storeToStack(instructions, stackBase, depth, target, tracking);
-        depth++;
+        if (target.type() == JunoType.INT64) {
+            Value low = Value.int32(nextValueId++);
+            Value high = Value.int32(nextValueId++);
+            instructions.add(new IrInstruction.UnpackLong(low, high, target));
+            storeWideToStack(instructions, stackBase, depth, low, high, tracking);
+        } else if (target.type() == JunoType.FLOAT64) {
+            storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+        } else {
+            storeToStack(instructions, stackBase, depth, target, tracking);
+        }
+        depth += target.type().jvmSlots();
         return new Lowered(nextValueId, depth);
     }
 
     private Lowered lowerArrayStore(List<IrInstruction> instructions, int stackBase, int depth,
                                      int nextValueId, ValueTracking tracking, ArrayElementType elementType) {
-        Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = value.nextValueId();
+        depth -= elementType.valueType().jvmSlots();
+        Value storedValue;
+        if (elementType.valueType() == JunoType.INT64) {
+            WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
+            nextValueId = value.nextValueId();
+            storedValue = Value.int64(nextValueId++);
+            instructions.add(new IrInstruction.PackLong(storedValue, value.low(), value.high()));
+        } else {
+            Popped value = switch (elementType.valueType()) {
+                case INT32 -> pop(instructions, stackBase, depth, nextValueId, tracking);
+                case FLOAT32 -> popFloat(instructions, stackBase, depth, nextValueId, tracking);
+                case FLOAT64 -> popDouble(instructions, stackBase, depth, nextValueId, tracking);
+                case INT64 -> throw new IllegalStateException("handled above");
+            };
+            nextValueId = value.nextValueId();
+            storedValue = value.value();
+        }
         Popped index = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = index.nextValueId();
         Popped array = pop(instructions, stackBase, --depth, nextValueId, tracking);
@@ -839,7 +1129,7 @@ public final class BytecodeToIr {
         if (knownLength != null) {
             instructions.add(new IrInstruction.BoundsCheck(index.value(), knownLength));
         }
-        instructions.add(new IrInstruction.ArrayStore(elementType, array.value(), index.value(), value.value()));
+        instructions.add(new IrInstruction.ArrayStore(elementType, array.value(), index.value(), storedValue));
         return new Lowered(nextValueId, depth);
     }
 
@@ -1065,6 +1355,14 @@ public final class BytecodeToIr {
         return nextValueId + 1;
     }
 
+    private int pushDoubleConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
+                                double value, ValueTracking tracking) {
+        Value target = Value.float64(nextValueId);
+        instructions.add(new IrInstruction.DoubleConst(target, value));
+        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+        return nextValueId + 1;
+    }
+
     private int pushLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int local,
                           Map<Integer, Integer> slotArrayLength, Set<Integer> arrayParameterSlots,
                           Map<Integer, RecordInstance> slotRecordInstance, ValueTracking tracking) {
@@ -1090,6 +1388,14 @@ public final class BytecodeToIr {
         Value target = Value.float32(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(target, local));
         storeToStack(instructions, stackBase, depth, target, tracking);
+        return nextValueId + 1;
+    }
+
+    private int pushDoubleLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
+                               int local, ValueTracking tracking) {
+        Value target = Value.float64(nextValueId);
+        instructions.add(new IrInstruction.LoadLocal(target, local));
+        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
         return nextValueId + 1;
     }
 
@@ -1120,6 +1426,20 @@ public final class BytecodeToIr {
         return nextValueId;
     }
 
+    private int pushDoubleBinary(List<IrInstruction> instructions, int stackBase, int depthBeforePush,
+                                 int nextValueId, FloatBinaryOp operation, ValueTracking tracking) {
+        int depth = depthBeforePush - 2;
+        Popped right = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = right.nextValueId();
+        depth -= 2;
+        Popped left = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = left.nextValueId();
+        Value target = Value.float64(nextValueId++);
+        instructions.add(new IrInstruction.DoubleBinary(target, operation, left.value(), right.value()));
+        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+        return nextValueId;
+    }
+
     private int pushUnary(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
                            UnaryOp operation, ValueTracking tracking) {
         int depth = depthBeforePush - 1;
@@ -1143,6 +1463,17 @@ public final class BytecodeToIr {
         return nextValueId;
     }
 
+    private int pushDoubleNegate(List<IrInstruction> instructions, int stackBase, int depthBeforePush,
+                                 int nextValueId, ValueTracking tracking) {
+        int depth = depthBeforePush - 2;
+        Popped operand = popDouble(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = operand.nextValueId();
+        Value target = Value.float64(nextValueId++);
+        instructions.add(new IrInstruction.DoubleNegate(target, operand.value()));
+        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+        return nextValueId;
+    }
+
     /** Emits a StoreLocal to a stack slot and keeps {@code tracking} consistent with it. */
     private void storeToStack(List<IrInstruction> instructions, int stackBase, int depth, Value value, ValueTracking tracking) {
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, value));
@@ -1162,6 +1493,22 @@ public final class BytecodeToIr {
         instructions.add(new IrInstruction.LoadLocal(value, stackBase + depthAfterPop));
         tracking.recordPop(stackBase + depthAfterPop, value);
         return new Popped(value, nextValueId + 1);
+    }
+
+    private Popped popDouble(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId,
+                             ValueTracking tracking) {
+        Value value = Value.float64(nextValueId);
+        instructions.add(new IrInstruction.LoadLocal(value, stackBase + depthAfterPop));
+        tracking.recordPop(stackBase + depthAfterPop, value);
+        tracking.clearStackSlot(stackBase + depthAfterPop + 1);
+        return new Popped(value, nextValueId + 1);
+    }
+
+    private void storeDoubleToStack(List<IrInstruction> instructions, int stackBase, int depth, Value value,
+                                    ValueTracking tracking) {
+        instructions.add(new IrInstruction.StoreLocal(stackBase + depth, value));
+        tracking.recordPush(stackBase + depth, value);
+        tracking.clearStackSlot(stackBase + depth + 1);
     }
 
     /**
@@ -1269,17 +1616,38 @@ public final class BytecodeToIr {
      * one of its constants ({@link JavaClass#enumConstantNames()}) — any other static field (mutable, or an
      * enum's own non-constant field, neither of which Juno supports) is a clear compile error.
      */
-    private int resolveEnumOrdinal(LinkedMethod linked, Instruction instruction, FieldRef field,
-                                    Map<String, JavaClass> classes) {
+    private Integer resolveEnumOrdinal(FieldRef field, Map<String, JavaClass> classes) {
         JavaClass owner = classes.get(field.owner());
         int ordinal = owner == null || !owner.isEnum() ? -1 : owner.enumConstantNames().indexOf(field.name());
-        if (ordinal < 0) {
-            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
-                    + instruction.offset() + ": getstatic is only supported for reading an enum constant ("
-                    + field.displayName() + " is not one); mutable/non-constant static fields are not "
-                    + "supported");
+        return ordinal < 0 ? null : ordinal;
+    }
+
+    private JunoType validateStaticField(LinkedMethod linked, Instruction instruction, FieldRef field,
+                                         Map<String, JavaClass> classes) {
+        JavaClass owner = classes.get(field.owner());
+        FieldInfo declaration = owner == null ? null : owner.findField(field.name(), field.descriptor());
+        String location = linked.method().reference().displayName() + " at bytecode offset " + instruction.offset();
+        if (declaration == null || !declaration.isStatic()) {
+            throw new CompileException(location + ": static field not found: " + field.displayName());
         }
-        return ordinal;
+        JunoType type;
+        if (Descriptor.isIntegerLike(field.descriptor())) {
+            type = JunoType.INT32;
+        } else if (Descriptor.isLong(field.descriptor())) {
+            type = JunoType.INT64;
+        } else if (Descriptor.isFloat(field.descriptor())) {
+            type = JunoType.FLOAT32;
+        } else if (Descriptor.isDouble(field.descriptor())) {
+            type = JunoType.FLOAT64;
+        } else {
+            throw new CompileException(location + ": unsupported static field type: "
+                    + field.displayName());
+        }
+        if (owner.findMethod("<clinit>", "()V") != null) {
+            throw new CompileException(location + ": static field owner has a class initializer, which Juno does "
+                    + "not execute yet; only JVM-default-zero static fields are supported: " + field.displayName());
+        }
+        return type;
     }
 
     private record Popped(Value value, int nextValueId) {

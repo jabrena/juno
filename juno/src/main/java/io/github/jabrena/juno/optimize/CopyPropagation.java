@@ -73,9 +73,13 @@ public final class CopyPropagation implements CompilerPass {
         return switch (instruction) {
             case IrInstruction.Const constant -> constant;
             case IrInstruction.FloatConst constant -> constant;
+            case IrInstruction.DoubleConst constant -> constant;
             case IrInstruction.LoadLocal load -> load;
             case IrInstruction.StoreLocal store ->
                     new IrInstruction.StoreLocal(store.local(), resolve(replacements, store.value()));
+            case IrInstruction.LoadStatic load -> load;
+            case IrInstruction.StoreStatic store ->
+                    new IrInstruction.StoreStatic(store.field(), resolve(replacements, store.value()));
             case IrInstruction.Binary binary -> new IrInstruction.Binary(binary.target(), binary.operation(),
                     resolve(replacements, binary.left()), resolve(replacements, binary.right()));
             case IrInstruction.Unary unary -> new IrInstruction.Unary(unary.target(), unary.operation(),
@@ -123,6 +127,32 @@ public final class CopyPropagation implements CompilerPass {
                     resolve(replacements, conversion.value()));
             case IrInstruction.FloatToInt conversion -> new IrInstruction.FloatToInt(conversion.target(),
                     resolve(replacements, conversion.value()));
+            case IrInstruction.DoubleBinary binary -> new IrInstruction.DoubleBinary(binary.target(), binary.operation(),
+                    resolve(replacements, binary.left()), resolve(replacements, binary.right()));
+            case IrInstruction.DoubleNegate negate -> new IrInstruction.DoubleNegate(negate.target(),
+                    resolve(replacements, negate.value()));
+            case IrInstruction.DoubleCompare compare -> new IrInstruction.DoubleCompare(compare.target(),
+                    resolve(replacements, compare.left()), resolve(replacements, compare.right()), compare.nanResult());
+            case IrInstruction.IntToDouble conversion -> new IrInstruction.IntToDouble(conversion.target(),
+                    resolve(replacements, conversion.value()));
+            case IrInstruction.DoubleToInt conversion -> new IrInstruction.DoubleToInt(conversion.target(),
+                    resolve(replacements, conversion.value()));
+            case IrInstruction.FloatToDouble conversion -> new IrInstruction.FloatToDouble(conversion.target(),
+                    resolve(replacements, conversion.value()));
+            case IrInstruction.DoubleToFloat conversion -> new IrInstruction.DoubleToFloat(conversion.target(),
+                    resolve(replacements, conversion.value()));
+            case IrInstruction.LongToDouble conversion -> new IrInstruction.LongToDouble(conversion.target(),
+                    resolve(replacements, conversion.valueLow()), resolve(replacements, conversion.valueHigh()));
+            case IrInstruction.DoubleToLong conversion -> new IrInstruction.DoubleToLong(
+                    conversion.targetLow(), conversion.targetHigh(), resolve(replacements, conversion.value()));
+            case IrInstruction.PackLong packed -> new IrInstruction.PackLong(packed.target(),
+                    resolve(replacements, packed.valueLow()), resolve(replacements, packed.valueHigh()));
+            case IrInstruction.UnpackLong unpacked -> new IrInstruction.UnpackLong(
+                    unpacked.targetLow(), unpacked.targetHigh(), resolve(replacements, unpacked.value()));
+            case IrInstruction.LongToFloat conversion -> new IrInstruction.LongToFloat(conversion.target(),
+                    resolve(replacements, conversion.valueLow()), resolve(replacements, conversion.valueHigh()));
+            case IrInstruction.FloatToLong conversion -> new IrInstruction.FloatToLong(
+                    conversion.targetLow(), conversion.targetHigh(), resolve(replacements, conversion.value()));
         };
     }
 

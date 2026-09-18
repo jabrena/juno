@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.classfile.FieldRef;
 
 final class CppNames {
     private CppNames() {
@@ -9,5 +10,10 @@ final class CppNames {
     static String method(MethodRef reference) {
         String base = (reference.owner() + "_" + reference.name()).replaceAll("[^A-Za-z0-9_]", "_");
         return "juno_" + base + "_" + Integer.toUnsignedString(reference.descriptor().hashCode(), 16);
+    }
+
+    static String field(FieldRef reference) {
+        String base = (reference.owner() + "_" + reference.name()).replaceAll("[^A-Za-z0-9_]", "_");
+        return "juno_field_" + base + "_" + Integer.toUnsignedString(reference.descriptor().hashCode(), 16);
     }
 }

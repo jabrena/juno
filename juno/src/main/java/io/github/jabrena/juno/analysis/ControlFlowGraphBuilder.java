@@ -83,6 +83,6 @@ public final class ControlFlowGraphBuilder {
     }
 
     private boolean isReturn(int opcode) {
-        return opcode == 172 || opcode == 174 || opcode == 176 || opcode == 177;
+        return opcode == 172 || opcode == 173 || opcode == 174 || opcode == 175 || opcode == 176 || opcode == 177;
     }
 }

@@ -8,6 +8,7 @@ package io.github.jabrena.juno.ir;
  */
 public enum JunoType {
     INT32(1),
+    INT64(2),
     FLOAT32(1),
     FLOAT64(2);
 

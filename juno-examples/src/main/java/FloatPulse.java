@@ -9,6 +9,9 @@ public final class FloatPulse {
     public static void main(String[] args) {
         DigitalOutput led = DigitalOutput.of(13);
         float pauseMillis = 100.0f;
+        float[] deltas = new float[2];
+        deltas[0] = 25.0f;
+        deltas[1] = -25.0f;
         boolean increasing = true;
         while (true) {
             led.high();
@@ -16,7 +19,7 @@ public final class FloatPulse {
             led.low();
             Delay.millis((int) pauseMillis);
 
-            float delta = increasing ? 25.0f : -25.0f;
+            float delta = increasing ? deltas[0] : deltas[1];
             pauseMillis = advance(pauseMillis, delta);
             if (pauseMillis >= 500.0f) {
                 increasing = false;

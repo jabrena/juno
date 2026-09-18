@@ -357,35 +357,32 @@ class JunoCompilerTest {
     }
 
     @Test
-    void reportsAWriteToAMutableStaticFieldAsAnUnsupportedPutstaticOpcode() throws Exception {
-        // A non-final (or otherwise non-constant) static field is genuinely unsupported. getstatic itself
-        // is now decodable (needed to read an enum constant, see supportsEnumConstantsAsOrdinalInts below),
-        // but putstatic never is - there is still no way to write a static field - so a read-modify-write
-        // like this fails at the write, not the read. This just confirms the failure is a clear, named
-        // CompileException rather than javac's inlining silently making it work too.
+    void supportsDefaultInitializedMutableStaticIntAndFloatFields() throws Exception {
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.Delay;
                 public final class MutableStatic {
-                    static int counter = 0;
+                    static int counter;
+                    static float scale;
                     public static void main(String[] args) {
                         counter = counter + 1;
+                        scale = 2.5f;
+                        Delay.millis((int) (scale * (float) counter));
                     }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.MutableStatic", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MutableStatic"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MutableStatic");
 
-        assertTrue(exception.getMessage().contains("demo.MutableStatic.main"));
-        assertTrue(exception.getMessage().contains("putstatic"));
+        assertTrue(generated.contains("static int32_t juno_field_demo_MutableStatic_counter_"));
+        assertTrue(generated.contains("static float juno_field_demo_MutableStatic_scale_"));
+        assertTrue(generated.contains("juno_field_demo_MutableStatic_counter_"));
+        assertTrue(generated.contains("juno_field_demo_MutableStatic_scale_"));
     }
 
     @Test
-    void reportsAReadOfANonEnumStaticFieldAsUnsupported() throws Exception {
-        // getstatic is decodable now, but only reading an enum constant is actually lowered; reading any
-        // other static field (mutable or not) must still fail cleanly, with a message calling out getstatic
-        // specifically, not silently misinterpreting the field as some other ordinal.
+    void rejectsAStaticFieldWhoseClassInitializerIsNotExecuted() throws Exception {
         String source = """
                 package demo;
                 public final class ReadOnlyStatic {
@@ -402,7 +399,7 @@ class JunoCompilerTest {
                 () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReadOnlyStatic"));
 
         assertTrue(exception.getMessage().contains("demo.ReadOnlyStatic.main"));
-        assertTrue(exception.getMessage().contains("getstatic"));
+        assertTrue(exception.getMessage().contains("class initializer"));
     }
 
     @Test
@@ -541,6 +538,41 @@ class JunoCompilerTest {
     }
 
     @Test
+    void supportsFloatArraysAcrossCallsAndForwardedReturns() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class FloatArrays {
+                    static float sum(float[] values, int count) {
+                        float total = 0.0f;
+                        for (int i = 0; i < count; i++) total += values[i];
+                        return total;
+                    }
+                    static float[] identity(float[] values) {
+                        return values;
+                    }
+                    public static void main(String[] args) {
+                        float[] samples = new float[3];
+                        samples[0] = 1.25f;
+                        samples[1] = 2.5f;
+                        samples[2] = -0.75f;
+                        float[] forwarded = identity(samples);
+                        Delay.millis((int) sum(forwarded, samples.length));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatArrays", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatArrays");
+
+        assertTrue(generated.contains("float arr_"), "float[] must use native float storage");
+        assertTrue(generated.contains("(float* arg0, int32_t arg1)"));
+        assertTrue(generated.contains("static float* juno_demo_FloatArrays_identity_"));
+        assertTrue(generated.contains("return reinterpret_cast<float*>(v"));
+        assertTrue(generated.contains(">= 3) juno_panic()"));
+    }
+
+    @Test
     void supportsForwardingAReceivedArrayParameterAsAReturnValue() throws Exception {
         String source = """
                 package demo;
@@ -675,29 +707,34 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rejectsLongAsAMethodParameterOrReturnType() throws Exception {
-        // Scoped deliberately to locals + arithmetic only: a long parameter/return would need to
-        // renumber every later JVM local slot (long occupies two), which the array-parameter code in
-        // particular assumes never happens. Descriptor already rejects 'J' as int-like, so this needs
-        // no extra guard - just locking in that the existing validation still covers it.
+    void supportsLongMethodParametersReturnsFieldsAndFloatConversions() throws Exception {
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.Delay;
                 public final class LongParam {
+                    static long saved;
                     static long identity(long x) {
                         return x;
                     }
                     public static void main(String[] args) {
                         long r = identity(5L);
+                        float asFloat = (float) r;
+                        saved = (long) asFloat;
+                        Delay.millis((int) saved);
                     }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.LongParam", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongParam"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongParam");
 
-        assertTrue(exception.getMessage().contains("demo.LongParam.identity"));
-        assertTrue(exception.getMessage().contains("int-like"));
+        assertTrue(generated.contains("static int64_t juno_demo_LongParam_identity_"));
+        assertTrue(generated.contains("(int64_t arg0)"));
+        assertTrue(generated.contains("locals[0].i32 = static_cast<int32_t>(static_cast<uint32_t>(static_cast<uint64_t>(arg0)))"));
+        assertTrue(generated.contains("locals[1].i32 = static_cast<int32_t>(static_cast<uint32_t>(static_cast<uint64_t>(arg0) >> 32))"));
+        assertTrue(generated.contains("static int64_t juno_field_demo_LongParam_saved_"));
+        assertTrue(generated.contains("static_cast<float>("));
+        assertTrue(generated.contains("juno_f2l("));
     }
 
     @Test
@@ -763,45 +800,79 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rejectsDoubleLocalsWithANamedOpcodeDiagnostic() throws Exception {
+    void supportsDoubleLocalsCallsFieldsArraysAndConversions() throws Exception {
         String source = """
                 package demo;
-                public final class DoubleLocal {
+                import io.github.jabrena.juno.api.Delay;
+                public final class DoubleMath {
+                    static double last;
+                    static double mix(double left, int scale, double right) {
+                        return left * (double) scale + right;
+                    }
+                    static double[] identity(double[] values) {
+                        return values;
+                    }
                     public static void main(String[] args) {
-                        double value = 1.0;
+                        double[] inputs = new double[2];
+                        inputs[0] = 1.25;
+                        inputs[1] = 0.5;
+                        double[] values = identity(inputs);
+                        double value = mix(values[0], 2, values[1]);
+                        double remainder = -value % 1.25;
+                        double nan = 0.0 / 0.0;
+                        float narrowedFloat = (float) remainder;
+                        int narrowedInt = (int) remainder;
+                        long narrowedLong = (long) remainder;
+                        double widenedInt = (double) narrowedInt;
+                        double widenedFloat = (double) narrowedFloat;
+                        double widenedLong = (double) narrowedLong;
+                        last = remainder + widenedInt + widenedFloat + widenedLong;
+                        Delay.millis(narrowedInt + (nan < value ? 1 : 0));
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.DoubleLocal", source);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.DoubleMath", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DoubleLocal"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DoubleMath");
 
-        assertTrue(exception.getMessage().contains("demo.DoubleLocal.main"));
-        assertTrue(exception.getMessage().contains("unsupported opcode"));
-        assertTrue(exception.getMessage().contains("dconst_1"));
+        assertTrue(generated.contains("static double juno_demo_DoubleMath_mix_"));
+        assertTrue(generated.contains("(double arg0, int32_t arg1, double arg2)"));
+        assertTrue(generated.contains("locals[0].f64 = arg0;"));
+        assertTrue(generated.contains("locals[2].i32 = arg1;"));
+        assertTrue(generated.contains("locals[3].f64 = arg2;"));
+        assertTrue(generated.contains("double arr_"));
+        assertTrue(generated.contains("static double* juno_demo_DoubleMath_identity_"));
+        assertTrue(generated.contains("static double juno_field_demo_DoubleMath_last_"));
+        assertTrue(generated.contains("fmod("));
+        assertTrue(generated.contains("juno_d2i("));
+        assertTrue(generated.contains("juno_d2l("));
     }
 
     @Test
-    void rejectsArraysOfLong() throws Exception {
-        // long[] is out of scope for this step; laload/lastore must fail cleanly rather than silently
-        // misinterpreting a long array as int32_t-per-element.
+    void supportsLongArraysAcrossCallsAndForwardedReturns() throws Exception {
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.Delay;
                 public final class LongArray {
+                    static long[] identity(long[] values) {
+                        return values;
+                    }
                     public static void main(String[] args) {
                         long[] xs = new long[3];
                         xs[0] = 5L;
+                        xs[1] = -2L;
+                        long value = identity(xs)[0] + xs[1];
+                        Delay.millis((int) value);
                     }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.LongArray", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongArray"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongArray");
 
-        assertTrue(exception.getMessage().contains("demo.LongArray.main"));
-        assertTrue(exception.getMessage().contains("unsupported opcode"));
+        assertTrue(generated.contains("int64_t arr_"));
+        assertTrue(generated.contains("static int64_t* juno_demo_LongArray_identity_"));
+        assertTrue(generated.contains("reinterpret_cast<int64_t*>("));
     }
 
     @Test
@@ -908,7 +979,7 @@ class JunoCompilerTest {
                 () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.TakesPoint"));
 
         assertTrue(exception.getMessage().contains("demo.TakesPoint.sum"));
-        assertTrue(exception.getMessage().contains("int-like"));
+        assertTrue(exception.getMessage().contains("supported scalar"));
     }
 
     @Test

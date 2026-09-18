@@ -23,15 +23,32 @@ class GeneratedCppSyntaxTest {
                 package demo;
                 import io.github.jabrena.juno.api.Gpio;
                 public final class FloatSmoke {
+                    static float lastValue;
+                    static double lastDouble;
                     static float adjust(float value, int factor, float offset) {
                         return value * (float) factor + offset;
+                    }
+                    static float sum(float[] values) {
+                        return values[0] + values[1];
+                    }
+                    static double blend(double[] values, double offset) {
+                        return values[0] * values[1] + offset;
                     }
                     public static void main(String[] args) {
                         float total = 0.0f;
                         for (int i = 0; i < 4; i++) total += 0.75f;
-                        float remainder = -adjust(total, 2, 0.0f) % 1.25f;
+                        float[] inputs = new float[2];
+                        inputs[0] = total;
+                        inputs[1] = 0.5f;
+                        float remainder = -adjust(sum(inputs), 2, 0.0f) % 1.25f;
+                        lastValue = remainder;
+                        double[] precise = new double[2];
+                        precise[0] = 1.25;
+                        precise[1] = 2.0;
+                        lastDouble = blend(precise, 0.5) % 1.5;
                         int narrowed = (int) remainder;
-                        Gpio.digitalWrite(13, (float) narrowed < total);
+                        Gpio.digitalWrite(13, (float) narrowed < total && lastValue == remainder
+                                && (int) lastDouble >= 0);
                     }
                 }
                 """;

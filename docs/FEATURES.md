@@ -6,16 +6,19 @@ subset. Diagnostics identify the method, bytecode offset, and unsupported opcode
 Supported today:
 
 - `static void main(String[])` and the embedded-friendly `static void main()`
-- static methods with `boolean`, `byte`, `char`, `short`, `int`, and `float` arguments/results
+- static methods with primitive arguments/results, including two-slot `long` and `double` values
 - local variables, integer constants, arithmetic, bitwise operations, shifts, comparisons,
   conditionals, and loops
 - `private/static final` primitive constants (`boolean`/`byte`/`char`/`short`/`int`) initialized
   with a compile-time constant expression, same class or a different one — `javac` inlines these
   as ordinary literals (JLS 4.12.4), so Juno never sees a field read
-- arrays of `boolean`/`byte`/`char`/`short`/`int`: `new T[N]` with a compile-time-constant `N`
+- mutable static primitive fields with JVM default-zero initialization. A class that declares a
+  reachable `<clinit>` is rejected because general static-initializer execution is not supported.
+- arrays of `boolean`/`byte`/`char`/`short`/`int`/`long`/`float`/`double`: `new T[N]` with a compile-time-constant `N`
   (there is no heap, so every array is a fixed-size local C array, stored at its natural width —
   `byte[]`/`boolean[]` as `int8_t`, `char[]` as `uint16_t`, `short[]` as `int16_t`, `int[]` as
-  `int32_t`); passing an array to another static method (pointer semantics); returning an array is
+  `int32_t`, `long[]` as `int64_t`, `float[]` as `float`, and `double[]` as `double`); passing an array
+  to another static method (pointer semantics); returning an array is
   supported only when directly forwarding a received array parameter (e.g. `return arr;`), never a
   locally created one, since that pointer would dangle once the method returns. `arr.length` and
   bounds-checked `arr[i]`/`arr[i] = v` work only on an array local that is assigned exactly once in
@@ -23,13 +26,14 @@ Supported today:
   parameter, or a reassigned local, still supports `arr[i]`/`arr[i] = v` but without a bounds check
   and without `.length`, since its size isn't known at compile time there. Multi-dimensional arrays
   are not supported.
-- `long` locals with arithmetic, shifts, bitwise operations, comparisons, `int`/`long` conversions,
-  and loops — represented internally as a pair of 32-bit halves, since there is no 64-bit register on
-  the target. Not supported as a method parameter or return type, a field, or an array element type.
+- `long` locals, method parameters/results, fields, and arrays, with arithmetic, shifts, bitwise
+  operations, comparisons, numeric conversions, calls, returns, and loops. JVM locals/stack values are
+  represented internally as paired 32-bit halves and packed to native `int64_t` at storage/call boundaries.
 - `float` locals and static method parameters/results, with constants, arithmetic (including remainder),
   negation, comparisons, `int`/`float` conversions, calls, returns, and loops. Java's NaN comparison rules
-  and saturating/NaN-to-zero `float`-to-`int` conversion are preserved. Float fields and arrays are not
-  supported. `double` remains entirely unsupported.
+  and saturating/NaN-to-zero numeric narrowing are preserved. Float fields and arrays are supported.
+- `double` locals, static method parameters/results, fields, arrays, arithmetic, comparisons, numeric
+  conversions, calls, and returns. Two JVM slots are preserved for every `double` local and parameter.
 - `enum` constants as plain 0-based ordinal `int`s — Juno never constructs a real enum object (no
   heap), it reads a constant's declaration-order position directly. Supported: enum-typed locals,
   parameters, and return values; `==`/`!=` comparisons (including against a named constant). Not
@@ -55,9 +59,8 @@ Not yet supported:
 - general objects, constructors, instance/virtual/interface calls, multi-dimensional arrays, or
   returning a locally created array (only forwarding a received array parameter is supported) —
   simple records (see above) are the one narrow exception
-- mutable/non-constant static fields (needs `getstatic`/`putstatic`), strings, exceptions, garbage
-  collection, threads, reflection, or dynamic loading
-- `long` as a method parameter/return type, field, or array element type; `float` fields or arrays; `double` entirely
+- nontrivial static initialization (`<clinit>`), strings, exceptions, garbage collection, threads,
+  reflection, or dynamic loading
 - `switch` on an enum, enum instance methods (`.name()`, `.ordinal()`, etc.), `values()`/`valueOf()`,
   and enums with per-constant state (custom constructors/fields/abstract methods)
 - records as a method parameter/return type, `equals()`/`hashCode()`/`toString()`, non-canonical
