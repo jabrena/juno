@@ -48,8 +48,13 @@ public final class ClassFileReader {
                     input.readInt();
                     yield new Object();
                 }
-                case 5, 6 -> {
-                    input.readLong();
+                case 5 -> {
+                    long value = input.readLong();
+                    index++; // long/double constants occupy two consecutive pool entries; the second is unusable
+                    yield value;
+                }
+                case 6 -> {
+                    input.readLong(); // double: not supported, but still consumed to keep later indices aligned
                     index++;
                     yield new Object();
                 }

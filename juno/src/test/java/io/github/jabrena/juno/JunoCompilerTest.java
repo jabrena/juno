@@ -556,4 +556,105 @@ class JunoCompilerTest {
 
         assertTrue(exception.getMessage().contains("demo.ReturnTernary.pick"));
     }
+
+    @Test
+    void supportsLongLocalsWithArithmeticShiftsBitwiseAndComparisons() throws Exception {
+        String source = """
+                package demo;
+                public final class LongMath {
+                    public static void main(String[] args) {
+                        long acc = 0L;
+                        for (long i = 0; i < 10; i++) {
+                            acc += i;
+                        }
+                        long a = 123456789012L;
+                        long b = -987654321098L;
+                        long sum = a + b;
+                        long diff = a - b;
+                        long prod = a * 3L;
+                        long quot = a / 7L;
+                        long rem = a % 7L;
+                        long neg = -a;
+                        long shiftedLeft = a << 3;
+                        long shiftedRight = b >> 2;
+                        long shiftedUnsigned = b >>> 2;
+                        long anded = a & b;
+                        long ored = a | b;
+                        long xored = a ^ b;
+                        int fromLong = (int) a;
+                        long fromInt = fromLong;
+                        boolean less = a < b;
+                        if (less && sum != diff) {
+                            acc = acc + 1;
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.LongMath", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongMath");
+
+        assertTrue(generated.contains("Closed-world entry point: demo.LongMath.main"));
+        assertTrue(generated.contains("juno_ladd("));
+        assertTrue(generated.contains("juno_lsub("));
+        assertTrue(generated.contains("juno_lmul("));
+        assertTrue(generated.contains("juno_ldiv("));
+        assertTrue(generated.contains("juno_lrem("));
+        assertTrue(generated.contains("juno_lneg("));
+        assertTrue(generated.contains("juno_lshl("));
+        assertTrue(generated.contains("juno_lshr("));
+        assertTrue(generated.contains("juno_lushr("));
+        assertTrue(generated.contains("juno_land("));
+        assertTrue(generated.contains("juno_lor("));
+        assertTrue(generated.contains("juno_lxor("));
+        assertTrue(generated.contains("(juno_l > juno_r) - (juno_l < juno_r)"), "lcmp lowers to a plain int result");
+    }
+
+    @Test
+    void rejectsLongAsAMethodParameterOrReturnType() throws Exception {
+        // Scoped deliberately to locals + arithmetic only: a long parameter/return would need to
+        // renumber every later JVM local slot (long occupies two), which the array-parameter code in
+        // particular assumes never happens. Descriptor already rejects 'J' as int-like, so this needs
+        // no extra guard - just locking in that the existing validation still covers it.
+        String source = """
+                package demo;
+                public final class LongParam {
+                    static long identity(long x) {
+                        return x;
+                    }
+                    public static void main(String[] args) {
+                        long r = identity(5L);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.LongParam", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongParam"));
+
+        assertTrue(exception.getMessage().contains("demo.LongParam.identity"));
+        assertTrue(exception.getMessage().contains("int-like"));
+    }
+
+    @Test
+    void rejectsArraysOfLong() throws Exception {
+        // long[] is out of scope for this step; laload/lastore must fail cleanly rather than silently
+        // misinterpreting a long array as int32_t-per-element.
+        String source = """
+                package demo;
+                public final class LongArray {
+                    public static void main(String[] args) {
+                        long[] xs = new long[3];
+                        xs[0] = 5L;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.LongArray", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongArray"));
+
+        assertTrue(exception.getMessage().contains("demo.LongArray.main"));
+        assertTrue(exception.getMessage().contains("unsupported opcode"));
+    }
 }

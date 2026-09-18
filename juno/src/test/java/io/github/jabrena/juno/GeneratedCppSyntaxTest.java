@@ -452,6 +452,56 @@ class GeneratedCppSyntaxTest {
         assertEquals(0, process.exitValue(), diagnostics);
     }
 
+    @Test
+    void generatedLongMathSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                public final class LongMath {
+                    public static void main(String[] args) {
+                        long acc = 0L;
+                        for (long i = 0; i < 10; i++) {
+                            acc += i;
+                        }
+                        long a = 123456789012L;
+                        long b = -987654321098L;
+                        long sum = a + b;
+                        long diff = a - b;
+                        long prod = a * 3L;
+                        long quot = a / 7L;
+                        long rem = a % 7L;
+                        long neg = -a;
+                        long shiftedLeft = a << 3;
+                        long shiftedRight = b >> 2;
+                        long shiftedUnsigned = b >>> 2;
+                        long anded = a & b;
+                        long ored = a | b;
+                        long xored = a ^ b;
+                        int fromLong = (int) a;
+                        long fromInt = fromLong;
+                        boolean less = a < b;
+                        if (less && sum != diff) {
+                            acc = acc + 1;
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.LongMath", source);
+        Path sketch = temporaryDirectory.resolve("LongMath.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongMath"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
     private String availableCompiler() {
         for (String candidate : new String[]{"clang++", "g++"}) {
             try {

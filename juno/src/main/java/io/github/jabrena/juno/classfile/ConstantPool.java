@@ -57,6 +57,14 @@ public final class ConstantPool {
         throw new CompileException("Only integer constants are supported by ldc (constant pool entry " + index + ")");
     }
 
+    public long longValue(int index) {
+        Object value = entry(index);
+        if (value instanceof Long longValue) {
+            return longValue;
+        }
+        throw new CompileException("Only long constants are supported by ldc2_w (constant pool entry " + index + ")");
+    }
+
     private Object entry(int index) {
         if (index <= 0 || index >= entries.length || entries[index] == null) {
             throw new CompileException("Invalid constant pool index " + index);

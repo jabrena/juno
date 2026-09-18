@@ -88,6 +88,9 @@ Supported today:
   parameter, or a reassigned local, still supports `arr[i]`/`arr[i] = v` but without a bounds check
   and without `.length`, since its size isn't known at compile time there. Multi-dimensional arrays
   are not supported.
+- `long` locals with arithmetic, shifts, bitwise operations, comparisons, `int`/`long` conversions,
+  and loops — represented internally as a pair of 32-bit halves, since there is no 64-bit register on
+  the target. Not supported as a method parameter or return type, a field, or an array element type.
 - direct static calls with closed-world reachability; unused methods are omitted
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
@@ -99,7 +102,8 @@ Not yet supported:
   returning a locally created array (only forwarding a received array parameter is supported)
 - mutable/non-constant static fields (needs `getstatic`/`putstatic`), strings, exceptions, garbage
   collection, threads, reflection, or dynamic loading
-- `long`, `float`, and `double`
+- `long` as a method parameter/return type, field, or array element type; `float` and `double`
+  entirely
 - the desktop JDK class library
 
 The `String[]` parameter of a conventional `main` is accepted as an entrypoint convention, but

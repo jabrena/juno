@@ -161,7 +161,65 @@ public final class ArduinoCppBackend {
             case IrInstruction.BoundsCheck check -> output.append("  if (").append(ref(check.index()))
                     .append(" < 0 || ").append(ref(check.index())).append(" >= ").append(check.length())
                     .append(") juno_panic();\n");
+            case IrInstruction.LongConst constant -> {
+                long value = constant.value();
+                assign(output, constant.targetLow(), Integer.toString((int) value));
+                assign(output, constant.targetHigh(), Integer.toString((int) (value >>> 32)));
+            }
+            case IrInstruction.LongBinary binary -> {
+                output.append("  {\n")
+                        .append("    int64_t juno_l = ").append(combineLong(binary.leftLow(), binary.leftHigh())).append(";\n")
+                        .append("    int64_t juno_r = ").append(combineLong(binary.rightLow(), binary.rightHigh())).append(";\n")
+                        .append("    int64_t juno_res = ").append(longHelperFor(binary.operation())).append("(juno_l, juno_r);\n")
+                        .append("    ").append(ref(binary.targetLow())).append(" = ").append(splitLow("juno_res")).append(";\n")
+                        .append("    ").append(ref(binary.targetHigh())).append(" = ").append(splitHigh("juno_res")).append(";\n")
+                        .append("  }\n");
+            }
+            case IrInstruction.LongShift shift -> {
+                output.append("  {\n")
+                        .append("    int64_t juno_l = ").append(combineLong(shift.valueLow(), shift.valueHigh())).append(";\n")
+                        .append("    int64_t juno_res = ").append(longShiftHelperFor(shift.operation()))
+                        .append("(juno_l, ").append(ref(shift.shiftAmount())).append(");\n")
+                        .append("    ").append(ref(shift.targetLow())).append(" = ").append(splitLow("juno_res")).append(";\n")
+                        .append("    ").append(ref(shift.targetHigh())).append(" = ").append(splitHigh("juno_res")).append(";\n")
+                        .append("  }\n");
+            }
+            case IrInstruction.LongNegate negate -> {
+                output.append("  {\n")
+                        .append("    int64_t juno_res = juno_lneg(").append(combineLong(negate.valueLow(), negate.valueHigh())).append(");\n")
+                        .append("    ").append(ref(negate.targetLow())).append(" = ").append(splitLow("juno_res")).append(";\n")
+                        .append("    ").append(ref(negate.targetHigh())).append(" = ").append(splitHigh("juno_res")).append(";\n")
+                        .append("  }\n");
+            }
+            case IrInstruction.LongCompare compare -> {
+                output.append("  {\n")
+                        .append("    int64_t juno_l = ").append(combineLong(compare.leftLow(), compare.leftHigh())).append(";\n")
+                        .append("    int64_t juno_r = ").append(combineLong(compare.rightLow(), compare.rightHigh())).append(";\n")
+                        .append("    ").append(ref(compare.target())).append(" = (juno_l > juno_r) - (juno_l < juno_r);\n")
+                        .append("  }\n");
+            }
+            case IrInstruction.IntToLong widen -> {
+                // Sign-extending an int32 to int64 needs no 64-bit arithmetic: the low half is the value
+                // unchanged, and the high half is all-0s or all-1s depending on its sign, i.e. value >> 31.
+                assign(output, widen.targetLow(), ref(widen.value()));
+                assign(output, widen.targetHigh(), ref(widen.value()) + " >> 31");
+            }
+            case IrInstruction.LongToInt narrow -> assign(output, narrow.target(), ref(narrow.valueLow()));
         }
+    }
+
+    /** Reconstructs a signed 64-bit value from its two 32-bit halves (see {@link IrInstruction.LongConst}). */
+    private String combineLong(Value low, Value high) {
+        return "static_cast<int64_t>((static_cast<uint64_t>(static_cast<uint32_t>(" + ref(high) + ")) << 32) | "
+                + "static_cast<uint64_t>(static_cast<uint32_t>(" + ref(low) + ")))";
+    }
+
+    private String splitLow(String int64Expression) {
+        return "static_cast<int32_t>(static_cast<uint32_t>(static_cast<uint64_t>(" + int64Expression + ")))";
+    }
+
+    private String splitHigh(String int64Expression) {
+        return "static_cast<int32_t>(static_cast<uint32_t>(static_cast<uint64_t>(" + int64Expression + ") >> 32))";
     }
 
     private void emitTerminator(StringBuilder output, IrTerminator terminator, IrInstruction.Compare foldedCompare,
@@ -291,6 +349,30 @@ public final class ArduinoCppBackend {
         };
     }
 
+    private String longHelperFor(BinaryOp operation) {
+        return switch (operation) {
+            case ADD -> "juno_ladd";
+            case SUBTRACT -> "juno_lsub";
+            case MULTIPLY -> "juno_lmul";
+            case DIVIDE -> "juno_ldiv";
+            case REMAINDER -> "juno_lrem";
+            case AND -> "juno_land";
+            case OR -> "juno_lor";
+            case XOR -> "juno_lxor";
+            case SHIFT_LEFT, SHIFT_RIGHT, UNSIGNED_SHIFT_RIGHT ->
+                    throw new IllegalStateException("Long shifts use longShiftHelperFor, not longHelperFor: " + operation);
+        };
+    }
+
+    private String longShiftHelperFor(BinaryOp operation) {
+        return switch (operation) {
+            case SHIFT_LEFT -> "juno_lshl";
+            case SHIFT_RIGHT -> "juno_lshr";
+            case UNSIGNED_SHIFT_RIGHT -> "juno_lushr";
+            default -> throw new IllegalStateException("Not a long shift operation: " + operation);
+        };
+    }
+
     private String operatorFor(Condition condition) {
         return switch (condition) {
             case EQUAL -> "==";
@@ -415,6 +497,44 @@ public final class ArduinoCppBackend {
                   pinMode(pin, OUTPUT);
                   return pin;
                 }
+
+                static int64_t juno_ladd(int64_t a, int64_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) + static_cast<uint64_t>(b));
+                }
+                static int64_t juno_lsub(int64_t a, int64_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) - static_cast<uint64_t>(b));
+                }
+                static int64_t juno_lmul(int64_t a, int64_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) * static_cast<uint64_t>(b));
+                }
+                static int64_t juno_ldiv(int64_t a, int64_t b) {
+                  if (b == 0) juno_panic();
+                  if (a == INT64_MIN && b == -1) return INT64_MIN;
+                  return a / b;
+                }
+                static int64_t juno_lrem(int64_t a, int64_t b) {
+                  if (b == 0) juno_panic();
+                  if (a == INT64_MIN && b == -1) return 0;
+                  return a % b;
+                }
+                static int64_t juno_lneg(int64_t value) {
+                  return static_cast<int64_t>(0ull - static_cast<uint64_t>(value));
+                }
+                static int64_t juno_lshl(int64_t a, int32_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) << (b & 63));
+                }
+                static int64_t juno_lshr(int64_t a, int32_t b) {
+                  uint32_t shift = static_cast<uint32_t>(b) & 63u;
+                  uint64_t value = static_cast<uint64_t>(a);
+                  if (shift == 0 || a >= 0) return static_cast<int64_t>(value >> shift);
+                  return static_cast<int64_t>((value >> shift) | (~0ull << (64u - shift)));
+                }
+                static int64_t juno_lushr(int64_t a, int32_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) >> (b & 63));
+                }
+                static int64_t juno_land(int64_t a, int64_t b) { return a & b; }
+                static int64_t juno_lor(int64_t a, int64_t b) { return a | b; }
+                static int64_t juno_lxor(int64_t a, int64_t b) { return a ^ b; }
 
                 """;
     }

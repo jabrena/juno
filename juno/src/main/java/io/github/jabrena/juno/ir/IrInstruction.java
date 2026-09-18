@@ -48,4 +48,36 @@ public sealed interface IrInstruction {
     /** Panics if {@code index} is outside {@code [0, length)}; emitted only when {@code length} is known. */
     record BoundsCheck(Value index, int length) implements IrInstruction {
     }
+
+    /**
+     * A 64-bit {@code long} value, materialized as two 32-bit halves ({@code targetLow}/{@code targetHigh})
+     * since every JVM local/stack slot and every backend {@code int32_t} is 32-bit. Long support is
+     * restricted to locals and arithmetic (no parameters, returns, fields, or arrays of long).
+     */
+    record LongConst(Value targetLow, Value targetHigh, long value) implements IrInstruction {
+    }
+
+    record LongBinary(Value targetLow, Value targetHigh, BinaryOp operation,
+                       Value leftLow, Value leftHigh, Value rightLow, Value rightHigh) implements IrInstruction {
+    }
+
+    /** {@code shiftAmount} is a plain (32-bit) int, per JVM {@code lshl}/{@code lshr}/{@code lushr} semantics. */
+    record LongShift(Value targetLow, Value targetHigh, BinaryOp operation,
+                      Value valueLow, Value valueHigh, Value shiftAmount) implements IrInstruction {
+    }
+
+    record LongNegate(Value targetLow, Value targetHigh, Value valueLow, Value valueHigh) implements IrInstruction {
+    }
+
+    /** {@code lcmp}: produces a regular int in {-1, 0, 1}, which then flows through ordinary int branch opcodes. */
+    record LongCompare(Value target, Value leftLow, Value leftHigh, Value rightLow, Value rightHigh)
+            implements IrInstruction {
+    }
+
+    record IntToLong(Value targetLow, Value targetHigh, Value value) implements IrInstruction {
+    }
+
+    /** {@code l2i}: truncates to the low 32 bits, which is exactly {@code valueLow} by construction. */
+    record LongToInt(Value target, Value valueLow, Value valueHigh) implements IrInstruction {
+    }
 }

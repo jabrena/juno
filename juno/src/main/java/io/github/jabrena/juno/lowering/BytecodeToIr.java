@@ -104,6 +104,15 @@ public final class BytecodeToIr {
                         nextValueId = pushConst(instructions, stackBase, depth, nextValueId, opcode - 3, tracking);
                         depth++;
                     }
+                    case 9, 10 -> {
+                        nextValueId = pushWideConst(instructions, stackBase, depth, nextValueId, opcode - 9, tracking);
+                        depth += 2;
+                    }
+                    case 20 -> {
+                        long value = linked.owner().constantPool().longValue(instruction.operandA());
+                        nextValueId = pushWideConst(instructions, stackBase, depth, nextValueId, value, tracking);
+                        depth += 2;
+                    }
                     case 16, 17 -> {
                         nextValueId = pushConst(instructions, stackBase, depth, nextValueId, instruction.operandA(), tracking);
                         depth++;
@@ -117,6 +126,15 @@ public final class BytecodeToIr {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, instruction.operandA(),
                                 slotArrayLength, arrayParameterSlots, tracking);
                         depth++;
+                    }
+                    case 22 -> {
+                        nextValueId = pushWideLoad(instructions, stackBase, depth, nextValueId,
+                                instruction.operandA(), tracking);
+                        depth += 2;
+                    }
+                    case 30, 31, 32, 33 -> {
+                        nextValueId = pushWideLoad(instructions, stackBase, depth, nextValueId, opcode - 30, tracking);
+                        depth += 2;
                     }
                     case 26, 27, 28, 29 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, opcode - 26,
@@ -133,10 +151,25 @@ public final class BytecodeToIr {
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), popped.value()));
                     }
+                    case 55 -> {
+                        depth -= 2;
+                        WidePopped popped = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = popped.nextValueId();
+                        instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), popped.low()));
+                        instructions.add(new IrInstruction.StoreLocal(instruction.operandA() + 1, popped.high()));
+                    }
                     case 59, 60, 61, 62 -> {
                         Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(opcode - 59, popped.value()));
+                    }
+                    case 63, 64, 65, 66 -> {
+                        depth -= 2;
+                        WidePopped popped = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = popped.nextValueId();
+                        int local = opcode - 63;
+                        instructions.add(new IrInstruction.StoreLocal(local, popped.low()));
+                        instructions.add(new IrInstruction.StoreLocal(local + 1, popped.high()));
                     }
                     case 75, 76, 77, 78 -> {
                         Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
@@ -155,29 +188,58 @@ public final class BytecodeToIr {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.ADD, tracking);
                         depth--;
                     }
+                    case 97 -> {
+                        nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.ADD, tracking);
+                        depth -= 2;
+                    }
                     case 100 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SUBTRACT, tracking);
                         depth--;
+                    }
+                    case 101 -> {
+                        nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SUBTRACT, tracking);
+                        depth -= 2;
                     }
                     case 104 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.MULTIPLY, tracking);
                         depth--;
                     }
+                    case 105 -> {
+                        nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.MULTIPLY, tracking);
+                        depth -= 2;
+                    }
                     case 108 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
                         depth--;
+                    }
+                    case 109 -> {
+                        nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
+                        depth -= 2;
                     }
                     case 112 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);
                         depth--;
                     }
+                    case 113 -> {
+                        nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);
+                        depth -= 2;
+                    }
                     case 116 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.NEGATE, tracking);
+                    case 117 -> nextValueId = pushLongNegate(instructions, stackBase, depth, nextValueId, tracking);
                     case 120 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_LEFT, tracking);
                         depth--;
                     }
+                    case 121 -> {
+                        nextValueId = pushLongShift(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_LEFT, tracking);
+                        depth--;
+                    }
                     case 122 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_RIGHT, tracking);
+                        depth--;
+                    }
+                    case 123 -> {
+                        nextValueId = pushLongShift(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_RIGHT, tracking);
                         depth--;
                     }
                     case 124 -> {
@@ -185,17 +247,65 @@ public final class BytecodeToIr {
                                 BinaryOp.UNSIGNED_SHIFT_RIGHT, tracking);
                         depth--;
                     }
+                    case 125 -> {
+                        nextValueId = pushLongShift(instructions, stackBase, depth, nextValueId,
+                                BinaryOp.UNSIGNED_SHIFT_RIGHT, tracking);
+                        depth--;
+                    }
                     case 126 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.AND, tracking);
                         depth--;
+                    }
+                    case 127 -> {
+                        nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.AND, tracking);
+                        depth -= 2;
                     }
                     case 128 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.OR, tracking);
                         depth--;
                     }
+                    case 129 -> {
+                        nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.OR, tracking);
+                        depth -= 2;
+                    }
                     case 130 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.XOR, tracking);
                         depth--;
+                    }
+                    case 131 -> {
+                        nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.XOR, tracking);
+                        depth -= 2;
+                    }
+                    case 133 -> {
+                        Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value targetLow = new Value(nextValueId++);
+                        Value targetHigh = new Value(nextValueId++);
+                        instructions.add(new IrInstruction.IntToLong(targetLow, targetHigh, value.value()));
+                        storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
+                        depth += 2;
+                    }
+                    case 136 -> {
+                        depth -= 2;
+                        WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value target = new Value(nextValueId++);
+                        instructions.add(new IrInstruction.LongToInt(target, value.low(), value.high()));
+                        storeToStack(instructions, stackBase, depth, target, tracking);
+                        depth++;
+                    }
+                    case 148 -> {
+                        depth -= 2;
+                        WidePopped right = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = right.nextValueId();
+                        depth -= 2;
+                        WidePopped left = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = left.nextValueId();
+                        Value result = new Value(nextValueId++);
+                        instructions.add(new IrInstruction.LongCompare(
+                                result, left.low(), left.high(), right.low(), right.high()));
+                        storeToStack(instructions, stackBase, depth, result, tracking);
+                        depth++;
                     }
                     case 132 -> {
                         Value loaded = new Value(nextValueId++);
@@ -481,12 +591,17 @@ public final class BytecodeToIr {
     private int stackDelta(LinkedMethod linked, Instruction instruction) {
         int opcode = instruction.opcode();
         return switch (opcode) {
-            case 0, 132, 145, 146, 147, 116, 167, 177, 188, 190 -> 0;
+            case 0, 132, 145, 146, 147, 116, 117, 167, 177, 188, 190 -> 0;
             case 2, 3, 4, 5, 6, 7, 8, 16, 17, 18, 19, 21, 25, 26, 27, 28, 29, 42, 43, 44, 45, 89 -> 1;
+            case 133 -> 1;
+            case 9, 10, 20, 22, 30, 31, 32, 33 -> 2;
             case 54, 58, 59, 60, 61, 62, 75, 76, 77, 78, 87, 153, 154, 155, 156, 157, 158, 172, 176 -> -1;
             case 46, 51, 52, 53 -> -1;
             case 96, 100, 104, 108, 112, 120, 122, 124, 126, 128, 130 -> -1;
+            case 121, 123, 125, 136 -> -1;
+            case 55, 63, 64, 65, 66, 97, 101, 105, 109, 113, 127, 129, 131 -> -2;
             case 159, 160, 161, 162, 163, 164 -> -2;
+            case 148 -> -3;
             case 79, 84, 85, 86 -> -3;
             case 182, 184 -> {
                 MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
@@ -631,6 +746,93 @@ public final class BytecodeToIr {
         return new Popped(value, nextValueId + 1);
     }
 
+    /**
+     * A {@code long} occupies two consecutive stack/local slots; by convention the lower-depth (lower-index)
+     * slot holds the low 32 bits and the next one holds the high 32 bits, both for synthetic stack slots and
+     * for JVM local slots (e.g. {@code lload n} reads locals {@code n} and {@code n + 1}).
+     */
+    private WidePopped popWide(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId, ArrayTracking tracking) {
+        Value low = new Value(nextValueId);
+        instructions.add(new IrInstruction.LoadLocal(low, stackBase + depthAfterPop));
+        tracking.recordPop(stackBase + depthAfterPop, low);
+        Value high = new Value(nextValueId + 1);
+        instructions.add(new IrInstruction.LoadLocal(high, stackBase + depthAfterPop + 1));
+        tracking.recordPop(stackBase + depthAfterPop + 1, high);
+        return new WidePopped(low, high, nextValueId + 2);
+    }
+
+    /** Stores a long's two halves to a pair of stack slots; arrays are never wide, so both slots are defensively cleared. */
+    private void storeWideToStack(List<IrInstruction> instructions, int stackBase, int depth, Value low, Value high, ArrayTracking tracking) {
+        instructions.add(new IrInstruction.StoreLocal(stackBase + depth, low));
+        tracking.clearStackSlot(stackBase + depth);
+        instructions.add(new IrInstruction.StoreLocal(stackBase + depth + 1, high));
+        tracking.clearStackSlot(stackBase + depth + 1);
+    }
+
+    private int pushWideConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, long value,
+                               ArrayTracking tracking) {
+        Value low = new Value(nextValueId);
+        Value high = new Value(nextValueId + 1);
+        instructions.add(new IrInstruction.LongConst(low, high, value));
+        storeWideToStack(instructions, stackBase, depth, low, high, tracking);
+        return nextValueId + 2;
+    }
+
+    private int pushWideLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int local,
+                              ArrayTracking tracking) {
+        Value low = new Value(nextValueId);
+        instructions.add(new IrInstruction.LoadLocal(low, local));
+        Value high = new Value(nextValueId + 1);
+        instructions.add(new IrInstruction.LoadLocal(high, local + 1));
+        storeWideToStack(instructions, stackBase, depth, low, high, tracking);
+        return nextValueId + 2;
+    }
+
+    private int pushLongBinary(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
+                                BinaryOp operation, ArrayTracking tracking) {
+        int depth = depthBeforePush - 2;
+        WidePopped right = popWide(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = right.nextValueId();
+        depth -= 2;
+        WidePopped left = popWide(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = left.nextValueId();
+        Value targetLow = new Value(nextValueId++);
+        Value targetHigh = new Value(nextValueId++);
+        instructions.add(new IrInstruction.LongBinary(targetLow, targetHigh, operation,
+                left.low(), left.high(), right.low(), right.high()));
+        storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
+        return nextValueId;
+    }
+
+    /** {@code lshl}/{@code lshr}/{@code lushr}: the shift amount is a plain int, popped before the long value. */
+    private int pushLongShift(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
+                               BinaryOp operation, ArrayTracking tracking) {
+        int depth = depthBeforePush;
+        Popped amount = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = amount.nextValueId();
+        depth -= 2;
+        WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = value.nextValueId();
+        Value targetLow = new Value(nextValueId++);
+        Value targetHigh = new Value(nextValueId++);
+        instructions.add(new IrInstruction.LongShift(targetLow, targetHigh, operation,
+                value.low(), value.high(), amount.value()));
+        storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
+        return nextValueId;
+    }
+
+    private int pushLongNegate(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
+                                ArrayTracking tracking) {
+        int depth = depthBeforePush - 2;
+        WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = value.nextValueId();
+        Value targetLow = new Value(nextValueId++);
+        Value targetHigh = new Value(nextValueId++);
+        instructions.add(new IrInstruction.LongNegate(targetLow, targetHigh, value.low(), value.high()));
+        storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
+        return nextValueId;
+    }
+
     private Condition conditionOf(int opcode, int base) {
         return switch (opcode - base) {
             case 0 -> Condition.EQUAL;
@@ -644,6 +846,9 @@ public final class BytecodeToIr {
     }
 
     private record Popped(Value value, int nextValueId) {
+    }
+
+    private record WidePopped(Value low, Value high, int nextValueId) {
     }
 
     private record Lowered(int nextValueId, int depth) {
