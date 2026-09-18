@@ -19,6 +19,8 @@ import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
 
 import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -56,6 +58,8 @@ public final class ArduinoCppBackend {
             output.append(ledMatrixHelpers());
         }
 
+        emitObjectLayouts(output, program);
+
         List<FieldRef> staticFields = usedStaticFields(program);
         for (FieldRef field : staticFields) {
             output.append("static ").append(cppScalarType(field.descriptor())).append(' ')
@@ -66,7 +70,7 @@ public final class ArduinoCppBackend {
         }
 
         for (IrMethod method : program.methods()) {
-            output.append(prototype(method.reference())).append(";\n");
+            output.append(prototype(method)).append(";\n");
         }
         output.append('\n');
         for (IrMethod method : program.methods()) {
@@ -74,8 +78,13 @@ public final class ArduinoCppBackend {
         }
 
         Descriptor entryDescriptor = Descriptor.parse(program.entryPoint().descriptor());
-        output.append("void setup() {\n  ")
-                .append(CppNames.method(program.entryPoint())).append('(');
+        output.append("void setup() {\n");
+        for (IrMethod method : program.methods()) {
+            if (method.reference().name().equals("<clinit>")) {
+                output.append("  ").append(CppNames.method(method.reference())).append("();\n");
+            }
+        }
+        output.append("  ").append(CppNames.method(program.entryPoint())).append('(');
         if (!entryDescriptor.parameters().isEmpty()) {
             output.append('0'); // closed-world programs have no command-line arguments
         }
@@ -115,6 +124,40 @@ public final class ArduinoCppBackend {
         return List.copyOf(fields.values());
     }
 
+    private void emitObjectLayouts(StringBuilder output, IrProgram program) {
+        TreeMap<String, TreeMap<String, FieldRef>> layouts = new TreeMap<>();
+        for (IrMethod method : program.methods()) {
+            for (IrBasicBlock block : method.blocks()) {
+                for (IrInstruction instruction : block.instructions()) {
+                    if (instruction instanceof IrInstruction.NewObject object) {
+                        layouts.computeIfAbsent(object.className(), ignored -> new TreeMap<>());
+                    } else if (instruction instanceof IrInstruction.LoadField load) {
+                        layouts.computeIfAbsent(load.field().owner(), ignored -> new TreeMap<>())
+                                .put(load.field().displayName(), load.field());
+                    } else if (instruction instanceof IrInstruction.StoreField store) {
+                        layouts.computeIfAbsent(store.field().owner(), ignored -> new TreeMap<>())
+                                .put(store.field().displayName(), store.field());
+                    }
+                }
+            }
+        }
+        for (Map.Entry<String, TreeMap<String, FieldRef>> layout : layouts.entrySet()) {
+            output.append("struct ").append(CppNames.objectType(layout.getKey())).append(" {\n");
+            if (layout.getValue().isEmpty()) {
+                output.append("  uint8_t unused;\n");
+            } else {
+                for (FieldRef field : layout.getValue().values()) {
+                    output.append("  ").append(cppScalarType(field.descriptor())).append(' ')
+                            .append(CppNames.instanceField(field)).append(";\n");
+                }
+            }
+            output.append("};\n");
+        }
+        if (!layouts.isEmpty()) {
+            output.append('\n');
+        }
+    }
+
     private boolean usesFloatingPoint(IrMethod method) {
         Descriptor descriptor = Descriptor.parse(method.reference().descriptor());
         return Descriptor.isFloat(descriptor.returnType()) || Descriptor.isDouble(descriptor.returnType())
@@ -134,19 +177,19 @@ public final class ArduinoCppBackend {
     private void emitMethod(StringBuilder output, IrMethod method) {
         Descriptor descriptor = Descriptor.parse(method.reference().descriptor());
         boolean typedLocals = usesTypedValues(method);
-        output.append(prototype(method.reference())).append(" {\n");
+        output.append(prototype(method)).append(" {\n");
         if (typedLocals) {
             output.append("  union JunoSlot { int32_t i32; int64_t i64; float f32; double f64; };\n")
                     .append("  JunoSlot locals[").append(Math.max(1, method.maxLocals())).append("] = {};\n");
         } else {
             output.append("  int32_t locals[").append(Math.max(1, method.maxLocals())).append("] = {};\n");
         }
-        for (ArrayDeclaration array : method.arrayDeclarations()) {
-            output.append("  ").append(cppType(array.elementType())).append(" arr_").append(array.handle().id())
-                    .append('[').append(array.length()).append("] = {};\n");
-        }
         List<String> parameterTypes = descriptor.parameters();
         int localSlot = 0;
+        if (!method.isStatic()) {
+            output.append("  ").append(localRef(0, JunoType.INT32, typedLocals)).append(" = arg_receiver;\n");
+            localSlot = 1;
+        }
         for (int index = 0; index < parameterTypes.size(); index++) {
             String parameterType = parameterTypes.get(index);
             if (Descriptor.isLong(parameterType)) {
@@ -170,6 +213,7 @@ public final class ArduinoCppBackend {
             localSlot += Descriptor.jvmSlots(parameterType);
         }
         emitValueDeclarations(output, method.values());
+        emitConstantArrayDeclarations(output, method);
         Optional<ArrayElementType> returnArrayType = arrayElementTypeOf(descriptor.returnType());
         for (IrBasicBlock block : method.blocks()) {
             emitBlock(output, block, returnArrayType, typedLocals);
@@ -184,6 +228,23 @@ public final class ArduinoCppBackend {
             output.append("  juno_panic();\n  return 0;\n");
         }
         output.append("}\n\n");
+    }
+
+    private void emitConstantArrayDeclarations(StringBuilder output, IrMethod method) {
+        for (IrBasicBlock block : method.blocks()) {
+            for (IrInstruction instruction : block.instructions()) {
+                if (instruction instanceof IrInstruction.IntArrayConst array) {
+                    output.append("  static int32_t juno_const_array_").append(array.target().id()).append("[] = {");
+                    for (int index = 0; index < array.values().size(); index++) {
+                        if (index > 0) {
+                            output.append(", ");
+                        }
+                        output.append(array.values().get(index));
+                    }
+                    output.append("};\n");
+                }
+            }
+        }
     }
 
     private void emitValueDeclarations(StringBuilder output, List<Value> values) {
@@ -259,6 +320,16 @@ public final class ArduinoCppBackend {
             case IrInstruction.LoadStatic load -> assign(output, load.target(), CppNames.field(load.field()));
             case IrInstruction.StoreStatic store -> output.append("  ").append(CppNames.field(store.field()))
                     .append(" = ").append(ref(store.value())).append(";\n");
+            case IrInstruction.NewObject object -> assign(output, object.target(),
+                    handleOf(allocationExpression(CppNames.objectType(object.className()), "1")));
+            case IrInstruction.LoadField load -> assign(output, load.target(), fieldExpression(load.field(), load.receiver()));
+            case IrInstruction.StoreField store -> output.append("  ")
+                    .append(fieldExpression(store.field(), store.receiver())).append(" = ")
+                    .append(ref(store.value())).append(";\n");
+            case IrInstruction.IntArrayConst array -> assign(output, array.target(),
+                    handleOf("juno_const_array_" + array.target().id()));
+            case IrInstruction.NewMultiArray array -> emitMultiArray(output, array);
+            case IrInstruction.Panic ignored -> output.append("  juno_panic();\n");
             case IrInstruction.Binary binary -> assign(output, binary.target(),
                     helperFor(binary.operation()) + "(" + ref(binary.left()) + ", " + ref(binary.right()) + ")");
             case IrInstruction.Unary unary -> assign(output, unary.target(), unaryExpression(unary));
@@ -267,7 +338,7 @@ public final class ArduinoCppBackend {
             case IrInstruction.Call call -> emitUserCall(output, call);
             case IrInstruction.IntrinsicCall call -> emitIntrinsicCall(output, call);
             case IrInstruction.NewArray newArray -> assign(output, newArray.target(),
-                    handleOf("arr_" + newArray.target().id()));
+                    handleOf(allocationExpression(cppType(newArray.elementType()), Integer.toString(newArray.length()))));
             case IrInstruction.ArrayLoad load -> assign(output, load.target(),
                     "reinterpret_cast<" + cppType(load.elementType()) + "*>(" + ref(load.array()) + ")[" + ref(load.index()) + "]");
             case IrInstruction.ArrayStore store -> output.append("  reinterpret_cast<").append(cppType(store.elementType()))
@@ -377,6 +448,42 @@ public final class ArduinoCppBackend {
         }
     }
 
+    private String fieldExpression(FieldRef field, Value receiver) {
+        return "reinterpret_cast<" + CppNames.objectType(field.owner()) + "*>(" + ref(receiver) + ")->"
+                + CppNames.instanceField(field);
+    }
+
+    private void emitMultiArray(StringBuilder output, IrInstruction.NewMultiArray array) {
+        assign(output, array.target(), handleOf(allocationExpression("int32_t",
+                Integer.toString(array.dimensions().get(0)))));
+        emitMultiArrayChildren(output, ref(array.target()), array.leafType(), array.dimensions(), 1);
+    }
+
+    private void emitMultiArrayChildren(StringBuilder output, String parentHandle, ArrayElementType leafType,
+                                        List<Integer> dimensions, int level) {
+        if (level >= dimensions.size()) {
+            return;
+        }
+        int count = dimensions.get(level - 1);
+        boolean leaf = level == dimensions.size() - 1;
+        for (int index = 0; index < count; index++) {
+            String slot = "reinterpret_cast<int32_t*>(" + parentHandle + ")[" + index + "]";
+            String elementCppType = leaf ? cppType(leafType) : "int32_t";
+            output.append("  ").append(slot).append(" = ")
+                    .append(handleOf(allocationExpression(elementCppType,
+                            Integer.toString(dimensions.get(level)))))
+                    .append(";\n");
+            if (!leaf) {
+                emitMultiArrayChildren(output, slot, leafType, dimensions, level + 1);
+            }
+        }
+    }
+
+    private String allocationExpression(String cppType, String count) {
+        return "reinterpret_cast<" + cppType + "*>(juno_alloc(sizeof(" + cppType + ") * (" + count
+                + "), alignof(" + cppType + ")))";
+    }
+
     private String localRef(int local, JunoType type, boolean typedLocals) {
         if (!typedLocals) {
             return "locals[" + local + "]";
@@ -479,6 +586,15 @@ public final class ArduinoCppBackend {
                     output.append("  return ").append(ref(returned.value().get())).append(";\n");
                 }
             }
+            case IrTerminator.Switch switched -> {
+                output.append("  switch (").append(ref(switched.selector())).append(") {\n");
+                for (int index = 0; index < switched.keys().size(); index++) {
+                    output.append("    case ").append(switched.keys().get(index)).append(": goto juno_pc_")
+                            .append(switched.targets().get(index)).append(";\n");
+                }
+                output.append("    default: goto juno_pc_").append(switched.defaultTarget()).append(";\n")
+                        .append("  }\n");
+            }
         }
     }
 
@@ -501,12 +617,18 @@ public final class ArduinoCppBackend {
     private String callExpression(IrInstruction.Call call, List<String> parameterTypes) {
         StringBuilder expression = new StringBuilder(CppNames.method(call.method())).append('(');
         List<Value> arguments = call.arguments();
+        boolean instanceCall = arguments.size() == parameterTypes.size() + 1;
         for (int index = 0; index < arguments.size(); index++) {
             if (index > 0) {
                 expression.append(", ");
             }
-            if (Descriptor.isArrayType(parameterTypes.get(index))) {
-                expression.append("reinterpret_cast<").append(cppType(arrayElementTypeOf(parameterTypes.get(index)).orElseThrow()))
+            if (instanceCall && index == 0) {
+                expression.append(ref(arguments.get(index)));
+                continue;
+            }
+            String parameterType = parameterTypes.get(index - (instanceCall ? 1 : 0));
+            if (Descriptor.isArrayType(parameterType)) {
+                expression.append("reinterpret_cast<").append(cppType(arrayElementTypeOf(parameterType).orElseThrow()))
                         .append("*>(").append(ref(arguments.get(index))).append(')');
             } else {
                 expression.append(ref(arguments.get(index)));
@@ -639,8 +761,8 @@ public final class ArduinoCppBackend {
         return "static_cast<int32_t>(reinterpret_cast<intptr_t>(" + pointerExpression + "))";
     }
 
-    private String prototype(MethodRef method) {
-        Descriptor descriptor = Descriptor.parse(method.descriptor());
+    private String prototype(IrMethod method) {
+        Descriptor descriptor = Descriptor.parse(method.reference().descriptor());
         String returnType;
         if (descriptor.returnsVoid()) {
             returnType = "void";
@@ -655,10 +777,15 @@ public final class ArduinoCppBackend {
             returnType = arrayReturn.map(type -> cppType(type) + "*").orElse("int32_t");
         }
         StringBuilder result = new StringBuilder("static ").append(returnType).append(' ')
-                .append(CppNames.method(method)).append('(');
+                .append(CppNames.method(method.reference())).append('(');
+        boolean hasParameter = false;
+        if (!method.isStatic()) {
+            result.append("int32_t arg_receiver");
+            hasParameter = true;
+        }
         List<String> parameterTypes = descriptor.parameters();
         for (int i = 0; i < parameterTypes.size(); i++) {
-            if (i > 0) {
+            if (hasParameter) {
                 result.append(", ");
             }
             String parameterType = parameterTypes.get(i);
@@ -671,6 +798,7 @@ public final class ArduinoCppBackend {
                             ? "float arg"
                             : arrayParam.map(type -> cppType(type) + "* arg").orElse("int32_t arg");
             result.append(cppParameter).append(i);
+            hasParameter = true;
         }
         return result.append(')').toString();
     }
@@ -679,7 +807,7 @@ public final class ArduinoCppBackend {
         if (!Descriptor.isArrayType(type)) {
             return Optional.empty();
         }
-        return ArrayElementType.fromDescriptor(Descriptor.arrayElementDescriptor(type));
+        return ArrayElementType.fromArrayDescriptor(type);
     }
 
     private String cppType(ArrayElementType elementType) {
@@ -688,6 +816,7 @@ public final class ArduinoCppBackend {
             case CHAR -> "uint16_t";
             case SHORT -> "int16_t";
             case INT -> "int32_t";
+            case REFERENCE -> "int32_t";
             case LONG -> "int64_t";
             case FLOAT -> "float";
             case DOUBLE -> "double";
@@ -730,6 +859,18 @@ public final class ArduinoCppBackend {
                 [[noreturn]] static void juno_panic() {
                   noInterrupts();
                   for (;;) {}
+                }
+
+                static uint8_t juno_arena[8192] __attribute__((aligned(8)));
+                static uint32_t juno_arena_used = 0;
+
+                static void* juno_alloc(uint32_t size, uint32_t alignment) {
+                  uint32_t aligned = (juno_arena_used + alignment - 1u) & ~(alignment - 1u);
+                  if (aligned > sizeof(juno_arena) || size > sizeof(juno_arena) - aligned) juno_panic();
+                  uint8_t* memory = &juno_arena[aligned];
+                  for (uint32_t index = 0; index < size; index++) memory[index] = 0;
+                  juno_arena_used = aligned + size;
+                  return memory;
                 }
 
                 static int32_t juno_iadd(int32_t a, int32_t b) {

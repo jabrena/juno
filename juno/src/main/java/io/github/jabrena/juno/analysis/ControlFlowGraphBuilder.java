@@ -22,6 +22,12 @@ public final class ControlFlowGraphBuilder {
         TreeSet<Integer> leaders = new TreeSet<>();
         leaders.add(instructions.get(0).offset());
         for (Instruction instruction : instructions) {
+            if (isSwitch(instruction.opcode())) {
+                addSwitchLeader(methodDisplayName, byOffset, leaders, instruction, instruction.operandA());
+                for (int targetOffset : instruction.switchOffsets()) {
+                    addSwitchLeader(methodDisplayName, byOffset, leaders, instruction, targetOffset);
+                }
+            }
             if (isBranch(instruction.opcode())) {
                 int target = instruction.offset() + instruction.operandA();
                 if (!byOffset.containsKey(target)) {
@@ -63,6 +69,11 @@ public final class ControlFlowGraphBuilder {
             }
             return new Terminator.Branch(last.offset() + last.operandA(), falseTarget);
         }
+        if (isSwitch(opcode)) {
+            List<Integer> targets = last.switchOffsets().stream()
+                    .map(relative -> last.offset() + relative).toList();
+            return new Terminator.Switch(last.switchKeys(), targets, last.offset() + last.operandA());
+        }
         if (isReturn(opcode)) {
             return new Terminator.Return();
         }
@@ -71,7 +82,7 @@ public final class ControlFlowGraphBuilder {
     }
 
     private boolean isBranch(int opcode) {
-        return opcode == 167 || isConditionalBranch(opcode);
+        return opcode == 167 || isConditionalBranch(opcode) || isSwitch(opcode);
     }
 
     private boolean isConditionalBranch(int opcode) {
@@ -82,7 +93,22 @@ public final class ControlFlowGraphBuilder {
         return isBranch(opcode) || isReturn(opcode);
     }
 
+    private boolean isSwitch(int opcode) {
+        return opcode == 170 || opcode == 171;
+    }
+
+    private void addSwitchLeader(String methodDisplayName, TreeMap<Integer, Instruction> byOffset,
+                                 TreeSet<Integer> leaders, Instruction instruction, int relativeTarget) {
+        int target = instruction.offset() + relativeTarget;
+        if (!byOffset.containsKey(target)) {
+            throw new CompileException(methodDisplayName + " at bytecode offset " + instruction.offset()
+                    + ": invalid switch target " + target);
+        }
+        leaders.add(target);
+    }
+
     private boolean isReturn(int opcode) {
-        return opcode == 172 || opcode == 173 || opcode == 174 || opcode == 175 || opcode == 176 || opcode == 177;
+        return opcode == 172 || opcode == 173 || opcode == 174 || opcode == 175 || opcode == 176
+                || opcode == 177 || opcode == 191;
     }
 }

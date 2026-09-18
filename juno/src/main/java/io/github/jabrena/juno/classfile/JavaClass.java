@@ -22,6 +22,7 @@ import java.util.List;
 public record JavaClass(String name, int accessFlags, String superClassName, ConstantPool constantPool,
                          List<JavaMethod> methods, List<FieldInfo> fields) {
     private static final int ACC_ENUM = 0x4000;
+    private static final int ACC_FINAL = 0x0010;
     private static final String RECORD_SUPERCLASS = "java/lang/Record";
 
     public boolean isEnum() {
@@ -30,6 +31,10 @@ public record JavaClass(String name, int accessFlags, String superClassName, Con
 
     public boolean isRecord() {
         return RECORD_SUPERCLASS.equals(superClassName);
+    }
+
+    public boolean isFinal() {
+        return (accessFlags & ACC_FINAL) != 0;
     }
 
     public List<String> enumConstantNames() {

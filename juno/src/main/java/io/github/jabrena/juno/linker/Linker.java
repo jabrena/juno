@@ -7,6 +7,7 @@ import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
+import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 
@@ -38,6 +39,10 @@ public final class Linker {
 
         Map<MethodRef, LinkedMethod> reachable = new LinkedHashMap<>();
         Deque<MethodRef> work = new ArrayDeque<>();
+        JavaMethod mainInitializer = mainClass.findMethod("<clinit>", "()V");
+        if (mainInitializer != null) {
+            work.add(mainInitializer.reference());
+        }
         work.add(entryPoint);
         while (!work.isEmpty()) {
             MethodRef reference = work.removeFirst();
@@ -52,22 +57,28 @@ public final class Linker {
             if (method == null) {
                 throw new CompileException("Reachable method not found: " + reference.displayName());
             }
-            validateMethod(method, reference.equals(entryPoint), enumClassNames);
+            validateMethod(method, reference.equals(entryPoint), classes.keySet());
             List<Instruction> instructions = decoder.decode(method);
             ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions);
             reachable.put(reference, new LinkedMethod(owner, method, instructions, cfg));
 
             for (Instruction instruction : instructions) {
-                if (instruction.opcode() == 182 || instruction.opcode() == 184) {
+                if (instruction.opcode() == 182 || instruction.opcode() == 183 || instruction.opcode() == 184) {
                     MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                    boolean isRecordAccessor = instruction.opcode() == 182 && RecordSupport.isAccessorCall(classes, called);
-                    if (instruction.opcode() == 182 && !IntrinsicRegistry.isIntrinsic(called) && !isRecordAccessor) {
-                        throw new CompileException(method.reference().displayName() + " at bytecode offset "
-                                + instruction.offset() + ": instance call is not a Juno intrinsic: "
-                                + called.displayName());
-                    }
-                    if (!IntrinsicRegistry.isIntrinsic(called) && !isRecordAccessor) {
+                    if (!IntrinsicRegistry.isIntrinsic(called)
+                            && !isRuntimeBaseConstructor(called)
+                            && !isEnumOperation(classes, called)) {
                         work.addLast(called);
+                    }
+                }
+                if (instruction.opcode() == 178 || instruction.opcode() == 179) {
+                    FieldRef field = owner.constantPool().fieldRef(instruction.operandA());
+                    JavaClass fieldOwner = classes.get(field.owner());
+                    if (fieldOwner != null && !fieldOwner.isEnum() && !field.name().startsWith("$SwitchMap$")) {
+                        JavaMethod initializer = fieldOwner.findMethod("<clinit>", "()V");
+                        if (initializer != null) {
+                            work.addLast(initializer.reference());
+                        }
                     }
                 }
             }
@@ -85,10 +96,7 @@ public final class Linker {
         return result;
     }
 
-    private void validateMethod(JavaMethod method, boolean entryPoint, Set<String> enumClassNames) {
-        if (!method.isStatic()) {
-            throw new CompileException("Juno v0.1 supports only static methods: " + method.reference().displayName());
-        }
+    private void validateMethod(JavaMethod method, boolean entryPoint, Set<String> referenceClassNames) {
         if (method.isNative() || method.code() == null) {
             throw new CompileException("Native method has no Juno intrinsic: " + method.reference().displayName());
         }
@@ -96,9 +104,25 @@ public final class Linker {
         boolean conventionalMain = entryPoint
                 && descriptor.parameters().equals(List.of("[Ljava/lang/String;"))
                 && descriptor.returnsVoid();
-        if (!conventionalMain && !descriptor.usesOnlyV01Types(enumClassNames)) {
-            throw new CompileException("Juno methods may use only supported scalar, array, or enum parameters and returns: "
+        if (!conventionalMain && !descriptor.usesOnlyV01Types(referenceClassNames)) {
+            throw new CompileException("Juno methods may use only supported scalar, array, or closed-world reference parameters and returns: "
                     + method.reference().displayName());
         }
+    }
+
+    private boolean isRuntimeBaseConstructor(MethodRef called) {
+        return called.name().equals("<init>") && called.descriptor().endsWith(")V")
+                && (called.owner().startsWith("java/lang/")
+                        || called.owner().equals("java/lang/Enum"));
+    }
+
+    private boolean isEnumOperation(Map<String, JavaClass> classes, MethodRef called) {
+        JavaClass owner = classes.get(called.owner());
+        if (owner != null && owner.isEnum()) {
+            return (called.name().equals("ordinal") && called.descriptor().equals("()I"))
+                    || (called.name().equals("values") && called.descriptor().startsWith("()[L"));
+        }
+        return called.owner().equals("java/lang/Enum")
+                && called.name().equals("ordinal") && called.descriptor().equals("()I");
     }
 }

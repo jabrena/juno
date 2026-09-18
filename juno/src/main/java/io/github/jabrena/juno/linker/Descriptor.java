@@ -43,12 +43,12 @@ public record Descriptor(List<String> parameters, String returnType) {
      * enum-typed parameter/return is accepted only if its class is in this set, since Juno represents an
      * enum constant purely as its ordinal {@code int} and never constructs a real object for it.
      */
-    public boolean usesOnlyV01Types(Set<String> enumClassNames) {
-        return parameters.stream().allMatch(type -> isSupportedParameterType(type, enumClassNames))
+    public boolean usesOnlyV01Types(Set<String> referenceClassNames) {
+        return parameters.stream().allMatch(type -> isSupportedParameterType(type, referenceClassNames))
                 && (returnsVoid() || isIntegerLike(returnType) || isLong(returnType) || isFloat(returnType)
                         || isDouble(returnType)
-                        || isArrayType(returnType)
-                        || isEnumType(returnType, enumClassNames));
+                        || isSupportedArrayType(returnType, referenceClassNames)
+                        || isReferenceType(returnType, referenceClassNames));
     }
 
     public static boolean isIntegerLike(String type) {
@@ -80,7 +80,7 @@ public record Descriptor(List<String> parameters, String returnType) {
      * (narrow, always-sound) rules on when returning one is actually accepted.
      */
     public static boolean isArrayType(String type) {
-        return type.length() == 2 && type.charAt(0) == '[' && "ZBCSIJFD".indexOf(type.charAt(1)) >= 0;
+        return type.startsWith("[");
     }
 
     /** The element type character of an array descriptor, e.g. {@code B} for {@code [B}. */
@@ -94,9 +94,25 @@ public record Descriptor(List<String> parameters, String returnType) {
                 && enumClassNames.contains(type.substring(1, type.length() - 1));
     }
 
-    private static boolean isSupportedParameterType(String type, Set<String> enumClassNames) {
-        return isIntegerLike(type) || isLong(type) || isFloat(type) || isDouble(type) || isArrayType(type)
-                || isEnumType(type, enumClassNames);
+    public static boolean isReferenceType(String type, Set<String> referenceClassNames) {
+        return type.length() > 2 && type.charAt(0) == 'L' && type.endsWith(";")
+                && referenceClassNames.contains(type.substring(1, type.length() - 1));
+    }
+
+    private static boolean isSupportedParameterType(String type, Set<String> referenceClassNames) {
+        return isIntegerLike(type) || isLong(type) || isFloat(type) || isDouble(type)
+                || isSupportedArrayType(type, referenceClassNames)
+                || isReferenceType(type, referenceClassNames);
+    }
+
+    private static boolean isSupportedArrayType(String type, Set<String> referenceClassNames) {
+        if (!isArrayType(type)) {
+            return false;
+        }
+        String component = type.substring(1);
+        return isIntegerLike(component) || isLong(component) || isFloat(component) || isDouble(component)
+                || isSupportedArrayType(component, referenceClassNames)
+                || isReferenceType(component, referenceClassNames);
     }
 
     private static ParsedType parseType(String descriptor, int start) {

@@ -19,13 +19,13 @@ Supported today:
   `byte[]`/`boolean[]` as `int8_t`, `char[]` as `uint16_t`, `short[]` as `int16_t`, `int[]` as
   `int32_t`, `long[]` as `int64_t`, `float[]` as `float`, and `double[]` as `double`); passing an array
   to another static method (pointer semantics); returning an array is
-  supported only when directly forwarding a received array parameter (e.g. `return arr;`), never a
-  locally created one, since that pointer would dangle once the method returns. `arr.length` and
+  safe for locally created arrays because array storage comes from Juno's fixed 8 KiB program-lifetime
+  arena. `arr.length` and
   bounds-checked `arr[i]`/`arr[i] = v` work only on an array local that is assigned exactly once in
   its method (i.e. "effectively final") right after `new T[...]` — an array received as a
   parameter, or a reassigned local, still supports `arr[i]`/`arr[i] = v` but without a bounds check
-  and without `.length`, since its size isn't known at compile time there. Multi-dimensional arrays
-  are not supported.
+  and without `.length`, since its size isn't known at compile time there. Fixed-size multidimensional
+  primitive arrays are supported when every dimension is a compile-time constant.
 - `long` locals, method parameters/results, fields, and arrays, with arithmetic, shifts, bitwise
   operations, comparisons, numeric conversions, calls, returns, and loops. JVM locals/stack values are
   represented internally as paired 32-bit halves and packed to native `int64_t` at storage/call boundaries.
@@ -34,21 +34,14 @@ Supported today:
   and saturating/NaN-to-zero numeric narrowing are preserved. Float fields and arrays are supported.
 - `double` locals, static method parameters/results, fields, arrays, arithmetic, comparisons, numeric
   conversions, calls, and returns. Two JVM slots are preserved for every `double` local and parameter.
-- `enum` constants as plain 0-based ordinal `int`s — Juno never constructs a real enum object (no
-  heap), it reads a constant's declaration-order position directly. Supported: enum-typed locals,
-  parameters, and return values; `==`/`!=` comparisons (including against a named constant). Not
-  supported: `switch` on an enum (javac routes it through a synthetic lookup-table class Juno doesn't
-  understand), `.name()`/`.toString()`/`.compareTo()`/`.ordinal()`, `values()`/`valueOf()`, and
-  per-constant fields, methods, or constructors.
-- simple `record`s with `boolean`/`byte`/`char`/`short`/`int` components, as local variables only —
-  Juno never constructs a real object (no heap), a record decomposes into its N component values
-  directly at `new`, and an accessor call (`p.x()`) resolves straight to the matching value. Only the
-  plain compiler-generated canonical constructor and accessors are accepted (verified by their exact
-  bytecode shape); a compact/custom constructor or a hand-written accessor override is rejected, since
-  Juno cannot otherwise tell it apart from the trivial default. Not supported: records as a method
-  parameter or return type (an N-component record needs N scalar slots, which would need real
-  parameter-slot renumbering), `equals()`/`hashCode()`/`toString()`, non-canonical constructors, and
-  non-int-like components (nested records, arrays, `long`, `String`, etc.).
+- `enum` constants as plain 0-based ordinal `int`s, including `ordinal()`, `values()`, equality, method
+  parameters/results, and `switch`. Name/string operations and per-constant state remain unsupported.
+- records as arena objects, including parameters/results, canonical and compact constructors, custom
+  accessors, and supported primitive/array/reference components. Generated `equals()`/`hashCode()`/
+  `toString()` remain unsupported because they require `invokedynamic` and broader object/String support.
+- final closed-world classes with constructors, primitive/reference instance fields, and statically
+  resolvable instance calls. Objects use a fixed 8 KiB zero-filled bump arena with no reclamation; code
+  must not allocate indefinitely inside loops.
 - direct static calls with closed-world reachability; unused methods are omitted
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
@@ -56,15 +49,12 @@ Supported today:
 
 Not yet supported:
 
-- general objects, constructors, instance/virtual/interface calls, multi-dimensional arrays, or
-  returning a locally created array (only forwarding a received array parameter is supported) —
-  simple records (see above) are the one narrow exception
-- nontrivial static initialization (`<clinit>`), strings, exceptions, garbage collection, threads,
+- inheritance/polymorphic dispatch, interfaces, object arrays with polymorphism, or garbage collection
+- strings, general exceptions, threads,
   reflection, or dynamic loading
-- `switch` on an enum, enum instance methods (`.name()`, `.ordinal()`, etc.), `values()`/`valueOf()`,
+- enum string methods (`.name()`, `.toString()`), `valueOf()`,
   and enums with per-constant state (custom constructors/fields/abstract methods)
-- records as a method parameter/return type, `equals()`/`hashCode()`/`toString()`, non-canonical
-  constructors, custom accessor overrides, and non-int-like record components
+- record `equals()`/`hashCode()`/`toString()` and other `invokedynamic`-based behavior
 - the desktop JDK class library
 
 The `String[]` parameter of a conventional `main` is accepted as an entrypoint convention, but

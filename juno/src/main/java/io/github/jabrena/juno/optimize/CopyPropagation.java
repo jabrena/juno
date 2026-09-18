@@ -38,7 +38,7 @@ public final class CopyPropagation implements CompilerPass {
         for (IrBasicBlock block : method.blocks()) {
             blocks.add(propagateBlock(block));
         }
-        return new IrMethod(method.reference(), method.maxLocals(), method.values(),
+        return new IrMethod(method.reference(), method.isStatic(), method.maxLocals(), method.values(),
                 method.arrayDeclarations(), List.copyOf(blocks));
     }
 
@@ -80,6 +80,14 @@ public final class CopyPropagation implements CompilerPass {
             case IrInstruction.LoadStatic load -> load;
             case IrInstruction.StoreStatic store ->
                     new IrInstruction.StoreStatic(store.field(), resolve(replacements, store.value()));
+            case IrInstruction.NewObject object -> object;
+            case IrInstruction.LoadField load -> new IrInstruction.LoadField(load.target(), load.field(),
+                    resolve(replacements, load.receiver()));
+            case IrInstruction.StoreField store -> new IrInstruction.StoreField(store.field(),
+                    resolve(replacements, store.receiver()), resolve(replacements, store.value()));
+            case IrInstruction.IntArrayConst array -> array;
+            case IrInstruction.NewMultiArray array -> array;
+            case IrInstruction.Panic panic -> panic;
             case IrInstruction.Binary binary -> new IrInstruction.Binary(binary.target(), binary.operation(),
                     resolve(replacements, binary.left()), resolve(replacements, binary.right()));
             case IrInstruction.Unary unary -> new IrInstruction.Unary(unary.target(), unary.operation(),
@@ -163,6 +171,9 @@ public final class CopyPropagation implements CompilerPass {
                     resolve(replacements, branch.condition()), branch.trueTarget(), branch.falseTarget());
             case IrTerminator.Return returned -> new IrTerminator.Return(
                     rewriteOptional(returned.value(), replacements));
+            case IrTerminator.Switch switched -> new IrTerminator.Switch(
+                    resolve(replacements, switched.selector()), switched.keys(), switched.targets(),
+                    switched.defaultTarget());
         };
     }
 

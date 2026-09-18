@@ -19,16 +19,18 @@ public final class BytecodeDecoder {
             int length;
             int operandA = 0;
             int operandB = 0;
+            List<Integer> switchKeys = List.of();
+            List<Integer> switchOffsets = List.of();
             switch (opcode) {
-                case 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                case 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
                         26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
-                        46, 47, 48, 49, 51, 52, 53, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
-                        73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 84, 85, 86, 87, 88, 89, 96, 97, 98, 99, 100, 101,
+                        46, 47, 48, 49, 50, 51, 52, 53, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
+                        73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 96, 97, 98, 99, 100, 101,
                         102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
                         118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 133, 134,
                         135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150,
                         151, 152, 172, 173, 174, 175, 176, 177,
-                        190 -> length = 1;
+                        190, 191 -> length = 1;
                 case 16 -> {
                     require(code, offset, 2, method);
                     operandA = code[offset + 1];
@@ -40,11 +42,11 @@ public final class BytecodeDecoder {
                     length = 2;
                 }
                 case 17, 19, 20, 153, 154, 155, 156, 157, 158,
-                        159, 160, 161, 162, 163, 164, 165, 166, 167, 178, 179, 180, 181, 182, 183, 184, 187 -> {
+                        159, 160, 161, 162, 163, 164, 165, 166, 167, 178, 179, 180, 181, 182, 183, 184, 187, 189 -> {
                     require(code, offset, 3, method);
                     operandA = signedShort(code, offset + 1);
                     if (opcode == 19 || opcode == 20 || opcode == 178 || opcode == 179 || opcode == 180 || opcode == 181
-                            || opcode == 182 || opcode == 183 || opcode == 184 || opcode == 187) {
+                            || opcode == 182 || opcode == 183 || opcode == 184 || opcode == 187 || opcode == 189) {
                         operandA = unsignedShort(code, offset + 1);
                     }
                     length = 3;
@@ -55,10 +57,56 @@ public final class BytecodeDecoder {
                     operandB = code[offset + 2];
                     length = 3;
                 }
+                case 170, 171 -> {
+                    int cursor = offset + 1;
+                    while ((cursor & 3) != 0) {
+                        cursor++;
+                    }
+                    require(code, offset, cursor - offset + (opcode == 170 ? 12 : 8), method);
+                    operandA = signedInt(code, cursor);
+                    cursor += 4;
+                    List<Integer> keys = new ArrayList<>();
+                    List<Integer> offsets = new ArrayList<>();
+                    if (opcode == 170) {
+                        int low = signedInt(code, cursor);
+                        int high = signedInt(code, cursor + 4);
+                        cursor += 8;
+                        if (high < low || (long) high - low > 65535) {
+                            throw error(method, offset, "invalid tableswitch range");
+                        }
+                        require(code, offset, cursor - offset + (high - low + 1) * 4, method);
+                        for (int key = low; key <= high; key++) {
+                            keys.add(key);
+                            offsets.add(signedInt(code, cursor));
+                            cursor += 4;
+                        }
+                    } else {
+                        int pairs = signedInt(code, cursor);
+                        cursor += 4;
+                        if (pairs < 0 || pairs > 65535) {
+                            throw error(method, offset, "invalid lookupswitch pair count");
+                        }
+                        require(code, offset, cursor - offset + pairs * 8, method);
+                        for (int index = 0; index < pairs; index++) {
+                            keys.add(signedInt(code, cursor));
+                            offsets.add(signedInt(code, cursor + 4));
+                            cursor += 8;
+                        }
+                    }
+                    switchKeys = List.copyOf(keys);
+                    switchOffsets = List.copyOf(offsets);
+                    length = cursor - offset;
+                }
+                case 197 -> {
+                    require(code, offset, 4, method);
+                    operandA = unsignedShort(code, offset + 1);
+                    operandB = unsigned(code[offset + 3]);
+                    length = 4;
+                }
                 default -> throw error(method, offset,
                         "unsupported opcode 0x" + String.format("%02x", opcode) + " (" + opcodeName(opcode) + ")");
             }
-            instructions.add(new Instruction(offset, opcode, operandA, operandB));
+            instructions.add(new Instruction(offset, opcode, operandA, operandB, switchKeys, switchOffsets));
             offset += length;
         }
         return List.copyOf(instructions);
@@ -67,6 +115,7 @@ public final class BytecodeDecoder {
     public static String opcodeName(int opcode) {
         return switch (opcode) {
             case 0 -> "nop";
+            case 1 -> "aconst_null";
             case 2 -> "iconst_m1";
             case 3, 4, 5, 6, 7, 8 -> "iconst_" + (opcode - 3);
             case 9, 10 -> "lconst_" + (opcode - 9);
@@ -91,6 +140,7 @@ public final class BytecodeDecoder {
             case 47 -> "laload";
             case 48 -> "faload";
             case 49 -> "daload";
+            case 50 -> "aaload";
             case 51 -> "baload";
             case 52 -> "caload";
             case 53 -> "saload";
@@ -108,6 +158,7 @@ public final class BytecodeDecoder {
             case 80 -> "lastore";
             case 81 -> "fastore";
             case 82 -> "dastore";
+            case 83 -> "aastore";
             case 84 -> "bastore";
             case 85 -> "castore";
             case 86 -> "sastore";
@@ -186,6 +237,8 @@ public final class BytecodeDecoder {
             case 165 -> "if_acmpeq";
             case 166 -> "if_acmpne";
             case 167 -> "goto";
+            case 170 -> "tableswitch";
+            case 171 -> "lookupswitch";
             case 172 -> "ireturn";
             case 173 -> "lreturn";
             case 174 -> "freturn";
@@ -201,7 +254,10 @@ public final class BytecodeDecoder {
             case 184 -> "invokestatic";
             case 187 -> "new";
             case 188 -> "newarray";
+            case 189 -> "anewarray";
             case 190 -> "arraylength";
+            case 191 -> "athrow";
+            case 197 -> "multianewarray";
             default -> "unknown";
         };
     }
@@ -226,5 +282,10 @@ public final class BytecodeDecoder {
 
     private int signedShort(byte[] bytes, int offset) {
         return (short) unsignedShort(bytes, offset);
+    }
+
+    private int signedInt(byte[] bytes, int offset) {
+        return unsigned(bytes[offset]) << 24 | unsigned(bytes[offset + 1]) << 16
+                | unsigned(bytes[offset + 2]) << 8 | unsigned(bytes[offset + 3]);
     }
 }

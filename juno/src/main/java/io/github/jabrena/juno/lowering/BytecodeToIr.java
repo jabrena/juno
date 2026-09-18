@@ -99,7 +99,7 @@ public final class BytecodeToIr {
         Descriptor methodDescriptor = Descriptor.parse(linked.method().descriptor());
         Map<Integer, Integer> entryDepths = computeEntryDepths(linked);
         Map<Integer, Integer> slotArrayLength = computeSingleAssignmentArrayLocals(linked);
-        Set<Integer> arrayParameterSlots = arrayParameterSlots(methodDescriptor);
+        Set<Integer> arrayParameterSlots = arrayParameterSlots(methodDescriptor, linked.method().isStatic());
         Set<Integer> singleAssignmentLocals = computeSingleAssignmentLocals(linked);
         Map<Integer, RecordInstance> slotRecordInstance = new HashMap<>();
         ValueTracking tracking = new ValueTracking();
@@ -115,6 +115,10 @@ public final class BytecodeToIr {
                 int opcode = instruction.opcode();
                 switch (opcode) {
                     case 0 -> { }
+                    case 1 -> {
+                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, 0, tracking);
+                        depth++;
+                    }
                     case 2 -> {
                         nextValueId = pushConst(instructions, stackBase, depth, nextValueId, -1, tracking);
                         depth++;
@@ -574,6 +578,13 @@ public final class BytecodeToIr {
                         if (ordinal != null) {
                             nextValueId = pushConst(instructions, stackBase, depth, nextValueId, ordinal, tracking);
                             depth++;
+                        } else if (field.name().startsWith("$SwitchMap$")) {
+                            List<Integer> mapping = resolveEnumSwitchMap(field, classes);
+                            Value target = Value.int32(nextValueId++);
+                            instructions.add(new IrInstruction.IntArrayConst(target, mapping));
+                            tracking.markKnownArray(target, mapping.size());
+                            storeToStack(instructions, stackBase, depth, target, tracking);
+                            depth++;
                         } else {
                             JunoType type = validateStaticField(linked, instruction, field, classes);
                             Value target = new Value(nextValueId++, type);
@@ -611,6 +622,18 @@ public final class BytecodeToIr {
                             nextValueId = value.nextValueId();
                             instructions.add(new IrInstruction.StoreStatic(field, value.value()));
                         }
+                    }
+                    case 180 -> {
+                        Lowered lowered = lowerFieldLoad(linked, instruction, instructions, stackBase, depth,
+                                nextValueId, tracking, classes);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 181 -> {
+                        Lowered lowered = lowerFieldStore(linked, instruction, instructions, stackBase, depth,
+                                nextValueId, tracking, classes);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
                     }
                     case 145 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_BYTE, tracking);
                     case 146 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_CHAR, tracking);
@@ -650,6 +673,13 @@ public final class BytecodeToIr {
                         terminator = new IrTerminator.Branch(condition, branch.trueTarget(), branch.falseTarget());
                     }
                     case 167 -> terminator = new IrTerminator.Jump(((Terminator.Jump) block.terminator()).target());
+                    case 170, 171 -> {
+                        Popped selector = pop(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = selector.nextValueId();
+                        Terminator.Switch switched = (Terminator.Switch) block.terminator();
+                        terminator = new IrTerminator.Switch(selector.value(), switched.keys(), switched.targets(),
+                                switched.defaultTarget());
+                    }
                     case 172 -> {
                         Popped returned = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = returned.nextValueId();
@@ -677,39 +707,61 @@ public final class BytecodeToIr {
                     case 176 -> {
                         Popped returned = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = returned.nextValueId();
-                        if (!tracking.isParameterForward(returned.value())) {
-                            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
-                                    + instruction.offset() + ": returning an array is only supported when directly "
-                                    + "forwarding a received array parameter (e.g. `return arr;` where arr is a "
-                                    + "parameter); a locally created or otherwise derived array would dangle once "
-                                    + "this method returns");
-                        }
                         terminator = new IrTerminator.Return(Optional.of(returned.value()));
                     }
                     case 177 -> terminator = new IrTerminator.Return(Optional.empty());
+                    case 191 -> {
+                        Popped thrown = pop(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = thrown.nextValueId();
+                        instructions.add(new IrInstruction.Panic());
+                        terminator = new IrTerminator.Jump(block.start());
+                    }
                     case 182 -> {
                         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-                        Lowered lowered = RecordSupport.isAccessorCall(classes, called)
-                                ? lowerRecordAccessor(linked, instruction, called, instructions, stackBase, depth,
-                                        nextValueId, tracking, classes)
+                        Lowered lowered = isEnumOrdinal(classes, called)
+                                ? lowerEnumOrdinal(instructions, stackBase, depth, nextValueId, tracking)
                                 : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
                     case 184 -> {
-                        Lowered lowered = lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
+                        MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
+                        Lowered lowered = isEnumValues(classes, called)
+                                ? lowerEnumValues(called, instructions, stackBase, depth, nextValueId, tracking, classes)
+                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
                     case 183 -> {
                         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-                        Lowered lowered = lowerRecordConstruction(linked, instruction, called, instructions,
-                                stackBase, depth, nextValueId, tracking, classes);
+                        Lowered lowered = isRuntimeBaseConstructor(called)
+                                ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId, tracking)
+                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
                     case 187 -> {
-                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, 0, tracking);
+                        String className = linked.owner().constantPool().className(instruction.operandA());
+                        JavaClass allocatedClass = classes.get(className);
+                        if (className.startsWith("java/lang/")) {
+                            nextValueId = pushConst(instructions, stackBase, depth, nextValueId, 0, tracking);
+                            depth++;
+                            break;
+                        }
+                        if (allocatedClass == null) {
+                            throw new CompileException(linked.method().reference().displayName()
+                                    + " at bytecode offset " + instruction.offset()
+                                    + ": object class is not available for closed-world allocation: " + className);
+                        }
+                        if (!allocatedClass.isFinal()) {
+                            throw new CompileException(linked.method().reference().displayName()
+                                    + " at bytecode offset " + instruction.offset()
+                                    + ": allocated classes must be final for statically resolved dispatch: "
+                                    + className.replace('/', '.'));
+                        }
+                        Value object = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.NewObject(object, className));
+                        storeToStack(instructions, stackBase, depth, object, tracking);
                         depth++;
                     }
                     case 46 -> {
@@ -733,6 +785,12 @@ public final class BytecodeToIr {
                     case 49 -> {
                         Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
                                 tracking, ArrayElementType.DOUBLE);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 50 -> {
+                        Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.REFERENCE);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
@@ -778,6 +836,12 @@ public final class BytecodeToIr {
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
+                    case 83 -> {
+                        Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.REFERENCE);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
                     case 84 -> {
                         Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
                                 tracking, ArrayElementType.BYTE);
@@ -810,6 +874,36 @@ public final class BytecodeToIr {
                         storeToStack(instructions, stackBase, depth, handle, tracking);
                         depth++;
                     }
+                    case 189 -> {
+                        ConstPop length = popKnownConstant(instructions, stackBase, depth, linked, instruction, tracking);
+                        depth = length.depth();
+                        Value handle = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.NewArray(handle, ArrayElementType.REFERENCE, length.value()));
+                        arrayDeclarations.add(new ArrayDeclaration(handle, ArrayElementType.REFERENCE, length.value()));
+                        tracking.markKnownArray(handle, length.value());
+                        storeToStack(instructions, stackBase, depth, handle, tracking);
+                        depth++;
+                    }
+                    case 197 -> {
+                        int dimensions = instruction.operandB();
+                        List<Integer> sizes = new ArrayList<>();
+                        for (int index = dimensions - 1; index >= 0; index--) {
+                            ConstPop size = popKnownConstant(instructions, stackBase, depth, linked, instruction, tracking);
+                            depth = size.depth();
+                            sizes.add(0, size.value());
+                        }
+                        String descriptor = linked.owner().constantPool().className(instruction.operandA());
+                        char leafDescriptor = descriptor.charAt(descriptor.length() - 1);
+                        ArrayElementType leafType = ArrayElementType.fromDescriptor(leafDescriptor)
+                                .orElseThrow(() -> new CompileException(linked.method().reference().displayName()
+                                        + " at bytecode offset " + instruction.offset()
+                                        + ": multidimensional object arrays are not supported yet: " + descriptor));
+                        Value handle = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.NewMultiArray(handle, leafType, List.copyOf(sizes)));
+                        tracking.markKnownArray(handle, sizes.get(0));
+                        storeToStack(instructions, stackBase, depth, handle, tracking);
+                        depth++;
+                    }
                     case 190 -> {
                         Popped array = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = array.nextValueId();
@@ -832,13 +926,14 @@ public final class BytecodeToIr {
             }
             blocks.add(new IrBasicBlock(block.start(), List.copyOf(instructions), terminator));
         }
-        return IrMethod.withInferredValues(linked.method().reference(), stackBase + linked.method().maxStack(),
+        return IrMethod.withInferredValues(linked.method().reference(), linked.method().isStatic(),
+                stackBase + linked.method().maxStack(),
                 nextValueId, List.copyOf(arrayDeclarations), List.copyOf(blocks));
     }
 
-    private Set<Integer> arrayParameterSlots(Descriptor methodDescriptor) {
+    private Set<Integer> arrayParameterSlots(Descriptor methodDescriptor, boolean isStatic) {
         Set<Integer> slots = new HashSet<>();
-        int slot = 0;
+        int slot = isStatic ? 0 : 1;
         for (String parameter : methodDescriptor.parameters()) {
             if (Descriptor.isArrayType(parameter)) {
                 slots.add(slot);
@@ -869,8 +964,9 @@ public final class BytecodeToIr {
             }
             Instruction newArrayInstruction = all.get(index - 1);
             Instruction lengthPush = all.get(index - 2);
-            if (newArrayInstruction.opcode() == 188
-                    && ArrayElementType.fromAtype(newArrayInstruction.operandA()).isPresent()) {
+            if ((newArrayInstruction.opcode() == 188
+                    && ArrayElementType.fromAtype(newArrayInstruction.operandA()).isPresent())
+                    || newArrayInstruction.opcode() == 189) {
                 Integer length = constantPushValue(lengthPush, linked);
                 if (length != null) {
                     candidateLength.put(slot, length);
@@ -969,6 +1065,11 @@ public final class BytecodeToIr {
             case Terminator.Branch branch -> List.of(branch.trueTarget(), branch.falseTarget());
             case Terminator.Fallthrough fallthrough -> List.of(fallthrough.target());
             case Terminator.Return ignored -> List.of();
+            case Terminator.Switch switched -> {
+                List<Integer> targets = new ArrayList<>(switched.targets());
+                targets.add(switched.defaultTarget());
+                yield List.copyOf(targets);
+            }
         };
     }
 
@@ -976,14 +1077,14 @@ public final class BytecodeToIr {
         int opcode = instruction.opcode();
         return switch (opcode) {
             case 0, 132, 134, 138, 139, 143, 145, 146, 147, 116, 117, 118, 119, 167, 177, 188,
-                    190 -> 0;
-            case 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 16, 17, 18, 19, 21, 23, 25,
+                    189, 190 -> 0;
+            case 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 16, 17, 18, 19, 21, 23, 25,
                     26, 27, 28, 29, 34, 35, 36, 37, 42, 43, 44, 45, 89 -> 1;
             case 133, 135, 140, 141, 187 -> 1;
             case 9, 10, 14, 15, 20, 22, 24, 30, 31, 32, 33, 38, 39, 40, 41 -> 2;
             case 54, 56, 58, 59, 60, 61, 62, 67, 68, 69, 70, 75, 76, 77, 78,
-                    87, 153, 154, 155, 156, 157, 158, 172, 174, 176 -> -1;
-            case 46, 48, 51, 52, 53 -> -1;
+                    87, 153, 154, 155, 156, 157, 158, 170, 171, 172, 174, 176, 191 -> -1;
+            case 46, 48, 50, 51, 52, 53 -> -1;
             case 47, 49 -> 0;
             case 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 120, 122, 124, 126, 128, 130,
                     149, 150 -> -1;
@@ -992,13 +1093,19 @@ public final class BytecodeToIr {
                     113, 115, 127, 129, 131, 173, 175 -> -2;
             case 159, 160, 161, 162, 163, 164, 165, 166 -> -2;
             case 148, 151, 152 -> -3;
-            case 79, 81, 84, 85, 86 -> -3;
+            case 79, 81, 83, 84, 85, 86 -> -3;
             case 80, 82 -> -4;
             case 178, 179 -> {
                 FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
                 int slots = Descriptor.jvmSlots(field.descriptor());
                 yield opcode == 178 ? slots : -slots;
             }
+            case 180, 181 -> {
+                FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
+                int slots = Descriptor.jvmSlots(field.descriptor());
+                yield opcode == 180 ? slots - 1 : -slots - 1;
+            }
+            case 197 -> 1 - instruction.operandB();
             case 182, 183, 184 -> {
                 MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                 Descriptor descriptor = Descriptor.parse(called.descriptor());
@@ -1036,7 +1143,7 @@ public final class BytecodeToIr {
             }
         }
         Optional<Value> receiver = Optional.empty();
-        if (instruction.opcode() == 182) {
+        if (instruction.opcode() == 182 || instruction.opcode() == 183) {
             Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
             nextValueId = popped.nextValueId();
             receiver = Optional.of(popped.value());
@@ -1058,7 +1165,10 @@ public final class BytecodeToIr {
             instructions.add(new IrInstruction.IntrinsicCall(
                     Optional.ofNullable(target), intrinsic.get(), receiver, List.of(arguments)));
         } else {
-            instructions.add(new IrInstruction.Call(Optional.ofNullable(target), called, List.of(arguments)));
+            List<Value> callArguments = new ArrayList<>();
+            receiver.ifPresent(callArguments::add);
+            callArguments.addAll(List.of(arguments));
+            instructions.add(new IrInstruction.Call(Optional.ofNullable(target), called, List.copyOf(callArguments)));
         }
         if (target != null) {
             if (target.type() == JunoType.INT64) {
@@ -1131,6 +1241,112 @@ public final class BytecodeToIr {
         }
         instructions.add(new IrInstruction.ArrayStore(elementType, array.value(), index.value(), storedValue));
         return new Lowered(nextValueId, depth);
+    }
+
+    private Lowered lowerFieldLoad(LinkedMethod linked, Instruction instruction,
+                                   List<IrInstruction> instructions, int stackBase, int depth,
+                                   int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes) {
+        FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
+        JunoType type = validateInstanceField(linked, instruction, field, classes);
+        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = receiver.nextValueId();
+        Value target = new Value(nextValueId++, type);
+        instructions.add(new IrInstruction.LoadField(target, field, receiver.value()));
+        if (type == JunoType.INT64) {
+            Value low = Value.int32(nextValueId++);
+            Value high = Value.int32(nextValueId++);
+            instructions.add(new IrInstruction.UnpackLong(low, high, target));
+            storeWideToStack(instructions, stackBase, depth, low, high, tracking);
+        } else if (type == JunoType.FLOAT64) {
+            storeDoubleToStack(instructions, stackBase, depth, target, tracking);
+        } else {
+            storeToStack(instructions, stackBase, depth, target, tracking);
+        }
+        return new Lowered(nextValueId, depth + type.jvmSlots());
+    }
+
+    private Lowered lowerFieldStore(LinkedMethod linked, Instruction instruction,
+                                    List<IrInstruction> instructions, int stackBase, int depth,
+                                    int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes) {
+        FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
+        JunoType type = validateInstanceField(linked, instruction, field, classes);
+        depth -= type.jvmSlots();
+        Value stored;
+        if (type == JunoType.INT64) {
+            WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
+            nextValueId = value.nextValueId();
+            stored = Value.int64(nextValueId++);
+            instructions.add(new IrInstruction.PackLong(stored, value.low(), value.high()));
+        } else {
+            Popped value = type == JunoType.FLOAT64
+                    ? popDouble(instructions, stackBase, depth, nextValueId, tracking)
+                    : type == JunoType.FLOAT32
+                            ? popFloat(instructions, stackBase, depth, nextValueId, tracking)
+                            : pop(instructions, stackBase, depth, nextValueId, tracking);
+            nextValueId = value.nextValueId();
+            stored = value.value();
+        }
+        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = receiver.nextValueId();
+        instructions.add(new IrInstruction.StoreField(field, receiver.value(), stored));
+        return new Lowered(nextValueId, depth);
+    }
+
+    private Lowered lowerEnumOrdinal(List<IrInstruction> instructions, int stackBase, int depth,
+                                     int nextValueId, ValueTracking tracking) {
+        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = receiver.nextValueId();
+        storeToStack(instructions, stackBase, depth, receiver.value(), tracking);
+        return new Lowered(nextValueId, depth + 1);
+    }
+
+    private Lowered lowerEnumValues(MethodRef called, List<IrInstruction> instructions, int stackBase, int depth,
+                                    int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes) {
+        JavaClass enumClass = classes.get(called.owner());
+        List<Integer> ordinals = new ArrayList<>();
+        for (int index = 0; index < enumClass.enumConstantNames().size(); index++) {
+            ordinals.add(index);
+        }
+        Value target = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.IntArrayConst(target, List.copyOf(ordinals)));
+        tracking.markKnownArray(target, ordinals.size());
+        storeToStack(instructions, stackBase, depth, target, tracking);
+        return new Lowered(nextValueId, depth + 1);
+    }
+
+    private Lowered discardInstanceCall(MethodRef called, List<IrInstruction> instructions, int stackBase,
+                                         int depth, int nextValueId, ValueTracking tracking) {
+        Descriptor descriptor = Descriptor.parse(called.descriptor());
+        for (int index = descriptor.parameters().size() - 1; index >= 0; index--) {
+            int slots = Descriptor.jvmSlots(descriptor.parameters().get(index));
+            depth -= slots;
+            if (slots == 2) {
+                WidePopped ignored = popWide(instructions, stackBase, depth, nextValueId, tracking);
+                nextValueId = ignored.nextValueId();
+            } else {
+                Popped ignored = pop(instructions, stackBase, depth, nextValueId, tracking);
+                nextValueId = ignored.nextValueId();
+            }
+        }
+        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        return new Lowered(receiver.nextValueId(), depth);
+    }
+
+    private boolean isRuntimeBaseConstructor(MethodRef called) {
+        return called.name().equals("<init>")
+                && called.owner().startsWith("java/lang/");
+    }
+
+    private boolean isEnumOrdinal(Map<String, JavaClass> classes, MethodRef called) {
+        JavaClass owner = classes.get(called.owner());
+        return called.name().equals("ordinal") && called.descriptor().equals("()I")
+                && ((owner != null && owner.isEnum()) || called.owner().equals("java/lang/Enum"));
+    }
+
+    private boolean isEnumValues(Map<String, JavaClass> classes, MethodRef called) {
+        JavaClass owner = classes.get(called.owner());
+        return owner != null && owner.isEnum() && called.name().equals("values")
+                && called.descriptor().startsWith("()[L");
     }
 
     /**
@@ -1622,6 +1838,60 @@ public final class BytecodeToIr {
         return ordinal < 0 ? null : ordinal;
     }
 
+    private List<Integer> resolveEnumSwitchMap(FieldRef requested, Map<String, JavaClass> classes) {
+        JavaClass mappingClass = classes.get(requested.owner());
+        JavaMethod initializer = mappingClass == null ? null : mappingClass.findMethod("<clinit>", "()V");
+        if (initializer == null) {
+            throw new CompileException("Synthetic enum switch map has no initializer: " + requested.displayName());
+        }
+        List<Instruction> bytecode = decoder.decode(initializer);
+        List<Integer> mapping = null;
+        for (int index = 4; index < bytecode.size(); index++) {
+            if (bytecode.get(index).opcode() != 79) {
+                continue;
+            }
+            Instruction mapLoad = bytecode.get(index - 4);
+            Instruction enumLoad = bytecode.get(index - 3);
+            Instruction ordinalCall = bytecode.get(index - 2);
+            Instruction valuePush = bytecode.get(index - 1);
+            if (mapLoad.opcode() != 178 || enumLoad.opcode() != 178 || ordinalCall.opcode() != 182) {
+                continue;
+            }
+            FieldRef mapField = mappingClass.constantPool().fieldRef(mapLoad.operandA());
+            if (!mapField.equals(requested)) {
+                continue;
+            }
+            FieldRef enumField = mappingClass.constantPool().fieldRef(enumLoad.operandA());
+            JavaClass enumClass = classes.get(enumField.owner());
+            int ordinal = enumClass == null ? -1 : enumClass.enumConstantNames().indexOf(enumField.name());
+            Integer switchValue = literalValue(valuePush, mappingClass);
+            if (ordinal < 0 || switchValue == null) {
+                throw new CompileException("Cannot resolve synthetic enum switch entry for " + requested.displayName());
+            }
+            if (mapping == null) {
+                mapping = new ArrayList<>();
+                for (int item = 0; item < enumClass.enumConstantNames().size(); item++) {
+                    mapping.add(0);
+                }
+            }
+            mapping.set(ordinal, switchValue);
+        }
+        if (mapping == null) {
+            throw new CompileException("Cannot resolve synthetic enum switch map: " + requested.displayName());
+        }
+        return List.copyOf(mapping);
+    }
+
+    private Integer literalValue(Instruction instruction, JavaClass owner) {
+        return switch (instruction.opcode()) {
+            case 2 -> -1;
+            case 3, 4, 5, 6, 7, 8 -> instruction.opcode() - 3;
+            case 16, 17 -> instruction.operandA();
+            case 18, 19 -> owner.constantPool().integer(instruction.operandA());
+            default -> null;
+        };
+    }
+
     private JunoType validateStaticField(LinkedMethod linked, Instruction instruction, FieldRef field,
                                          Map<String, JavaClass> classes) {
         JavaClass owner = classes.get(field.owner());
@@ -1630,24 +1900,38 @@ public final class BytecodeToIr {
         if (declaration == null || !declaration.isStatic()) {
             throw new CompileException(location + ": static field not found: " + field.displayName());
         }
-        JunoType type;
+        return typeOfDescriptor(location, field, classes);
+    }
+
+    private JunoType validateInstanceField(LinkedMethod linked, Instruction instruction, FieldRef field,
+                                           Map<String, JavaClass> classes) {
+        JavaClass owner = classes.get(field.owner());
+        FieldInfo declaration = owner == null ? null : owner.findField(field.name(), field.descriptor());
+        String location = linked.method().reference().displayName() + " at bytecode offset " + instruction.offset();
+        if (declaration == null || declaration.isStatic()) {
+            throw new CompileException(location + ": instance field not found: " + field.displayName());
+        }
+        return typeOfDescriptor(location, field, classes);
+    }
+
+    private JunoType typeOfDescriptor(String location, FieldRef field, Map<String, JavaClass> classes) {
         if (Descriptor.isIntegerLike(field.descriptor())) {
-            type = JunoType.INT32;
-        } else if (Descriptor.isLong(field.descriptor())) {
-            type = JunoType.INT64;
-        } else if (Descriptor.isFloat(field.descriptor())) {
-            type = JunoType.FLOAT32;
-        } else if (Descriptor.isDouble(field.descriptor())) {
-            type = JunoType.FLOAT64;
-        } else {
-            throw new CompileException(location + ": unsupported static field type: "
-                    + field.displayName());
+            return JunoType.INT32;
         }
-        if (owner.findMethod("<clinit>", "()V") != null) {
-            throw new CompileException(location + ": static field owner has a class initializer, which Juno does "
-                    + "not execute yet; only JVM-default-zero static fields are supported: " + field.displayName());
+        if (Descriptor.isLong(field.descriptor())) {
+            return JunoType.INT64;
         }
-        return type;
+        if (Descriptor.isFloat(field.descriptor())) {
+            return JunoType.FLOAT32;
+        }
+        if (Descriptor.isDouble(field.descriptor())) {
+            return JunoType.FLOAT64;
+        }
+        if (Descriptor.isArrayType(field.descriptor())
+                || Descriptor.isReferenceType(field.descriptor(), classes.keySet())) {
+            return JunoType.INT32;
+        }
+        throw new CompileException(location + ": unsupported field type: " + field.displayName());
     }
 
     private record Popped(Value value, int nextValueId) {

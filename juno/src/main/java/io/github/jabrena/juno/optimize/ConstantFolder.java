@@ -40,7 +40,7 @@ public final class ConstantFolder implements CompilerPass {
         for (IrBasicBlock block : method.blocks()) {
             blocks.add(foldBlock(block));
         }
-        return new IrMethod(method.reference(), method.maxLocals(), method.values(),
+        return new IrMethod(method.reference(), method.isStatic(), method.maxLocals(), method.values(),
                 method.arrayDeclarations(), List.copyOf(blocks));
     }
 
@@ -98,6 +98,19 @@ public final class ConstantFolder implements CompilerPass {
             Integer condition = constants.get(branch.condition());
             if (condition != null) {
                 return new IrTerminator.Jump(condition != 0 ? branch.trueTarget() : branch.falseTarget());
+            }
+        }
+        if (terminator instanceof IrTerminator.Switch switched) {
+            Integer selector = constants.get(switched.selector());
+            if (selector != null) {
+                int target = switched.defaultTarget();
+                for (int index = 0; index < switched.keys().size(); index++) {
+                    if (switched.keys().get(index) == selector) {
+                        target = switched.targets().get(index);
+                        break;
+                    }
+                }
+                return new IrTerminator.Jump(target);
             }
         }
         return terminator;

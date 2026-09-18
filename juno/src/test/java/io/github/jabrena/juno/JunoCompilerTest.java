@@ -229,10 +229,7 @@ class JunoCompilerTest {
     }
 
     @Test
-    void reportsUnsupportedBytecodeWithMethodAndOffset() throws Exception {
-        // anewarray (a reference-type array) is genuinely undecoded, unlike newarray (primitive arrays):
-        // distinct from object construction, which is now decodable but only for a recognized record (see
-        // rejectsConstructingANonRecordObject below).
+    void supportsReferenceArrays() throws Exception {
         String source = """
                 package demo;
                 public final class Objects {
@@ -241,12 +238,9 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Objects", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Objects"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Objects");
 
-        assertTrue(exception.getMessage().contains("demo.Objects.main"));
-        assertTrue(exception.getMessage().contains("unsupported opcode"));
-        assertTrue(exception.getMessage().contains("bytecode offset"));
+        assertTrue(generated.contains("sizeof(int32_t) * (3)"));
     }
 
     @Test
@@ -382,7 +376,7 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rejectsAStaticFieldWhoseClassInitializerIsNotExecuted() throws Exception {
+    void executesAReachableStaticFieldInitializerBeforeMain() throws Exception {
         String source = """
                 package demo;
                 public final class ReadOnlyStatic {
@@ -395,11 +389,11 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.ReadOnlyStatic", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReadOnlyStatic"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReadOnlyStatic");
 
-        assertTrue(exception.getMessage().contains("demo.ReadOnlyStatic.main"));
-        assertTrue(exception.getMessage().contains("class initializer"));
+        assertTrue(generated.contains("juno_demo_ReadOnlyStatic__clinit_"));
+        assertTrue(generated.indexOf("juno_demo_ReadOnlyStatic__clinit_")
+                < generated.lastIndexOf("juno_demo_ReadOnlyStatic_main_"));
     }
 
     @Test
@@ -427,7 +421,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ArrayDemo");
 
-        assertTrue(generated.contains("int32_t arr_"), "the local array must be declared as a real C array");
+        assertTrue(generated.contains("sizeof(int32_t) * (3)"), "the local array must use arena storage");
         assertTrue(generated.contains(">= 3) juno_panic()"),
                 "writes into the 3-element local array must be bounds-checked against its known length");
         assertTrue(generated.contains("(int32_t* arg0, int32_t arg1)"),
@@ -530,9 +524,9 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ElementTypes");
 
-        assertTrue(generated.contains("int8_t arr_"), "byte[] must be stored as int8_t, not int32_t");
-        assertTrue(generated.contains("uint16_t arr_"), "char[] must be stored as uint16_t");
-        assertTrue(generated.contains("int16_t arr_"), "short[] must be stored as int16_t");
+        assertTrue(generated.contains("sizeof(int8_t) * (4)"), "byte[] must be stored as int8_t, not int32_t");
+        assertTrue(generated.contains("sizeof(uint16_t) * (3)"), "char[] must be stored as uint16_t");
+        assertTrue(generated.contains("sizeof(int16_t) * (2)"), "short[] must be stored as int16_t");
         assertTrue(generated.contains("(int8_t* arg0, int32_t arg1)"),
                 "sumBytes's byte[] parameter must be an int8_t pointer");
     }
@@ -565,7 +559,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatArrays");
 
-        assertTrue(generated.contains("float arr_"), "float[] must use native float storage");
+        assertTrue(generated.contains("sizeof(float) * (3)"), "float[] must use native float storage");
         assertTrue(generated.contains("(float* arg0, int32_t arg1)"));
         assertTrue(generated.contains("static float* juno_demo_FloatArrays_identity_"));
         assertTrue(generated.contains("return reinterpret_cast<float*>(v"));
@@ -601,9 +595,7 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rejectsReturningALocallyAllocatedArray() throws Exception {
-        // local's storage is this call's own stack frame; the returned pointer would dangle once
-        // makeArray() returns, so this must be a compile error, not silently wrong generated code.
+    void supportsReturningALocallyAllocatedArenaArray() throws Exception {
         String source = """
                 package demo;
                 public final class ReturnLocal {
@@ -620,18 +612,14 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.ReturnLocal", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnLocal"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnLocal");
 
-        assertTrue(exception.getMessage().contains("demo.ReturnLocal.makeArray"));
-        assertTrue(exception.getMessage().contains("dangle"));
+        assertTrue(generated.contains("static int32_t* juno_demo_ReturnLocal_makeArray_"));
+        assertTrue(generated.contains("sizeof(int32_t) * (3)"));
     }
 
     @Test
-    void rejectsReturningAnArrayThatOnlyExistsAfterABranchMerge() throws Exception {
-        // useA ? a : b merges through the operand stack across a block boundary; parameter-forward
-        // tracking is deliberately block-local (like the known-length array tracking), so this is a
-        // safe, conservative rejection rather than a silently-wrong answer.
+    void supportsReturningAnArrayAfterABranchMerge() throws Exception {
         String source = """
                 package demo;
                 public final class ReturnTernary {
@@ -647,10 +635,9 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.ReturnTernary", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnTernary"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnTernary");
 
-        assertTrue(exception.getMessage().contains("demo.ReturnTernary.pick"));
+        assertTrue(generated.contains("static int32_t* juno_demo_ReturnTernary_pick_"));
     }
 
     @Test
@@ -840,7 +827,7 @@ class JunoCompilerTest {
         assertTrue(generated.contains("locals[0].f64 = arg0;"));
         assertTrue(generated.contains("locals[2].i32 = arg1;"));
         assertTrue(generated.contains("locals[3].f64 = arg2;"));
-        assertTrue(generated.contains("double arr_"));
+        assertTrue(generated.contains("sizeof(double) * (2)"));
         assertTrue(generated.contains("static double* juno_demo_DoubleMath_identity_"));
         assertTrue(generated.contains("static double juno_field_demo_DoubleMath_last_"));
         assertTrue(generated.contains("fmod("));
@@ -870,7 +857,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongArray");
 
-        assertTrue(generated.contains("int64_t arr_"));
+        assertTrue(generated.contains("sizeof(int64_t) * (3)"));
         assertTrue(generated.contains("static int64_t* juno_demo_LongArray_identity_"));
         assertTrue(generated.contains("reinterpret_cast<int64_t*>("));
     }
@@ -921,11 +908,6 @@ class JunoCompilerTest {
 
     @Test
     void supportsSimpleRecordsAsLocalsWithAccessorReads() throws Exception {
-        // Scoped deliberately to "records, locals + accessors only": a record is never actually
-        // constructed (no heap), it decomposes into its N int-like component values directly at the
-        // new+invokespecial<init> site; an accessor call (p.x()) resolves straight to that value, no
-        // runtime object or method call involved. Not supported: parameters/returns, custom constructor
-        // logic, custom accessor overrides, non-int-like components.
         String recordSource = """
                 package demo;
                 public record Point(int x, int y) {
@@ -946,16 +928,14 @@ class JunoCompilerTest {
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesPoint");
 
         assertTrue(generated.contains("Closed-world entry point: demo.UsesPoint.main"));
-        assertTrue(generated.contains("juno_iadd("), "p.x() + p.y() must resolve to the two constructor "
-                + "argument values added directly, with no object or method call ever emitted");
-        assertFalse(generated.contains("getfield"), "getfield must be resolved away, not passed through");
-        assertFalse(generated.contains("new Point"), "no real construction/allocation should ever be emitted");
+        assertTrue(generated.contains("struct JunoObject_demo_Point"));
+        assertTrue(generated.contains("field_x_"));
+        assertTrue(generated.contains("field_y_"));
+        assertTrue(generated.contains("juno_alloc(sizeof(JunoObject_demo_Point)"));
     }
 
     @Test
-    void rejectsARecordAsAMethodParameterOrReturnType() throws Exception {
-        // A record with N components needs N scalar slots, so passing/returning one would need real
-        // parameter-slot renumbering - explicitly out of scope, the same reason long stayed locals-only.
+    void supportsARecordAsAMethodParameterAndReturnType() throws Exception {
         String recordSource = """
                 package demo;
                 public record Point(int x, int y) {
@@ -964,51 +944,56 @@ class JunoCompilerTest {
         String usingSource = """
                 package demo;
                 public final class TakesPoint {
+                    static Point echo(Point p) {
+                        return p;
+                    }
                     static int sum(Point p) {
                         return p.x() + p.y();
                     }
                     public static void main(String[] args) {
-                        sum(new Point(1, 2));
+                        sum(echo(new Point(1, 2)));
                     }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Point", recordSource);
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.TakesPoint", usingSource);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.TakesPoint"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.TakesPoint");
 
-        assertTrue(exception.getMessage().contains("demo.TakesPoint.sum"));
-        assertTrue(exception.getMessage().contains("supported scalar"));
+        assertTrue(generated.contains("static int32_t juno_demo_TakesPoint_echo_"));
+        assertTrue(generated.contains("static int32_t juno_demo_TakesPoint_sum_"));
     }
 
     @Test
-    void rejectsConstructingANonRecordObject() throws Exception {
+    void supportsConstructingAFinalObjectWithMutableFieldsAndInstanceCalls() throws Exception {
         String source = """
                 package demo;
                 public final class NewsObject {
-                    public static void main(String[] args) { new Object(); }
+                    private int value;
+                    NewsObject(int value) { this.value = value; }
+                    int add(int amount) { value += amount; return value; }
+                    public static void main(String[] args) {
+                        NewsObject value = new NewsObject(3);
+                        int result = value.add(4);
+                    }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.NewsObject", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NewsObject"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NewsObject");
 
-        assertTrue(exception.getMessage().contains("demo.NewsObject.main"));
-        assertTrue(exception.getMessage().contains("simple records"));
+        assertTrue(generated.contains("struct JunoObject_demo_NewsObject"));
+        assertTrue(generated.contains("field_value_"));
+        assertTrue(generated.contains("int32_t arg_receiver, int32_t arg0"));
     }
 
     @Test
-    void rejectsARecordWithACompactConstructor() throws Exception {
-        // A compact constructor transforms arguments before they become field values, so the raw
-        // constructor arguments Juno would otherwise decompose into are NOT the real field values -
-        // must fail cleanly rather than silently use the untransformed inputs.
+    void supportsARecordWithACompactConstructor() throws Exception {
         String recordSource = """
                 package demo;
                 public record Point(int x, int y) {
                     public Point {
-                        x = Math.abs(x);
+                        if (x < 0) x = -x;
                     }
                 }
                 """;
@@ -1024,16 +1009,13 @@ class JunoCompilerTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Point", recordSource);
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesCompactPoint", usingSource);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCompactPoint"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCompactPoint");
 
-        assertTrue(exception.getMessage().contains("custom or compact constructor"));
+        assertTrue(generated.contains("juno_ineg("));
     }
 
     @Test
-    void rejectsARecordWithACustomAccessorOverride() throws Exception {
-        // A hand-written accessor could return something other than the raw field (e.g. a transformed
-        // value), which Juno cannot distinguish from the trivial default without checking its bytecode.
+    void supportsARecordWithACustomAccessorOverride() throws Exception {
         String recordSource = """
                 package demo;
                 public record Point(int x, int y) {
@@ -1055,17 +1037,13 @@ class JunoCompilerTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Point", recordSource);
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesCustomAccessor", usingSource);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCustomAccessor"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCustomAccessor");
 
-        assertTrue(exception.getMessage().contains("custom body"));
+        assertTrue(generated.contains("juno_imul("));
     }
 
     @Test
-    void rejectsARecordWithANonIntLikeComponent() throws Exception {
-        // An array-typed component (rather than String/null) is used so the constructor argument itself
-        // is a value Juno already knows how to push (an array handle) - the rejection must come from
-        // validating the record's own shape, not from failing earlier on an unrelated unsupported opcode.
+    void supportsARecordWithAnArrayComponent() throws Exception {
         String recordSource = """
                 package demo;
                 public record Labeled(int[] data, int value) {
@@ -1084,9 +1062,9 @@ class JunoCompilerTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Labeled", recordSource);
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesLabeled", usingSource);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesLabeled"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesLabeled");
 
-        assertTrue(exception.getMessage().contains("boolean/byte/char/short/int components"));
+        assertTrue(generated.contains("struct JunoObject_demo_Labeled"));
+        assertTrue(generated.contains("field_data_"));
     }
 }

@@ -58,7 +58,7 @@ public final class DeadBlockElimination implements CompilerPass {
                 kept.add(block);
             }
         }
-        return new IrMethod(method.reference(), method.maxLocals(), method.values(),
+        return new IrMethod(method.reference(), method.isStatic(), method.maxLocals(), method.values(),
                 method.arrayDeclarations(), List.copyOf(kept));
     }
 
@@ -67,6 +67,11 @@ public final class DeadBlockElimination implements CompilerPass {
             case IrTerminator.Jump jump -> List.of(jump.target());
             case IrTerminator.Branch branch -> List.of(branch.trueTarget(), branch.falseTarget());
             case IrTerminator.Return ignored -> List.of();
+            case IrTerminator.Switch switched -> {
+                List<Integer> targets = new ArrayList<>(switched.targets());
+                targets.add(switched.defaultTarget());
+                yield List.copyOf(targets);
+            }
         };
     }
 }

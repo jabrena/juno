@@ -16,4 +16,13 @@ final class CppNames {
         String base = (reference.owner() + "_" + reference.name()).replaceAll("[^A-Za-z0-9_]", "_");
         return "juno_field_" + base + "_" + Integer.toUnsignedString(reference.descriptor().hashCode(), 16);
     }
+
+    static String objectType(String className) {
+        return "JunoObject_" + className.replaceAll("[^A-Za-z0-9_]", "_");
+    }
+
+    static String instanceField(FieldRef reference) {
+        return "field_" + reference.name().replaceAll("[^A-Za-z0-9_]", "_") + "_"
+                + Integer.toUnsignedString(reference.descriptor().hashCode(), 16);
+    }
 }

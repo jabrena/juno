@@ -11,6 +11,7 @@ public enum ArrayElementType {
     CHAR(JunoType.INT32),
     SHORT(JunoType.INT32),
     INT(JunoType.INT32),
+    REFERENCE(JunoType.INT32),
     LONG(JunoType.INT64),
     FLOAT(JunoType.FLOAT32),
     DOUBLE(JunoType.FLOAT64);
@@ -51,5 +52,16 @@ public enum ArrayElementType {
             case 'D' -> Optional.of(DOUBLE);
             default -> Optional.empty();
         };
+    }
+
+    public static Optional<ArrayElementType> fromArrayDescriptor(String descriptor) {
+        if (!descriptor.startsWith("[") || descriptor.length() < 2) {
+            return Optional.empty();
+        }
+        char component = descriptor.charAt(1);
+        if (component == '[' || component == 'L') {
+            return Optional.of(REFERENCE);
+        }
+        return fromDescriptor(component);
     }
 }

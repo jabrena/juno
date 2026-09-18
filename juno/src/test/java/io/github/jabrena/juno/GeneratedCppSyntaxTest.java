@@ -633,6 +633,56 @@ class GeneratedCppSyntaxTest {
         assertEquals(0, process.exitValue(), diagnostics);
     }
 
+    @Test
+    void generatedArenaObjectAndSwitchSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                public final class ArenaSmoke {
+                    static int seed = 10;
+                    enum Mode { FAST, SLOW }
+                    record Step(int value) {}
+                    static final class Box {
+                        int value;
+                        Box(int value) { this.value = value; }
+                        int add(Step step) { value += step.value(); return value; }
+                    }
+                    static Step echo(Step step) { return step; }
+                    static int[] values(int first, int second) {
+                        int[] result = new int[2];
+                        result[0] = first;
+                        result[1] = second;
+                        return result;
+                    }
+                    static int select(Mode mode) {
+                        return switch (mode) { case FAST -> 1; case SLOW -> 2; };
+                    }
+                    public static void main(String[] args) {
+                        int[][] matrix = new int[2][2];
+                        matrix[1][1] = 3;
+                        Box box = new Box(seed);
+                        Step step = echo(new Step(select(Mode.FAST) + matrix[1][1]));
+                        int[] result = values(box.add(step), box.add(new Step(select(Mode.SLOW))));
+                        int total = result[0] + result[1];
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ArenaSmoke", source);
+        Path sketch = temporaryDirectory.resolve("ArenaSmoke.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ArenaSmoke"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
     private String availableCompiler() {
         for (String candidate : new String[]{"clang++", "g++"}) {
             try {

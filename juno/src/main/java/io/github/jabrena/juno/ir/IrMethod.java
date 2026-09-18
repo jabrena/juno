@@ -5,8 +5,12 @@ import io.github.jabrena.juno.classfile.MethodRef;
 import java.util.Arrays;
 import java.util.List;
 
-public record IrMethod(MethodRef reference, int maxLocals, List<Value> values,
+public record IrMethod(MethodRef reference, boolean isStatic, int maxLocals, List<Value> values,
                        List<ArrayDeclaration> arrayDeclarations, List<IrBasicBlock> blocks) {
+    public IrMethod(MethodRef reference, int maxLocals, List<Value> values,
+                    List<ArrayDeclaration> arrayDeclarations, List<IrBasicBlock> blocks) {
+        this(reference, true, maxLocals, values, arrayDeclarations, blocks);
+    }
     public IrMethod {
         values = List.copyOf(values);
         arrayDeclarations = List.copyOf(arrayDeclarations);
@@ -53,7 +57,15 @@ public record IrMethod(MethodRef reference, int maxLocals, List<Value> values,
                 inferred[index] = Value.int32(index);
             }
         }
-        return new IrMethod(reference, maxLocals, Arrays.asList(inferred), arrayDeclarations, blocks);
+        return new IrMethod(reference, true, maxLocals, Arrays.asList(inferred), arrayDeclarations, blocks);
+    }
+
+    public static IrMethod withInferredValues(MethodRef reference, boolean isStatic, int maxLocals, int valueCount,
+                                              List<ArrayDeclaration> arrayDeclarations,
+                                              List<IrBasicBlock> blocks) {
+        IrMethod method = withInferredValues(reference, maxLocals, valueCount, arrayDeclarations, blocks);
+        return new IrMethod(reference, isStatic, method.maxLocals(), method.values(),
+                method.arrayDeclarations(), method.blocks());
     }
 
     private static void requireDeclared(List<Value> values, Value value) {

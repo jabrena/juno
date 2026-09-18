@@ -17,6 +17,12 @@ final class IrValues {
             case IrInstruction.StoreLocal store -> List.of(store.value());
             case IrInstruction.LoadStatic load -> List.of(load.target());
             case IrInstruction.StoreStatic store -> List.of(store.value());
+            case IrInstruction.NewObject object -> List.of(object.target());
+            case IrInstruction.LoadField load -> List.of(load.target(), load.receiver());
+            case IrInstruction.StoreField store -> List.of(store.receiver(), store.value());
+            case IrInstruction.IntArrayConst array -> List.of(array.target());
+            case IrInstruction.NewMultiArray array -> List.of(array.target());
+            case IrInstruction.Panic ignored -> List.of();
             case IrInstruction.Binary binary -> List.of(binary.target(), binary.left(), binary.right());
             case IrInstruction.Unary unary -> List.of(unary.target(), unary.value());
             case IrInstruction.Compare compare -> List.of(compare.target(), compare.left(), compare.right());
@@ -79,6 +85,7 @@ final class IrValues {
             case IrTerminator.Jump ignored -> List.of();
             case IrTerminator.Branch branch -> List.of(branch.condition());
             case IrTerminator.Return returned -> returned.value().stream().toList();
+            case IrTerminator.Switch switched -> List.of(switched.selector());
         };
     }
 

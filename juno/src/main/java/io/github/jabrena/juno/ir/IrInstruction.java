@@ -30,6 +30,27 @@ public sealed interface IrInstruction {
     record StoreStatic(FieldRef field, Value value) implements IrInstruction {
     }
 
+    record NewObject(Value target, String className) implements IrInstruction {
+    }
+
+    record LoadField(Value target, FieldRef field, Value receiver) implements IrInstruction {
+    }
+
+    record StoreField(FieldRef field, Value receiver, Value value) implements IrInstruction {
+    }
+
+    /** A compiler-created immutable int/reference array, used for enum values and switch maps. */
+    record IntArrayConst(Value target, List<Integer> values) implements IrInstruction {
+    }
+
+    /** A fixed-size multidimensional primitive array allocated recursively from the arena. */
+    record NewMultiArray(Value target, ArrayElementType leafType, List<Integer> dimensions)
+            implements IrInstruction {
+    }
+
+    record Panic() implements IrInstruction {
+    }
+
     record Binary(Value target, BinaryOp operation, Value left, Value right) implements IrInstruction {
     }
 
