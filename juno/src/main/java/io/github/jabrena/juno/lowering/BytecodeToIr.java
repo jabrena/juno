@@ -9,6 +9,7 @@ import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 import io.github.jabrena.juno.ir.ArrayDeclaration;
+import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrBasicBlock;
@@ -26,9 +27,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Lowers each reachable method's JVM bytecode into Juno IR: a non-SSA, block-structured form where every
@@ -44,26 +47,28 @@ import java.util.Optional;
  * {@link io.github.jabrena.juno.analysis.ControlFlowGraphBuilder}, since a block's depth cannot in general be
  * inferred just by reading blocks in textual order.
  *
- * <p><b>int[] arrays</b> (there is no heap, so every array is a fixed-size C array) are supported in a
- * deliberately narrow, always-sound way. A JVM local slot is treated as a known-length array only when it is
- * assigned via {@code astore} exactly once in the whole method (i.e. "effectively final"), immediately after
- * {@code newarray} with a compile-time-constant count ({@link #computeSingleAssignmentArrayLocals}). Since
- * that slot can then only ever hold that one array for its entire reachable lifetime, every load of it is
- * safely known-length too, without needing a merge-aware, cross-block dataflow pass. That per-value knowledge
- * ({@code arrayLength}) is tracked globally (values are never redefined), but propagating it back out of a
- * stack-slot round trip needs one more piece of state: which stack slot currently holds which known-length
- * array ({@code currentStackSlotLength}). Unlike JVM locals, stack slots are constantly reused as depth rises
- * and falls, and two different branches could in principle leave different arrays in the same slot before a
- * merge — so that tracking is reset at the start of every block, trading a little precision (an array handle
- * threaded across a branch loses its "known length" status) for never being wrong.
- *
- * <p>Anything else that produces or holds an array reference — a method parameter, a reassigned local, or an
- * array received from elsewhere — falls back to raw-pointer semantics: {@code iaload}/{@code iastore} still
- * work but are not bounds-checked, and {@code arraylength} is a compile error rather than silently wrong.
+ * <p><b>Arrays</b> (there is no heap, so every array is a fixed-size C array) are supported in a deliberately
+ * narrow, always-sound way, tracked by {@link ArrayTracking}:
+ * <ul>
+ *   <li>A JVM local slot is treated as a known-length array only when it is assigned via {@code astore}
+ *       exactly once in the whole method (i.e. "effectively final"), immediately after {@code newarray} with
+ *       a compile-time-constant count ({@link #computeSingleAssignmentArrayLocals}). Since that slot can then
+ *       only ever hold that one array for its entire reachable lifetime, every load of it is safely
+ *       known-length too, without needing a merge-aware, cross-block dataflow pass. Anything else holding an
+ *       array reference (a parameter, a reassigned local) falls back to raw-pointer semantics: array
+ *       load/store still compile, just unchecked, and {@code arraylength} is a compile error rather than a
+ *       silently wrong answer.
+ *   <li>Returning an array ({@code areturn}) is accepted only when the returned value directly traces to one
+ *       of this method's own array-typed parameters — anything else (a locally {@code newarray}'d array, for
+ *       instance) would return a pointer into this call's own stack frame, which dangles once it returns.
+ * </ul>
+ * Per-value knowledge ({@code arrayLength}, {@code parameterForwarded}) is tracked globally, since values are
+ * never redefined. Propagating it back out of a stack-slot round trip needs one more piece of state — which
+ * stack slot currently holds which known array — and that part is reset at the start of every block: unlike
+ * JVM locals, stack slots are constantly reused as depth rises and falls, and two different branches could in
+ * principle leave different arrays in the same slot before a merge.
  */
 public final class BytecodeToIr {
-    private static final int T_INT_ATYPE = 10;
-
     public IrProgram lower(Program program) {
         List<IrMethod> methods = new ArrayList<>();
         for (LinkedMethod linked : program.methods()) {
@@ -74,66 +79,67 @@ public final class BytecodeToIr {
 
     public IrMethod lower(LinkedMethod linked) {
         int stackBase = linked.method().maxLocals();
+        Descriptor methodDescriptor = Descriptor.parse(linked.method().descriptor());
         Map<Integer, Integer> entryDepths = computeEntryDepths(linked);
         Map<Integer, Integer> slotArrayLength = computeSingleAssignmentArrayLocals(linked);
-        Map<Value, Integer> arrayLength = new HashMap<>();
+        Set<Integer> arrayParameterSlots = arrayParameterSlots(methodDescriptor);
+        ArrayTracking tracking = new ArrayTracking();
         List<ArrayDeclaration> arrayDeclarations = new ArrayList<>();
         List<IrBasicBlock> blocks = new ArrayList<>();
         int nextValueId = 0;
         for (BasicBlock block : linked.controlFlowGraph().blocks()) {
             List<IrInstruction> instructions = new ArrayList<>();
             int depth = entryDepths.getOrDefault(block.start(), 0);
-            Map<Integer, Integer> currentStackSlotLength = new HashMap<>();
+            tracking.startBlock();
             IrTerminator terminator = null;
             for (Instruction instruction : block.instructions()) {
                 int opcode = instruction.opcode();
                 switch (opcode) {
                     case 0 -> { }
                     case 2 -> {
-                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, -1, currentStackSlotLength);
+                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, -1, tracking);
                         depth++;
                     }
                     case 3, 4, 5, 6, 7, 8 -> {
-                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, opcode - 3, currentStackSlotLength);
+                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, opcode - 3, tracking);
                         depth++;
                     }
                     case 16, 17 -> {
-                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, instruction.operandA(),
-                                currentStackSlotLength);
+                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, instruction.operandA(), tracking);
                         depth++;
                     }
                     case 18, 19 -> {
                         nextValueId = pushConst(instructions, stackBase, depth, nextValueId,
-                                linked.owner().constantPool().integer(instruction.operandA()), currentStackSlotLength);
+                                linked.owner().constantPool().integer(instruction.operandA()), tracking);
                         depth++;
                     }
                     case 21, 25 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, instruction.operandA(),
-                                slotArrayLength, arrayLength, currentStackSlotLength);
+                                slotArrayLength, arrayParameterSlots, tracking);
                         depth++;
                     }
                     case 26, 27, 28, 29 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, opcode - 26,
-                                slotArrayLength, arrayLength, currentStackSlotLength);
+                                slotArrayLength, arrayParameterSlots, tracking);
                         depth++;
                     }
                     case 42, 43, 44, 45 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, opcode - 42,
-                                slotArrayLength, arrayLength, currentStackSlotLength);
+                                slotArrayLength, arrayParameterSlots, tracking);
                         depth++;
                     }
                     case 54, 58 -> {
-                        Popped popped = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+                        Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), popped.value()));
                     }
                     case 59, 60, 61, 62 -> {
-                        Popped popped = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+                        Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(opcode - 59, popped.value()));
                     }
                     case 75, 76, 77, 78 -> {
-                        Popped popped = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+                        Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(opcode - 75, popped.value()));
                     }
@@ -141,57 +147,54 @@ public final class BytecodeToIr {
                     case 89 -> {
                         Value top = new Value(nextValueId++);
                         instructions.add(new IrInstruction.LoadLocal(top, stackBase + depth - 1));
-                        Integer length = currentStackSlotLength.get(stackBase + depth - 1);
-                        if (length != null) {
-                            arrayLength.put(top, length);
-                        }
-                        storeToStack(instructions, stackBase, depth, top, arrayLength, currentStackSlotLength);
+                        tracking.recordPop(stackBase + depth - 1, top);
+                        storeToStack(instructions, stackBase, depth, top, tracking);
                         depth++;
                     }
                     case 96 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.ADD, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.ADD, tracking);
                         depth--;
                     }
                     case 100 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SUBTRACT, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SUBTRACT, tracking);
                         depth--;
                     }
                     case 104 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.MULTIPLY, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.MULTIPLY, tracking);
                         depth--;
                     }
                     case 108 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
                         depth--;
                     }
                     case 112 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);
                         depth--;
                     }
-                    case 116 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.NEGATE, arrayLength, currentStackSlotLength);
+                    case 116 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.NEGATE, tracking);
                     case 120 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_LEFT, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_LEFT, tracking);
                         depth--;
                     }
                     case 122 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_RIGHT, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_RIGHT, tracking);
                         depth--;
                     }
                     case 124 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId,
-                                BinaryOp.UNSIGNED_SHIFT_RIGHT, arrayLength, currentStackSlotLength);
+                                BinaryOp.UNSIGNED_SHIFT_RIGHT, tracking);
                         depth--;
                     }
                     case 126 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.AND, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.AND, tracking);
                         depth--;
                     }
                     case 128 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.OR, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.OR, tracking);
                         depth--;
                     }
                     case 130 -> {
-                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.XOR, arrayLength, currentStackSlotLength);
+                        nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.XOR, tracking);
                         depth--;
                     }
                     case 132 -> {
@@ -203,11 +206,11 @@ public final class BytecodeToIr {
                         instructions.add(new IrInstruction.Binary(sum, BinaryOp.ADD, loaded, amount));
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), sum));
                     }
-                    case 145 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_BYTE, arrayLength, currentStackSlotLength);
-                    case 146 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_CHAR, arrayLength, currentStackSlotLength);
-                    case 147 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_SHORT, arrayLength, currentStackSlotLength);
+                    case 145 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_BYTE, tracking);
+                    case 146 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_CHAR, tracking);
+                    case 147 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_SHORT, tracking);
                     case 153, 154, 155, 156, 157, 158 -> {
-                        Popped operand = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+                        Popped operand = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = operand.nextValueId();
                         Value zero = new Value(nextValueId++);
                         instructions.add(new IrInstruction.Const(zero, 0));
@@ -217,9 +220,9 @@ public final class BytecodeToIr {
                         terminator = new IrTerminator.Branch(condition, branch.trueTarget(), branch.falseTarget());
                     }
                     case 159, 160, 161, 162, 163, 164 -> {
-                        Popped right = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+                        Popped right = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = right.nextValueId();
-                        Popped left = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+                        Popped left = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = left.nextValueId();
                         Value condition = new Value(nextValueId++);
                         instructions.add(new IrInstruction.Compare(
@@ -229,70 +232,102 @@ public final class BytecodeToIr {
                     }
                     case 167 -> terminator = new IrTerminator.Jump(((Terminator.Jump) block.terminator()).target());
                     case 172 -> {
-                        Popped returned = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+                        Popped returned = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = returned.nextValueId();
+                        terminator = new IrTerminator.Return(Optional.of(returned.value()));
+                    }
+                    case 176 -> {
+                        Popped returned = pop(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = returned.nextValueId();
+                        if (!tracking.isParameterForward(returned.value())) {
+                            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                                    + instruction.offset() + ": returning an array is only supported when directly "
+                                    + "forwarding a received array parameter (e.g. `return arr;` where arr is a "
+                                    + "parameter); a locally created or otherwise derived array would dangle once "
+                                    + "this method returns");
+                        }
                         terminator = new IrTerminator.Return(Optional.of(returned.value()));
                     }
                     case 177 -> terminator = new IrTerminator.Return(Optional.empty());
                     case 182, 184 -> {
-                        Lowered lowered = lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId,
-                                arrayLength, currentStackSlotLength);
+                        Lowered lowered = lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
                     case 46 -> {
-                        Popped index = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
-                        nextValueId = index.nextValueId();
-                        Popped array = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
-                        nextValueId = array.nextValueId();
-                        Integer knownLength = arrayLength.get(array.value());
-                        if (knownLength != null) {
-                            instructions.add(new IrInstruction.BoundsCheck(index.value(), knownLength));
-                        }
-                        Value target = new Value(nextValueId++);
-                        instructions.add(new IrInstruction.ArrayLoad(target, array.value(), index.value()));
-                        storeToStack(instructions, stackBase, depth, target, arrayLength, currentStackSlotLength);
-                        depth++;
+                        Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.INT);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 51 -> {
+                        Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.BYTE);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 52 -> {
+                        Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.CHAR);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 53 -> {
+                        Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.SHORT);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
                     }
                     case 79 -> {
-                        Popped value = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
-                        nextValueId = value.nextValueId();
-                        Popped index = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
-                        nextValueId = index.nextValueId();
-                        Popped array = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
-                        nextValueId = array.nextValueId();
-                        Integer knownLength = arrayLength.get(array.value());
-                        if (knownLength != null) {
-                            instructions.add(new IrInstruction.BoundsCheck(index.value(), knownLength));
-                        }
-                        instructions.add(new IrInstruction.ArrayStore(array.value(), index.value(), value.value()));
+                        Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.INT);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 84 -> {
+                        Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.BYTE);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 85 -> {
+                        Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.CHAR);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 86 -> {
+                        Lowered lowered = lowerArrayStore(instructions, stackBase, depth, nextValueId,
+                                tracking, ArrayElementType.SHORT);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
                     }
                     case 188 -> {
-                        if (instruction.operandA() != T_INT_ATYPE) {
-                            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
-                                    + instruction.offset() + ": newarray only supports int[] (atype " + T_INT_ATYPE
-                                    + "), got atype " + instruction.operandA());
-                        }
-                        ConstPop length = popKnownConstant(instructions, stackBase, depth, linked, instruction, currentStackSlotLength);
+                        ArrayElementType elementType = ArrayElementType.fromAtype(instruction.operandA())
+                                .orElseThrow(() -> new CompileException(linked.method().reference().displayName()
+                                        + " at bytecode offset " + instruction.offset()
+                                        + ": newarray only supports boolean[]/byte[]/char[]/short[]/int[] (atype "
+                                        + "4/8/5/9/10), got atype " + instruction.operandA()));
+                        ConstPop length = popKnownConstant(instructions, stackBase, depth, linked, instruction, tracking);
                         depth = length.depth();
                         Value handle = new Value(nextValueId++);
-                        instructions.add(new IrInstruction.NewArray(handle, length.value()));
-                        arrayDeclarations.add(new ArrayDeclaration(handle, length.value()));
-                        arrayLength.put(handle, length.value());
-                        storeToStack(instructions, stackBase, depth, handle, arrayLength, currentStackSlotLength);
+                        instructions.add(new IrInstruction.NewArray(handle, elementType, length.value()));
+                        arrayDeclarations.add(new ArrayDeclaration(handle, elementType, length.value()));
+                        tracking.markKnownArray(handle, length.value());
+                        storeToStack(instructions, stackBase, depth, handle, tracking);
                         depth++;
                     }
                     case 190 -> {
-                        Popped array = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+                        Popped array = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = array.nextValueId();
-                        Integer knownLength = arrayLength.get(array.value());
+                        Integer knownLength = tracking.knownLength(array.value());
                         if (knownLength == null) {
                             throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
                                     + instruction.offset() + ": array length is not known at compile time here "
                                     + "(only supported on a local array created once in this method with a "
                                     + "compile-time-constant size)");
                         }
-                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, knownLength, currentStackSlotLength);
+                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, knownLength, tracking);
                         depth++;
                     }
                     default -> throw new CompileException(
@@ -308,11 +343,22 @@ public final class BytecodeToIr {
                 List.copyOf(arrayDeclarations), List.copyOf(blocks));
     }
 
+    private Set<Integer> arrayParameterSlots(Descriptor methodDescriptor) {
+        Set<Integer> slots = new HashSet<>();
+        List<String> parameters = methodDescriptor.parameters();
+        for (int index = 0; index < parameters.size(); index++) {
+            if (Descriptor.isArrayType(parameters.get(index))) {
+                slots.add(index);
+            }
+        }
+        return slots;
+    }
+
     /**
      * Finds every JVM local slot that is assigned via {@code astore} exactly once in the whole method,
-     * immediately after {@code newarray} (int) with a compile-time-constant count. Such a slot can only ever
-     * hold that one array for its entire reachable lifetime (Java requires definite assignment before any
-     * read), so every load of it is safely known-length without needing cross-block dataflow.
+     * immediately after {@code newarray} with a compile-time-constant count. Such a slot can only ever hold
+     * that one array for its entire reachable lifetime (Java requires definite assignment before any read),
+     * so every load of it is safely known-length without needing cross-block dataflow.
      */
     private Map<Integer, Integer> computeSingleAssignmentArrayLocals(LinkedMethod linked) {
         List<Instruction> all = linked.instructions();
@@ -329,7 +375,8 @@ public final class BytecodeToIr {
             }
             Instruction newArrayInstruction = all.get(index - 1);
             Instruction lengthPush = all.get(index - 2);
-            if (newArrayInstruction.opcode() == 188 && newArrayInstruction.operandA() == T_INT_ATYPE) {
+            if (newArrayInstruction.opcode() == 188
+                    && ArrayElementType.fromAtype(newArrayInstruction.operandA()).isPresent()) {
                 Integer length = constantPushValue(lengthPush, linked);
                 if (length != null) {
                     candidateLength.put(slot, length);
@@ -369,7 +416,7 @@ public final class BytecodeToIr {
      * {@code newarray}'s count, since there is no heap and every array must be a fixed-size C array.
      */
     private ConstPop popKnownConstant(List<IrInstruction> instructions, int stackBase, int depth,
-                                       LinkedMethod linked, Instruction site, Map<Integer, Integer> currentStackSlotLength) {
+                                       LinkedMethod linked, Instruction site, ArrayTracking tracking) {
         int newDepth = depth - 1;
         int slot = stackBase + newDepth;
         if (instructions.size() >= 2
@@ -379,7 +426,7 @@ public final class BytecodeToIr {
                 && constant.target().equals(store.value())) {
             instructions.remove(instructions.size() - 1);
             instructions.remove(instructions.size() - 1);
-            currentStackSlotLength.remove(slot);
+            tracking.clearStackSlot(slot);
             return new ConstPop(constant.value(), newDepth);
         }
         throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
@@ -436,10 +483,11 @@ public final class BytecodeToIr {
         return switch (opcode) {
             case 0, 132, 145, 146, 147, 116, 167, 177, 188, 190 -> 0;
             case 2, 3, 4, 5, 6, 7, 8, 16, 17, 18, 19, 21, 25, 26, 27, 28, 29, 42, 43, 44, 45, 89 -> 1;
-            case 54, 58, 59, 60, 61, 62, 75, 76, 77, 78, 87, 153, 154, 155, 156, 157, 158, 172, 46 -> -1;
+            case 54, 58, 59, 60, 61, 62, 75, 76, 77, 78, 87, 153, 154, 155, 156, 157, 158, 172, 176 -> -1;
+            case 46, 51, 52, 53 -> -1;
             case 96, 100, 104, 108, 112, 120, 122, 124, 126, 128, 130 -> -1;
             case 159, 160, 161, 162, 163, 164 -> -2;
-            case 79 -> -3;
+            case 79, 84, 85, 86 -> -3;
             case 182, 184 -> {
                 MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                 Descriptor descriptor = Descriptor.parse(called.descriptor());
@@ -452,19 +500,18 @@ public final class BytecodeToIr {
     }
 
     private Lowered lowerCall(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,
-                               int stackBase, int depth, int nextValueId, Map<Value, Integer> arrayLength,
-                               Map<Integer, Integer> currentStackSlotLength) {
+                               int stackBase, int depth, int nextValueId, ArrayTracking tracking) {
         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
         Descriptor descriptor = Descriptor.parse(called.descriptor());
         Value[] arguments = new Value[descriptor.parameters().size()];
         for (int index = arguments.length - 1; index >= 0; index--) {
-            Popped popped = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+            Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
             nextValueId = popped.nextValueId();
             arguments[index] = popped.value();
         }
         Optional<Value> receiver = Optional.empty();
         if (instruction.opcode() == 182) {
-            Popped popped = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+            Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
             nextValueId = popped.nextValueId();
             receiver = Optional.of(popped.value());
         }
@@ -482,80 +529,105 @@ public final class BytecodeToIr {
             instructions.add(new IrInstruction.Call(Optional.ofNullable(target), called, List.of(arguments)));
         }
         if (target != null) {
-            storeToStack(instructions, stackBase, depth, target, arrayLength, currentStackSlotLength);
+            storeToStack(instructions, stackBase, depth, target, tracking);
             depth++;
         }
         return new Lowered(nextValueId, depth);
     }
 
+    private Lowered lowerArrayLoad(List<IrInstruction> instructions, int stackBase, int depth,
+                                    int nextValueId, ArrayTracking tracking, ArrayElementType elementType) {
+        Popped index = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = index.nextValueId();
+        Popped array = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = array.nextValueId();
+        Integer knownLength = tracking.knownLength(array.value());
+        if (knownLength != null) {
+            instructions.add(new IrInstruction.BoundsCheck(index.value(), knownLength));
+        }
+        Value target = new Value(nextValueId++);
+        instructions.add(new IrInstruction.ArrayLoad(target, elementType, array.value(), index.value()));
+        storeToStack(instructions, stackBase, depth, target, tracking);
+        depth++;
+        return new Lowered(nextValueId, depth);
+    }
+
+    private Lowered lowerArrayStore(List<IrInstruction> instructions, int stackBase, int depth,
+                                     int nextValueId, ArrayTracking tracking, ArrayElementType elementType) {
+        Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = value.nextValueId();
+        Popped index = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = index.nextValueId();
+        Popped array = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = array.nextValueId();
+        Integer knownLength = tracking.knownLength(array.value());
+        if (knownLength != null) {
+            instructions.add(new IrInstruction.BoundsCheck(index.value(), knownLength));
+        }
+        instructions.add(new IrInstruction.ArrayStore(elementType, array.value(), index.value(), value.value()));
+        return new Lowered(nextValueId, depth);
+    }
+
     private int pushConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int value,
-                           Map<Integer, Integer> currentStackSlotLength) {
+                           ArrayTracking tracking) {
         Value target = new Value(nextValueId);
         instructions.add(new IrInstruction.Const(target, value));
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
-        currentStackSlotLength.remove(stackBase + depth);
+        tracking.clearStackSlot(stackBase + depth);
         return nextValueId + 1;
     }
 
     private int pushLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int local,
-                          Map<Integer, Integer> slotArrayLength, Map<Value, Integer> arrayLength,
-                          Map<Integer, Integer> currentStackSlotLength) {
+                          Map<Integer, Integer> slotArrayLength, Set<Integer> arrayParameterSlots, ArrayTracking tracking) {
         Value target = new Value(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(target, local));
         Integer knownLength = slotArrayLength.get(local);
         if (knownLength != null) {
-            arrayLength.put(target, knownLength);
+            tracking.markKnownArray(target, knownLength);
         }
-        storeToStack(instructions, stackBase, depth, target, arrayLength, currentStackSlotLength);
+        if (arrayParameterSlots.contains(local)) {
+            tracking.markParameterForward(target);
+        }
+        storeToStack(instructions, stackBase, depth, target, tracking);
         return nextValueId + 1;
     }
 
     private int pushBinary(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
-                            BinaryOp operation, Map<Value, Integer> arrayLength, Map<Integer, Integer> currentStackSlotLength) {
+                            BinaryOp operation, ArrayTracking tracking) {
         int depth = depthBeforePush;
-        Popped right = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+        Popped right = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = right.nextValueId();
-        Popped left = pop(instructions, stackBase, --depth, nextValueId, arrayLength, currentStackSlotLength);
+        Popped left = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = left.nextValueId();
         Value target = new Value(nextValueId++);
         instructions.add(new IrInstruction.Binary(target, operation, left.value(), right.value()));
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
-        currentStackSlotLength.remove(stackBase + depth);
+        tracking.clearStackSlot(stackBase + depth);
         return nextValueId;
     }
 
     private int pushUnary(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
-                           UnaryOp operation, Map<Value, Integer> arrayLength, Map<Integer, Integer> currentStackSlotLength) {
+                           UnaryOp operation, ArrayTracking tracking) {
         int depth = depthBeforePush - 1;
-        Popped operand = pop(instructions, stackBase, depth, nextValueId, arrayLength, currentStackSlotLength);
+        Popped operand = pop(instructions, stackBase, depth, nextValueId, tracking);
         nextValueId = operand.nextValueId();
         Value target = new Value(nextValueId++);
         instructions.add(new IrInstruction.Unary(target, operation, operand.value()));
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
-        currentStackSlotLength.remove(stackBase + depth);
+        tracking.clearStackSlot(stackBase + depth);
         return nextValueId;
     }
 
-    /** Emits a StoreLocal to a stack slot and keeps {@code currentStackSlotLength} consistent with it. */
-    private void storeToStack(List<IrInstruction> instructions, int stackBase, int depth, Value value,
-                               Map<Value, Integer> arrayLength, Map<Integer, Integer> currentStackSlotLength) {
+    /** Emits a StoreLocal to a stack slot and keeps {@code tracking} consistent with it. */
+    private void storeToStack(List<IrInstruction> instructions, int stackBase, int depth, Value value, ArrayTracking tracking) {
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, value));
-        Integer length = arrayLength.get(value);
-        if (length != null) {
-            currentStackSlotLength.put(stackBase + depth, length);
-        } else {
-            currentStackSlotLength.remove(stackBase + depth);
-        }
+        tracking.recordPush(stackBase + depth, value);
     }
 
-    private Popped pop(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId,
-                        Map<Value, Integer> arrayLength, Map<Integer, Integer> currentStackSlotLength) {
+    private Popped pop(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId, ArrayTracking tracking) {
         Value value = new Value(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(value, stackBase + depthAfterPop));
-        Integer length = currentStackSlotLength.get(stackBase + depthAfterPop);
-        if (length != null) {
-            arrayLength.put(value, length);
-        }
+        tracking.recordPop(stackBase + depthAfterPop, value);
         return new Popped(value, nextValueId + 1);
     }
 
@@ -578,5 +650,69 @@ public final class BytecodeToIr {
     }
 
     private record ConstPop(int value, int depth) {
+    }
+
+    /**
+     * Per-method array bookkeeping used to decide, at each array access, whether it is safe to bounds-check
+     * (a known-length local array) and, at {@code areturn}, whether it is safe to return (a direct parameter
+     * forward). {@code arrayLength}/{@code parameterForwarded} are keyed by {@link Value} and never reset —
+     * values are single-assignment, so a fact about one is true for its whole lifetime. The stack-slot views
+     * are reset at the start of every block (see the class-level docs for why).
+     */
+    private static final class ArrayTracking {
+        private final Map<Value, Integer> arrayLength = new HashMap<>();
+        private final Set<Value> parameterForwarded = new HashSet<>();
+        private Map<Integer, Integer> currentStackSlotLength = new HashMap<>();
+        private Set<Integer> currentStackSlotIsParameterForward = new HashSet<>();
+
+        void startBlock() {
+            currentStackSlotLength = new HashMap<>();
+            currentStackSlotIsParameterForward = new HashSet<>();
+        }
+
+        void markKnownArray(Value value, int length) {
+            arrayLength.put(value, length);
+        }
+
+        void markParameterForward(Value value) {
+            parameterForwarded.add(value);
+        }
+
+        Integer knownLength(Value value) {
+            return arrayLength.get(value);
+        }
+
+        boolean isParameterForward(Value value) {
+            return parameterForwarded.contains(value);
+        }
+
+        void clearStackSlot(int slot) {
+            currentStackSlotLength.remove(slot);
+            currentStackSlotIsParameterForward.remove(slot);
+        }
+
+        void recordPush(int slot, Value value) {
+            Integer length = arrayLength.get(value);
+            if (length != null) {
+                currentStackSlotLength.put(slot, length);
+            } else {
+                currentStackSlotLength.remove(slot);
+            }
+            if (parameterForwarded.contains(value)) {
+                currentStackSlotIsParameterForward.add(slot);
+            } else {
+                currentStackSlotIsParameterForward.remove(slot);
+            }
+        }
+
+        void recordPop(int slot, Value value) {
+            Integer length = currentStackSlotLength.get(slot);
+            if (length != null) {
+                arrayLength.put(value, length);
+            }
+            if (currentStackSlotIsParameterForward.contains(slot)) {
+                parameterForwarded.add(value);
+            }
+        }
     }
 }

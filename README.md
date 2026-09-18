@@ -77,13 +77,17 @@ Supported today:
 - `private/static final` primitive constants (`boolean`/`byte`/`char`/`short`/`int`) initialized
   with a compile-time constant expression, same class or a different one — `javac` inlines these
   as ordinary literals (JLS 4.12.4), so Juno never sees a field read
-- `int[]` arrays: `new int[N]` with a compile-time-constant `N` (there is no heap, so every array
-  is a fixed-size local C array); passing an `int[]` to another static method (pointer semantics).
-  `arr.length` and bounds-checked `arr[i]`/`arr[i] = v` work only on an array local that is
-  assigned exactly once in its method (i.e. "effectively final") right after `new int[...]` — an
-  array received as a parameter, or a reassigned local, still supports `arr[i]`/`arr[i] = v` but
-  without a bounds check and without `.length`, since its size isn't known at compile time there.
-  Returning an `int[]` from a method is not yet supported.
+- arrays of `boolean`/`byte`/`char`/`short`/`int`: `new T[N]` with a compile-time-constant `N`
+  (there is no heap, so every array is a fixed-size local C array, stored at its natural width —
+  `byte[]`/`boolean[]` as `int8_t`, `char[]` as `uint16_t`, `short[]` as `int16_t`, `int[]` as
+  `int32_t`); passing an array to another static method (pointer semantics); returning an array is
+  supported only when directly forwarding a received array parameter (e.g. `return arr;`), never a
+  locally created one, since that pointer would dangle once the method returns. `arr.length` and
+  bounds-checked `arr[i]`/`arr[i] = v` work only on an array local that is assigned exactly once in
+  its method (i.e. "effectively final") right after `new T[...]` — an array received as a
+  parameter, or a reassigned local, still supports `arr[i]`/`arr[i] = v` but without a bounds check
+  and without `.length`, since its size isn't known at compile time there. Multi-dimensional arrays
+  are not supported.
 - direct static calls with closed-world reachability; unused methods are omitted
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
@@ -91,8 +95,8 @@ Supported today:
 
 Not yet supported:
 
-- general objects, constructors, instance/virtual/interface calls, arrays of any type other than
-  `int[]`, multi-dimensional arrays, or returning an array from a method
+- general objects, constructors, instance/virtual/interface calls, multi-dimensional arrays, or
+  returning a locally created array (only forwarding a received array parameter is supported)
 - mutable/non-constant static fields (needs `getstatic`/`putstatic`), strings, exceptions, garbage
   collection, threads, reflection, or dynamic loading
 - `long`, `float`, and `double`

@@ -443,4 +443,117 @@ class JunoCompilerTest {
                 "a reassigned local is not effectively-final and must not be bounds-checked");
         assertTrue(generated.contains("] = v"), "both stores must still compile, as raw pointer writes");
     }
+
+    @Test
+    void supportsByteCharAndShortArraysWithTheirNativeStorageWidth() throws Exception {
+        String source = """
+                package demo;
+                public final class ElementTypes {
+                    static int sumBytes(byte[] values, int count) {
+                        int total = 0;
+                        for (int i = 0; i < count; i++) total += values[i];
+                        return total;
+                    }
+                    public static void main(String[] args) {
+                        byte[] buf = new byte[4];
+                        buf[0] = 10;
+                        char[] chars = new char[3];
+                        chars[0] = 'a';
+                        short[] shorts = new short[2];
+                        shorts[0] = 1000;
+                        int total = sumBytes(buf, buf.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ElementTypes", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ElementTypes");
+
+        assertTrue(generated.contains("int8_t arr_"), "byte[] must be stored as int8_t, not int32_t");
+        assertTrue(generated.contains("uint16_t arr_"), "char[] must be stored as uint16_t");
+        assertTrue(generated.contains("int16_t arr_"), "short[] must be stored as int16_t");
+        assertTrue(generated.contains("(int8_t* arg0, int32_t arg1)"),
+                "sumBytes's byte[] parameter must be an int8_t pointer");
+    }
+
+    @Test
+    void supportsForwardingAReceivedArrayParameterAsAReturnValue() throws Exception {
+        String source = """
+                package demo;
+                public final class ReturnForward {
+                    static int[] pick(boolean useA, int[] a, int[] b) {
+                        if (useA) {
+                            return a;
+                        }
+                        return b;
+                    }
+                    public static void main(String[] args) {
+                        int[] x = new int[2];
+                        int[] y = new int[2];
+                        int[] chosen = pick(true, x, y);
+                        chosen[1] = 99;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ReturnForward", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnForward");
+
+        assertTrue(generated.contains("static int32_t* juno_demo_ReturnForward_pick_"),
+                "an int[]-returning method must have a pointer return type");
+        assertTrue(generated.contains("return reinterpret_cast<int32_t*>(v"));
+    }
+
+    @Test
+    void rejectsReturningALocallyAllocatedArray() throws Exception {
+        // local's storage is this call's own stack frame; the returned pointer would dangle once
+        // makeArray() returns, so this must be a compile error, not silently wrong generated code.
+        String source = """
+                package demo;
+                public final class ReturnLocal {
+                    static int[] makeArray() {
+                        int[] local = new int[3];
+                        local[0] = 5;
+                        return local;
+                    }
+                    public static void main(String[] args) {
+                        int[] arr = makeArray();
+                        arr[0] = 1;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ReturnLocal", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnLocal"));
+
+        assertTrue(exception.getMessage().contains("demo.ReturnLocal.makeArray"));
+        assertTrue(exception.getMessage().contains("dangle"));
+    }
+
+    @Test
+    void rejectsReturningAnArrayThatOnlyExistsAfterABranchMerge() throws Exception {
+        // useA ? a : b merges through the operand stack across a block boundary; parameter-forward
+        // tracking is deliberately block-local (like the known-length array tracking), so this is a
+        // safe, conservative rejection rather than a silently-wrong answer.
+        String source = """
+                package demo;
+                public final class ReturnTernary {
+                    static int[] pick(boolean useA, int[] a, int[] b) {
+                        return useA ? a : b;
+                    }
+                    public static void main(String[] args) {
+                        int[] x = new int[2];
+                        int[] y = new int[2];
+                        pick(true, x, y);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ReturnTernary", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnTernary"));
+
+        assertTrue(exception.getMessage().contains("demo.ReturnTernary.pick"));
+    }
 }

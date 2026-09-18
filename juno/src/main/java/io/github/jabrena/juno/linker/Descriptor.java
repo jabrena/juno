@@ -33,20 +33,29 @@ public record Descriptor(List<String> parameters, String returnType) {
 
     public boolean usesOnlyV01Types() {
         return parameters.stream().allMatch(Descriptor::isSupportedParameterType)
-                && (returnsVoid() || isIntegerLike(returnType));
+                && (returnsVoid() || isIntegerLike(returnType) || isArrayType(returnType));
     }
 
     public static boolean isIntegerLike(String type) {
         return type.length() == 1 && "ZBCSI".contains(type);
     }
 
-    /** {@code int[]} parameters are pointer-passed; arrays as return types are not yet supported. */
-    public static boolean isIntArray(String type) {
-        return type.equals("[I");
+    /**
+     * Arrays are pointer-passed; there is no heap, so an array parameter/return is only ever a handle to
+     * storage that outlives the call — see {@link io.github.jabrena.juno.lowering.BytecodeToIr} for the
+     * (narrow, always-sound) rules on when returning one is actually accepted.
+     */
+    public static boolean isArrayType(String type) {
+        return type.length() == 2 && type.charAt(0) == '[' && "ZBCSI".indexOf(type.charAt(1)) >= 0;
+    }
+
+    /** The element type character of an array descriptor, e.g. {@code B} for {@code [B}. */
+    public static char arrayElementDescriptor(String arrayType) {
+        return arrayType.charAt(1);
     }
 
     private static boolean isSupportedParameterType(String type) {
-        return isIntegerLike(type) || isIntArray(type);
+        return isIntegerLike(type) || isArrayType(type);
     }
 
     private static ParsedType parseType(String descriptor, int start) {

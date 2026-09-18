@@ -3,6 +3,7 @@ package io.github.jabrena.juno.backend;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.ArrayDeclaration;
+import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrBasicBlock;
@@ -16,6 +17,7 @@ import io.github.jabrena.juno.linker.Descriptor;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /** Emits portable Arduino C++ from Juno IR, which the Renesas core compiles to Cortex-M4 machine code. */
@@ -79,13 +81,13 @@ public final class ArduinoCppBackend {
         output.append(prototype(method.reference())).append(" {\n")
                 .append("  int32_t locals[").append(Math.max(1, method.maxLocals())).append("] = {};\n");
         for (ArrayDeclaration array : method.arrayDeclarations()) {
-            output.append("  int32_t arr_").append(array.handle().id()).append('[').append(array.length())
-                    .append("] = {};\n");
+            output.append("  ").append(cppType(array.elementType())).append(" arr_").append(array.handle().id())
+                    .append('[').append(array.length()).append("] = {};\n");
         }
         List<String> parameterTypes = descriptor.parameters();
         for (int index = 0; index < parameterTypes.size(); index++) {
             output.append("  locals[").append(index).append("] = ");
-            if (Descriptor.isIntArray(parameterTypes.get(index))) {
+            if (Descriptor.isArrayType(parameterTypes.get(index))) {
                 output.append(handleOf("arg" + index));
             } else {
                 output.append("arg").append(index);
@@ -104,8 +106,9 @@ public final class ArduinoCppBackend {
             }
             output.append(";\n");
         }
+        Optional<ArrayElementType> returnArrayType = arrayElementTypeOf(descriptor.returnType());
         for (IrBasicBlock block : method.blocks()) {
-            emitBlock(output, block);
+            emitBlock(output, block, returnArrayType);
         }
         if (descriptor.returnsVoid()) {
             output.append("  return;\n");
@@ -115,7 +118,7 @@ public final class ArduinoCppBackend {
         output.append("}\n\n");
     }
 
-    private void emitBlock(StringBuilder output, IrBasicBlock block) {
+    private void emitBlock(StringBuilder output, IrBasicBlock block, Optional<ArrayElementType> returnArrayType) {
         output.append("juno_pc_").append(block.start()).append(":\n");
         List<IrInstruction> instructions = block.instructions();
         int limit = instructions.size();
@@ -130,7 +133,7 @@ public final class ArduinoCppBackend {
         for (int index = 0; index < limit; index++) {
             emitInstruction(output, instructions.get(index));
         }
-        emitTerminator(output, block.terminator(), foldedCompare);
+        emitTerminator(output, block.terminator(), foldedCompare, returnArrayType);
     }
 
     private void emitInstruction(StringBuilder output, IrInstruction instruction) {
@@ -151,9 +154,9 @@ public final class ArduinoCppBackend {
             case IrInstruction.NewArray newArray -> assign(output, newArray.target(),
                     handleOf("arr_" + newArray.target().id()));
             case IrInstruction.ArrayLoad load -> assign(output, load.target(),
-                    "reinterpret_cast<int32_t*>(" + ref(load.array()) + ")[" + ref(load.index()) + "]");
-            case IrInstruction.ArrayStore store -> output.append("  reinterpret_cast<int32_t*>(")
-                    .append(ref(store.array())).append(")[").append(ref(store.index())).append("] = ")
+                    "reinterpret_cast<" + cppType(load.elementType()) + "*>(" + ref(load.array()) + ")[" + ref(load.index()) + "]");
+            case IrInstruction.ArrayStore store -> output.append("  reinterpret_cast<").append(cppType(store.elementType()))
+                    .append("*>(").append(ref(store.array())).append(")[").append(ref(store.index())).append("] = ")
                     .append(ref(store.value())).append(";\n");
             case IrInstruction.BoundsCheck check -> output.append("  if (").append(ref(check.index()))
                     .append(" < 0 || ").append(ref(check.index())).append(" >= ").append(check.length())
@@ -161,7 +164,8 @@ public final class ArduinoCppBackend {
         }
     }
 
-    private void emitTerminator(StringBuilder output, IrTerminator terminator, IrInstruction.Compare foldedCompare) {
+    private void emitTerminator(StringBuilder output, IrTerminator terminator, IrInstruction.Compare foldedCompare,
+                                 Optional<ArrayElementType> returnArrayType) {
         switch (terminator) {
             case IrTerminator.Jump jump -> output.append("  goto juno_pc_").append(jump.target()).append(";\n");
             case IrTerminator.Branch branch -> {
@@ -172,34 +176,49 @@ public final class ArduinoCppBackend {
                         .append("  goto juno_pc_").append(branch.falseTarget()).append(";\n");
             }
             case IrTerminator.Return returned -> {
-                if (returned.value().isPresent()) {
-                    output.append("  return ").append(ref(returned.value().get())).append(";\n");
-                } else {
+                if (returned.value().isEmpty()) {
                     output.append("  return;\n");
+                } else if (returnArrayType.isPresent()) {
+                    output.append("  return reinterpret_cast<").append(cppType(returnArrayType.get())).append("*>(")
+                            .append(ref(returned.value().get())).append(");\n");
+                } else {
+                    output.append("  return ").append(ref(returned.value().get())).append(";\n");
                 }
             }
         }
     }
 
     private void emitUserCall(StringBuilder output, IrInstruction.Call call) {
-        List<String> parameterTypes = Descriptor.parse(call.method().descriptor()).parameters();
+        Descriptor calleeDescriptor = Descriptor.parse(call.method().descriptor());
+        List<String> parameterTypes = calleeDescriptor.parameters();
+        Optional<ArrayElementType> returnArrayType = arrayElementTypeOf(calleeDescriptor.returnType());
         output.append("  ");
         if (call.target().isPresent()) {
             output.append(ref(call.target().get())).append(" = ");
         }
-        output.append(CppNames.method(call.method())).append('(');
+        if (returnArrayType.isPresent()) {
+            output.append(handleOf(callExpression(call, parameterTypes)));
+        } else {
+            output.append(callExpression(call, parameterTypes));
+        }
+        output.append(";\n");
+    }
+
+    private String callExpression(IrInstruction.Call call, List<String> parameterTypes) {
+        StringBuilder expression = new StringBuilder(CppNames.method(call.method())).append('(');
         List<Value> arguments = call.arguments();
         for (int index = 0; index < arguments.size(); index++) {
             if (index > 0) {
-                output.append(", ");
+                expression.append(", ");
             }
-            if (Descriptor.isIntArray(parameterTypes.get(index))) {
-                output.append("reinterpret_cast<int32_t*>(").append(ref(arguments.get(index))).append(')');
+            if (Descriptor.isArrayType(parameterTypes.get(index))) {
+                expression.append("reinterpret_cast<").append(cppType(arrayElementTypeOf(parameterTypes.get(index)).orElseThrow()))
+                        .append("*>(").append(ref(arguments.get(index))).append(')');
             } else {
-                output.append(ref(arguments.get(index)));
+                expression.append(ref(arguments.get(index)));
             }
         }
-        output.append(");\n");
+        return expression.append(')').toString();
     }
 
     private void emitIntrinsicCall(StringBuilder output, IrInstruction.IntrinsicCall call) {
@@ -304,7 +323,13 @@ public final class ArduinoCppBackend {
 
     private String prototype(MethodRef method) {
         Descriptor descriptor = Descriptor.parse(method.descriptor());
-        String returnType = descriptor.returnsVoid() ? "void" : "int32_t";
+        String returnType;
+        if (descriptor.returnsVoid()) {
+            returnType = "void";
+        } else {
+            Optional<ArrayElementType> arrayReturn = arrayElementTypeOf(descriptor.returnType());
+            returnType = arrayReturn.map(type -> cppType(type) + "*").orElse("int32_t");
+        }
         StringBuilder result = new StringBuilder("static ").append(returnType).append(' ')
                 .append(CppNames.method(method)).append('(');
         List<String> parameterTypes = descriptor.parameters();
@@ -312,9 +337,26 @@ public final class ArduinoCppBackend {
             if (i > 0) {
                 result.append(", ");
             }
-            result.append(Descriptor.isIntArray(parameterTypes.get(i)) ? "int32_t* arg" : "int32_t arg").append(i);
+            Optional<ArrayElementType> arrayParam = arrayElementTypeOf(parameterTypes.get(i));
+            result.append(arrayParam.map(type -> cppType(type) + "* arg").orElse("int32_t arg")).append(i);
         }
         return result.append(')').toString();
+    }
+
+    private Optional<ArrayElementType> arrayElementTypeOf(String type) {
+        if (!Descriptor.isArrayType(type)) {
+            return Optional.empty();
+        }
+        return ArrayElementType.fromDescriptor(Descriptor.arrayElementDescriptor(type));
+    }
+
+    private String cppType(ArrayElementType elementType) {
+        return switch (elementType) {
+            case BYTE -> "int8_t";
+            case CHAR -> "uint16_t";
+            case SHORT -> "int16_t";
+            case INT -> "int32_t";
+        };
     }
 
     private String runtimeHelpers() {

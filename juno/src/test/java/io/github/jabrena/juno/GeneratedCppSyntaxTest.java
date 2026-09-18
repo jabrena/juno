@@ -366,6 +366,58 @@ class GeneratedCppSyntaxTest {
     }
 
     @Test
+    void generatedOtherElementTypeArraysAndArrayReturnSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                public final class ArrayVariety {
+                    static int sumBytes(byte[] values, int count) {
+                        int total = 0;
+                        for (int i = 0; i < count; i++) total += values[i];
+                        return total;
+                    }
+                    static int[] pick(boolean useA, int[] a, int[] b) {
+                        if (useA) {
+                            return a;
+                        }
+                        return b;
+                    }
+                    public static void main(String[] args) {
+                        byte[] buf = new byte[4];
+                        buf[0] = 10;
+                        buf[1] = 20;
+                        char[] chars = new char[3];
+                        chars[0] = 'a';
+                        short[] shorts = new short[2];
+                        shorts[0] = 1000;
+                        boolean[] flags = new boolean[2];
+                        flags[0] = true;
+                        int total = sumBytes(buf, buf.length);
+
+                        int[] x = new int[2];
+                        int[] y = new int[2];
+                        int[] chosen = pick(true, x, y);
+                        chosen[1] = 99;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ArrayVariety", source);
+        Path sketch = temporaryDirectory.resolve("ArrayVariety.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ArrayVariety"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
+    @Test
     void generatedRatonLocoSketchPassesACppSyntaxCheck() throws Exception {
         String compiler = availableCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");

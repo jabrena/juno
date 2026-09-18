@@ -35,14 +35,14 @@ public sealed interface IrInstruction {
                           List<Value> arguments) implements IrInstruction {
     }
 
-    /** Declares a fixed-size {@code int[length]} local array; {@code target} becomes a handle to it. */
-    record NewArray(Value target, int length) implements IrInstruction {
+    /** Declares a fixed-size local array; {@code target} becomes a handle to it. */
+    record NewArray(Value target, ArrayElementType elementType, int length) implements IrInstruction {
     }
 
-    record ArrayLoad(Value target, Value array, Value index) implements IrInstruction {
+    record ArrayLoad(Value target, ArrayElementType elementType, Value array, Value index) implements IrInstruction {
     }
 
-    record ArrayStore(Value array, Value index, Value value) implements IrInstruction {
+    record ArrayStore(ArrayElementType elementType, Value array, Value index, Value value) implements IrInstruction {
     }
 
     /** Panics if {@code index} is outside {@code [0, length)}; emitted only when {@code length} is known. */
