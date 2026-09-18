@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,12 +39,23 @@ public final class CompilerTestSupport {
         return directory;
     }
 
+    // The compiler classpath is resolved relative to the juno module's own working directory during
+    // `mvn test`: `target/classes` holds any cross-class fixtures compiled by an earlier compileJava
+    // call, and `../juno-api/target/classes` holds the api package's classes (Serial, Gpio, ...) that
+    // fixture sources import, now that the api package lives in a sibling module.
+    private static final List<Path> JUNO_CLASSPATH =
+            List.of(Path.of("target/classes"), Path.of("../juno-api/target/classes"));
+
     public static String compileJuno(Path classes, String mainClass) {
-        return new JunoCompiler().compile(List.of(classes, Path.of("target/classes")), mainClass);
+        List<Path> classpath = new ArrayList<>(List.of(classes));
+        classpath.addAll(JUNO_CLASSPATH);
+        return new JunoCompiler().compile(classpath, mainClass);
     }
 
     public static Program link(Path classes, String mainClass) {
-        Map<String, JavaClass> loaded = new ClassPath().load(List.of(classes, Path.of("target/classes")));
+        List<Path> classpath = new ArrayList<>(List.of(classes));
+        classpath.addAll(JUNO_CLASSPATH);
+        Map<String, JavaClass> loaded = new ClassPath().load(classpath);
         return new Linker().link(loaded, mainClass);
     }
 }

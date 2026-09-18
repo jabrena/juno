@@ -12,6 +12,7 @@
     <description>A tiny Java AOT compiler for Arduino UNO R4 WiFi, and example programs for it</description>
 
     <modules>
+        <module>juno-api</module>
         <module>juno</module>
         <module>juno-examples</module>
     </modules>
@@ -47,5 +48,15 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.basedir}/docs/javadocs/${project.version}</outputDirectory>
+                    <doclint>none</doclint>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

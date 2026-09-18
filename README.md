@@ -20,12 +20,15 @@ Java source -> javac -> .class -> Juno linker/AOT -> .ino -> Arduino toolchain -
 
 This is a multi-module Maven build:
 
-- [`juno/`](juno) — the Juno compiler itself (`classfile`, `bytecode`, `linker`, `backend`,
-  and the `api` hardware abstraction). Builds `juno/target/juno-<version>.jar`, an executable
-  jar whose main class is `io.github.jabrena.juno.Main`.
-- [`juno-examples/`](juno-examples) — example Java programs written against the `juno` module's `api`
-  package, compiled by Maven like any other Java module (`juno-examples/target/classes`) so they are
-  checked for compile errors on every build.
+- [`juno-api/`](juno-api) — the small Java-facing hardware API (`Gpio`, `Delay`, `Clock`,
+  `DigitalOutput`, `LedMatrix`, `Serial`, `Mouse`, …) that Juno recognizes as compiler intrinsics.
+  Has no dependency on the compiler, so example/user code only needs this module on its classpath.
+- [`juno/`](juno) — the Juno compiler itself (`classfile`, `bytecode`, `linker`, `backend`, …).
+  Builds `juno/target/juno-<version>.jar`, an executable jar whose main class is
+  `io.github.jabrena.juno.Main`.
+- [`juno-examples/`](juno-examples) — example Java programs written against `juno-api`, compiled by
+  Maven like any other Java module (`juno-examples/target/classes`) so they are checked for
+  compile errors on every build.
 
 ## Quick start
 
@@ -35,10 +38,10 @@ Requirements: JDK 25+ and Maven 3.9+.
 ./mvnw clean package
 ```
 
-This builds both modules: `juno/target/juno-0.1.0-SNAPSHOT.jar` (the compiler) and
-`juno-examples/target/classes` (the compiled example programs). To turn an example into a `.ino`
-sketch and run it on real UNO R4 hardware with `arduino-cli`, see
-[docs/ARDUINO.md](docs/ARDUINO.md).
+This builds all three modules: `juno-api/target/classes` (the hardware API),
+`juno/target/juno-0.1.0-SNAPSHOT.jar` (the compiler), and `juno-examples/target/classes` (the
+compiled example programs). To turn an example into a `.ino` sketch and run it on real UNO R4
+hardware with `arduino-cli`, see [docs/ARDUINO.md](docs/ARDUINO.md).
 
 ## Java API
 
@@ -75,7 +78,7 @@ Before generating or uploading a sketch, inspect conservative runtime-risk and r
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar inspect \
   --main ArenaFeaturesPulse \
-  --classpath juno-examples/target/classes:juno/target/classes \
+  --classpath juno-examples/target/classes:juno-api/target/classes \
   --risks
 ```
 
@@ -93,9 +96,10 @@ memory report remains authoritative for final RAM and flash use.
   eliminates unreachable methods.
 - `backend` emits standalone Arduino C++ with compact operand/local stacks. The native compiler
   can then optimize those fixed-size structures.
-- `api` provides the small Java-facing hardware abstraction.
 
-All of the above live under [`juno/src/main/java/io/github/jabrena/juno/`](juno/src/main/java/io/github/jabrena/juno).
+The above live under [`juno/src/main/java/io/github/jabrena/juno/`](juno/src/main/java/io/github/jabrena/juno).
+The small Java-facing hardware abstraction lives separately, in
+[`juno-api/src/main/java/io/github/jabrena/juno/api/`](juno-api/src/main/java/io/github/jabrena/juno/api).
 
 Juno currently uses ArduinoCore-renesas as its HAL. Moving selected intrinsics to Renesas FSP or
 direct registers, then adding an SSA IR before C emission, are natural later steps.
@@ -112,11 +116,12 @@ diagnostics, and pass generated C++ through `clang++` or `g++` with a minimal Ar
 compatibility header when one is available.
 
 ```bash
-./mvnw -pl juno javadoc:javadoc
+./mvnw javadoc:aggregate
 ```
 
-Generates the `juno` module's Javadoc HTML into `docs/javadocs/<version>/apidocs`, e.g.
-`docs/javadocs/0.1.0-SNAPSHOT/apidocs/index.html`.
+Generates a combined Javadoc site for `juno-api` and `juno` into `docs/javadocs/<version>/apidocs`,
+e.g. `docs/javadocs/0.1.0-SNAPSHOT/apidocs/index.html` (`juno-examples` is excluded, since it's
+example programs rather than library API).
 
 ## References
 

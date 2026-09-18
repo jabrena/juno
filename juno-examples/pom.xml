@@ -14,10 +14,14 @@
     <name>Juno Examples</name>
     <description>Example Java programs demonstrating the Juno hardware API</description>
 
+    <properties>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.github.jabrena</groupId>
-            <artifactId>juno</artifactId>
+            <artifactId>juno-api</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

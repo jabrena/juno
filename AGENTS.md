@@ -29,9 +29,15 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 
 ## File structure
 
-This is a multi-module Maven build: the `juno` module is the compiler, the `juno-examples` module
-is example programs written against it.
+This is a multi-module Maven build: the `juno-api` module is the Java-facing hardware API, `juno`
+is the compiler, and `juno-examples` is example programs written against `juno-api`.
 
+- `juno-api/src/main/java/io/github/jabrena/juno/api/` – WRITE here: the Java-facing hardware API
+  (`Gpio`, `Delay`, `Clock`, `DigitalOutput`, `LedMatrix`, `Serial`, `Mouse`, …). Every `native` method here
+  must have a matching entry in `juno`'s `linker/Intrinsics.java` and
+  `backend/ArduinoCppBackend#intrinsicExpression`. This module has no dependency on `juno`; the
+  compiler recognizes intrinsics by matching fully-qualified class/method names read from `.class`
+  bytecode, not by a compile-time dependency.
 - `juno/src/main/java/io/github/jabrena/juno/classfile/` – WRITE here: `.class` parsing and
   constant pool resolution.
 - `juno/src/main/java/io/github/jabrena/juno/bytecode/` – WRITE here: the admitted opcode
@@ -40,31 +46,31 @@ is example programs written against it.
   `Intrinsics` registry, `Descriptor` type checks.
 - `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `ArduinoCppBackend`, the
   C++ emitter and intrinsic lowering (`intrinsicExpression`), plus `CppNames`.
-- `juno/src/main/java/io/github/jabrena/juno/api/` – WRITE here: the Java-facing hardware API
-  (`Gpio`, `Delay`, `Clock`, `DigitalOutput`, `LedMatrix`, `Serial`, `Mouse`, …). Every `native` method here
-  must have a matching entry in `linker/Intrinsics.java` and
-  `backend/ArduinoCppBackend#intrinsicExpression`.
 - `juno/src/test/java/io/github/jabrena/juno/` – WRITE here: compiler unit tests and the
   generated-C++ syntax check (`GeneratedCppSyntaxTest`, requires `clang++`/`g++` locally; skips
-  otherwise).
+  otherwise). These fixtures import `juno-api` classes (a test-scope dependency of `juno`) via
+  `CompilerTestSupport`, which resolves the compiler's own classpath relative to `juno`'s working
+  directory (`target/classes` plus `../juno-api/target/classes`) — update both paths together if
+  the module layout changes again.
 - `juno/src/test/resources/` – WRITE here: minimal Arduino header stubs (`Arduino.h`,
   `Arduino_LED_Matrix.h`) used only to syntax-check generated sketches offline.
 - `juno-examples/src/main/java/` – WRITE here: example Java programs (`Blink.java`,
   `LedMatrixHeart.java`, `LedMatrixSnake.java`, `SerialCounter.java`, …) demonstrating the
-  supported API; they are a normal Maven module (depends on the `juno` module's `juno` artifact)
+  supported API; they are a normal Maven module (depends on the `juno-api` artifact, not `juno`)
   so `mvn compile` checks they still build. Keep them buildable end-to-end via `arduino-cli` too.
 - `docs/` – WRITE here: supporting documentation (`ARDUINO.md` for the `arduino-cli` workflow,
   `TYPES.md` for the Java/Arduino type mapping).
-- `docs/javadocs/<version>/` – **generated, currently tracked**: Javadoc HTML for the `juno`
-  module (`./mvnw -pl juno javadoc:javadoc`). Not gitignored by request — regenerate rather
-  than hand-edit, and expect it to be committed for release versions.
+- `docs/javadocs/<version>/` – **generated, currently tracked**: combined Javadoc HTML for the
+  `juno-api` and `juno` modules (`./mvnw javadoc:aggregate`, run from the repo root). Not
+  gitignored by request — regenerate rather than hand-edit, and expect it to be committed for
+  release versions.
 - `documentation/` – WRITE here: images and video assets (board photos, demo clips).
 - `build/` – **READ only / generated**: Juno-generated `.ino` sketches (`build/juno/<Main>/<Main>.ino`).
   Gitignored; never hand-edit.
-- `target/`, `juno/target/`, `juno-examples/target/` – **READ only / generated**: Maven build output.
-  Gitignored.
-- `pom.xml` (root, `juno/`, `juno-examples/`), `README.md`, `docs/ARDUINO.md` – WRITE here: build
-  configuration and documentation.
+- `target/`, `juno-api/target/`, `juno/target/`, `juno-examples/target/` – **READ only / generated**:
+  Maven build output. Gitignored.
+- `pom.xml` (root, `juno-api/`, `juno/`, `juno-examples/`), `README.md`, `docs/ARDUINO.md` – WRITE
+  here: build configuration and documentation.
 
 ## Commands
 
@@ -78,12 +84,12 @@ is example programs written against it.
 # Full verify, matching CI (.github/workflows/maven.yaml)
 ./mvnw --batch-mode --no-transfer-progress verify
 
-# Generate the juno module's Javadoc HTML into docs/javadocs/<version>/apidocs
-./mvnw -pl juno javadoc:javadoc
+# Generate the combined juno-api + juno Javadoc HTML into docs/javadocs/<version>/apidocs
+./mvnw javadoc:aggregate
 
 # Run Juno: link + emit the Arduino sketch for an example already built by `mvn package`
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main <Name> --classpath juno-examples/target/classes:juno/target/classes
+  --main <Name> --classpath juno-examples/target/classes:juno-api/target/classes
 
 # Compile the generated sketch against the real Arduino toolchain (must be installed separately)
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/<Name>

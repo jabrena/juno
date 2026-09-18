@@ -16,6 +16,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.github.jabrena</groupId>
+            <artifactId>juno-api</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
@@ -34,14 +40,6 @@
                             <mainClass>io.github.jabrena.juno.Main</mainClass>
                         </manifest>
                     </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <outputDirectory>${project.basedir}/../docs/javadocs/${project.version}</outputDirectory>
-                    <doclint>none</doclint>
                 </configuration>
             </plugin>
         </plugins>

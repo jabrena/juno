@@ -38,10 +38,11 @@ From the repository root:
 ./mvnw clean package
 ```
 
-This builds the `juno` module's compiler jar (`juno/target/juno-0.1.0-SNAPSHOT.jar`) and
-compiles every program under `juno-examples/src/main/java` (`juno-examples/target/classes`). Every example
-below reuses the same classpath, `juno-examples/target/classes:juno/target/classes`, no matter which
-Juno API it uses.
+This builds the `juno` module's compiler jar (`juno/target/juno-0.1.0-SNAPSHOT.jar`), the
+`juno-api` module's hardware API classes (`juno-api/target/classes`), and compiles every program
+under `juno-examples/src/main/java` (`juno-examples/target/classes`). Every example below reuses
+the same classpath, `juno-examples/target/classes:juno-api/target/classes`, no matter which Juno
+API it uses.
 
 ## Compile and upload a sketch
 
@@ -50,7 +51,7 @@ Generate the `.ino` sketch for a given example's main class, then hand it to `ar
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main <ExampleClassName> \
-  --classpath juno-examples/target/classes:juno/target/classes
+  --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/<ExampleClassName>
 arduino-cli upload \
@@ -68,7 +69,7 @@ The generated sketch is `build/juno/<ExampleClassName>/<ExampleClassName>.ino`. 
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main Blink \
-  --classpath juno-examples/target/classes:juno/target/classes
+  --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/Blink
 arduino-cli upload \
@@ -88,7 +89,7 @@ serial port both work end to end:
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main SerialCounter \
-  --classpath juno-examples/target/classes:juno/target/classes
+  --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/SerialCounter
 arduino-cli upload \
@@ -105,11 +106,10 @@ arduino-cli monitor -p /dev/cu.YOUR_PORT -c baudrate=9600
 
 The intended output is `0`, `1`, `2`, ... once a second. Press `Ctrl+C` to exit the monitor.
 
-Known limitation: USB serial output is not currently reliable when the Java entry point never
-returns. Juno invokes the entry point from Arduino `setup()`, and an infinite Java loop can prevent
-the UNO R4 USB service from being polled normally. During the runtime-risk board test the monitor
-connected successfully but received no bytes. LED-based examples remain reliable while this backend
-integration issue is addressed.
+Generated sketches keep the UNO R4's USB service polled even though the Java entry point never
+returns (Juno invokes it from Arduino `setup()`): the backend emits a `yield()` call at every loop
+backedge, and the generated `yield()` override polls `Serial`'s boolean conversion, the core's
+supported hook into TinyUSB's `tud_task()`.
 
 ### LED matrix examples
 
@@ -137,7 +137,7 @@ arduino-cli lib install Mouse
 
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main RatonLoco \
-  --classpath juno-examples/target/classes:juno/target/classes
+  --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/RatonLoco
 arduino-cli upload \
