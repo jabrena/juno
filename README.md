@@ -74,6 +74,9 @@ Supported today:
 - static methods with `boolean`, `byte`, `char`, `short`, and `int` arguments/results
 - local variables, integer constants, arithmetic, bitwise operations, shifts, comparisons,
   conditionals, and loops
+- `private/static final` primitive constants (`boolean`/`byte`/`char`/`short`/`int`) initialized
+  with a compile-time constant expression, same class or a different one — `javac` inlines these
+  as ordinary literals (JLS 4.12.4), so Juno never sees a field read
 - direct static calls with closed-world reachability; unused methods are omitted
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
@@ -82,7 +85,8 @@ Supported today:
 Not yet supported:
 
 - general objects, constructors, instance/virtual/interface calls, or arrays used by application code
-- static fields, strings, exceptions, garbage collection, threads, reflection, or dynamic loading
+- mutable/non-constant static fields (needs `getstatic`/`putstatic`), strings, exceptions, garbage
+  collection, threads, reflection, or dynamic loading
 - `long`, `float`, and `double`
 - the desktop JDK class library
 

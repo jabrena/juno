@@ -258,4 +258,86 @@ class JunoCompilerTest {
         assertTrue(result.report().irBlocks() > 2, "addTo's loop needs more than one block per method");
         assertEquals(Set.of(Intrinsic.GPIO_PIN_MODE, Intrinsic.DELAY_MILLIS), result.report().intrinsics());
     }
+
+    @Test
+    void inlinesASameClassStaticFinalIntConstant() throws Exception {
+        // static final int fields initialized with a constant expression are compile-time constants
+        // per JLS 4.12.4: javac inlines the literal at every use, same class or not, so this never
+        // reaches the linker/backend as a getstatic - it's just an iconst/bipush/sipush like any
+        // other literal. This mirrors juno-examples' Blink.java (`private static final int LED = 13`),
+        // already flashed and verified on hardware; this test just locks the behavior in.
+        String source = """
+                package demo;
+                public final class SameClassConstant {
+                    private static final int LIMIT = 4;
+                    static int addTo() {
+                        int value = 0;
+                        for (int i = 0; i < LIMIT; i++) value += i;
+                        return value;
+                    }
+                    public static void main(String[] args) {
+                        addTo();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.SameClassConstant", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SameClassConstant");
+
+        assertTrue(generated.contains("Closed-world entry point: demo.SameClassConstant.main"));
+        assertFalse(generated.contains("getstatic"), "javac must inline the constant, not emit a field read");
+    }
+
+    @Test
+    void inlinesACrossClassStaticFinalIntConstant() throws Exception {
+        String declaringSource = """
+                package demo;
+                public final class Limits {
+                    static final int MAX = 4;
+                }
+                """;
+        String usingSource = """
+                package demo;
+                public final class CrossClassConstant {
+                    static int addTo() {
+                        int value = 0;
+                        for (int i = 0; i < Limits.MAX; i++) value += i;
+                        return value;
+                    }
+                    public static void main(String[] args) {
+                        addTo();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Limits", declaringSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.CrossClassConstant", usingSource);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CrossClassConstant");
+
+        assertTrue(generated.contains("Closed-world entry point: demo.CrossClassConstant.main"));
+        assertFalse(generated.contains("getstatic"));
+    }
+
+    @Test
+    void reportsAMutableStaticFieldAsAnUnsupportedGetstaticOpcode() throws Exception {
+        // A non-final (or otherwise non-constant) static field is genuinely unsupported: it needs
+        // getstatic/putstatic, which the decoder rejects. This just confirms the failure is a clear,
+        // named CompileException rather than javac's inlining silently making it work too.
+        String source = """
+                package demo;
+                public final class MutableStatic {
+                    static int counter = 0;
+                    public static void main(String[] args) {
+                        counter = counter + 1;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MutableStatic", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MutableStatic"));
+
+        assertTrue(exception.getMessage().contains("demo.MutableStatic.main"));
+        assertTrue(exception.getMessage().contains("getstatic"));
+    }
 }

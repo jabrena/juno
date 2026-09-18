@@ -110,6 +110,8 @@ public final class BytecodeDecoder {
             case 167 -> "goto";
             case 172 -> "ireturn";
             case 177 -> "return";
+            case 178 -> "getstatic";
+            case 179 -> "putstatic";
             case 182 -> "invokevirtual";
             case 184 -> "invokestatic";
             default -> "unknown";
