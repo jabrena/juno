@@ -340,4 +340,107 @@ class JunoCompilerTest {
         assertTrue(exception.getMessage().contains("demo.MutableStatic.main"));
         assertTrue(exception.getMessage().contains("getstatic"));
     }
+
+    @Test
+    void supportsALocalArrayWithBoundsCheckedAccessAndAConstantFoldedLength() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Gpio;
+                public final class ArrayDemo {
+                    static int sum(int[] values, int count) {
+                        int total = 0;
+                        for (int i = 0; i < count; i++) total += values[i];
+                        return total;
+                    }
+                    public static void main(String[] args) {
+                        int[] pins = new int[3];
+                        pins[0] = 2;
+                        pins[1] = 3;
+                        pins[2] = 4;
+                        int total = sum(pins, pins.length);
+                        Gpio.pinMode(total, Gpio.OUTPUT);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ArrayDemo", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ArrayDemo");
+
+        assertTrue(generated.contains("int32_t arr_"), "the local array must be declared as a real C array");
+        assertTrue(generated.contains(">= 3) juno_panic()"),
+                "writes into the 3-element local array must be bounds-checked against its known length");
+        assertTrue(generated.contains("(int32_t* arg0, int32_t arg1)"),
+                "sum's int[] parameter must be a pointer, with the explicit count as a second parameter");
+        // pins.length either folds to a compile-time constant or compileJuno throws (see the negative
+        // test below); reaching this point at all already proves it resolved successfully.
+    }
+
+    @Test
+    void rejectsANonConstantArrayLength() throws Exception {
+        String source = """
+                package demo;
+                public final class NonConstLen {
+                    public static void main(String[] args) {
+                        int n = 5;
+                        int[] arr = new int[n];
+                        arr[0] = 1;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NonConstLen", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NonConstLen"));
+
+        assertTrue(exception.getMessage().contains("array length must be a compile-time constant"));
+    }
+
+    @Test
+    void rejectsLengthOnAnArrayReceivedAsAParameter() throws Exception {
+        // .length needs a statically-known size; a parameter's array could have come from any caller
+        // with any length, so this is a clear compile error rather than a silently wrong answer.
+        String source = """
+                package demo;
+                public final class LengthOnParam {
+                    static int firstLength(int[] values) {
+                        return values.length;
+                    }
+                    public static void main(String[] args) {
+                        int[] a = new int[2];
+                        firstLength(a);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.LengthOnParam", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LengthOnParam"));
+
+        assertTrue(exception.getMessage().contains("demo.LengthOnParam.firstLength"));
+        assertTrue(exception.getMessage().contains("array length is not known at compile time"));
+    }
+
+    @Test
+    void aReassignedArrayLocalDegradesToUncheckedAccessInsteadOfFailing() throws Exception {
+        // arr is astore'd twice, so it is not "effectively final" and is not tracked: both stores must
+        // still compile (raw pointer semantics), just without a bounds check.
+        String source = """
+                package demo;
+                public final class Reassigned {
+                    public static void main(String[] args) {
+                        int[] arr = new int[2];
+                        arr[0] = 1;
+                        arr = new int[3];
+                        arr[0] = 2;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Reassigned", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Reassigned");
+
+        assertFalse(generated.contains(">= 2) juno_panic()") || generated.contains(">= 3) juno_panic()"),
+                "a reassigned local is not effectively-final and must not be bounds-checked");
+        assertTrue(generated.contains("] = v"), "both stores must still compile, as raw pointer writes");
+    }
 }

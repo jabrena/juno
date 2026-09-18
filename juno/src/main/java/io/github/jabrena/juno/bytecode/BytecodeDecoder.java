@@ -22,16 +22,16 @@ public final class BytecodeDecoder {
             switch (opcode) {
                 case 0, 2, 3, 4, 5, 6, 7, 8,
                         26, 27, 28, 29, 42, 43, 44, 45,
-                        59, 60, 61, 62, 75, 76, 77, 78,
-                        87, 89, 96, 100, 104, 108, 112, 116,
+                        46, 59, 60, 61, 62, 75, 76, 77, 78,
+                        79, 87, 89, 96, 100, 104, 108, 112, 116,
                         120, 122, 124, 126, 128, 130,
-                        145, 146, 147, 172, 177 -> length = 1;
+                        145, 146, 147, 172, 177, 190 -> length = 1;
                 case 16 -> {
                     require(code, offset, 2, method);
                     operandA = code[offset + 1];
                     length = 2;
                 }
-                case 18, 21, 25, 54, 58 -> {
+                case 18, 21, 25, 54, 58, 188 -> {
                     require(code, offset, 2, method);
                     operandA = unsigned(code[offset + 1]);
                     length = 2;
@@ -73,10 +73,12 @@ public final class BytecodeDecoder {
             case 26, 27, 28, 29 -> "iload_" + (opcode - 26);
             case 25 -> "aload";
             case 42, 43, 44, 45 -> "aload_" + (opcode - 42);
+            case 46 -> "iaload";
             case 54 -> "istore";
             case 59, 60, 61, 62 -> "istore_" + (opcode - 59);
             case 58 -> "astore";
             case 75, 76, 77, 78 -> "astore_" + (opcode - 75);
+            case 79 -> "iastore";
             case 87 -> "pop";
             case 89 -> "dup";
             case 96 -> "iadd";
@@ -114,6 +116,8 @@ public final class BytecodeDecoder {
             case 179 -> "putstatic";
             case 182 -> "invokevirtual";
             case 184 -> "invokestatic";
+            case 188 -> "newarray";
+            case 190 -> "arraylength";
             default -> "unknown";
         };
     }

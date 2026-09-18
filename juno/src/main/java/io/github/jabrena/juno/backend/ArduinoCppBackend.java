@@ -2,6 +2,7 @@ package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
+import io.github.jabrena.juno.ir.ArrayDeclaration;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrBasicBlock;
@@ -77,8 +78,19 @@ public final class ArduinoCppBackend {
         Descriptor descriptor = Descriptor.parse(method.reference().descriptor());
         output.append(prototype(method.reference())).append(" {\n")
                 .append("  int32_t locals[").append(Math.max(1, method.maxLocals())).append("] = {};\n");
-        for (int index = 0; index < descriptor.parameters().size(); index++) {
-            output.append("  locals[").append(index).append("] = arg").append(index).append(";\n");
+        for (ArrayDeclaration array : method.arrayDeclarations()) {
+            output.append("  int32_t arr_").append(array.handle().id()).append('[').append(array.length())
+                    .append("] = {};\n");
+        }
+        List<String> parameterTypes = descriptor.parameters();
+        for (int index = 0; index < parameterTypes.size(); index++) {
+            output.append("  locals[").append(index).append("] = ");
+            if (Descriptor.isIntArray(parameterTypes.get(index))) {
+                output.append(handleOf("arg" + index));
+            } else {
+                output.append("arg").append(index);
+            }
+            output.append(";\n");
         }
         if (method.valueCount() > 0) {
             // Declared without initializers, and up front: a goto into a later block must not jump
@@ -136,6 +148,16 @@ public final class ArduinoCppBackend {
                     "(" + ref(compare.left()) + " " + operatorFor(compare.condition()) + " " + ref(compare.right()) + ") ? 1 : 0");
             case IrInstruction.Call call -> emitUserCall(output, call);
             case IrInstruction.IntrinsicCall call -> emitIntrinsicCall(output, call);
+            case IrInstruction.NewArray newArray -> assign(output, newArray.target(),
+                    handleOf("arr_" + newArray.target().id()));
+            case IrInstruction.ArrayLoad load -> assign(output, load.target(),
+                    "reinterpret_cast<int32_t*>(" + ref(load.array()) + ")[" + ref(load.index()) + "]");
+            case IrInstruction.ArrayStore store -> output.append("  reinterpret_cast<int32_t*>(")
+                    .append(ref(store.array())).append(")[").append(ref(store.index())).append("] = ")
+                    .append(ref(store.value())).append(";\n");
+            case IrInstruction.BoundsCheck check -> output.append("  if (").append(ref(check.index()))
+                    .append(" < 0 || ").append(ref(check.index())).append(" >= ").append(check.length())
+                    .append(") juno_panic();\n");
         }
     }
 
@@ -160,6 +182,7 @@ public final class ArduinoCppBackend {
     }
 
     private void emitUserCall(StringBuilder output, IrInstruction.Call call) {
+        List<String> parameterTypes = Descriptor.parse(call.method().descriptor()).parameters();
         output.append("  ");
         if (call.target().isPresent()) {
             output.append(ref(call.target().get())).append(" = ");
@@ -170,7 +193,11 @@ public final class ArduinoCppBackend {
             if (index > 0) {
                 output.append(", ");
             }
-            output.append(ref(arguments.get(index)));
+            if (Descriptor.isIntArray(parameterTypes.get(index))) {
+                output.append("reinterpret_cast<int32_t*>(").append(ref(arguments.get(index))).append(')');
+            } else {
+                output.append(ref(arguments.get(index)));
+            }
         }
         output.append(");\n");
     }
@@ -264,16 +291,28 @@ public final class ArduinoCppBackend {
         return "v" + value.id();
     }
 
+    /**
+     * Converts a pointer expression to the {@code int32_t} handle representation every array reference is
+     * stored as. {@code reinterpret_cast<int32_t>(pointer)} is only valid when a pointer fits in 32 bits —
+     * true on the actual Cortex-M4 target, but not on a 64-bit host, where syntax checks (and any other
+     * non-target compilation) would reject it. Going through {@code intptr_t} first is valid on both: exact
+     * on the 32-bit target, and merely truncating (never executed there) on a 64-bit host.
+     */
+    private String handleOf(String pointerExpression) {
+        return "static_cast<int32_t>(reinterpret_cast<intptr_t>(" + pointerExpression + "))";
+    }
+
     private String prototype(MethodRef method) {
         Descriptor descriptor = Descriptor.parse(method.descriptor());
         String returnType = descriptor.returnsVoid() ? "void" : "int32_t";
         StringBuilder result = new StringBuilder("static ").append(returnType).append(' ')
                 .append(CppNames.method(method)).append('(');
-        for (int i = 0; i < descriptor.parameters().size(); i++) {
+        List<String> parameterTypes = descriptor.parameters();
+        for (int i = 0; i < parameterTypes.size(); i++) {
             if (i > 0) {
                 result.append(", ");
             }
-            result.append("int32_t arg").append(i);
+            result.append(Descriptor.isIntArray(parameterTypes.get(i)) ? "int32_t* arg" : "int32_t arg").append(i);
         }
         return result.append(')').toString();
     }

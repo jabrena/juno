@@ -127,7 +127,7 @@ class ConstantFolderTest {
 
     private IrProgram programOf(List<IrInstruction> instructions, IrTerminator terminator) {
         IrBasicBlock block = new IrBasicBlock(0, instructions, terminator);
-        IrMethod irMethod = new IrMethod(method, 1, 8, List.of(block));
+        IrMethod irMethod = new IrMethod(method, 1, 8, List.of(), List.of(block));
         return new IrProgram(method, List.of(irMethod));
     }
 }

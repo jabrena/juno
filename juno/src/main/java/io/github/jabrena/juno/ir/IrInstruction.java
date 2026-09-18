@@ -34,4 +34,18 @@ public sealed interface IrInstruction {
     record IntrinsicCall(Optional<Value> target, Intrinsic intrinsic, Optional<Value> receiver,
                           List<Value> arguments) implements IrInstruction {
     }
+
+    /** Declares a fixed-size {@code int[length]} local array; {@code target} becomes a handle to it. */
+    record NewArray(Value target, int length) implements IrInstruction {
+    }
+
+    record ArrayLoad(Value target, Value array, Value index) implements IrInstruction {
+    }
+
+    record ArrayStore(Value array, Value index, Value value) implements IrInstruction {
+    }
+
+    /** Panics if {@code index} is outside {@code [0, length)}; emitted only when {@code length} is known. */
+    record BoundsCheck(Value index, int length) implements IrInstruction {
+    }
 }

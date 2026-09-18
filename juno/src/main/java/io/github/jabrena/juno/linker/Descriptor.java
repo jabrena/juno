@@ -32,12 +32,21 @@ public record Descriptor(List<String> parameters, String returnType) {
     }
 
     public boolean usesOnlyV01Types() {
-        return parameters.stream().allMatch(Descriptor::isIntegerLike)
+        return parameters.stream().allMatch(Descriptor::isSupportedParameterType)
                 && (returnsVoid() || isIntegerLike(returnType));
     }
 
     public static boolean isIntegerLike(String type) {
         return type.length() == 1 && "ZBCSI".contains(type);
+    }
+
+    /** {@code int[]} parameters are pointer-passed; arrays as return types are not yet supported. */
+    public static boolean isIntArray(String type) {
+        return type.equals("[I");
+    }
+
+    private static boolean isSupportedParameterType(String type) {
+        return isIntegerLike(type) || isIntArray(type);
     }
 
     private static ParsedType parseType(String descriptor, int start) {

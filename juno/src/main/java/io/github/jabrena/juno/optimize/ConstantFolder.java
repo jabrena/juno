@@ -40,7 +40,8 @@ public final class ConstantFolder implements CompilerPass {
         for (IrBasicBlock block : method.blocks()) {
             blocks.add(foldBlock(block));
         }
-        return new IrMethod(method.reference(), method.maxLocals(), method.valueCount(), List.copyOf(blocks));
+        return new IrMethod(method.reference(), method.maxLocals(), method.valueCount(),
+                method.arrayDeclarations(), List.copyOf(blocks));
     }
 
     private IrBasicBlock foldBlock(IrBasicBlock block) {

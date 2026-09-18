@@ -77,6 +77,13 @@ Supported today:
 - `private/static final` primitive constants (`boolean`/`byte`/`char`/`short`/`int`) initialized
   with a compile-time constant expression, same class or a different one — `javac` inlines these
   as ordinary literals (JLS 4.12.4), so Juno never sees a field read
+- `int[]` arrays: `new int[N]` with a compile-time-constant `N` (there is no heap, so every array
+  is a fixed-size local C array); passing an `int[]` to another static method (pointer semantics).
+  `arr.length` and bounds-checked `arr[i]`/`arr[i] = v` work only on an array local that is
+  assigned exactly once in its method (i.e. "effectively final") right after `new int[...]` — an
+  array received as a parameter, or a reassigned local, still supports `arr[i]`/`arr[i] = v` but
+  without a bounds check and without `.length`, since its size isn't known at compile time there.
+  Returning an `int[]` from a method is not yet supported.
 - direct static calls with closed-world reachability; unused methods are omitted
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
@@ -84,7 +91,8 @@ Supported today:
 
 Not yet supported:
 
-- general objects, constructors, instance/virtual/interface calls, or arrays used by application code
+- general objects, constructors, instance/virtual/interface calls, arrays of any type other than
+  `int[]`, multi-dimensional arrays, or returning an array from a method
 - mutable/non-constant static fields (needs `getstatic`/`putstatic`), strings, exceptions, garbage
   collection, threads, reflection, or dynamic loading
 - `long`, `float`, and `double`
@@ -130,5 +138,8 @@ Generates the `juno` module's Javadoc HTML into `docs/javadocs/<version>/apidocs
 
 - https://dev.java/
 - https://store.arduino.cc/products/uno-r4-wifi
+- https://store.arduino.cc/products/arduino-uno-rev3
+- https://store.arduino.cc/products/arduino-uno-wifi-rev2
+- https://lejos.sourceforge.io/
 - https://sunspotdev.org/
 - https://sunspotdev.org/docs/index.html

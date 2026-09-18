@@ -328,6 +328,44 @@ class GeneratedCppSyntaxTest {
     }
 
     @Test
+    void generatedArraySketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Gpio;
+                public final class ArrayDemo {
+                    static int sum(int[] values, int count) {
+                        int total = 0;
+                        for (int i = 0; i < count; i++) total += values[i];
+                        return total;
+                    }
+                    public static void main(String[] args) {
+                        int[] pins = new int[3];
+                        pins[0] = 2;
+                        pins[1] = 3;
+                        pins[2] = 4;
+                        int total = sum(pins, pins.length);
+                        Gpio.pinMode(total, Gpio.OUTPUT);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ArrayDemo", source);
+        Path sketch = temporaryDirectory.resolve("ArrayDemo.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ArrayDemo"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
+    @Test
     void generatedRatonLocoSketchPassesACppSyntaxCheck() throws Exception {
         String compiler = availableCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
