@@ -63,7 +63,7 @@ public final class ControlFlowGraphBuilder {
             }
             return new Terminator.Branch(last.offset() + last.operandA(), falseTarget);
         }
-        if (opcode == 172 || opcode == 177) {
+        if (isReturn(opcode)) {
             return new Terminator.Return();
         }
         Integer next = byOffset.higherKey(last.offset());
@@ -79,6 +79,10 @@ public final class ControlFlowGraphBuilder {
     }
 
     private boolean isBlockEnd(int opcode) {
-        return isBranch(opcode) || opcode == 172 || opcode == 177;
+        return isBranch(opcode) || isReturn(opcode);
+    }
+
+    private boolean isReturn(int opcode) {
+        return opcode == 172 || opcode == 174 || opcode == 176 || opcode == 177;
     }
 }

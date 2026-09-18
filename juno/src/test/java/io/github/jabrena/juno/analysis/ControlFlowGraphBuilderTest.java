@@ -79,6 +79,21 @@ class ControlFlowGraphBuilderTest {
     }
 
     @Test
+    void floatReturnEndsABasicBlock() {
+        List<Instruction> instructions = List.of(
+                new Instruction(0, 11, 0, 0),  // fconst_0
+                new Instruction(1, 174, 0, 0), // freturn
+                new Instruction(2, 12, 0, 0),  // fconst_1
+                new Instruction(3, 174, 0, 0)); // freturn
+
+        ControlFlowGraph cfg = builder.build("demo.FloatReturns.pick", instructions);
+
+        assertEquals(2, cfg.blocks().size());
+        assertInstanceOf(Terminator.Return.class, cfg.blockAt(0).orElseThrow().terminator());
+        assertInstanceOf(Terminator.Return.class, cfg.blockAt(2).orElseThrow().terminator());
+    }
+
+    @Test
     void invalidBranchTargetIsReported() {
         List<Instruction> instructions = List.of(
                 new Instruction(0, 153, 99, 0), // ifeq -> offset 99, which does not exist

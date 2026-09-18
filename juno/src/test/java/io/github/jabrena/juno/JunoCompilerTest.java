@@ -736,25 +736,30 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rejectsFloatAsAMethodParameterOrReturnType() throws Exception {
+    void supportsFloatMethodParametersAndReturnValues() throws Exception {
         String source = """
                 package demo;
-                public final class FloatParam {
-                    static float identity(float value) {
-                        return value;
+                import io.github.jabrena.juno.api.Delay;
+                public final class FloatMethods {
+                    static float mix(float left, int scale, float right) {
+                        return left * (float) scale + right;
                     }
                     public static void main(String[] args) {
-                        float result = identity(1.0f);
+                        float result = mix(1.25f, 2, 0.5f);
+                        Delay.millis((int) result);
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatParam", source);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatMethods", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatParam"));
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatMethods");
 
-        assertTrue(exception.getMessage().contains("demo.FloatParam.identity"));
-        assertTrue(exception.getMessage().contains("int-like"));
+        assertTrue(generated.contains("static float juno_demo_FloatMethods_mix_"));
+        assertTrue(generated.contains("(float arg0, int32_t arg1, float arg2)"));
+        assertTrue(generated.contains("locals[0].f32 = arg0;"));
+        assertTrue(generated.contains("locals[1].i32 = arg1;"));
+        assertTrue(generated.contains("locals[2].f32 = arg2;"));
+        assertTrue(generated.contains("= juno_demo_FloatMethods_mix_"));
     }
 
     @Test

@@ -25,7 +25,8 @@ public final class BytecodeDecoder {
                         46, 51, 52, 53, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 75, 76, 77, 78,
                         79, 84, 85, 86, 87, 89, 96, 97, 98, 100, 101, 102, 104, 105, 106, 108, 109, 110,
                         112, 113, 114, 116, 117, 118, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129,
-                        130, 131, 133, 134, 136, 139, 145, 146, 147, 148, 149, 150, 172, 176, 177, 190 -> length = 1;
+                        130, 131, 133, 134, 136, 139, 145, 146, 147, 148, 149, 150, 172, 174, 176, 177,
+                        190 -> length = 1;
                 case 16 -> {
                     require(code, offset, 2, method);
                     operandA = code[offset + 1];
@@ -157,6 +158,7 @@ public final class BytecodeDecoder {
             case 166 -> "if_acmpne";
             case 167 -> "goto";
             case 172 -> "ireturn";
+            case 174 -> "freturn";
             case 176 -> "areturn";
             case 177 -> "return";
             case 178 -> "getstatic";

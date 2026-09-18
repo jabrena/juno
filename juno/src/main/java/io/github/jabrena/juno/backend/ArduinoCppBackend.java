@@ -86,7 +86,10 @@ public final class ArduinoCppBackend {
     }
 
     private boolean usesFloatingPoint(IrMethod method) {
-        return method.values().stream().anyMatch(value -> value.type() != JunoType.INT32);
+        Descriptor descriptor = Descriptor.parse(method.reference().descriptor());
+        return Descriptor.isFloat(descriptor.returnType())
+                || descriptor.parameters().stream().anyMatch(Descriptor::isFloat)
+                || method.values().stream().anyMatch(value -> value.type() != JunoType.INT32);
     }
 
     private void emitMethod(StringBuilder output, IrMethod method) {
@@ -105,8 +108,10 @@ public final class ArduinoCppBackend {
         }
         List<String> parameterTypes = descriptor.parameters();
         for (int index = 0; index < parameterTypes.size(); index++) {
-            output.append("  ").append(localRef(index, JunoType.INT32, typedLocals)).append(" = ");
-            if (Descriptor.isArrayType(parameterTypes.get(index))) {
+            String parameterType = parameterTypes.get(index);
+            JunoType junoType = Descriptor.isFloat(parameterType) ? JunoType.FLOAT32 : JunoType.INT32;
+            output.append("  ").append(localRef(index, junoType, typedLocals)).append(" = ");
+            if (Descriptor.isArrayType(parameterType)) {
                 output.append(handleOf("arg" + index));
             } else {
                 output.append("arg").append(index);
@@ -120,6 +125,8 @@ public final class ArduinoCppBackend {
         }
         if (descriptor.returnsVoid()) {
             output.append("  return;\n");
+        } else if (Descriptor.isFloat(descriptor.returnType())) {
+            output.append("  juno_panic();\n  return 0.0f;\n");
         } else {
             output.append("  juno_panic();\n  return 0;\n");
         }
@@ -497,6 +504,8 @@ public final class ArduinoCppBackend {
         String returnType;
         if (descriptor.returnsVoid()) {
             returnType = "void";
+        } else if (Descriptor.isFloat(descriptor.returnType())) {
+            returnType = "float";
         } else {
             Optional<ArrayElementType> arrayReturn = arrayElementTypeOf(descriptor.returnType());
             returnType = arrayReturn.map(type -> cppType(type) + "*").orElse("int32_t");
@@ -508,8 +517,12 @@ public final class ArduinoCppBackend {
             if (i > 0) {
                 result.append(", ");
             }
-            Optional<ArrayElementType> arrayParam = arrayElementTypeOf(parameterTypes.get(i));
-            result.append(arrayParam.map(type -> cppType(type) + "* arg").orElse("int32_t arg")).append(i);
+            String parameterType = parameterTypes.get(i);
+            Optional<ArrayElementType> arrayParam = arrayElementTypeOf(parameterType);
+            String cppParameter = Descriptor.isFloat(parameterType)
+                    ? "float arg"
+                    : arrayParam.map(type -> cppType(type) + "* arg").orElse("int32_t arg");
+            result.append(cppParameter).append(i);
         }
         return result.append(')').toString();
     }

@@ -474,6 +474,11 @@ public final class BytecodeToIr {
                         nextValueId = returned.nextValueId();
                         terminator = new IrTerminator.Return(Optional.of(returned.value()));
                     }
+                    case 174 -> {
+                        Popped returned = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = returned.nextValueId();
+                        terminator = new IrTerminator.Return(Optional.of(returned.value()));
+                    }
                     case 176 -> {
                         Popped returned = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = returned.nextValueId();
@@ -745,7 +750,7 @@ public final class BytecodeToIr {
             case 133, 178, 187 -> 1;
             case 9, 10, 20, 22, 30, 31, 32, 33 -> 2;
             case 54, 56, 58, 59, 60, 61, 62, 67, 68, 69, 70, 75, 76, 77, 78,
-                    87, 153, 154, 155, 156, 157, 158, 172, 176 -> -1;
+                    87, 153, 154, 155, 156, 157, 158, 172, 174, 176 -> -1;
             case 46, 51, 52, 53 -> -1;
             case 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 120, 122, 124, 126, 128, 130,
                     149, 150 -> -1;
@@ -771,7 +776,9 @@ public final class BytecodeToIr {
         Descriptor descriptor = Descriptor.parse(called.descriptor());
         Value[] arguments = new Value[descriptor.parameters().size()];
         for (int index = arguments.length - 1; index >= 0; index--) {
-            Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
+            Popped popped = Descriptor.isFloat(descriptor.parameters().get(index))
+                    ? popFloat(instructions, stackBase, --depth, nextValueId, tracking)
+                    : pop(instructions, stackBase, --depth, nextValueId, tracking);
             nextValueId = popped.nextValueId();
             arguments[index] = popped.value();
         }
@@ -784,7 +791,9 @@ public final class BytecodeToIr {
 
         Value target = null;
         if (!descriptor.returnsVoid()) {
-            target = Value.int32(nextValueId++);
+            target = Descriptor.isFloat(descriptor.returnType())
+                    ? Value.float32(nextValueId++)
+                    : Value.int32(nextValueId++);
         }
 
         Optional<Intrinsic> intrinsic = IntrinsicRegistry.resolve(called);

@@ -17,12 +17,16 @@ public final class FloatPulse {
             Delay.millis((int) pauseMillis);
 
             float delta = increasing ? 25.0f : -25.0f;
-            pauseMillis += delta;
+            pauseMillis = advance(pauseMillis, delta);
             if (pauseMillis >= 500.0f) {
                 increasing = false;
             } else if (pauseMillis <= 100.0f) {
                 increasing = true;
             }
         }
+    }
+
+    private static float advance(float value, float delta) {
+        return value + delta;
     }
 }

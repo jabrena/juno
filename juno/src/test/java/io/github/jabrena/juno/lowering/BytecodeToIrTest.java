@@ -178,6 +178,45 @@ class BytecodeToIrTest {
                 "the merge block must read the value back from the same slot both branches wrote");
     }
 
+    @Test
+    void lowersTypedFloatArgumentsCallResultAndReturns() throws Exception {
+        String source = """
+                package demo;
+                public final class FloatCalls {
+                    static float pick(float left, int useLeft, float right) {
+                        if (useLeft != 0) return left;
+                        return right;
+                    }
+                    public static void main(String[] args) {
+                        float value = pick(1.25f, 0, 2.5f);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatCalls", source);
+        Program program = CompilerTestSupport.link(temporaryDirectory, "demo.FloatCalls");
+
+        IrMethod main = entryPointMethod(program);
+        IrInstruction.Call call = main.blocks().stream()
+                .flatMap(block -> block.instructions().stream())
+                .filter(IrInstruction.Call.class::isInstance)
+                .map(IrInstruction.Call.class::cast)
+                .findFirst()
+                .orElseThrow();
+        assertEquals(List.of(JunoType.FLOAT32, JunoType.INT32, JunoType.FLOAT32),
+                call.arguments().stream().map(value -> value.type()).toList());
+        assertEquals(JunoType.FLOAT32, call.target().orElseThrow().type());
+
+        IrMethod pick = methodNamed(program, "pick");
+        List<IrTerminator.Return> returns = pick.blocks().stream()
+                .map(IrBasicBlock::terminator)
+                .filter(IrTerminator.Return.class::isInstance)
+                .map(IrTerminator.Return.class::cast)
+                .filter(returned -> returned.value().isPresent())
+                .toList();
+        assertEquals(2, returns.size());
+        assertTrue(returns.stream().allMatch(returned -> returned.value().orElseThrow().type() == JunoType.FLOAT32));
+    }
+
     private IrInstruction.StoreLocal lastStoreLocal(List<IrInstruction> instructions) {
         List<IrInstruction.StoreLocal> stores = instructionsOfType(instructions, IrInstruction.StoreLocal.class);
         return stores.get(stores.size() - 1);

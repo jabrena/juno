@@ -23,10 +23,13 @@ class GeneratedCppSyntaxTest {
                 package demo;
                 import io.github.jabrena.juno.api.Gpio;
                 public final class FloatSmoke {
+                    static float adjust(float value, int factor, float offset) {
+                        return value * (float) factor + offset;
+                    }
                     public static void main(String[] args) {
                         float total = 0.0f;
                         for (int i = 0; i < 4; i++) total += 0.75f;
-                        float remainder = -(total * 2.0f) % 1.25f;
+                        float remainder = -adjust(total, 2, 0.0f) % 1.25f;
                         int narrowed = (int) remainder;
                         Gpio.digitalWrite(13, (float) narrowed < total);
                     }

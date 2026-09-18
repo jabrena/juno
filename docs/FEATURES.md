@@ -6,7 +6,7 @@ subset. Diagnostics identify the method, bytecode offset, and unsupported opcode
 Supported today:
 
 - `static void main(String[])` and the embedded-friendly `static void main()`
-- static methods with `boolean`, `byte`, `char`, `short`, and `int` arguments/results
+- static methods with `boolean`, `byte`, `char`, `short`, `int`, and `float` arguments/results
 - local variables, integer constants, arithmetic, bitwise operations, shifts, comparisons,
   conditionals, and loops
 - `private/static final` primitive constants (`boolean`/`byte`/`char`/`short`/`int`) initialized
@@ -26,10 +26,10 @@ Supported today:
 - `long` locals with arithmetic, shifts, bitwise operations, comparisons, `int`/`long` conversions,
   and loops — represented internally as a pair of 32-bit halves, since there is no 64-bit register on
   the target. Not supported as a method parameter or return type, a field, or an array element type.
-- `float` locals with constants, arithmetic (including remainder), negation, comparisons, `int`/`float`
-  conversions, and loops. Java's NaN comparison rules and saturating/NaN-to-zero `float`-to-`int`
-  conversion are preserved. Not supported as a method parameter or return type, a field, or an array
-  element type. `double` remains entirely unsupported.
+- `float` locals and static method parameters/results, with constants, arithmetic (including remainder),
+  negation, comparisons, `int`/`float` conversions, calls, returns, and loops. Java's NaN comparison rules
+  and saturating/NaN-to-zero `float`-to-`int` conversion are preserved. Float fields and arrays are not
+  supported. `double` remains entirely unsupported.
 - `enum` constants as plain 0-based ordinal `int`s — Juno never constructs a real enum object (no
   heap), it reads a constant's declaration-order position directly. Supported: enum-typed locals,
   parameters, and return values; `==`/`!=` comparisons (including against a named constant). Not
@@ -57,7 +57,7 @@ Not yet supported:
   simple records (see above) are the one narrow exception
 - mutable/non-constant static fields (needs `getstatic`/`putstatic`), strings, exceptions, garbage
   collection, threads, reflection, or dynamic loading
-- `long` or `float` as a method parameter/return type, field, or array element type; `double` entirely
+- `long` as a method parameter/return type, field, or array element type; `float` fields or arrays; `double` entirely
 - `switch` on an enum, enum instance methods (`.name()`, `.ordinal()`, etc.), `values()`/`valueOf()`,
   and enums with per-constant state (custom constructors/fields/abstract methods)
 - records as a method parameter/return type, `equals()`/`hashCode()`/`toString()`, non-canonical

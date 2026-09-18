@@ -45,12 +45,16 @@ public record Descriptor(List<String> parameters, String returnType) {
      */
     public boolean usesOnlyV01Types(Set<String> enumClassNames) {
         return parameters.stream().allMatch(type -> isSupportedParameterType(type, enumClassNames))
-                && (returnsVoid() || isIntegerLike(returnType) || isArrayType(returnType)
+                && (returnsVoid() || isIntegerLike(returnType) || isFloat(returnType) || isArrayType(returnType)
                         || isEnumType(returnType, enumClassNames));
     }
 
     public static boolean isIntegerLike(String type) {
         return type.length() == 1 && "ZBCSI".contains(type);
+    }
+
+    public static boolean isFloat(String type) {
+        return type.equals("F");
     }
 
     /**
@@ -74,7 +78,7 @@ public record Descriptor(List<String> parameters, String returnType) {
     }
 
     private static boolean isSupportedParameterType(String type, Set<String> enumClassNames) {
-        return isIntegerLike(type) || isArrayType(type) || isEnumType(type, enumClassNames);
+        return isIntegerLike(type) || isFloat(type) || isArrayType(type) || isEnumType(type, enumClassNames);
     }
 
     private static ParsedType parseType(String descriptor, int start) {

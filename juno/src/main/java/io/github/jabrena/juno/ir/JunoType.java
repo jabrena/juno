@@ -3,8 +3,8 @@ package io.github.jabrena.juno.ir;
 /**
  * The scalar runtime types a Juno IR {@link Value} can carry.
  *
- * <p>Current bytecode lowering produces only {@link #INT32}. The floating-point variants establish the typed
- * IR/backend boundary needed by future float and double lowering; their JVM opcodes remain unsupported.
+ * <p>Current bytecode lowering produces {@link #INT32} and {@link #FLOAT32}. {@link #FLOAT64} reserves the
+ * typed IR/backend lane needed by future double lowering; double bytecodes remain unsupported.
  */
 public enum JunoType {
     INT32(1),

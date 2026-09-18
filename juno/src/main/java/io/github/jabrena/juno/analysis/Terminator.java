@@ -8,7 +8,7 @@ public sealed interface Terminator {
     /** A conditional branch: control goes to {@code trueTarget} or falls through to {@code falseTarget}. */
     record Branch(int trueTarget, int falseTarget) implements Terminator {}
 
-    /** {@code ireturn} or {@code return}, or the implicit return past the last instruction of a method. */
+    /** A supported JVM return opcode, or the implicit return past the last instruction of a method. */
     record Return() implements Terminator {}
 
     /** Falls into the next block without an explicit branch instruction. */

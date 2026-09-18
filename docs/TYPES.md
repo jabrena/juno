@@ -6,9 +6,9 @@ records an explicit `JunoType` for every `Value`; the currently accepted bytecod
 
 ## Supported Java types
 
-`Descriptor.isIntegerLike` (in
+Method descriptor validation (in
 [`juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java`](../juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java))
-admits five primitive JVM descriptor types as ordinary scalar method parameters/results:
+admits six primitive JVM descriptor types as ordinary scalar method parameters/results:
 
 | Java type | JVM descriptor |
 |-----------|-----------------|
@@ -17,12 +17,13 @@ admits five primitive JVM descriptor types as ordinary scalar method parameters/
 | `char`    | `C` |
 | `short`   | `S` |
 | `int`     | `I` |
+| `float`   | `F` |
 
 Primitive arrays and simple enums are also supported as parameters/results under the restrictions in
-[FEATURES.md](FEATURES.md). `long`/`float` parameters and results, `double`, and general reference types remain
+[FEATURES.md](FEATURES.md). `long` parameters and results, `double`, and general reference types remain
 rejected at link time; `DigitalOutput` is a compiler-erased handle rather than a real object.
 
-## Typed IR, one currently active scalar lane
+## Typed IR scalar lanes
 
 The JVM itself never gives `boolean`, `byte`, `char`, or `short` their own operand-stack
 representation — bytecode always computes with them as a 32-bit `int` on the stack, only
@@ -103,9 +104,9 @@ method calls (`led.high()` instead of `Gpio.digitalWrite(13, true)`).
 
 ## What this rules out
 
-Juno supports the `FLOAT32` lane for local computation, but it still does not accept:
+Juno supports the `FLOAT32` lane for local computation and static method calls, but it still does not accept:
 
-- `float` method parameters/results, fields, or arrays
+- `float` fields or arrays
 - any `double` source operations; `FLOAT64` is an internal type reservation, not language support
 - `long` method parameters/results, fields, or arrays (`long` locals and arithmetic use paired `INT32` halves)
 - `String` — so no `Serial.print(String)`; only the `int` overloads exist, and multi-character

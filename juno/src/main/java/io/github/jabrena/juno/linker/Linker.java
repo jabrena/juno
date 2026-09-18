@@ -97,7 +97,7 @@ public final class Linker {
                 && descriptor.parameters().equals(List.of("[Ljava/lang/String;"))
                 && descriptor.returnsVoid();
         if (!conventionalMain && !descriptor.usesOnlyV01Types(enumClassNames)) {
-            throw new CompileException("Juno v0.1 methods may use only int-like parameters and return values: "
+            throw new CompileException("Juno v0.1 methods may use only int-like or float parameters and return values: "
                     + method.reference().displayName());
         }
     }
