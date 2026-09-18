@@ -13,10 +13,15 @@ public final class JunoCompiler {
     private final CompilationPipeline pipeline = new CompilationPipeline();
 
     public String compile(List<Path> classPath, String mainClass) {
-        Program program = pipeline.link(classPath, mainClass);
+        return compile(new CompilationRequest(classPath, mainClass)).generatedSource();
+    }
+
+    public CompilationResult compile(CompilationRequest request) {
+        Program program = pipeline.link(request.classPath(), request.mainClass());
         IrProgram ir = pipeline.lower(program);
         IrProgram optimized = pipeline.optimize(ir);
-        return pipeline.generate(optimized);
+        String source = pipeline.generate(optimized);
+        return new CompilationResult(source, CompilationReport.from(program, optimized));
     }
 
     public void compileTo(List<Path> classPath, String mainClass, Path output) {

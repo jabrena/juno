@@ -1,10 +1,14 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.intrinsic.Intrinsic;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -223,5 +227,35 @@ class JunoCompilerTest {
         assertTrue(generated.contains("static_cast<uint32_t>(a) + static_cast<uint32_t>(b)"));
         assertTrue(generated.contains("juno_imul(v"));
         assertTrue(generated.contains("juno_ineg(v"));
+    }
+
+    @Test
+    void compileWithRequestReturnsAReportAlongsideTheGeneratedSource() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.Delay;
+                public final class Reported {
+                    static int addTo(int limit) {
+                        int value = 0;
+                        for (int i = 0; i < limit; i++) value += i;
+                        return value;
+                    }
+                    public static void main(String[] args) {
+                        Gpio.pinMode(13, Gpio.OUTPUT);
+                        Delay.millis(addTo(4));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Reported", source);
+
+        CompilationResult result = new JunoCompiler().compile(
+                new CompilationRequest(List.of(temporaryDirectory, Path.of("target/classes")), "demo.Reported"));
+
+        assertTrue(result.generatedSource().contains("Closed-world entry point: demo.Reported.main"));
+        assertEquals("demo.Reported.main([Ljava/lang/String;)V", result.report().entryPoint().displayName());
+        assertEquals(2, result.report().reachableMethods(), "main and addTo, both reachable");
+        assertTrue(result.report().irBlocks() > 2, "addTo's loop needs more than one block per method");
+        assertEquals(Set.of(Intrinsic.GPIO_PIN_MODE, Intrinsic.DELAY_MILLIS), result.report().intrinsics());
     }
 }

@@ -1,5 +1,13 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.analysis.BasicBlock;
+import io.github.jabrena.juno.ir.IrBasicBlock;
+import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.ir.IrMethod;
+import io.github.jabrena.juno.ir.IrProgram;
+import io.github.jabrena.juno.linker.LinkedMethod;
+import io.github.jabrena.juno.linker.Program;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,10 +38,16 @@ public final class Main {
             System.out.println("Juno " + VERSION);
             return;
         }
-        if (!args[0].equals("compile")) {
+        if (args[0].equals("compile")) {
+            runCompile(args);
+        } else if (args[0].equals("inspect")) {
+            runInspect(args);
+        } else {
             throw new CompileException("Unknown command '" + args[0] + "'. Run with --help for usage.");
         }
+    }
 
+    private static void runCompile(String[] args) {
         String mainClass = null;
         String classPathValue = "target/classes";
         Path output = null;
@@ -61,6 +75,73 @@ public final class Main {
             String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
             output = Path.of("build", "juno", simpleName, simpleName + ".ino");
         }
+        List<Path> classPath = parseClassPath(classPathValue);
+
+        new JunoCompiler().compileTo(classPath, mainClass, output);
+        System.out.println("Generated " + output + " for Arduino UNO R4");
+    }
+
+    private static void runInspect(String[] args) {
+        String mainClass = null;
+        String classPathValue = "target/classes";
+        boolean showIr = false;
+        boolean showCfg = false;
+        for (int index = 1; index < args.length; index++) {
+            String option = args[index];
+            if (option.equals("--main")) {
+                mainClass = value(args, ++index, option);
+            } else if (option.equals("--classpath") || option.equals("-cp")) {
+                classPathValue = value(args, ++index, option);
+            } else if (option.equals("--ir")) {
+                showIr = true;
+            } else if (option.equals("--cfg")) {
+                showCfg = true;
+            } else {
+                throw new CompileException("Unknown option '" + option + "'");
+            }
+        }
+        if (mainClass == null) {
+            throw new CompileException("Missing required option --main");
+        }
+        List<Path> classPath = parseClassPath(classPathValue);
+
+        CompilationPipeline pipeline = new CompilationPipeline();
+        Program program = pipeline.link(classPath, mainClass);
+        IrProgram optimized = pipeline.optimize(pipeline.lower(program));
+        CompilationReport report = CompilationReport.from(program, optimized);
+
+        System.out.println("Entry point: " + report.entryPoint().displayName());
+        System.out.println("Reachable methods: " + report.reachableMethods());
+        System.out.println("IR basic blocks: " + report.irBlocks());
+        System.out.println("Intrinsics used: " + (report.intrinsics().isEmpty() ? "(none)" : report.intrinsics()));
+
+        if (showCfg) {
+            System.out.println();
+            System.out.println("Control flow graphs:");
+            for (LinkedMethod linked : program.methods()) {
+                System.out.println("  " + linked.method().reference().displayName());
+                for (BasicBlock block : linked.controlFlowGraph().blocks()) {
+                    System.out.println("    block " + block.start() + " -> " + block.terminator());
+                }
+            }
+        }
+        if (showIr) {
+            System.out.println();
+            System.out.println("Juno IR:");
+            for (IrMethod method : optimized.methods()) {
+                System.out.println("  " + method.reference().displayName());
+                for (IrBasicBlock block : method.blocks()) {
+                    System.out.println("    block " + block.start() + ":");
+                    for (IrInstruction instruction : block.instructions()) {
+                        System.out.println("      " + instruction);
+                    }
+                    System.out.println("      " + block.terminator());
+                }
+            }
+        }
+    }
+
+    private static List<Path> parseClassPath(String classPathValue) {
         List<Path> classPath = new ArrayList<>();
         for (String entry : classPathValue.split(java.util.regex.Pattern.quote(File.pathSeparator))) {
             if (!entry.isBlank()) {
@@ -70,9 +151,7 @@ public final class Main {
         if (classPath.isEmpty()) {
             throw new CompileException("Classpath is empty");
         }
-
-        new JunoCompiler().compileTo(classPath, mainClass, output);
-        System.out.println("Generated " + output + " for Arduino UNO R4");
+        return classPath;
     }
 
     private static String value(String[] args, int index, String option) {
@@ -88,11 +167,19 @@ public final class Main {
 
                 Usage:
                   java -jar juno.jar compile --main <class> [options]
+                  java -jar juno.jar inspect --main <class> [options]
 
-                Options:
+                compile options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
                   --output, -o <file>       Generated .ino file (default: build/juno/<Main>/<Main>.ino)
                   --board <board>           uno-r4-wifi or uno-r4-minima
+
+                inspect options:
+                  --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
+                  --ir                      Print the lowered/optimized Juno IR per reachable method
+                  --cfg                     Print each reachable method's basic-block control flow graph
+
+                Global options:
                   --help, -h                Show this help
                   --version                 Show the version
                 """;
