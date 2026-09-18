@@ -1,8 +1,8 @@
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.DigitalOutput;
-import io.github.jabrena.juno.api.LedCanvas;
-import io.github.jabrena.juno.api.LedMatrix;
-import io.github.jabrena.juno.api.LedMatrixShapes;
+import io.github.jabrena.juno.api.led.LedCanvas;
+import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.led.LedMatrixShapes;
 import io.github.jabrena.juno.api.Mouse;
 
 /**

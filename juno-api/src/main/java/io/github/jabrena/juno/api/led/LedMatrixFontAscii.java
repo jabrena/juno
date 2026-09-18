@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api;
+package io.github.jabrena.juno.api.led;
 
 /**
  * A 5x7 dot-matrix font covering the full printable ASCII range (32 space .. 126 {@code ~}), for

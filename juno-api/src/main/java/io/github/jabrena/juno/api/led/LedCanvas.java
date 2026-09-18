@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api;
+package io.github.jabrena.juno.api.led;
 
 /**
  * Pixel-addressing helpers for the UNO R4 WiFi's built-in 12x8 LED matrix. A frame is 96 pixels

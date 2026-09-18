@@ -107,7 +107,7 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.LedMatrix;
+                import io.github.jabrena.juno.api.led.LedMatrix;
                 public final class Heart {
                     public static void main(String[] args) {
                         LedMatrix.begin();
@@ -139,8 +139,8 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.LedMatrix;
-                import io.github.jabrena.juno.api.LedMatrixText;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.led.LedMatrixText;
                 public final class Digits {
                     public static void main(String[] args) {
                         LedMatrix.begin();
@@ -175,8 +175,8 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.LedMatrix;
-                import io.github.jabrena.juno.api.LedMatrixSmallText;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.led.LedMatrixSmallText;
                 public final class Decimal {
                     public static void main(String[] args) {
                         LedMatrix.begin();
@@ -210,8 +210,8 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.LedMatrix;
-                import io.github.jabrena.juno.api.LedMatrixShapes;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.led.LedMatrixShapes;
                 public final class Shapes {
                     public static void main(String[] args) {
                         LedMatrix.begin();
@@ -245,9 +245,9 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.LedMatrix;
-                import io.github.jabrena.juno.api.LedMatrixShapes;
-                import io.github.jabrena.juno.api.LedMatrixTransform;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.led.LedMatrixShapes;
+                import io.github.jabrena.juno.api.led.LedMatrixTransform;
                 public final class Triangle {
                     public static void main(String[] args) {
                         LedMatrix.begin();
@@ -283,8 +283,8 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.LedMatrix;
-                import io.github.jabrena.juno.api.LedMatrixShapes;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.led.LedMatrixShapes;
                 public final class Circle {
                     public static void main(String[] args) {
                         LedMatrix.begin();
@@ -318,8 +318,8 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.LedMatrix;
-                import io.github.jabrena.juno.api.LedMatrixText;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.led.LedMatrixText;
                 public final class Ascii {
                     public static void main(String[] args) {
                         LedMatrix.begin();

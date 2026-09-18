@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api;
+package io.github.jabrena.juno.api.led;
 
 /**
  * Rotates the points of a {@link LedMatrixShapes} shape around a pivot before drawing it, using the

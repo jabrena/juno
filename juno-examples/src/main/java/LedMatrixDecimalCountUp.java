@@ -1,6 +1,6 @@
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.LedMatrix;
-import io.github.jabrena.juno.api.LedMatrixSmallText;
+import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.led.LedMatrixSmallText;
 
 /**
  * Counts a one-decimal-digit reading from 0.0 up to 9.9 on the UNO R4 WiFi's 12x8 LED matrix,

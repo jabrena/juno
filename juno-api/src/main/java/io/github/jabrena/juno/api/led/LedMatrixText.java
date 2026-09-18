@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api;
+package io.github.jabrena.juno.api.led;
 
 /**
  * Draws {@link LedMatrixFont} and {@link LedMatrixFontAscii} glyphs into a

@@ -1,7 +1,7 @@
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.LedMatrix;
-import io.github.jabrena.juno.api.LedMatrixShapes;
-import io.github.jabrena.juno.api.LedMatrixTransform;
+import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.led.LedMatrixShapes;
+import io.github.jabrena.juno.api.led.LedMatrixTransform;
 
 /**
  * Draws a triangle on the UNO R4 WiFi's 12x8 LED matrix and steps it through the four 90-degree

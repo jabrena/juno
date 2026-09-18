@@ -1,6 +1,6 @@
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.LedMatrix;
-import io.github.jabrena.juno.api.LedMatrixText;
+import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.led.LedMatrixText;
 
 /**
  * Counts from 1 to 10 on the UNO R4 WiFi's 12x8 LED matrix using the shared 5x7 font in

@@ -110,7 +110,7 @@ class JunoCompilerTest {
     void lowersLedMatrixIntrinsicsAndOmitsUnusedHeader() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.LedMatrix;
+                import io.github.jabrena.juno.api.led.LedMatrix;
                 public final class Heart {
                     public static void main(String[] args) {
                         LedMatrix.begin();
@@ -150,8 +150,8 @@ class JunoCompilerTest {
     void rendersDigitsAndTrimsUnusedLetterGlyphs() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.LedMatrix;
-                import io.github.jabrena.juno.api.LedMatrixText;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.led.LedMatrixText;
                 public final class Digits {
                     public static void main(String[] args) {
                         int word0 = LedMatrixText.drawDigit(0, 0, 7, 4, 0);
@@ -163,8 +163,8 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Digits");
 
-        assertTrue(generated.contains("juno_io_github_jabrena_juno_api_LedMatrixText_drawDigit"));
-        assertTrue(generated.contains("juno_io_github_jabrena_juno_api_LedCanvas_setPixel"));
+        assertTrue(generated.contains("juno_io_github_jabrena_juno_api_led_LedMatrixText_drawDigit"));
+        assertTrue(generated.contains("juno_io_github_jabrena_juno_api_led_LedCanvas_setPixel"));
         assertFalse(generated.contains("letterARowBits"));
         assertFalse(generated.contains("LedMatrixFont_letterPixel"));
     }

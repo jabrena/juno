@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api;
+package io.github.jabrena.juno.api.led;
 
 /**
  * Draws rectangles (a square is just a rectangle with {@code width == height}), triangles, and

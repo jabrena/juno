@@ -1,6 +1,6 @@
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.LedMatrix;
-import io.github.jabrena.juno.api.LedMatrixText;
+import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.led.LedMatrixText;
 
 /**
  * Cycles the full printable-ASCII font in {@code LedMatrixFontAscii} one character at a time on

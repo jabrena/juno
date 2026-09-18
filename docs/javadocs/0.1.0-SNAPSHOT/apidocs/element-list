@@ -1,6 +1,7 @@
 io.github.jabrena.juno
 io.github.jabrena.juno.analysis
 io.github.jabrena.juno.api
+io.github.jabrena.juno.api.led
 io.github.jabrena.juno.backend
 io.github.jabrena.juno.bytecode
 io.github.jabrena.juno.classfile

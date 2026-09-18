@@ -1,5 +1,5 @@
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.LedMatrix;
+import io.github.jabrena.juno.api.led.LedMatrix;
 
 public final class LedMatrixHeart {
     // The UNO R4 WiFi's built-in 12x8 LED matrix; each frame is 96 pixels packed MSB-first,

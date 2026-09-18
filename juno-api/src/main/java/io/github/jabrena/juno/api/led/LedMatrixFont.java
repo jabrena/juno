@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api;
+package io.github.jabrena.juno.api.led;
 
 /**
  * A classic 5x7 dot-matrix font for digits and uppercase letters, sized to fit the UNO R4 WiFi's

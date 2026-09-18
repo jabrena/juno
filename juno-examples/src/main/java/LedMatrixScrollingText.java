@@ -1,6 +1,6 @@
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.LedMatrix;
-import io.github.jabrena.juno.api.LedMatrixText;
+import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.led.LedMatrixText;
 
 /**
  * Scrolls "Juno, Java for Arduino ONE R4" across the UNO R4 WiFi's 12x8 LED matrix from right to

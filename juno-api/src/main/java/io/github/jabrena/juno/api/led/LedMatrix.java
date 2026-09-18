@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api;
+package io.github.jabrena.juno.api.led;
 
 /** UNO R4 WiFi 12x8 built-in LED matrix operations recognized as compiler intrinsics by Juno. */
 public final class LedMatrix {

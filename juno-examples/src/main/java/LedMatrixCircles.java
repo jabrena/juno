@@ -1,6 +1,6 @@
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.LedMatrix;
-import io.github.jabrena.juno.api.LedMatrixShapes;
+import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.led.LedMatrixShapes;
 
 /**
  * Cycles a filled circle and an outlined circle, centered on the UNO R4 WiFi's 12x8 LED matrix,

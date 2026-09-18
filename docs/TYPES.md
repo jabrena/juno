@@ -111,7 +111,7 @@ Juno supports typed `INT64`, `FLOAT32`, and `FLOAT64` boundary values in additio
 a call, field, or array boundary. Remaining exclusions include:
 
 - `String` — so no `Serial.print(String)`; only the `int` overloads exist, and multi-character
-  display (see [`LedMatrixText`](../juno/src/main/java/io/github/jabrena/juno/api/LedMatrixText.java))
+  display (see [`LedMatrixText`](../juno-api/src/main/java/io/github/jabrena/juno/api/led/LedMatrixText.java))
   works character-by-character with hand-encoded font tables instead of string data
 - polymorphic objects/inheritance and unbounded allocation. Final closed-world objects and records use
   one-slot handles into a fixed 8 KiB program-lifetime arena with no reclamation

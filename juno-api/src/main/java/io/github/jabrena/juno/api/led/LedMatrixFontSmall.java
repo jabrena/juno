@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api;
+package io.github.jabrena.juno.api.led;
 
 /**
  * A compact 3x5 dot-matrix font for digits 0-9, offered as a smaller alternative to the 5x7

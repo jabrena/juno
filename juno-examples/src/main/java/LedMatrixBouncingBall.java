@@ -1,7 +1,7 @@
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.LedMatrix;
-import io.github.jabrena.juno.api.LedMatrixShapes;
+import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.led.LedMatrixShapes;
 
 /**
  * The classic bouncing-ball animation on the UNO R4 WiFi's 12x8 LED matrix: a small circle, drawn
