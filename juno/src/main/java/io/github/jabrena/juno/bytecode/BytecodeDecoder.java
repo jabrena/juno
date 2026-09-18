@@ -37,10 +37,11 @@ public final class BytecodeDecoder {
                     length = 2;
                 }
                 case 17, 19, 20, 153, 154, 155, 156, 157, 158,
-                        159, 160, 161, 162, 163, 164, 165, 166, 167, 178, 182, 184 -> {
+                        159, 160, 161, 162, 163, 164, 165, 166, 167, 178, 180, 181, 182, 183, 184, 187 -> {
                     require(code, offset, 3, method);
                     operandA = signedShort(code, offset + 1);
-                    if (opcode == 19 || opcode == 20 || opcode == 178 || opcode == 182 || opcode == 184) {
+                    if (opcode == 19 || opcode == 20 || opcode == 178 || opcode == 180 || opcode == 181
+                            || opcode == 182 || opcode == 183 || opcode == 184 || opcode == 187) {
                         operandA = unsignedShort(code, offset + 1);
                     }
                     length = 3;
@@ -144,8 +145,12 @@ public final class BytecodeDecoder {
             case 177 -> "return";
             case 178 -> "getstatic";
             case 179 -> "putstatic";
+            case 180 -> "getfield";
+            case 181 -> "putfield";
             case 182 -> "invokevirtual";
+            case 183 -> "invokespecial";
             case 184 -> "invokestatic";
+            case 187 -> "new";
             case 188 -> "newarray";
             case 190 -> "arraylength";
             default -> "unknown";

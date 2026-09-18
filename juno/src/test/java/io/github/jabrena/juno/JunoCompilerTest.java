@@ -195,10 +195,13 @@ class JunoCompilerTest {
 
     @Test
     void reportsUnsupportedBytecodeWithMethodAndOffset() throws Exception {
+        // anewarray (a reference-type array) is genuinely undecoded, unlike newarray (primitive arrays):
+        // distinct from object construction, which is now decodable but only for a recognized record (see
+        // rejectsConstructingANonRecordObject below).
         String source = """
                 package demo;
                 public final class Objects {
-                    public static void main(String[] args) { new Object(); }
+                    public static void main(String[] args) { Object[] x = new Object[3]; }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Objects", source);
@@ -726,5 +729,176 @@ class JunoCompilerTest {
         assertTrue(generated.contains(" = 1;"), "Direction.SOUTH must fold to its ordinal, 1");
         assertTrue(generated.contains(" = 0;"), "Direction.NORTH must fold to its ordinal, 0");
         assertFalse(generated.contains("getstatic"), "getstatic must be resolved away, not passed through");
+    }
+
+    @Test
+    void supportsSimpleRecordsAsLocalsWithAccessorReads() throws Exception {
+        // Scoped deliberately to "records, locals + accessors only": a record is never actually
+        // constructed (no heap), it decomposes into its N int-like component values directly at the
+        // new+invokespecial<init> site; an accessor call (p.x()) resolves straight to that value, no
+        // runtime object or method call involved. Not supported: parameters/returns, custom constructor
+        // logic, custom accessor overrides, non-int-like components.
+        String recordSource = """
+                package demo;
+                public record Point(int x, int y) {
+                }
+                """;
+        String usingSource = """
+                package demo;
+                public final class UsesPoint {
+                    public static void main(String[] args) {
+                        Point p = new Point(3, 4);
+                        int total = p.x() + p.y();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Point", recordSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesPoint", usingSource);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesPoint");
+
+        assertTrue(generated.contains("Closed-world entry point: demo.UsesPoint.main"));
+        assertTrue(generated.contains("juno_iadd("), "p.x() + p.y() must resolve to the two constructor "
+                + "argument values added directly, with no object or method call ever emitted");
+        assertFalse(generated.contains("getfield"), "getfield must be resolved away, not passed through");
+        assertFalse(generated.contains("new Point"), "no real construction/allocation should ever be emitted");
+    }
+
+    @Test
+    void rejectsARecordAsAMethodParameterOrReturnType() throws Exception {
+        // A record with N components needs N scalar slots, so passing/returning one would need real
+        // parameter-slot renumbering - explicitly out of scope, the same reason long stayed locals-only.
+        String recordSource = """
+                package demo;
+                public record Point(int x, int y) {
+                }
+                """;
+        String usingSource = """
+                package demo;
+                public final class TakesPoint {
+                    static int sum(Point p) {
+                        return p.x() + p.y();
+                    }
+                    public static void main(String[] args) {
+                        sum(new Point(1, 2));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Point", recordSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.TakesPoint", usingSource);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.TakesPoint"));
+
+        assertTrue(exception.getMessage().contains("demo.TakesPoint.sum"));
+        assertTrue(exception.getMessage().contains("int-like"));
+    }
+
+    @Test
+    void rejectsConstructingANonRecordObject() throws Exception {
+        String source = """
+                package demo;
+                public final class NewsObject {
+                    public static void main(String[] args) { new Object(); }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NewsObject", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NewsObject"));
+
+        assertTrue(exception.getMessage().contains("demo.NewsObject.main"));
+        assertTrue(exception.getMessage().contains("simple records"));
+    }
+
+    @Test
+    void rejectsARecordWithACompactConstructor() throws Exception {
+        // A compact constructor transforms arguments before they become field values, so the raw
+        // constructor arguments Juno would otherwise decompose into are NOT the real field values -
+        // must fail cleanly rather than silently use the untransformed inputs.
+        String recordSource = """
+                package demo;
+                public record Point(int x, int y) {
+                    public Point {
+                        x = Math.abs(x);
+                    }
+                }
+                """;
+        String usingSource = """
+                package demo;
+                public final class UsesCompactPoint {
+                    public static void main(String[] args) {
+                        Point p = new Point(-3, 4);
+                        int x = p.x();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Point", recordSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesCompactPoint", usingSource);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCompactPoint"));
+
+        assertTrue(exception.getMessage().contains("custom or compact constructor"));
+    }
+
+    @Test
+    void rejectsARecordWithACustomAccessorOverride() throws Exception {
+        // A hand-written accessor could return something other than the raw field (e.g. a transformed
+        // value), which Juno cannot distinguish from the trivial default without checking its bytecode.
+        String recordSource = """
+                package demo;
+                public record Point(int x, int y) {
+                    @Override
+                    public int x() {
+                        return x * 2;
+                    }
+                }
+                """;
+        String usingSource = """
+                package demo;
+                public final class UsesCustomAccessor {
+                    public static void main(String[] args) {
+                        Point p = new Point(3, 4);
+                        int x = p.x();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Point", recordSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesCustomAccessor", usingSource);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCustomAccessor"));
+
+        assertTrue(exception.getMessage().contains("custom body"));
+    }
+
+    @Test
+    void rejectsARecordWithANonIntLikeComponent() throws Exception {
+        // An array-typed component (rather than String/null) is used so the constructor argument itself
+        // is a value Juno already knows how to push (an array handle) - the rejection must come from
+        // validating the record's own shape, not from failing earlier on an unrelated unsupported opcode.
+        String recordSource = """
+                package demo;
+                public record Labeled(int[] data, int value) {
+                }
+                """;
+        String usingSource = """
+                package demo;
+                public final class UsesLabeled {
+                    public static void main(String[] args) {
+                        int[] data = new int[2];
+                        Labeled l = new Labeled(data, 3);
+                        int v = l.value();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Labeled", recordSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesLabeled", usingSource);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesLabeled"));
+
+        assertTrue(exception.getMessage().contains("boolean/byte/char/short/int components"));
     }
 }

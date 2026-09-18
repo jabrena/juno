@@ -32,6 +32,15 @@ Supported today:
   supported: `switch` on an enum (javac routes it through a synthetic lookup-table class Juno doesn't
   understand), `.name()`/`.toString()`/`.compareTo()`/`.ordinal()`, `values()`/`valueOf()`, and
   per-constant fields, methods, or constructors.
+- simple `record`s with `boolean`/`byte`/`char`/`short`/`int` components, as local variables only —
+  Juno never constructs a real object (no heap), a record decomposes into its N component values
+  directly at `new`, and an accessor call (`p.x()`) resolves straight to the matching value. Only the
+  plain compiler-generated canonical constructor and accessors are accepted (verified by their exact
+  bytecode shape); a compact/custom constructor or a hand-written accessor override is rejected, since
+  Juno cannot otherwise tell it apart from the trivial default. Not supported: records as a method
+  parameter or return type (an N-component record needs N scalar slots, which would need real
+  parameter-slot renumbering), `equals()`/`hashCode()`/`toString()`, non-canonical constructors, and
+  non-int-like components (nested records, arrays, `long`, `String`, etc.).
 - direct static calls with closed-world reachability; unused methods are omitted
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
@@ -40,13 +49,16 @@ Supported today:
 Not yet supported:
 
 - general objects, constructors, instance/virtual/interface calls, multi-dimensional arrays, or
-  returning a locally created array (only forwarding a received array parameter is supported)
+  returning a locally created array (only forwarding a received array parameter is supported) —
+  simple records (see above) are the one narrow exception
 - mutable/non-constant static fields (needs `getstatic`/`putstatic`), strings, exceptions, garbage
   collection, threads, reflection, or dynamic loading
 - `long` as a method parameter/return type, field, or array element type; `float` and `double`
   entirely
 - `switch` on an enum, enum instance methods (`.name()`, `.ordinal()`, etc.), `values()`/`valueOf()`,
   and enums with per-constant state (custom constructors/fields/abstract methods)
+- records as a method parameter/return type, `equals()`/`hashCode()`/`toString()`, non-canonical
+  constructors, custom accessor overrides, and non-int-like record components
 - the desktop JDK class library
 
 The `String[]` parameter of a conventional `main` is accepted as an entrypoint convention, but

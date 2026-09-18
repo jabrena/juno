@@ -60,12 +60,13 @@ public final class Linker {
             for (Instruction instruction : instructions) {
                 if (instruction.opcode() == 182 || instruction.opcode() == 184) {
                     MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                    if (instruction.opcode() == 182 && !IntrinsicRegistry.isIntrinsic(called)) {
+                    boolean isRecordAccessor = instruction.opcode() == 182 && RecordSupport.isAccessorCall(classes, called);
+                    if (instruction.opcode() == 182 && !IntrinsicRegistry.isIntrinsic(called) && !isRecordAccessor) {
                         throw new CompileException(method.reference().displayName() + " at bytecode offset "
                                 + instruction.offset() + ": instance call is not a Juno intrinsic: "
                                 + called.displayName());
                     }
-                    if (!IntrinsicRegistry.isIntrinsic(called)) {
+                    if (!IntrinsicRegistry.isIntrinsic(called) && !isRecordAccessor) {
                         work.addLast(called);
                     }
                 }

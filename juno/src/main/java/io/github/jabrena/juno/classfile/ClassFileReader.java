@@ -25,12 +25,13 @@ public final class ClassFileReader {
             ConstantPool pool = readConstantPool(input);
             int classAccessFlags = input.readUnsignedShort();
             String className = pool.className(input.readUnsignedShort());
-            input.readUnsignedShort(); // super class
+            int superClassIndex = input.readUnsignedShort();
+            String superClassName = superClassIndex == 0 ? null : pool.className(superClassIndex);
             skipInterfaces(input);
-            List<String> enumConstantNames = readFields(input, pool);
+            List<FieldInfo> fields = readFields(input, pool);
             List<JavaMethod> methods = readMethods(input, pool, className);
             skipAttributes(input, pool);
-            return new JavaClass(className, classAccessFlags, pool, List.copyOf(methods), enumConstantNames);
+            return new JavaClass(className, classAccessFlags, superClassName, pool, List.copyOf(methods), fields);
         } catch (IOException exception) {
             throw new CompileException("Cannot read class file", exception);
         }
@@ -86,21 +87,18 @@ public final class ClassFileReader {
         input.skipNBytes((long) count * 2);
     }
 
-    /** Returns the names of fields flagged {@code ACC_ENUM}, in declaration order (see {@link JavaClass}). */
-    private List<String> readFields(DataInputStream input, ConstantPool pool) throws IOException {
-        final int accEnum = 0x4000;
+    /** Returns every declared field, in class-file declaration order (see {@link JavaClass}). */
+    private List<FieldInfo> readFields(DataInputStream input, ConstantPool pool) throws IOException {
         int count = input.readUnsignedShort();
-        List<String> enumConstantNames = new ArrayList<>();
+        List<FieldInfo> fields = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             int accessFlags = input.readUnsignedShort();
             String name = pool.utf8(input.readUnsignedShort());
-            input.readUnsignedShort(); // descriptor
+            String descriptor = pool.utf8(input.readUnsignedShort());
             skipAttributes(input, pool);
-            if ((accessFlags & accEnum) != 0) {
-                enumConstantNames.add(name);
-            }
+            fields.add(new FieldInfo(name, descriptor, accessFlags));
         }
-        return List.copyOf(enumConstantNames);
+        return List.copyOf(fields);
     }
 
     private List<JavaMethod> readMethods(DataInputStream input, ConstantPool pool, String owner) throws IOException {

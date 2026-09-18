@@ -4,12 +4,16 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.analysis.BasicBlock;
 import io.github.jabrena.juno.analysis.ControlFlowGraph;
 import io.github.jabrena.juno.analysis.Terminator;
+import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.classfile.FieldInfo;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
+import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
+import io.github.jabrena.juno.linker.RecordSupport;
 import io.github.jabrena.juno.ir.ArrayDeclaration;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.BinaryOp;
@@ -34,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Lowers each reachable method's JVM bytecode into Juno IR: a non-SSA, block-structured form where every
@@ -50,7 +55,7 @@ import java.util.Set;
  * inferred just by reading blocks in textual order.
  *
  * <p><b>Arrays</b> (there is no heap, so every array is a fixed-size C array) are supported in a deliberately
- * narrow, always-sound way, tracked by {@link ArrayTracking}:
+ * narrow, always-sound way, tracked by {@link ValueTracking}:
  * <ul>
  *   <li>A JVM local slot is treated as a known-length array only when it is assigned via {@code astore}
  *       exactly once in the whole method (i.e. "effectively final"), immediately after {@code newarray} with
@@ -71,6 +76,9 @@ import java.util.Set;
  * principle leave different arrays in the same slot before a merge.
  */
 public final class BytecodeToIr {
+    private final BytecodeDecoder decoder = new BytecodeDecoder();
+    private final Map<String, List<FieldInfo>> validatedRecords = new HashMap<>();
+
     public IrProgram lower(Program program) {
         List<IrMethod> methods = new ArrayList<>();
         for (LinkedMethod linked : program.methods()) {
@@ -90,7 +98,9 @@ public final class BytecodeToIr {
         Map<Integer, Integer> entryDepths = computeEntryDepths(linked);
         Map<Integer, Integer> slotArrayLength = computeSingleAssignmentArrayLocals(linked);
         Set<Integer> arrayParameterSlots = arrayParameterSlots(methodDescriptor);
-        ArrayTracking tracking = new ArrayTracking();
+        Set<Integer> singleAssignmentLocals = computeSingleAssignmentLocals(linked);
+        Map<Integer, RecordInstance> slotRecordInstance = new HashMap<>();
+        ValueTracking tracking = new ValueTracking();
         List<ArrayDeclaration> arrayDeclarations = new ArrayList<>();
         List<IrBasicBlock> blocks = new ArrayList<>();
         int nextValueId = 0;
@@ -131,7 +141,7 @@ public final class BytecodeToIr {
                     }
                     case 21, 25 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, instruction.operandA(),
-                                slotArrayLength, arrayParameterSlots, tracking);
+                                slotArrayLength, arrayParameterSlots, slotRecordInstance, tracking);
                         depth++;
                     }
                     case 22 -> {
@@ -145,18 +155,20 @@ public final class BytecodeToIr {
                     }
                     case 26, 27, 28, 29 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, opcode - 26,
-                                slotArrayLength, arrayParameterSlots, tracking);
+                                slotArrayLength, arrayParameterSlots, slotRecordInstance, tracking);
                         depth++;
                     }
                     case 42, 43, 44, 45 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, opcode - 42,
-                                slotArrayLength, arrayParameterSlots, tracking);
+                                slotArrayLength, arrayParameterSlots, slotRecordInstance, tracking);
                         depth++;
                     }
                     case 54, 58 -> {
                         Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), popped.value()));
+                        trackRecordLocalIfSingleAssignment(instruction.operandA(), popped.value(), tracking,
+                                singleAssignmentLocals, slotRecordInstance);
                     }
                     case 55 -> {
                         depth -= 2;
@@ -169,6 +181,8 @@ public final class BytecodeToIr {
                         Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(opcode - 59, popped.value()));
+                        trackRecordLocalIfSingleAssignment(opcode - 59, popped.value(), tracking,
+                                singleAssignmentLocals, slotRecordInstance);
                     }
                     case 63, 64, 65, 66 -> {
                         depth -= 2;
@@ -182,6 +196,8 @@ public final class BytecodeToIr {
                         Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
                         instructions.add(new IrInstruction.StoreLocal(opcode - 75, popped.value()));
+                        trackRecordLocalIfSingleAssignment(opcode - 75, popped.value(), tracking,
+                                singleAssignmentLocals, slotRecordInstance);
                     }
                     case 87 -> depth--;
                     case 89 -> {
@@ -385,10 +401,30 @@ public final class BytecodeToIr {
                         terminator = new IrTerminator.Return(Optional.of(returned.value()));
                     }
                     case 177 -> terminator = new IrTerminator.Return(Optional.empty());
-                    case 182, 184 -> {
+                    case 182 -> {
+                        MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
+                        Lowered lowered = RecordSupport.isAccessorCall(classes, called)
+                                ? lowerRecordAccessor(linked, instruction, called, instructions, stackBase, depth,
+                                        nextValueId, tracking, classes)
+                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 184 -> {
                         Lowered lowered = lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
+                    }
+                    case 183 -> {
+                        MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
+                        Lowered lowered = lowerRecordConstruction(linked, instruction, called, instructions,
+                                stackBase, depth, nextValueId, tracking, classes);
+                        nextValueId = lowered.nextValueId();
+                        depth = lowered.depth();
+                    }
+                    case 187 -> {
+                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, 0, tracking);
+                        depth++;
                     }
                     case 46 -> {
                         Lowered lowered = lowerArrayLoad(instructions, stackBase, depth, nextValueId,
@@ -552,7 +588,7 @@ public final class BytecodeToIr {
      * {@code newarray}'s count, since there is no heap and every array must be a fixed-size C array.
      */
     private ConstPop popKnownConstant(List<IrInstruction> instructions, int stackBase, int depth,
-                                       LinkedMethod linked, Instruction site, ArrayTracking tracking) {
+                                       LinkedMethod linked, Instruction site, ValueTracking tracking) {
         int newDepth = depth - 1;
         int slot = stackBase + newDepth;
         if (instructions.size() >= 2
@@ -619,7 +655,7 @@ public final class BytecodeToIr {
         return switch (opcode) {
             case 0, 132, 145, 146, 147, 116, 117, 167, 177, 188, 190 -> 0;
             case 2, 3, 4, 5, 6, 7, 8, 16, 17, 18, 19, 21, 25, 26, 27, 28, 29, 42, 43, 44, 45, 89 -> 1;
-            case 133, 178 -> 1;
+            case 133, 178, 187 -> 1;
             case 9, 10, 20, 22, 30, 31, 32, 33 -> 2;
             case 54, 58, 59, 60, 61, 62, 75, 76, 77, 78, 87, 153, 154, 155, 156, 157, 158, 172, 176 -> -1;
             case 46, 51, 52, 53 -> -1;
@@ -629,10 +665,10 @@ public final class BytecodeToIr {
             case 159, 160, 161, 162, 163, 164, 165, 166 -> -2;
             case 148 -> -3;
             case 79, 84, 85, 86 -> -3;
-            case 182, 184 -> {
+            case 182, 183, 184 -> {
                 MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                 Descriptor descriptor = Descriptor.parse(called.descriptor());
-                int consumed = descriptor.parameters().size() + (opcode == 182 ? 1 : 0);
+                int consumed = descriptor.parameters().size() + (opcode == 182 || opcode == 183 ? 1 : 0);
                 int produced = descriptor.returnsVoid() ? 0 : 1;
                 yield produced - consumed;
             }
@@ -641,7 +677,7 @@ public final class BytecodeToIr {
     }
 
     private Lowered lowerCall(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,
-                               int stackBase, int depth, int nextValueId, ArrayTracking tracking) {
+                               int stackBase, int depth, int nextValueId, ValueTracking tracking) {
         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
         Descriptor descriptor = Descriptor.parse(called.descriptor());
         Value[] arguments = new Value[descriptor.parameters().size()];
@@ -677,7 +713,7 @@ public final class BytecodeToIr {
     }
 
     private Lowered lowerArrayLoad(List<IrInstruction> instructions, int stackBase, int depth,
-                                    int nextValueId, ArrayTracking tracking, ArrayElementType elementType) {
+                                    int nextValueId, ValueTracking tracking, ArrayElementType elementType) {
         Popped index = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = index.nextValueId();
         Popped array = pop(instructions, stackBase, --depth, nextValueId, tracking);
@@ -694,7 +730,7 @@ public final class BytecodeToIr {
     }
 
     private Lowered lowerArrayStore(List<IrInstruction> instructions, int stackBase, int depth,
-                                     int nextValueId, ArrayTracking tracking, ArrayElementType elementType) {
+                                     int nextValueId, ValueTracking tracking, ArrayElementType elementType) {
         Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = value.nextValueId();
         Popped index = pop(instructions, stackBase, --depth, nextValueId, tracking);
@@ -709,8 +745,213 @@ public final class BytecodeToIr {
         return new Lowered(nextValueId, depth);
     }
 
+    /**
+     * {@code new X} + {@code dup} + args + {@code invokespecial <init>} is the only object-construction
+     * pattern Juno supports, and only for a validated simple record (see {@link #validateSimpleRecord}):
+     * there is no heap, so a record is never actually allocated, just decomposed into its N argument
+     * values. {@code dup} already duplicated the {@code new}-pushed placeholder (see the opcode 89 case) —
+     * this pops the copy consumed as the receiver, then tags the slot the OTHER (surviving) copy occupies,
+     * exactly mirroring {@link #lowerCall}'s pop order for an instance call.
+     */
+    private Lowered lowerRecordConstruction(LinkedMethod linked, Instruction instruction, MethodRef called,
+                                             List<IrInstruction> instructions, int stackBase, int depth,
+                                             int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes) {
+        if (!called.name().equals("<init>")) {
+            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                    + instruction.offset() + ": invokespecial is only supported for constructing a recognized "
+                    + "record (" + called.displayName() + " is not a constructor call this can resolve)");
+        }
+        JavaClass recordClass = classes.get(called.owner());
+        if (recordClass == null || !recordClass.isRecord()) {
+            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                    + instruction.offset() + ": object construction is only supported for simple records ("
+                    + called.owner().replace('/', '.') + " is not one); general objects/constructors are "
+                    + "not supported");
+        }
+        List<FieldInfo> components = validateSimpleRecord(recordClass);
+        Value[] fieldValues = new Value[components.size()];
+        for (int index = fieldValues.length - 1; index >= 0; index--) {
+            Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
+            nextValueId = popped.nextValueId();
+            fieldValues[index] = popped.value();
+        }
+        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = receiver.nextValueId();
+        // depth now reflects "1 item left on the stack" (the dup'd copy that survives, per the class-level
+        // docs above); its slot is stackBase + depth - 1, matching pop()'s own "depth after popping" convention.
+        tracking.markStackSlotRecord(stackBase + depth - 1, new RecordInstance(recordClass.name(), List.of(fieldValues)));
+        return new Lowered(nextValueId, depth);
+    }
+
+    /**
+     * A record accessor call ({@code p.x()}) never actually calls anything: it resolves directly to the
+     * field value captured at construction time (see {@link #lowerRecordConstruction}), reusing that
+     * existing {@link Value} rather than emitting any new instruction.
+     */
+    private Lowered lowerRecordAccessor(LinkedMethod linked, Instruction instruction, MethodRef called,
+                                         List<IrInstruction> instructions, int stackBase, int depth,
+                                         int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes) {
+        JavaClass recordClass = classes.get(called.owner());
+        List<FieldInfo> components = validateSimpleRecord(recordClass);
+        int componentIndex = -1;
+        for (int index = 0; index < components.size(); index++) {
+            if (components.get(index).name().equals(called.name())) {
+                componentIndex = index;
+                break;
+            }
+        }
+        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = receiver.nextValueId();
+        RecordInstance instance = tracking.knownRecord(receiver.value());
+        if (instance == null || !instance.className().equals(recordClass.name()) || componentIndex < 0) {
+            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                    + instruction.offset() + ": " + called.displayName() + " can only be called on a record "
+                    + "constructed directly in this method and assigned to a local exactly once "
+                    + "(\"effectively final\"); this receiver's construction site could not be resolved at "
+                    + "compile time");
+        }
+        Value fieldValue = instance.fieldValues().get(componentIndex);
+        storeToStack(instructions, stackBase, depth, fieldValue, tracking);
+        depth++;
+        return new Lowered(nextValueId, depth);
+    }
+
+    /**
+     * Validates that {@code recordClass} is a "simple" record Juno can safely decompose: every component is
+     * an int-like primitive, its canonical constructor is exactly the compiler-generated shape (no compact
+     * or custom constructor logic), and every accessor is exactly the compiler-generated trivial getter (no
+     * override). Anything else risks silently using a raw constructor argument or field value where the
+     * user's own code would have transformed it — a compile error here instead. Cached per class per
+     * compile, since bytecode decoding is not free and the same record can be constructed many times.
+     */
+    private List<FieldInfo> validateSimpleRecord(JavaClass recordClass) {
+        List<FieldInfo> cached = validatedRecords.get(recordClass.name());
+        if (cached != null) {
+            return cached;
+        }
+        List<FieldInfo> components = recordClass.recordComponents();
+        for (FieldInfo component : components) {
+            if (!Descriptor.isIntegerLike(component.descriptor())) {
+                throw new CompileException("Record " + recordClass.name().replace('/', '.') + " has a component '"
+                        + component.name() + "' of unsupported type " + component.descriptor() + "; Juno's "
+                        + "record support is limited to boolean/byte/char/short/int components");
+            }
+        }
+        String initDescriptor = "(" + components.stream().map(FieldInfo::descriptor).collect(Collectors.joining()) + ")V";
+        JavaMethod init = recordClass.findMethod("<init>", initDescriptor);
+        if (init == null || init.code() == null) {
+            throw new CompileException("Record " + recordClass.name().replace('/', '.')
+                    + " has no matching canonical constructor");
+        }
+        validateCanonicalConstructor(recordClass, init, components);
+        for (FieldInfo component : components) {
+            String accessorDescriptor = "()" + component.descriptor();
+            JavaMethod accessor = recordClass.findMethod(component.name(), accessorDescriptor);
+            if (accessor == null || accessor.code() == null) {
+                throw new CompileException("Record " + recordClass.name().replace('/', '.') + " has no accessor "
+                        + "method for component '" + component.name() + "'");
+            }
+            validateTrivialAccessor(recordClass, accessor, component);
+        }
+        validatedRecords.put(recordClass.name(), components);
+        return components;
+    }
+
+    /** Expected shape: {@code aload_0; invokespecial <super ctor>; (aload_0; iload_N; putfield)*; return}. */
+    private void validateCanonicalConstructor(JavaClass recordClass, JavaMethod init, List<FieldInfo> components) {
+        List<Instruction> instructions = decoder.decode(init);
+        int expectedCount = 2 + 3 * components.size() + 1;
+        if (instructions.size() != expectedCount
+                || instructions.get(0).opcode() != 42
+                || instructions.get(1).opcode() != 183
+                || instructions.get(instructions.size() - 1).opcode() != 177) {
+            throw unsupportedConstructor(recordClass);
+        }
+        for (int index = 0; index < components.size(); index++) {
+            Instruction loadThis = instructions.get(2 + 3 * index);
+            Instruction loadArg = instructions.get(2 + 3 * index + 1);
+            Instruction store = instructions.get(2 + 3 * index + 2);
+            Integer argSlot = intLoadSlot(loadArg);
+            if (loadThis.opcode() != 42 || store.opcode() != 181 || argSlot == null || argSlot != index + 1) {
+                throw unsupportedConstructor(recordClass);
+            }
+            FieldRef field = recordClass.constantPool().fieldRef(store.operandA());
+            if (!field.owner().equals(recordClass.name()) || !field.name().equals(components.get(index).name())) {
+                throw unsupportedConstructor(recordClass);
+            }
+        }
+    }
+
+    /** Expected shape: {@code aload_0; getfield <this component>; ireturn}. */
+    private void validateTrivialAccessor(JavaClass recordClass, JavaMethod accessor, FieldInfo component) {
+        List<Instruction> instructions = decoder.decode(accessor);
+        FieldRef field = instructions.size() == 3 && instructions.get(1).opcode() == 180
+                ? recordClass.constantPool().fieldRef(instructions.get(1).operandA()) : null;
+        if (instructions.size() != 3
+                || instructions.get(0).opcode() != 42
+                || instructions.get(1).opcode() != 180
+                || instructions.get(2).opcode() != 172
+                || field == null
+                || !field.owner().equals(recordClass.name())
+                || !field.name().equals(component.name())) {
+            throw new CompileException("Record " + recordClass.name().replace('/', '.') + "." + component.name()
+                    + "() has a custom body; Juno's record support requires the plain compiler-generated "
+                    + "accessor (just returning the field)");
+        }
+    }
+
+    private CompileException unsupportedConstructor(JavaClass recordClass) {
+        return new CompileException("Record " + recordClass.name().replace('/', '.') + " has a custom or compact "
+                + "constructor body; Juno's record support requires the plain compiler-generated canonical "
+                + "constructor (no extra validation/transformation logic)");
+    }
+
+    /** The local slot an {@code iload}/{@code iload_0..3} instruction reads, or {@code null} otherwise. */
+    private Integer intLoadSlot(Instruction instruction) {
+        return switch (instruction.opcode()) {
+            case 21 -> instruction.operandA();
+            case 26, 27, 28, 29 -> instruction.opcode() - 26;
+            default -> null;
+        };
+    }
+
+    /** Every JVM local slot assigned via {@code astore} exactly once in the whole method (see {@link #astoreSlot}). */
+    private Set<Integer> computeSingleAssignmentLocals(LinkedMethod linked) {
+        Map<Integer, Integer> storeCounts = new HashMap<>();
+        for (Instruction instruction : linked.instructions()) {
+            Integer slot = astoreSlot(instruction);
+            if (slot != null) {
+                storeCounts.merge(slot, 1, Integer::sum);
+            }
+        }
+        Set<Integer> result = new HashSet<>();
+        for (Map.Entry<Integer, Integer> entry : storeCounts.entrySet()) {
+            if (entry.getValue() == 1) {
+                result.add(entry.getKey());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * If {@code slot} is assigned exactly once in the whole method and the value being stored is a known
+     * record instance, remembers that fact for {@code slot}'s entire remaining lifetime — safe because Java
+     * requires definite assignment before any read, so a single-assignment slot can only ever hold that one
+     * value (the same "effectively final" reasoning already used for arrays).
+     */
+    private void trackRecordLocalIfSingleAssignment(int slot, Value value, ValueTracking tracking,
+                                                     Set<Integer> singleAssignmentLocals,
+                                                     Map<Integer, RecordInstance> slotRecordInstance) {
+        if (singleAssignmentLocals.contains(slot)) {
+            RecordInstance instance = tracking.knownRecord(value);
+            if (instance != null) {
+                slotRecordInstance.put(slot, instance);
+            }
+        }
+    }
+
     private int pushConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int value,
-                           ArrayTracking tracking) {
+                           ValueTracking tracking) {
         Value target = new Value(nextValueId);
         instructions.add(new IrInstruction.Const(target, value));
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
@@ -719,7 +960,8 @@ public final class BytecodeToIr {
     }
 
     private int pushLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int local,
-                          Map<Integer, Integer> slotArrayLength, Set<Integer> arrayParameterSlots, ArrayTracking tracking) {
+                          Map<Integer, Integer> slotArrayLength, Set<Integer> arrayParameterSlots,
+                          Map<Integer, RecordInstance> slotRecordInstance, ValueTracking tracking) {
         Value target = new Value(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(target, local));
         Integer knownLength = slotArrayLength.get(local);
@@ -729,12 +971,16 @@ public final class BytecodeToIr {
         if (arrayParameterSlots.contains(local)) {
             tracking.markParameterForward(target);
         }
+        RecordInstance knownRecord = slotRecordInstance.get(local);
+        if (knownRecord != null) {
+            tracking.markKnownRecord(target, knownRecord);
+        }
         storeToStack(instructions, stackBase, depth, target, tracking);
         return nextValueId + 1;
     }
 
     private int pushBinary(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
-                            BinaryOp operation, ArrayTracking tracking) {
+                            BinaryOp operation, ValueTracking tracking) {
         int depth = depthBeforePush;
         Popped right = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = right.nextValueId();
@@ -748,7 +994,7 @@ public final class BytecodeToIr {
     }
 
     private int pushUnary(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
-                           UnaryOp operation, ArrayTracking tracking) {
+                           UnaryOp operation, ValueTracking tracking) {
         int depth = depthBeforePush - 1;
         Popped operand = pop(instructions, stackBase, depth, nextValueId, tracking);
         nextValueId = operand.nextValueId();
@@ -760,12 +1006,12 @@ public final class BytecodeToIr {
     }
 
     /** Emits a StoreLocal to a stack slot and keeps {@code tracking} consistent with it. */
-    private void storeToStack(List<IrInstruction> instructions, int stackBase, int depth, Value value, ArrayTracking tracking) {
+    private void storeToStack(List<IrInstruction> instructions, int stackBase, int depth, Value value, ValueTracking tracking) {
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, value));
         tracking.recordPush(stackBase + depth, value);
     }
 
-    private Popped pop(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId, ArrayTracking tracking) {
+    private Popped pop(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId, ValueTracking tracking) {
         Value value = new Value(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(value, stackBase + depthAfterPop));
         tracking.recordPop(stackBase + depthAfterPop, value);
@@ -777,7 +1023,7 @@ public final class BytecodeToIr {
      * slot holds the low 32 bits and the next one holds the high 32 bits, both for synthetic stack slots and
      * for JVM local slots (e.g. {@code lload n} reads locals {@code n} and {@code n + 1}).
      */
-    private WidePopped popWide(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId, ArrayTracking tracking) {
+    private WidePopped popWide(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId, ValueTracking tracking) {
         Value low = new Value(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(low, stackBase + depthAfterPop));
         tracking.recordPop(stackBase + depthAfterPop, low);
@@ -788,7 +1034,7 @@ public final class BytecodeToIr {
     }
 
     /** Stores a long's two halves to a pair of stack slots; arrays are never wide, so both slots are defensively cleared. */
-    private void storeWideToStack(List<IrInstruction> instructions, int stackBase, int depth, Value low, Value high, ArrayTracking tracking) {
+    private void storeWideToStack(List<IrInstruction> instructions, int stackBase, int depth, Value low, Value high, ValueTracking tracking) {
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, low));
         tracking.clearStackSlot(stackBase + depth);
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth + 1, high));
@@ -796,7 +1042,7 @@ public final class BytecodeToIr {
     }
 
     private int pushWideConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, long value,
-                               ArrayTracking tracking) {
+                               ValueTracking tracking) {
         Value low = new Value(nextValueId);
         Value high = new Value(nextValueId + 1);
         instructions.add(new IrInstruction.LongConst(low, high, value));
@@ -805,7 +1051,7 @@ public final class BytecodeToIr {
     }
 
     private int pushWideLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int local,
-                              ArrayTracking tracking) {
+                              ValueTracking tracking) {
         Value low = new Value(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(low, local));
         Value high = new Value(nextValueId + 1);
@@ -815,7 +1061,7 @@ public final class BytecodeToIr {
     }
 
     private int pushLongBinary(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
-                                BinaryOp operation, ArrayTracking tracking) {
+                                BinaryOp operation, ValueTracking tracking) {
         int depth = depthBeforePush - 2;
         WidePopped right = popWide(instructions, stackBase, depth, nextValueId, tracking);
         nextValueId = right.nextValueId();
@@ -832,7 +1078,7 @@ public final class BytecodeToIr {
 
     /** {@code lshl}/{@code lshr}/{@code lushr}: the shift amount is a plain int, popped before the long value. */
     private int pushLongShift(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
-                               BinaryOp operation, ArrayTracking tracking) {
+                               BinaryOp operation, ValueTracking tracking) {
         int depth = depthBeforePush;
         Popped amount = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = amount.nextValueId();
@@ -848,7 +1094,7 @@ public final class BytecodeToIr {
     }
 
     private int pushLongNegate(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
-                                ArrayTracking tracking) {
+                                ValueTracking tracking) {
         int depth = depthBeforePush - 2;
         WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
         nextValueId = value.nextValueId();
@@ -903,21 +1149,25 @@ public final class BytecodeToIr {
     }
 
     /**
-     * Per-method array bookkeeping used to decide, at each array access, whether it is safe to bounds-check
-     * (a known-length local array) and, at {@code areturn}, whether it is safe to return (a direct parameter
-     * forward). {@code arrayLength}/{@code parameterForwarded} are keyed by {@link Value} and never reset —
+     * Per-method bookkeeping of facts about values that a real type system would normally carry: whether a
+     * value is a known-length local array (safe to bounds-check), a direct array-parameter forward (safe to
+     * return), or a known record instance (its field values, so an accessor call can resolve directly to one
+     * without ever needing a real object). Every "known X" map is keyed by {@link Value} and never reset —
      * values are single-assignment, so a fact about one is true for its whole lifetime. The stack-slot views
      * are reset at the start of every block (see the class-level docs for why).
      */
-    private static final class ArrayTracking {
+    private static final class ValueTracking {
         private final Map<Value, Integer> arrayLength = new HashMap<>();
         private final Set<Value> parameterForwarded = new HashSet<>();
+        private final Map<Value, RecordInstance> recordOf = new HashMap<>();
         private Map<Integer, Integer> currentStackSlotLength = new HashMap<>();
         private Set<Integer> currentStackSlotIsParameterForward = new HashSet<>();
+        private Map<Integer, RecordInstance> currentStackSlotRecord = new HashMap<>();
 
         void startBlock() {
             currentStackSlotLength = new HashMap<>();
             currentStackSlotIsParameterForward = new HashSet<>();
+            currentStackSlotRecord = new HashMap<>();
         }
 
         void markKnownArray(Value value, int length) {
@@ -936,9 +1186,27 @@ public final class BytecodeToIr {
             return parameterForwarded.contains(value);
         }
 
+        void markKnownRecord(Value value, RecordInstance instance) {
+            recordOf.put(value, instance);
+        }
+
+        RecordInstance knownRecord(Value value) {
+            return recordOf.get(value);
+        }
+
+        /**
+         * Tags the value currently occupying {@code slot} (whichever it turns out to be once popped) as a
+         * record instance, without needing a {@link Value} in hand — used right after {@code invokespecial
+         * <init>} finishes, where the surviving {@code dup}'d reference is still on the stack, never re-read.
+         */
+        void markStackSlotRecord(int slot, RecordInstance instance) {
+            currentStackSlotRecord.put(slot, instance);
+        }
+
         void clearStackSlot(int slot) {
             currentStackSlotLength.remove(slot);
             currentStackSlotIsParameterForward.remove(slot);
+            currentStackSlotRecord.remove(slot);
         }
 
         void recordPush(int slot, Value value) {
@@ -953,6 +1221,12 @@ public final class BytecodeToIr {
             } else {
                 currentStackSlotIsParameterForward.remove(slot);
             }
+            RecordInstance instance = recordOf.get(value);
+            if (instance != null) {
+                currentStackSlotRecord.put(slot, instance);
+            } else {
+                currentStackSlotRecord.remove(slot);
+            }
         }
 
         void recordPop(int slot, Value value) {
@@ -963,6 +1237,14 @@ public final class BytecodeToIr {
             if (currentStackSlotIsParameterForward.contains(slot)) {
                 parameterForwarded.add(value);
             }
+            RecordInstance instance = currentStackSlotRecord.get(slot);
+            if (instance != null) {
+                recordOf.put(value, instance);
+            }
         }
+    }
+
+    /** A record instance that was never actually constructed on any heap — just its component field values. */
+    private record RecordInstance(String className, List<Value> fieldValues) {
     }
 }
