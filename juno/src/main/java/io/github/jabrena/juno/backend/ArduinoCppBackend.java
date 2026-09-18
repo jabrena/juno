@@ -302,7 +302,7 @@ public final class ArduinoCppBackend {
         for (int index = 0; index < limit; index++) {
             emitInstruction(output, instructions.get(index), typedLocals);
         }
-        emitTerminator(output, block.terminator(), foldedCompare, returnArrayType);
+        emitTerminator(output, block.start(), block.terminator(), foldedCompare, returnArrayType);
     }
 
     private void emitInstruction(StringBuilder output, IrInstruction instruction, boolean typedLocals) {
@@ -566,11 +566,16 @@ public final class ArduinoCppBackend {
         return "static_cast<int32_t>(static_cast<uint32_t>(static_cast<uint64_t>(" + int64Expression + ") >> 32))";
     }
 
-    private void emitTerminator(StringBuilder output, IrTerminator terminator, IrInstruction.Compare foldedCompare,
-                                 Optional<ArrayElementType> returnArrayType) {
+    private void emitTerminator(StringBuilder output, int blockStart, IrTerminator terminator,
+                                IrInstruction.Compare foldedCompare, Optional<ArrayElementType> returnArrayType) {
         switch (terminator) {
-            case IrTerminator.Jump jump -> output.append("  goto juno_pc_").append(jump.target()).append(";\n");
+            case IrTerminator.Jump jump -> {
+                emitRuntimePollForBackedge(output, blockStart, List.of(jump.target()));
+                output.append("  goto juno_pc_").append(jump.target()).append(";\n");
+            }
             case IrTerminator.Branch branch -> {
+                emitRuntimePollForBackedge(output, blockStart,
+                        List.of(branch.trueTarget(), branch.falseTarget()));
                 String condition = foldedCompare != null
                         ? ref(foldedCompare.left()) + " " + operatorFor(foldedCompare.condition()) + " " + ref(foldedCompare.right())
                         : ref(branch.condition()) + " != 0";
@@ -588,6 +593,9 @@ public final class ArduinoCppBackend {
                 }
             }
             case IrTerminator.Switch switched -> {
+                List<Integer> targets = new ArrayList<>(switched.targets());
+                targets.add(switched.defaultTarget());
+                emitRuntimePollForBackedge(output, blockStart, targets);
                 output.append("  switch (").append(ref(switched.selector())).append(") {\n");
                 for (int index = 0; index < switched.keys().size(); index++) {
                     output.append("    case ").append(switched.keys().get(index)).append(": goto juno_pc_")
@@ -596,6 +604,12 @@ public final class ArduinoCppBackend {
                 output.append("    default: goto juno_pc_").append(switched.defaultTarget()).append(";\n")
                         .append("  }\n");
             }
+        }
+    }
+
+    private void emitRuntimePollForBackedge(StringBuilder output, int blockStart, List<Integer> targets) {
+        if (targets.stream().anyMatch(target -> target <= blockStart)) {
+            output.append("  yield();\n");
         }
     }
 
@@ -857,6 +871,12 @@ public final class ArduinoCppBackend {
 
     private String runtimeHelpers() {
         return """
+                void yield() {
+                #ifndef NO_USB
+                  static_cast<void>(static_cast<bool>(Serial));
+                #endif
+                }
+
                 [[noreturn]] static void juno_panic() {
                   noInterrupts();
                   for (;;) {}

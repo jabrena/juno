@@ -31,4 +31,17 @@ class ArduinoCppBackendTest {
         assertTrue(generated.contains("  float v1;"));
         assertTrue(generated.contains("  double v2;"));
     }
+
+    @Test
+    void pollsTheArduinoRuntimeAtLoopBackedges() {
+        MethodRef entryPoint = new MethodRef("demo/Polling", "main", "()V");
+        IrBasicBlock loop = new IrBasicBlock(0, List.of(), new IrTerminator.Jump(0));
+        IrMethod method = new IrMethod(entryPoint, 0, List.of(), List.of(), List.of(loop));
+
+        String generated = new ArduinoCppBackend().generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertTrue(generated.contains("void yield() {"));
+        assertTrue(generated.contains("static_cast<void>(static_cast<bool>(Serial));"));
+        assertTrue(generated.contains("  yield();\n  goto juno_pc_0;"));
+    }
 }

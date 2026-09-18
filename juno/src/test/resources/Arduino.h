@@ -23,5 +23,6 @@ struct JunoSerial {
   void begin(unsigned long) {}
   void print(int32_t) {}
   void println(int32_t) {}
+  explicit operator bool() const { return true; }
 };
 inline JunoSerial Serial;
