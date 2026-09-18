@@ -18,11 +18,13 @@ import io.github.jabrena.juno.ir.ArrayDeclaration;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
+import io.github.jabrena.juno.ir.FloatBinaryOp;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
+import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.UnaryOp;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
@@ -125,6 +127,11 @@ public final class BytecodeToIr {
                         nextValueId = pushWideConst(instructions, stackBase, depth, nextValueId, opcode - 9, tracking);
                         depth += 2;
                     }
+                    case 11, 12, 13 -> {
+                        nextValueId = pushFloatConst(instructions, stackBase, depth, nextValueId,
+                                (float) (opcode - 11), tracking);
+                        depth++;
+                    }
                     case 20 -> {
                         long value = linked.owner().constantPool().longValue(instruction.operandA());
                         nextValueId = pushWideConst(instructions, stackBase, depth, nextValueId, value, tracking);
@@ -135,8 +142,13 @@ public final class BytecodeToIr {
                         depth++;
                     }
                     case 18, 19 -> {
-                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId,
-                                linked.owner().constantPool().integer(instruction.operandA()), tracking);
+                        if (linked.owner().constantPool().isFloat(instruction.operandA())) {
+                            nextValueId = pushFloatConst(instructions, stackBase, depth, nextValueId,
+                                    linked.owner().constantPool().floatValue(instruction.operandA()), tracking);
+                        } else {
+                            nextValueId = pushConst(instructions, stackBase, depth, nextValueId,
+                                    linked.owner().constantPool().integer(instruction.operandA()), tracking);
+                        }
                         depth++;
                     }
                     case 21, 25 -> {
@@ -149,9 +161,19 @@ public final class BytecodeToIr {
                                 instruction.operandA(), tracking);
                         depth += 2;
                     }
+                    case 23 -> {
+                        nextValueId = pushFloatLoad(instructions, stackBase, depth, nextValueId,
+                                instruction.operandA(), tracking);
+                        depth++;
+                    }
                     case 30, 31, 32, 33 -> {
                         nextValueId = pushWideLoad(instructions, stackBase, depth, nextValueId, opcode - 30, tracking);
                         depth += 2;
+                    }
+                    case 34, 35, 36, 37 -> {
+                        nextValueId = pushFloatLoad(instructions, stackBase, depth, nextValueId,
+                                opcode - 34, tracking);
+                        depth++;
                     }
                     case 26, 27, 28, 29 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, opcode - 26,
@@ -177,6 +199,11 @@ public final class BytecodeToIr {
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), popped.low()));
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA() + 1, popped.high()));
                     }
+                    case 56 -> {
+                        Popped popped = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = popped.nextValueId();
+                        instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), popped.value()));
+                    }
                     case 59, 60, 61, 62 -> {
                         Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
@@ -192,6 +219,11 @@ public final class BytecodeToIr {
                         instructions.add(new IrInstruction.StoreLocal(local, popped.low()));
                         instructions.add(new IrInstruction.StoreLocal(local + 1, popped.high()));
                     }
+                    case 67, 68, 69, 70 -> {
+                        Popped popped = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = popped.nextValueId();
+                        instructions.add(new IrInstruction.StoreLocal(opcode - 67, popped.value()));
+                    }
                     case 75, 76, 77, 78 -> {
                         Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = popped.nextValueId();
@@ -201,7 +233,8 @@ public final class BytecodeToIr {
                     }
                     case 87 -> depth--;
                     case 89 -> {
-                        Value top = new Value(nextValueId++);
+                        JunoType type = tracking.stackSlotType(stackBase + depth - 1);
+                        Value top = new Value(nextValueId++, type == null ? JunoType.INT32 : type);
                         instructions.add(new IrInstruction.LoadLocal(top, stackBase + depth - 1));
                         tracking.recordPop(stackBase + depth - 1, top);
                         storeToStack(instructions, stackBase, depth, top, tracking);
@@ -215,6 +248,11 @@ public final class BytecodeToIr {
                         nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.ADD, tracking);
                         depth -= 2;
                     }
+                    case 98 -> {
+                        nextValueId = pushFloatBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.ADD, tracking);
+                        depth--;
+                    }
                     case 100 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SUBTRACT, tracking);
                         depth--;
@@ -222,6 +260,11 @@ public final class BytecodeToIr {
                     case 101 -> {
                         nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SUBTRACT, tracking);
                         depth -= 2;
+                    }
+                    case 102 -> {
+                        nextValueId = pushFloatBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.SUBTRACT, tracking);
+                        depth--;
                     }
                     case 104 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.MULTIPLY, tracking);
@@ -231,6 +274,11 @@ public final class BytecodeToIr {
                         nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.MULTIPLY, tracking);
                         depth -= 2;
                     }
+                    case 106 -> {
+                        nextValueId = pushFloatBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.MULTIPLY, tracking);
+                        depth--;
+                    }
                     case 108 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
                         depth--;
@@ -238,6 +286,11 @@ public final class BytecodeToIr {
                     case 109 -> {
                         nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
                         depth -= 2;
+                    }
+                    case 110 -> {
+                        nextValueId = pushFloatBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.DIVIDE, tracking);
+                        depth--;
                     }
                     case 112 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);
@@ -247,8 +300,14 @@ public final class BytecodeToIr {
                         nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);
                         depth -= 2;
                     }
+                    case 114 -> {
+                        nextValueId = pushFloatBinary(instructions, stackBase, depth, nextValueId,
+                                FloatBinaryOp.REMAINDER, tracking);
+                        depth--;
+                    }
                     case 116 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.NEGATE, tracking);
                     case 117 -> nextValueId = pushLongNegate(instructions, stackBase, depth, nextValueId, tracking);
+                    case 118 -> nextValueId = pushFloatNegate(instructions, stackBase, depth, nextValueId, tracking);
                     case 120 -> {
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.SHIFT_LEFT, tracking);
                         depth--;
@@ -302,18 +361,34 @@ public final class BytecodeToIr {
                     case 133 -> {
                         Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = value.nextValueId();
-                        Value targetLow = new Value(nextValueId++);
-                        Value targetHigh = new Value(nextValueId++);
+                        Value targetLow = Value.int32(nextValueId++);
+                        Value targetHigh = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.IntToLong(targetLow, targetHigh, value.value()));
                         storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
                         depth += 2;
+                    }
+                    case 134 -> {
+                        Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value target = Value.float32(nextValueId++);
+                        instructions.add(new IrInstruction.IntToFloat(target, value.value()));
+                        storeToStack(instructions, stackBase, depth, target, tracking);
+                        depth++;
                     }
                     case 136 -> {
                         depth -= 2;
                         WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = value.nextValueId();
-                        Value target = new Value(nextValueId++);
+                        Value target = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.LongToInt(target, value.low(), value.high()));
+                        storeToStack(instructions, stackBase, depth, target, tracking);
+                        depth++;
+                    }
+                    case 139 -> {
+                        Popped value = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = value.nextValueId();
+                        Value target = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.FloatToInt(target, value.value()));
                         storeToStack(instructions, stackBase, depth, target, tracking);
                         depth++;
                     }
@@ -324,18 +399,29 @@ public final class BytecodeToIr {
                         depth -= 2;
                         WidePopped left = popWide(instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = left.nextValueId();
-                        Value result = new Value(nextValueId++);
+                        Value result = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.LongCompare(
                                 result, left.low(), left.high(), right.low(), right.high()));
                         storeToStack(instructions, stackBase, depth, result, tracking);
                         depth++;
                     }
+                    case 149, 150 -> {
+                        Popped right = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = right.nextValueId();
+                        Popped left = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = left.nextValueId();
+                        Value result = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.FloatCompare(
+                                result, left.value(), right.value(), opcode == 149 ? -1 : 1));
+                        storeToStack(instructions, stackBase, depth, result, tracking);
+                        depth++;
+                    }
                     case 132 -> {
-                        Value loaded = new Value(nextValueId++);
+                        Value loaded = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.LoadLocal(loaded, instruction.operandA()));
-                        Value amount = new Value(nextValueId++);
+                        Value amount = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.Const(amount, instruction.operandB()));
-                        Value sum = new Value(nextValueId++);
+                        Value sum = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.Binary(sum, BinaryOp.ADD, loaded, amount));
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), sum));
                     }
@@ -351,9 +437,9 @@ public final class BytecodeToIr {
                     case 153, 154, 155, 156, 157, 158 -> {
                         Popped operand = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = operand.nextValueId();
-                        Value zero = new Value(nextValueId++);
+                        Value zero = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.Const(zero, 0));
-                        Value condition = new Value(nextValueId++);
+                        Value condition = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.Compare(condition, conditionOf(opcode, 153), operand.value(), zero));
                         Terminator.Branch branch = (Terminator.Branch) block.terminator();
                         terminator = new IrTerminator.Branch(condition, branch.trueTarget(), branch.falseTarget());
@@ -363,7 +449,7 @@ public final class BytecodeToIr {
                         nextValueId = right.nextValueId();
                         Popped left = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = left.nextValueId();
-                        Value condition = new Value(nextValueId++);
+                        Value condition = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.Compare(
                                 condition, conditionOf(opcode, 159), left.value(), right.value()));
                         Terminator.Branch branch = (Terminator.Branch) block.terminator();
@@ -376,7 +462,7 @@ public final class BytecodeToIr {
                         nextValueId = right.nextValueId();
                         Popped left = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = left.nextValueId();
-                        Value condition = new Value(nextValueId++);
+                        Value condition = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.Compare(
                                 condition, conditionOf(opcode, 165), left.value(), right.value()));
                         Terminator.Branch branch = (Terminator.Branch) block.terminator();
@@ -482,7 +568,7 @@ public final class BytecodeToIr {
                                         + "4/8/5/9/10), got atype " + instruction.operandA()));
                         ConstPop length = popKnownConstant(instructions, stackBase, depth, linked, instruction, tracking);
                         depth = length.depth();
-                        Value handle = new Value(nextValueId++);
+                        Value handle = Value.int32(nextValueId++);
                         instructions.add(new IrInstruction.NewArray(handle, elementType, length.value()));
                         arrayDeclarations.add(new ArrayDeclaration(handle, elementType, length.value()));
                         tracking.markKnownArray(handle, length.value());
@@ -511,8 +597,8 @@ public final class BytecodeToIr {
             }
             blocks.add(new IrBasicBlock(block.start(), List.copyOf(instructions), terminator));
         }
-        return new IrMethod(linked.method().reference(), stackBase + linked.method().maxStack(), nextValueId,
-                List.copyOf(arrayDeclarations), List.copyOf(blocks));
+        return IrMethod.withInferredValues(linked.method().reference(), stackBase + linked.method().maxStack(),
+                nextValueId, List.copyOf(arrayDeclarations), List.copyOf(blocks));
     }
 
     private Set<Integer> arrayParameterSlots(Descriptor methodDescriptor) {
@@ -653,13 +739,16 @@ public final class BytecodeToIr {
     private int stackDelta(LinkedMethod linked, Instruction instruction) {
         int opcode = instruction.opcode();
         return switch (opcode) {
-            case 0, 132, 145, 146, 147, 116, 117, 167, 177, 188, 190 -> 0;
-            case 2, 3, 4, 5, 6, 7, 8, 16, 17, 18, 19, 21, 25, 26, 27, 28, 29, 42, 43, 44, 45, 89 -> 1;
+            case 0, 132, 134, 139, 145, 146, 147, 116, 117, 118, 167, 177, 188, 190 -> 0;
+            case 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 16, 17, 18, 19, 21, 23, 25,
+                    26, 27, 28, 29, 34, 35, 36, 37, 42, 43, 44, 45, 89 -> 1;
             case 133, 178, 187 -> 1;
             case 9, 10, 20, 22, 30, 31, 32, 33 -> 2;
-            case 54, 58, 59, 60, 61, 62, 75, 76, 77, 78, 87, 153, 154, 155, 156, 157, 158, 172, 176 -> -1;
+            case 54, 56, 58, 59, 60, 61, 62, 67, 68, 69, 70, 75, 76, 77, 78,
+                    87, 153, 154, 155, 156, 157, 158, 172, 176 -> -1;
             case 46, 51, 52, 53 -> -1;
-            case 96, 100, 104, 108, 112, 120, 122, 124, 126, 128, 130 -> -1;
+            case 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 120, 122, 124, 126, 128, 130,
+                    149, 150 -> -1;
             case 121, 123, 125, 136 -> -1;
             case 55, 63, 64, 65, 66, 97, 101, 105, 109, 113, 127, 129, 131 -> -2;
             case 159, 160, 161, 162, 163, 164, 165, 166 -> -2;
@@ -695,7 +784,7 @@ public final class BytecodeToIr {
 
         Value target = null;
         if (!descriptor.returnsVoid()) {
-            target = new Value(nextValueId++);
+            target = Value.int32(nextValueId++);
         }
 
         Optional<Intrinsic> intrinsic = IntrinsicRegistry.resolve(called);
@@ -722,7 +811,7 @@ public final class BytecodeToIr {
         if (knownLength != null) {
             instructions.add(new IrInstruction.BoundsCheck(index.value(), knownLength));
         }
-        Value target = new Value(nextValueId++);
+        Value target = Value.int32(nextValueId++);
         instructions.add(new IrInstruction.ArrayLoad(target, elementType, array.value(), index.value()));
         storeToStack(instructions, stackBase, depth, target, tracking);
         depth++;
@@ -952,17 +1041,25 @@ public final class BytecodeToIr {
 
     private int pushConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int value,
                            ValueTracking tracking) {
-        Value target = new Value(nextValueId);
+        Value target = Value.int32(nextValueId);
         instructions.add(new IrInstruction.Const(target, value));
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
         tracking.clearStackSlot(stackBase + depth);
         return nextValueId + 1;
     }
 
+    private int pushFloatConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
+                               float value, ValueTracking tracking) {
+        Value target = Value.float32(nextValueId);
+        instructions.add(new IrInstruction.FloatConst(target, value));
+        storeToStack(instructions, stackBase, depth, target, tracking);
+        return nextValueId + 1;
+    }
+
     private int pushLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int local,
                           Map<Integer, Integer> slotArrayLength, Set<Integer> arrayParameterSlots,
                           Map<Integer, RecordInstance> slotRecordInstance, ValueTracking tracking) {
-        Value target = new Value(nextValueId);
+        Value target = Value.int32(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(target, local));
         Integer knownLength = slotArrayLength.get(local);
         if (knownLength != null) {
@@ -979,6 +1076,14 @@ public final class BytecodeToIr {
         return nextValueId + 1;
     }
 
+    private int pushFloatLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
+                              int local, ValueTracking tracking) {
+        Value target = Value.float32(nextValueId);
+        instructions.add(new IrInstruction.LoadLocal(target, local));
+        storeToStack(instructions, stackBase, depth, target, tracking);
+        return nextValueId + 1;
+    }
+
     private int pushBinary(List<IrInstruction> instructions, int stackBase, int depthBeforePush, int nextValueId,
                             BinaryOp operation, ValueTracking tracking) {
         int depth = depthBeforePush;
@@ -986,10 +1091,23 @@ public final class BytecodeToIr {
         nextValueId = right.nextValueId();
         Popped left = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = left.nextValueId();
-        Value target = new Value(nextValueId++);
+        Value target = Value.int32(nextValueId++);
         instructions.add(new IrInstruction.Binary(target, operation, left.value(), right.value()));
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
         tracking.clearStackSlot(stackBase + depth);
+        return nextValueId;
+    }
+
+    private int pushFloatBinary(List<IrInstruction> instructions, int stackBase, int depthBeforePush,
+                                int nextValueId, FloatBinaryOp operation, ValueTracking tracking) {
+        int depth = depthBeforePush;
+        Popped right = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = right.nextValueId();
+        Popped left = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = left.nextValueId();
+        Value target = Value.float32(nextValueId++);
+        instructions.add(new IrInstruction.FloatBinary(target, operation, left.value(), right.value()));
+        storeToStack(instructions, stackBase, depth, target, tracking);
         return nextValueId;
     }
 
@@ -998,10 +1116,21 @@ public final class BytecodeToIr {
         int depth = depthBeforePush - 1;
         Popped operand = pop(instructions, stackBase, depth, nextValueId, tracking);
         nextValueId = operand.nextValueId();
-        Value target = new Value(nextValueId++);
+        Value target = Value.int32(nextValueId++);
         instructions.add(new IrInstruction.Unary(target, operation, operand.value()));
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
         tracking.clearStackSlot(stackBase + depth);
+        return nextValueId;
+    }
+
+    private int pushFloatNegate(List<IrInstruction> instructions, int stackBase, int depthBeforePush,
+                                int nextValueId, ValueTracking tracking) {
+        int depth = depthBeforePush - 1;
+        Popped operand = popFloat(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = operand.nextValueId();
+        Value target = Value.float32(nextValueId++);
+        instructions.add(new IrInstruction.FloatNegate(target, operand.value()));
+        storeToStack(instructions, stackBase, depth, target, tracking);
         return nextValueId;
     }
 
@@ -1012,7 +1141,15 @@ public final class BytecodeToIr {
     }
 
     private Popped pop(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId, ValueTracking tracking) {
-        Value value = new Value(nextValueId);
+        Value value = Value.int32(nextValueId);
+        instructions.add(new IrInstruction.LoadLocal(value, stackBase + depthAfterPop));
+        tracking.recordPop(stackBase + depthAfterPop, value);
+        return new Popped(value, nextValueId + 1);
+    }
+
+    private Popped popFloat(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId,
+                            ValueTracking tracking) {
+        Value value = Value.float32(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(value, stackBase + depthAfterPop));
         tracking.recordPop(stackBase + depthAfterPop, value);
         return new Popped(value, nextValueId + 1);
@@ -1024,10 +1161,10 @@ public final class BytecodeToIr {
      * for JVM local slots (e.g. {@code lload n} reads locals {@code n} and {@code n + 1}).
      */
     private WidePopped popWide(List<IrInstruction> instructions, int stackBase, int depthAfterPop, int nextValueId, ValueTracking tracking) {
-        Value low = new Value(nextValueId);
+        Value low = Value.int32(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(low, stackBase + depthAfterPop));
         tracking.recordPop(stackBase + depthAfterPop, low);
-        Value high = new Value(nextValueId + 1);
+        Value high = Value.int32(nextValueId + 1);
         instructions.add(new IrInstruction.LoadLocal(high, stackBase + depthAfterPop + 1));
         tracking.recordPop(stackBase + depthAfterPop + 1, high);
         return new WidePopped(low, high, nextValueId + 2);
@@ -1043,8 +1180,8 @@ public final class BytecodeToIr {
 
     private int pushWideConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, long value,
                                ValueTracking tracking) {
-        Value low = new Value(nextValueId);
-        Value high = new Value(nextValueId + 1);
+        Value low = Value.int32(nextValueId);
+        Value high = Value.int32(nextValueId + 1);
         instructions.add(new IrInstruction.LongConst(low, high, value));
         storeWideToStack(instructions, stackBase, depth, low, high, tracking);
         return nextValueId + 2;
@@ -1052,9 +1189,9 @@ public final class BytecodeToIr {
 
     private int pushWideLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int local,
                               ValueTracking tracking) {
-        Value low = new Value(nextValueId);
+        Value low = Value.int32(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(low, local));
-        Value high = new Value(nextValueId + 1);
+        Value high = Value.int32(nextValueId + 1);
         instructions.add(new IrInstruction.LoadLocal(high, local + 1));
         storeWideToStack(instructions, stackBase, depth, low, high, tracking);
         return nextValueId + 2;
@@ -1068,8 +1205,8 @@ public final class BytecodeToIr {
         depth -= 2;
         WidePopped left = popWide(instructions, stackBase, depth, nextValueId, tracking);
         nextValueId = left.nextValueId();
-        Value targetLow = new Value(nextValueId++);
-        Value targetHigh = new Value(nextValueId++);
+        Value targetLow = Value.int32(nextValueId++);
+        Value targetHigh = Value.int32(nextValueId++);
         instructions.add(new IrInstruction.LongBinary(targetLow, targetHigh, operation,
                 left.low(), left.high(), right.low(), right.high()));
         storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
@@ -1085,8 +1222,8 @@ public final class BytecodeToIr {
         depth -= 2;
         WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
         nextValueId = value.nextValueId();
-        Value targetLow = new Value(nextValueId++);
-        Value targetHigh = new Value(nextValueId++);
+        Value targetLow = Value.int32(nextValueId++);
+        Value targetHigh = Value.int32(nextValueId++);
         instructions.add(new IrInstruction.LongShift(targetLow, targetHigh, operation,
                 value.low(), value.high(), amount.value()));
         storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
@@ -1098,8 +1235,8 @@ public final class BytecodeToIr {
         int depth = depthBeforePush - 2;
         WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
         nextValueId = value.nextValueId();
-        Value targetLow = new Value(nextValueId++);
-        Value targetHigh = new Value(nextValueId++);
+        Value targetLow = Value.int32(nextValueId++);
+        Value targetHigh = Value.int32(nextValueId++);
         instructions.add(new IrInstruction.LongNegate(targetLow, targetHigh, value.low(), value.high()));
         storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
         return nextValueId;
@@ -1163,11 +1300,13 @@ public final class BytecodeToIr {
         private Map<Integer, Integer> currentStackSlotLength = new HashMap<>();
         private Set<Integer> currentStackSlotIsParameterForward = new HashSet<>();
         private Map<Integer, RecordInstance> currentStackSlotRecord = new HashMap<>();
+        private Map<Integer, JunoType> currentStackSlotType = new HashMap<>();
 
         void startBlock() {
             currentStackSlotLength = new HashMap<>();
             currentStackSlotIsParameterForward = new HashSet<>();
             currentStackSlotRecord = new HashMap<>();
+            currentStackSlotType = new HashMap<>();
         }
 
         void markKnownArray(Value value, int length) {
@@ -1207,9 +1346,15 @@ public final class BytecodeToIr {
             currentStackSlotLength.remove(slot);
             currentStackSlotIsParameterForward.remove(slot);
             currentStackSlotRecord.remove(slot);
+            currentStackSlotType.remove(slot);
+        }
+
+        JunoType stackSlotType(int slot) {
+            return currentStackSlotType.get(slot);
         }
 
         void recordPush(int slot, Value value) {
+            currentStackSlotType.put(slot, value.type());
             Integer length = arrayLength.get(value);
             if (length != null) {
                 currentStackSlotLength.put(slot, length);

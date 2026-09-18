@@ -25,9 +25,9 @@ class ConstantFolderTest {
 
     @Test
     void foldsBinaryArithmeticOverTwoConstants() {
-        Value a = new Value(0);
-        Value b = new Value(1);
-        Value sum = new Value(2);
+        Value a = Value.int32(0);
+        Value b = Value.int32(1);
+        Value sum = Value.int32(2);
         List<IrInstruction> instructions = List.of(
                 new IrInstruction.Const(a, 2),
                 new IrInstruction.Const(b, 3),
@@ -45,9 +45,9 @@ class ConstantFolderTest {
 
     @Test
     void doesNotFoldDivisionByZero() {
-        Value a = new Value(0);
-        Value zero = new Value(1);
-        Value quotient = new Value(2);
+        Value a = Value.int32(0);
+        Value zero = Value.int32(1);
+        Value quotient = Value.int32(2);
         List<IrInstruction> instructions = List.of(
                 new IrInstruction.Const(a, 10),
                 new IrInstruction.Const(zero, 0),
@@ -62,8 +62,8 @@ class ConstantFolderTest {
 
     @Test
     void foldsUnaryNegationOverAConstant() {
-        Value a = new Value(0);
-        Value negated = new Value(1);
+        Value a = Value.int32(0);
+        Value negated = Value.int32(1);
         List<IrInstruction> instructions = List.of(
                 new IrInstruction.Const(a, 7),
                 new IrInstruction.Unary(negated, UnaryOp.NEGATE, a));
@@ -76,9 +76,9 @@ class ConstantFolderTest {
 
     @Test
     void foldsACompareOverTwoConstantsAndThenTheBranchIntoAJump() {
-        Value a = new Value(0);
-        Value b = new Value(1);
-        Value condition = new Value(2);
+        Value a = Value.int32(0);
+        Value b = Value.int32(1);
+        Value condition = Value.int32(2);
         List<IrInstruction> instructions = List.of(
                 new IrInstruction.Const(a, 5),
                 new IrInstruction.Const(b, 5),
@@ -99,9 +99,9 @@ class ConstantFolderTest {
         // LoadLocal never yields a known constant here: the slot may have been written by more
         // than one predecessor block (see BytecodeToIr), so folding through it would be unsound
         // without a separate copy-propagation pass.
-        Value loaded = new Value(0);
-        Value constant = new Value(1);
-        Value sum = new Value(2);
+        Value loaded = Value.int32(0);
+        Value constant = Value.int32(1);
+        Value sum = Value.int32(2);
         List<IrInstruction> instructions = List.of(
                 new IrInstruction.LoadLocal(loaded, 0),
                 new IrInstruction.Const(constant, 1),
@@ -127,7 +127,7 @@ class ConstantFolderTest {
 
     private IrProgram programOf(List<IrInstruction> instructions, IrTerminator terminator) {
         IrBasicBlock block = new IrBasicBlock(0, instructions, terminator);
-        IrMethod irMethod = new IrMethod(method, 1, 8, List.of(), List.of(block));
+        IrMethod irMethod = new IrMethod(method, 1, Value.int32Values(8), List.of(), List.of(block));
         return new IrProgram(method, List.of(irMethod));
     }
 }

@@ -1,14 +1,14 @@
 # Java types vs. Arduino types
 
-Juno only accepts a small slice of Java's type system (see [FEATURES.md](FEATURES.md)),
-and maps all of it onto a single C++ representation. This note explains why, and where the two
-type systems still show through at the API boundary.
+Juno only accepts a small slice of Java's type system (see [FEATURES.md](FEATURES.md)). Its IR now
+records an explicit `JunoType` for every `Value`; the currently accepted bytecodes lower to `INT32` and
+`FLOAT32`. This note explains the current representations and where the Java and Arduino type systems meet.
 
 ## Supported Java types
 
 `Descriptor.isIntegerLike` (in
 [`juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java`](../juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java))
-admits exactly five JVM descriptor types as method parameters/results:
+admits five primitive JVM descriptor types as ordinary scalar method parameters/results:
 
 | Java type | JVM descriptor |
 |-----------|-----------------|
@@ -18,24 +18,38 @@ admits exactly five JVM descriptor types as method parameters/results:
 | `short`   | `S` |
 | `int`     | `I` |
 
-`long`, `float`, `double`, arrays, and every reference type except the compiler-erased
-`DigitalOutput` handle (see below) are rejected at link time.
+Primitive arrays and simple enums are also supported as parameters/results under the restrictions in
+[FEATURES.md](FEATURES.md). `long`/`float` parameters and results, `double`, and general reference types remain
+rejected at link time; `DigitalOutput` is a compiler-erased handle rather than a real object.
 
-## One stack slot, one C++ type
+## Typed IR, one currently active scalar lane
 
 The JVM itself never gives `boolean`, `byte`, `char`, or `short` their own operand-stack
 representation — bytecode always computes with them as a 32-bit `int` on the stack, only
-narrowing on store (`i2b`, `i2s`) or when a `char` needs zero-extension. Juno's backend
-(`ArduinoCppBackend`) mirrors this directly: every local variable and every stack slot in
-generated C++ is declared `int32_t`, regardless of which of the five Java types produced it.
+narrowing on store (`i2b`, `i2s`) or when a `char` needs zero-extension.
+
+Juno represents every symbolic IR register as `Value(id, JunoType)`. `JunoType` defines `INT32`,
+`FLOAT32`, and `FLOAT64`, and the backend declares each value using its recorded type. The classfile
+frontend currently produces `INT32` and `FLOAT32`; `FLOAT64` reserves the typed lane for a later
+`double` implementation.
+
+Integer-only methods retain an `int32_t` local-slot array. A method containing float values uses a
+typed `JunoSlot` union so the same JVM slot can safely hold either lane at different points in the method.
+Array references remain 32-bit handles on Cortex-M4, enums are ordinals, and each half of Juno's split
+`long` representation is 32 bits.
 
 ```cpp
 int32_t locals[N] = {};
-int32_t stack[M] = {};
+int32_t v0, v1, v2;
+
+// In a method containing float values:
+union JunoSlot { int32_t i32; float f32; double f64; };
+JunoSlot locals[N] = {};
+float v3, v4;
 ```
 
-So a Java `byte`, `char`, `short`, `boolean`, or `int` are indistinguishable once they reach
-Juno's backend — there is exactly one runtime representation. The narrowing bytecodes are lowered
+So a Java `byte`, `char`, `short`, `boolean`, or `int` intentionally share the `INT32` runtime
+representation. The narrowing bytecodes are lowered
 to explicit casts that reproduce Java's sign/zero-extension semantics:
 
 - `i2b` (opcode 145) → `juno_i2b`, sign-extends the low 8 bits
@@ -66,12 +80,11 @@ vocabulary (`unsigned long`, `uint32_t`, `bool`, `int`). Juno's intrinsic loweri
 The recurring pattern: Java's type system has no `unsigned` and no distinct `bool` at the ABI
 level, so every Arduino API that expects `unsigned long`, `uint32_t`, or a `HIGH`/`LOW`/`bool`
 convention gets an explicit `static_cast`/ternary at the exact point Juno lowers the call. Application
-code never sees or writes these casts — it only ever deals in `boolean`, `byte`, `char`, `short`,
-and `int`.
+code never sees or writes these casts; the affected hardware APIs retain their Java integer-like signatures.
 
 ## `DigitalOutput`: an object with no runtime representation
 
-`DigitalOutput` (the one non-primitive type Juno accepts) is not a real object at runtime. The
+`DigitalOutput` is an object-shaped API but not a real object at runtime. The
 "constructor" `DigitalOutput.of(int pin)` lowers to `juno_digital_output_of`, which just calls
 `pinMode(pin, OUTPUT)` and returns the pin number:
 
@@ -90,15 +103,15 @@ method calls (`led.high()` instead of `Gpio.digitalWrite(13, true)`).
 
 ## What this rules out
 
-Because everything collapses to `int32_t`, Juno cannot (yet) represent:
+Juno supports the `FLOAT32` lane for local computation, but it still does not accept:
 
-- Java's `long`, `float`, or `double` — there is no 64-bit or floating-point lane in the backend
+- `float` method parameters/results, fields, or arrays
+- any `double` source operations; `FLOAT64` is an internal type reservation, not language support
+- `long` method parameters/results, fields, or arrays (`long` locals and arithmetic use paired `INT32` halves)
 - `String` — so no `Serial.print(String)`; only the `int` overloads exist, and multi-character
   display (see [`LedMatrixText`](../juno/src/main/java/io/github/jabrena/juno/api/LedMatrixText.java))
   works character-by-character with hand-encoded font tables instead of string data
-- arrays, so a `uint32_t[3]` LED matrix frame is passed as three separate `int` parameters
-  instead of one array parameter
-- real objects/fields — `DigitalOutput` is the only reference type, and it is erased entirely by
-  link time
+- general objects/fields — `DigitalOutput`, enums, and simple local records are deliberately erased or
+  decomposed by lowering rather than represented as heap objects
 
 See [FEATURES.md](FEATURES.md) for the full, authoritative list.

@@ -9,6 +9,7 @@ import io.github.jabrena.juno.linker.Program;
 import io.github.jabrena.juno.lowering.BytecodeToIr;
 import io.github.jabrena.juno.optimize.CompilerPass;
 import io.github.jabrena.juno.optimize.ConstantFolder;
+import io.github.jabrena.juno.optimize.CopyPropagation;
 import io.github.jabrena.juno.optimize.DeadBlockElimination;
 
 import java.nio.file.Path;
@@ -23,7 +24,7 @@ import java.util.Map;
  */
 final class CompilationPipeline {
     private static final List<CompilerPass> OPTIMIZATION_PASSES = List.of(
-            new ConstantFolder(), new DeadBlockElimination());
+            new CopyPropagation(), new ConstantFolder(), new DeadBlockElimination());
 
     Program link(List<Path> classPath, String mainClass) {
         Map<String, JavaClass> classes = new ClassPath().load(classPath);

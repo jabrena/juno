@@ -5,6 +5,7 @@ import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
+import io.github.jabrena.juno.ir.Value;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -24,7 +25,8 @@ class DeadBlockEliminationTest {
         IrBasicBlock header = new IrBasicBlock(0, List.of(), new IrTerminator.Jump(10));
         IrBasicBlock live = new IrBasicBlock(10, List.of(), new IrTerminator.Return(Optional.empty()));
         IrBasicBlock dead = new IrBasicBlock(20, List.of(), new IrTerminator.Return(Optional.empty()));
-        IrMethod irMethod = new IrMethod(method, 1, 0, List.of(), List.of(header, live, dead));
+        IrMethod irMethod = new IrMethod(method, 1, Value.int32Values(0), List.of(),
+                List.of(header, live, dead));
         IrProgram program = new IrProgram(method, List.of(irMethod));
 
         IrMethod pruned = elimination.apply(program).methods().get(0);
@@ -38,10 +40,11 @@ class DeadBlockEliminationTest {
     @Test
     void keepsBothTargetsOfARealBranch() {
         IrBasicBlock header = new IrBasicBlock(0, List.of(),
-                new IrTerminator.Branch(new io.github.jabrena.juno.ir.Value(0), 10, 20));
+                new IrTerminator.Branch(Value.int32(0), 10, 20));
         IrBasicBlock trueBlock = new IrBasicBlock(10, List.of(), new IrTerminator.Return(Optional.empty()));
         IrBasicBlock falseBlock = new IrBasicBlock(20, List.of(), new IrTerminator.Return(Optional.empty()));
-        IrMethod irMethod = new IrMethod(method, 1, 1, List.of(), List.of(header, trueBlock, falseBlock));
+        IrMethod irMethod = new IrMethod(method, 1, Value.int32Values(1), List.of(),
+                List.of(header, trueBlock, falseBlock));
         IrProgram program = new IrProgram(method, List.of(irMethod));
 
         IrMethod pruned = elimination.apply(program).methods().get(0);
@@ -53,7 +56,7 @@ class DeadBlockEliminationTest {
     void aLoneUnreachableBlockAfterTheEntryIsDropped() {
         IrBasicBlock header = new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty()));
         IrBasicBlock orphan = new IrBasicBlock(5, List.of(), new IrTerminator.Return(Optional.empty()));
-        IrMethod irMethod = new IrMethod(method, 1, 0, List.of(), List.of(header, orphan));
+        IrMethod irMethod = new IrMethod(method, 1, Value.int32Values(0), List.of(), List.of(header, orphan));
         IrProgram program = new IrProgram(method, List.of(irMethod));
 
         IrMethod pruned = elimination.apply(program).methods().get(0);

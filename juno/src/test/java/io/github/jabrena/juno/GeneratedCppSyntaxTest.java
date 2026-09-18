@@ -16,6 +16,38 @@ class GeneratedCppSyntaxTest {
     Path temporaryDirectory;
 
     @Test
+    void generatedFloatSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Gpio;
+                public final class FloatSmoke {
+                    public static void main(String[] args) {
+                        float total = 0.0f;
+                        for (int i = 0; i < 4; i++) total += 0.75f;
+                        float remainder = -(total * 2.0f) % 1.25f;
+                        int narrowed = (int) remainder;
+                        Gpio.digitalWrite(13, (float) narrowed < total);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatSmoke", source);
+        Path sketch = temporaryDirectory.resolve("FloatSmoke.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatSmoke"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
+    @Test
     void generatedSketchPassesACppSyntaxCheck() throws Exception {
         String compiler = availableCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");

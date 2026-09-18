@@ -20,18 +20,18 @@ public final class BytecodeDecoder {
             int operandA = 0;
             int operandB = 0;
             switch (opcode) {
-                case 0, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                        26, 27, 28, 29, 30, 31, 32, 33, 42, 43, 44, 45,
-                        46, 51, 52, 53, 59, 60, 61, 62, 63, 64, 65, 66, 75, 76, 77, 78,
-                        79, 84, 85, 86, 87, 89, 96, 97, 100, 101, 104, 105, 108, 109, 112, 113, 116, 117,
-                        120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 133, 136,
-                        145, 146, 147, 148, 172, 176, 177, 190 -> length = 1;
+                case 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+                        26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 42, 43, 44, 45,
+                        46, 51, 52, 53, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 75, 76, 77, 78,
+                        79, 84, 85, 86, 87, 89, 96, 97, 98, 100, 101, 102, 104, 105, 106, 108, 109, 110,
+                        112, 113, 114, 116, 117, 118, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129,
+                        130, 131, 133, 134, 136, 139, 145, 146, 147, 148, 149, 150, 172, 176, 177, 190 -> length = 1;
                 case 16 -> {
                     require(code, offset, 2, method);
                     operandA = code[offset + 1];
                     length = 2;
                 }
-                case 18, 21, 22, 25, 54, 55, 58, 188 -> {
+                case 18, 21, 22, 23, 25, 54, 55, 56, 58, 188 -> {
                     require(code, offset, 2, method);
                     operandA = unsigned(code[offset + 1]);
                     length = 2;
@@ -67,6 +67,8 @@ public final class BytecodeDecoder {
             case 2 -> "iconst_m1";
             case 3, 4, 5, 6, 7, 8 -> "iconst_" + (opcode - 3);
             case 9, 10 -> "lconst_" + (opcode - 9);
+            case 11, 12, 13 -> "fconst_" + (opcode - 11);
+            case 14, 15 -> "dconst_" + (opcode - 14);
             case 16 -> "bipush";
             case 17 -> "sipush";
             case 18 -> "ldc";
@@ -74,8 +76,10 @@ public final class BytecodeDecoder {
             case 20 -> "ldc2_w";
             case 21 -> "iload";
             case 22 -> "lload";
+            case 23 -> "fload";
             case 26, 27, 28, 29 -> "iload_" + (opcode - 26);
             case 30, 31, 32, 33 -> "lload_" + (opcode - 30);
+            case 34, 35, 36, 37 -> "fload_" + (opcode - 34);
             case 25 -> "aload";
             case 42, 43, 44, 45 -> "aload_" + (opcode - 42);
             case 46 -> "iaload";
@@ -84,8 +88,10 @@ public final class BytecodeDecoder {
             case 53 -> "saload";
             case 54 -> "istore";
             case 55 -> "lstore";
+            case 56 -> "fstore";
             case 59, 60, 61, 62 -> "istore_" + (opcode - 59);
             case 63, 64, 65, 66 -> "lstore_" + (opcode - 63);
+            case 67, 68, 69, 70 -> "fstore_" + (opcode - 67);
             case 58 -> "astore";
             case 75, 76, 77, 78 -> "astore_" + (opcode - 75);
             case 79 -> "iastore";
@@ -96,16 +102,22 @@ public final class BytecodeDecoder {
             case 89 -> "dup";
             case 96 -> "iadd";
             case 97 -> "ladd";
+            case 98 -> "fadd";
             case 100 -> "isub";
             case 101 -> "lsub";
+            case 102 -> "fsub";
             case 104 -> "imul";
             case 105 -> "lmul";
+            case 106 -> "fmul";
             case 108 -> "idiv";
             case 109 -> "ldiv";
+            case 110 -> "fdiv";
             case 112 -> "irem";
             case 113 -> "lrem";
+            case 114 -> "frem";
             case 116 -> "ineg";
             case 117 -> "lneg";
+            case 118 -> "fneg";
             case 120 -> "ishl";
             case 121 -> "lshl";
             case 122 -> "ishr";
@@ -120,11 +132,15 @@ public final class BytecodeDecoder {
             case 131 -> "lxor";
             case 132 -> "iinc";
             case 133 -> "i2l";
+            case 134 -> "i2f";
             case 136 -> "l2i";
+            case 139 -> "f2i";
             case 145 -> "i2b";
             case 146 -> "i2c";
             case 147 -> "i2s";
             case 148 -> "lcmp";
+            case 149 -> "fcmpl";
+            case 150 -> "fcmpg";
             case 153 -> "ifeq";
             case 154 -> "ifne";
             case 155 -> "iflt";

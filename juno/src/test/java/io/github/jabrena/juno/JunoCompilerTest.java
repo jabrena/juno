@@ -1,6 +1,10 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.intrinsic.Intrinsic;
+import io.github.jabrena.juno.ir.IrMethod;
+import io.github.jabrena.juno.ir.IrProgram;
+import io.github.jabrena.juno.ir.IrTerminator;
+import io.github.jabrena.juno.linker.Program;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,6 +20,37 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class JunoCompilerTest {
     @TempDir
     Path temporaryDirectory;
+
+    @Test
+    void propagatesLoweredLocalCopiesBeforeFoldingConstantBranches() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class FoldedBranch {
+                    static int choose() {
+                        int answer = 5;
+                        if (answer == 5) return 11;
+                        return 22;
+                    }
+                    public static void main(String[] args) {
+                        Delay.millis(choose());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FoldedBranch", source);
+        Program linked = CompilerTestSupport.link(temporaryDirectory, "demo.FoldedBranch");
+        CompilationPipeline pipeline = new CompilationPipeline();
+
+        IrProgram optimized = pipeline.optimize(pipeline.lower(linked));
+
+        IrMethod choose = optimized.methods().stream()
+                .filter(candidate -> candidate.reference().name().equals("choose"))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(2, choose.blocks().size());
+        assertTrue(choose.blocks().stream().noneMatch(
+                block -> block.terminator() instanceof IrTerminator.Branch));
+    }
 
     @Test
     void compilesReachableMethodsBranchesAndHardwareIntrinsics() throws Exception {
@@ -663,6 +698,83 @@ class JunoCompilerTest {
 
         assertTrue(exception.getMessage().contains("demo.LongParam.identity"));
         assertTrue(exception.getMessage().contains("int-like"));
+    }
+
+    @Test
+    void supportsFloatLocalsArithmeticComparisonsConversionsAndLoops() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.Gpio;
+                public final class FloatMath {
+                    public static void main(String[] args) {
+                        float total = 0.0f;
+                        for (int i = 0; i < 4; i++) {
+                            total += 0.75f;
+                        }
+                        float adjusted = -(total * 2.0f - 1.0f) / 2.0f;
+                        float remainder = adjusted % 1.25f;
+                        int narrowed = (int) remainder;
+                        float widened = (float) narrowed;
+                        float nan = 0.0f / 0.0f;
+                        boolean ordered = widened < total && !(nan >= total);
+                        Gpio.digitalWrite(13, ordered);
+                        Delay.millis(narrowed);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatMath", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatMath");
+
+        assertTrue(generated.contains("union JunoSlot"));
+        assertTrue(generated.contains("float v"));
+        assertTrue(generated.contains("fmodf("));
+        assertTrue(generated.contains("juno_f2i("));
+        assertTrue(generated.contains("static_cast<float>("));
+        assertTrue(generated.contains("isnan("));
+    }
+
+    @Test
+    void rejectsFloatAsAMethodParameterOrReturnType() throws Exception {
+        String source = """
+                package demo;
+                public final class FloatParam {
+                    static float identity(float value) {
+                        return value;
+                    }
+                    public static void main(String[] args) {
+                        float result = identity(1.0f);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatParam", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatParam"));
+
+        assertTrue(exception.getMessage().contains("demo.FloatParam.identity"));
+        assertTrue(exception.getMessage().contains("int-like"));
+    }
+
+    @Test
+    void rejectsDoubleLocalsWithANamedOpcodeDiagnostic() throws Exception {
+        String source = """
+                package demo;
+                public final class DoubleLocal {
+                    public static void main(String[] args) {
+                        double value = 1.0;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.DoubleLocal", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DoubleLocal"));
+
+        assertTrue(exception.getMessage().contains("demo.DoubleLocal.main"));
+        assertTrue(exception.getMessage().contains("unsupported opcode"));
+        assertTrue(exception.getMessage().contains("dconst_1"));
     }
 
     @Test

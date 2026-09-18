@@ -45,10 +45,7 @@ public final class ClassFileReader {
             entries[index] = switch (tag) {
                 case 1 -> input.readUTF();
                 case 3 -> input.readInt();
-                case 4 -> {
-                    input.readInt();
-                    yield new Object();
-                }
+                case 4 -> Float.intBitsToFloat(input.readInt());
                 case 5 -> {
                     long value = input.readLong();
                     index++; // long/double constants occupy two consecutive pool entries; the second is unusable

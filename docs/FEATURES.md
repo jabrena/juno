@@ -26,6 +26,10 @@ Supported today:
 - `long` locals with arithmetic, shifts, bitwise operations, comparisons, `int`/`long` conversions,
   and loops — represented internally as a pair of 32-bit halves, since there is no 64-bit register on
   the target. Not supported as a method parameter or return type, a field, or an array element type.
+- `float` locals with constants, arithmetic (including remainder), negation, comparisons, `int`/`float`
+  conversions, and loops. Java's NaN comparison rules and saturating/NaN-to-zero `float`-to-`int`
+  conversion are preserved. Not supported as a method parameter or return type, a field, or an array
+  element type. `double` remains entirely unsupported.
 - `enum` constants as plain 0-based ordinal `int`s — Juno never constructs a real enum object (no
   heap), it reads a constant's declaration-order position directly. Supported: enum-typed locals,
   parameters, and return values; `==`/`!=` comparisons (including against a named constant). Not
@@ -53,8 +57,7 @@ Not yet supported:
   simple records (see above) are the one narrow exception
 - mutable/non-constant static fields (needs `getstatic`/`putstatic`), strings, exceptions, garbage
   collection, threads, reflection, or dynamic loading
-- `long` as a method parameter/return type, field, or array element type; `float` and `double`
-  entirely
+- `long` or `float` as a method parameter/return type, field, or array element type; `double` entirely
 - `switch` on an enum, enum instance methods (`.name()`, `.ordinal()`, etc.), `values()`/`valueOf()`,
   and enums with per-constant state (custom constructors/fields/abstract methods)
 - records as a method parameter/return type, `equals()`/`hashCode()`/`toString()`, non-canonical

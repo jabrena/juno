@@ -72,6 +72,18 @@ public final class ConstantPool {
         throw new CompileException("Only integer constants are supported by ldc (constant pool entry " + index + ")");
     }
 
+    public boolean isFloat(int index) {
+        return entry(index) instanceof Float;
+    }
+
+    public float floatValue(int index) {
+        Object value = entry(index);
+        if (value instanceof Float floatValue) {
+            return floatValue;
+        }
+        throw new CompileException("Constant pool entry " + index + " is not a float");
+    }
+
     public long longValue(int index) {
         Object value = entry(index);
         if (value instanceof Long longValue) {

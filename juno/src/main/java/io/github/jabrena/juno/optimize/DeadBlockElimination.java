@@ -58,7 +58,7 @@ public final class DeadBlockElimination implements CompilerPass {
                 kept.add(block);
             }
         }
-        return new IrMethod(method.reference(), method.maxLocals(), method.valueCount(),
+        return new IrMethod(method.reference(), method.maxLocals(), method.values(),
                 method.arrayDeclarations(), List.copyOf(kept));
     }
 

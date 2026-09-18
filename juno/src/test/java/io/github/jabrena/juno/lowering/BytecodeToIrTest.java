@@ -7,6 +7,7 @@ import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrTerminator;
+import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.Program;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,7 @@ class BytecodeToIrTest {
         IrMethod method = entryPointMethod(program);
 
         assertEquals(1, method.blocks().size());
+        assertTrue(method.values().stream().allMatch(value -> value.type() == JunoType.INT32));
         List<IrInstruction> instructions = method.blocks().get(0).instructions();
 
         // javac constant-folds `1 + 2` into a single iconst_3.

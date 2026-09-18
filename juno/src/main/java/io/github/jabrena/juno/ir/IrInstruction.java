@@ -11,6 +11,9 @@ public sealed interface IrInstruction {
     record Const(Value target, int value) implements IrInstruction {
     }
 
+    record FloatConst(Value target, float value) implements IrInstruction {
+    }
+
     record LoadLocal(Value target, int local) implements IrInstruction {
     }
 
@@ -79,5 +82,26 @@ public sealed interface IrInstruction {
 
     /** {@code l2i}: truncates to the low 32 bits, which is exactly {@code valueLow} by construction. */
     record LongToInt(Value target, Value valueLow, Value valueHigh) implements IrInstruction {
+    }
+
+    record FloatBinary(Value target, FloatBinaryOp operation, Value left, Value right) implements IrInstruction {
+    }
+
+    record FloatNegate(Value target, Value value) implements IrInstruction {
+    }
+
+    /** JVM {@code fcmpl}/{@code fcmpg}; {@code nanResult} is respectively -1 or 1. */
+    record FloatCompare(Value target, Value left, Value right, int nanResult) implements IrInstruction {
+        public FloatCompare {
+            if (nanResult != -1 && nanResult != 1) {
+                throw new IllegalArgumentException("Float comparison NaN result must be -1 or 1");
+            }
+        }
+    }
+
+    record IntToFloat(Value target, Value value) implements IrInstruction {
+    }
+
+    record FloatToInt(Value target, Value value) implements IrInstruction {
     }
 }
