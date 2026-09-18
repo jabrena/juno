@@ -5,6 +5,8 @@ import io.github.jabrena.juno.analysis.BasicBlock;
 import io.github.jabrena.juno.analysis.ControlFlowGraph;
 import io.github.jabrena.juno.analysis.Terminator;
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.classfile.FieldRef;
+import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
@@ -72,12 +74,17 @@ public final class BytecodeToIr {
     public IrProgram lower(Program program) {
         List<IrMethod> methods = new ArrayList<>();
         for (LinkedMethod linked : program.methods()) {
-            methods.add(lower(linked));
+            methods.add(lower(linked, program.classes()));
         }
         return new IrProgram(program.entryPoint(), List.copyOf(methods));
     }
 
+    /** Convenience overload for callers with no enum classes to resolve (e.g. hand-built {@link LinkedMethod}s in tests). */
     public IrMethod lower(LinkedMethod linked) {
+        return lower(linked, Map.of());
+    }
+
+    public IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes) {
         int stackBase = linked.method().maxLocals();
         Descriptor methodDescriptor = Descriptor.parse(linked.method().descriptor());
         Map<Integer, Integer> entryDepths = computeEntryDepths(linked);
@@ -316,6 +323,12 @@ public final class BytecodeToIr {
                         instructions.add(new IrInstruction.Binary(sum, BinaryOp.ADD, loaded, amount));
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), sum));
                     }
+                    case 178 -> {
+                        FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
+                        int ordinal = resolveEnumOrdinal(linked, instruction, field, classes);
+                        nextValueId = pushConst(instructions, stackBase, depth, nextValueId, ordinal, tracking);
+                        depth++;
+                    }
                     case 145 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_BYTE, tracking);
                     case 146 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_CHAR, tracking);
                     case 147 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_SHORT, tracking);
@@ -337,6 +350,19 @@ public final class BytecodeToIr {
                         Value condition = new Value(nextValueId++);
                         instructions.add(new IrInstruction.Compare(
                                 condition, conditionOf(opcode, 159), left.value(), right.value()));
+                        Terminator.Branch branch = (Terminator.Branch) block.terminator();
+                        terminator = new IrTerminator.Branch(condition, branch.trueTarget(), branch.falseTarget());
+                    }
+                    case 165, 166 -> {
+                        // Reference equality; every reference-shaped Juno value (an array handle, an enum
+                        // constant's ordinal) is represented as a plain int32_t, so this is just int equality.
+                        Popped right = pop(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = right.nextValueId();
+                        Popped left = pop(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = left.nextValueId();
+                        Value condition = new Value(nextValueId++);
+                        instructions.add(new IrInstruction.Compare(
+                                condition, conditionOf(opcode, 165), left.value(), right.value()));
                         Terminator.Branch branch = (Terminator.Branch) block.terminator();
                         terminator = new IrTerminator.Branch(condition, branch.trueTarget(), branch.falseTarget());
                     }
@@ -593,14 +619,14 @@ public final class BytecodeToIr {
         return switch (opcode) {
             case 0, 132, 145, 146, 147, 116, 117, 167, 177, 188, 190 -> 0;
             case 2, 3, 4, 5, 6, 7, 8, 16, 17, 18, 19, 21, 25, 26, 27, 28, 29, 42, 43, 44, 45, 89 -> 1;
-            case 133 -> 1;
+            case 133, 178 -> 1;
             case 9, 10, 20, 22, 30, 31, 32, 33 -> 2;
             case 54, 58, 59, 60, 61, 62, 75, 76, 77, 78, 87, 153, 154, 155, 156, 157, 158, 172, 176 -> -1;
             case 46, 51, 52, 53 -> -1;
             case 96, 100, 104, 108, 112, 120, 122, 124, 126, 128, 130 -> -1;
             case 121, 123, 125, 136 -> -1;
             case 55, 63, 64, 65, 66, 97, 101, 105, 109, 113, 127, 129, 131 -> -2;
-            case 159, 160, 161, 162, 163, 164 -> -2;
+            case 159, 160, 161, 162, 163, 164, 165, 166 -> -2;
             case 148 -> -3;
             case 79, 84, 85, 86 -> -3;
             case 182, 184 -> {
@@ -843,6 +869,25 @@ public final class BytecodeToIr {
             case 5 -> Condition.LESS_EQUAL;
             default -> throw new IllegalStateException("Unexpected comparison opcode " + opcode);
         };
+    }
+
+    /**
+     * Resolves a {@code getstatic} target to an enum constant's ordinal. Juno never constructs a real enum
+     * object; the field must belong to a class recognized as an enum (see {@link JavaClass#isEnum()}) and be
+     * one of its constants ({@link JavaClass#enumConstantNames()}) — any other static field (mutable, or an
+     * enum's own non-constant field, neither of which Juno supports) is a clear compile error.
+     */
+    private int resolveEnumOrdinal(LinkedMethod linked, Instruction instruction, FieldRef field,
+                                    Map<String, JavaClass> classes) {
+        JavaClass owner = classes.get(field.owner());
+        int ordinal = owner == null || !owner.isEnum() ? -1 : owner.enumConstantNames().indexOf(field.name());
+        if (ordinal < 0) {
+            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                    + instruction.offset() + ": getstatic is only supported for reading an enum constant ("
+                    + field.displayName() + " is not one); mutable/non-constant static fields are not "
+                    + "supported");
+        }
+        return ordinal;
     }
 
     private record Popped(Value value, int nextValueId) {

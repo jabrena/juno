@@ -502,6 +502,51 @@ class GeneratedCppSyntaxTest {
         assertEquals(0, process.exitValue(), diagnostics);
     }
 
+    @Test
+    void generatedEnumSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String enumSource = """
+                package demo;
+                public enum Direction {
+                    NORTH, SOUTH, EAST, WEST;
+                }
+                """;
+        String usingSource = """
+                package demo;
+                public final class UsesEnum {
+                    static int classify(Direction d) {
+                        if (d == Direction.NORTH) {
+                            return 0;
+                        }
+                        if (d != Direction.SOUTH) {
+                            return 1;
+                        }
+                        return 2;
+                    }
+                    public static void main(String[] args) {
+                        Direction d = Direction.EAST;
+                        int code = classify(d);
+                        boolean isWest = d == Direction.WEST;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Direction", enumSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesEnum", usingSource);
+        Path sketch = temporaryDirectory.resolve("UsesEnum.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesEnum"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(0, process.exitValue(), diagnostics);
+    }
+
     private String availableCompiler() {
         for (String candidate : new String[]{"clang++", "g++"}) {
             try {

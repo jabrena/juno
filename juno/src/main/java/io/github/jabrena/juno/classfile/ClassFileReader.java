@@ -23,14 +23,14 @@ public final class ClassFileReader {
             }
 
             ConstantPool pool = readConstantPool(input);
-            input.readUnsignedShort(); // class access flags
+            int classAccessFlags = input.readUnsignedShort();
             String className = pool.className(input.readUnsignedShort());
             input.readUnsignedShort(); // super class
             skipInterfaces(input);
-            skipMembers(input, pool); // fields
+            List<String> enumConstantNames = readFields(input, pool);
             List<JavaMethod> methods = readMethods(input, pool, className);
             skipAttributes(input, pool);
-            return new JavaClass(className, pool, List.copyOf(methods));
+            return new JavaClass(className, classAccessFlags, pool, List.copyOf(methods), enumConstantNames);
         } catch (IOException exception) {
             throw new CompileException("Cannot read class file", exception);
         }
@@ -86,14 +86,21 @@ public final class ClassFileReader {
         input.skipNBytes((long) count * 2);
     }
 
-    private void skipMembers(DataInputStream input, ConstantPool pool) throws IOException {
+    /** Returns the names of fields flagged {@code ACC_ENUM}, in declaration order (see {@link JavaClass}). */
+    private List<String> readFields(DataInputStream input, ConstantPool pool) throws IOException {
+        final int accEnum = 0x4000;
         int count = input.readUnsignedShort();
+        List<String> enumConstantNames = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            input.readUnsignedShort();
-            input.readUnsignedShort();
-            input.readUnsignedShort();
+            int accessFlags = input.readUnsignedShort();
+            String name = pool.utf8(input.readUnsignedShort());
+            input.readUnsignedShort(); // descriptor
             skipAttributes(input, pool);
+            if ((accessFlags & accEnum) != 0) {
+                enumConstantNames.add(name);
+            }
         }
+        return List.copyOf(enumConstantNames);
     }
 
     private List<JavaMethod> readMethods(DataInputStream input, ConstantPool pool, String owner) throws IOException {

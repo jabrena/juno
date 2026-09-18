@@ -26,6 +26,12 @@ Supported today:
 - `long` locals with arithmetic, shifts, bitwise operations, comparisons, `int`/`long` conversions,
   and loops — represented internally as a pair of 32-bit halves, since there is no 64-bit register on
   the target. Not supported as a method parameter or return type, a field, or an array element type.
+- `enum` constants as plain 0-based ordinal `int`s — Juno never constructs a real enum object (no
+  heap), it reads a constant's declaration-order position directly. Supported: enum-typed locals,
+  parameters, and return values; `==`/`!=` comparisons (including against a named constant). Not
+  supported: `switch` on an enum (javac routes it through a synthetic lookup-table class Juno doesn't
+  understand), `.name()`/`.toString()`/`.compareTo()`/`.ordinal()`, `values()`/`valueOf()`, and
+  per-constant fields, methods, or constructors.
 - direct static calls with closed-world reachability; unused methods are omitted
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
@@ -39,7 +45,8 @@ Not yet supported:
   collection, threads, reflection, or dynamic loading
 - `long` as a method parameter/return type, field, or array element type; `float` and `double`
   entirely
-- enums
+- `switch` on an enum, enum instance methods (`.name()`, `.ordinal()`, etc.), `values()`/`valueOf()`,
+  and enums with per-constant state (custom constructors/fields/abstract methods)
 - the desktop JDK class library
 
 The `String[]` parameter of a conventional `main` is accepted as an entrypoint convention, but

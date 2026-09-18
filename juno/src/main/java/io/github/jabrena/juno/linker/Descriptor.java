@@ -4,6 +4,7 @@ import io.github.jabrena.juno.CompileException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public record Descriptor(List<String> parameters, String returnType) {
     public static Descriptor parse(String descriptor) {
@@ -31,9 +32,21 @@ public record Descriptor(List<String> parameters, String returnType) {
         return returnType.equals("V");
     }
 
+    /** Enum-free convenience overload, e.g. for callers that never touch enum-typed descriptors. */
     public boolean usesOnlyV01Types() {
-        return parameters.stream().allMatch(Descriptor::isSupportedParameterType)
-                && (returnsVoid() || isIntegerLike(returnType) || isArrayType(returnType));
+        return usesOnlyV01Types(Set.of());
+    }
+
+    /**
+     * {@code enumClassNames} is the internal (slash-separated) name of every class recognized as a simple
+     * enum constant source (see {@link io.github.jabrena.juno.classfile.JavaClass#isEnum()}) — an
+     * enum-typed parameter/return is accepted only if its class is in this set, since Juno represents an
+     * enum constant purely as its ordinal {@code int} and never constructs a real object for it.
+     */
+    public boolean usesOnlyV01Types(Set<String> enumClassNames) {
+        return parameters.stream().allMatch(type -> isSupportedParameterType(type, enumClassNames))
+                && (returnsVoid() || isIntegerLike(returnType) || isArrayType(returnType)
+                        || isEnumType(returnType, enumClassNames));
     }
 
     public static boolean isIntegerLike(String type) {
@@ -54,8 +67,14 @@ public record Descriptor(List<String> parameters, String returnType) {
         return arrayType.charAt(1);
     }
 
-    private static boolean isSupportedParameterType(String type) {
-        return isIntegerLike(type) || isArrayType(type);
+    /** Whether {@code type} is an object-type descriptor (e.g. {@code Lcom/foo/Direction;}) for a known enum. */
+    public static boolean isEnumType(String type, Set<String> enumClassNames) {
+        return type.length() > 2 && type.charAt(0) == 'L' && type.endsWith(";")
+                && enumClassNames.contains(type.substring(1, type.length() - 1));
+    }
+
+    private static boolean isSupportedParameterType(String type, Set<String> enumClassNames) {
+        return isIntegerLike(type) || isArrayType(type) || isEnumType(type, enumClassNames);
     }
 
     private static ParsedType parseType(String descriptor, int start) {

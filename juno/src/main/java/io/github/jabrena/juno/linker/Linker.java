@@ -15,6 +15,8 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /** Performs closed-world reachability and resolves every static call before code generation. */
 public final class Linker {
@@ -29,6 +31,10 @@ public final class Linker {
         }
         JavaMethod main = findMain(mainClass);
         MethodRef entryPoint = main.reference();
+        Set<String> enumClassNames = classes.values().stream()
+                .filter(JavaClass::isEnum)
+                .map(JavaClass::name)
+                .collect(Collectors.toUnmodifiableSet());
 
         Map<MethodRef, LinkedMethod> reachable = new LinkedHashMap<>();
         Deque<MethodRef> work = new ArrayDeque<>();
@@ -46,7 +52,7 @@ public final class Linker {
             if (method == null) {
                 throw new CompileException("Reachable method not found: " + reference.displayName());
             }
-            validateMethod(method, reference.equals(entryPoint));
+            validateMethod(method, reference.equals(entryPoint), enumClassNames);
             List<Instruction> instructions = decoder.decode(method);
             ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions);
             reachable.put(reference, new LinkedMethod(owner, method, instructions, cfg));
@@ -65,7 +71,7 @@ public final class Linker {
                 }
             }
         }
-        return new Program(entryPoint, List.copyOf(reachable.values()));
+        return new Program(entryPoint, List.copyOf(reachable.values()), classes);
     }
 
     private JavaMethod findMain(JavaClass mainClass) {
@@ -78,7 +84,7 @@ public final class Linker {
         return result;
     }
 
-    private void validateMethod(JavaMethod method, boolean entryPoint) {
+    private void validateMethod(JavaMethod method, boolean entryPoint, Set<String> enumClassNames) {
         if (!method.isStatic()) {
             throw new CompileException("Juno v0.1 supports only static methods: " + method.reference().displayName());
         }
@@ -89,7 +95,7 @@ public final class Linker {
         boolean conventionalMain = entryPoint
                 && descriptor.parameters().equals(List.of("[Ljava/lang/String;"))
                 && descriptor.returnsVoid();
-        if (!conventionalMain && !descriptor.usesOnlyV01Types()) {
+        if (!conventionalMain && !descriptor.usesOnlyV01Types(enumClassNames)) {
             throw new CompileException("Juno v0.1 methods may use only int-like parameters and return values: "
                     + method.reference().displayName());
         }

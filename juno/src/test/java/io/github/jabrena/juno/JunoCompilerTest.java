@@ -319,10 +319,12 @@ class JunoCompilerTest {
     }
 
     @Test
-    void reportsAMutableStaticFieldAsAnUnsupportedGetstaticOpcode() throws Exception {
-        // A non-final (or otherwise non-constant) static field is genuinely unsupported: it needs
-        // getstatic/putstatic, which the decoder rejects. This just confirms the failure is a clear,
-        // named CompileException rather than javac's inlining silently making it work too.
+    void reportsAWriteToAMutableStaticFieldAsAnUnsupportedPutstaticOpcode() throws Exception {
+        // A non-final (or otherwise non-constant) static field is genuinely unsupported. getstatic itself
+        // is now decodable (needed to read an enum constant, see supportsEnumConstantsAsOrdinalInts below),
+        // but putstatic never is - there is still no way to write a static field - so a read-modify-write
+        // like this fails at the write, not the read. This just confirms the failure is a clear, named
+        // CompileException rather than javac's inlining silently making it work too.
         String source = """
                 package demo;
                 public final class MutableStatic {
@@ -338,6 +340,30 @@ class JunoCompilerTest {
                 () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MutableStatic"));
 
         assertTrue(exception.getMessage().contains("demo.MutableStatic.main"));
+        assertTrue(exception.getMessage().contains("putstatic"));
+    }
+
+    @Test
+    void reportsAReadOfANonEnumStaticFieldAsUnsupported() throws Exception {
+        // getstatic is decodable now, but only reading an enum constant is actually lowered; reading any
+        // other static field (mutable or not) must still fail cleanly, with a message calling out getstatic
+        // specifically, not silently misinterpreting the field as some other ordinal.
+        String source = """
+                package demo;
+                public final class ReadOnlyStatic {
+                    static final int NOT_A_CONSTANT_EXPRESSION = compute();
+                    static int compute() { return 5; }
+                    public static void main(String[] args) {
+                        int c = NOT_A_CONSTANT_EXPRESSION;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ReadOnlyStatic", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReadOnlyStatic"));
+
+        assertTrue(exception.getMessage().contains("demo.ReadOnlyStatic.main"));
         assertTrue(exception.getMessage().contains("getstatic"));
     }
 
@@ -656,5 +682,49 @@ class JunoCompilerTest {
 
         assertTrue(exception.getMessage().contains("demo.LongArray.main"));
         assertTrue(exception.getMessage().contains("unsupported opcode"));
+    }
+
+    @Test
+    void supportsEnumConstantsAsOrdinalInts() throws Exception {
+        // Scoped deliberately to ordinal-int representation: an enum constant is never actually
+        // constructed (no heap, no objects), it is just its 0-based declaration-order ordinal, a plain
+        // int32_t. getstatic on a recognized enum constant resolves directly to that literal; ==/!=
+        // (if_acmpeq/if_acmpne) then works for free, since equal ordinals are equal ints. switch/.name()/
+        // .ordinal()/.values()/.valueOf()/per-constant fields and methods are explicitly out of scope.
+        String enumSource = """
+                package demo;
+                public enum Direction {
+                    NORTH, SOUTH, EAST, WEST;
+                }
+                """;
+        String usingSource = """
+                package demo;
+                public final class UsesEnum {
+                    static int classify(Direction d) {
+                        if (d == Direction.NORTH) {
+                            return 0;
+                        }
+                        return -1;
+                    }
+                    public static void main(String[] args) {
+                        Direction d = Direction.SOUTH;
+                        boolean isNorth = d == Direction.NORTH;
+                        boolean isSouth = d != Direction.NORTH;
+                        int code = classify(Direction.NORTH);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Direction", enumSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesEnum", usingSource);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesEnum");
+
+        assertTrue(generated.contains("Closed-world entry point: demo.UsesEnum.main"));
+        assertTrue(generated.contains("(int32_t arg0)"),
+                "an enum-typed parameter must be a plain int32_t, like every other Juno value");
+        // NORTH=0, SOUTH=1: Direction.SOUTH must resolve to the literal 1, Direction.NORTH to 0.
+        assertTrue(generated.contains(" = 1;"), "Direction.SOUTH must fold to its ordinal, 1");
+        assertTrue(generated.contains(" = 0;"), "Direction.NORTH must fold to its ordinal, 0");
+        assertFalse(generated.contains("getstatic"), "getstatic must be resolved away, not passed through");
     }
 }

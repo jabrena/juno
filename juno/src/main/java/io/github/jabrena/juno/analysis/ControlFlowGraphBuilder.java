@@ -75,7 +75,7 @@ public final class ControlFlowGraphBuilder {
     }
 
     private boolean isConditionalBranch(int opcode) {
-        return opcode >= 153 && opcode <= 164;
+        return (opcode >= 153 && opcode <= 164) || opcode == 165 || opcode == 166;
     }
 
     private boolean isBlockEnd(int opcode) {

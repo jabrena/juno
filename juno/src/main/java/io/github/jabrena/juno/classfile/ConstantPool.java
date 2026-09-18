@@ -49,6 +49,21 @@ public final class ConstantPool {
                 utf8(nameAndType.descriptorIndex()));
     }
 
+    public FieldRef fieldRef(int index) {
+        Object value = entry(index);
+        if (!(value instanceof RefEntry ref)) {
+            throw new CompileException("Constant pool entry " + index + " is not a field reference");
+        }
+        Object nameAndTypeValue = entry(ref.nameAndTypeIndex());
+        if (!(nameAndTypeValue instanceof NameAndTypeEntry nameAndType)) {
+            throw new CompileException("Malformed field reference at constant pool entry " + index);
+        }
+        return new FieldRef(
+                className(ref.classIndex()),
+                utf8(nameAndType.nameIndex()),
+                utf8(nameAndType.descriptorIndex()));
+    }
+
     public int integer(int index) {
         Object value = entry(index);
         if (value instanceof Integer integer) {
