@@ -1,6 +1,11 @@
 io.github.jabrena.juno
+io.github.jabrena.juno.analysis
 io.github.jabrena.juno.api
 io.github.jabrena.juno.backend
 io.github.jabrena.juno.bytecode
 io.github.jabrena.juno.classfile
+io.github.jabrena.juno.intrinsic
+io.github.jabrena.juno.ir
 io.github.jabrena.juno.linker
+io.github.jabrena.juno.lowering
+io.github.jabrena.juno.optimize
