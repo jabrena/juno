@@ -67,6 +67,11 @@ public record Descriptor(List<String> parameters, String returnType) {
         return type.equals("D");
     }
 
+    /** Only {@code java.lang.String} itself; Juno has no heap, so a string is only ever a compile-time literal. */
+    public static boolean isString(String type) {
+        return type.equals("Ljava/lang/String;");
+    }
+
     public static int jvmSlots(String type) {
         if (type.equals("V")) {
             return 0;

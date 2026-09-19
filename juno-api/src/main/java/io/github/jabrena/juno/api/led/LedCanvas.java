@@ -221,6 +221,17 @@ public final class LedCanvas {
         }
     }
 
+    /**
+     * Draws {@code text} left-to-right starting at ({@code originX}, {@code originY}), one
+     * {@link #drawChar} per character spaced {@code LedMatrixFontAscii.GLYPH_WIDTH + 1} columns
+     * apart (5-wide glyph + 1-column gap) — the same fixed layout {@code LedMatrixScrollingText} used
+     * to lay out by hand before Juno had string-literal support. {@code text} must be a compile-time
+     * string literal: Juno unrolls it into one {@code drawChar} call per character at compile time
+     * (no heap, no runtime string), so this costs nothing beyond what writing the calls out by hand
+     * would have.
+     */
+    public static native void drawText(boolean[][] frame, String text, int originX, int originY);
+
     /** Draws digit (0-9) with the small font, using {@link LedMatrixFontSmall}. */
     public static void drawSmallDigit(boolean[][] frame, int digit, int originX, int originY) {
         for (int row = 0; row < LedMatrixFontSmall.GLYPH_HEIGHT; row++) {

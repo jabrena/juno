@@ -12,6 +12,9 @@ public final class ConstantPool {
     public record RefEntry(int classIndex, int nameAndTypeIndex) {
     }
 
+    public record StringEntry(int utf8Index) {
+    }
+
     private final Object[] entries;
 
     ConstantPool(Object[] entries) {
@@ -70,6 +73,19 @@ public final class ConstantPool {
             return integer;
         }
         throw new CompileException("Only integer constants are supported by ldc (constant pool entry " + index + ")");
+    }
+
+    public boolean isString(int index) {
+        return entry(index) instanceof StringEntry;
+    }
+
+    public String string(int index) {
+        Object value = entry(index);
+        if (value instanceof StringEntry stringEntry) {
+            return utf8(stringEntry.utf8Index());
+        }
+        throw new CompileException("Constant pool entry " + index + " is not a String constant (only a literal "
+                + "\"...\" is supported by ldc)");
     }
 
     public boolean isFloat(int index) {

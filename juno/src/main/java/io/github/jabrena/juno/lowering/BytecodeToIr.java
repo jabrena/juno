@@ -78,6 +78,15 @@ import java.util.stream.Collectors;
  * principle leave different arrays in the same slot before a merge.
  */
 public final class BytecodeToIr {
+    private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
+            "drawText", "([[ZLjava/lang/String;II)V");
+    private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
+            "drawChar", "([[ZIII)V");
+    /** {@code io.github.jabrena.juno.api.led.LedMatrixFontAscii.GLYPH_WIDTH + 1} (a 5-wide glyph plus a
+     * 1-column gap) — {@code juno-api} is only a test-scoped dependency of this module, so this can't
+     * reference that constant directly; keep the two in sync if the font's geometry ever changes. */
+    private static final int DRAW_TEXT_CHAR_SPACING = 6;
+
     private final BytecodeDecoder decoder = new BytecodeDecoder();
     private final Map<String, List<FieldInfo>> validatedRecords = new HashMap<>();
 
@@ -102,6 +111,7 @@ public final class BytecodeToIr {
         Set<Integer> arrayParameterSlots = arrayParameterSlots(methodDescriptor, linked.method().isStatic());
         Set<Integer> singleAssignmentLocals = computeSingleAssignmentLocals(linked);
         Map<Integer, RecordInstance> slotRecordInstance = new HashMap<>();
+        Map<Integer, String> slotStringInstance = new HashMap<>();
         ValueTracking tracking = new ValueTracking();
         List<ArrayDeclaration> arrayDeclarations = new ArrayList<>();
         List<IrBasicBlock> blocks = new ArrayList<>();
@@ -159,6 +169,9 @@ public final class BytecodeToIr {
                         if (linked.owner().constantPool().isFloat(instruction.operandA())) {
                             nextValueId = pushFloatConst(instructions, stackBase, depth, nextValueId,
                                     linked.owner().constantPool().floatValue(instruction.operandA()), tracking);
+                        } else if (linked.owner().constantPool().isString(instruction.operandA())) {
+                            nextValueId = pushStringConst(instructions, stackBase, depth, nextValueId,
+                                    linked.owner().constantPool().string(instruction.operandA()), tracking);
                         } else {
                             nextValueId = pushConst(instructions, stackBase, depth, nextValueId,
                                     linked.owner().constantPool().integer(instruction.operandA()), tracking);
@@ -167,7 +180,7 @@ public final class BytecodeToIr {
                     }
                     case 21, 25 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, instruction.operandA(),
-                                slotArrayLength, arrayParameterSlots, slotRecordInstance, tracking);
+                                slotArrayLength, arrayParameterSlots, slotRecordInstance, slotStringInstance, tracking);
                         depth++;
                     }
                     case 22 -> {
@@ -201,12 +214,12 @@ public final class BytecodeToIr {
                     }
                     case 26, 27, 28, 29 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, opcode - 26,
-                                slotArrayLength, arrayParameterSlots, slotRecordInstance, tracking);
+                                slotArrayLength, arrayParameterSlots, slotRecordInstance, slotStringInstance, tracking);
                         depth++;
                     }
                     case 42, 43, 44, 45 -> {
                         nextValueId = pushLoad(instructions, stackBase, depth, nextValueId, opcode - 42,
-                                slotArrayLength, arrayParameterSlots, slotRecordInstance, tracking);
+                                slotArrayLength, arrayParameterSlots, slotRecordInstance, slotStringInstance, tracking);
                         depth++;
                     }
                     case 54, 58 -> {
@@ -215,6 +228,8 @@ public final class BytecodeToIr {
                         instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), popped.value()));
                         trackRecordLocalIfSingleAssignment(instruction.operandA(), popped.value(), tracking,
                                 singleAssignmentLocals, slotRecordInstance);
+                        trackStringLocalIfSingleAssignment(instruction.operandA(), popped.value(), tracking,
+                                singleAssignmentLocals, slotStringInstance);
                     }
                     case 55 -> {
                         depth -= 2;
@@ -240,6 +255,8 @@ public final class BytecodeToIr {
                         instructions.add(new IrInstruction.StoreLocal(opcode - 59, popped.value()));
                         trackRecordLocalIfSingleAssignment(opcode - 59, popped.value(), tracking,
                                 singleAssignmentLocals, slotRecordInstance);
+                        trackStringLocalIfSingleAssignment(opcode - 59, popped.value(), tracking,
+                                singleAssignmentLocals, slotStringInstance);
                     }
                     case 63, 64, 65, 66 -> {
                         depth -= 2;
@@ -266,6 +283,8 @@ public final class BytecodeToIr {
                         instructions.add(new IrInstruction.StoreLocal(opcode - 75, popped.value()));
                         trackRecordLocalIfSingleAssignment(opcode - 75, popped.value(), tracking,
                                 singleAssignmentLocals, slotRecordInstance);
+                        trackStringLocalIfSingleAssignment(opcode - 75, popped.value(), tracking,
+                                singleAssignmentLocals, slotStringInstance);
                     }
                     case 87 -> depth--;
                     case 88 -> depth -= 2;
@@ -728,7 +747,13 @@ public final class BytecodeToIr {
                         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                         Lowered lowered = isEnumValues(classes, called)
                                 ? lowerEnumValues(called, instructions, stackBase, depth, nextValueId, tracking, classes)
-                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
+                                : isCompileTimeGetenv(called)
+                                        ? lowerCompileTimeGetenv(linked, instruction, instructions, stackBase, depth,
+                                                nextValueId, tracking)
+                                        : isDrawTextCall(called)
+                                                ? lowerDrawText(linked, instruction, instructions, stackBase, depth,
+                                                        nextValueId, tracking)
+                                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
@@ -1123,6 +1148,7 @@ public final class BytecodeToIr {
         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
         Descriptor descriptor = Descriptor.parse(called.descriptor());
         Value[] arguments = new Value[descriptor.parameters().size()];
+        String[] literalStrings = new String[descriptor.parameters().size()];
         for (int index = arguments.length - 1; index >= 0; index--) {
             String parameterType = descriptor.parameters().get(index);
             depth -= Descriptor.jvmSlots(parameterType);
@@ -1132,6 +1158,16 @@ public final class BytecodeToIr {
                 Value packed = Value.int64(nextValueId++);
                 instructions.add(new IrInstruction.PackLong(packed, popped.low(), popped.high()));
                 arguments[index] = packed;
+            } else if (Descriptor.isString(parameterType)) {
+                Popped popped = pop(instructions, stackBase, depth, nextValueId, tracking);
+                nextValueId = popped.nextValueId();
+                String literal = tracking.knownString(popped.value());
+                if (literal == null) {
+                    throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                            + instruction.offset() + ": " + called.displayName() + " requires a compile-time "
+                            + "string literal argument (Juno has no heap for a runtime String value)");
+                }
+                literalStrings[index] = literal;
             } else {
                 Popped popped = Descriptor.isDouble(parameterType)
                         ? popDouble(instructions, stackBase, depth, nextValueId, tracking)
@@ -1140,6 +1176,15 @@ public final class BytecodeToIr {
                                 : pop(instructions, stackBase, depth, nextValueId, tracking);
                 nextValueId = popped.nextValueId();
                 arguments[index] = popped.value();
+            }
+        }
+        List<Value> numericArguments = new ArrayList<>();
+        List<String> literalArguments = new ArrayList<>();
+        for (int index = 0; index < arguments.length; index++) {
+            if (literalStrings[index] != null) {
+                literalArguments.add(literalStrings[index]);
+            } else {
+                numericArguments.add(arguments[index]);
             }
         }
         Optional<Value> receiver = Optional.empty();
@@ -1163,11 +1208,11 @@ public final class BytecodeToIr {
         Optional<Intrinsic> intrinsic = IntrinsicRegistry.resolve(called);
         if (intrinsic.isPresent()) {
             instructions.add(new IrInstruction.IntrinsicCall(
-                    Optional.ofNullable(target), intrinsic.get(), receiver, List.of(arguments)));
+                    Optional.ofNullable(target), intrinsic.get(), receiver, numericArguments, literalArguments));
         } else {
             List<Value> callArguments = new ArrayList<>();
             receiver.ifPresent(callArguments::add);
-            callArguments.addAll(List.of(arguments));
+            callArguments.addAll(numericArguments);
             instructions.add(new IrInstruction.Call(Optional.ofNullable(target), called, List.copyOf(callArguments)));
         }
         if (target != null) {
@@ -1347,6 +1392,85 @@ public final class BytecodeToIr {
         JavaClass owner = classes.get(called.owner());
         return owner != null && owner.isEnum() && called.name().equals("values")
                 && called.descriptor().startsWith("()[L");
+    }
+
+    private boolean isCompileTimeGetenv(MethodRef called) {
+        return called.owner().equals("java/lang/System") && called.name().equals("getenv")
+                && called.descriptor().equals("(Ljava/lang/String;)Ljava/lang/String;");
+    }
+
+    /**
+     * {@code System.getenv("NAME")} of a literal environment-variable name is evaluated by Juno itself,
+     * at compile time, by calling the real {@code System.getenv} in Juno's own JVM process — reading
+     * Juno's build-time environment (wherever {@code juno compile} runs), never the target device's.
+     * The result becomes a compile-time string literal exactly like {@code ldc "..."} (see
+     * {@link #pushStringConst}), used e.g. to keep WiFi credentials out of committed source.
+     */
+    private Lowered lowerCompileTimeGetenv(LinkedMethod linked, Instruction instruction,
+                                            List<IrInstruction> instructions, int stackBase, int depth,
+                                            int nextValueId, ValueTracking tracking) {
+        Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = popped.nextValueId();
+        String variableName = tracking.knownString(popped.value());
+        if (variableName == null) {
+            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                    + instruction.offset() + ": System.getenv requires a compile-time string literal "
+                    + "environment-variable name");
+        }
+        String value = System.getenv(variableName);
+        if (value == null) {
+            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                    + instruction.offset() + ": environment variable " + variableName + " is not set; Juno "
+                    + "resolves System.getenv(...) at compile time, so it must be set wherever `juno compile` runs");
+        }
+        nextValueId = pushStringConst(instructions, stackBase, depth, nextValueId, value, tracking);
+        depth++;
+        return new Lowered(nextValueId, depth);
+    }
+
+    private boolean isDrawTextCall(MethodRef called) {
+        return called.equals(DRAW_TEXT_METHOD);
+    }
+
+    /**
+     * {@code LedCanvas.drawText(frame, "literal", x, y)} is unrolled entirely at compile time into one
+     * {@code LedCanvas.drawChar} call per character of the literal, each character's x position
+     * computed as {@code x + i * (LedMatrixFontAscii.GLYPH_WIDTH + 1)} — exactly what writing the
+     * calls out by hand (as {@code LedMatrixScrollingText} used to) would produce. {@code drawChar} is
+     * an entirely ordinary reachable Juno method (see {@link io.github.jabrena.juno.linker.Linker}'s
+     * matching reachability special-case), so neither backend needs any new codegen for this at all.
+     */
+    private Lowered lowerDrawText(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,
+                                   int stackBase, int depth, int nextValueId, ValueTracking tracking) {
+        Popped originY = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = originY.nextValueId();
+        Popped originX = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = originX.nextValueId();
+        Popped text = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = text.nextValueId();
+        String message = tracking.knownString(text.value());
+        if (message == null) {
+            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                    + instruction.offset() + ": " + DRAW_TEXT_METHOD.displayName() + " requires a compile-time "
+                    + "string literal text argument (Juno has no heap for a runtime String value)");
+        }
+        Popped frame = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = frame.nextValueId();
+
+        for (int index = 0; index < message.length(); index++) {
+            Value charValue = Value.int32(nextValueId++);
+            instructions.add(new IrInstruction.Const(charValue, message.charAt(index)));
+            Value xValue = originX.value();
+            if (index > 0) {
+                Value columnOffset = Value.int32(nextValueId++);
+                instructions.add(new IrInstruction.Const(columnOffset, index * DRAW_TEXT_CHAR_SPACING));
+                xValue = Value.int32(nextValueId++);
+                instructions.add(new IrInstruction.Binary(xValue, BinaryOp.ADD, originX.value(), columnOffset));
+            }
+            instructions.add(new IrInstruction.Call(Optional.empty(), DRAW_CHAR_METHOD,
+                    List.of(frame.value(), charValue, xValue, originY.value())));
+        }
+        return new Lowered(nextValueId, depth);
     }
 
     /**
@@ -1554,12 +1678,40 @@ public final class BytecodeToIr {
         }
     }
 
+    /** Same reasoning as {@link #trackRecordLocalIfSingleAssignment}, but for a known string literal. */
+    private void trackStringLocalIfSingleAssignment(int slot, Value value, ValueTracking tracking,
+                                                     Set<Integer> singleAssignmentLocals,
+                                                     Map<Integer, String> slotStringInstance) {
+        if (singleAssignmentLocals.contains(slot)) {
+            String literal = tracking.knownString(value);
+            if (literal != null) {
+                slotStringInstance.put(slot, literal);
+            }
+        }
+    }
+
     private int pushConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int value,
                            ValueTracking tracking) {
         Value target = Value.int32(nextValueId);
         instructions.add(new IrInstruction.Const(target, value));
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
         tracking.clearStackSlot(stackBase + depth);
+        return nextValueId + 1;
+    }
+
+    /**
+     * A string literal is never actually allocated (no heap): the pushed {@link Value} carries a dummy 0, and
+     * the literal text is tracked purely at compile time via {@link ValueTracking#markKnownString}, the same
+     * way a record instance's field values are tracked instead of a real object (see
+     * {@link #lowerRecordConstruction}).
+     */
+    private int pushStringConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
+                                 String value, ValueTracking tracking) {
+        Value target = Value.int32(nextValueId);
+        instructions.add(new IrInstruction.Const(target, 0));
+        instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
+        tracking.markKnownString(target, value);
+        tracking.markStackSlotString(stackBase + depth, value);
         return nextValueId + 1;
     }
 
@@ -1581,7 +1733,8 @@ public final class BytecodeToIr {
 
     private int pushLoad(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId, int local,
                           Map<Integer, Integer> slotArrayLength, Set<Integer> arrayParameterSlots,
-                          Map<Integer, RecordInstance> slotRecordInstance, ValueTracking tracking) {
+                          Map<Integer, RecordInstance> slotRecordInstance, Map<Integer, String> slotStringInstance,
+                          ValueTracking tracking) {
         Value target = Value.int32(nextValueId);
         instructions.add(new IrInstruction.LoadLocal(target, local));
         Integer knownLength = slotArrayLength.get(local);
@@ -1594,6 +1747,10 @@ public final class BytecodeToIr {
         RecordInstance knownRecord = slotRecordInstance.get(local);
         if (knownRecord != null) {
             tracking.markKnownRecord(target, knownRecord);
+        }
+        String knownString = slotStringInstance.get(local);
+        if (knownString != null) {
+            tracking.markKnownString(target, knownString);
         }
         storeToStack(instructions, stackBase, depth, target, tracking);
         return nextValueId + 1;
@@ -1958,15 +2115,18 @@ public final class BytecodeToIr {
         private final Map<Value, Integer> arrayLength = new HashMap<>();
         private final Set<Value> parameterForwarded = new HashSet<>();
         private final Map<Value, RecordInstance> recordOf = new HashMap<>();
+        private final Map<Value, String> stringOf = new HashMap<>();
         private Map<Integer, Integer> currentStackSlotLength = new HashMap<>();
         private Set<Integer> currentStackSlotIsParameterForward = new HashSet<>();
         private Map<Integer, RecordInstance> currentStackSlotRecord = new HashMap<>();
+        private Map<Integer, String> currentStackSlotString = new HashMap<>();
         private Map<Integer, JunoType> currentStackSlotType = new HashMap<>();
 
         void startBlock() {
             currentStackSlotLength = new HashMap<>();
             currentStackSlotIsParameterForward = new HashSet<>();
             currentStackSlotRecord = new HashMap<>();
+            currentStackSlotString = new HashMap<>();
             currentStackSlotType = new HashMap<>();
         }
 
@@ -2003,10 +2163,24 @@ public final class BytecodeToIr {
             currentStackSlotRecord.put(slot, instance);
         }
 
+        void markKnownString(Value value, String literal) {
+            stringOf.put(value, literal);
+        }
+
+        String knownString(Value value) {
+            return stringOf.get(value);
+        }
+
+        /** Same reasoning as {@link #markStackSlotRecord}, but for a compile-time string literal. */
+        void markStackSlotString(int slot, String literal) {
+            currentStackSlotString.put(slot, literal);
+        }
+
         void clearStackSlot(int slot) {
             currentStackSlotLength.remove(slot);
             currentStackSlotIsParameterForward.remove(slot);
             currentStackSlotRecord.remove(slot);
+            currentStackSlotString.remove(slot);
             currentStackSlotType.remove(slot);
         }
 
@@ -2033,6 +2207,12 @@ public final class BytecodeToIr {
             } else {
                 currentStackSlotRecord.remove(slot);
             }
+            String string = stringOf.get(value);
+            if (string != null) {
+                currentStackSlotString.put(slot, string);
+            } else {
+                currentStackSlotString.remove(slot);
+            }
         }
 
         void recordPop(int slot, Value value) {
@@ -2046,6 +2226,10 @@ public final class BytecodeToIr {
             RecordInstance instance = currentStackSlotRecord.get(slot);
             if (instance != null) {
                 recordOf.put(value, instance);
+            }
+            String string = currentStackSlotString.get(slot);
+            if (string != null) {
+                stringOf.put(value, string);
             }
         }
     }

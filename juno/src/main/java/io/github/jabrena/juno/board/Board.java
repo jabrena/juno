@@ -8,8 +8,10 @@ import io.github.jabrena.juno.CompileException;
  * {@code @Board} annotation at all, preserving Juno's original UNO-R4-WiFi-shaped behavior.
  */
 public enum Board {
-    UNO_R4_WIFI("io/github/jabrena/juno/api/ArduinoUnoR4WiFi", "UNO R4 WiFi", "arduino:renesas_uno:unor4wifi", true),
-    UNO_R4_MINIMA("io/github/jabrena/juno/api/ArduinoUnoR4Minima", "UNO R4 Minima", "arduino:renesas_uno:minima", false);
+    UNO_R4_WIFI("io/github/jabrena/juno/api/ArduinoUnoR4WiFi", "UNO R4 WiFi", "arduino:renesas_uno:unor4wifi",
+            true, true),
+    UNO_R4_MINIMA("io/github/jabrena/juno/api/ArduinoUnoR4Minima", "UNO R4 Minima", "arduino:renesas_uno:minima",
+            false, false);
 
     public static final Board DEFAULT = UNO_R4_WIFI;
 
@@ -17,12 +19,14 @@ public enum Board {
     private final String displayName;
     private final String fqbn;
     private final boolean hasLedMatrix;
+    private final boolean hasWifi;
 
-    Board(String apiClassName, String displayName, String fqbn, boolean hasLedMatrix) {
+    Board(String apiClassName, String displayName, String fqbn, boolean hasLedMatrix, boolean hasWifi) {
         this.apiClassName = apiClassName;
         this.displayName = displayName;
         this.fqbn = fqbn;
         this.hasLedMatrix = hasLedMatrix;
+        this.hasWifi = hasWifi;
     }
 
     /** {@code apiClassName} is a JVM-internal name, e.g. {@code io/github/jabrena/juno/api/ArduinoUnoR4WiFi}. */
@@ -46,5 +50,9 @@ public enum Board {
 
     public boolean hasLedMatrix() {
         return hasLedMatrix;
+    }
+
+    public boolean hasWifi() {
+        return hasWifi;
     }
 }

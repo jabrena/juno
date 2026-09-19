@@ -77,10 +77,12 @@ public final class CortexM4AsmBackend {
     private final Map<String, Integer> objectSizes = new LinkedHashMap<>();
     private final Map<FieldRef, Integer> fieldOffsets = new LinkedHashMap<>();
     private final Map<FieldRef, String> staticSymbols = new LinkedHashMap<>();
+    private final Map<String, String> stringLiteralSymbols = new LinkedHashMap<>();
     private MethodRef entryPoint;
     private String clinitLabel;
     private int labelCounter;
     private boolean usesMouse;
+    private boolean usesWifi;
 
     public Output generate(IrProgram program) {
         entryPoint = program.entryPoint();
@@ -102,6 +104,7 @@ public final class CortexM4AsmBackend {
                 .append("    .syntax unified\n")
                 .append("    .thumb\n");
         emitStaticStorage(output);
+        emitStringLiteralStorage(output);
         output.append("    .text\n");
         for (IrMethod method : program.methods()) {
             emitMethod(output, method);
@@ -134,6 +137,12 @@ public final class CortexM4AsmBackend {
                                 load.field(), field -> "juno_static_" + sanitize(field.displayName()));
                         case IrInstruction.StoreStatic store -> staticSymbols.computeIfAbsent(
                                 store.field(), field -> "juno_static_" + sanitize(field.displayName()));
+                        case IrInstruction.IntrinsicCall call -> {
+                            for (String literal : call.literalArguments()) {
+                                stringLiteralSymbols.computeIfAbsent(literal,
+                                        unused -> "juno_str" + stringLiteralSymbols.size());
+                            }
+                        }
                         default -> { }
                     }
                 }
@@ -163,6 +172,45 @@ public final class CortexM4AsmBackend {
             output.append(symbol).append(":\n")
                     .append("    .space 4\n");
         }
+    }
+
+    /**
+     * Every distinct string literal used anywhere in the program (deduplicated by content) gets one
+     * {@code .rodata} symbol, filled in by {@link #computeLayouts}; a call site just loads its address.
+     */
+    private void emitStringLiteralStorage(StringBuilder output) {
+        if (stringLiteralSymbols.isEmpty()) {
+            return;
+        }
+        output.append("    .section .rodata\n")
+                .append("    .align 2\n");
+        for (Map.Entry<String, String> entry : stringLiteralSymbols.entrySet()) {
+            output.append(entry.getValue()).append(":\n")
+                    .append("    .asciz \"").append(asmStringLiteral(entry.getKey())).append("\"\n");
+        }
+    }
+
+    /** Escapes {@code value} for a GNU {@code as} {@code .asciz} directive. */
+    private String asmStringLiteral(String value) {
+        StringBuilder escaped = new StringBuilder();
+        for (int index = 0; index < value.length(); index++) {
+            char character = value.charAt(index);
+            switch (character) {
+                case '\\' -> escaped.append("\\\\");
+                case '"' -> escaped.append("\\\"");
+                case '\n' -> escaped.append("\\n");
+                case '\r' -> escaped.append("\\r");
+                case '\t' -> escaped.append("\\t");
+                default -> {
+                    if (character < 0x20 || character > 0x7E) {
+                        escaped.append(String.format("\\%03o", (int) character));
+                    } else {
+                        escaped.append(character);
+                    }
+                }
+            }
+        }
+        return escaped.toString();
     }
 
     private String asmFunctionName(IrMethod method) {
@@ -452,6 +500,29 @@ public final class CortexM4AsmBackend {
                 load(output, frame, "r0", call.arguments().get(0));
                 output.append("    bl juno_serial_println\n");
             }
+            case SERIAL_PRINT_STRING -> {
+                output.append("    ldr r0, =")
+                        .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
+                output.append("    bl juno_serial_print_str\n");
+            }
+            case SERIAL_PRINTLN_STRING -> {
+                output.append("    ldr r0, =")
+                        .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
+                output.append("    bl juno_serial_println_str\n");
+            }
+            case WIFI_BEGIN -> {
+                usesWifi = true;
+                output.append("    ldr r0, =")
+                        .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
+                output.append("    ldr r1, =")
+                        .append(stringLiteralSymbols.get(call.literalArguments().get(1))).append('\n');
+                output.append("    bl juno_wifi_begin\n");
+            }
+            case WIFI_STATUS -> {
+                usesWifi = true;
+                output.append("    bl juno_wifi_status\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
             case MOUSE_BEGIN -> {
                 usesMouse = true;
                 output.append("    bl juno_mouse_begin\n");
@@ -667,6 +738,9 @@ public final class CortexM4AsmBackend {
         if (usesMouse) {
             shim.append("#include <Mouse.h>\n");
         }
+        if (usesWifi) {
+            shim.append("#include <WiFiS3.h>\n");
+        }
         shim.append("""
 
                 extern "C" [[noreturn]] void juno_panic() {
@@ -717,6 +791,14 @@ public final class CortexM4AsmBackend {
                 extern "C" void juno_serial_println(int32_t value) {
                   Serial.println(value);
                 }
+
+                extern "C" void juno_serial_print_str(const char* value) {
+                  Serial.print(value);
+                }
+
+                extern "C" void juno_serial_println_str(const char* value) {
+                  Serial.println(value);
+                }
                 """.replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES)));
         if (usesMouse) {
             shim.append("""
@@ -727,6 +809,18 @@ public final class CortexM4AsmBackend {
 
                     extern "C" void juno_mouse_move(int32_t x, int32_t y) {
                       Mouse.move(static_cast<signed char>(x), static_cast<signed char>(y));
+                    }
+                    """);
+        }
+        if (usesWifi) {
+            shim.append("""
+
+                    extern "C" void juno_wifi_begin(const char* ssid, const char* password) {
+                      WiFi.begin(ssid, password);
+                    }
+
+                    extern "C" int32_t juno_wifi_status() {
+                      return static_cast<int32_t>(WiFi.status());
                     }
                     """);
         }

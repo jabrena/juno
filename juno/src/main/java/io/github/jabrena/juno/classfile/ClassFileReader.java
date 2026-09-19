@@ -60,7 +60,8 @@ public final class ClassFileReader {
                     yield value;
                 }
                 case 7 -> new ConstantPool.ClassEntry(input.readUnsignedShort());
-                case 8, 16, 19, 20 -> {
+                case 8 -> new ConstantPool.StringEntry(input.readUnsignedShort());
+                case 16, 19, 20 -> {
                     input.readUnsignedShort();
                     yield new Object();
                 }

@@ -140,7 +140,7 @@ class CopyPropagationTest {
                 new IrInstruction.Unary(negatedInt, UnaryOp.NEGATE, loaded),
                 new IrInstruction.Call(Optional.of(callResult), callee, List.of(loaded)),
                 new IrInstruction.IntrinsicCall(Optional.of(intrinsicResult), Intrinsic.GPIO_DIGITAL_READ,
-                        Optional.of(loaded), List.of(loaded)),
+                        Optional.of(loaded), List.of(loaded), List.of()),
                 new IrInstruction.ArrayLoad(arrayResult, ArrayElementType.INT, loaded, loaded),
                 new IrInstruction.ArrayStore(ArrayElementType.INT, loaded, loaded, loaded),
                 new IrInstruction.BoundsCheck(loaded, 4),

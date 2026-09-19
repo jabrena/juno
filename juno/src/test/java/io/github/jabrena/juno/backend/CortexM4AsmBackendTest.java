@@ -37,7 +37,7 @@ class CortexM4AsmBackendTest {
                 new IrInstruction.Const(Value.int32(0), 13),
                 new IrInstruction.StoreLocal(2, Value.int32(0)),
                 new IrInstruction.IntrinsicCall(Optional.of(Value.int32(2)), Intrinsic.DIGITAL_OUTPUT_OF,
-                        Optional.empty(), List.of(Value.int32(0))),
+                        Optional.empty(), List.of(Value.int32(0)), List.of()),
                 new IrInstruction.StoreLocal(2, Value.int32(2)),
                 new IrInstruction.StoreLocal(1, Value.int32(2))),
                 new IrTerminator.Jump(6));
@@ -45,19 +45,19 @@ class CortexM4AsmBackendTest {
                 new IrInstruction.LoadLocal(Value.int32(4), 1),
                 new IrInstruction.StoreLocal(2, Value.int32(4)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.DIGITAL_OUTPUT_HIGH,
-                        Optional.of(Value.int32(4)), List.of()),
+                        Optional.of(Value.int32(4)), List.of(), List.of()),
                 new IrInstruction.Const(Value.int32(6), 500),
                 new IrInstruction.StoreLocal(2, Value.int32(6)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.DELAY_MILLIS,
-                        Optional.empty(), List.of(Value.int32(6))),
+                        Optional.empty(), List.of(Value.int32(6)), List.of()),
                 new IrInstruction.LoadLocal(Value.int32(8), 1),
                 new IrInstruction.StoreLocal(2, Value.int32(8)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.DIGITAL_OUTPUT_LOW,
-                        Optional.of(Value.int32(8)), List.of()),
+                        Optional.of(Value.int32(8)), List.of(), List.of()),
                 new IrInstruction.Const(Value.int32(10), 500),
                 new IrInstruction.StoreLocal(2, Value.int32(10)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.DELAY_MILLIS,
-                        Optional.empty(), List.of(Value.int32(10)))),
+                        Optional.empty(), List.of(Value.int32(10)), List.of())),
                 new IrTerminator.Jump(6));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 3, 11, List.of(), List.of(setupBlock, loopBlock));
 
@@ -85,7 +85,7 @@ class CortexM4AsmBackendTest {
         MethodRef entryPoint = new MethodRef("LedMatrixHeart", "main", "([Ljava/lang/String;)V");
         IrBasicBlock setupBlock = new IrBasicBlock(0, List.of(
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.LED_MATRIX_BEGIN,
-                        Optional.empty(), List.of())),
+                        Optional.empty(), List.of(), List.of())),
                 new IrTerminator.Jump(3));
         IrBasicBlock loopBlock = new IrBasicBlock(3, List.of(
                 new IrInstruction.Const(Value.int32(0), 0x3184A444),
@@ -95,17 +95,17 @@ class CortexM4AsmBackendTest {
                 new IrInstruction.Const(Value.int32(2), 0x100A0040),
                 new IrInstruction.StoreLocal(3, Value.int32(2)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.LED_MATRIX_LOAD_FRAME,
-                        Optional.empty(), List.of(Value.int32(0), Value.int32(1), Value.int32(2))),
+                        Optional.empty(), List.of(Value.int32(0), Value.int32(1), Value.int32(2)), List.of()),
                 new IrInstruction.Const(Value.int32(6), 500),
                 new IrInstruction.StoreLocal(1, Value.int32(6)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.DELAY_MILLIS,
-                        Optional.empty(), List.of(Value.int32(6))),
+                        Optional.empty(), List.of(Value.int32(6)), List.of()),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.LED_MATRIX_CLEAR,
-                        Optional.empty(), List.of()),
+                        Optional.empty(), List.of(), List.of()),
                 new IrInstruction.Const(Value.int32(8), 500),
                 new IrInstruction.StoreLocal(1, Value.int32(8)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.DELAY_MILLIS,
-                        Optional.empty(), List.of(Value.int32(8)))),
+                        Optional.empty(), List.of(Value.int32(8)), List.of())),
                 new IrTerminator.Jump(3));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 4, 9, List.of(), List.of(setupBlock, loopBlock));
 
@@ -136,7 +136,7 @@ class CortexM4AsmBackendTest {
                 new IrInstruction.Const(Value.int32(0), 9600),
                 new IrInstruction.StoreLocal(2, Value.int32(0)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.SERIAL_BEGIN,
-                        Optional.empty(), List.of(Value.int32(0))),
+                        Optional.empty(), List.of(Value.int32(0)), List.of()),
                 new IrInstruction.Const(Value.int32(2), 0),
                 new IrInstruction.StoreLocal(2, Value.int32(2)),
                 new IrInstruction.StoreLocal(1, Value.int32(2))),
@@ -145,7 +145,7 @@ class CortexM4AsmBackendTest {
                 new IrInstruction.LoadLocal(Value.int32(4), 1),
                 new IrInstruction.StoreLocal(2, Value.int32(4)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.SERIAL_PRINTLN,
-                        Optional.empty(), List.of(Value.int32(4))),
+                        Optional.empty(), List.of(Value.int32(4)), List.of()),
                 new IrInstruction.LoadLocal(Value.int32(6), 1),
                 new IrInstruction.StoreLocal(2, Value.int32(6)),
                 new IrInstruction.Const(Value.int32(7), 1),
@@ -156,7 +156,7 @@ class CortexM4AsmBackendTest {
                 new IrInstruction.Const(Value.int32(12), 1000),
                 new IrInstruction.StoreLocal(2, Value.int32(12)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.DELAY_MILLIS,
-                        Optional.empty(), List.of(Value.int32(12)))),
+                        Optional.empty(), List.of(Value.int32(12)), List.of())),
                 new IrTerminator.Jump(8));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 4, 13, List.of(), List.of(setupBlock, loopBlock));
 
@@ -171,6 +171,62 @@ class CortexM4AsmBackendTest {
         String shim = result.runtimeShim();
         assertTrue(shim.contains("extern \"C\" void juno_serial_begin(int32_t baud)"));
         assertTrue(shim.contains("extern \"C\" void juno_serial_println(int32_t value)"));
+    }
+
+    /** A string literal gets its own {@code .rodata} symbol; the call site just loads its address. */
+    @Test
+    void lowersSerialStringLiteralIntrinsicsToARodataSymbol() {
+        MethodRef entryPoint = new MethodRef("demo/Greeting", "main", "([Ljava/lang/String;)V");
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.SERIAL_PRINT_STRING,
+                        Optional.empty(), List.of(), List.of("hello")),
+                new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.SERIAL_PRINTLN_STRING,
+                        Optional.empty(), List.of(), List.of("world"))),
+                new IrTerminator.Return(Optional.empty()));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 0, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        String assembly = result.assembly();
+
+        assertTrue(assembly.contains(".section .rodata"));
+        assertTrue(assembly.contains("juno_str0:\n    .asciz \"hello\""));
+        assertTrue(assembly.contains("juno_str1:\n    .asciz \"world\""));
+        assertTrue(assembly.contains("ldr r0, =juno_str0"));
+        assertTrue(assembly.contains("bl juno_serial_print_str"));
+        assertTrue(assembly.contains("ldr r0, =juno_str1"));
+        assertTrue(assembly.contains("bl juno_serial_println_str"));
+
+        String shim = result.runtimeShim();
+        assertTrue(shim.contains("extern \"C\" void juno_serial_print_str(const char* value)"));
+        assertTrue(shim.contains("extern \"C\" void juno_serial_println_str(const char* value)"));
+    }
+
+    /** WiFi credentials are two string literals; {@code status()} returns through r0 like any other call. */
+    @Test
+    void lowersWifiIntrinsicsToLiteralAddressesAndAShim() {
+        MethodRef entryPoint = new MethodRef("demo/WifiConnect", "main", "([Ljava/lang/String;)V");
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.WIFI_BEGIN,
+                        Optional.empty(), List.of(), List.of("network", "password")),
+                new IrInstruction.IntrinsicCall(Optional.of(Value.int32(0)), Intrinsic.WIFI_STATUS,
+                        Optional.empty(), List.of(), List.of())),
+                new IrTerminator.Return(Optional.empty()));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 1, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        String assembly = result.assembly();
+
+        assertTrue(assembly.contains("juno_str0:\n    .asciz \"network\""));
+        assertTrue(assembly.contains("juno_str1:\n    .asciz \"password\""));
+        assertTrue(assembly.contains("ldr r0, =juno_str0"));
+        assertTrue(assembly.contains("ldr r1, =juno_str1"));
+        assertTrue(assembly.contains("bl juno_wifi_begin"));
+        assertTrue(assembly.contains("bl juno_wifi_status"));
+
+        String shim = result.runtimeShim();
+        assertTrue(shim.contains("#include <WiFiS3.h>"));
+        assertTrue(shim.contains("extern \"C\" void juno_wifi_begin(const char* ssid, const char* password)"));
+        assertTrue(shim.contains("extern \"C\" int32_t juno_wifi_status()"));
     }
 
     /**
@@ -239,11 +295,11 @@ class CortexM4AsmBackendTest {
     void lowersMouseIntrinsicsOnlyWhenUsed() {
         MethodRef entryPoint = new MethodRef("RatonLoco", "main", "()V");
         IrBasicBlock block = new IrBasicBlock(0, List.of(
-                new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.MOUSE_BEGIN, Optional.empty(), List.of()),
+                new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.MOUSE_BEGIN, Optional.empty(), List.of(), List.of()),
                 new IrInstruction.Const(Value.int32(0), 50),
                 new IrInstruction.Const(Value.int32(1), 0),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.MOUSE_MOVE,
-                        Optional.empty(), List.of(Value.int32(0), Value.int32(1)))),
+                        Optional.empty(), List.of(Value.int32(0), Value.int32(1)), List.of())),
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 2, List.of(), List.of(block));
 

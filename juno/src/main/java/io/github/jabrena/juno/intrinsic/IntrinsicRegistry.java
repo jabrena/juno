@@ -50,10 +50,18 @@ public final class IntrinsicRegistry {
                     Intrinsic.SERIAL_PRINT),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/Serial", "println", "(I)V"),
                     Intrinsic.SERIAL_PRINTLN),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/Serial", "print", "(Ljava/lang/String;)V"),
+                    Intrinsic.SERIAL_PRINT_STRING),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/Serial", "println", "(Ljava/lang/String;)V"),
+                    Intrinsic.SERIAL_PRINTLN_STRING),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/Mouse", "begin", "()V"),
                     Intrinsic.MOUSE_BEGIN),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/Mouse", "move", "(II)V"),
-                    Intrinsic.MOUSE_MOVE));
+                    Intrinsic.MOUSE_MOVE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Wifi", "begin",
+                    "(Ljava/lang/String;Ljava/lang/String;)V"), Intrinsic.WIFI_BEGIN),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Wifi", "status", "()I"),
+                    Intrinsic.WIFI_STATUS));
 
     private IntrinsicRegistry() {
     }

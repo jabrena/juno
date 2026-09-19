@@ -14,6 +14,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -190,6 +191,134 @@ class JunoCompilerTest {
         assertTrue(generated.contains("Serial.begin(static_cast<unsigned long>(call_arg0))"));
         assertTrue(generated.contains("Serial.print(call_arg0)"));
         assertTrue(generated.contains("Serial.println(call_arg0)"));
+    }
+
+    @Test
+    void lowersSerialStringLiteralIntrinsics() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Serial;
+                public final class Greeting {
+                    public static void main(String[] args) {
+                        Serial.begin(9600);
+                        Serial.print("hello");
+                        String message = "world";
+                        Serial.println(message);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Greeting", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Greeting");
+
+        assertTrue(generated.contains("const char* call_str0 = \"hello\";"));
+        assertTrue(generated.contains("Serial.print(call_str0)"));
+        assertTrue(generated.contains("const char* call_str0 = \"world\";"));
+        assertTrue(generated.contains("Serial.println(call_str0)"));
+    }
+
+    @Test
+    void rejectsNonLiteralSerialStringArgument() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.Serial;
+                public final class DynamicGreeting {
+                    public static void main(String[] args) {
+                        Serial.begin(9600);
+                        String message = Clock.millis() > 0 ? "yes" : "no";
+                        Serial.println(message);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.DynamicGreeting", source);
+
+        assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DynamicGreeting"));
+    }
+
+    @Test
+    void lowersWifiIntrinsicsWithLiteralCredentials() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.Wifi;
+                public final class WifiConnect {
+                    public static void main(String[] args) {
+                        Wifi.begin("TestNetwork-SSID", "test-password-123");
+                        int status = Wifi.status();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiConnect", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiConnect");
+
+        assertTrue(generated.contains("#include <WiFiS3.h>"));
+        assertTrue(generated.contains("const char* call_str0 = \"TestNetwork-SSID\";"));
+        assertTrue(generated.contains("const char* call_str1 = \"test-password-123\";"));
+        assertTrue(generated.contains("WiFi.begin(call_str0, call_str1)"));
+        assertTrue(generated.contains("WiFi.status()"));
+    }
+
+    @Test
+    void resolvesWifiCredentialsFromACompileTimeEnvironmentVariable() throws Exception {
+        String pathValue = System.getenv("PATH");
+        assertTrue(pathValue != null && !pathValue.isEmpty(), "test environment must define PATH");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.Wifi;
+                public final class WifiConnectFromEnv {
+                    public static void main(String[] args) {
+                        Wifi.begin(System.getenv("PATH"), "password");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiConnectFromEnv", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiConnectFromEnv");
+
+        assertTrue(generated.contains("const char* call_str0 = \"" + pathValue.replace("\\", "\\\\") + "\";"));
+    }
+
+    @Test
+    void rejectsAnUnsetCompileTimeEnvironmentVariable() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.Wifi;
+                public final class WifiConnectFromMissingEnv {
+                    public static void main(String[] args) {
+                        Wifi.begin(System.getenv("JUNO_TEST_WIFI_SSID_NOT_SET"), "password");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiConnectFromMissingEnv", source);
+
+        assertNull(System.getenv("JUNO_TEST_WIFI_SSID_NOT_SET"),
+                "test environment must not define JUNO_TEST_WIFI_SSID_NOT_SET");
+        assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiConnectFromMissingEnv"));
+    }
+
+    @Test
+    void rejectsWifiUsageOnTheMinimaWhichHasNoOnboardModule() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.ArduinoUnoR4Minima;
+                import io.github.jabrena.juno.api.Board;
+                import io.github.jabrena.juno.api.net.Wifi;
+                @Board(ArduinoUnoR4Minima.class)
+                public final class MinimaWithWifi {
+                    public static void main(String[] args) {
+                        Wifi.begin("network", "password");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithWifi", source);
+
+        CompileException exception = assertThrows(CompileException.class,
+                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithWifi"));
+        assertTrue(exception.getMessage().contains("Wifi"));
+        assertTrue(exception.getMessage().contains("Minima"));
     }
 
     @Test

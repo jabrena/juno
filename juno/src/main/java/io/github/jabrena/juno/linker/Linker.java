@@ -26,6 +26,11 @@ import java.util.stream.Collectors;
 public final class Linker {
     private static final Set<Intrinsic> LED_MATRIX_INTRINSICS = EnumSet.of(
             Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME, Intrinsic.LED_MATRIX_CLEAR);
+    private static final Set<Intrinsic> WIFI_INTRINSICS = EnumSet.of(Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS);
+    private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
+            "drawText", "([[ZLjava/lang/String;II)V");
+    private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
+            "drawChar", "([[ZIII)V");
 
     private final BytecodeDecoder decoder = new BytecodeDecoder();
     private final ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilder();
@@ -73,9 +78,13 @@ public final class Linker {
                 if (instruction.opcode() == 182 || instruction.opcode() == 183 || instruction.opcode() == 184) {
                     MethodRef called = owner.constantPool().methodRef(instruction.operandA());
                     IntrinsicRegistry.resolve(called).ifPresent(intrinsic -> requireLedMatrixSupport(board, intrinsic, reference));
-                    if (!IntrinsicRegistry.isIntrinsic(called)
+                    IntrinsicRegistry.resolve(called).ifPresent(intrinsic -> requireWifiSupport(board, intrinsic, reference));
+                    if (isDrawTextCall(called)) {
+                        work.addLast(DRAW_CHAR_METHOD);
+                    } else if (!IntrinsicRegistry.isIntrinsic(called)
                             && !isRuntimeBaseConstructor(called)
-                            && !isEnumOperation(classes, called)) {
+                            && !isEnumOperation(classes, called)
+                            && !isCompileTimeGetenv(called)) {
                         work.addLast(called);
                     }
                 }
@@ -99,6 +108,32 @@ public final class Linker {
             throw new CompileException("LedMatrix requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
                     + " has no onboard LED matrix (used from " + caller.displayName() + ")");
         }
+    }
+
+    private void requireWifiSupport(Board board, Intrinsic intrinsic, MethodRef caller) {
+        if (!board.hasWifi() && WIFI_INTRINSICS.contains(intrinsic)) {
+            throw new CompileException("Wifi requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
+                    + " has no onboard WiFi module (used from " + caller.displayName() + ")");
+        }
+    }
+
+    /**
+     * {@code System.getenv("NAME")} of a literal environment-variable name is resolved by Juno itself at
+     * compile time (see {@code BytecodeToIr#lowerCompileTimeGetenv}), reading its own build-time
+     * environment rather than the target device's — never a reachable call.
+     */
+    private boolean isCompileTimeGetenv(MethodRef called) {
+        return called.owner().equals("java/lang/System") && called.name().equals("getenv")
+                && called.descriptor().equals("(Ljava/lang/String;)Ljava/lang/String;");
+    }
+
+    /**
+     * {@code LedCanvas.drawText(frame, "literal", x, y)} is unrolled by {@code BytecodeToIr} into one
+     * {@code LedCanvas.drawChar} call per character at compile time — {@code drawText} itself is
+     * native (no body to walk into); {@link #DRAW_CHAR_METHOD} is what's actually reachable.
+     */
+    private boolean isDrawTextCall(MethodRef called) {
+        return called.equals(DRAW_TEXT_METHOD);
     }
 
     private JavaMethod findMain(JavaClass mainClass) {
