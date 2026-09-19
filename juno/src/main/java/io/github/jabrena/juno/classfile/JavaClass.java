@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.classfile;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * {@code superClassName} is the internal name of the direct superclass, or {@code null} only for
@@ -20,7 +21,7 @@ import java.util.List;
  * {@link #recordComponents()}.
  */
 public record JavaClass(String name, int accessFlags, String superClassName, ConstantPool constantPool,
-                         List<JavaMethod> methods, List<FieldInfo> fields) {
+                         List<JavaMethod> methods, List<FieldInfo> fields, Optional<String> boardApiClassName) {
     private static final int ACC_ENUM = 0x4000;
     private static final int ACC_FINAL = 0x0010;
     private static final String RECORD_SUPERCLASS = "java/lang/Record";

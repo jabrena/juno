@@ -1,3 +1,5 @@
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
@@ -7,6 +9,7 @@ import io.github.jabrena.juno.api.led.LedMatrix;
  * the UNO R4 WiFi's 12x8 LED matrix using {@code LedCanvas.drawChar}: digits 0-9, then
  * uppercase A-Z, then lowercase a-z, then the punctuation/symbol characters, in that order.
  */
+@Board(ArduinoUnoR4WiFi.class)
 public final class LedMatrixAsciiScroll {
     public static void main(String[] args) {
         LedMatrix.begin();

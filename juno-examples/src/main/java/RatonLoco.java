@@ -1,3 +1,5 @@
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.DigitalOutput;
 import io.github.jabrena.juno.api.led.LedCanvas;
@@ -13,6 +15,7 @@ import io.github.jabrena.juno.api.Mouse;
  * the {@code Mouse} library ({@code arduino-cli lib install Mouse}). Once uploaded, it takes over
  * the real cursor on whatever computer the board's USB cable is plugged into.
  */
+@Board(ArduinoUnoR4WiFi.class)
 public final class RatonLoco {
     private static final int LED = 13;
     private static final int MOVE_DELAY = 1000;

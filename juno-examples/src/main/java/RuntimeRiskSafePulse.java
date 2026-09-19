@@ -1,7 +1,10 @@
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.DigitalOutput;
 
 /** Board test for a bounded arena allocation and a clean {@code juno inspect --risks} report. */
+@Board(ArduinoUnoR4WiFi.class)
 public final class RuntimeRiskSafePulse {
     private RuntimeRiskSafePulse() {
     }

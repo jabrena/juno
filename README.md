@@ -49,9 +49,12 @@ Hardware operations are normal Java native declarations at compile time and comp
 at link time:
 
 ```java
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.DigitalOutput;
 
+@Board(ArduinoUnoR4WiFi.class)
 public final class Blink {
     public static void main(String[] args) {
         DigitalOutput led = DigitalOutput.of(13);
@@ -65,6 +68,13 @@ public final class Blink {
 
 See the [Javadoc](https://jabrena.github.io/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html)
 for the complete Java API reference.
+
+### Target board
+
+`@Board` (`io.github.jabrena.juno.api.Board`) on the entry-point class selects which UNO R4 variant
+Juno compiles for: `ArduinoUnoR4WiFi` or `ArduinoUnoR4Minima`. A class with no `@Board` annotation
+targets the WiFi variant by default. The board gates board-specific intrinsics at link time — `LedMatrix`
+requires `ArduinoUnoR4WiFi.class`, since the Minima has no onboard matrix.
 
 ## Supported Java subset
 
@@ -100,6 +110,19 @@ memory report remains authoritative for final RAM and flash use.
 The above live under [`juno/src/main/java/io/github/jabrena/juno/`](juno/src/main/java/io/github/jabrena/juno).
 The small Java-facing hardware abstraction lives separately, in
 [`juno-api/src/main/java/io/github/jabrena/juno/api/`](juno-api/src/main/java/io/github/jabrena/juno/api).
+
+### Experimental: Cortex-M4 assembly backend
+
+[`CortexM4AsmBackend`](juno/src/main/java/io/github/jabrena/juno/backend/CortexM4AsmBackend.java) emits
+GNU ARM (Cortex-M4) assembly straight from Juno IR — no C++ in between. Every reachable method
+becomes its own function with a real AAPCS calling convention (including stack-passed arguments
+beyond the first four); every value and local lives in a fixed stack-frame slot rather than a
+register, so it doesn't run out of registers as a method grows. Supports branches, `switch`, `int`
+arithmetic/comparisons, fixed-size arrays, arena-allocated objects with fields, mutable static
+fields, GPIO/delay, `LedMatrix`, and `Serial` (the last two via a small `extern "C"` shim around
+things the assembly can't call directly). Try it with `java -jar juno.jar
+asm --main Blink ...`; see [docs/ARDUINO.md](docs/ARDUINO.md) for the full walkthrough, including how
+far this has (and hasn't) been verified on real hardware.
 
 Juno currently uses ArduinoCore-renesas as its HAL. Moving selected intrinsics to Renesas FSP or
 direct registers, then adding an SSA IR before C emission, are natural later steps.

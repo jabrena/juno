@@ -1,3 +1,5 @@
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.DigitalOutput;
 
@@ -6,6 +8,7 @@ import io.github.jabrena.juno.api.DigitalOutput;
  * A one-second startup light is followed by eight short flashes; the ninth 1 KiB allocation then
  * calls {@code juno_panic()}.
  */
+@Board(ArduinoUnoR4WiFi.class)
 public final class RuntimeRiskArenaExhaustion {
     private static final int INTS_PER_ALLOCATION = 256;
 

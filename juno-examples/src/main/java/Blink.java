@@ -1,6 +1,9 @@
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.DigitalOutput;
 
+@Board(ArduinoUnoR4WiFi.class)
 public final class Blink {
     private static final int LED = 13;
 

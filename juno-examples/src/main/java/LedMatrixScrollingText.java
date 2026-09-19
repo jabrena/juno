@@ -1,3 +1,5 @@
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
@@ -10,6 +12,7 @@ import io.github.jabrena.juno.api.led.LedMatrix;
  * scroll offset; {@code LedCanvas.setPixel} already clips anything outside the 12x8 frame, so
  * characters simply appear at the right edge and disappear off the left edge as the offset shrinks.
  */
+@Board(ArduinoUnoR4WiFi.class)
 public final class LedMatrixScrollingText {
     private static final int CHAR_SPACING = 6;
     private static final int CHAR_COUNT = 29;

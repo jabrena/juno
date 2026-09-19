@@ -3,6 +3,8 @@ package io.github.jabrena.juno;
 import io.github.jabrena.juno.analysis.BasicBlock;
 import io.github.jabrena.juno.analysis.RuntimeRisk;
 import io.github.jabrena.juno.analysis.RuntimeRiskReport;
+import io.github.jabrena.juno.backend.CortexM4AsmBackend;
+import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
@@ -11,6 +13,9 @@ import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.Program;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +49,8 @@ public final class Main {
             runCompile(args);
         } else if (args[0].equals("inspect")) {
             runInspect(args);
+        } else if (args[0].equals("asm")) {
+            runAsm(args);
         } else {
             throw new CompileException("Unknown command '" + args[0] + "'. Run with --help for usage.");
         }
@@ -55,12 +62,7 @@ public final class Main {
         Path output = null;
         for (int index = 1; index < args.length; index++) {
             String option = args[index];
-            if (option.equals("--board")) {
-                String board = value(args, ++index, option);
-                if (!board.equals("uno-r4-wifi") && !board.equals("uno-r4-minima")) {
-                    throw new CompileException("Unsupported board '" + board + "'; use uno-r4-wifi or uno-r4-minima");
-                }
-            } else if (option.equals("--main")) {
+            if (option.equals("--main")) {
                 mainClass = value(args, ++index, option);
             } else if (option.equals("--classpath") || option.equals("-cp")) {
                 classPathValue = value(args, ++index, option);
@@ -79,8 +81,71 @@ public final class Main {
         }
         List<Path> classPath = parseClassPath(classPathValue);
 
-        new JunoCompiler().compileTo(classPath, mainClass, output);
-        System.out.println("Generated " + output + " for Arduino UNO R4");
+        CompilationResult result = new JunoCompiler().compileTo(classPath, mainClass, output);
+        Board board = result.report().board();
+        System.out.println("Generated " + output + " for " + board.displayName() + " (fqbn " + board.fqbn() + ")");
+    }
+
+    /**
+     * Experimental: emits GNU ARM assembly straight from Juno IR, bypassing the C++ backend, for the
+     * subset {@link CortexM4AsmBackend} supports today. Always also writes a small {@code extern "C"}
+     * runtime shim {@code .cpp} alongside the {@code .S} file (see {@link CortexM4AsmBackend}'s class
+     * doc) — compile both into the sketch.
+     */
+    private static void runAsm(String[] args) {
+        String mainClass = null;
+        String classPathValue = "target/classes";
+        Path output = null;
+        for (int index = 1; index < args.length; index++) {
+            String option = args[index];
+            if (option.equals("--main")) {
+                mainClass = value(args, ++index, option);
+            } else if (option.equals("--classpath") || option.equals("-cp")) {
+                classPathValue = value(args, ++index, option);
+            } else if (option.equals("--output") || option.equals("-o")) {
+                output = Path.of(value(args, ++index, option));
+            } else {
+                throw new CompileException("Unknown option '" + option + "'");
+            }
+        }
+        if (mainClass == null) {
+            throw new CompileException("Missing required option --main");
+        }
+        if (output == null) {
+            String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
+            output = Path.of("build", "juno", simpleName, simpleName + ".S");
+        }
+        List<Path> classPath = parseClassPath(classPathValue);
+
+        CompilationPipeline pipeline = new CompilationPipeline();
+        Program program = pipeline.link(classPath, mainClass);
+        IrProgram optimized = pipeline.optimize(pipeline.lower(program));
+        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(optimized);
+        try {
+            Path parent = output.toAbsolutePath().getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.writeString(output, result.assembly(), StandardCharsets.UTF_8);
+        } catch (IOException exception) {
+            throw new CompileException("Cannot write generated assembly to " + output, exception);
+        }
+        System.out.println("Generated " + output + " for " + program.board().displayName()
+                + " -- EXPERIMENTAL, not yet flashed to a physical board.");
+
+        Path shimOutput = output.resolveSibling(baseName(output) + "Shim.cpp");
+        try {
+            Files.writeString(shimOutput, result.runtimeShim(), StandardCharsets.UTF_8);
+        } catch (IOException exception) {
+            throw new CompileException("Cannot write generated runtime shim to " + shimOutput, exception);
+        }
+        System.out.println("Generated " + shimOutput + " -- compile this alongside the .S file.");
+    }
+
+    private static String baseName(Path path) {
+        String fileName = path.getFileName().toString();
+        int dot = fileName.lastIndexOf('.');
+        return dot < 0 ? fileName : fileName.substring(0, dot);
     }
 
     private static void runInspect(String[] args) {
@@ -116,6 +181,7 @@ public final class Main {
         CompilationReport report = CompilationReport.from(program, optimized);
 
         System.out.println("Entry point: " + report.entryPoint().displayName());
+        System.out.println("Board: " + report.board().displayName() + " (fqbn " + report.board().fqbn() + ")");
         System.out.println("Reachable methods: " + report.reachableMethods());
         System.out.println("IR basic blocks: " + report.irBlocks());
         System.out.println("Intrinsics used: " + (report.intrinsics().isEmpty() ? "(none)" : report.intrinsics()));
@@ -208,17 +274,27 @@ public final class Main {
                 Usage:
                   java -jar juno.jar compile --main <class> [options]
                   java -jar juno.jar inspect --main <class> [options]
+                  java -jar juno.jar asm --main <class> [options]
 
                 compile options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
                   --output, -o <file>       Generated .ino file (default: build/juno/<Main>/<Main>.ino)
-                  --board <board>           uno-r4-wifi or uno-r4-minima
+
+                The target board is read from the entry-point class's @Board annotation
+                (io.github.jabrena.juno.api.Board); a class with no @Board annotation targets the UNO R4
+                WiFi by default.
 
                 inspect options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
                   --ir                      Print the lowered/optimized Juno IR per reachable method
                   --cfg                     Print each reachable method's basic-block control flow graph
                   --risks                   Estimate runtime resource use and print structured risk findings
+
+                asm options (EXPERIMENTAL, not yet verified on real hardware):
+                  --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
+                  --output, -o <file>       Generated .S file (default: build/juno/<Main>/<Main>.S)
+                  Emits GNU ARM Cortex-M4 assembly directly from Juno IR, bypassing the C++ backend.
+                  Only supports single-method programs using GPIO digital I/O and delay, e.g. Blink.
 
                 Global options:
                   --help, -h                Show this help

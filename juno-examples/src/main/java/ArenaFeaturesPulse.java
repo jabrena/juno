@@ -1,7 +1,10 @@
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.DigitalOutput;
 
 /** Board test for arena objects, escaping/nested arrays, records, enum switch, and static initialization. */
+@Board(ArduinoUnoR4WiFi.class)
 public final class ArenaFeaturesPulse {
     private static int initialPause = 100;
 

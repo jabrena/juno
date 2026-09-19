@@ -3,16 +3,19 @@ package io.github.jabrena.juno.linker;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.analysis.ControlFlowGraph;
 import io.github.jabrena.juno.analysis.ControlFlowGraphBuilder;
+import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +24,9 @@ import java.util.stream.Collectors;
 
 /** Performs closed-world reachability and resolves every static call before code generation. */
 public final class Linker {
+    private static final Set<Intrinsic> LED_MATRIX_INTRINSICS = EnumSet.of(
+            Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME, Intrinsic.LED_MATRIX_CLEAR);
+
     private final BytecodeDecoder decoder = new BytecodeDecoder();
     private final ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilder();
 
@@ -30,6 +36,7 @@ public final class Linker {
         if (mainClass == null) {
             throw new CompileException("Main class not found on the classpath: " + mainClassName);
         }
+        Board board = mainClass.boardApiClassName().map(Board::fromApiClassName).orElse(Board.DEFAULT);
         JavaMethod main = findMain(mainClass);
         MethodRef entryPoint = main.reference();
         Set<String> enumClassNames = classes.values().stream()
@@ -65,6 +72,7 @@ public final class Linker {
             for (Instruction instruction : instructions) {
                 if (instruction.opcode() == 182 || instruction.opcode() == 183 || instruction.opcode() == 184) {
                     MethodRef called = owner.constantPool().methodRef(instruction.operandA());
+                    IntrinsicRegistry.resolve(called).ifPresent(intrinsic -> requireLedMatrixSupport(board, intrinsic, reference));
                     if (!IntrinsicRegistry.isIntrinsic(called)
                             && !isRuntimeBaseConstructor(called)
                             && !isEnumOperation(classes, called)) {
@@ -83,7 +91,14 @@ public final class Linker {
                 }
             }
         }
-        return new Program(entryPoint, List.copyOf(reachable.values()), classes);
+        return new Program(entryPoint, List.copyOf(reachable.values()), classes, board);
+    }
+
+    private void requireLedMatrixSupport(Board board, Intrinsic intrinsic, MethodRef caller) {
+        if (!board.hasLedMatrix() && LED_MATRIX_INTRINSICS.contains(intrinsic)) {
+            throw new CompileException("LedMatrix requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
+                    + " has no onboard LED matrix (used from " + caller.displayName() + ")");
+        }
     }
 
     private JavaMethod findMain(JavaClass mainClass) {

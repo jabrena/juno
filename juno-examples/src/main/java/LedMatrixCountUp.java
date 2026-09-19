@@ -1,3 +1,5 @@
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
@@ -7,6 +9,7 @@ import io.github.jabrena.juno.api.led.LedMatrix;
  * {@code LedCanvas}/{@code LedMatrixFont}. 1-9 are drawn as a single centered digit; 10 is
  * drawn as two digits side by side, since 5 + 1 gap + 5 = 11 fits within the 12-column matrix.
  */
+@Board(ArduinoUnoR4WiFi.class)
 public final class LedMatrixCountUp {
     public static void main(String[] args) {
         LedMatrix.begin();

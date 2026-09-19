@@ -1,3 +1,5 @@
+import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
@@ -10,6 +12,7 @@ import io.github.jabrena.juno.api.led.LedMatrix;
  * LED matrix's own bit index) instead of an (x, y) pair, so a deeper body only costs one extra
  * local/parameter per segment.
  */
+@Board(ArduinoUnoR4WiFi.class)
 public final class LedMatrixSnake {
     private static final int WIDTH = 12;
     private static final int HEIGHT = 8;

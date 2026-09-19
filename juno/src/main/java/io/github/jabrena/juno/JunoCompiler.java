@@ -24,16 +24,17 @@ public final class JunoCompiler {
         return new CompilationResult(source, CompilationReport.from(program, optimized));
     }
 
-    public void compileTo(List<Path> classPath, String mainClass, Path output) {
-        String source = compile(classPath, mainClass);
+    public CompilationResult compileTo(List<Path> classPath, String mainClass, Path output) {
+        CompilationResult result = compile(new CompilationRequest(classPath, mainClass));
         try {
             Path parent = output.toAbsolutePath().getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            Files.writeString(output, source, StandardCharsets.UTF_8);
+            Files.writeString(output, result.generatedSource(), StandardCharsets.UTF_8);
         } catch (IOException exception) {
             throw new CompileException("Cannot write generated sketch to " + output, exception);
         }
+        return result;
     }
 }
