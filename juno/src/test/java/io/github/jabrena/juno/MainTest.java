@@ -11,9 +11,8 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MainTest {
     @TempDir
@@ -40,10 +39,10 @@ class MainTest {
         Main.run(new String[]{"inspect", "--main", "demo.Fixture", "--classpath", classPath()});
 
         String output = captured.toString(StandardCharsets.UTF_8);
-        assertTrue(output.contains("Entry point: demo.Fixture.main"));
-        assertTrue(output.contains("Reachable methods: 1"));
-        assertTrue(output.contains("Intrinsics used: [GPIO_PIN_MODE]"));
-        assertFalse(output.contains("Juno IR:"), "no --ir flag, so no IR dump");
+        assertThat(output.contains("Entry point: demo.Fixture.main")).isTrue();
+        assertThat(output.contains("Reachable methods: 1")).isTrue();
+        assertThat(output.contains("Intrinsics used: [GPIO_PIN_MODE]")).isTrue();
+        assertThat(output.contains("Juno IR:")).as("no --ir flag, so no IR dump").isFalse();
     }
 
     @Test
@@ -53,8 +52,8 @@ class MainTest {
         Main.run(new String[]{"inspect", "--main", "demo.Fixture", "--classpath", classPath(), "--ir"});
 
         String output = captured.toString(StandardCharsets.UTF_8);
-        assertTrue(output.contains("Juno IR:"));
-        assertTrue(output.contains("IntrinsicCall"));
+        assertThat(output.contains("Juno IR:")).isTrue();
+        assertThat(output.contains("IntrinsicCall")).isTrue();
     }
 
     @Test
@@ -64,8 +63,8 @@ class MainTest {
         Main.run(new String[]{"inspect", "--main", "demo.Fixture", "--classpath", classPath(), "--cfg"});
 
         String output = captured.toString(StandardCharsets.UTF_8);
-        assertTrue(output.contains("Control flow graphs:"));
-        assertTrue(output.contains("block 0 ->"));
+        assertThat(output.contains("Control flow graphs:")).isTrue();
+        assertThat(output.contains("block 0 ->")).isTrue();
     }
 
     @Test
@@ -75,16 +74,16 @@ class MainTest {
         Main.run(new String[]{"inspect", "--main", "demo.Risky", "--classpath", classPath(), "--risks"});
 
         String output = captured.toString(StandardCharsets.UTF_8);
-        assertTrue(output.contains("Runtime risk analysis:"));
-        assertTrue(output.contains("Arena:"));
-        assertTrue(output.contains("JUNO-RISK-001"));
-        assertTrue(output.contains("JUNO-RISK-005"));
-        assertTrue(output.contains("conservative source-level estimates"));
+        assertThat(output.contains("Runtime risk analysis:")).isTrue();
+        assertThat(output.contains("Arena:")).isTrue();
+        assertThat(output.contains("JUNO-RISK-001")).isTrue();
+        assertThat(output.contains("JUNO-RISK-005")).isTrue();
+        assertThat(output.contains("conservative source-level estimates")).isTrue();
     }
 
     @Test
     void inspectWithoutMainThrows() {
-        assertThrows(CompileException.class, () -> Main.run(new String[]{"inspect"}));
+        assertThatThrownBy(() -> Main.run(new String[]{"inspect"})).isInstanceOf(CompileException.class);
     }
 
     private String classPath() {

@@ -2,17 +2,17 @@ package io.github.jabrena.juno.linker;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DescriptorTest {
     @Test
     void acceptsFloatDoubleAndLongParametersAndResults() {
-        assertTrue(Descriptor.parse("(FIF)F").usesOnlyV01Types());
-        assertTrue(Descriptor.parse("([FI)[F").usesOnlyV01Types());
-        assertTrue(Descriptor.parse("(DID)D").usesOnlyV01Types());
-        assertTrue(Descriptor.parse("([DI)[D").usesOnlyV01Types());
-        assertTrue(Descriptor.parse("(J)F").usesOnlyV01Types());
-        assertTrue(Descriptor.parse("(F)J").usesOnlyV01Types());
-        assertTrue(Descriptor.parse("([JI)[J").usesOnlyV01Types());
+        assertThat(Descriptor.parse("(FIF)F").usesOnlyV01Types()).isTrue();
+        assertThat(Descriptor.parse("([FI)[F").usesOnlyV01Types()).isTrue();
+        assertThat(Descriptor.parse("(DID)D").usesOnlyV01Types()).isTrue();
+        assertThat(Descriptor.parse("([DI)[D").usesOnlyV01Types()).isTrue();
+        assertThat(Descriptor.parse("(J)F").usesOnlyV01Types()).isTrue();
+        assertThat(Descriptor.parse("(F)J").usesOnlyV01Types()).isTrue();
+        assertThat(Descriptor.parse("([JI)[J").usesOnlyV01Types()).isTrue();
     }
 }

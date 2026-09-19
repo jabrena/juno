@@ -16,9 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class BytecodeToIrTest {
     @TempDir
@@ -43,25 +41,24 @@ class BytecodeToIrTest {
 
         IrMethod method = entryPointMethod(program);
 
-        assertEquals(1, method.blocks().size());
-        assertTrue(method.values().stream().allMatch(value -> value.type() == JunoType.INT32));
+        assertThat(method.blocks().size()).isEqualTo(1);
+        assertThat(method.values().stream().allMatch(value -> value.type() == JunoType.INT32)).isTrue();
         List<IrInstruction> instructions = method.blocks().get(0).instructions();
 
         // javac constant-folds `1 + 2` into a single iconst_3.
-        assertTrue(instructionsOfType(instructions, IrInstruction.Const.class).stream().anyMatch(c -> c.value() == 3));
-        assertTrue(instructionsOfType(instructions, IrInstruction.Const.class).stream().anyMatch(c -> c.value() == 13));
-        assertTrue(instructionsOfType(instructions, IrInstruction.StoreLocal.class).stream().anyMatch(s -> s.local() == 1),
-                "expected value to be stored to JVM local 1");
+        assertThat(instructionsOfType(instructions, IrInstruction.Const.class).stream().anyMatch(c -> c.value() == 3)).isTrue();
+        assertThat(instructionsOfType(instructions, IrInstruction.Const.class).stream().anyMatch(c -> c.value() == 13)).isTrue();
+        assertThat(instructionsOfType(instructions, IrInstruction.StoreLocal.class).stream().anyMatch(s -> s.local() == 1)).as("expected value to be stored to JVM local 1").isTrue();
 
         IrInstruction.IntrinsicCall call = instructionsOfType(instructions, IrInstruction.IntrinsicCall.class)
                 .stream().findFirst().orElseThrow();
-        assertEquals(Intrinsic.GPIO_PIN_MODE, call.intrinsic());
-        assertEquals(2, call.arguments().size());
-        assertTrue(call.target().isEmpty());
-        assertTrue(call.receiver().isEmpty());
+        assertThat(call.intrinsic()).isEqualTo(Intrinsic.GPIO_PIN_MODE);
+        assertThat(call.arguments().size()).isEqualTo(2);
+        assertThat(call.target().isEmpty()).isTrue();
+        assertThat(call.receiver().isEmpty()).isTrue();
 
-        assertInstanceOf(IrTerminator.Return.class, method.blocks().get(0).terminator());
-        assertTrue(((IrTerminator.Return) method.blocks().get(0).terminator()).value().isEmpty());
+        assertThat(method.blocks().get(0).terminator()).isInstanceOf(IrTerminator.Return.class);
+        assertThat(((IrTerminator.Return) method.blocks().get(0).terminator()).value().isEmpty()).isTrue();
     }
 
     @Test
@@ -84,26 +81,27 @@ class BytecodeToIrTest {
         Program program = CompilerTestSupport.link(temporaryDirectory, "demo.Branchy");
 
         IrMethod pick = methodNamed(program, "pick");
-        assertEquals(3, pick.blocks().size());
+        assertThat(pick.blocks().size()).isEqualTo(3);
 
         IrBasicBlock header = blockAt(pick, 0);
         IrInstruction.Compare compare = instructionsOfType(header.instructions(), IrInstruction.Compare.class)
                 .stream().findFirst().orElseThrow();
-        assertEquals(Condition.NOT_EQUAL, compare.condition());
-        var branch = assertInstanceOf(IrTerminator.Branch.class, header.terminator());
-        assertEquals(compare.target(), branch.condition());
-        assertEquals(6, branch.trueTarget());
-        assertEquals(4, branch.falseTarget());
+        assertThat(compare.condition()).isEqualTo(Condition.NOT_EQUAL);
+        assertThat(header.terminator()).isInstanceOf(IrTerminator.Branch.class);
+        var branch = (IrTerminator.Branch) header.terminator();
+        assertThat(branch.condition()).isEqualTo(compare.target());
+        assertThat(branch.trueTarget()).isEqualTo(6);
+        assertThat(branch.falseTarget()).isEqualTo(4);
 
         IrBasicBlock thenBlock = blockAt(pick, 4);
-        assertTrue(instructionsOfType(thenBlock.instructions(), IrInstruction.Const.class).stream()
-                .anyMatch(c -> c.value() == 1));
-        assertInstanceOf(IrTerminator.Return.class, thenBlock.terminator());
+        assertThat(instructionsOfType(thenBlock.instructions(), IrInstruction.Const.class).stream()
+                .anyMatch(c -> c.value() == 1)).isTrue();
+        assertThat(thenBlock.terminator()).isInstanceOf(IrTerminator.Return.class);
 
         IrBasicBlock elseBlock = blockAt(pick, 6);
-        assertTrue(instructionsOfType(elseBlock.instructions(), IrInstruction.Const.class).stream()
-                .anyMatch(c -> c.value() == 2));
-        assertInstanceOf(IrTerminator.Return.class, elseBlock.terminator());
+        assertThat(instructionsOfType(elseBlock.instructions(), IrInstruction.Const.class).stream()
+                .anyMatch(c -> c.value() == 2)).isTrue();
+        assertThat(elseBlock.terminator()).isInstanceOf(IrTerminator.Return.class);
     }
 
     @Test
@@ -126,14 +124,14 @@ class BytecodeToIrTest {
 
         IrMethod addTo = methodNamed(program, "addTo");
 
-        assertTrue(addTo.blocks().size() > 1);
+        assertThat(addTo.blocks().size() > 1).isTrue();
         boolean sawBackEdge = addTo.blocks().stream()
                 .anyMatch(block -> block.terminator() instanceof IrTerminator.Jump jump
                         && jump.target() < block.start());
-        assertTrue(sawBackEdge, "expected a jump back to an earlier block for the loop");
+        assertThat(sawBackEdge).as("expected a jump back to an earlier block for the loop").isTrue();
         boolean sawReturn = addTo.blocks().stream()
                 .anyMatch(block -> block.terminator() instanceof IrTerminator.Return);
-        assertTrue(sawReturn);
+        assertThat(sawReturn).isTrue();
     }
 
     /**
@@ -163,19 +161,18 @@ class BytecodeToIrTest {
         Program program = CompilerTestSupport.link(temporaryDirectory, "demo.Ternary");
 
         IrMethod pick = methodNamed(program, "pick");
-        assertEquals(4, pick.blocks().size());
+        assertThat(pick.blocks().size()).isEqualTo(4);
 
         IrBasicBlock thenBlock = blockAt(pick, 4);
         IrBasicBlock elseBlock = blockAt(pick, 8);
         int thenSlot = lastStoreLocal(thenBlock.instructions()).local();
         int elseSlot = lastStoreLocal(elseBlock.instructions()).local();
-        assertEquals(thenSlot, elseSlot, "both branches of a ternary must write their result to the same slot");
+        assertThat(elseSlot).as("both branches of a ternary must write their result to the same slot").isEqualTo(thenSlot);
 
         IrBasicBlock mergeBlock = blockAt(pick, 9);
         IrInstruction.LoadLocal firstLoad = instructionsOfType(mergeBlock.instructions(), IrInstruction.LoadLocal.class)
                 .stream().findFirst().orElseThrow();
-        assertEquals(thenSlot, firstLoad.local(),
-                "the merge block must read the value back from the same slot both branches wrote");
+        assertThat(firstLoad.local()).as("the merge block must read the value back from the same slot both branches wrote").isEqualTo(thenSlot);
     }
 
     @Test
@@ -202,9 +199,8 @@ class BytecodeToIrTest {
                 .map(IrInstruction.Call.class::cast)
                 .findFirst()
                 .orElseThrow();
-        assertEquals(List.of(JunoType.FLOAT32, JunoType.INT32, JunoType.FLOAT32),
-                call.arguments().stream().map(value -> value.type()).toList());
-        assertEquals(JunoType.FLOAT32, call.target().orElseThrow().type());
+        assertThat(call.arguments().stream().map(value -> value.type()).toList()).isEqualTo(List.of(JunoType.FLOAT32, JunoType.INT32, JunoType.FLOAT32));
+        assertThat(call.target().orElseThrow().type()).isEqualTo(JunoType.FLOAT32);
 
         IrMethod pick = methodNamed(program, "pick");
         List<IrTerminator.Return> returns = pick.blocks().stream()
@@ -213,8 +209,8 @@ class BytecodeToIrTest {
                 .map(IrTerminator.Return.class::cast)
                 .filter(returned -> returned.value().isPresent())
                 .toList();
-        assertEquals(2, returns.size());
-        assertTrue(returns.stream().allMatch(returned -> returned.value().orElseThrow().type() == JunoType.FLOAT32));
+        assertThat(returns.size()).isEqualTo(2);
+        assertThat(returns.stream().allMatch(returned -> returned.value().orElseThrow().type() == JunoType.FLOAT32)).isTrue();
     }
 
     private IrInstruction.StoreLocal lastStoreLocal(List<IrInstruction> instructions) {

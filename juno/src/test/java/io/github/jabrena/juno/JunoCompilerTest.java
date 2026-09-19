@@ -12,11 +12,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JunoCompilerTest {
     @TempDir
@@ -48,9 +45,9 @@ class JunoCompilerTest {
                 .filter(candidate -> candidate.reference().name().equals("choose"))
                 .findFirst()
                 .orElseThrow();
-        assertEquals(2, choose.blocks().size());
-        assertTrue(choose.blocks().stream().noneMatch(
-                block -> block.terminator() instanceof IrTerminator.Branch));
+        assertThat(choose.blocks().size()).isEqualTo(2);
+        assertThat(choose.blocks().stream().noneMatch(
+                block -> block.terminator() instanceof IrTerminator.Branch)).isTrue();
     }
 
     @Test
@@ -75,12 +72,12 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Main");
 
-        assertTrue(generated.contains("Closed-world entry point: demo.Main.main"));
-        assertTrue(generated.contains("pinMode(call_arg0, call_arg1)"));
-        assertTrue(generated.contains("digitalWrite(call_arg0, call_arg1 ? HIGH : LOW)"));
-        assertTrue(generated.contains("juno_demo_Main_addTo"));
-        assertFalse(generated.contains("juno_demo_Main_unused"));
-        assertTrue(generated.contains("goto juno_pc_"));
+        assertThat(generated.contains("Closed-world entry point: demo.Main.main")).isTrue();
+        assertThat(generated.contains("pinMode(call_arg0, call_arg1)")).isTrue();
+        assertThat(generated.contains("digitalWrite(call_arg0, call_arg1 ? HIGH : LOW)")).isTrue();
+        assertThat(generated.contains("juno_demo_Main_addTo")).isTrue();
+        assertThat(generated.contains("juno_demo_Main_unused")).isFalse();
+        assertThat(generated.contains("goto juno_pc_")).isTrue();
     }
 
     @Test
@@ -100,11 +97,11 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ObjectStyleApi");
 
-        assertTrue(generated.contains("= juno_digital_output_of(call_arg0);"));
-        assertTrue(generated.contains("pinMode(pin, OUTPUT)"));
-        assertTrue(generated.contains("digitalWrite(call_receiver, HIGH)"));
-        assertTrue(generated.contains("digitalWrite(call_receiver, LOW)"));
-        assertFalse(generated.contains("new DigitalOutput"));
+        assertThat(generated.contains("= juno_digital_output_of(call_arg0);")).isTrue();
+        assertThat(generated.contains("pinMode(pin, OUTPUT)")).isTrue();
+        assertThat(generated.contains("digitalWrite(call_receiver, HIGH)")).isTrue();
+        assertThat(generated.contains("digitalWrite(call_receiver, LOW)")).isTrue();
+        assertThat(generated.contains("new DigitalOutput")).isFalse();
     }
 
     @Test
@@ -124,11 +121,11 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Heart");
 
-        assertTrue(generated.contains("#include \"Arduino_LED_Matrix.h\""));
-        assertTrue(generated.contains("ArduinoLEDMatrix juno_led_matrix;"));
-        assertTrue(generated.contains("juno_led_matrix_begin()"));
-        assertTrue(generated.contains("juno_led_matrix_load_frame(call_arg0, call_arg1, call_arg2)"));
-        assertTrue(generated.contains("juno_led_matrix_clear()"));
+        assertThat(generated.contains("#include \"Arduino_LED_Matrix.h\"")).isTrue();
+        assertThat(generated.contains("ArduinoLEDMatrix juno_led_matrix;")).isTrue();
+        assertThat(generated.contains("juno_led_matrix_begin()")).isTrue();
+        assertThat(generated.contains("juno_led_matrix_load_frame(call_arg0, call_arg1, call_arg2)")).isTrue();
+        assertThat(generated.contains("juno_led_matrix_clear()")).isTrue();
 
         String plainSource = """
                 package demo;
@@ -143,8 +140,8 @@ class JunoCompilerTest {
 
         String plainGenerated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Plain");
 
-        assertFalse(plainGenerated.contains("Arduino_LED_Matrix.h"));
-        assertFalse(plainGenerated.contains("ArduinoLEDMatrix"));
+        assertThat(plainGenerated.contains("Arduino_LED_Matrix.h")).isFalse();
+        assertThat(plainGenerated.contains("ArduinoLEDMatrix")).isFalse();
     }
 
     @Test
@@ -165,10 +162,10 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Digits");
 
-        assertTrue(generated.contains("juno_io_github_jabrena_juno_api_led_LedCanvas_drawDigit"));
-        assertTrue(generated.contains("juno_io_github_jabrena_juno_api_led_LedCanvas_setPixel"));
-        assertFalse(generated.contains("letterARowBits"));
-        assertFalse(generated.contains("LedMatrixFont_letterPixel"));
+        assertThat(generated.contains("juno_io_github_jabrena_juno_api_led_LedCanvas_drawDigit")).isTrue();
+        assertThat(generated.contains("juno_io_github_jabrena_juno_api_led_LedCanvas_setPixel")).isTrue();
+        assertThat(generated.contains("letterARowBits")).isFalse();
+        assertThat(generated.contains("LedMatrixFont_letterPixel")).isFalse();
     }
 
     @Test
@@ -188,9 +185,9 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Counter");
 
-        assertTrue(generated.contains("Serial.begin(static_cast<unsigned long>(call_arg0))"));
-        assertTrue(generated.contains("Serial.print(call_arg0)"));
-        assertTrue(generated.contains("Serial.println(call_arg0)"));
+        assertThat(generated.contains("Serial.begin(static_cast<unsigned long>(call_arg0))")).isTrue();
+        assertThat(generated.contains("Serial.print(call_arg0)")).isTrue();
+        assertThat(generated.contains("Serial.println(call_arg0)")).isTrue();
     }
 
     @Test
@@ -211,10 +208,10 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Greeting");
 
-        assertTrue(generated.contains("const char* call_str0 = \"hello\";"));
-        assertTrue(generated.contains("Serial.print(call_str0)"));
-        assertTrue(generated.contains("const char* call_str0 = \"world\";"));
-        assertTrue(generated.contains("Serial.println(call_str0)"));
+        assertThat(generated.contains("const char* call_str0 = \"hello\";")).isTrue();
+        assertThat(generated.contains("Serial.print(call_str0)")).isTrue();
+        assertThat(generated.contains("const char* call_str0 = \"world\";")).isTrue();
+        assertThat(generated.contains("Serial.println(call_str0)")).isTrue();
     }
 
     @Test
@@ -233,8 +230,8 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.DynamicGreeting", source);
 
-        assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DynamicGreeting"));
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DynamicGreeting"))
+                .isInstanceOf(CompileException.class);
     }
 
     @Test
@@ -253,17 +250,17 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiConnect");
 
-        assertTrue(generated.contains("#include <WiFiS3.h>"));
-        assertTrue(generated.contains("const char* call_str0 = \"TestNetwork-SSID\";"));
-        assertTrue(generated.contains("const char* call_str1 = \"test-password-123\";"));
-        assertTrue(generated.contains("WiFi.begin(call_str0, call_str1)"));
-        assertTrue(generated.contains("WiFi.status()"));
+        assertThat(generated.contains("#include <WiFiS3.h>")).isTrue();
+        assertThat(generated.contains("const char* call_str0 = \"TestNetwork-SSID\";")).isTrue();
+        assertThat(generated.contains("const char* call_str1 = \"test-password-123\";")).isTrue();
+        assertThat(generated.contains("WiFi.begin(call_str0, call_str1)")).isTrue();
+        assertThat(generated.contains("WiFi.status()")).isTrue();
     }
 
     @Test
     void resolvesWifiCredentialsFromACompileTimeEnvironmentVariable() throws Exception {
         String pathValue = System.getenv("PATH");
-        assertTrue(pathValue != null && !pathValue.isEmpty(), "test environment must define PATH");
+        assertThat(pathValue != null && !pathValue.isEmpty()).as("test environment must define PATH").isTrue();
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.net.Wifi;
@@ -277,7 +274,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiConnectFromEnv");
 
-        assertTrue(generated.contains("const char* call_str0 = \"" + pathValue.replace("\\", "\\\\") + "\";"));
+        assertThat(generated.contains("const char* call_str0 = \"" + pathValue.replace("\\", "\\\\") + "\";")).isTrue();
     }
 
     @Test
@@ -293,10 +290,9 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiConnectFromMissingEnv", source);
 
-        assertNull(System.getenv("JUNO_TEST_WIFI_SSID_NOT_SET"),
-                "test environment must not define JUNO_TEST_WIFI_SSID_NOT_SET");
-        assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiConnectFromMissingEnv"));
+        assertThat(System.getenv("JUNO_TEST_WIFI_SSID_NOT_SET")).as("test environment must not define JUNO_TEST_WIFI_SSID_NOT_SET").isNull();
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiConnectFromMissingEnv"))
+                .isInstanceOf(CompileException.class);
     }
 
     @Test
@@ -315,10 +311,10 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithWifi", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithWifi"));
-        assertTrue(exception.getMessage().contains("Wifi"));
-        assertTrue(exception.getMessage().contains("Minima"));
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithWifi"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("Wifi")
+                .hasMessageContaining("Minima");
     }
 
     @Test
@@ -337,10 +333,10 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Wiggle");
 
-        assertTrue(generated.contains("#include <Mouse.h>"));
-        assertTrue(generated.contains("Mouse.begin()"));
-        assertTrue(generated.contains(
-                "Mouse.move(static_cast<signed char>(call_arg0), static_cast<signed char>(call_arg1))"));
+        assertThat(generated.contains("#include <Mouse.h>")).isTrue();
+        assertThat(generated.contains("Mouse.begin()")).isTrue();
+        assertThat(generated.contains(
+                "Mouse.move(static_cast<signed char>(call_arg0), static_cast<signed char>(call_arg1))")).isTrue();
 
         String plainSource = """
                 package demo;
@@ -355,7 +351,7 @@ class JunoCompilerTest {
 
         String plainGenerated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Plain");
 
-        assertFalse(plainGenerated.contains("Mouse.h"));
+        assertThat(plainGenerated.contains("Mouse.h")).isFalse();
     }
 
     @Test
@@ -370,7 +366,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Objects");
 
-        assertTrue(generated.contains("sizeof(int32_t) * (3)"));
+        assertThat(generated.contains("sizeof(int32_t) * (3)")).isTrue();
     }
 
     @Test
@@ -386,9 +382,9 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MathProgram");
 
-        assertTrue(generated.contains("static_cast<uint32_t>(a) + static_cast<uint32_t>(b)"));
-        assertTrue(generated.contains("juno_imul(v"));
-        assertTrue(generated.contains("juno_ineg(v"));
+        assertThat(generated.contains("static_cast<uint32_t>(a) + static_cast<uint32_t>(b)")).isTrue();
+        assertThat(generated.contains("juno_imul(v")).isTrue();
+        assertThat(generated.contains("juno_ineg(v")).isTrue();
     }
 
     @Test
@@ -414,13 +410,13 @@ class JunoCompilerTest {
         CompilationResult result = new JunoCompiler().compile(
                 new CompilationRequest(List.of(temporaryDirectory, Path.of("target/classes")), "demo.Reported"));
 
-        assertTrue(result.generatedSource().contains("Closed-world entry point: demo.Reported.main"));
-        assertEquals("demo.Reported.main([Ljava/lang/String;)V", result.report().entryPoint().displayName());
-        assertEquals(2, result.report().reachableMethods(), "main and addTo, both reachable");
-        assertTrue(result.report().irBlocks() > 2, "addTo's loop needs more than one block per method");
-        assertEquals(Set.of(Intrinsic.GPIO_PIN_MODE, Intrinsic.DELAY_MILLIS), result.report().intrinsics());
-        assertEquals(8192, result.report().runtimeRisks().arenaCapacityBytes());
-        assertTrue(result.report().runtimeRisks().estimatedMaxStackBytes() > 0);
+        assertThat(result.generatedSource().contains("Closed-world entry point: demo.Reported.main")).isTrue();
+        assertThat(result.report().entryPoint().displayName()).isEqualTo("demo.Reported.main([Ljava/lang/String;)V");
+        assertThat(result.report().reachableMethods()).as("main and addTo, both reachable").isEqualTo(2);
+        assertThat(result.report().irBlocks() > 2).as("addTo's loop needs more than one block per method").isTrue();
+        assertThat(result.report().intrinsics()).isEqualTo(Set.of(Intrinsic.GPIO_PIN_MODE, Intrinsic.DELAY_MILLIS));
+        assertThat(result.report().runtimeRisks().arenaCapacityBytes()).isEqualTo(8192);
+        assertThat(result.report().runtimeRisks().estimatedMaxStackBytes() > 0).isTrue();
     }
 
     @Test
@@ -448,8 +444,8 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SameClassConstant");
 
-        assertTrue(generated.contains("Closed-world entry point: demo.SameClassConstant.main"));
-        assertFalse(generated.contains("getstatic"), "javac must inline the constant, not emit a field read");
+        assertThat(generated.contains("Closed-world entry point: demo.SameClassConstant.main")).isTrue();
+        assertThat(generated.contains("getstatic")).as("javac must inline the constant, not emit a field read").isFalse();
     }
 
     @Test
@@ -478,8 +474,8 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CrossClassConstant");
 
-        assertTrue(generated.contains("Closed-world entry point: demo.CrossClassConstant.main"));
-        assertFalse(generated.contains("getstatic"));
+        assertThat(generated.contains("Closed-world entry point: demo.CrossClassConstant.main")).isTrue();
+        assertThat(generated.contains("getstatic")).isFalse();
     }
 
     @Test
@@ -501,10 +497,10 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MutableStatic");
 
-        assertTrue(generated.contains("static int32_t juno_field_demo_MutableStatic_counter_"));
-        assertTrue(generated.contains("static float juno_field_demo_MutableStatic_scale_"));
-        assertTrue(generated.contains("juno_field_demo_MutableStatic_counter_"));
-        assertTrue(generated.contains("juno_field_demo_MutableStatic_scale_"));
+        assertThat(generated.contains("static int32_t juno_field_demo_MutableStatic_counter_")).isTrue();
+        assertThat(generated.contains("static float juno_field_demo_MutableStatic_scale_")).isTrue();
+        assertThat(generated.contains("juno_field_demo_MutableStatic_counter_")).isTrue();
+        assertThat(generated.contains("juno_field_demo_MutableStatic_scale_")).isTrue();
     }
 
     @Test
@@ -523,9 +519,9 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReadOnlyStatic");
 
-        assertTrue(generated.contains("juno_demo_ReadOnlyStatic__clinit_"));
-        assertTrue(generated.indexOf("juno_demo_ReadOnlyStatic__clinit_")
-                < generated.lastIndexOf("juno_demo_ReadOnlyStatic_main_"));
+        assertThat(generated.contains("juno_demo_ReadOnlyStatic__clinit_")).isTrue();
+        assertThat(generated.indexOf("juno_demo_ReadOnlyStatic__clinit_")
+                < generated.lastIndexOf("juno_demo_ReadOnlyStatic_main_")).isTrue();
     }
 
     @Test
@@ -553,11 +549,9 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ArrayDemo");
 
-        assertTrue(generated.contains("sizeof(int32_t) * (3)"), "the local array must use arena storage");
-        assertTrue(generated.contains(">= 3) juno_panic()"),
-                "writes into the 3-element local array must be bounds-checked against its known length");
-        assertTrue(generated.contains("(int32_t* arg0, int32_t arg1)"),
-                "sum's int[] parameter must be a pointer, with the explicit count as a second parameter");
+        assertThat(generated.contains("sizeof(int32_t) * (3)")).as("the local array must use arena storage").isTrue();
+        assertThat(generated.contains(">= 3) juno_panic()")).as("writes into the 3-element local array must be bounds-checked against its known length").isTrue();
+        assertThat(generated.contains("(int32_t* arg0, int32_t arg1)")).as("sum's int[] parameter must be a pointer, with the explicit count as a second parameter").isTrue();
         // pins.length either folds to a compile-time constant or compileJuno throws (see the negative
         // test below); reaching this point at all already proves it resolved successfully.
     }
@@ -576,10 +570,9 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.NonConstLen", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NonConstLen"));
-
-        assertTrue(exception.getMessage().contains("array length must be a compile-time constant"));
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NonConstLen"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("array length must be a compile-time constant");
     }
 
     @Test
@@ -600,11 +593,10 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.LengthOnParam", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LengthOnParam"));
-
-        assertTrue(exception.getMessage().contains("demo.LengthOnParam.firstLength"));
-        assertTrue(exception.getMessage().contains("array length is not known at compile time"));
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LengthOnParam"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("demo.LengthOnParam.firstLength")
+                .hasMessageContaining("array length is not known at compile time");
     }
 
     @Test
@@ -626,9 +618,8 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Reassigned");
 
-        assertFalse(generated.contains(">= 2) juno_panic()") || generated.contains(">= 3) juno_panic()"),
-                "a reassigned local is not effectively-final and must not be bounds-checked");
-        assertTrue(generated.contains("] = v"), "both stores must still compile, as raw pointer writes");
+        assertThat(generated.contains(">= 2) juno_panic()") || generated.contains(">= 3) juno_panic()")).as("a reassigned local is not effectively-final and must not be bounds-checked").isFalse();
+        assertThat(generated.contains("] = v")).as("both stores must still compile, as raw pointer writes").isTrue();
     }
 
     @Test
@@ -656,11 +647,10 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ElementTypes");
 
-        assertTrue(generated.contains("sizeof(int8_t) * (4)"), "byte[] must be stored as int8_t, not int32_t");
-        assertTrue(generated.contains("sizeof(uint16_t) * (3)"), "char[] must be stored as uint16_t");
-        assertTrue(generated.contains("sizeof(int16_t) * (2)"), "short[] must be stored as int16_t");
-        assertTrue(generated.contains("(int8_t* arg0, int32_t arg1)"),
-                "sumBytes's byte[] parameter must be an int8_t pointer");
+        assertThat(generated.contains("sizeof(int8_t) * (4)")).as("byte[] must be stored as int8_t, not int32_t").isTrue();
+        assertThat(generated.contains("sizeof(uint16_t) * (3)")).as("char[] must be stored as uint16_t").isTrue();
+        assertThat(generated.contains("sizeof(int16_t) * (2)")).as("short[] must be stored as int16_t").isTrue();
+        assertThat(generated.contains("(int8_t* arg0, int32_t arg1)")).as("sumBytes's byte[] parameter must be an int8_t pointer").isTrue();
     }
 
     @Test
@@ -691,11 +681,11 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatArrays");
 
-        assertTrue(generated.contains("sizeof(float) * (3)"), "float[] must use native float storage");
-        assertTrue(generated.contains("(float* arg0, int32_t arg1)"));
-        assertTrue(generated.contains("static float* juno_demo_FloatArrays_identity_"));
-        assertTrue(generated.contains("return reinterpret_cast<float*>(v"));
-        assertTrue(generated.contains(">= 3) juno_panic()"));
+        assertThat(generated.contains("sizeof(float) * (3)")).as("float[] must use native float storage").isTrue();
+        assertThat(generated.contains("(float* arg0, int32_t arg1)")).isTrue();
+        assertThat(generated.contains("static float* juno_demo_FloatArrays_identity_")).isTrue();
+        assertThat(generated.contains("return reinterpret_cast<float*>(v")).isTrue();
+        assertThat(generated.contains(">= 3) juno_panic()")).isTrue();
     }
 
     @Test
@@ -721,9 +711,8 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnForward");
 
-        assertTrue(generated.contains("static int32_t* juno_demo_ReturnForward_pick_"),
-                "an int[]-returning method must have a pointer return type");
-        assertTrue(generated.contains("return reinterpret_cast<int32_t*>(v"));
+        assertThat(generated.contains("static int32_t* juno_demo_ReturnForward_pick_")).as("an int[]-returning method must have a pointer return type").isTrue();
+        assertThat(generated.contains("return reinterpret_cast<int32_t*>(v")).isTrue();
     }
 
     @Test
@@ -746,8 +735,8 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnLocal");
 
-        assertTrue(generated.contains("static int32_t* juno_demo_ReturnLocal_makeArray_"));
-        assertTrue(generated.contains("sizeof(int32_t) * (3)"));
+        assertThat(generated.contains("static int32_t* juno_demo_ReturnLocal_makeArray_")).isTrue();
+        assertThat(generated.contains("sizeof(int32_t) * (3)")).isTrue();
     }
 
     @Test
@@ -769,7 +758,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnTernary");
 
-        assertTrue(generated.contains("static int32_t* juno_demo_ReturnTernary_pick_"));
+        assertThat(generated.contains("static int32_t* juno_demo_ReturnTernary_pick_")).isTrue();
     }
 
     @Test
@@ -809,20 +798,20 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongMath");
 
-        assertTrue(generated.contains("Closed-world entry point: demo.LongMath.main"));
-        assertTrue(generated.contains("juno_ladd("));
-        assertTrue(generated.contains("juno_lsub("));
-        assertTrue(generated.contains("juno_lmul("));
-        assertTrue(generated.contains("juno_ldiv("));
-        assertTrue(generated.contains("juno_lrem("));
-        assertTrue(generated.contains("juno_lneg("));
-        assertTrue(generated.contains("juno_lshl("));
-        assertTrue(generated.contains("juno_lshr("));
-        assertTrue(generated.contains("juno_lushr("));
-        assertTrue(generated.contains("juno_land("));
-        assertTrue(generated.contains("juno_lor("));
-        assertTrue(generated.contains("juno_lxor("));
-        assertTrue(generated.contains("(juno_l > juno_r) - (juno_l < juno_r)"), "lcmp lowers to a plain int result");
+        assertThat(generated.contains("Closed-world entry point: demo.LongMath.main")).isTrue();
+        assertThat(generated.contains("juno_ladd(")).isTrue();
+        assertThat(generated.contains("juno_lsub(")).isTrue();
+        assertThat(generated.contains("juno_lmul(")).isTrue();
+        assertThat(generated.contains("juno_ldiv(")).isTrue();
+        assertThat(generated.contains("juno_lrem(")).isTrue();
+        assertThat(generated.contains("juno_lneg(")).isTrue();
+        assertThat(generated.contains("juno_lshl(")).isTrue();
+        assertThat(generated.contains("juno_lshr(")).isTrue();
+        assertThat(generated.contains("juno_lushr(")).isTrue();
+        assertThat(generated.contains("juno_land(")).isTrue();
+        assertThat(generated.contains("juno_lor(")).isTrue();
+        assertThat(generated.contains("juno_lxor(")).isTrue();
+        assertThat(generated.contains("(juno_l > juno_r) - (juno_l < juno_r)")).as("lcmp lowers to a plain int result").isTrue();
     }
 
     @Test
@@ -847,13 +836,13 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongParam");
 
-        assertTrue(generated.contains("static int64_t juno_demo_LongParam_identity_"));
-        assertTrue(generated.contains("(int64_t arg0)"));
-        assertTrue(generated.contains("locals[0].i32 = static_cast<int32_t>(static_cast<uint32_t>(static_cast<uint64_t>(arg0)))"));
-        assertTrue(generated.contains("locals[1].i32 = static_cast<int32_t>(static_cast<uint32_t>(static_cast<uint64_t>(arg0) >> 32))"));
-        assertTrue(generated.contains("static int64_t juno_field_demo_LongParam_saved_"));
-        assertTrue(generated.contains("static_cast<float>("));
-        assertTrue(generated.contains("juno_f2l("));
+        assertThat(generated.contains("static int64_t juno_demo_LongParam_identity_")).isTrue();
+        assertThat(generated.contains("(int64_t arg0)")).isTrue();
+        assertThat(generated.contains("locals[0].i32 = static_cast<int32_t>(static_cast<uint32_t>(static_cast<uint64_t>(arg0)))")).isTrue();
+        assertThat(generated.contains("locals[1].i32 = static_cast<int32_t>(static_cast<uint32_t>(static_cast<uint64_t>(arg0) >> 32))")).isTrue();
+        assertThat(generated.contains("static int64_t juno_field_demo_LongParam_saved_")).isTrue();
+        assertThat(generated.contains("static_cast<float>(")).isTrue();
+        assertThat(generated.contains("juno_f2l(")).isTrue();
     }
 
     @Test
@@ -883,12 +872,12 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatMath");
 
-        assertTrue(generated.contains("union JunoSlot"));
-        assertTrue(generated.contains("float v"));
-        assertTrue(generated.contains("fmodf("));
-        assertTrue(generated.contains("juno_f2i("));
-        assertTrue(generated.contains("static_cast<float>("));
-        assertTrue(generated.contains("isnan("));
+        assertThat(generated.contains("union JunoSlot")).isTrue();
+        assertThat(generated.contains("float v")).isTrue();
+        assertThat(generated.contains("fmodf(")).isTrue();
+        assertThat(generated.contains("juno_f2i(")).isTrue();
+        assertThat(generated.contains("static_cast<float>(")).isTrue();
+        assertThat(generated.contains("isnan(")).isTrue();
     }
 
     @Test
@@ -910,12 +899,12 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatMethods");
 
-        assertTrue(generated.contains("static float juno_demo_FloatMethods_mix_"));
-        assertTrue(generated.contains("(float arg0, int32_t arg1, float arg2)"));
-        assertTrue(generated.contains("locals[0].f32 = arg0;"));
-        assertTrue(generated.contains("locals[1].i32 = arg1;"));
-        assertTrue(generated.contains("locals[2].f32 = arg2;"));
-        assertTrue(generated.contains("= juno_demo_FloatMethods_mix_"));
+        assertThat(generated.contains("static float juno_demo_FloatMethods_mix_")).isTrue();
+        assertThat(generated.contains("(float arg0, int32_t arg1, float arg2)")).isTrue();
+        assertThat(generated.contains("locals[0].f32 = arg0;")).isTrue();
+        assertThat(generated.contains("locals[1].i32 = arg1;")).isTrue();
+        assertThat(generated.contains("locals[2].f32 = arg2;")).isTrue();
+        assertThat(generated.contains("= juno_demo_FloatMethods_mix_")).isTrue();
     }
 
     @Test
@@ -954,17 +943,17 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DoubleMath");
 
-        assertTrue(generated.contains("static double juno_demo_DoubleMath_mix_"));
-        assertTrue(generated.contains("(double arg0, int32_t arg1, double arg2)"));
-        assertTrue(generated.contains("locals[0].f64 = arg0;"));
-        assertTrue(generated.contains("locals[2].i32 = arg1;"));
-        assertTrue(generated.contains("locals[3].f64 = arg2;"));
-        assertTrue(generated.contains("sizeof(double) * (2)"));
-        assertTrue(generated.contains("static double* juno_demo_DoubleMath_identity_"));
-        assertTrue(generated.contains("static double juno_field_demo_DoubleMath_last_"));
-        assertTrue(generated.contains("fmod("));
-        assertTrue(generated.contains("juno_d2i("));
-        assertTrue(generated.contains("juno_d2l("));
+        assertThat(generated.contains("static double juno_demo_DoubleMath_mix_")).isTrue();
+        assertThat(generated.contains("(double arg0, int32_t arg1, double arg2)")).isTrue();
+        assertThat(generated.contains("locals[0].f64 = arg0;")).isTrue();
+        assertThat(generated.contains("locals[2].i32 = arg1;")).isTrue();
+        assertThat(generated.contains("locals[3].f64 = arg2;")).isTrue();
+        assertThat(generated.contains("sizeof(double) * (2)")).isTrue();
+        assertThat(generated.contains("static double* juno_demo_DoubleMath_identity_")).isTrue();
+        assertThat(generated.contains("static double juno_field_demo_DoubleMath_last_")).isTrue();
+        assertThat(generated.contains("fmod(")).isTrue();
+        assertThat(generated.contains("juno_d2i(")).isTrue();
+        assertThat(generated.contains("juno_d2l(")).isTrue();
     }
 
     @Test
@@ -989,9 +978,9 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongArray");
 
-        assertTrue(generated.contains("sizeof(int64_t) * (3)"));
-        assertTrue(generated.contains("static int64_t* juno_demo_LongArray_identity_"));
-        assertTrue(generated.contains("reinterpret_cast<int64_t*>("));
+        assertThat(generated.contains("sizeof(int64_t) * (3)")).isTrue();
+        assertThat(generated.contains("static int64_t* juno_demo_LongArray_identity_")).isTrue();
+        assertThat(generated.contains("reinterpret_cast<int64_t*>(")).isTrue();
     }
 
     @Test
@@ -1029,13 +1018,12 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesEnum");
 
-        assertTrue(generated.contains("Closed-world entry point: demo.UsesEnum.main"));
-        assertTrue(generated.contains("(int32_t arg0)"),
-                "an enum-typed parameter must be a plain int32_t, like every other Juno value");
+        assertThat(generated.contains("Closed-world entry point: demo.UsesEnum.main")).isTrue();
+        assertThat(generated.contains("(int32_t arg0)")).as("an enum-typed parameter must be a plain int32_t, like every other Juno value").isTrue();
         // NORTH=0, SOUTH=1: Direction.SOUTH must resolve to the literal 1, Direction.NORTH to 0.
-        assertTrue(generated.contains(" = 1;"), "Direction.SOUTH must fold to its ordinal, 1");
-        assertTrue(generated.contains(" = 0;"), "Direction.NORTH must fold to its ordinal, 0");
-        assertFalse(generated.contains("getstatic"), "getstatic must be resolved away, not passed through");
+        assertThat(generated.contains(" = 1;")).as("Direction.SOUTH must fold to its ordinal, 1").isTrue();
+        assertThat(generated.contains(" = 0;")).as("Direction.NORTH must fold to its ordinal, 0").isTrue();
+        assertThat(generated.contains("getstatic")).as("getstatic must be resolved away, not passed through").isFalse();
     }
 
     @Test
@@ -1059,11 +1047,11 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesPoint");
 
-        assertTrue(generated.contains("Closed-world entry point: demo.UsesPoint.main"));
-        assertTrue(generated.contains("struct JunoObject_demo_Point"));
-        assertTrue(generated.contains("field_x_"));
-        assertTrue(generated.contains("field_y_"));
-        assertTrue(generated.contains("juno_alloc(sizeof(JunoObject_demo_Point)"));
+        assertThat(generated.contains("Closed-world entry point: demo.UsesPoint.main")).isTrue();
+        assertThat(generated.contains("struct JunoObject_demo_Point")).isTrue();
+        assertThat(generated.contains("field_x_")).isTrue();
+        assertThat(generated.contains("field_y_")).isTrue();
+        assertThat(generated.contains("juno_alloc(sizeof(JunoObject_demo_Point)")).isTrue();
     }
 
     @Test
@@ -1092,8 +1080,8 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.TakesPoint");
 
-        assertTrue(generated.contains("static int32_t juno_demo_TakesPoint_echo_"));
-        assertTrue(generated.contains("static int32_t juno_demo_TakesPoint_sum_"));
+        assertThat(generated.contains("static int32_t juno_demo_TakesPoint_echo_")).isTrue();
+        assertThat(generated.contains("static int32_t juno_demo_TakesPoint_sum_")).isTrue();
     }
 
     @Test
@@ -1114,9 +1102,9 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NewsObject");
 
-        assertTrue(generated.contains("struct JunoObject_demo_NewsObject"));
-        assertTrue(generated.contains("field_value_"));
-        assertTrue(generated.contains("int32_t arg_receiver, int32_t arg0"));
+        assertThat(generated.contains("struct JunoObject_demo_NewsObject")).isTrue();
+        assertThat(generated.contains("field_value_")).isTrue();
+        assertThat(generated.contains("int32_t arg_receiver, int32_t arg0")).isTrue();
     }
 
     @Test
@@ -1143,7 +1131,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCompactPoint");
 
-        assertTrue(generated.contains("juno_ineg("));
+        assertThat(generated.contains("juno_ineg(")).isTrue();
     }
 
     @Test
@@ -1171,7 +1159,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCustomAccessor");
 
-        assertTrue(generated.contains("juno_imul("));
+        assertThat(generated.contains("juno_imul(")).isTrue();
     }
 
     @Test
@@ -1196,7 +1184,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesLabeled");
 
-        assertTrue(generated.contains("struct JunoObject_demo_Labeled"));
-        assertTrue(generated.contains("field_data_"));
+        assertThat(generated.contains("struct JunoObject_demo_Labeled")).isTrue();
+        assertThat(generated.contains("field_data_")).isTrue();
     }
 }

@@ -15,9 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ConstantFolderTest {
     private final ConstantFolder folder = new ConstantFolder();
@@ -37,10 +35,11 @@ class ConstantFolderTest {
         IrMethod folded = folder.apply(program).methods().get(0);
         List<IrInstruction> foldedInstructions = folded.blocks().get(0).instructions();
 
-        assertEquals(3, foldedInstructions.size());
-        var foldedSum = assertInstanceOf(IrInstruction.Const.class, foldedInstructions.get(2));
-        assertEquals(5, foldedSum.value());
-        assertEquals(sum, foldedSum.target());
+        assertThat(foldedInstructions.size()).isEqualTo(3);
+        assertThat(foldedInstructions.get(2)).isInstanceOf(IrInstruction.Const.class);
+        var foldedSum = (IrInstruction.Const) foldedInstructions.get(2);
+        assertThat(foldedSum.value()).isEqualTo(5);
+        assertThat(foldedSum.target()).isEqualTo(sum);
     }
 
     @Test
@@ -57,7 +56,7 @@ class ConstantFolderTest {
         IrMethod folded = folder.apply(program).methods().get(0);
         IrInstruction last = folded.blocks().get(0).instructions().get(2);
 
-        assertInstanceOf(IrInstruction.Binary.class, last);
+        assertThat(last).isInstanceOf(IrInstruction.Binary.class);
     }
 
     @Test
@@ -70,8 +69,9 @@ class ConstantFolderTest {
         IrProgram program = programOf(instructions, new IrTerminator.Return(Optional.of(negated)));
 
         IrMethod folded = folder.apply(program).methods().get(0);
-        var foldedNegate = assertInstanceOf(IrInstruction.Const.class, folded.blocks().get(0).instructions().get(1));
-        assertEquals(-7, foldedNegate.value());
+        assertThat(folded.blocks().get(0).instructions().get(1)).isInstanceOf(IrInstruction.Const.class);
+        var foldedNegate = (IrInstruction.Const) folded.blocks().get(0).instructions().get(1);
+        assertThat(foldedNegate.value()).isEqualTo(-7);
     }
 
     @Test
@@ -88,10 +88,12 @@ class ConstantFolderTest {
         IrMethod folded = folder.apply(program).methods().get(0);
         IrBasicBlock block = folded.blocks().get(0);
 
-        var foldedCompare = assertInstanceOf(IrInstruction.Const.class, block.instructions().get(2));
-        assertEquals(1, foldedCompare.value());
-        var jump = assertInstanceOf(IrTerminator.Jump.class, block.terminator());
-        assertEquals(10, jump.target(), "condition folded to true (5 == 5), so the branch must become a jump to trueTarget");
+        assertThat(block.instructions().get(2)).isInstanceOf(IrInstruction.Const.class);
+        var foldedCompare = (IrInstruction.Const) block.instructions().get(2);
+        assertThat(foldedCompare.value()).isEqualTo(1);
+        assertThat(block.terminator()).isInstanceOf(IrTerminator.Jump.class);
+        var jump = (IrTerminator.Jump) block.terminator();
+        assertThat(jump.target()).as("condition folded to true (5 == 5), so the branch must become a jump to trueTarget").isEqualTo(10);
     }
 
     @Test
@@ -111,7 +113,7 @@ class ConstantFolderTest {
         IrMethod folded = folder.apply(program).methods().get(0);
         IrInstruction last = folded.blocks().get(0).instructions().get(2);
 
-        assertInstanceOf(IrInstruction.Binary.class, last);
+        assertThat(last).isInstanceOf(IrInstruction.Binary.class);
     }
 
     @Test
@@ -122,7 +124,7 @@ class ConstantFolderTest {
 
         IrMethod folded = folder.apply(program).methods().get(0);
 
-        assertSame(returnTerminator.getClass(), folded.blocks().get(0).terminator().getClass());
+        assertThat(folded.blocks().get(0).terminator().getClass()).isSameAs(returnTerminator.getClass());
     }
 
     private IrProgram programOf(List<IrInstruction> instructions, IrTerminator terminator) {

@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class GeneratedCppSyntaxTest {
     @TempDir
@@ -64,7 +64,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -97,7 +97,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -129,7 +129,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -164,7 +164,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -198,7 +198,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -233,7 +233,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -269,7 +269,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -304,7 +304,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -338,7 +338,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -371,7 +371,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -409,7 +409,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -461,7 +461,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -496,7 +496,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -546,7 +546,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -591,7 +591,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -625,7 +625,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     @Test
@@ -675,7 +675,7 @@ class GeneratedCppSyntaxTest {
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(0, process.exitValue(), diagnostics);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
     private String availableCompiler() {

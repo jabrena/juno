@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DeadBlockEliminationTest {
     private final DeadBlockElimination elimination = new DeadBlockElimination();
@@ -31,10 +30,10 @@ class DeadBlockEliminationTest {
 
         IrMethod pruned = elimination.apply(program).methods().get(0);
 
-        assertEquals(2, pruned.blocks().size());
-        assertTrue(pruned.blocks().stream().anyMatch(block -> block.start() == 0));
-        assertTrue(pruned.blocks().stream().anyMatch(block -> block.start() == 10));
-        assertTrue(pruned.blocks().stream().noneMatch(block -> block.start() == 20));
+        assertThat(pruned.blocks().size()).isEqualTo(2);
+        assertThat(pruned.blocks().stream().anyMatch(block -> block.start() == 0)).isTrue();
+        assertThat(pruned.blocks().stream().anyMatch(block -> block.start() == 10)).isTrue();
+        assertThat(pruned.blocks().stream().noneMatch(block -> block.start() == 20)).isTrue();
     }
 
     @Test
@@ -49,7 +48,7 @@ class DeadBlockEliminationTest {
 
         IrMethod pruned = elimination.apply(program).methods().get(0);
 
-        assertEquals(3, pruned.blocks().size());
+        assertThat(pruned.blocks().size()).isEqualTo(3);
     }
 
     @Test
@@ -61,7 +60,7 @@ class DeadBlockEliminationTest {
 
         IrMethod pruned = elimination.apply(program).methods().get(0);
 
-        assertEquals(1, pruned.blocks().size());
-        assertEquals(0, pruned.blocks().get(0).start());
+        assertThat(pruned.blocks().size()).isEqualTo(1);
+        assertThat(pruned.blocks().get(0).start()).isEqualTo(0);
     }
 }

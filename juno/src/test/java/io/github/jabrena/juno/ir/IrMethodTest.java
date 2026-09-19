@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class IrMethodTest {
     private final MethodRef method = new MethodRef("demo/Typed", "main", "()V");
@@ -16,17 +16,17 @@ class IrMethodTest {
 
     @Test
     void recordsJvmSlotWidthsForEveryScalarType() {
-        assertEquals(1, JunoType.INT32.jvmSlots());
-        assertEquals(1, JunoType.FLOAT32.jvmSlots());
-        assertEquals(2, JunoType.FLOAT64.jvmSlots());
+        assertThat(JunoType.INT32.jvmSlots()).isEqualTo(1);
+        assertThat(JunoType.FLOAT32.jvmSlots()).isEqualTo(1);
+        assertThat(JunoType.FLOAT64.jvmSlots()).isEqualTo(2);
     }
 
     @Test
     void rejectsANonContiguousValueTable() {
         List<Value> values = List.of(Value.int32(0), Value.int32(2));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> new IrMethod(method, 0, values, List.of(), List.of(emptyBlock)));
+        assertThatThrownBy(() -> new IrMethod(method, 0, values, List.of(), List.of(emptyBlock)))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -35,7 +35,7 @@ class IrMethodTest {
         IrBasicBlock block = new IrBasicBlock(0, List.of(new IrInstruction.StoreLocal(0, floatValue)),
                 new IrTerminator.Return(Optional.empty()));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> new IrMethod(method, 1, Value.int32Values(1), List.of(), List.of(block)));
+        assertThatThrownBy(() -> new IrMethod(method, 1, Value.int32Values(1), List.of(), List.of(block)))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

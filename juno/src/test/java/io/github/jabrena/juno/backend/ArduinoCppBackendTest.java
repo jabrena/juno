@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ArduinoCppBackendTest {
     @Test
@@ -27,9 +27,9 @@ class ArduinoCppBackendTest {
 
         String generated = new ArduinoCppBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
-        assertTrue(generated.contains("  int32_t v0;"));
-        assertTrue(generated.contains("  float v1;"));
-        assertTrue(generated.contains("  double v2;"));
+        assertThat(generated.contains("  int32_t v0;")).isTrue();
+        assertThat(generated.contains("  float v1;")).isTrue();
+        assertThat(generated.contains("  double v2;")).isTrue();
     }
 
     @Test
@@ -40,8 +40,8 @@ class ArduinoCppBackendTest {
 
         String generated = new ArduinoCppBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
-        assertTrue(generated.contains("void yield() {"));
-        assertTrue(generated.contains("static_cast<void>(static_cast<bool>(Serial));"));
-        assertTrue(generated.contains("  yield();\n  goto juno_pc_0;"));
+        assertThat(generated.contains("void yield() {")).isTrue();
+        assertThat(generated.contains("static_cast<void>(static_cast<bool>(Serial));")).isTrue();
+        assertThat(generated.contains("  yield();\n  goto juno_pc_0;")).isTrue();
     }
 }

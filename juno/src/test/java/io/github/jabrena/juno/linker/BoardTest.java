@@ -8,9 +8,8 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BoardTest {
     @TempDir
@@ -30,7 +29,7 @@ class BoardTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Unannotated", source);
         Program program = CompilerTestSupport.link(temporaryDirectory, "demo.Unannotated");
 
-        assertEquals(Board.UNO_R4_WIFI, program.board());
+        assertThat(program.board()).isEqualTo(Board.UNO_R4_WIFI);
     }
 
     @Test
@@ -50,7 +49,7 @@ class BoardTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaProgram", source);
         Program program = CompilerTestSupport.link(temporaryDirectory, "demo.MinimaProgram");
 
-        assertEquals(Board.UNO_R4_MINIMA, program.board());
+        assertThat(program.board()).isEqualTo(Board.UNO_R4_MINIMA);
     }
 
     @Test
@@ -69,9 +68,9 @@ class BoardTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithMatrix", source);
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> CompilerTestSupport.link(temporaryDirectory, "demo.MinimaWithMatrix"));
-        assertTrue(exception.getMessage().contains("LedMatrix"));
-        assertTrue(exception.getMessage().contains("Minima"));
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.MinimaWithMatrix"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("LedMatrix")
+                .hasMessageContaining("Minima");
     }
 }

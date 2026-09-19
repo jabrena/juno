@@ -18,9 +18,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class CopyPropagationTest {
     private final CopyPropagation propagation = new CopyPropagation();
@@ -44,11 +42,12 @@ class CopyPropagationTest {
                 .methods().get(0);
 
         List<IrInstruction> rewritten = optimized.blocks().get(0).instructions();
-        assertEquals(4, rewritten.size());
-        assertTrue(rewritten.stream().noneMatch(IrInstruction.LoadLocal.class::isInstance));
-        IrInstruction.Binary binary = assertInstanceOf(IrInstruction.Binary.class, rewritten.get(3));
-        assertEquals(source, binary.left());
-        assertEquals(one, binary.right());
+        assertThat(rewritten.size()).isEqualTo(4);
+        assertThat(rewritten.stream().noneMatch(IrInstruction.LoadLocal.class::isInstance)).isTrue();
+        assertThat(rewritten.get(3)).isInstanceOf(IrInstruction.Binary.class);
+        IrInstruction.Binary binary = (IrInstruction.Binary) rewritten.get(3);
+        assertThat(binary.left()).isEqualTo(source);
+        assertThat(binary.right()).isEqualTo(one);
     }
 
     @Test
@@ -67,9 +66,9 @@ class CopyPropagationTest {
                 new IrBasicBlock(0, instructions, new IrTerminator.Return(Optional.of(loaded))))))
                 .methods().get(0);
 
-        IrTerminator.Return returned = assertInstanceOf(
-                IrTerminator.Return.class, optimized.blocks().get(0).terminator());
-        assertEquals(Optional.of(second), returned.value());
+        assertThat(optimized.blocks().get(0).terminator()).isInstanceOf(IrTerminator.Return.class);
+        IrTerminator.Return returned = (IrTerminator.Return) optimized.blocks().get(0).terminator();
+        assertThat(returned.value()).isEqualTo(Optional.of(second));
     }
 
     @Test
@@ -90,10 +89,11 @@ class CopyPropagationTest {
         IrMethod optimized = propagation.apply(programOf(List.of(header, left, right, merge))).methods().get(0);
 
         IrBasicBlock optimizedMerge = optimized.blocks().get(3);
-        assertEquals(1, optimizedMerge.instructions().size());
-        assertInstanceOf(IrInstruction.LoadLocal.class, optimizedMerge.instructions().get(0));
-        assertEquals(Optional.of(merged),
-                assertInstanceOf(IrTerminator.Return.class, optimizedMerge.terminator()).value());
+        assertThat(optimizedMerge.instructions().size()).isEqualTo(1);
+        assertThat(optimizedMerge.instructions().get(0)).isInstanceOf(IrInstruction.LoadLocal.class);
+        assertThat(optimizedMerge.terminator()).isInstanceOf(IrTerminator.Return.class);
+        IrTerminator.Return mergeReturn = (IrTerminator.Return) optimizedMerge.terminator();
+        assertThat(mergeReturn.value()).isEqualTo(Optional.of(merged));
     }
 
     @Test
@@ -110,8 +110,8 @@ class CopyPropagationTest {
 
         IrMethod optimized = propagation.apply(program).methods().get(0);
 
-        assertTrue(optimized.blocks().get(0).instructions().stream()
-                .anyMatch(IrInstruction.LoadLocal.class::isInstance));
+        assertThat(optimized.blocks().get(0).instructions().stream()
+                .anyMatch(IrInstruction.LoadLocal.class::isInstance)).isTrue();
     }
 
     @Test
@@ -157,35 +157,34 @@ class CopyPropagationTest {
                         new IrBasicBlock(0, instructions, new IrTerminator.Return(Optional.empty())))))
                 .methods().get(0).blocks().get(0).instructions();
 
-        assertEquals(source, first(rewritten, IrInstruction.Unary.class).value());
+        assertThat(first(rewritten, IrInstruction.Unary.class).value()).isEqualTo(source);
         IrInstruction.Call call = first(rewritten, IrInstruction.Call.class);
-        assertEquals(List.of(source), call.arguments());
+        assertThat(call.arguments()).isEqualTo(List.of(source));
         IrInstruction.IntrinsicCall intrinsic = first(rewritten, IrInstruction.IntrinsicCall.class);
-        assertEquals(Optional.of(source), intrinsic.receiver());
-        assertEquals(List.of(source), intrinsic.arguments());
+        assertThat(intrinsic.receiver()).isEqualTo(Optional.of(source));
+        assertThat(intrinsic.arguments()).isEqualTo(List.of(source));
         IrInstruction.ArrayLoad arrayLoad = first(rewritten, IrInstruction.ArrayLoad.class);
-        assertEquals(source, arrayLoad.array());
-        assertEquals(source, arrayLoad.index());
+        assertThat(arrayLoad.array()).isEqualTo(source);
+        assertThat(arrayLoad.index()).isEqualTo(source);
         IrInstruction.ArrayStore arrayStore = first(rewritten, IrInstruction.ArrayStore.class);
-        assertEquals(source, arrayStore.array());
-        assertEquals(source, arrayStore.index());
-        assertEquals(source, arrayStore.value());
-        assertEquals(source, first(rewritten, IrInstruction.BoundsCheck.class).index());
+        assertThat(arrayStore.array()).isEqualTo(source);
+        assertThat(arrayStore.index()).isEqualTo(source);
+        assertThat(arrayStore.value()).isEqualTo(source);
+        assertThat(first(rewritten, IrInstruction.BoundsCheck.class).index()).isEqualTo(source);
 
         IrInstruction.LongBinary longBinary = first(rewritten, IrInstruction.LongBinary.class);
-        assertEquals(List.of(source, source, source, source), List.of(
-                longBinary.leftLow(), longBinary.leftHigh(), longBinary.rightLow(), longBinary.rightHigh()));
+        assertThat(List.of(
+                longBinary.leftLow(), longBinary.leftHigh(), longBinary.rightLow(), longBinary.rightHigh())).isEqualTo(List.of(source, source, source, source));
         IrInstruction.LongShift longShift = first(rewritten, IrInstruction.LongShift.class);
-        assertEquals(List.of(source, source, source),
-                List.of(longShift.valueLow(), longShift.valueHigh(), longShift.shiftAmount()));
+        assertThat(List.of(longShift.valueLow(), longShift.valueHigh(), longShift.shiftAmount())).isEqualTo(List.of(source, source, source));
         IrInstruction.LongNegate longNegate = first(rewritten, IrInstruction.LongNegate.class);
-        assertEquals(List.of(source, source), List.of(longNegate.valueLow(), longNegate.valueHigh()));
+        assertThat(List.of(longNegate.valueLow(), longNegate.valueHigh())).isEqualTo(List.of(source, source));
         IrInstruction.LongCompare longCompare = first(rewritten, IrInstruction.LongCompare.class);
-        assertEquals(List.of(source, source, source, source), List.of(
-                longCompare.leftLow(), longCompare.leftHigh(), longCompare.rightLow(), longCompare.rightHigh()));
-        assertEquals(source, first(rewritten, IrInstruction.IntToLong.class).value());
+        assertThat(List.of(
+                longCompare.leftLow(), longCompare.leftHigh(), longCompare.rightLow(), longCompare.rightHigh())).isEqualTo(List.of(source, source, source, source));
+        assertThat(first(rewritten, IrInstruction.IntToLong.class).value()).isEqualTo(source);
         IrInstruction.LongToInt longToInt = first(rewritten, IrInstruction.LongToInt.class);
-        assertEquals(List.of(source, source), List.of(longToInt.valueLow(), longToInt.valueHigh()));
+        assertThat(List.of(longToInt.valueLow(), longToInt.valueHigh())).isEqualTo(List.of(source, source));
     }
 
     @Test
@@ -210,12 +209,13 @@ class CopyPropagationTest {
         optimized = new DeadBlockElimination().apply(optimized);
 
         IrMethod method = optimized.methods().get(0);
-        assertEquals(List.of(0, 10), method.blocks().stream().map(IrBasicBlock::start).toList());
-        IrTerminator.Jump jump = assertInstanceOf(IrTerminator.Jump.class, method.blocks().get(0).terminator());
-        assertEquals(10, jump.target());
-        IrInstruction.Const foldedComparison = assertInstanceOf(IrInstruction.Const.class,
-                method.blocks().get(0).instructions().get(3));
-        assertEquals(1, foldedComparison.value());
+        assertThat(method.blocks().stream().map(IrBasicBlock::start).toList()).isEqualTo(List.of(0, 10));
+        assertThat(method.blocks().get(0).terminator()).isInstanceOf(IrTerminator.Jump.class);
+        IrTerminator.Jump jump = (IrTerminator.Jump) method.blocks().get(0).terminator();
+        assertThat(jump.target()).isEqualTo(10);
+        assertThat(method.blocks().get(0).instructions().get(3)).isInstanceOf(IrInstruction.Const.class);
+        IrInstruction.Const foldedComparison = (IrInstruction.Const) method.blocks().get(0).instructions().get(3);
+        assertThat(foldedComparison.value()).isEqualTo(1);
     }
 
     private IrProgram programOf(List<IrBasicBlock> blocks) {

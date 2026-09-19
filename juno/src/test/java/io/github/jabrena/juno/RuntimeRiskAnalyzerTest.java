@@ -7,9 +7,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class RuntimeRiskAnalyzerTest {
     @TempDir
@@ -32,11 +30,11 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertEquals(8192, report.arenaCapacityBytes());
-        assertTrue(report.estimatedArenaBytes() > 0);
-        assertTrue(report.unboundedArenaAllocation());
-        assertTrue(hasCode(report, "JUNO-RISK-001"));
-        assertTrue(hasCode(report, "JUNO-RISK-005"));
+        assertThat(report.arenaCapacityBytes()).isEqualTo(8192);
+        assertThat(report.estimatedArenaBytes() > 0).isTrue();
+        assertThat(report.unboundedArenaAllocation()).isTrue();
+        assertThat(hasCode(report, "JUNO-RISK-001")).isTrue();
+        assertThat(hasCode(report, "JUNO-RISK-005")).isTrue();
     }
 
     @Test
@@ -51,8 +49,8 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertTrue(report.estimatedArenaBytes() > report.arenaCapacityBytes());
-        assertTrue(hasCode(report, "JUNO-RISK-002"));
+        assertThat(report.estimatedArenaBytes() > report.arenaCapacityBytes()).isTrue();
+        assertThat(hasCode(report, "JUNO-RISK-002")).isTrue();
     }
 
     @Test
@@ -68,9 +66,9 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertEquals(-1, report.maxCallDepth());
-        assertEquals(-1, report.estimatedMaxStackBytes());
-        assertTrue(hasCode(report, "JUNO-RISK-003"));
+        assertThat(report.maxCallDepth()).isEqualTo(-1);
+        assertThat(report.estimatedMaxStackBytes()).isEqualTo(-1);
+        assertThat(hasCode(report, "JUNO-RISK-003")).isTrue();
     }
 
     @Test
@@ -87,9 +85,9 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertTrue(report.boundsChecks() > 0);
-        assertTrue(report.uncheckedArrayAccesses() > 0);
-        assertTrue(hasCode(report, "JUNO-RISK-004"));
+        assertThat(report.boundsChecks() > 0).isTrue();
+        assertThat(report.uncheckedArrayAccesses() > 0).isTrue();
+        assertThat(hasCode(report, "JUNO-RISK-004")).isTrue();
     }
 
     @Test
@@ -106,8 +104,7 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertFalse(hasCode(report, "JUNO-RISK-005"),
-                "floating-point zero division follows Java infinity/NaN semantics and does not panic");
+        assertThat(hasCode(report, "JUNO-RISK-005")).as("floating-point zero division follows Java infinity/NaN semantics and does not panic").isFalse();
     }
 
     @Test
@@ -123,7 +120,7 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertTrue(hasCode(report, "JUNO-RISK-006"));
+        assertThat(hasCode(report, "JUNO-RISK-006")).isTrue();
     }
 
     private RuntimeRiskReport compileReport(String className, String source) throws Exception {

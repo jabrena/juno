@@ -6,10 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ControlFlowGraphBuilderTest {
     private final ControlFlowGraphBuilder builder = new ControlFlowGraphBuilder();
@@ -23,10 +21,10 @@ class ControlFlowGraphBuilderTest {
 
         ControlFlowGraph cfg = builder.build("demo.Straight.main", instructions);
 
-        assertEquals(1, cfg.blocks().size());
-        assertEquals(0, cfg.entry().start());
-        assertEquals(3, cfg.entry().instructions().size());
-        assertInstanceOf(Terminator.Return.class, cfg.entry().terminator());
+        assertThat(cfg.blocks().size()).isEqualTo(1);
+        assertThat(cfg.entry().start()).isEqualTo(0);
+        assertThat(cfg.entry().instructions().size()).isEqualTo(3);
+        assertThat(cfg.entry().terminator()).isInstanceOf(Terminator.Return.class);
     }
 
     @Test
@@ -42,21 +40,23 @@ class ControlFlowGraphBuilderTest {
 
         ControlFlowGraph cfg = builder.build("demo.IfElse.main", instructions);
 
-        assertEquals(4, cfg.blocks().size());
+        assertThat(cfg.blocks().size()).isEqualTo(4);
         BasicBlock header = cfg.blockAt(0).orElseThrow();
-        Terminator.Branch branch = assertInstanceOf(Terminator.Branch.class, header.terminator());
-        assertEquals(8, branch.trueTarget());
-        assertEquals(4, branch.falseTarget());
+        assertThat(header.terminator()).isInstanceOf(Terminator.Branch.class);
+        Terminator.Branch branch = (Terminator.Branch) header.terminator();
+        assertThat(branch.trueTarget()).isEqualTo(8);
+        assertThat(branch.falseTarget()).isEqualTo(4);
 
         BasicBlock thenBlock = cfg.blockAt(4).orElseThrow();
-        Terminator.Jump jump = assertInstanceOf(Terminator.Jump.class, thenBlock.terminator());
-        assertEquals(9, jump.target());
+        assertThat(thenBlock.terminator()).isInstanceOf(Terminator.Jump.class);
+        Terminator.Jump jump = (Terminator.Jump) thenBlock.terminator();
+        assertThat(jump.target()).isEqualTo(9);
 
         BasicBlock elseBlock = cfg.blockAt(8).orElseThrow();
-        assertInstanceOf(Terminator.Fallthrough.class, elseBlock.terminator());
+        assertThat(elseBlock.terminator()).isInstanceOf(Terminator.Fallthrough.class);
 
         BasicBlock merge = cfg.blockAt(9).orElseThrow();
-        assertInstanceOf(Terminator.Return.class, merge.terminator());
+        assertThat(merge.terminator()).isInstanceOf(Terminator.Return.class);
     }
 
     @Test
@@ -71,11 +71,12 @@ class ControlFlowGraphBuilderTest {
 
         ControlFlowGraph cfg = builder.build("demo.Loop.main", instructions);
 
-        assertEquals(3, cfg.blocks().size());
+        assertThat(cfg.blocks().size()).isEqualTo(3);
         BasicBlock loopBody = cfg.blockAt(4).orElseThrow();
-        Terminator.Jump backEdge = assertInstanceOf(Terminator.Jump.class, loopBody.terminator());
-        assertEquals(0, backEdge.target());
-        assertTrue(cfg.blockAt(0).isPresent());
+        assertThat(loopBody.terminator()).isInstanceOf(Terminator.Jump.class);
+        Terminator.Jump backEdge = (Terminator.Jump) loopBody.terminator();
+        assertThat(backEdge.target()).isEqualTo(0);
+        assertThat(cfg.blockAt(0).isPresent()).isTrue();
     }
 
     @Test
@@ -88,9 +89,9 @@ class ControlFlowGraphBuilderTest {
 
         ControlFlowGraph cfg = builder.build("demo.FloatReturns.pick", instructions);
 
-        assertEquals(2, cfg.blocks().size());
-        assertInstanceOf(Terminator.Return.class, cfg.blockAt(0).orElseThrow().terminator());
-        assertInstanceOf(Terminator.Return.class, cfg.blockAt(2).orElseThrow().terminator());
+        assertThat(cfg.blocks().size()).isEqualTo(2);
+        assertThat(cfg.blockAt(0).orElseThrow().terminator()).isInstanceOf(Terminator.Return.class);
+        assertThat(cfg.blockAt(2).orElseThrow().terminator()).isInstanceOf(Terminator.Return.class);
     }
 
     @Test
@@ -99,9 +100,8 @@ class ControlFlowGraphBuilderTest {
                 new Instruction(0, 153, 99, 0), // ifeq -> offset 99, which does not exist
                 new Instruction(3, 177, 0, 0));
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> builder.build("demo.Bad.main", instructions));
-
-        assertTrue(exception.getMessage().contains("invalid branch target 99"));
+        assertThatThrownBy(() -> builder.build("demo.Bad.main", instructions))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("invalid branch target 99");
     }
 }

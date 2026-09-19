@@ -17,9 +17,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * {@link CortexM4AsmBackendTest#lowersABlinkShapedProgramToLinkableCortexM4Assembly} builds the exact IR
@@ -64,13 +63,13 @@ class CortexM4AsmBackendTest {
         CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
-        assertTrue(assembly.contains(".global juno_Blink_asm"));
-        assertTrue(assembly.contains("bl pinMode"));
-        assertTrue(assembly.contains("bl digitalWrite"));
-        assertTrue(assembly.contains("bl delay"));
+        assertThat(assembly.contains(".global juno_Blink_asm")).isTrue();
+        assertThat(assembly.contains("bl pinMode")).isTrue();
+        assertThat(assembly.contains("bl digitalWrite")).isTrue();
+        assertThat(assembly.contains("bl delay")).isTrue();
         // Loop backedge: yield is emitted right before the branch back to the loop block.
-        assertTrue(assembly.contains("bl yield\n    b ."));
-        assertTrue(result.runtimeShim().contains("extern \"C\" void* juno_alloc"));
+        assertThat(assembly.contains("bl yield\n    b .")).isTrue();
+        assertThat(result.runtimeShim().contains("extern \"C\" void* juno_alloc")).isTrue();
     }
 
     /**
@@ -112,17 +111,17 @@ class CortexM4AsmBackendTest {
         CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
-        assertTrue(assembly.contains("bl juno_led_matrix_begin"));
-        assertTrue(assembly.contains("bl juno_led_matrix_load_frame"));
-        assertTrue(assembly.contains("bl juno_led_matrix_clear"));
-        assertTrue(assembly.contains("movt r0, #12676")); // high 16 bits of 0x3184A444
-        assertTrue(assembly.contains("bl delay"));
+        assertThat(assembly.contains("bl juno_led_matrix_begin")).isTrue();
+        assertThat(assembly.contains("bl juno_led_matrix_load_frame")).isTrue();
+        assertThat(assembly.contains("bl juno_led_matrix_clear")).isTrue();
+        assertThat(assembly.contains("movt r0, #12676")).isTrue(); // high 16 bits of 0x3184A444
+        assertThat(assembly.contains("bl delay")).isTrue();
 
         String shim = result.runtimeShim();
-        assertTrue(shim.contains("extern \"C\" void juno_led_matrix_begin()"));
-        assertTrue(shim.contains("extern \"C\" void juno_led_matrix_load_frame(int32_t word0, int32_t word1, int32_t word2)"));
-        assertTrue(shim.contains("extern \"C\" void juno_led_matrix_clear()"));
-        assertTrue(shim.contains("ArduinoLEDMatrix"));
+        assertThat(shim.contains("extern \"C\" void juno_led_matrix_begin()")).isTrue();
+        assertThat(shim.contains("extern \"C\" void juno_led_matrix_load_frame(int32_t word0, int32_t word1, int32_t word2)")).isTrue();
+        assertThat(shim.contains("extern \"C\" void juno_led_matrix_clear()")).isTrue();
+        assertThat(shim.contains("ArduinoLEDMatrix")).isTrue();
     }
 
     /**
@@ -163,14 +162,14 @@ class CortexM4AsmBackendTest {
         CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
-        assertTrue(assembly.contains("bl juno_serial_begin"));
-        assertTrue(assembly.contains("bl juno_serial_println"));
-        assertTrue(assembly.contains("add r0, r0, r1"));
-        assertTrue(assembly.contains("bl delay"));
+        assertThat(assembly.contains("bl juno_serial_begin")).isTrue();
+        assertThat(assembly.contains("bl juno_serial_println")).isTrue();
+        assertThat(assembly.contains("add r0, r0, r1")).isTrue();
+        assertThat(assembly.contains("bl delay")).isTrue();
 
         String shim = result.runtimeShim();
-        assertTrue(shim.contains("extern \"C\" void juno_serial_begin(int32_t baud)"));
-        assertTrue(shim.contains("extern \"C\" void juno_serial_println(int32_t value)"));
+        assertThat(shim.contains("extern \"C\" void juno_serial_begin(int32_t baud)")).isTrue();
+        assertThat(shim.contains("extern \"C\" void juno_serial_println(int32_t value)")).isTrue();
     }
 
     /** A string literal gets its own {@code .rodata} symbol; the call site just loads its address. */
@@ -188,17 +187,17 @@ class CortexM4AsmBackendTest {
         CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
-        assertTrue(assembly.contains(".section .rodata"));
-        assertTrue(assembly.contains("juno_str0:\n    .asciz \"hello\""));
-        assertTrue(assembly.contains("juno_str1:\n    .asciz \"world\""));
-        assertTrue(assembly.contains("ldr r0, =juno_str0"));
-        assertTrue(assembly.contains("bl juno_serial_print_str"));
-        assertTrue(assembly.contains("ldr r0, =juno_str1"));
-        assertTrue(assembly.contains("bl juno_serial_println_str"));
+        assertThat(assembly.contains(".section .rodata")).isTrue();
+        assertThat(assembly.contains("juno_str0:\n    .asciz \"hello\"")).isTrue();
+        assertThat(assembly.contains("juno_str1:\n    .asciz \"world\"")).isTrue();
+        assertThat(assembly.contains("ldr r0, =juno_str0")).isTrue();
+        assertThat(assembly.contains("bl juno_serial_print_str")).isTrue();
+        assertThat(assembly.contains("ldr r0, =juno_str1")).isTrue();
+        assertThat(assembly.contains("bl juno_serial_println_str")).isTrue();
 
         String shim = result.runtimeShim();
-        assertTrue(shim.contains("extern \"C\" void juno_serial_print_str(const char* value)"));
-        assertTrue(shim.contains("extern \"C\" void juno_serial_println_str(const char* value)"));
+        assertThat(shim.contains("extern \"C\" void juno_serial_print_str(const char* value)")).isTrue();
+        assertThat(shim.contains("extern \"C\" void juno_serial_println_str(const char* value)")).isTrue();
     }
 
     /** WiFi credentials are two string literals; {@code status()} returns through r0 like any other call. */
@@ -216,17 +215,17 @@ class CortexM4AsmBackendTest {
         CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
-        assertTrue(assembly.contains("juno_str0:\n    .asciz \"network\""));
-        assertTrue(assembly.contains("juno_str1:\n    .asciz \"password\""));
-        assertTrue(assembly.contains("ldr r0, =juno_str0"));
-        assertTrue(assembly.contains("ldr r1, =juno_str1"));
-        assertTrue(assembly.contains("bl juno_wifi_begin"));
-        assertTrue(assembly.contains("bl juno_wifi_status"));
+        assertThat(assembly.contains("juno_str0:\n    .asciz \"network\"")).isTrue();
+        assertThat(assembly.contains("juno_str1:\n    .asciz \"password\"")).isTrue();
+        assertThat(assembly.contains("ldr r0, =juno_str0")).isTrue();
+        assertThat(assembly.contains("ldr r1, =juno_str1")).isTrue();
+        assertThat(assembly.contains("bl juno_wifi_begin")).isTrue();
+        assertThat(assembly.contains("bl juno_wifi_status")).isTrue();
 
         String shim = result.runtimeShim();
-        assertTrue(shim.contains("#include <WiFiS3.h>"));
-        assertTrue(shim.contains("extern \"C\" void juno_wifi_begin(const char* ssid, const char* password)"));
-        assertTrue(shim.contains("extern \"C\" int32_t juno_wifi_status()"));
+        assertThat(shim.contains("#include <WiFiS3.h>")).isTrue();
+        assertThat(shim.contains("extern \"C\" void juno_wifi_begin(const char* ssid, const char* password)")).isTrue();
+        assertThat(shim.contains("extern \"C\" int32_t juno_wifi_status()")).isTrue();
     }
 
     /**
@@ -275,13 +274,13 @@ class CortexM4AsmBackendTest {
                 .generate(new IrProgram(mainRef, List.of(clinit, main)));
         String assembly = result.assembly();
 
-        assertTrue(assembly.contains("    .bss"));
-        assertTrue(assembly.contains("juno_static_demo_Arena_base_I:"));
-        assertTrue(assembly.contains("bl juno_fn0")); // entry point calls <clinit> first
-        assertTrue(assembly.contains("bl juno_alloc")); // NewObject
-        assertTrue(assembly.contains("ldr r1, [r0, #0]")); // LoadField at the (only) field's offset 0
-        assertTrue(assembly.contains("str r1, [r0, #0]")); // StoreField
-        assertTrue(assembly.contains("bne .Lswitchnext")); // Switch dispatch
+        assertThat(assembly.contains("    .bss")).isTrue();
+        assertThat(assembly.contains("juno_static_demo_Arena_base_I:")).isTrue();
+        assertThat(assembly.contains("bl juno_fn0")).isTrue(); // entry point calls <clinit> first
+        assertThat(assembly.contains("bl juno_alloc")).isTrue(); // NewObject
+        assertThat(assembly.contains("ldr r1, [r0, #0]")).isTrue(); // LoadField at the (only) field's offset 0
+        assertThat(assembly.contains("str r1, [r0, #0]")).isTrue(); // StoreField
+        assertThat(assembly.contains("bne .Lswitchnext")).isTrue(); // Switch dispatch
     }
 
     /**
@@ -305,17 +304,17 @@ class CortexM4AsmBackendTest {
 
         CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
-        assertTrue(result.assembly().contains("bl juno_mouse_begin"));
-        assertTrue(result.assembly().contains("bl juno_mouse_move"));
-        assertTrue(result.runtimeShim().contains("#include <Mouse.h>"));
-        assertTrue(result.runtimeShim().contains("extern \"C\" void juno_mouse_move(int32_t x, int32_t y)"));
+        assertThat(result.assembly().contains("bl juno_mouse_begin")).isTrue();
+        assertThat(result.assembly().contains("bl juno_mouse_move")).isTrue();
+        assertThat(result.runtimeShim().contains("#include <Mouse.h>")).isTrue();
+        assertThat(result.runtimeShim().contains("extern \"C\" void juno_mouse_move(int32_t x, int32_t y)")).isTrue();
 
         // A program that never touches Mouse must not require that library to compile.
         MethodRef noArgsEntry = new MethodRef("RatonLoco", "main", "()V");
         CortexM4AsmBackend.Output withoutMouse = new CortexM4AsmBackend().generate(
                 new IrProgram(noArgsEntry, List.of(IrMethod.withInferredValues(noArgsEntry, 0, 0, List.of(),
                         List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty())))))));
-        assertFalse(withoutMouse.runtimeShim().contains("Mouse"));
+        assertThat(withoutMouse.runtimeShim().contains("Mouse")).isFalse();
     }
 
     @Test
@@ -326,9 +325,9 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 1, List.of(), List.of(block));
 
-        CompileException exception = assertThrows(CompileException.class,
-                () -> new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method))));
-        assertTrue(exception.getMessage().contains("does not support"));
+        assertThatThrownBy(() -> new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method))))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("does not support");
     }
 
     @Test
@@ -362,9 +361,9 @@ class CortexM4AsmBackendTest {
                 .generate(new IrProgram(mainRef, List.of(main, classify)));
         String assembly = result.assembly();
 
-        assertTrue(assembly.contains("cmp r0, r1"));
-        assertTrue(assembly.contains("blt .Lcmptrue"));
-        assertTrue(assembly.contains("bl juno_fn1")); // main calling classify by its assigned label
-        assertTrue(assembly.contains(".global juno_Cond_asm")); // only the entry point is exported
+        assertThat(assembly.contains("cmp r0, r1")).isTrue();
+        assertThat(assembly.contains("blt .Lcmptrue")).isTrue();
+        assertThat(assembly.contains("bl juno_fn1")).isTrue(); // main calling classify by its assigned label
+        assertThat(assembly.contains(".global juno_Cond_asm")).isTrue(); // only the entry point is exported
     }
 }
