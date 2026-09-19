@@ -318,6 +318,102 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersHttpGetAndPostIntrinsics() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.HttpClient;
+                public final class HttpDemo {
+                    public static void main(String[] args) {
+                        byte[] response = new byte[128];
+                        int getBytes = HttpClient.get("example.com", 80, "/status", response, response.length);
+                        int postBytes = HttpClient.post("example.com", 80, "/submit", "{\\"ok\\":true}",
+                                response, response.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpDemo", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpDemo");
+
+        assertThat(generated.contains("#include <WiFiS3.h>")).isTrue();
+        assertThat(generated.contains("juno_http_get(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("juno_http_post(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("const char* call_str0 = \"example.com\";")).isTrue();
+        assertThat(generated.contains("const char* call_str1 = \"/status\";")).isTrue();
+        assertThat(generated.contains("\"{\\\"ok\\\":true}\"")).isTrue();
+        assertThat(generated.contains("static int32_t juno_http_request(")).isTrue();
+    }
+
+    @Test
+    void rejectsHttpUsageOnTheMinimaWhichHasNoOnboardModule() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.ArduinoUnoR4Minima;
+                import io.github.jabrena.juno.api.Board;
+                import io.github.jabrena.juno.api.net.HttpClient;
+                @Board(ArduinoUnoR4Minima.class)
+                public final class MinimaWithHttp {
+                    public static void main(String[] args) {
+                        byte[] response = new byte[16];
+                        HttpClient.get("example.com", 80, "/", response, response.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithHttp", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithHttp"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("Minima");
+    }
+
+    @Test
+    void lowersJsonFieldExtractionIntrinsics() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.Json;
+                public final class JsonDemo {
+                    public static void main(String[] args) {
+                        byte[] buffer = new byte[64];
+                        byte[] name = new byte[32];
+                        int temperature = Json.getInt(buffer, buffer.length, "data.sensor.temp");
+                        boolean ok = Json.getBool(buffer, buffer.length, "ok");
+                        int nameLength = Json.getString(buffer, buffer.length, "name", name, name.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.JsonDemo", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonDemo");
+
+        assertThat(generated.contains("#include <WiFiS3.h>")).as("JSON parsing alone needs no WiFi").isFalse();
+        assertThat(generated.contains("juno_json_get_int(")).isTrue();
+        assertThat(generated.contains("juno_json_get_bool(")).isTrue();
+        assertThat(generated.contains("juno_json_get_string(")).isTrue();
+        assertThat(generated.contains("const char* call_str0 = \"data.sensor.temp\";")).isTrue();
+        assertThat(generated.contains("static bool juno_json_locate(")).isTrue();
+    }
+
+    @Test
+    void omitsHttpAndJsonHelpersWhenUnused() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class NoNetworking {
+                    public static void main(String[] args) {
+                        Delay.millis(10);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NoNetworking", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NoNetworking");
+
+        assertThat(generated.contains("juno_http_request")).isFalse();
+        assertThat(generated.contains("juno_json_locate")).isFalse();
+        assertThat(generated.contains("#include <WiFiS3.h>")).isFalse();
+    }
+
+    @Test
     void lowersMouseIntrinsicsAndOmitsUnusedHeader() throws Exception {
         String source = """
                 package demo;

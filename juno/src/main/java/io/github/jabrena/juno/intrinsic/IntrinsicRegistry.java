@@ -61,7 +61,17 @@ public final class IntrinsicRegistry {
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Wifi", "begin",
                     "(Ljava/lang/String;Ljava/lang/String;)V"), Intrinsic.WIFI_BEGIN),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Wifi", "status", "()I"),
-                    Intrinsic.WIFI_STATUS));
+                    Intrinsic.WIFI_STATUS),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/HttpClient", "get",
+                    "(Ljava/lang/String;ILjava/lang/String;[BI)I"), Intrinsic.HTTP_GET),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/HttpClient", "post",
+                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI)I"), Intrinsic.HTTP_POST),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "getInt",
+                    "([BILjava/lang/String;)I"), Intrinsic.JSON_GET_INT),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "getBool",
+                    "([BILjava/lang/String;)Z"), Intrinsic.JSON_GET_BOOL),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "getString",
+                    "([BILjava/lang/String;[BI)I"), Intrinsic.JSON_GET_STRING));
 
     private IntrinsicRegistry() {
     }

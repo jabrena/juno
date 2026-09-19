@@ -678,6 +678,39 @@ class GeneratedCppSyntaxTest {
         assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
+    @Test
+    void generatedJsonFieldExtractionSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.Json;
+                public final class JsonSmoke {
+                    public static void main(String[] args) {
+                        byte[] buffer = new byte[64];
+                        byte[] name = new byte[16];
+                        int temperature = Json.getInt(buffer, buffer.length, "data.sensor.temp");
+                        boolean ok = Json.getBool(buffer, buffer.length, "ok");
+                        int nameLength = Json.getString(buffer, buffer.length, "name", name, name.length);
+                        int total = temperature + nameLength + (ok ? 1 : 0);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.JsonSmoke", source);
+        Path sketch = temporaryDirectory.resolve("JsonSmoke.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonSmoke"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
+    }
+
     private String availableCompiler() {
         for (String candidate : new String[]{"clang++", "g++"}) {
             try {

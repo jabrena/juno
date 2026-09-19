@@ -28,5 +28,10 @@ public enum Intrinsic {
     MOUSE_BEGIN,
     MOUSE_MOVE,
     WIFI_BEGIN,
-    WIFI_STATUS
+    WIFI_STATUS,
+    HTTP_GET,
+    HTTP_POST,
+    JSON_GET_INT,
+    JSON_GET_BOOL,
+    JSON_GET_STRING
 }
