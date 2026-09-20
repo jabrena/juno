@@ -1,10 +1,12 @@
+package io.github.jabrena.juno.api.hid;
+
 import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.DigitalOutput;
+import io.github.jabrena.juno.api.Mouse;
 import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
-import io.github.jabrena.juno.api.Mouse;
 
 /**
  * Port of <a href="https://github.com/jabrena/raton-loco/blob/main/arduino/raton-loco.ino">

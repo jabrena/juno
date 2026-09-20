@@ -1,8 +1,8 @@
+package io.github.jabrena.juno.api.led;
+
 import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.led.LedCanvas;
-import io.github.jabrena.juno.api.led.LedMatrix;
 
 /**
  * Cycles the full printable-ASCII font in {@code LedMatrixFontAscii} one character at a time on

@@ -46,8 +46,9 @@ Supported today:
   must not allocate indefinitely inside loops.
 - direct static calls with closed-world reachability; unused methods are omitted
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
-- UNO R4 WiFi networking through allocation-free `Wifi` and HTTP `GET`, `POST`, `DELETE`, `PATCH`,
-  and RFC 10008 `QUERY` intrinsics; request bodies use compile-time JSON strings
+- UNO R4 WiFi networking through allocation-free `Wifi`, plain HTTP, and certificate-validated HTTPS
+  `GET`, `POST`, `DELETE`, `PATCH`, and RFC 10008 `QUERY` intrinsics; request bodies use compile-time
+  JSON strings
 - bounded, allocation-free JSON inspection over caller-owned `byte[]` buffers: strict whole-document
   validation, object dot paths and zero-based array indexes, value type/null detection, array sizing,
   32/64-bit integers, decimal/exponent numbers, booleans, and JSON-string escape decoding to UTF-8

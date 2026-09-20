@@ -353,9 +353,49 @@ class JunoCompilerTest {
         assertThat(generated.contains("\"{\\\"value\\\":2}\"")).isTrue();
         assertThat(generated.contains("\"{\\\"tag\\\":\\\"new\\\"}\"")).isTrue();
         assertThat(generated.contains("static int32_t juno_http_request(")).isTrue();
-        assertThat(generated.contains("juno_http_request(\"DELETE\", host, port, path, nullptr")).isTrue();
-        assertThat(generated.contains("juno_http_request(\"PATCH\", host, port, path, body")).isTrue();
-        assertThat(generated.contains("juno_http_request(\"QUERY\", host, port, path, body")).isTrue();
+        assertThat(generated.contains("juno_http_request(client, \"DELETE\", host, port, path, nullptr")).isTrue();
+        assertThat(generated.contains("juno_http_request(client, \"PATCH\", host, port, path, body")).isTrue();
+        assertThat(generated.contains("juno_http_request(client, \"QUERY\", host, port, path, body")).isTrue();
+        assertThat(generated.contains("#include <WiFiSSLClient.h>")).isFalse();
+        assertThat(generated.contains("juno_https_get")).isFalse();
+    }
+
+    @Test
+    void lowersHttpsMethodIntrinsics() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.HttpsClient;
+                public final class HttpsDemo {
+                    public static void main(String[] args) {
+                        byte[] response = new byte[128];
+                        int getBytes = HttpsClient.get("example.com", 443, "/status",
+                                response, response.length);
+                        int postBytes = HttpsClient.post("example.com", 443, "/submit", "{\\\"ok\\\":true}",
+                                response, response.length);
+                        int deleteBytes = HttpsClient.delete("example.com", 443, "/items/7",
+                                response, response.length);
+                        int patchBytes = HttpsClient.patch("example.com", 443, "/items/7", "{\\\"value\\\":2}",
+                                response, response.length);
+                        int queryBytes = HttpsClient.query("example.com", 443, "/items/search",
+                                "{\\\"tag\\\":\\\"new\\\"}", response, response.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpsDemo", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpsDemo");
+
+        assertThat(generated.contains("#include <WiFiS3.h>")).isTrue();
+        assertThat(generated.contains("#include <WiFiSSLClient.h>")).isTrue();
+        assertThat(generated.contains("juno_https_get(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("juno_https_post(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("juno_https_delete(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("juno_https_patch(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("juno_https_query(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("WiFiSSLClient client;")).isTrue();
+        assertThat(generated.contains("juno_http_request(client, \"GET\", host, port, path, nullptr")).isTrue();
+        assertThat(generated.contains("juno_http_request(client, \"QUERY\", host, port, path, body")).isTrue();
+        assertThat(generated.contains("juno_http_get")).isFalse();
     }
 
     @Test
@@ -399,6 +439,28 @@ class JunoCompilerTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithQuery", source);
 
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithQuery"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("Minima");
+    }
+
+    @Test
+    void rejectsHttpsUsageOnTheMinimaWhichHasNoOnboardModule() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.ArduinoUnoR4Minima;
+                import io.github.jabrena.juno.api.Board;
+                import io.github.jabrena.juno.api.net.HttpsClient;
+                @Board(ArduinoUnoR4Minima.class)
+                public final class MinimaWithHttps {
+                    public static void main(String[] args) {
+                        byte[] response = new byte[16];
+                        HttpsClient.get("example.com", 443, "/", response, response.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithHttps", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithHttps"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("Minima");
     }

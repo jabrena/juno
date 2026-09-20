@@ -3,8 +3,9 @@
 Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiFi. Programs can:
 
 - connect to a Wi-Fi network with [`Wifi`](../juno-api/src/main/java/io/github/jabrena/juno/api/net/Wifi.java);
-- send HTTP `GET`, `POST`, `DELETE`, `PATCH`, and `QUERY` requests with
-  [`HttpClient`](../juno-api/src/main/java/io/github/jabrena/juno/api/net/HttpClient.java); and
+- send plain HTTP or TLS-protected HTTPS `GET`, `POST`, `DELETE`, `PATCH`, and `QUERY` requests with
+  [`HttpClient`](../juno-api/src/main/java/io/github/jabrena/juno/api/net/HttpClient.java) and
+  [`HttpsClient`](../juno-api/src/main/java/io/github/jabrena/juno/api/net/HttpsClient.java); and
 - extract typed values directly from JSON response bytes with
   [`Json`](../juno-api/src/main/java/io/github/jabrena/juno/api/net/Json.java).
 
@@ -14,7 +15,7 @@ the caller; the implementation does not allocate a JSON document or create runti
 
 ## Requirements and current limits
 
-Wi-Fi and HTTP require an UNO R4 WiFi entry point:
+Wi-Fi, HTTP, and HTTPS require an UNO R4 WiFi entry point:
 
 ```java
 import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
@@ -26,21 +27,22 @@ public final class InternetExample {
 }
 ```
 
-The UNO R4 Minima has no onboard network module, so Juno rejects reachable `Wifi` or `HttpClient`
-calls for that board. `Json` itself is board-independent and can parse any local `byte[]` on either
-UNO R4 variant.
+The UNO R4 Minima has no onboard network module, so Juno rejects reachable `Wifi`, `HttpClient`, or
+`HttpsClient` calls for that board. `Json` itself is board-independent and can parse any local
+`byte[]` on either UNO R4 variant.
 
 The current network layer deliberately stays small:
 
-- only plain HTTP is supported; there is no HTTPS/TLS support;
 - request hosts, paths, and request bodies must be compile-time strings;
 - custom request headers, redirects, cookies, and authentication helpers are not available;
+- HTTPS uses the root CA bundle installed in the board's WiFi firmware; Juno does not yet accept a
+  custom CA certificate from Java source;
 - the response status line and headers are consumed but are not exposed to Java code;
 - each request has a fixed five-second timeout; and
 - the response body may be truncated when it is larger than the supplied buffer.
 
-Use APIs that permit unencrypted HTTP and do not require custom headers. Do not send private API
-tokens, personal data, or other secrets over plain HTTP.
+Prefer `HttpsClient` for Internet services. Do not send API tokens, personal data, credentials, or
+other secrets with plain `HttpClient`.
 
 ## Supplying Wi-Fi credentials
 
@@ -84,7 +86,7 @@ secret storage. Juno embeds the resolved value in the generated `.ino` sketch an
 no longer needed. Juno does not automatically read `.env` files; a shell or CI system must export
 their values before invoking the compiler.
 
-The same mechanism can supply an HTTP host, path, or request body when necessary:
+The same mechanism can supply an HTTP or HTTPS host, path, or request body when necessary:
 
 ```java
 int responseBytes = HttpClient.get(
@@ -95,8 +97,8 @@ int responseBytes = HttpClient.get(
         response.length);
 ```
 
-Any credential placed in an HTTP path or body would still be embedded in the firmware and sent
-without TLS, so this is suitable only for non-sensitive values.
+Any value supplied this way is still embedded in the generated firmware. `HttpsClient` protects it
+in transit; `HttpClient` sends it without encryption.
 
 ## Connecting to Wi-Fi
 
@@ -120,9 +122,9 @@ if (Wifi.status() != Wifi.STATUS_CONNECTED) {
 }
 ```
 
-Call HTTP operations only after the connection succeeds. Applications that run indefinitely should
-also decide how to handle a later disconnection, for example by waiting for connectivity or calling
-`Wifi.begin` again before the next request.
+Call HTTP or HTTPS operations only after the connection succeeds. Applications that run indefinitely
+should also decide how to handle a later disconnection, for example by waiting for connectivity or
+calling `Wifi.begin` again before the next request.
 
 ## Calling REST APIs
 
@@ -141,6 +143,20 @@ int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
 Pass the host without `http://` and normally begin the path with `/`. The host and path must be
 string literals, constant literal expressions, or direct `System.getenv("LITERAL_NAME")` calls;
 Juno cannot construct a runtime `String`.
+
+For TLS, use the equivalent `HttpsClient` method, conventionally on port 443. Do not include
+`https://` in the host:
+
+```java
+int responseBytes = HttpsClient.get(
+        "httpbin.org", 443, "/anything", response, response.length);
+```
+
+Juno emits Arduino's `WiFiSSLClient`, which validates the server certificate against the root CA
+bundle installed in the UNO R4 WiFi firmware. A missing, expired, or untrusted CA makes the
+connection return `-1`. Arduino documents how to update the bundle with
+[Upload SSL root certificates](https://support.arduino.cc/hc/en-us/articles/360016119219-Upload-SSL-root-certificates).
+Juno currently uses that bundle as-is and does not expose `setCACert` for a per-program custom CA.
 
 The result is:
 
@@ -174,8 +190,8 @@ while (true) {
 
 ### Choosing an HTTP method
 
-All methods write the response body into the supplied buffer and return the same result values
-described above. Their request behavior differs:
+Both `HttpClient` and `HttpsClient` provide the following methods. They write the response body into
+the supplied buffer and return the same result values described above:
 
 | Method | Request body | Typical purpose |
 |---|---|---|
@@ -452,9 +468,11 @@ arduino-cli monitor \
 Uploading replaces the board's current firmware. Find the correct port first with
 `arduino-cli board list`. For the broader build/upload workflow, see
 [`docs/ARDUINO.md`](ARDUINO.md). The repository includes
-[`HttpMethods.java`](../juno-examples/src/main/java/HttpMethods.java), which verifies all supported
-HTTP methods against public echo services, and
-[`MadridWeather.java`](../juno-examples/src/main/java/MadridWeather.java), which extracts live API
+[`HttpMethods.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/net/HttpMethods.java), which verifies all supported
+methods over plain HTTP,
+[`HttpsMethods.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/net/HttpsMethods.java), which repeats the checks with
+certificate-validated TLS, and
+[`MadridWeather.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/net/MadridWeather.java), which extracts live API
 data for display on the LED matrix.
 
 ## Troubleshooting
@@ -466,9 +484,11 @@ data for display on the LED matrix.
 - **`HttpClient` returns `-1`:** the TCP connection failed. Confirm Wi-Fi connectivity, the host,
   port, DNS availability, and that the service accepts plain HTTP.
 - **`HttpClient` returns `0`:** no body bytes were captured before the connection ended or timed out.
+- **`HttpsClient` returns `-1`:** the TCP or TLS connection failed. Check the host and port, update
+  the board's connectivity firmware, and ensure its root CA bundle trusts the service certificate.
 - **`Json.type` returns `TYPE_INVALID`:** pass the returned HTTP byte count—not `response.length`—and
   increase the response buffer if the body may have been truncated.
 - **A getter returns zero or `false`:** call `Json.type` to distinguish a legitimate value from a
   missing path, wrong type, or invalid document.
-- **An API requires HTTPS, bearer headers, a non-JSON request body, or runtime request data:** it is outside the current
-  `HttpClient` feature set.
+- **An API requires bearer headers, a custom per-program CA, a non-JSON request body, or runtime
+  request data:** it is outside the current client feature set.

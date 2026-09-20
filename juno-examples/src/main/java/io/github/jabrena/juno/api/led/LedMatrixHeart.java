@@ -1,7 +1,8 @@
+package io.github.jabrena.juno.api.led;
+
 import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.led.LedMatrix;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class LedMatrixHeart {

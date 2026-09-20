@@ -1,3 +1,5 @@
+package io.github.jabrena.juno.api.io;
+
 import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;

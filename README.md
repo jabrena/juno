@@ -9,7 +9,7 @@ Renesas toolchain compiles to native Cortex-M4 code.
 
 This repository contains a working v0.1 compiler, not a JVM interpreter. The first milestone
 supports 32-bit integer code, static methods, branches, loops, and GPIO/time intrinsics. It can
-compile [`juno-examples/src/main/java/Blink.java`](juno-examples/src/main/java/Blink.java) all the way to a
+compile [`juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) all the way to a
 `.ino` sketch.
 
 ```text
@@ -69,7 +69,7 @@ public final class Blink {
 See the [Javadoc](https://jabrena.github.io/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html)
 for the complete Java API reference.
 
-For Wi-Fi connections, compile-time credentials, HTTP REST calls, and bounded JSON response
+For Wi-Fi connections, compile-time credentials, HTTP/HTTPS REST calls, and bounded JSON response
 extraction, see the [Internet access guide](docs/INTERNET.md).
 
 ### Target board
@@ -124,7 +124,7 @@ register, so it doesn't run out of registers as a method grows. Supports branche
 arithmetic/comparisons, fixed-size arrays, arena-allocated objects with fields, mutable static
 fields, GPIO/delay, `LedMatrix`, and `Serial` (the last two via a small `extern "C"` shim around
 things the assembly can't call directly). Try it with `java -jar juno.jar
-asm --main Blink ...`; see [docs/ARDUINO.md](docs/ARDUINO.md) for the full walkthrough, including how
+asm --main io.github.jabrena.juno.api.Blink ...`; see [docs/ARDUINO.md](docs/ARDUINO.md) for the full walkthrough, including how
 far this has (and hasn't) been verified on real hardware.
 
 Juno currently uses ArduinoCore-renesas as its HAL. Moving selected intrinsics to Renesas FSP or

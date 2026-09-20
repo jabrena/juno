@@ -319,9 +319,11 @@ class CortexM4AsmBackendTest {
 
     @Test
     void rejectsProgramsOutsideTheSupportedSubset() {
-        MethodRef entryPoint = new MethodRef("demo/Floaty", "main", "()V");
+        // IntArrayConst (compiler-created enum/switch-map arrays) has no asm-backend codegen yet,
+        // unlike long/float/double/HTTP/JSON, which this backend now supports (see the tests below).
+        MethodRef entryPoint = new MethodRef("demo/EnumMap", "main", "()V");
         IrBasicBlock block = new IrBasicBlock(0,
-                List.of(new IrInstruction.FloatConst(Value.float32(0), 1.0f)),
+                List.of(new IrInstruction.IntArrayConst(Value.int32(0), List.of(1, 2, 3))),
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 1, List.of(), List.of(block));
 
@@ -365,5 +367,88 @@ class CortexM4AsmBackendTest {
         assertThat(assembly.contains("blt .Lcmptrue")).isTrue();
         assertThat(assembly.contains("bl juno_fn1")).isTrue(); // main calling classify by its assigned label
         assertThat(assembly.contains(".global juno_Cond_asm")).isTrue(); // only the entry point is exported
+    }
+
+    @Test
+    void lowersLongArithmeticThroughRuntimeShimHelpers() {
+        // long a = 40L, b = 2L; return (int) (a + b);
+        MethodRef entryPoint = new MethodRef("demo/LongMath", "main", "()I");
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.LongConst(Value.int32(0), Value.int32(1), 40L),
+                new IrInstruction.LongConst(Value.int32(2), Value.int32(3), 2L),
+                new IrInstruction.LongBinary(Value.int32(4), Value.int32(5), BinaryOp.ADD,
+                        Value.int32(0), Value.int32(1), Value.int32(2), Value.int32(3)),
+                new IrInstruction.LongToInt(Value.int32(6), Value.int32(4), Value.int32(5))),
+                new IrTerminator.Return(Optional.of(Value.int32(6))));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(result.assembly().contains("bl juno_ladd")).isTrue();
+        assertThat(result.runtimeShim().contains("extern \"C\" int64_t juno_ladd")).isTrue();
+        // A program that never touches long must not pull the helper block in at all.
+        MethodRef intOnlyEntry = new MethodRef("demo/IntOnly", "main", "()V");
+        CortexM4AsmBackend.Output withoutLong = new CortexM4AsmBackend().generate(new IrProgram(intOnlyEntry,
+                List.of(IrMethod.withInferredValues(intOnlyEntry, 0, 0, List.of(),
+                        List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty())))))));
+        assertThat(withoutLong.runtimeShim().contains("juno_ladd")).isFalse();
+    }
+
+    /**
+     * Mirrors {@code MadridWeather}'s exact {@code (int) Json.getDouble(...)} pattern: a JSON double
+     * field read, immediately truncated to int (see {@code juno-examples/src/main/java/MadridWeather.java}).
+     */
+    @Test
+    void lowersJsonGetDoubleThroughDoubleToIntLikeMadridWeather() {
+        MethodRef entryPoint = new MethodRef("demo/WeatherAsm", "main", "()I");
+        Value buffer = Value.int32(0);
+        Value length = Value.int32(1);
+        Value doubleResult = Value.float64(2);
+        Value intResult = Value.int32(3);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(buffer, 0),
+                new IrInstruction.Const(length, 10),
+                new IrInstruction.IntrinsicCall(Optional.of(doubleResult), Intrinsic.JSON_GET_DOUBLE,
+                        Optional.empty(), List.of(buffer, length), List.of("current.temperature_2m")),
+                new IrInstruction.DoubleToInt(intResult, doubleResult)),
+                new IrTerminator.Return(Optional.of(intResult)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(result.assembly().contains("bl juno_json_get_double")).isTrue();
+        assertThat(result.assembly().contains("bl juno_d2i")).isTrue();
+        assertThat(result.runtimeShim().contains("extern \"C\" double juno_json_get_double")).isTrue();
+        assertThat(result.runtimeShim().contains("#include <math.h>")).isTrue();
+        assertThat(result.runtimeShim().contains("#include <string.h>")).isTrue();
+    }
+
+    @Test
+    void lowersHttpsGetWithStackSpilledArgumentsAndATlsRuntimeShim() {
+        // HttpsClient.get("api.open-meteo.com", 443, "/v1/forecast", buffer, 512) — 5 argument words
+        // exceeds the 4 available AAPCS registers, exercising emitShimCall's stack-spill path.
+        MethodRef entryPoint = new MethodRef("demo/HttpsFetch", "main", "()I");
+        Value port = Value.int32(0);
+        Value bufferPtr = Value.int32(1);
+        Value bufferLength = Value.int32(2);
+        Value result = Value.int32(3);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(port, 443),
+                new IrInstruction.Const(bufferPtr, 0),
+                new IrInstruction.Const(bufferLength, 512),
+                new IrInstruction.IntrinsicCall(Optional.of(result), Intrinsic.HTTPS_GET, Optional.empty(),
+                        List.of(port, bufferPtr, bufferLength), List.of("api.open-meteo.com", "/v1/forecast"))),
+                new IrTerminator.Return(Optional.of(result)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output result2 = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(result2.assembly().contains("bl juno_https_get")).isTrue();
+        assertThat(result2.assembly().contains("sub sp, sp, #8")).isTrue(); // 5 words spills 1, rounded to 8
+        assertThat(result2.assembly().contains("add sp, sp, #8")).isTrue();
+        assertThat(result2.runtimeShim().contains("#include <WiFiSSLClient.h>")).isTrue();
+        assertThat(result2.runtimeShim().contains("extern \"C\" int32_t juno_https_get")).isTrue();
+        // HTTP (plain) must not be pulled in by an HTTPS-only program.
+        assertThat(result2.runtimeShim().contains("juno_http_get")).isFalse();
     }
 }

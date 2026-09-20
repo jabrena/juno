@@ -716,6 +716,44 @@ class GeneratedCppSyntaxTest {
     }
 
     @Test
+    void generatedHttpsMethodSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.HttpsClient;
+                public final class HttpsMethodsSmoke {
+                    public static void main(String[] args) {
+                        byte[] response = new byte[64];
+                        int getBytes = HttpsClient.get("example.com", 443, "/items",
+                                response, response.length);
+                        int postBytes = HttpsClient.post("example.com", 443, "/items", "{\\\"value\\\":1}",
+                                response, response.length);
+                        int deleteBytes = HttpsClient.delete("example.com", 443, "/items/1",
+                                response, response.length);
+                        int patchBytes = HttpsClient.patch("example.com", 443, "/items/1", "{\\\"value\\\":2}",
+                                response, response.length);
+                        int queryBytes = HttpsClient.query("example.com", 443, "/items/search", "{\\\"value\\\":2}",
+                                response, response.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpsMethodsSmoke", source);
+        Path sketch = temporaryDirectory.resolve("HttpsMethodsSmoke.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpsMethodsSmoke"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
+    }
+
+    @Test
     void generatedJsonFieldExtractionSketchPassesACppSyntaxCheck() throws Exception {
         String compiler = availableCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");

@@ -1,8 +1,8 @@
+package io.github.jabrena.juno.api.led;
+
 import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.led.LedCanvas;
-import io.github.jabrena.juno.api.led.LedMatrix;
 
 /**
  * Cycles a filled square, an outlined square, a filled rectangle, and an outlined rectangle on the

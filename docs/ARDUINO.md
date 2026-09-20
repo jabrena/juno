@@ -68,7 +68,7 @@ The generated sketch is `build/juno/<ExampleClassName>/<ExampleClassName>.ino`. 
 
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main Blink \
+  --main io.github.jabrena.juno.api.Blink \
   --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/Blink
@@ -82,13 +82,13 @@ The board's built-in LED (pin 13) should start blinking once a second.
 
 ### Example: SerialCounter (reading Serial output)
 
-[`juno-examples/src/main/java/SerialCounter.java`](../juno-examples/src/main/java/SerialCounter.java) counts
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/io/SerialCounter.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/SerialCounter.java) counts
 up once a second over USB serial, so it doubles as a check that the toolchain and the board's
 serial port both work end to end:
 
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main SerialCounter \
+  --main io.github.jabrena.juno.api.io.SerialCounter \
   --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/SerialCounter
@@ -120,7 +120,7 @@ on the UNO R4 Minima, which lacks that matrix.
 
 ### Example: RatonLoco (USB mouse control)
 
-[`juno-examples/src/main/java/RatonLoco.java`](../juno-examples/src/main/java/RatonLoco.java) is a
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java) is a
 port of [raton-loco.ino](https://github.com/jabrena/raton-loco/blob/main/arduino/raton-loco.ino):
 it blinks the built-in LED, then drags the host computer's mouse cursor in a square (right, down,
 left, up) over USB HID.
@@ -136,7 +136,7 @@ native USB (UNO R4 WiFi/Minima):
 arduino-cli lib install Mouse
 
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main RatonLoco \
+  --main io.github.jabrena.juno.api.hid.RatonLoco \
   --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/RatonLoco
@@ -168,7 +168,7 @@ how large or branchy a method is.
 
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar asm \
-  --main Blink \
+  --main io.github.jabrena.juno.api.Blink \
   --classpath juno-examples/target/classes:juno-api/target/classes
 ```
 
@@ -212,3 +212,21 @@ blocks — the full printable-ASCII font dispatch tree) have all been assembled 
 real `arduino:renesas_uno` toolchain and uploaded to real hardware; on-device confirmation of their
 actual on-screen behavior is pending. Any other program is unverified beyond "assembles and links";
 treat this backend as experimental.
+
+**`long`/`float`/`double` and `Wifi`/`HttpClient`/`HttpsClient`/`Json` support added.** The RA4M1 has
+no hardware FPU, so every nontrivial `long`/`float`/`double` operation is a call to a small
+`extern "C"` runtime-shim helper (soft arithmetic, same idea as calling into `libgcc`, just hand-written
+and reused verbatim from `ArduinoCppBackend`'s own already-verified `long` helpers where possible)
+rather than hand-rolled assembly; see `CortexM4AsmBackend`'s class doc for the exact storage model.
+HTTP/HTTPS/JSON reuse `ArduinoCppBackend`'s own HTTP/1.1 codec and JSON scanner as `extern "C"` shim
+functions. `MadridWeather` (WiFi connect, an HTTPS/TLS request, and JSON field extraction including a
+`Json.getDouble` result immediately narrowed to `int`, matching this backend's `(int)
+Json.getDouble(...)` support) has been assembled and linked against the real toolchain and confirmed
+working on real UNO R4 WiFi hardware via its own USB serial output (`WiFi status: 3`, then repeated
+`HTTPS response bytes: N` / `HTTPS JSON: OK` cycles); its LED-matrix display output itself still needs
+the user's own eyes, same as `LedMatrixHeart`/`Snake`/`AsciiScroll` above. Assembling a program this
+large also surfaced a new toolchain-only bug: `ldr rN, =symbol` (string literals, static fields) uses a
+PC-relative literal pool that only reaches 4095 bytes forward, and every previous program was small
+enough that the assembler's default end-of-file pool was always in range — fixed by flushing the pool
+(`.ltorg`) after every basic block, always safe since a block's terminator already ends in an
+unconditional branch or return.

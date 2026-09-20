@@ -36,6 +36,9 @@ public final class ArduinoCppBackend {
     private static final Set<Intrinsic> HTTP_INTRINSICS = EnumSet.of(
             Intrinsic.HTTP_GET, Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH,
             Intrinsic.HTTP_QUERY);
+    private static final Set<Intrinsic> HTTPS_INTRINSICS = EnumSet.of(
+            Intrinsic.HTTPS_GET, Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH,
+            Intrinsic.HTTPS_QUERY);
     private static final Set<Intrinsic> JSON_INTRINSICS = EnumSet.of(
             Intrinsic.JSON_TYPE, Intrinsic.JSON_GET_INT, Intrinsic.JSON_GET_LONG,
             Intrinsic.JSON_GET_DOUBLE, Intrinsic.JSON_GET_BOOL, Intrinsic.JSON_GET_STRING,
@@ -46,6 +49,7 @@ public final class ArduinoCppBackend {
         boolean usesMouse = usesAnyIntrinsic(program, MOUSE_INTRINSICS);
         boolean usesWifi = usesAnyIntrinsic(program, WIFI_INTRINSICS);
         boolean usesHttp = usesAnyIntrinsic(program, HTTP_INTRINSICS);
+        boolean usesHttps = usesAnyIntrinsic(program, HTTPS_INTRINSICS);
         boolean usesJson = usesAnyIntrinsic(program, JSON_INTRINSICS);
         boolean usesFloatingPoint = program.methods().stream().anyMatch(this::usesFloatingPoint);
         StringBuilder output = new StringBuilder();
@@ -62,10 +66,13 @@ public final class ArduinoCppBackend {
         if (usesMouse) {
             output.append("#include <Mouse.h>\n");
         }
-        if (usesWifi || usesHttp) {
+        if (usesWifi || usesHttp || usesHttps) {
             output.append("#include <WiFiS3.h>\n");
         }
-        if (usesHttp || usesJson) {
+        if (usesHttps) {
+            output.append("#include <WiFiSSLClient.h>\n");
+        }
+        if (usesHttp || usesHttps || usesJson) {
             output.append("#include <string.h>\n");
         }
         output.append('\n').append(runtimeHelpers());
@@ -78,8 +85,8 @@ public final class ArduinoCppBackend {
         if (usesJson) {
             output.append(jsonHelpers());
         }
-        if (usesHttp) {
-            output.append(httpHelpers());
+        if (usesHttp || usesHttps) {
+            output.append(httpHelpers(usesHttp, usesHttps));
         }
 
         emitObjectLayouts(output, program);
@@ -741,6 +748,16 @@ public final class ArduinoCppBackend {
             case HTTP_PATCH -> "juno_http_patch(call_str0, call_arg0, call_str1, call_str2, "
                     + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
             case HTTP_QUERY -> "juno_http_query(call_str0, call_arg0, call_str1, call_str2, "
+                    + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
+            case HTTPS_GET -> "juno_https_get(call_str0, call_arg0, call_str1, "
+                    + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
+            case HTTPS_POST -> "juno_https_post(call_str0, call_arg0, call_str1, call_str2, "
+                    + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
+            case HTTPS_DELETE -> "juno_https_delete(call_str0, call_arg0, call_str1, "
+                    + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
+            case HTTPS_PATCH -> "juno_https_patch(call_str0, call_arg0, call_str1, call_str2, "
+                    + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
+            case HTTPS_QUERY -> "juno_https_query(call_str0, call_arg0, call_str1, call_str2, "
                     + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
             case JSON_TYPE -> "juno_json_type(reinterpret_cast<const uint8_t*>(call_arg0), call_arg1, call_str0)";
             case JSON_GET_INT -> "juno_json_get_int(reinterpret_cast<const uint8_t*>(call_arg0), call_arg1, call_str0)";
@@ -1556,13 +1573,13 @@ public final class ArduinoCppBackend {
                 """;
     }
 
-    /** Backs {@link io.github.jabrena.juno.api.net.HttpClient} with hand-rolled HTTP/1.1 over WiFiClient. */
-    private String httpHelpers() {
-        return """
-                static int32_t juno_http_request(const char* method, const char* host, int32_t port,
+    /** Backs the HTTP APIs with a shared HTTP/1.1 codec over plain or TLS WiFi clients. */
+    private String httpHelpers(boolean usesHttp, boolean usesHttps) {
+        StringBuilder helpers = new StringBuilder("""
+                template <typename Client>
+                static int32_t juno_http_request(Client& client, const char* method, const char* host, int32_t port,
                                                   const char* path, const char* body,
                                                   uint8_t* responseBuffer, int32_t responseBufferLength) {
-                  WiFiClient client;
                   if (!client.connect(host, static_cast<uint16_t>(port))) {
                     return -1;
                   }
@@ -1668,31 +1685,87 @@ public final class ArduinoCppBackend {
                   return written < responseBufferLength ? written : responseBufferLength;
                 }
 
+                """);
+        if (usesHttp) {
+            helpers.append("""
+
                 static int32_t juno_http_get(const char* host, int32_t port, const char* path,
                                               uint8_t* responseBuffer, int32_t responseBufferLength) {
-                  return juno_http_request("GET", host, port, path, nullptr, responseBuffer, responseBufferLength);
+                  WiFiClient client;
+                  return juno_http_request(client, "GET", host, port, path, nullptr,
+                                           responseBuffer, responseBufferLength);
                 }
 
                 static int32_t juno_http_post(const char* host, int32_t port, const char* path, const char* body,
                                                uint8_t* responseBuffer, int32_t responseBufferLength) {
-                  return juno_http_request("POST", host, port, path, body, responseBuffer, responseBufferLength);
+                  WiFiClient client;
+                  return juno_http_request(client, "POST", host, port, path, body,
+                                           responseBuffer, responseBufferLength);
                 }
 
                 static int32_t juno_http_delete(const char* host, int32_t port, const char* path,
                                                  uint8_t* responseBuffer, int32_t responseBufferLength) {
-                  return juno_http_request("DELETE", host, port, path, nullptr, responseBuffer, responseBufferLength);
+                  WiFiClient client;
+                  return juno_http_request(client, "DELETE", host, port, path, nullptr,
+                                           responseBuffer, responseBufferLength);
                 }
 
                 static int32_t juno_http_patch(const char* host, int32_t port, const char* path, const char* body,
                                                 uint8_t* responseBuffer, int32_t responseBufferLength) {
-                  return juno_http_request("PATCH", host, port, path, body, responseBuffer, responseBufferLength);
+                  WiFiClient client;
+                  return juno_http_request(client, "PATCH", host, port, path, body,
+                                           responseBuffer, responseBufferLength);
                 }
 
                 static int32_t juno_http_query(const char* host, int32_t port, const char* path, const char* body,
                                                 uint8_t* responseBuffer, int32_t responseBufferLength) {
-                  return juno_http_request("QUERY", host, port, path, body, responseBuffer, responseBufferLength);
+                  WiFiClient client;
+                  return juno_http_request(client, "QUERY", host, port, path, body,
+                                           responseBuffer, responseBufferLength);
                 }
 
-                """;
+                """);
+        }
+        if (usesHttps) {
+            helpers.append("""
+
+                static int32_t juno_https_get(const char* host, int32_t port, const char* path,
+                                               uint8_t* responseBuffer, int32_t responseBufferLength) {
+                  WiFiSSLClient client;
+                  return juno_http_request(client, "GET", host, port, path, nullptr,
+                                           responseBuffer, responseBufferLength);
+                }
+
+                static int32_t juno_https_post(const char* host, int32_t port, const char* path, const char* body,
+                                                uint8_t* responseBuffer, int32_t responseBufferLength) {
+                  WiFiSSLClient client;
+                  return juno_http_request(client, "POST", host, port, path, body,
+                                           responseBuffer, responseBufferLength);
+                }
+
+                static int32_t juno_https_delete(const char* host, int32_t port, const char* path,
+                                                  uint8_t* responseBuffer, int32_t responseBufferLength) {
+                  WiFiSSLClient client;
+                  return juno_http_request(client, "DELETE", host, port, path, nullptr,
+                                           responseBuffer, responseBufferLength);
+                }
+
+                static int32_t juno_https_patch(const char* host, int32_t port, const char* path, const char* body,
+                                                 uint8_t* responseBuffer, int32_t responseBufferLength) {
+                  WiFiSSLClient client;
+                  return juno_http_request(client, "PATCH", host, port, path, body,
+                                           responseBuffer, responseBufferLength);
+                }
+
+                static int32_t juno_https_query(const char* host, int32_t port, const char* path, const char* body,
+                                                 uint8_t* responseBuffer, int32_t responseBufferLength) {
+                  WiFiSSLClient client;
+                  return juno_http_request(client, "QUERY", host, port, path, body,
+                                           responseBuffer, responseBufferLength);
+                }
+
+                """);
+        }
+        return helpers.toString();
     }
 }

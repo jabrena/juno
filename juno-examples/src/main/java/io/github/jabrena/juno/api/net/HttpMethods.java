@@ -1,10 +1,9 @@
+package io.github.jabrena.juno.api.net;
+
 import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.api.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.Serial;
-import io.github.jabrena.juno.api.net.HttpClient;
-import io.github.jabrena.juno.api.net.Json;
-import io.github.jabrena.juno.api.net.Wifi;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class HttpMethods {
