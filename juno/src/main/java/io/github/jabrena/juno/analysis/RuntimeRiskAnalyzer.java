@@ -5,6 +5,7 @@ import io.github.jabrena.juno.classfile.FieldInfo;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.IrBasicBlock;
@@ -48,12 +49,20 @@ public final class RuntimeRiskAnalyzer {
             int allocated = 0;
             int possibleDivisionByZero = 0;
             int definiteNullDereferences = 0;
+            int oversizedStringBuilders = 0;
             for (IrBasicBlock block : method.blocks()) {
                 int blockAllocation = 0;
                 for (IrInstruction instruction : block.instructions()) {
                     int bytes = allocationBytes(instruction, linked.classes());
                     allocated += bytes;
                     blockAllocation += bytes;
+                    if (instruction instanceof IrInstruction.IntrinsicCall call
+                            && call.intrinsic() == Intrinsic.STRING_BUILDER_NEW) {
+                        Integer capacity = integerConstants.get(call.arguments().get(0));
+                        if (capacity == null || capacity >= RuntimeLimits.STRING_SLOT_CAPACITY_BYTES) {
+                            oversizedStringBuilders++;
+                        }
+                    }
                     if (instruction instanceof IrInstruction.Call call) {
                         calls.get(method.reference()).add(call.method());
                         callSites.get(method.reference()).add(call.method());
@@ -110,6 +119,12 @@ public final class RuntimeRiskAnalyzer {
             if (definiteNullDereferences > 0) {
                 findings.add(new RuntimeRisk("JUNO-RISK-006", RiskSeverity.WARNING, method.reference(),
                         definiteNullDereferences + " reference dereference(s) use a compile-time null value"));
+            }
+            if (oversizedStringBuilders > 0) {
+                findings.add(new RuntimeRisk("JUNO-RISK-007", RiskSeverity.WARNING, method.reference(),
+                        oversizedStringBuilders + " StringBuilder(s) constructed with capacity >= "
+                                + RuntimeLimits.STRING_SLOT_CAPACITY_BYTES + " (or not a compile-time constant); "
+                                + "toString() panics instead of truncating once content reaches that length"));
             }
         }
 

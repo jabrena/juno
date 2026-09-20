@@ -23,60 +23,52 @@ public final class DisplayData {
         LedMatrix.begin();
     }
 
-    /** Displays Madrid's local time as a scrolling message. */
-    public void showTime(byte[] timeText) {
-        int length = 0;
-        length = appendChar(length, 'M');
-        length = appendChar(length, 'a');
-        length = appendChar(length, 'd');
-        length = appendChar(length, 'r');
-        length = appendChar(length, 'i');
-        length = appendChar(length, 'd');
-        length = appendChar(length, ' ');
-        length = appendChar(length, 'T');
-        length = appendChar(length, 'i');
-        length = appendChar(length, 'm');
-        length = appendChar(length, 'e');
-        length = appendChar(length, ':');
-        length = appendChar(length, ' ');
-        length = TimeClient.appendTime(timeText, message, length);
+    /** Displays {@code message} as a scrolling message, verbatim. */
+    public void showMessage(String message) {
+        scrollMessage(loadMessage(message));
+    }
 
-        scrollMessage(length);
+    /** Displays Madrid's local time as a scrolling message. */
+    public void showTime(String time) {
+        StringBuilder text = new StringBuilder(MAX_MESSAGE_CHARS);
+        text.append("Madrid Time: ");
+        appendRuntimeString(text, time);
+        scrollMessage(loadMessage(text.toString()));
     }
 
     /** Displays Madrid's temperature as a scrolling message. */
     public void showTemperature(String temperature) {
-        int length = 0;
-        length = appendChar(length, 'M');
-        length = appendChar(length, 'a');
-        length = appendChar(length, 'd');
-        length = appendChar(length, 'r');
-        length = appendChar(length, 'i');
-        length = appendChar(length, 'd');
-        length = appendChar(length, ' ');
-        length = appendChar(length, 'W');
-        length = appendChar(length, 'e');
-        length = appendChar(length, 'a');
-        length = appendChar(length, 't');
-        length = appendChar(length, 'h');
-        length = appendChar(length, 'e');
-        length = appendChar(length, 'r');
-        length = appendChar(length, ':');
-        length = appendChar(length, ' ');
-        int index = 0;
-        int temperatureLength = temperature.length();
-        while (index < temperatureLength) {
-            length = appendChar(length, temperature.charAt(index));
-            index = index + 1;
-        }
-        length = appendChar(length, 'C');
-
-        scrollMessage(length);
+        StringBuilder text = new StringBuilder(MAX_MESSAGE_CHARS);
+        text.append("Madrid Weather: ");
+        appendRuntimeString(text, temperature);
+        text.append('C');
+        scrollMessage(loadMessage(text.toString()));
     }
 
-    private int appendChar(int index, int code) {
-        message[index] = code;
-        return index + 1;
+    /**
+     * Appends {@code value} to {@code text} one {@code char} at a time — {@code StringBuilder}'s
+     * {@code append(String)} only accepts a compile-time string literal, never a runtime value
+     * like a JSON-extracted temperature or formatted time, so a literal-free runtime value has to
+     * go through {@code append(char)}/{@code String.charAt} instead.
+     */
+    private void appendRuntimeString(StringBuilder text, String value) {
+        int length = value.length();
+        int index = 0;
+        while (index < length) {
+            text.append(value.charAt(index));
+            index = index + 1;
+        }
+    }
+
+    /** Copies {@code text} into {@link #message} and returns its length. */
+    private int loadMessage(String text) {
+        int length = text.length();
+        int index = 0;
+        while (index < length) {
+            message[index] = text.charAt(index);
+            index = index + 1;
+        }
+        return length;
     }
 
     private void scrollMessage(int messageLength) {

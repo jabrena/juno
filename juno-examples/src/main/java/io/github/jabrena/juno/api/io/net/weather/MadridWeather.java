@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.io.net.weather;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.io.net.HttpsClient;
 import io.github.jabrena.juno.api.io.net.Wifi;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
@@ -17,8 +18,9 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * {@code JUNO_WIFI_PASSWORD} (resolved by Juno itself at compile time, never written to a file).
  *
  * <p>{@link WeatherClient} fetches and parses the Open-Meteo response, {@link TimeClient} extracts
- * the local time, and {@link DisplayData} builds and scrolls the runtime messages on the matrix.
- * The temperature flows between those components as a bounded runtime {@link String}.
+ * and formats the local time, and {@link DisplayData} builds and scrolls the runtime messages on
+ * the matrix. Both the temperature and the formatted time flow between these components as
+ * runtime {@link String}s, built with {@link StringBuilder} in {@code TimeClient}'s case.
  *
  * <p>Open-Meteo's {@code current.time} is a fixed-width ISO-8601 string
  * ({@code "2026-09-20T16:00"}); the hour/minute are read directly out of its known character
@@ -31,63 +33,75 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  */
 @Board(ArduinoUnoR4WiFi.class)
 public final class MadridWeather {
-    private static final int RESPONSE_BUFFER_SIZE = 512;
     private static final int TIME_TEXT_BUFFER_SIZE = 32;
 
-    private static void processWeather(DisplayData display, byte[] response) {
-        int responseBytes = WeatherClient.fetch(response, RESPONSE_BUFFER_SIZE);
-        if (responseBytes <= 0) {
-            Serial.println("Weather request failed");
-            return;
-        }
-
-        Serial.print("Weather response bytes: ");
-        Serial.println(responseBytes);
-        String temperature = WeatherClient.getTemperature(response, responseBytes);
+    private static void processWeather(DisplayData display, byte[] response, byte[] headers,
+            int[] statusAndHeadersLength) {
+        String temperature = WeatherClient.fetchTemperature(response, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE,
+                headers, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength);
         if (temperature != null) {
             display.showTemperature(temperature);
         } else {
-            Serial.println("Unexpected weather JSON");
+            Serial.println("Weather request failed");
+            display.showMessage("Weather failed");
         }
     }
 
-    private static void processTime(DisplayData display, byte[] response, byte[] timeText) {
-        int responseBytes = TimeClient.fetch(response, RESPONSE_BUFFER_SIZE);
-        if (responseBytes <= 0) {
-            Serial.println("Time request failed");
-            return;
-        }
-
-        Serial.print("Time response bytes: ");
-        Serial.println(responseBytes);
-        int timeTextLength = TimeClient.read(response, responseBytes, timeText, TIME_TEXT_BUFFER_SIZE);
-        if (TimeClient.isAvailable(timeTextLength)) {
-            display.showTime(timeText);
+    private static void processTime(DisplayData display, byte[] response, byte[] headers, byte[] timeText,
+            int[] statusAndHeadersLength) {
+        String time = TimeClient.fetchTime(response, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE,
+                headers, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength,
+                timeText, TIME_TEXT_BUFFER_SIZE);
+        if (time != null) {
+            display.showTime(time);
         } else {
-            Serial.println("Unexpected time JSON");
+            Serial.println("Time request failed");
+            display.showMessage("Time failed");
         }
     }
 
-    public static void main(String[] args) {
-        Serial.begin(BaudRate.BAUD_115200);
-        Delay.millis(2000);
+    private static void connectWifi(DisplayData display) {
+        display.showMessage("Connecting");
         Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
 
         while (Wifi.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(1000);
         }
         Serial.println("WiFi connected");
+        display.showMessage("Connected");
+        // WiFi.status() reports connected before the module's network stack (DHCP/DNS) is actually
+        // ready for outbound connections — the first HTTPS request right after this point reliably
+        // fails with client.connect() itself returning false (confirmed on real hardware: status=0,
+        // bodyLength=-1), while every later request succeeds. A short settle delay here avoids
+        // spending that first request on a connection that was never going to work.
+        Delay.millis(2000);
+    }
+
+    public static void main(String[] args) {
+        Serial.begin(BaudRate.BAUD_115200);
+        Delay.millis(2000);
 
         DisplayData display = new DisplayData();
         display.begin();
+        connectWifi(display);
+
         // Allocated once, outside the loop, and overwritten every iteration: Juno's arena never frees
         // memory, so fresh allocations inside a while(true) would exhaust it after a few hundred cycles.
-        byte[] response = new byte[RESPONSE_BUFFER_SIZE];
+        // Each service gets its own buffer/scratch pair rather than sharing one, so a weather request
+        // can never leave stale bytes behind for the time request (or vice versa) to read.
+        byte[] weatherResponse = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
+        byte[] weatherHeaders = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
+        int[] weatherStatusAndHeadersLength = new int[2];
+        
+        byte[] timeResponse = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
+        byte[] timeHeaders = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
+        int[] timeStatusAndHeadersLength = new int[2];
+        
         byte[] timeText = new byte[TIME_TEXT_BUFFER_SIZE];
 
         while (true) {
-            processWeather(display, response);
-            processTime(display, response, timeText);
+            processWeather(display, weatherResponse, weatherHeaders, weatherStatusAndHeadersLength);
+            processTime(display, timeResponse, timeHeaders, timeText, timeStatusAndHeadersLength);
             Delay.millis(1000);
         }
     }

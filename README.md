@@ -1,7 +1,6 @@
 # Juno: Java for Arduino
 
-Juno is an experimental ahead-of-time compiler for running a practical subset of Java on the
-Arduino UNO R4 WiFi. It keeps `javac` as the Java frontend, performs
+Juno is an ahead-of-time compiler for running a practical subset of Java on the Arduino UNO R4 WiFi. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits an Arduino C++ sketch which the
 Renesas toolchain compiles to native Cortex-M4 code.
 
@@ -114,22 +113,6 @@ memory report remains authoritative for final RAM and flash use.
 The above, along with the small Java-facing hardware abstraction (`api/`) and the `@Board`
 selection types (`annotations/`), live under
 [`juno/src/main/java/io/github/jabrena/juno/`](juno/src/main/java/io/github/jabrena/juno).
-
-### Experimental: Cortex-M4 assembly backend
-
-[`CortexM4AsmBackend`](juno/src/main/java/io/github/jabrena/juno/backend/CortexM4AsmBackend.java) emits
-GNU ARM (Cortex-M4) assembly straight from Juno IR — no C++ in between. Every reachable method
-becomes its own function with a real AAPCS calling convention (including stack-passed arguments
-beyond the first four); every value and local lives in a fixed stack-frame slot rather than a
-register, so it doesn't run out of registers as a method grows. Supports branches, `switch`, `int`
-arithmetic/comparisons, fixed-size arrays, arena-allocated objects with fields, mutable static
-fields, GPIO/delay, `LedMatrix`, and `Serial` (the last two via a small `extern "C"` shim around
-things the assembly can't call directly). Try it with `java -jar juno.jar
-asm --main io.github.jabrena.juno.api.Blink ...`; see [docs/ARDUINO.md](docs/ARDUINO.md) for the full walkthrough, including how
-far this has (and hasn't) been verified on real hardware.
-
-Juno currently uses ArduinoCore-renesas as its HAL. Moving selected intrinsics to Renesas FSP or
-direct registers, then adding an SSA IR before C emission, are natural later steps.
 
 ## Development
 

@@ -429,31 +429,90 @@ class CortexM4AsmBackendTest {
 
     @Test
     void lowersHttpsGetWithStackSpilledArgumentsAndATlsRuntimeShim() {
-        // HttpsClient.get("api.open-meteo.com", 443, "/v1/forecast", buffer, 512) — 5 argument words
-        // exceeds the 4 available AAPCS registers, exercising emitShimCall's stack-spill path.
+        // HttpsClient.get("api.open-meteo.com", 443, "/v1/forecast", body, 512, headers, 512, out) —
+        // 8 argument words exceeds the 4 available AAPCS registers, exercising emitShimCall's
+        // stack-spill path.
         MethodRef entryPoint = new MethodRef("demo/HttpsFetch", "main", "()I");
         Value port = Value.int32(0);
         Value bufferPtr = Value.int32(1);
         Value bufferLength = Value.int32(2);
-        Value result = Value.int32(3);
+        Value headersPtr = Value.int32(3);
+        Value headersLength = Value.int32(4);
+        Value outPtr = Value.int32(5);
+        Value result = Value.int32(6);
         IrBasicBlock block = new IrBasicBlock(0, List.of(
                 new IrInstruction.Const(port, 443),
                 new IrInstruction.Const(bufferPtr, 0),
                 new IrInstruction.Const(bufferLength, 512),
+                new IrInstruction.Const(headersPtr, 0),
+                new IrInstruction.Const(headersLength, 512),
+                new IrInstruction.Const(outPtr, 0),
                 new IrInstruction.IntrinsicCall(Optional.of(result), Intrinsic.HTTPS_GET, Optional.empty(),
-                        List.of(port, bufferPtr, bufferLength), List.of("api.open-meteo.com", "/v1/forecast"))),
+                        List.of(port, bufferPtr, bufferLength, headersPtr, headersLength, outPtr),
+                        List.of("api.open-meteo.com", "/v1/forecast"))),
                 new IrTerminator.Return(Optional.of(result)));
-        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
 
         CortexM4AsmBackend.Output result2 = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(result2.assembly().contains("bl juno_https_get")).isTrue();
-        assertThat(result2.assembly().contains("sub sp, sp, #8")).isTrue(); // 5 words spills 1, rounded to 8
-        assertThat(result2.assembly().contains("add sp, sp, #8")).isTrue();
+        assertThat(result2.assembly().contains("sub sp, sp, #16")).isTrue(); // 8 words spills 4, rounded to 16
+        assertThat(result2.assembly().contains("add sp, sp, #16")).isTrue();
         assertThat(result2.runtimeShim().contains("#include <WiFiSSLClient.h>")).isTrue();
         assertThat(result2.runtimeShim().contains("extern \"C\" int32_t juno_https_get")).isTrue();
         // HTTP (plain) must not be pulled in by an HTTPS-only program.
         assertThat(result2.runtimeShim().contains("juno_http_get")).isFalse();
+    }
+
+    /**
+     * {@code new StringBuilder(8)} then {@code .append('1').append("!!").toString()}. Exercises
+     * {@link io.github.jabrena.juno.lowering.BytecodeToIr}'s dedicated construction lowering (a
+     * regular {@code new}+{@code invokespecial <init>} pair can't just be one more intrinsic here,
+     * since the real JDK constructor is {@code void} — see that class's
+     * {@code lowerStringBuilderConstruction} for why) only indirectly, by asserting the resulting
+     * IR already carries a real {@code STRING_BUILDER_NEW} call rather than a discarded
+     * placeholder; this test's own focus is that the asm backend lowers that IR correctly.
+     */
+    @Test
+    void lowersStringBuilderConstructionAppendAndToStringThroughTheShim() {
+        MethodRef entryPoint = new MethodRef("demo/Builder", "main", "([Ljava/lang/String;)V");
+        Value capacity = Value.int32(0);
+        Value builder = Value.int32(1);
+        Value character = Value.int32(2);
+        Value afterChar = Value.int32(3);
+        Value afterString = Value.int32(4);
+        Value text = Value.int32(5);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(capacity, 8),
+                new IrInstruction.IntrinsicCall(Optional.of(builder), Intrinsic.STRING_BUILDER_NEW,
+                        Optional.empty(), List.of(capacity), List.of()),
+                new IrInstruction.Const(character, '1'),
+                new IrInstruction.IntrinsicCall(Optional.of(afterChar), Intrinsic.STRING_BUILDER_APPEND_CHAR,
+                        Optional.of(builder), List.of(character), List.of()),
+                new IrInstruction.IntrinsicCall(Optional.of(afterString), Intrinsic.STRING_BUILDER_APPEND_STRING,
+                        Optional.of(afterChar), List.of(), List.of("!!")),
+                new IrInstruction.IntrinsicCall(Optional.of(text), Intrinsic.STRING_BUILDER_TO_STRING,
+                        Optional.of(afterString), List.of(), List.of())),
+                new IrTerminator.Return(Optional.empty()));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 6, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        String assembly = result.assembly();
+
+        assertThat(assembly.contains("bl juno_string_builder_new")).isTrue();
+        assertThat(assembly.contains("bl juno_string_builder_append_char")).isTrue();
+        assertThat(assembly.contains("ldr r1, =juno_str0")).isTrue();
+        assertThat(assembly.contains("bl juno_string_builder_append_string")).isTrue();
+        assertThat(assembly.contains("bl juno_string_builder_to_string")).isTrue();
+
+        String shim = result.runtimeShim();
+        assertThat(shim.contains("extern \"C\" int32_t juno_string_builder_new(int32_t capacity)")).isTrue();
+        assertThat(shim.contains("extern \"C\" int32_t juno_string_builder_append_char(int32_t handle, int32_t value)")).isTrue();
+        assertThat(shim.contains("extern \"C\" int32_t juno_string_builder_append_string(int32_t handle, const char* text)")).isTrue();
+        assertThat(shim.contains("extern \"C\" int32_t juno_string_builder_to_string(int32_t handle)")).isTrue();
+        // toString() needs the shared runtime-string-slot pool even though this program never calls
+        // String.valueOf/Json.getString itself.
+        assertThat(shim.contains("juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE]")).isTrue();
     }
 
     @Test
@@ -529,7 +588,7 @@ class CortexM4AsmBackendTest {
 
         assertThat(generated.assembly()).contains("bl juno_json_get_string_value");
         assertThat(generated.runtimeShim()).contains("extern \"C\" int32_t juno_json_get_string_value(");
-        assertThat(generated.runtimeShim()).contains("JUNO_STRING_SLOT_SIZE = 20");
+        assertThat(generated.runtimeShim()).contains("JUNO_STRING_SLOT_SIZE = 32");
     }
 
     /** Mirrors {@link io.github.jabrena.juno.JunoCompilerTest}'s same-named regression test for the C++ backend. */

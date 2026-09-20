@@ -13,40 +13,49 @@ public final class TimeClient {
     private static final int HOUR_INDEX = 11;
     private static final int MINUTE_INDEX = 14;
     private static final int MINIMUM_TIME_LENGTH = MINUTE_INDEX + 2;
+    private static final int HTTP_STATUS_OK = 200;
 
     private TimeClient() {
     }
 
     /**
-     * Fetches Madrid's current local time into {@code response}.
-     *
-     * @return the response length, or a non-positive value when the request fails
+     * Fetches Madrid's current local time into {@code response}/{@code headers} (caller-owned,
+     * reused every call), using {@code timeText} as internal scratch space for the raw ISO-8601
+     * text (e.g. {@code "2026-09-20T16:00"}), and returns the formatted {@code HH:MM} as a fresh
+     * {@link String} — or {@code null} when the request failed, the response status wasn't
+     * {@code 200}, or the response didn't contain the fixed-width time field.
+     * {@code statusAndHeadersLength}/{@code timeText} are caller-owned scratch space (allocated
+     * once outside any loop, like the buffers), since Juno has no heap to allocate them internally
+     * — for the same reason, this reads the status/body directly off
+     * {@code statusAndHeadersLength}/the returned body length rather than wrapping them in an
+     * {@link io.github.jabrena.juno.api.io.net.HttpResponse}, since a loop calling this forever
+     * would otherwise allocate one every iteration.
      */
-    public static int fetch(byte[] response, int responseLength) {
-        return HttpsClient.get(API_HOST, HTTPS_PORT, API_PATH, response, responseLength);
+    public static String fetchTime(byte[] response, int responseLength, byte[] headers, int headersLength,
+            int[] statusAndHeadersLength, byte[] timeText, int timeTextLength) {
+        int bodyLength = HttpsClient.get(API_HOST, HTTPS_PORT, API_PATH, response, responseLength,
+                headers, headersLength, statusAndHeadersLength);
+        if (statusAndHeadersLength[0] != HTTP_STATUS_OK || bodyLength <= 0) {
+            return null;
+        }
+        int copiedLength = Json.getString(response, bodyLength, CURRENT_TIME_PATH, timeText, timeTextLength);
+        if (copiedLength < MINIMUM_TIME_LENGTH) {
+            return null;
+        }
+        return formatTime(timeText);
     }
 
     /**
-     * Copies the current ISO-8601 local time into {@code timeText}.
-     *
-     * @return the copied time length, or a non-positive value when the field cannot be read
+     * Formats the raw ISO-8601 text in {@code timeText} (e.g. {@code "2026-09-20T16:00"}) as
+     * {@code HH:MM}.
      */
-    public static int read(byte[] response, int responseLength, byte[] timeText, int timeTextLength) {
-        return Json.getString(response, responseLength, CURRENT_TIME_PATH, timeText, timeTextLength);
-    }
-
-    /** Returns whether the copied value contains the fixed-width {@code HH:MM} positions. */
-    public static boolean isAvailable(int timeTextLength) {
-        return timeTextLength >= MINIMUM_TIME_LENGTH;
-    }
-
-    /** Appends {@code HH:MM} to {@code message} and returns the next free index. */
-    public static int appendTime(byte[] timeText, int[] message, int index) {
-        message[index] = timeText[HOUR_INDEX];
-        message[index + 1] = timeText[HOUR_INDEX + 1];
-        message[index + 2] = ':';
-        message[index + 3] = timeText[MINUTE_INDEX];
-        message[index + 4] = timeText[MINUTE_INDEX + 1];
-        return index + 5;
+    private static String formatTime(byte[] timeText) {
+        StringBuilder formatted = new StringBuilder(5);
+        formatted.append((char) timeText[HOUR_INDEX]);
+        formatted.append((char) timeText[HOUR_INDEX + 1]);
+        formatted.append(':');
+        formatted.append((char) timeText[MINUTE_INDEX]);
+        formatted.append((char) timeText[MINUTE_INDEX + 1]);
+        return formatted.toString();
     }
 }

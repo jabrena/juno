@@ -123,6 +123,40 @@ class RuntimeRiskAnalyzerTest {
         assertThat(hasCode(report, "JUNO-RISK-006")).isTrue();
     }
 
+    @Test
+    void reportsAStringBuilderCapacityThatCanOverflowTheRuntimeStringSlotAtToString() throws Exception {
+        RuntimeRiskReport report = compileReport("demo.OversizedBuilder", """
+                package demo;
+                public final class OversizedBuilder {
+                    public static void main() {
+                        StringBuilder builder = new StringBuilder(40);
+                        builder.append('a');
+                        String ignored = builder.toString();
+                    }
+                }
+                """);
+
+        assertThat(hasCode(report, "JUNO-RISK-007")).isTrue();
+    }
+
+    @Test
+    void doesNotReportAStringBuilderCapacityWellWithinTheRuntimeStringSlot() throws Exception {
+        RuntimeRiskReport report = compileReport("demo.SafeBuilder", """
+                package demo;
+                public final class SafeBuilder {
+                    public static void main() {
+                        StringBuilder builder = new StringBuilder(8);
+                        builder.append('a');
+                        String ignored = builder.toString();
+                    }
+                }
+                """);
+
+        assertThat(hasCode(report, "JUNO-RISK-007"))
+                .as("a capacity comfortably under the string-slot size can never overflow it")
+                .isFalse();
+    }
+
     private RuntimeRiskReport compileReport(String className, String source) throws Exception {
         CompilerTestSupport.compileJava(temporaryDirectory, className, source);
         CompilationResult result = new JunoCompiler().compile(

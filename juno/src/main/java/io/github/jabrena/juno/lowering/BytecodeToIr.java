@@ -770,9 +770,11 @@ public final class BytecodeToIr {
                     }
                     case 183 -> {
                         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-                        Lowered lowered = isRuntimeBaseConstructor(called)
-                                ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId, tracking)
-                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
+                        Lowered lowered = isStringBuilderConstruction(called)
+                                ? lowerStringBuilderConstruction(instructions, stackBase, depth, nextValueId, tracking)
+                                : isRuntimeBaseConstructor(called)
+                                        ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId, tracking)
+                                        : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
                     }
@@ -1403,6 +1405,35 @@ public final class BytecodeToIr {
     private boolean isRuntimeBaseConstructor(MethodRef called) {
         return called.name().equals("<init>")
                 && called.owner().startsWith("java/lang/");
+    }
+
+    private boolean isStringBuilderConstruction(MethodRef called) {
+        return called.owner().equals("java/lang/StringBuilder") && called.name().equals("<init>")
+                && called.descriptor().equals("(I)V");
+    }
+
+    /**
+     * {@code new StringBuilder(capacity)} — {@code new} (opcode 187) already pushed a placeholder
+     * {@code 0} for any unrecognized {@code java/lang/*} allocation (see that opcode's handling
+     * above), which {@code dup} then duplicated: one copy is consumed here as this constructor's
+     * receiver, the other survives on the stack as the expression's result. Since {@code <init>}
+     * is declared {@code void}, the normal call-lowering "push a return value" path never runs, so
+     * the surviving placeholder would otherwise stay {@code 0} forever — this overwrites that
+     * exact stack slot with the real arena-allocated handle instead.
+     */
+    private Lowered lowerStringBuilderConstruction(List<IrInstruction> instructions, int stackBase, int depth,
+                                                     int nextValueId, ValueTracking tracking) {
+        depth -= 1;
+        Popped capacity = pop(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = capacity.nextValueId();
+        depth -= 1;
+        Popped discardedReceiver = pop(instructions, stackBase, depth, nextValueId, tracking);
+        nextValueId = discardedReceiver.nextValueId();
+        Value handle = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.STRING_BUILDER_NEW,
+                Optional.empty(), List.of(capacity.value()), List.of()));
+        storeToStack(instructions, stackBase, depth - 1, handle, tracking);
+        return new Lowered(nextValueId, depth);
     }
 
     private boolean isEnumOrdinal(Map<String, JavaClass> classes, MethodRef called) {

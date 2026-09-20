@@ -117,6 +117,7 @@ public final class CortexM4AsmBackend {
     private boolean usesJson;
     private boolean usesRuntimeStrings;
     private boolean usesJsonStringValue;
+    private boolean usesStringBuilder;
 
     public Output generate(IrProgram program) {
         entryPoint = program.entryPoint();
@@ -334,7 +335,12 @@ public final class CortexM4AsmBackend {
         String label = functionLabels.get(method.reference());
         boolean isEntryPoint = method.reference().equals(entryPoint);
         FrameLayout frame = frameLayout(method);
-        List<String> parameterTypes = Descriptor.parse(method.reference().descriptor()).parameters();
+        // JVMS 2.6.1: for a non-static method, local 0 is the implicit `this`/receiver, which the
+        // descriptor's own parameter list never includes — the caller side (BytecodeToIr's lowering
+        // of a Call) already prepends the receiver to `arguments()`, so it always arrives as the
+        // first incoming word (r0), ahead of any declared parameter.
+        int parameterCount = Descriptor.parse(method.reference().descriptor()).parameters().size()
+                + (method.isStatic() ? 0 : 1);
 
         output.append('\n');
         if (isEntryPoint) {
@@ -350,7 +356,7 @@ public final class CortexM4AsmBackend {
             emitLoadImmediate(output, "r12", frame.frameSize());
             output.append("    sub sp, sp, r12\n");
         }
-        emitParameterSpill(output, frame, parameterTypes);
+        emitParameterSpill(output, frame, parameterCount);
         // Mirrors ArduinoCppBackend's setup(): <clinit> is its own reachable method in the IR, but
         // nothing calls it there either — the C++ backend invokes it explicitly, so this does too.
         if (isEntryPoint && clinitLabel != null) {
@@ -375,12 +381,14 @@ public final class CortexM4AsmBackend {
 
     /**
      * Copies incoming parameters (register-passed args 0-3, stack-passed args 4+) into their JVM
-     * local slots (JVMS 2.6.1: a static method's formal parameters occupy locals 0..k-1). Stack-passed
-     * args sit at {@code [caller's sp at the `bl`] + 4*(i-4)}; after this function's own prologue that
-     * address is {@code frame.frameSize() + PUSH_BYTES} higher than the current {@code sp}.
+     * local slots (JVMS 2.6.1: a static method's formal parameters occupy locals 0..k-1; a non-static
+     * method's receiver occupies local 0 first, with {@code parameterCount} including it — see the
+     * caller). Stack-passed args sit at {@code [caller's sp at the `bl`] + 4*(i-4)}; after this
+     * function's own prologue that address is {@code frame.frameSize() + PUSH_BYTES} higher than the
+     * current {@code sp}.
      */
-    private void emitParameterSpill(StringBuilder output, FrameLayout frame, List<String> parameterTypes) {
-        for (int i = 0; i < parameterTypes.size(); i++) {
+    private void emitParameterSpill(StringBuilder output, FrameLayout frame, int parameterCount) {
+        for (int i = 0; i < parameterCount; i++) {
             int localOffset = frame.localOffset(i);
             if (i < 4) {
                 emitStore(output, "r" + i, localOffset);
@@ -854,6 +862,33 @@ public final class CortexM4AsmBackend {
                 output.append("    bl juno_string_char_at\n");
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
+            case STRING_BUILDER_NEW -> {
+                usesStringBuilder = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl juno_string_builder_new\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case STRING_BUILDER_APPEND_CHAR -> {
+                usesStringBuilder = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                load(output, frame, "r1", call.arguments().get(0));
+                output.append("    bl juno_string_builder_append_char\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case STRING_BUILDER_APPEND_STRING -> {
+                usesStringBuilder = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                output.append("    ldr r1, =")
+                        .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
+                output.append("    bl juno_string_builder_append_string\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case STRING_BUILDER_TO_STRING -> {
+                usesStringBuilder = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                output.append("    bl juno_string_builder_to_string\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
             case SERIAL_PRINT_STRING -> {
                 output.append("    ldr r0, =")
                         .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
@@ -895,7 +930,10 @@ public final class CortexM4AsmBackend {
                                 new WordSource.FromValue(call.arguments().get(0)),
                                 new WordSource.StringAddress(call.literalArguments().get(1)),
                                 new WordSource.FromValue(call.arguments().get(1)),
-                                new WordSource.FromValue(call.arguments().get(2))));
+                                new WordSource.FromValue(call.arguments().get(2)),
+                                new WordSource.FromValue(call.arguments().get(3)),
+                                new WordSource.FromValue(call.arguments().get(4)),
+                                new WordSource.FromValue(call.arguments().get(5))));
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
             case HTTP_POST, HTTP_PATCH, HTTP_QUERY -> {
@@ -911,7 +949,10 @@ public final class CortexM4AsmBackend {
                                 new WordSource.StringAddress(call.literalArguments().get(1)),
                                 new WordSource.StringAddress(call.literalArguments().get(2)),
                                 new WordSource.FromValue(call.arguments().get(1)),
-                                new WordSource.FromValue(call.arguments().get(2))));
+                                new WordSource.FromValue(call.arguments().get(2)),
+                                new WordSource.FromValue(call.arguments().get(3)),
+                                new WordSource.FromValue(call.arguments().get(4)),
+                                new WordSource.FromValue(call.arguments().get(5))));
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
             case HTTPS_GET, HTTPS_DELETE -> {
@@ -922,7 +963,10 @@ public final class CortexM4AsmBackend {
                                 new WordSource.FromValue(call.arguments().get(0)),
                                 new WordSource.StringAddress(call.literalArguments().get(1)),
                                 new WordSource.FromValue(call.arguments().get(1)),
-                                new WordSource.FromValue(call.arguments().get(2))));
+                                new WordSource.FromValue(call.arguments().get(2)),
+                                new WordSource.FromValue(call.arguments().get(3)),
+                                new WordSource.FromValue(call.arguments().get(4)),
+                                new WordSource.FromValue(call.arguments().get(5))));
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
             case HTTPS_POST, HTTPS_PATCH, HTTPS_QUERY -> {
@@ -938,7 +982,10 @@ public final class CortexM4AsmBackend {
                                 new WordSource.StringAddress(call.literalArguments().get(1)),
                                 new WordSource.StringAddress(call.literalArguments().get(2)),
                                 new WordSource.FromValue(call.arguments().get(1)),
-                                new WordSource.FromValue(call.arguments().get(2))));
+                                new WordSource.FromValue(call.arguments().get(2)),
+                                new WordSource.FromValue(call.arguments().get(3)),
+                                new WordSource.FromValue(call.arguments().get(4)),
+                                new WordSource.FromValue(call.arguments().get(5))));
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
             case JSON_TYPE, JSON_GET_INT, JSON_GET_BOOL, JSON_ARRAY_SIZE -> {
@@ -1280,7 +1327,7 @@ public final class CortexM4AsmBackend {
         if (usesHttp || usesHttps || usesJson || usesRuntimeStrings) {
             shim.append("#include <string.h>\n");
         }
-        if (usesFloat || usesDouble || usesJson) {
+        if (usesFloat || usesDouble || usesJson || usesRuntimeStrings || usesStringBuilder) {
             shim.append("#include <math.h>\n");
         }
         shim.append("""
@@ -1342,8 +1389,11 @@ public final class CortexM4AsmBackend {
                   Serial.println(value);
                 }
                 """.replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES)));
-        if (usesRuntimeStrings) {
+        if (usesRuntimeStrings || usesStringBuilder) {
             shim.append(runtimeStringHelpers());
+        }
+        if (usesStringBuilder) {
+            shim.append(stringBuilderHelpers());
         }
         if (usesMouse) {
             shim.append("""
@@ -1447,7 +1497,7 @@ public final class CortexM4AsmBackend {
         return """
 
                 static constexpr uint32_t JUNO_STRING_SLOT_COUNT = 8;
-                static constexpr uint32_t JUNO_STRING_SLOT_SIZE = 20;
+                static constexpr uint32_t JUNO_STRING_SLOT_SIZE = ${JUNO_STRING_SLOT_SIZE};
                 static char juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE];
                 static uint32_t juno_string_slot_cursor = 0;
 
@@ -1526,6 +1576,66 @@ public final class CortexM4AsmBackend {
                   int32_t length = static_cast<int32_t>(strlen(text));
                   if (index < 0 || index >= length) juno_panic();
                   return static_cast<uint8_t>(text[index]);
+                }
+                """.replace("${JUNO_STRING_SLOT_SIZE}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES));
+    }
+
+    /**
+     * {@code StringBuilder} is represented as an arena-allocated header (its {@code length} and
+     * {@code capacity}, as two {@code int32_t}s) immediately followed by its {@code capacity}-byte
+     * buffer — a single {@code juno_alloc} block, addressed by the header's own pointer (cast to
+     * {@code int32_t} the same way every other handle in this file is). {@code toString()} copies
+     * the written bytes into the same rotating string-slot pool {@link #runtimeStringHelpers()}
+     * uses for every other runtime string, so it needs that pool already declared.
+     */
+    private String stringBuilderHelpers() {
+        return """
+
+                static constexpr uint32_t JUNO_STRING_BUILDER_HEADER_WORDS = 2; // length, capacity
+
+                extern "C" int32_t juno_string_builder_new(int32_t capacity) {
+                  if (capacity < 0) juno_panic();
+                  uint32_t bytes = JUNO_STRING_BUILDER_HEADER_WORDS * sizeof(int32_t) + static_cast<uint32_t>(capacity);
+                  auto* header = reinterpret_cast<int32_t*>(juno_alloc(bytes, alignof(int32_t)));
+                  header[0] = 0;         // length
+                  header[1] = capacity;  // capacity
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(header));
+                }
+
+                static uint8_t* juno_string_builder_buffer(int32_t handle) {
+                  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+                  return reinterpret_cast<uint8_t*>(header + JUNO_STRING_BUILDER_HEADER_WORDS);
+                }
+
+                extern "C" int32_t juno_string_builder_append_char(int32_t handle, int32_t value) {
+                  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+                  if (header[0] < header[1]) {
+                    juno_string_builder_buffer(handle)[header[0]] = static_cast<uint8_t>(value);
+                    header[0]++;
+                  }
+                  return handle;
+                }
+
+                extern "C" int32_t juno_string_builder_append_string(int32_t handle, const char* text) {
+                  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+                  uint8_t* buffer = juno_string_builder_buffer(handle);
+                  for (const char* c = text; *c != '\\0' && header[0] < header[1]; c++) {
+                    buffer[header[0]] = static_cast<uint8_t>(*c);
+                    header[0]++;
+                  }
+                  return handle;
+                }
+
+                extern "C" int32_t juno_string_builder_to_string(int32_t handle) {
+                  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+                  int32_t length = header[0];
+                  if (static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) juno_panic();
+                  char* slot = juno_string_slots[juno_string_slot_cursor];
+                  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+                  const uint8_t* buffer = juno_string_builder_buffer(handle);
+                  for (int32_t i = 0; i < length; i++) slot[i] = static_cast<char>(buffer[i]);
+                  slot[length] = '\\0';
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(slot));
                 }
                 """;
     }
@@ -2108,8 +2218,12 @@ public final class CortexM4AsmBackend {
                 template <typename Client>
                 static int32_t juno_http_request(Client& client, const char* method, const char* host, int32_t port,
                                                   const char* path, const char* body,
-                                                  uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                  uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                  uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                  int32_t* statusAndHeadersLength) {
                   if (!client.connect(host, static_cast<uint16_t>(port))) {
+                    statusAndHeadersLength[0] = 0;
+                    statusAndHeadersLength[1] = 0;
                     return -1;
                   }
                   client.print(method);
@@ -2128,11 +2242,30 @@ public final class CortexM4AsmBackend {
                   }
 
                   const unsigned long deadline = millis() + 5000;
+                  // The status line ("HTTP/1.1 200 OK\\r\\n") is parsed for its numeric status code
+                  // only; everything else on it (the HTTP version and the reason phrase) is skipped.
+                  bool inStatusLine = true;
+                  int32_t statusLinePhase = 0; // 0 = before the version's trailing space, 1 = digits, 2 = skip rest
+                  int32_t statusValue = 0;
                   bool inBody = false;
+                  int32_t headersWritten = 0;
                   char recent[4] = {0, 0, 0, 0};
                   bool chunked = false;
                   int32_t chunkedMatch = 0;
                   const char* chunkedMarker = "chunked";
+
+                  // A non-chunked response's length is usually known up front via Content-Length,
+                  // detected the same rolling-match way as "chunked" above (safe for the same reason:
+                  // no internal repeated-character overlap). Reading exactly that many body bytes lets
+                  // the loop return as soon as the response is complete, instead of only ever stopping
+                  // via the connection closing or the fixed deadline below — relying solely on the
+                  // latter risks abandoning the socket mid-response, which can wedge the WiFi module's
+                  // TLS state for the next request on some servers/networks.
+                  bool hasContentLength = false;
+                  bool inContentLengthValue = false;
+                  int32_t contentLength = 0;
+                  int32_t contentLengthMatch = 0;
+                  const char* contentLengthMarker = "content-length:";
 
                   int32_t written = 0;
                   int32_t chunkState = 0; // 0 = reading hex size, 1 = chunk data, 2 = trailing CRLF, 3 = done
@@ -2150,6 +2283,17 @@ public final class CortexM4AsmBackend {
                     if (value < 0) break;
                     char c = static_cast<char>(value);
 
+                    if (inStatusLine) {
+                      if (statusLinePhase == 0) {
+                        if (c == ' ') statusLinePhase = 1;
+                      } else if (statusLinePhase == 1) {
+                        if (c >= '0' && c <= '9') statusValue = statusValue * 10 + (c - '0');
+                        else statusLinePhase = 2;
+                      }
+                      if (c == '\\n') inStatusLine = false;
+                      continue;
+                    }
+
                     if (!inBody) {
                       char lower = (c >= 'A' && c <= 'Z') ? static_cast<char>(c - 'A' + 'a') : c;
                       if (lower == chunkedMarker[chunkedMatch]) {
@@ -2158,6 +2302,19 @@ public final class CortexM4AsmBackend {
                       } else {
                         chunkedMatch = (lower == chunkedMarker[0]) ? 1 : 0;
                       }
+                      if (inContentLengthValue) {
+                        if (c >= '0' && c <= '9') contentLength = contentLength * 10 + (c - '0');
+                        else if (c != ' ') inContentLengthValue = false;
+                      } else if (lower == contentLengthMarker[contentLengthMatch]) {
+                        contentLengthMatch++;
+                        if (contentLengthMarker[contentLengthMatch] == 0) {
+                          inContentLengthValue = true;
+                          hasContentLength = true;
+                          contentLength = 0;
+                        }
+                      } else {
+                        contentLengthMatch = (lower == contentLengthMarker[0]) ? 1 : 0;
+                      }
                       recent[0] = recent[1];
                       recent[1] = recent[2];
                       recent[2] = recent[3];
@@ -2165,12 +2322,15 @@ public final class CortexM4AsmBackend {
                       if (recent[0] == '\\r' && recent[1] == '\\n' && recent[2] == '\\r' && recent[3] == '\\n') {
                         inBody = true;
                       }
+                      if (headersWritten < headersBufferLength) headersBuffer[headersWritten] = static_cast<uint8_t>(c);
+                      headersWritten++;
                       continue;
                     }
 
                     if (!chunked) {
                       if (written < responseBufferLength) responseBuffer[written] = static_cast<uint8_t>(c);
                       written++;
+                      if (hasContentLength && written >= contentLength) break;
                       continue;
                     }
 
@@ -2205,6 +2365,8 @@ public final class CortexM4AsmBackend {
                     if (chunkState == 3) break;
                   }
                   client.stop();
+                  statusAndHeadersLength[0] = statusValue;
+                  statusAndHeadersLength[1] = headersWritten < headersBufferLength ? headersWritten : headersBufferLength;
                   return written < responseBufferLength ? written : responseBufferLength;
                 }
 
@@ -2213,38 +2375,53 @@ public final class CortexM4AsmBackend {
             helpers.append("""
 
                     extern "C" int32_t juno_http_get(const char* host, int32_t port, const char* path,
-                                                      uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                      uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                      uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                      int32_t* statusAndHeadersLength) {
                       WiFiClient client;
                       return juno_http_request(client, "GET", host, port, path, nullptr,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     extern "C" int32_t juno_http_post(const char* host, int32_t port, const char* path, const char* body,
-                                                       uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                       uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                       uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                       int32_t* statusAndHeadersLength) {
                       WiFiClient client;
                       return juno_http_request(client, "POST", host, port, path, body,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     extern "C" int32_t juno_http_delete(const char* host, int32_t port, const char* path,
-                                                         uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                         uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                         uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                         int32_t* statusAndHeadersLength) {
                       WiFiClient client;
                       return juno_http_request(client, "DELETE", host, port, path, nullptr,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     extern "C" int32_t juno_http_patch(const char* host, int32_t port, const char* path, const char* body,
-                                                        uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                        uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                        uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                        int32_t* statusAndHeadersLength) {
                       WiFiClient client;
                       return juno_http_request(client, "PATCH", host, port, path, body,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     extern "C" int32_t juno_http_query(const char* host, int32_t port, const char* path, const char* body,
-                                                        uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                        uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                        uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                        int32_t* statusAndHeadersLength) {
                       WiFiClient client;
                       return juno_http_request(client, "QUERY", host, port, path, body,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     """);
@@ -2253,38 +2430,53 @@ public final class CortexM4AsmBackend {
             helpers.append("""
 
                     extern "C" int32_t juno_https_get(const char* host, int32_t port, const char* path,
-                                                       uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                       uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                       uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                       int32_t* statusAndHeadersLength) {
                       WiFiSSLClient client;
                       return juno_http_request(client, "GET", host, port, path, nullptr,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     extern "C" int32_t juno_https_post(const char* host, int32_t port, const char* path, const char* body,
-                                                        uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                        uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                        uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                        int32_t* statusAndHeadersLength) {
                       WiFiSSLClient client;
                       return juno_http_request(client, "POST", host, port, path, body,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     extern "C" int32_t juno_https_delete(const char* host, int32_t port, const char* path,
-                                                          uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                          uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                          uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                          int32_t* statusAndHeadersLength) {
                       WiFiSSLClient client;
                       return juno_http_request(client, "DELETE", host, port, path, nullptr,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     extern "C" int32_t juno_https_patch(const char* host, int32_t port, const char* path, const char* body,
-                                                         uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                         uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                         uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                         int32_t* statusAndHeadersLength) {
                       WiFiSSLClient client;
                       return juno_http_request(client, "PATCH", host, port, path, body,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     extern "C" int32_t juno_https_query(const char* host, int32_t port, const char* path, const char* body,
-                                                         uint8_t* responseBuffer, int32_t responseBufferLength) {
+                                                         uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                         uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                         int32_t* statusAndHeadersLength) {
                       WiFiSSLClient client;
                       return juno_http_request(client, "QUERY", host, port, path, body,
-                                               responseBuffer, responseBufferLength);
+                                               responseBuffer, responseBufferLength,
+                                               headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     """);

@@ -48,6 +48,7 @@ public record Descriptor(List<String> parameters, String returnType) {
                 && (returnsVoid() || isIntegerLike(returnType) || isLong(returnType) || isFloat(returnType)
                         || isDouble(returnType)
                         || isString(returnType)
+                        || isStringBuilder(returnType)
                         || isSupportedArrayType(returnType, referenceClassNames)
                         || isReferenceType(returnType, referenceClassNames));
     }
@@ -71,6 +72,11 @@ public record Descriptor(List<String> parameters, String returnType) {
     /** Only {@code java.lang.String} itself; Juno represents it as a bounded runtime UTF-8 reference. */
     public static boolean isString(String type) {
         return type.equals("Ljava/lang/String;");
+    }
+
+    /** Only {@code java.lang.StringBuilder} itself; Juno represents it as an arena-allocated handle. */
+    public static boolean isStringBuilder(String type) {
+        return type.equals("Ljava/lang/StringBuilder;");
     }
 
     public static int jvmSlots(String type) {
@@ -108,6 +114,7 @@ public record Descriptor(List<String> parameters, String returnType) {
     private static boolean isSupportedParameterType(String type, Set<String> referenceClassNames) {
         return isIntegerLike(type) || isLong(type) || isFloat(type) || isDouble(type)
                 || isString(type)
+                || isStringBuilder(type)
                 || isSupportedArrayType(type, referenceClassNames)
                 || isReferenceType(type, referenceClassNames);
     }

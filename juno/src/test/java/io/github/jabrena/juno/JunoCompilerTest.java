@@ -376,15 +376,19 @@ class JunoCompilerTest {
                 public final class HttpDemo {
                     public static void main(String[] args) {
                         byte[] response = new byte[128];
-                        int getBytes = HttpClient.get("example.com", 80, "/status", response, response.length);
+                        byte[] headers = new byte[128];
+                        int[] out = new int[2];
+                        int getBytes = HttpClient.get("example.com", 80, "/status", response, response.length,
+                                headers, headers.length, out);
                         int postBytes = HttpClient.post("example.com", 80, "/submit", "{\\"ok\\":true}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int deleteBytes = HttpClient.delete("example.com", 80, "/items/7",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int patchBytes = HttpClient.patch("example.com", 80, "/items/7", "{\\"value\\":2}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int queryBytes = HttpClient.query("example.com", 80, "/items/search",
-                                "{\\"tag\\":\\"new\\"}", response, response.length);
+                                "{\\"tag\\":\\"new\\"}", response, response.length,
+                                headers, headers.length, out);
                     }
                 }
                 """;
@@ -419,16 +423,19 @@ class JunoCompilerTest {
                 public final class HttpsDemo {
                     public static void main(String[] args) {
                         byte[] response = new byte[128];
+                        byte[] headers = new byte[128];
+                        int[] out = new int[2];
                         int getBytes = HttpsClient.get("example.com", 443, "/status",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int postBytes = HttpsClient.post("example.com", 443, "/submit", "{\\\"ok\\\":true}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int deleteBytes = HttpsClient.delete("example.com", 443, "/items/7",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int patchBytes = HttpsClient.patch("example.com", 443, "/items/7", "{\\\"value\\\":2}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int queryBytes = HttpsClient.query("example.com", 443, "/items/search",
-                                "{\\\"tag\\\":\\\"new\\\"}", response, response.length);
+                                "{\\\"tag\\\":\\\"new\\\"}", response, response.length,
+                                headers, headers.length, out);
                     }
                 }
                 """;
@@ -447,6 +454,38 @@ class JunoCompilerTest {
         assertThat(generated.contains("juno_http_request(client, \"GET\", host, port, path, nullptr")).isTrue();
         assertThat(generated.contains("juno_http_request(client, \"QUERY\", host, port, path, body")).isTrue();
         assertThat(generated.contains("juno_http_get")).isFalse();
+    }
+
+    @Test
+    void lowersStringBuilderConstructionAppendAndToString() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class StringBuilderDemo {
+                    public static void main(String[] args) {
+                        StringBuilder builder = new StringBuilder(8);
+                        builder.append('1');
+                        builder.append("!!");
+                        String text = builder.toString();
+                        Serial.println(text.length());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.StringBuilderDemo", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.StringBuilderDemo");
+
+        // Construction: real allocation (juno_string_builder_new), never the discarded java/lang/*
+        // placeholder 0 that "new" alone would otherwise leave behind.
+        assertThat(generated.contains("juno_string_builder_new(")).isTrue();
+        assertThat(generated.contains("juno_string_builder_append_char(")).isTrue();
+        assertThat(generated.contains("juno_string_builder_append_string(")).isTrue();
+        assertThat(generated.contains("juno_string_builder_to_string(")).isTrue();
+        assertThat(generated.contains("static int32_t juno_string_builder_new(int32_t capacity)")).isTrue();
+        assertThat(generated.contains("static uint8_t* juno_string_builder_buffer(int32_t handle)")).isTrue();
+        // Needs the shared runtime-string-slot pool for toString(), even though this program never
+        // calls String.valueOf/Json.getString itself.
+        assertThat(generated.contains("juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE]")).isTrue();
     }
 
     @Test
@@ -502,7 +541,7 @@ class JunoCompilerTest {
 
         assertThat(generated).contains("juno_json_get_string_value(");
         assertThat(generated).contains("static int32_t juno_json_get_string_value(");
-        assertThat(generated).contains("JUNO_STRING_SLOT_SIZE = 20");
+        assertThat(generated).contains("JUNO_STRING_SLOT_SIZE = 32");
     }
 
     /**

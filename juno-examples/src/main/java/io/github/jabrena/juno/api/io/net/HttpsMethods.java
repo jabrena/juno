@@ -67,43 +67,42 @@ public final class HttpsMethods {
             return;
         }
 
-        byte[] response = new byte[768];
+        byte[] response = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
+        byte[] headers = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
         byte[] method = new byte[6];
+        int[] statusAndHeadersLength = new int[2];
 
-        int responseLength = HttpsClient.get(
-                HTTPBIN_HOST, HTTPS_PORT, ANYTHING_PATH, response, response.length);
-        int methodLength = readMethod(response, responseLength, method, method.length);
+        int bodyLength = HttpsClient.get(HTTPBIN_HOST, HTTPS_PORT, ANYTHING_PATH,
+                response, response.length, headers, headers.length, statusAndHeadersLength);
+        int methodLength = readMethod(response, bodyLength, method, method.length);
         Serial.print("HTTPS GET: ");
         printResult(matches(method, methodLength, 3, 'G', 'E', 'T', 0, 0, 0));
         Delay.millis(500);
 
-        responseLength = HttpsClient.post(
-                HTTPBIN_HOST, HTTPS_PORT, ANYTHING_PATH, "{\"verb\":\"POST\"}",
-                response, response.length);
-        methodLength = readMethod(response, responseLength, method, method.length);
+        bodyLength = HttpsClient.post(HTTPBIN_HOST, HTTPS_PORT, ANYTHING_PATH, "{\"verb\":\"POST\"}",
+                response, response.length, headers, headers.length, statusAndHeadersLength);
+        methodLength = readMethod(response, bodyLength, method, method.length);
         Serial.print("HTTPS POST: ");
         printResult(matches(method, methodLength, 4, 'P', 'O', 'S', 'T', 0, 0));
         Delay.millis(500);
 
-        responseLength = HttpsClient.delete(
-                HTTPBIN_HOST, HTTPS_PORT, ANYTHING_PATH, response, response.length);
-        methodLength = readMethod(response, responseLength, method, method.length);
+        bodyLength = HttpsClient.delete(HTTPBIN_HOST, HTTPS_PORT, ANYTHING_PATH,
+                response, response.length, headers, headers.length, statusAndHeadersLength);
+        methodLength = readMethod(response, bodyLength, method, method.length);
         Serial.print("HTTPS DELETE: ");
         printResult(matches(method, methodLength, 6, 'D', 'E', 'L', 'E', 'T', 'E'));
         Delay.millis(500);
 
-        responseLength = HttpsClient.patch(
-                HTTPBIN_HOST, HTTPS_PORT, ANYTHING_PATH, "{\"verb\":\"PATCH\"}",
-                response, response.length);
-        methodLength = readMethod(response, responseLength, method, method.length);
+        bodyLength = HttpsClient.patch(HTTPBIN_HOST, HTTPS_PORT, ANYTHING_PATH, "{\"verb\":\"PATCH\"}",
+                response, response.length, headers, headers.length, statusAndHeadersLength);
+        methodLength = readMethod(response, bodyLength, method, method.length);
         Serial.print("HTTPS PATCH: ");
         printResult(matches(method, methodLength, 5, 'P', 'A', 'T', 'C', 'H', 0));
         Delay.millis(500);
 
-        responseLength = HttpsClient.query(
-                HTTPBUN_HOST, HTTPS_PORT, ANYTHING_PATH, "{\"verb\":\"QUERY\"}",
-                response, response.length);
-        methodLength = readMethod(response, responseLength, method, method.length);
+        bodyLength = HttpsClient.query(HTTPBUN_HOST, HTTPS_PORT, ANYTHING_PATH, "{\"verb\":\"QUERY\"}",
+                response, response.length, headers, headers.length, statusAndHeadersLength);
+        methodLength = readMethod(response, bodyLength, method, method.length);
         Serial.print("HTTPS QUERY: ");
         printResult(matches(method, methodLength, 5, 'Q', 'U', 'E', 'R', 'Y', 0));
     }

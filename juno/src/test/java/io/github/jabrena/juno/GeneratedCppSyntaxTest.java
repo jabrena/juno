@@ -689,15 +689,18 @@ class GeneratedCppSyntaxTest {
                 public final class HttpMethodsSmoke {
                     public static void main(String[] args) {
                         byte[] response = new byte[64];
-                        int getBytes = HttpClient.get("example.com", 80, "/items", response, response.length);
+                        byte[] headers = new byte[64];
+                        int[] out = new int[2];
+                        int getBytes = HttpClient.get("example.com", 80, "/items", response, response.length,
+                                headers, headers.length, out);
                         int postBytes = HttpClient.post("example.com", 80, "/items", "{\\\"value\\\":1}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int deleteBytes = HttpClient.delete("example.com", 80, "/items/1",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int patchBytes = HttpClient.patch("example.com", 80, "/items/1", "{\\\"value\\\":2}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int queryBytes = HttpClient.query("example.com", 80, "/items/search", "{\\\"value\\\":2}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                     }
                 }
                 """;
@@ -726,22 +729,58 @@ class GeneratedCppSyntaxTest {
                 public final class HttpsMethodsSmoke {
                     public static void main(String[] args) {
                         byte[] response = new byte[64];
+                        byte[] headers = new byte[64];
+                        int[] out = new int[2];
                         int getBytes = HttpsClient.get("example.com", 443, "/items",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int postBytes = HttpsClient.post("example.com", 443, "/items", "{\\\"value\\\":1}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int deleteBytes = HttpsClient.delete("example.com", 443, "/items/1",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int patchBytes = HttpsClient.patch("example.com", 443, "/items/1", "{\\\"value\\\":2}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                         int queryBytes = HttpsClient.query("example.com", 443, "/items/search", "{\\\"value\\\":2}",
-                                response, response.length);
+                                response, response.length, headers, headers.length, out);
                     }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpsMethodsSmoke", source);
         Path sketch = temporaryDirectory.resolve("HttpsMethodsSmoke.ino");
         Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpsMethodsSmoke"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
+    }
+
+    @Test
+    void generatedStringBuilderSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class StringBuilderSmoke {
+                    public static void main(String[] args) {
+                        StringBuilder builder = new StringBuilder(8);
+                        builder.append('1');
+                        builder.append('6');
+                        builder.append(':');
+                        builder.append("00");
+                        String text = builder.toString();
+                        Serial.println(text.length());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.StringBuilderSmoke", source);
+        Path sketch = temporaryDirectory.resolve("StringBuilderSmoke.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.StringBuilderSmoke"),
                 StandardCharsets.UTF_8);
 
         Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",

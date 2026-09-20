@@ -18,11 +18,9 @@ public final class Blink {
         DigitalOutput led = DigitalOutput.of(LED);
 
         while (true) {
-            //Turn the build-in LED on for 500 milliseconds, then off for 500 milliseconds, repeating indefinitely.
             led.high();
             Delay.millis(500);
 
-            //Turn the build-in LED off for 500 milliseconds, then on for 500 milliseconds, repeating indefinitely.
             led.low();
             Delay.millis(500);
         }

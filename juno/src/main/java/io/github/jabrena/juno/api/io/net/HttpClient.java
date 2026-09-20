@@ -9,38 +9,57 @@ package io.github.jabrena.juno.api.io.net;
  * {@link #query}) must each be a compile-time
  * constant: either a string literal, or {@code System.getenv("NAME")} of a literal
  * environment-variable name, exactly like {@link Wifi#begin}'s credentials. Juno has no heap, so
- * none of these can be a runtime-computed {@code String}.
+ * none of these can be a runtime-computed {@code String} — this also means these methods must be
+ * called directly with the literal in hand, never forwarded through another method's own
+ * {@code String} parameter.
  *
- * <p>The response body is written into {@code responseBuffer} (a caller-owned, fixed-size
- * {@code byte[]}), starting at index 0 and truncated to {@code responseBufferLength} bytes if the
- * body is longer — pass the buffer's own array length explicitly, since Juno has no runtime
- * {@code .length} for an array method parameter. Each method returns the number of body bytes
- * written, or {@code -1} if the connection failed. Only the response body is captured; the HTTP
- * status line and headers are consumed and discarded. A request that doesn't complete within a
- * fixed 5-second timeout is abandoned and returns whatever was captured so far.
+ * <p>The response body is written into {@code bodyBuffer} and the raw response headers into
+ * {@code headersBuffer} (both caller-owned, fixed-size {@code byte[]}), each starting at index 0
+ * and truncated to its own length if longer — pass each buffer's own array length explicitly,
+ * since Juno has no runtime {@code .length} for an array method parameter. Each method returns the
+ * number of body bytes written, or {@code -1} if the connection failed. {@code statusAndHeadersLength}
+ * (a caller-owned {@code int[2]}, allocated once outside any loop like the buffers themselves) is
+ * filled with the HTTP status code at index 0 (or {@code 0} if the connection failed before a
+ * status line was received) and the number of bytes written into {@code headersBuffer} at index 1.
+ * Copy these, together with the returned body length, into an {@link HttpResponse} for a more
+ * convenient caller-owned holder. A request that doesn't complete within a fixed 5-second timeout
+ * is abandoned and returns whatever was captured so far.
  */
 public final class HttpClient {
+    /** A reasonable default size for a caller's body/headers buffer, in bytes. */
+    public static final int DEFAULT_RESPONSE_BUFFER_SIZE = 1024;
+
     private HttpClient() {
     }
 
     public static native int get(String host, int port, String path,
-            byte[] responseBuffer, int responseBufferLength);
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
 
     public static native int post(String host, int port, String path, String body,
-            byte[] responseBuffer, int responseBufferLength);
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
 
     /** Sends a bodyless HTTP DELETE request. */
     public static native int delete(String host, int port, String path,
-            byte[] responseBuffer, int responseBufferLength);
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
 
     /** Sends an HTTP PATCH request with a compile-time JSON body. */
     public static native int patch(String host, int port, String path, String body,
-            byte[] responseBuffer, int responseBufferLength);
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
 
     /**
      * Sends a safe, idempotent HTTP QUERY request with a compile-time JSON body, as defined by
      * RFC 10008.
      */
     public static native int query(String host, int port, String path, String body,
-            byte[] responseBuffer, int responseBufferLength);
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
 }
