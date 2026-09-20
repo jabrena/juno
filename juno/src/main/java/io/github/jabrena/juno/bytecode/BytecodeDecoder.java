@@ -42,7 +42,8 @@ public final class BytecodeDecoder {
                     length = 2;
                 }
                 case 17, 19, 20, 153, 154, 155, 156, 157, 158,
-                        159, 160, 161, 162, 163, 164, 165, 166, 167, 178, 179, 180, 181, 182, 183, 184, 187, 189 -> {
+                        159, 160, 161, 162, 163, 164, 165, 166, 167, 178, 179, 180, 181, 182, 183, 184, 187, 189,
+                        198, 199 -> {
                     require(code, offset, 3, method);
                     operandA = signedShort(code, offset + 1);
                     if (opcode == 19 || opcode == 20 || opcode == 178 || opcode == 179 || opcode == 180 || opcode == 181
@@ -258,6 +259,8 @@ public final class BytecodeDecoder {
             case 190 -> "arraylength";
             case 191 -> "athrow";
             case 197 -> "multianewarray";
+            case 198 -> "ifnull";
+            case 199 -> "ifnonnull";
             default -> "unknown";
         };
     }

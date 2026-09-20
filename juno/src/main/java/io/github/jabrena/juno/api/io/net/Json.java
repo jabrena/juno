@@ -17,8 +17,15 @@ package io.github.jabrena.juno.api.io.net;
  * results and never allocate or throw. {@code bufferLength} must be the number of JSON bytes in
  * the buffer (for example, the value returned by {@link HttpClient#get}), not the buffer capacity.
  *
- * <p>{@link #getString} decodes JSON escapes, including UTF-16 <code>&#92;uXXXX</code> surrogate pairs,
- * to UTF-8 in {@code out}. It writes at most {@code outLength} bytes and never appends a NUL byte.
+ * <p>{@link #getString(byte[], int, String, byte[], int)} decodes JSON escapes, including UTF-16
+ * <code>&#92;uXXXX</code> surrogate pairs, to UTF-8 in {@code out}. It writes at most
+ * {@code outLength} bytes and never appends a NUL byte.
+ *
+ * <p>{@link #getString(byte[], int, String)} instead returns a bounded runtime {@link String}
+ * holding the value's raw JSON text (quotes stripped for an actual JSON string, no escape
+ * decoding) — useful for a JSON number when its exact source text matters more than its value
+ * parsed through {@link #getDouble}, which loses precision for values not exactly representable
+ * in binary floating point.
  */
 public final class Json {
     public static final int TYPE_MISSING = 0;
@@ -51,6 +58,14 @@ public final class Json {
     /** Decodes a JSON string to UTF-8 and returns the number of bytes written. */
     public static native int getString(byte[] buffer, int bufferLength, String path,
             byte[] out, int outLength);
+
+    /**
+     * Returns the raw JSON text of any scalar value at {@code path} (a JSON string's content with
+     * its surrounding quotes stripped, or a number/boolean/{@code null} literal exactly as
+     * written), or {@code null} when the path is missing, resolves to an object or array, or the
+     * raw text is too long for Juno's bounded runtime-string pool.
+     */
+    public static native String getString(byte[] buffer, int bufferLength, String path);
 
     /** Returns the number of direct array elements, or {@code -1} on failure or a type mismatch. */
     public static native int arraySize(byte[] buffer, int bufferLength, String path);

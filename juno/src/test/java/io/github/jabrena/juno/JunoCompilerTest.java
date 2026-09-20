@@ -236,6 +236,57 @@ class JunoCompilerTest {
     }
 
     @Test
+    void supportsRuntimeStringsAcrossMethodParametersAndReturns() throws Exception {
+        String source = """
+                package demo;
+                public final class RuntimeText {
+                    static String format(int value) {
+                        return String.valueOf(value);
+                    }
+                    static int inspect(String value) {
+                        if (value == null) return 0;
+                        return value.length() + value.charAt(0);
+                    }
+                    public static void main(String[] args) {
+                        int dynamic = inspect(format(-12));
+                        int literal = inspect("ok");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.RuntimeText", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.RuntimeText");
+
+        assertThat(generated).contains("juno_string_value_of_int(call_arg0)");
+        assertThat(generated).contains("juno_string_length(call_receiver)");
+        assertThat(generated).contains("juno_string_char_at(call_receiver, call_arg0)");
+        assertThat(generated).contains("JUNO_STRING_SLOT_COUNT = 8");
+        assertThat(generated).contains("reinterpret_cast<intptr_t>(\"ok\")");
+    }
+
+    @Test
+    void lowersStringValueOfDoubleWithATypedArgument() throws Exception {
+        String source = """
+                package demo;
+                public final class RuntimeDecimal {
+                    static String format(double value) {
+                        return String.valueOf(value);
+                    }
+                    public static void main(String[] args) {
+                        String text = format(21.2);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.RuntimeDecimal", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.RuntimeDecimal");
+
+        assertThat(generated).contains("double call_arg0");
+        assertThat(generated).contains("juno_string_value_of_double(call_arg0)");
+        assertThat(generated).contains("static int32_t juno_string_value_of_double(double value)");
+    }
+
+    @Test
     void rejectsNonLiteralSerialStringArgument() throws Exception {
         String source = """
                 package demo;
@@ -431,6 +482,55 @@ class JunoCompilerTest {
         assertThat(generated.contains("juno_json_array_size(")).isTrue();
         assertThat(generated.contains("const char* call_str0 = \"data.sensor.temp\";")).isTrue();
         assertThat(generated.contains("static int32_t juno_json_locate(")).isTrue();
+    }
+
+    @Test
+    void lowersJsonGetStringValueAsARuntimeString() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.net.Json;
+                public final class JsonStringValueDemo {
+                    public static void main(String[] args) {
+                        byte[] buffer = new byte[64];
+                        String temperature = Json.getString(buffer, buffer.length, "data.sensor.temp");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.JsonStringValueDemo", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonStringValueDemo");
+
+        assertThat(generated).contains("juno_json_get_string_value(");
+        assertThat(generated).contains("static int32_t juno_json_get_string_value(");
+        assertThat(generated).contains("JUNO_STRING_SLOT_SIZE = 20");
+    }
+
+    /**
+     * Regression test for a real bug: {@code juno_json_get_string_value} needs the runtime-string
+     * pool, which is only emitted when some intrinsic in {@code RUNTIME_STRING_INTRINSICS} is used
+     * — a program using only {@code Json.getInt} must not pull in that unused helper (it would
+     * reference undeclared symbols if the string pool weren't also unconditionally gated the same
+     * way).
+     */
+    @Test
+    void omitsJsonGetStringValueHelperWhenOnlyOtherJsonIntrinsicsAreUsed() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.net.Json;
+                public final class JsonIntOnlyDemo {
+                    public static void main(String[] args) {
+                        byte[] buffer = new byte[64];
+                        int temperature = Json.getInt(buffer, buffer.length, "data.sensor.temp");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.JsonIntOnlyDemo", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonIntOnlyDemo");
+
+        assertThat(generated).contains("juno_json_get_int(");
+        assertThat(generated).doesNotContain("juno_json_get_string_value");
+        assertThat(generated).doesNotContain("JUNO_STRING_SLOT_SIZE");
     }
 
     @Test

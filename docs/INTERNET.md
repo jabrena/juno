@@ -471,7 +471,7 @@ Uploading replaces the board's current firmware. Find the correct port first wit
 methods over plain HTTP,
 [`HttpsMethods.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/HttpsMethods.java), which repeats the checks with
 certificate-validated TLS, and
-[`MadridWeather.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/MadridWeather.java), which extracts live API
+[`MadridWeather.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/MadridWeather.java), which extracts live API
 data for display on the LED matrix.
 
 ## Troubleshooting

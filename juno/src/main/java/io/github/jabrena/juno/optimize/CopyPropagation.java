@@ -72,6 +72,7 @@ public final class CopyPropagation implements CompilerPass {
     private IrInstruction rewriteInstruction(IrInstruction instruction, Map<Value, Value> replacements) {
         return switch (instruction) {
             case IrInstruction.Const constant -> constant;
+            case IrInstruction.StringConst constant -> constant;
             case IrInstruction.FloatConst constant -> constant;
             case IrInstruction.DoubleConst constant -> constant;
             case IrInstruction.LoadLocal load -> load;

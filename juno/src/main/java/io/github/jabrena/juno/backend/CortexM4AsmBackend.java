@@ -115,6 +115,8 @@ public final class CortexM4AsmBackend {
     private boolean usesHttp;
     private boolean usesHttps;
     private boolean usesJson;
+    private boolean usesRuntimeStrings;
+    private boolean usesJsonStringValue;
 
     public Output generate(IrProgram program) {
         entryPoint = program.entryPoint();
@@ -172,6 +174,8 @@ public final class CortexM4AsmBackend {
                                 store.field(), field -> "juno_static_" + sanitize(field.displayName()));
                         case IrInstruction.IntArrayConst array -> intArraySymbols.computeIfAbsent(
                                 array, unused -> "juno_int_array" + intArraySymbols.size());
+                        case IrInstruction.StringConst constant -> stringLiteralSymbols.computeIfAbsent(
+                                constant.value(), unused -> "juno_str" + stringLiteralSymbols.size());
                         case IrInstruction.IntrinsicCall call -> {
                             for (String literal : call.literalArguments()) {
                                 stringLiteralSymbols.computeIfAbsent(literal,
@@ -392,6 +396,10 @@ public final class CortexM4AsmBackend {
         switch (instruction) {
             case IrInstruction.Const constant -> {
                 emitLoadImmediate(output, "r0", constant.value());
+                store(output, frame, "r0", constant.target());
+            }
+            case IrInstruction.StringConst constant -> {
+                output.append("    ldr r0, =").append(stringLiteralSymbols.get(constant.value())).append('\n');
                 store(output, frame, "r0", constant.target());
             }
             case IrInstruction.LoadLocal load -> {
@@ -820,6 +828,32 @@ public final class CortexM4AsmBackend {
                 load(output, frame, "r0", call.arguments().get(0));
                 output.append("    bl juno_serial_println\n");
             }
+            case STRING_VALUE_OF_INT -> {
+                usesRuntimeStrings = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl juno_string_value_of_int\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case STRING_VALUE_OF_DOUBLE -> {
+                usesRuntimeStrings = true;
+                emitShimCall(output, frame, "juno_string_value_of_double",
+                        List.of(new WordSource.FromValueLow(call.arguments().get(0)),
+                                new WordSource.FromValueHigh(call.arguments().get(0))));
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case STRING_LENGTH -> {
+                usesRuntimeStrings = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                output.append("    bl juno_string_length\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case STRING_CHAR_AT -> {
+                usesRuntimeStrings = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                load(output, frame, "r1", call.arguments().get(0));
+                output.append("    bl juno_string_char_at\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
             case SERIAL_PRINT_STRING -> {
                 output.append("    ldr r0, =")
                         .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
@@ -945,6 +979,16 @@ public final class CortexM4AsmBackend {
                                 new WordSource.StringAddress(call.literalArguments().get(0)),
                                 new WordSource.FromValue(call.arguments().get(2)),
                                 new WordSource.FromValue(call.arguments().get(3))));
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case JSON_GET_STRING_VALUE -> {
+                usesJson = true;
+                usesRuntimeStrings = true;
+                usesJsonStringValue = true;
+                emitShimCall(output, frame, "juno_json_get_string_value",
+                        List.of(new WordSource.FromValue(call.arguments().get(0)),
+                                new WordSource.FromValue(call.arguments().get(1)),
+                                new WordSource.StringAddress(call.literalArguments().get(0))));
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
             default -> throw unsupported("intrinsic " + call.intrinsic());
@@ -1233,7 +1277,7 @@ public final class CortexM4AsmBackend {
         if (usesHttps) {
             shim.append("#include <WiFiSSLClient.h>\n");
         }
-        if (usesHttp || usesHttps || usesJson) {
+        if (usesHttp || usesHttps || usesJson || usesRuntimeStrings) {
             shim.append("#include <string.h>\n");
         }
         if (usesFloat || usesDouble || usesJson) {
@@ -1298,6 +1342,9 @@ public final class CortexM4AsmBackend {
                   Serial.println(value);
                 }
                 """.replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES)));
+        if (usesRuntimeStrings) {
+            shim.append(runtimeStringHelpers());
+        }
         if (usesMouse) {
             shim.append("""
 
@@ -1333,6 +1380,9 @@ public final class CortexM4AsmBackend {
         }
         if (usesJson) {
             shim.append(jsonHelpers());
+        }
+        if (usesJsonStringValue) {
+            shim.append(jsonStringValueHelpers());
         }
         if (usesHttp || usesHttps) {
             shim.append(httpHelpers());
@@ -1390,6 +1440,93 @@ public final class CortexM4AsmBackend {
                   return (a > b) - (a < b);
                 }
 
+                """;
+    }
+
+    private String runtimeStringHelpers() {
+        return """
+
+                static constexpr uint32_t JUNO_STRING_SLOT_COUNT = 8;
+                static constexpr uint32_t JUNO_STRING_SLOT_SIZE = 20;
+                static char juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE];
+                static uint32_t juno_string_slot_cursor = 0;
+
+                static const char* juno_string_pointer(int32_t value) {
+                  if (value == 0) juno_panic();
+                  return reinterpret_cast<const char*>(static_cast<intptr_t>(value));
+                }
+
+                extern "C" int32_t juno_string_value_of_int(int32_t value) {
+                  char* buffer = juno_string_slots[juno_string_slot_cursor];
+                  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+                  char reversed[JUNO_STRING_SLOT_SIZE];
+                  uint32_t magnitude = value < 0
+                      ? 0u - static_cast<uint32_t>(value)
+                      : static_cast<uint32_t>(value);
+                  uint32_t count = 0;
+                  do {
+                    reversed[count++] = static_cast<char>('0' + magnitude % 10u);
+                    magnitude /= 10u;
+                  } while (magnitude != 0u);
+                  uint32_t index = 0;
+                  if (value < 0) buffer[index++] = '-';
+                  while (count > 0u) buffer[index++] = reversed[--count];
+                  buffer[index] = '\0';
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
+                }
+
+                // Fixed-precision formatting, not Java's shortest-round-trip Double.toString: the
+                // fractional part is truncated toward zero at 6 digits (trailing zeros trimmed), so a
+                // value whose exact binary representation sits just below the intended decimal (e.g.
+                // 21.2 stored as 21.199999999999999...) can format one unit low in the last digit.
+                extern "C" int32_t juno_string_value_of_double(double value) {
+                  if (isnan(value) || isinf(value)) juno_panic();
+                  bool negative = value < 0.0;
+                  double magnitude = negative ? -value : value;
+                  if (magnitude >= 1.0e9) juno_panic();
+                  char* buffer = juno_string_slots[juno_string_slot_cursor];
+                  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+                  auto integerPart = static_cast<uint32_t>(magnitude);
+                  static constexpr uint32_t FRACTION_DIGITS = 6;
+                  static constexpr uint32_t FRACTION_SCALE = 1000000u;
+                  double fraction = magnitude - static_cast<double>(integerPart);
+                  auto fractionDigits = static_cast<uint32_t>(fraction * static_cast<double>(FRACTION_SCALE));
+                  if (fractionDigits >= FRACTION_SCALE) fractionDigits = FRACTION_SCALE - 1u;
+                  char reversed[JUNO_STRING_SLOT_SIZE];
+                  uint32_t count = 0;
+                  uint32_t integerDigits = integerPart;
+                  do {
+                    reversed[count++] = static_cast<char>('0' + integerDigits % 10u);
+                    integerDigits /= 10u;
+                  } while (integerDigits != 0u);
+                  uint32_t index = 0;
+                  if (negative) buffer[index++] = '-';
+                  while (count > 0u) buffer[index++] = reversed[--count];
+                  if (fractionDigits != 0u) {
+                    char fractionText[FRACTION_DIGITS];
+                    for (uint32_t i = FRACTION_DIGITS; i > 0u; --i) {
+                      fractionText[i - 1u] = static_cast<char>('0' + fractionDigits % 10u);
+                      fractionDigits /= 10u;
+                    }
+                    uint32_t fractionLength = FRACTION_DIGITS;
+                    while (fractionLength > 1u && fractionText[fractionLength - 1u] == '0') fractionLength--;
+                    buffer[index++] = '.';
+                    for (uint32_t i = 0; i < fractionLength; ++i) buffer[index++] = fractionText[i];
+                  }
+                  buffer[index] = '\0';
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
+                }
+
+                extern "C" int32_t juno_string_length(int32_t value) {
+                  return static_cast<int32_t>(strlen(juno_string_pointer(value)));
+                }
+
+                extern "C" int32_t juno_string_char_at(int32_t value, int32_t index) {
+                  const char* text = juno_string_pointer(value);
+                  int32_t length = static_cast<int32_t>(strlen(text));
+                  if (index < 0 || index >= length) juno_panic();
+                  return static_cast<uint8_t>(text[index]);
+                }
                 """;
     }
 
@@ -1923,6 +2060,42 @@ public final class CortexM4AsmBackend {
                     if (p < end && *p == ',') { p++; juno_json_skip_space(&p, end); }
                   }
                   return size;
+                }
+
+                """;
+    }
+
+    /**
+     * {@code Json.getString(byte[], int, String)}'s shim — separate from {@link #jsonHelpers()}
+     * since it needs the runtime-string pool ({@link #runtimeStringHelpers()}), only guaranteed
+     * present when {@code JSON_GET_STRING_VALUE} is itself the reason {@code usesRuntimeStrings} is
+     * true (a program using only e.g. {@code Json.getInt} never gets that pool at all).
+     */
+    private String jsonStringValueHelpers() {
+        return """
+
+                // Any scalar's raw JSON text, not just JSON strings — a JSON string's surrounding
+                // quotes are stripped, but nothing is escape-decoded (unlike juno_json_get_string),
+                // since a number/boolean/null literal never has escapes to begin with.
+                extern "C" int32_t juno_json_get_string_value(const uint8_t* buffer, int32_t length, const char* key) {
+                  const char* start;
+                  const char* end;
+                  if (juno_json_locate(buffer, length, key, &start, &end) != 1 || start >= end
+                      || *start == '{' || *start == '[') return 0;
+                  const char* contentStart = start;
+                  const char* contentEnd = end;
+                  if (*start == '"') {
+                    if (end - start < 2) return 0;
+                    contentStart = start + 1;
+                    contentEnd = end - 1;
+                  }
+                  int32_t contentLength = static_cast<int32_t>(contentEnd - contentStart);
+                  if (contentLength < 0 || static_cast<uint32_t>(contentLength) >= JUNO_STRING_SLOT_SIZE) return 0;
+                  char* slot = juno_string_slots[juno_string_slot_cursor];
+                  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+                  for (int32_t i = 0; i < contentLength; i++) slot[i] = contentStart[i];
+                  slot[contentLength] = '\\0';
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(slot));
                 }
 
                 """;

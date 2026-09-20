@@ -11,6 +11,7 @@ final class IrValues {
     static List<Value> of(IrInstruction instruction) {
         return switch (instruction) {
             case IrInstruction.Const constant -> List.of(constant.target());
+            case IrInstruction.StringConst constant -> List.of(constant.target());
             case IrInstruction.FloatConst constant -> List.of(constant.target());
             case IrInstruction.DoubleConst constant -> List.of(constant.target());
             case IrInstruction.LoadLocal load -> List.of(load.target());

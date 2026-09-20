@@ -398,8 +398,9 @@ class CortexM4AsmBackendTest {
     }
 
     /**
-     * Mirrors {@code MadridWeather}'s exact {@code (int) Json.getDouble(...)} pattern: a JSON double
-     * field read, immediately truncated to int (see {@code juno-examples/src/main/java/MadridWeather.java}).
+     * Mirrors {@code WeatherClient}'s exact {@code (int) Json.getDouble(...)} pattern: a JSON double
+     * field read, immediately truncated to int (see
+     * {@code juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/WeatherClient.java}).
      */
     @Test
     void lowersJsonGetDoubleThroughDoubleToIntLikeMadridWeather() {
@@ -453,5 +454,104 @@ class CortexM4AsmBackendTest {
         assertThat(result2.runtimeShim().contains("extern \"C\" int32_t juno_https_get")).isTrue();
         // HTTP (plain) must not be pulled in by an HTTPS-only program.
         assertThat(result2.runtimeShim().contains("juno_http_get")).isFalse();
+    }
+
+    @Test
+    void lowersRuntimeStringOperationsThroughTheShim() {
+        MethodRef entryPoint = new MethodRef("demo/RuntimeText", "main", "()I");
+        Value number = Value.int32(0);
+        Value text = Value.int32(1);
+        Value length = Value.int32(2);
+        Value index = Value.int32(3);
+        Value character = Value.int32(4);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(number, -12),
+                new IrInstruction.IntrinsicCall(Optional.of(text), Intrinsic.STRING_VALUE_OF_INT,
+                        Optional.empty(), List.of(number), List.of()),
+                new IrInstruction.IntrinsicCall(Optional.of(length), Intrinsic.STRING_LENGTH,
+                        Optional.of(text), List.of(), List.of()),
+                new IrInstruction.Const(index, 0),
+                new IrInstruction.IntrinsicCall(Optional.of(character), Intrinsic.STRING_CHAR_AT,
+                        Optional.of(text), List.of(index), List.of())),
+                new IrTerminator.Return(Optional.of(length)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 5, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+                .generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(generated.assembly()).contains("bl juno_string_value_of_int");
+        assertThat(generated.assembly()).contains("bl juno_string_length");
+        assertThat(generated.assembly()).contains("bl juno_string_char_at");
+        assertThat(generated.runtimeShim()).contains("extern \"C\" int32_t juno_string_value_of_int");
+    }
+
+    /** Same JSON-double read as {@code WeatherClient}, but formatted with its decimal part kept. */
+    @Test
+    void lowersStringValueOfDoubleThroughTheShimAsAWholeDoubleArgument() {
+        MethodRef entryPoint = new MethodRef("demo/WeatherDecimalAsm", "main", "()I");
+        Value buffer = Value.int32(0);
+        Value length = Value.int32(1);
+        Value doubleResult = Value.float64(2);
+        Value text = Value.int32(3);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(buffer, 0),
+                new IrInstruction.Const(length, 10),
+                new IrInstruction.IntrinsicCall(Optional.of(doubleResult), Intrinsic.JSON_GET_DOUBLE,
+                        Optional.empty(), List.of(buffer, length), List.of("current.temperature_2m")),
+                new IrInstruction.IntrinsicCall(Optional.of(text), Intrinsic.STRING_VALUE_OF_DOUBLE,
+                        Optional.empty(), List.of(doubleResult), List.of())),
+                new IrTerminator.Return(Optional.of(text)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+                .generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(generated.assembly()).contains("bl juno_string_value_of_double");
+        assertThat(generated.runtimeShim()).contains("extern \"C\" int32_t juno_string_value_of_double(double value)");
+    }
+
+    @Test
+    void lowersJsonGetStringValueThroughTheShimAsARuntimeString() {
+        MethodRef entryPoint = new MethodRef("demo/JsonStringValueAsm", "main", "()I");
+        Value buffer = Value.int32(0);
+        Value length = Value.int32(1);
+        Value text = Value.int32(2);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(buffer, 0),
+                new IrInstruction.Const(length, 10),
+                new IrInstruction.IntrinsicCall(Optional.of(text), Intrinsic.JSON_GET_STRING_VALUE,
+                        Optional.empty(), List.of(buffer, length), List.of("current.temperature_2m"))),
+                new IrTerminator.Return(Optional.of(text)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+                .generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(generated.assembly()).contains("bl juno_json_get_string_value");
+        assertThat(generated.runtimeShim()).contains("extern \"C\" int32_t juno_json_get_string_value(");
+        assertThat(generated.runtimeShim()).contains("JUNO_STRING_SLOT_SIZE = 20");
+    }
+
+    /** Mirrors {@link io.github.jabrena.juno.JunoCompilerTest}'s same-named regression test for the C++ backend. */
+    @Test
+    void omitsJsonGetStringValueHelperWhenOnlyOtherJsonIntrinsicsAreUsed() {
+        MethodRef entryPoint = new MethodRef("demo/JsonIntOnlyAsm", "main", "()I");
+        Value buffer = Value.int32(0);
+        Value length = Value.int32(1);
+        Value temperature = Value.int32(2);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(buffer, 0),
+                new IrInstruction.Const(length, 10),
+                new IrInstruction.IntrinsicCall(Optional.of(temperature), Intrinsic.JSON_GET_INT,
+                        Optional.empty(), List.of(buffer, length), List.of("data.sensor.temp"))),
+                new IrTerminator.Return(Optional.of(temperature)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+                .generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(generated.assembly()).contains("bl juno_json_get_int");
+        assertThat(generated.runtimeShim()).doesNotContain("juno_json_get_string_value");
+        assertThat(generated.runtimeShim()).doesNotContain("JUNO_STRING_SLOT_SIZE");
     }
 }

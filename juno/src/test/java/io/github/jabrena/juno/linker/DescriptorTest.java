@@ -14,5 +14,6 @@ class DescriptorTest {
         assertThat(Descriptor.parse("(J)F").usesOnlyV01Types()).isTrue();
         assertThat(Descriptor.parse("(F)J").usesOnlyV01Types()).isTrue();
         assertThat(Descriptor.parse("([JI)[J").usesOnlyV01Types()).isTrue();
+        assertThat(Descriptor.parse("(Ljava/lang/String;)Ljava/lang/String;").usesOnlyV01Types()).isTrue();
     }
 }

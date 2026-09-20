@@ -47,6 +47,11 @@ Supported today:
   resolvable instance calls. Objects use a fixed 8 KiB zero-filled bump arena with no reclamation; code
   must not allocate indefinitely inside loops.
 - direct static calls with closed-world reachability; unused methods are omitted
+- runtime {@code String} references in locals, parameters, and return values, with string literals,
+  {@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Integer conversions use eight
+  rotating 12-byte UTF-8 slots instead of the arena, so conversion-heavy loops remain allocation-free;
+  a converted value must be consumed before eight newer conversions overwrite its slot. APIs documented
+  as compile-time-string-only (including networking paths/bodies and LED text unrolling) retain that rule.
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - UNO R4 WiFi networking through allocation-free `Wifi`, plain HTTP, and certificate-validated HTTPS
   `GET`, `POST`, `DELETE`, `PATCH`, and RFC 10008 `QUERY` intrinsics; request bodies use compile-time
@@ -91,7 +96,7 @@ Two board examples make the distinction observable:
 Not yet supported:
 
 - inheritance/polymorphic dispatch, interfaces, object arrays with polymorphism, or garbage collection
-- strings, general exceptions, threads,
+- general string construction/concatenation and other {@code String} methods, general exceptions, threads,
   reflection, or dynamic loading
 - enum string methods (`.name()`, `.toString()`), `valueOf()`, and enum state beyond one directly
   assigned, compile-time integer value per constant (including mutable fields and per-constant class bodies)

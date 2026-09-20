@@ -47,6 +47,7 @@ public record Descriptor(List<String> parameters, String returnType) {
         return parameters.stream().allMatch(type -> isSupportedParameterType(type, referenceClassNames))
                 && (returnsVoid() || isIntegerLike(returnType) || isLong(returnType) || isFloat(returnType)
                         || isDouble(returnType)
+                        || isString(returnType)
                         || isSupportedArrayType(returnType, referenceClassNames)
                         || isReferenceType(returnType, referenceClassNames));
     }
@@ -67,7 +68,7 @@ public record Descriptor(List<String> parameters, String returnType) {
         return type.equals("D");
     }
 
-    /** Only {@code java.lang.String} itself; Juno has no heap, so a string is only ever a compile-time literal. */
+    /** Only {@code java.lang.String} itself; Juno represents it as a bounded runtime UTF-8 reference. */
     public static boolean isString(String type) {
         return type.equals("Ljava/lang/String;");
     }
@@ -106,6 +107,7 @@ public record Descriptor(List<String> parameters, String returnType) {
 
     private static boolean isSupportedParameterType(String type, Set<String> referenceClassNames) {
         return isIntegerLike(type) || isLong(type) || isFloat(type) || isDouble(type)
+                || isString(type)
                 || isSupportedArrayType(type, referenceClassNames)
                 || isReferenceType(type, referenceClassNames);
     }

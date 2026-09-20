@@ -691,6 +691,17 @@ public final class BytecodeToIr {
                         Terminator.Branch branch = (Terminator.Branch) block.terminator();
                         terminator = new IrTerminator.Branch(condition, branch.trueTarget(), branch.falseTarget());
                     }
+                    case 198, 199 -> {
+                        Popped reference = pop(instructions, stackBase, --depth, nextValueId, tracking);
+                        nextValueId = reference.nextValueId();
+                        Value nullValue = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.Const(nullValue, 0));
+                        Value condition = Value.int32(nextValueId++);
+                        instructions.add(new IrInstruction.Compare(
+                                condition, conditionOf(opcode, 198), reference.value(), nullValue));
+                        Terminator.Branch branch = (Terminator.Branch) block.terminator();
+                        terminator = new IrTerminator.Branch(condition, branch.trueTarget(), branch.falseTarget());
+                    }
                     case 167 -> terminator = new IrTerminator.Jump(((Terminator.Jump) block.terminator()).target());
                     case 170, 171 -> {
                         Popped selector = pop(instructions, stackBase, --depth, nextValueId, tracking);
@@ -1108,7 +1119,7 @@ public final class BytecodeToIr {
             case 133, 135, 140, 141, 187 -> 1;
             case 9, 10, 14, 15, 20, 22, 24, 30, 31, 32, 33, 38, 39, 40, 41 -> 2;
             case 54, 56, 58, 59, 60, 61, 62, 67, 68, 69, 70, 75, 76, 77, 78,
-                    87, 153, 154, 155, 156, 157, 158, 170, 171, 172, 174, 176, 191 -> -1;
+                    87, 153, 154, 155, 156, 157, 158, 170, 171, 172, 174, 176, 191, 198, 199 -> -1;
             case 46, 48, 50, 51, 52, 53 -> -1;
             case 47, 49 -> 0;
             case 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 120, 122, 124, 126, 128, 130,
@@ -1147,6 +1158,7 @@ public final class BytecodeToIr {
                                int stackBase, int depth, int nextValueId, ValueTracking tracking) {
         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
         Descriptor descriptor = Descriptor.parse(called.descriptor());
+        Optional<Intrinsic> intrinsic = IntrinsicRegistry.resolve(called);
         Value[] arguments = new Value[descriptor.parameters().size()];
         String[] literalStrings = new String[descriptor.parameters().size()];
         for (int index = arguments.length - 1; index >= 0; index--) {
@@ -1161,13 +1173,17 @@ public final class BytecodeToIr {
             } else if (Descriptor.isString(parameterType)) {
                 Popped popped = pop(instructions, stackBase, depth, nextValueId, tracking);
                 nextValueId = popped.nextValueId();
-                String literal = tracking.knownString(popped.value());
-                if (literal == null) {
-                    throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
-                            + instruction.offset() + ": " + called.displayName() + " requires a compile-time "
-                            + "string literal argument (Juno has no heap for a runtime String value)");
+                if (intrinsic.isPresent()) {
+                    String literal = tracking.knownString(popped.value());
+                    if (literal == null) {
+                        throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                                + instruction.offset() + ": " + called.displayName() + " requires a compile-time "
+                                + "string literal argument");
+                    }
+                    literalStrings[index] = literal;
+                } else {
+                    arguments[index] = popped.value();
                 }
-                literalStrings[index] = literal;
             } else {
                 Popped popped = Descriptor.isDouble(parameterType)
                         ? popDouble(instructions, stackBase, depth, nextValueId, tracking)
@@ -1205,7 +1221,6 @@ public final class BytecodeToIr {
                             : Value.int32(nextValueId++);
         }
 
-        Optional<Intrinsic> intrinsic = IntrinsicRegistry.resolve(called);
         if (intrinsic.isPresent()) {
             instructions.add(new IrInstruction.IntrinsicCall(
                     Optional.ofNullable(target), intrinsic.get(), receiver, numericArguments, literalArguments));
@@ -1708,15 +1723,13 @@ public final class BytecodeToIr {
     }
 
     /**
-     * A string literal is never actually allocated (no heap): the pushed {@link Value} carries a dummy 0, and
-     * the literal text is tracked purely at compile time via {@link ValueTracking#markKnownString}, the same
-     * way a record instance's field values are tracked instead of a real object (see
-     * {@link #lowerRecordConstruction}).
+     * A string literal points directly at immutable generated storage while its text remains tracked at
+     * compile time for intrinsics that require literal arguments.
      */
     private int pushStringConst(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
                                  String value, ValueTracking tracking) {
         Value target = Value.int32(nextValueId);
-        instructions.add(new IrInstruction.Const(target, 0));
+        instructions.add(new IrInstruction.StringConst(target, value));
         instructions.add(new IrInstruction.StoreLocal(stackBase + depth, target));
         tracking.markKnownString(target, value);
         tracking.markStackSlotString(stackBase + depth, value);

@@ -12,6 +12,10 @@ public sealed interface IrInstruction {
     record Const(Value target, int value) implements IrInstruction {
     }
 
+    /** A UTF-8 string literal materialized as a null-terminated runtime string reference. */
+    record StringConst(Value target, String value) implements IrInstruction {
+    }
+
     record FloatConst(Value target, float value) implements IrInstruction {
     }
 

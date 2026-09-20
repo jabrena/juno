@@ -28,6 +28,14 @@ public final class IntrinsicRegistry {
                     Intrinsic.CLOCK_MILLIS),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/Clock", "micros", "()I"),
                     Intrinsic.CLOCK_MICROS),
+            Map.entry(new MethodRef("java/lang/String", "valueOf", "(I)Ljava/lang/String;"),
+                    Intrinsic.STRING_VALUE_OF_INT),
+            Map.entry(new MethodRef("java/lang/String", "valueOf", "(D)Ljava/lang/String;"),
+                    Intrinsic.STRING_VALUE_OF_DOUBLE),
+            Map.entry(new MethodRef("java/lang/String", "length", "()I"),
+                    Intrinsic.STRING_LENGTH),
+            Map.entry(new MethodRef("java/lang/String", "charAt", "(I)C"),
+                    Intrinsic.STRING_CHAR_AT),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/DigitalOutput", "of",
                     "(I)Lio/github/jabrena/juno/api/io/DigitalOutput;"), Intrinsic.DIGITAL_OUTPUT_OF),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/DigitalOutput", "high", "()V"),
@@ -94,6 +102,8 @@ public final class IntrinsicRegistry {
                     "([BILjava/lang/String;)Z"), Intrinsic.JSON_GET_BOOL),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "getString",
                     "([BILjava/lang/String;[BI)I"), Intrinsic.JSON_GET_STRING),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "getString",
+                    "([BILjava/lang/String;)Ljava/lang/String;"), Intrinsic.JSON_GET_STRING_VALUE),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "arraySize",
                     "([BILjava/lang/String;)I"), Intrinsic.JSON_ARRAY_SIZE));
 
