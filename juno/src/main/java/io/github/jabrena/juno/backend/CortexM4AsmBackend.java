@@ -31,10 +31,10 @@ import java.util.Optional;
  * arguments beyond the first four), with branches, {@code switch}, {@code int} arithmetic/comparisons,
  * fixed-size arrays, arena-allocated objects with fields, mutable static fields, GPIO/delay,
  * {@code LedMatrix}, {@code Serial}, {@code Mouse}, {@code Wifi}, {@code HttpClient}/{@code HttpsClient},
- * {@code Json}, and {@code long}/{@code float}/{@code double} support. Calls Juno can't statically
- * resolve, and a handful of instruction kinds with no codegen yet ({@link IrInstruction.IntArrayConst},
- * used for enum switch maps), fail loudly with {@link CompileException} rather than emitting code that
- * looks plausible but was never checked.
+ * {@code Json}, compiler-generated constant arrays used by enums, and
+ * {@code long}/{@code float}/{@code double} support. Calls Juno can't statically resolve, and
+ * instruction kinds with no codegen yet fail loudly with {@link CompileException} rather than emitting
+ * code that looks plausible but was never checked.
  *
  * <h2>{@code long}/{@code float}/{@code double}</h2>
  * The RA4M1 (UNO R4's Cortex-M4) has no hardware FPU, and 64-bit values don't fit a single register,
@@ -103,6 +103,7 @@ public final class CortexM4AsmBackend {
     private final Map<FieldRef, Integer> fieldOffsets = new LinkedHashMap<>();
     private final Map<FieldRef, String> staticSymbols = new LinkedHashMap<>();
     private final Map<String, String> stringLiteralSymbols = new LinkedHashMap<>();
+    private final Map<IrInstruction.IntArrayConst, String> intArraySymbols = new LinkedHashMap<>();
     private MethodRef entryPoint;
     private String clinitLabel;
     private int labelCounter;
@@ -136,6 +137,7 @@ public final class CortexM4AsmBackend {
                 .append("    .thumb\n");
         emitStaticStorage(output);
         emitStringLiteralStorage(output);
+        emitIntArrayStorage(output);
         output.append("    .text\n");
         for (IrMethod method : program.methods()) {
             emitMethod(output, method);
@@ -168,6 +170,8 @@ public final class CortexM4AsmBackend {
                                 load.field(), field -> "juno_static_" + sanitize(field.displayName()));
                         case IrInstruction.StoreStatic store -> staticSymbols.computeIfAbsent(
                                 store.field(), field -> "juno_static_" + sanitize(field.displayName()));
+                        case IrInstruction.IntArrayConst array -> intArraySymbols.computeIfAbsent(
+                                array, unused -> "juno_int_array" + intArraySymbols.size());
                         case IrInstruction.IntrinsicCall call -> {
                             for (String literal : call.literalArguments()) {
                                 stringLiteralSymbols.computeIfAbsent(literal,
@@ -218,6 +222,27 @@ public final class CortexM4AsmBackend {
         for (Map.Entry<String, String> entry : stringLiteralSymbols.entrySet()) {
             output.append(entry.getValue()).append(":\n")
                     .append("    .asciz \"").append(asmStringLiteral(entry.getKey())).append("\"\n");
+        }
+    }
+
+    /** Emits compiler-created immutable integer arrays used by enum values and switch maps. */
+    private void emitIntArrayStorage(StringBuilder output) {
+        if (intArraySymbols.isEmpty()) {
+            return;
+        }
+        output.append("    .section .rodata\n")
+                .append("    .align 2\n");
+        for (Map.Entry<IrInstruction.IntArrayConst, String> entry : intArraySymbols.entrySet()) {
+            output.append(entry.getValue()).append(":\n")
+                    .append("    .word ");
+            List<Integer> values = entry.getKey().values();
+            for (int index = 0; index < values.size(); index++) {
+                if (index > 0) {
+                    output.append(", ");
+                }
+                output.append(values.get(index));
+            }
+            output.append('\n');
         }
     }
 
@@ -431,6 +456,10 @@ public final class CortexM4AsmBackend {
                 load(output, frame, "r0", storeStatic.value());
                 output.append("    ldr r1, =").append(staticSymbols.get(storeStatic.field())).append('\n')
                         .append("    str r0, [r1]\n");
+            }
+            case IrInstruction.IntArrayConst array -> {
+                output.append("    ldr r0, =").append(intArraySymbols.get(array)).append('\n');
+                store(output, frame, "r0", array.target());
             }
             case IrInstruction.LongConst constant -> {
                 emitLoadImmediate(output, "r0", (int) constant.value());

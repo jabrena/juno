@@ -38,11 +38,11 @@ From the repository root:
 ./mvnw clean package
 ```
 
-This builds the `juno` module's compiler jar (`juno/target/juno-0.1.0-SNAPSHOT.jar`), the
-`juno-api` module's hardware API classes (`juno-api/target/classes`), and compiles every program
-under `juno-examples/src/main/java` (`juno-examples/target/classes`). Every example below reuses
-the same classpath, `juno-examples/target/classes:juno-api/target/classes`, no matter which Juno
-API it uses.
+This builds the `juno` module's compiler jar and hardware API classes together
+(`juno/target/juno-0.1.0-SNAPSHOT.jar`, `juno/target/classes`), and compiles every program under
+`juno-examples/src/main/java` (`juno-examples/target/classes`). Every example below reuses the
+same classpath, `juno-examples/target/classes:juno/target/classes`, no matter which Juno API it
+uses.
 
 ## Compile and upload a sketch
 
@@ -51,7 +51,7 @@ Generate the `.ino` sketch for a given example's main class, then hand it to `ar
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main <ExampleClassName> \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+  --classpath juno-examples/target/classes:juno/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/<ExampleClassName>
 arduino-cli upload \
@@ -61,15 +61,14 @@ arduino-cli upload \
 ```
 
 The generated sketch is `build/juno/<ExampleClassName>/<ExampleClassName>.ino`. Replace
-`/dev/cu.YOUR_PORT` with the port reported by `arduino-cli board list`, and use
-`arduino:renesas_uno:minima` instead of `arduino:renesas_uno:unor4wifi` for the UNO R4 Minima.
+`/dev/cu.YOUR_PORT` with the port reported by `arduino-cli board list`.
 
 ### Example: Blink
 
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main io.github.jabrena.juno.api.Blink \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+  --classpath juno-examples/target/classes:juno/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/Blink
 arduino-cli upload \
@@ -82,14 +81,14 @@ The board's built-in LED (pin 13) should start blinking once a second.
 
 ### Example: SerialCounter (reading Serial output)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/io/SerialCounter.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/SerialCounter.java) counts
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java) counts
 up once a second over USB serial, so it doubles as a check that the toolchain and the board's
 serial port both work end to end:
 
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main io.github.jabrena.juno.api.io.SerialCounter \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+  --main io.github.jabrena.juno.api.io.usb.SerialCounter \
+  --classpath juno-examples/target/classes:juno/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/SerialCounter
 arduino-cli upload \
@@ -98,7 +97,8 @@ arduino-cli upload \
   build/juno/SerialCounter
 ```
 
-Then open the serial monitor at the same baud rate the sketch uses (`Serial.begin(9600)`):
+Then open the serial monitor at the same baud rate the sketch uses
+(`Serial.begin(BaudRate.BAUD_9600)`):
 
 ```bash
 arduino-cli monitor -p /dev/cu.YOUR_PORT -c baudrate=9600
@@ -115,12 +115,11 @@ supported hook into TinyUSB's `tud_task()`.
 
 Any of the `LedMatrix*` example classes (see the main README's Java API section for the full
 list) follow the same pattern as `Blink` above — just swap in the class name, e.g. `--main
-LedMatrixHeart`. They all draw on the UNO R4 WiFi's built-in 12x8 LED matrix and are not supported
-on the UNO R4 Minima, which lacks that matrix.
+LedMatrixHeart`. They all draw on the UNO R4 WiFi's built-in 12x8 LED matrix.
 
 ### Example: RatonLoco (USB mouse control)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java) is a
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java) is a
 port of [raton-loco.ino](https://github.com/jabrena/raton-loco/blob/main/arduino/raton-loco.ino):
 it blinks the built-in LED, then drags the host computer's mouse cursor in a square (right, down,
 left, up) over USB HID.
@@ -130,14 +129,14 @@ computer the board's USB cable is plugged into — unplug the board or re-flash 
 sketch to stop it.
 
 It needs the `Mouse` library (not bundled with the `arduino:renesas_uno` core) and a board with
-native USB (UNO R4 WiFi/Minima):
+native USB (UNO R4 WiFi):
 
 ```bash
 arduino-cli lib install Mouse
 
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main io.github.jabrena.juno.api.hid.RatonLoco \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+  --main io.github.jabrena.juno.api.io.hid.RatonLoco \
+  --classpath juno-examples/target/classes:juno/target/classes
 
 arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/RatonLoco
 arduino-cli upload \
@@ -169,7 +168,7 @@ how large or branchy a method is.
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar asm \
   --main io.github.jabrena.juno.api.Blink \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+  --classpath juno-examples/target/classes:juno/target/classes
 ```
 
 This writes `build/juno/Blink/Blink.S`. It isn't a sketch by itself: put it in its own sketch folder

@@ -38,7 +38,8 @@ Juno represents every symbolic IR register as `Value(id, JunoType)`. `JunoType` 
 Integer-only methods retain an `int32_t` local-slot array. A method containing `long`, `float`, or
 `double` values uses a typed `JunoSlot` union so the same JVM slot can safely hold different lanes at
 different points in the method.
-Array references remain 32-bit handles on Cortex-M4, enums are ordinals, and each half of Juno's split
+Array references remain 32-bit handles on Cortex-M4, enums are ordinals (with associated integer values
+stored in compiler-generated lookup tables), and each half of Juno's split
 `long` representation is 32 bits.
 
 ```cpp
@@ -75,7 +76,8 @@ vocabulary (`unsigned long`, `uint32_t`, `bool`, `int`). Juno's intrinsic loweri
 | `Gpio.analogRead(int pin)` → `int`         | `static_cast<int32_t>(analogRead(call_arg0))`          | Arduino's ADC reading (`int`, 0-1023 on UNO R4) fits `int32_t` unchanged |
 | `Delay.millis(int ms)`                     | `delay(static_cast<unsigned long>(call_arg0))`         | Arduino's `delay` takes `unsigned long`; Java has no unsigned types, so this is a reinterpreting cast |
 | `Clock.millis()` → `int`                   | `static_cast<int32_t>(millis())`                       | Arduino's `millis()` returns `unsigned long`, which wraps at ~49.7 days; reinterpreted as a signed `int32_t`, the same bit pattern reads as negative after ~24.8 days. Delta calculations like `millis() - start` still work (two's-complement wraparound), but the raw value itself is not always positive |
-| `Serial.begin(int baudRate)`               | `Serial.begin(static_cast<unsigned long>(call_arg0))`  | same unsigned/signed mismatch as `Delay.millis` |
+| `Serial.begin(BaudRate baudRate)`           | resolves the enum to an `int`, then calls `Serial.begin(static_cast<unsigned long>(call_arg0))` | type-safe convenience overload for the five common rates in `BaudRate` |
+| `Serial.begin(int baudRate)`                | `Serial.begin(static_cast<unsigned long>(call_arg0))`  | custom-rate escape hatch; same unsigned/signed mismatch as `Delay.millis` |
 | `Serial.println(int value)`                | `Serial.println(call_arg0)`                            | prints a signed decimal `int32_t`; there is no `String` overload because Juno has no `String` |
 | `LedMatrix.loadFrame(int, int, int)`       | `juno_led_matrix_load_frame(...)` → `const uint32_t frame[3]` | each Java `int` is reinterpreted bit-for-bit as `uint32_t` (a packed pixel bitmask, not a numeric value) |
 | `Mouse.move(int x, int y)`                 | `Mouse.move(static_cast<signed char>(call_arg0), static_cast<signed char>(call_arg1))` | Arduino's `Mouse.move` takes `signed char` (-128..127); each Java `int` is narrowed to its low 8 bits, sign-extended — out-of-range values wrap instead of clamping |
@@ -111,7 +113,7 @@ Juno supports typed `INT64`, `FLOAT32`, and `FLOAT64` boundary values in additio
 a call, field, or array boundary. Remaining exclusions include:
 
 - `String` — so no `Serial.print(String)`; only the `int` overloads exist, and multi-character
-  display (see [`LedCanvas`](../juno-api/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java))
+  display (see [`LedCanvas`](../juno/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java))
   works character-by-character with hand-encoded font tables instead of string data
 - polymorphic objects/inheritance and unbounded allocation. Final closed-world objects and records use
   one-slot handles into a fixed 8 KiB program-lifetime arena with no reclamation

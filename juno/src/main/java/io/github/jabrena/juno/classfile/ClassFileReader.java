@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public final class ClassFileReader {
     private static final int CLASS_FILE_MAGIC = 0xCAFEBABE;
-    private static final String BOARD_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/api/Board;";
+    private static final String BOARD_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Board;";
 
     public JavaClass read(byte[] bytes) {
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(bytes))) {

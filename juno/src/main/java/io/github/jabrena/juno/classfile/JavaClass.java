@@ -12,9 +12,10 @@ import java.util.Optional;
  * names in declaration order, which the JLS guarantees matches {@code Enum.ordinal()} assignment
  * regardless of custom constructors or per-constant class bodies (JLS 8.9.1: "the ordinal of an enum
  * constant is its position in its enum declaration, where the initial constant is assigned an ordinal of
- * zero"). Juno never constructs a real enum object; a constant is represented purely by this 0-based index
- * (see {@link io.github.jabrena.juno.lowering.BytecodeToIr}'s handling of {@code getstatic} on an enum
- * field).
+ * zero"). Juno never constructs a real enum object; a constant is represented purely by this 0-based
+ * index. A supported constructor-associated integer field is materialized as an immutable lookup table
+ * indexed by that ordinal (see {@link io.github.jabrena.juno.lowering.BytecodeToIr}'s handling of enum
+ * {@code getstatic} and {@code getfield} instructions).
  *
  * <p>A record class (superclass {@code java/lang/Record}) declares no instance fields beyond its
  * components (JLS 8.10), so every non-static field, in declaration order, is a record component; see

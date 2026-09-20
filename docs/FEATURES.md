@@ -37,7 +37,9 @@ Supported today:
 - `double` locals, static method parameters/results, fields, arrays, arithmetic, comparisons, numeric
   conversions, calls, and returns. Two JVM slots are preserved for every `double` local and parameter.
 - `enum` constants as plain 0-based ordinal `int`s, including `ordinal()`, `values()`, equality, method
-  parameters/results, and `switch`. Name/string operations and per-constant state remain unsupported.
+  parameters/results, and `switch`. An enum may associate one compile-time integer value with each
+  constant through a constructor and expose it through a simple field accessor; Juno emits an immutable
+  ordinal-indexed lookup rather than allocating enum objects.
 - records as arena objects, including parameters/results, canonical and compact constructors, custom
   accessors, and supported primitive/array/reference components. Generated `equals()`/`hashCode()`/
   `toString()` remain unsupported because they require `invokedynamic` and broader object/String support.
@@ -91,8 +93,8 @@ Not yet supported:
 - inheritance/polymorphic dispatch, interfaces, object arrays with polymorphism, or garbage collection
 - strings, general exceptions, threads,
   reflection, or dynamic loading
-- enum string methods (`.name()`, `.toString()`), `valueOf()`,
-  and enums with per-constant state (custom constructors/fields/abstract methods)
+- enum string methods (`.name()`, `.toString()`), `valueOf()`, and enum state beyond one directly
+  assigned, compile-time integer value per constant (including mutable fields and per-constant class bodies)
 - record `equals()`/`hashCode()`/`toString()` and other `invokedynamic`-based behavior
 - the desktop JDK class library
 

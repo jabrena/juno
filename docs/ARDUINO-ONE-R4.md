@@ -116,35 +116,26 @@ arduino-cli compile \
   build/juno/<ExampleClassName>
 ```
 
-Compile for the Minima variant:
-
-```bash
-arduino-cli compile \
-  --fqbn arduino:renesas_uno:minima \
-  build/juno/<ExampleClassName>
-```
-
 Uploading changes the firmware on a connected physical board. Find the port with
 `arduino-cli board list` and follow the upload procedure in [ARDUINO.md](ARDUINO.md).
 
 ## Juno compatibility
 
-The UNO R4 WiFi and Minima are Juno's primary targets. Juno generates portable Arduino C++ and the
-`arduino:renesas_uno` core compiles that sketch to native RA4M1 machine code. The entry-point class's
-`@Board` annotation (`io.github.jabrena.juno.api.Board`) selects which variant a program targets; a
-class with no `@Board` annotation targets the WiFi variant by default. `LedMatrix` is rejected at
-link time for a program annotated `@Board(ArduinoUnoR4Minima.class)`, since that variant has no
-onboard matrix.
+The UNO R4 WiFi is currently Juno's only target (the Minima is untested and not yet supported).
+Juno generates portable Arduino C++ and the `arduino:renesas_uno` core compiles that sketch to
+native RA4M1 machine code. The entry-point class's `@Board` annotation
+(`io.github.jabrena.juno.annotations.Board`) selects the target board; a class with no `@Board` annotation
+targets the WiFi variant by default.
 
-| Juno API or feature | R4 Minima | R4 WiFi | Notes |
-|---|---:|---:|---|
-| `Gpio` and `DigitalOutput` | Yes | Yes | Uses standard Arduino GPIO calls |
-| `Delay` and `Clock` | Yes | Yes | Uses Arduino delay and time functions |
-| `Serial` | Yes | Yes | Uses the board's USB serial support |
-| `Mouse` | Yes | Yes | Requires the Arduino `Mouse` library and native USB HID support |
-| `LedMatrix` | No | Yes | Requires the WiFi model's onboard 12x8 matrix |
-| Wi-Fi and Bluetooth | Not applicable | Not yet exposed | No Juno intrinsic API currently exists |
-| DAC, RTC and CAN | Not yet exposed | Not yet exposed | Hardware exists, but Juno has no intrinsic API for it yet |
+| Juno API or feature | R4 WiFi | Notes |
+|---|---:|---|
+| `Gpio` and `DigitalOutput` | Yes | Uses standard Arduino GPIO calls |
+| `Delay` and `Clock` | Yes | Uses Arduino delay and time functions |
+| `Serial` | Yes | Uses the board's USB serial support |
+| `Mouse` | Yes | Requires the Arduino `Mouse` library and native USB HID support |
+| `LedMatrix` | Yes | Requires the WiFi model's onboard 12x8 matrix |
+| Wi-Fi and Bluetooth | Yes (Wi-Fi) | Bluetooth has no Juno intrinsic API yet |
+| DAC, RTC and CAN | Not yet exposed | Hardware exists, but Juno has no intrinsic API for it yet |
 
 Juno currently represents supported Java values as 32-bit integers. That maps naturally to the
 RA4M1 and leaves substantially more SRAM than on the UNO R3 for generated locals and temporary

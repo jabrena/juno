@@ -2,12 +2,12 @@
 
 Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiFi. Programs can:
 
-- connect to a Wi-Fi network with [`Wifi`](../juno-api/src/main/java/io/github/jabrena/juno/api/net/Wifi.java);
+- connect to a Wi-Fi network with [`Wifi`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/Wifi.java);
 - send plain HTTP or TLS-protected HTTPS `GET`, `POST`, `DELETE`, `PATCH`, and `QUERY` requests with
-  [`HttpClient`](../juno-api/src/main/java/io/github/jabrena/juno/api/net/HttpClient.java) and
-  [`HttpsClient`](../juno-api/src/main/java/io/github/jabrena/juno/api/net/HttpsClient.java); and
+  [`HttpClient`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/HttpClient.java) and
+  [`HttpsClient`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/HttpsClient.java); and
 - extract typed values directly from JSON response bytes with
-  [`Json`](../juno-api/src/main/java/io/github/jabrena/juno/api/net/Json.java).
+  [`Json`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/Json.java).
 
 These APIs are compiler intrinsics. Java declares them as `native` methods, and Juno emits their
 Arduino C++ implementations only when the program uses them. Response and string buffers belong to
@@ -18,8 +18,8 @@ the caller; the implementation does not allocate a JSON document or create runti
 Wi-Fi, HTTP, and HTTPS require an UNO R4 WiFi entry point:
 
 ```java
-import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.api.Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class InternetExample {
@@ -27,9 +27,7 @@ public final class InternetExample {
 }
 ```
 
-The UNO R4 Minima has no onboard network module, so Juno rejects reachable `Wifi`, `HttpClient`, or
-`HttpsClient` calls for that board. `Json` itself is board-independent and can parse any local
-`byte[]` on either UNO R4 variant.
+`Json` itself does not touch the network and can parse any local `byte[]`.
 
 The current network layer deliberately stays small:
 
@@ -63,7 +61,7 @@ export JUNO_WIFI_PASSWORD='your-network-password'
 
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main InternetExample \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+  --classpath juno-examples/target/classes:juno/target/classes
 ```
 
 They can also be scoped to that single command:
@@ -73,7 +71,7 @@ JUNO_WIFI_SSID='your-network-name' \
 JUNO_WIFI_PASSWORD='your-network-password' \
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main InternetExample \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+  --classpath juno-examples/target/classes:juno/target/classes
 ```
 
 Juno evaluates `System.getenv("NAME")` on the development machine during compilation. The variable
@@ -386,13 +384,14 @@ This example connects with build-time credentials, requests Madrid's current tem
 the JSON type, and prints an integer temperature over USB serial once a minute:
 
 ```java
-import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.api.Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Serial;
-import io.github.jabrena.juno.api.net.HttpClient;
-import io.github.jabrena.juno.api.net.Json;
-import io.github.jabrena.juno.api.net.Wifi;
+import io.github.jabrena.juno.api.io.usb.BaudRate;
+import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.net.HttpClient;
+import io.github.jabrena.juno.api.io.net.Json;
+import io.github.jabrena.juno.api.io.net.Wifi;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class InternetExample {
@@ -401,7 +400,7 @@ public final class InternetExample {
             + "&current=temperature_2m";
 
     public static void main(String[] args) {
-        Serial.begin(115200);
+        Serial.begin(BaudRate.BAUD_115200);
         Wifi.begin(
                 System.getenv("JUNO_WIFI_SSID"),
                 System.getenv("JUNO_WIFI_PASSWORD"));
@@ -449,7 +448,7 @@ JUNO_WIFI_SSID='your-network-name' \
 JUNO_WIFI_PASSWORD='your-network-password' \
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main InternetExample \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+  --classpath juno-examples/target/classes:juno/target/classes
 
 arduino-cli compile \
   --fqbn arduino:renesas_uno:unor4wifi \
@@ -468,11 +467,11 @@ arduino-cli monitor \
 Uploading replaces the board's current firmware. Find the correct port first with
 `arduino-cli board list`. For the broader build/upload workflow, see
 [`docs/ARDUINO.md`](ARDUINO.md). The repository includes
-[`HttpMethods.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/net/HttpMethods.java), which verifies all supported
+[`HttpMethods.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/HttpMethods.java), which verifies all supported
 methods over plain HTTP,
-[`HttpsMethods.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/net/HttpsMethods.java), which repeats the checks with
+[`HttpsMethods.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/HttpsMethods.java), which repeats the checks with
 certificate-validated TLS, and
-[`MadridWeather.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/net/MadridWeather.java), which extracts live API
+[`MadridWeather.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/MadridWeather.java), which extracts live API
 data for display on the LED matrix.
 
 ## Troubleshooting

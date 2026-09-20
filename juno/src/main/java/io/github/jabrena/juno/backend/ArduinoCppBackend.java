@@ -1104,7 +1104,7 @@ public final class ArduinoCppBackend {
     }
 
     /**
-     * A bounded, non-allocating JSON scanner backing {@link io.github.jabrena.juno.api.net.Json}: reads
+     * A bounded, non-allocating JSON scanner backing {@link io.github.jabrena.juno.api.io.net.Json}: reads
      * fields directly out of a caller-owned byte buffer without ever building a parsed document. Every
      * function below takes explicit begin/end pointers instead of relying on NUL termination, since the
      * buffer is raw HTTP response bytes, not a C string.

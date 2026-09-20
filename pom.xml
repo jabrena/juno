@@ -8,11 +8,10 @@
     <artifactId>java-for-arduino</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Java for Arduino</name>
-    <description>A tiny Java AOT compiler for Arduino UNO R4 WiFi, and example programs for it</description>
+    <name>Java for Arduino One</name>
+    <description>A tiny Java AOT compiler for Arduino UNO R4 WiFi</description>
 
     <modules>
-        <module>juno-api</module>
         <module>juno</module>
         <module>juno-examples</module>
     </modules>

@@ -21,7 +21,7 @@ class GeneratedCppSyntaxTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.io.Gpio;
                 public final class FloatSmoke {
                     static float lastValue;
                     static double lastDouble;
@@ -75,7 +75,7 @@ class GeneratedCppSyntaxTest {
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.io.Gpio;
                 public final class Smoke {
                     static int mix(int value) { return (value << 2) ^ 7; }
                     public static void main(String[] args) {
@@ -348,10 +348,11 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.Serial;
+                import io.github.jabrena.juno.api.io.usb.BaudRate;
+                import io.github.jabrena.juno.api.io.usb.Serial;
                 public final class Counter {
                     public static void main(String[] args) {
-                        Serial.begin(9600);
+                        Serial.begin(BaudRate.BAUD_9600);
                         int counter = 0;
                         Serial.println(counter);
                         counter++;
@@ -380,7 +381,7 @@ class GeneratedCppSyntaxTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.io.Gpio;
                 public final class ArrayDemo {
                     static int sum(int[] values, int count) {
                         int total = 0;
@@ -471,8 +472,8 @@ class GeneratedCppSyntaxTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.DigitalOutput;
-                import io.github.jabrena.juno.api.Mouse;
+                import io.github.jabrena.juno.api.io.DigitalOutput;
+                import io.github.jabrena.juno.api.io.hid.Mouse;
                 public final class RatonLoco {
                     public static void main(String[] args) {
                         DigitalOutput led = DigitalOutput.of(13);
@@ -684,7 +685,7 @@ class GeneratedCppSyntaxTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.HttpClient;
+                import io.github.jabrena.juno.api.io.net.HttpClient;
                 public final class HttpMethodsSmoke {
                     public static void main(String[] args) {
                         byte[] response = new byte[64];
@@ -721,7 +722,7 @@ class GeneratedCppSyntaxTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.HttpsClient;
+                import io.github.jabrena.juno.api.io.net.HttpsClient;
                 public final class HttpsMethodsSmoke {
                     public static void main(String[] args) {
                         byte[] response = new byte[64];
@@ -759,7 +760,7 @@ class GeneratedCppSyntaxTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.Json;
+                import io.github.jabrena.juno.api.io.net.Json;
                 public final class JsonSmoke {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];
@@ -797,7 +798,7 @@ class GeneratedCppSyntaxTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.Json;
+                import io.github.jabrena.juno.api.io.net.Json;
                 public final class JsonRuntime {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[1];

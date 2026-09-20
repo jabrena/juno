@@ -54,7 +54,7 @@ class JunoCompilerTest {
     void compilesReachableMethodsBranchesAndHardwareIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.io.Gpio;
                 public final class Main {
                     public static int addTo(int limit) {
                         int value = 0;
@@ -84,7 +84,7 @@ class JunoCompilerTest {
     void erasesDigitalOutputObjectsToPinNumbers() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.DigitalOutput;
+                import io.github.jabrena.juno.api.io.DigitalOutput;
                 public final class ObjectStyleApi {
                     public static void main(String[] args) {
                         DigitalOutput led = DigitalOutput.of(13);
@@ -129,7 +129,7 @@ class JunoCompilerTest {
 
         String plainSource = """
                 package demo;
-                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.io.Gpio;
                 public final class Plain {
                     public static void main(String[] args) {
                         Gpio.pinMode(13, Gpio.OUTPUT);
@@ -172,10 +172,11 @@ class JunoCompilerTest {
     void lowersSerialIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Serial;
+                import io.github.jabrena.juno.api.io.usb.BaudRate;
+                import io.github.jabrena.juno.api.io.usb.Serial;
                 public final class Counter {
                     public static void main(String[] args) {
-                        Serial.begin(9600);
+                        Serial.begin(BaudRate.BAUD_9600);
                         Serial.print(1);
                         Serial.println(2);
                     }
@@ -191,13 +192,33 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersACustomSerialBaudRate() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class CustomBaudRate {
+                    public static void main(String[] args) {
+                        Serial.begin(74880);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.CustomBaudRate", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CustomBaudRate");
+
+        assertThat(generated.contains("Serial.begin(static_cast<unsigned long>(call_arg0))")).isTrue();
+        assertThat(generated.contains(" = 74880;")).isTrue();
+    }
+
+    @Test
     void lowersSerialStringLiteralIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Serial;
+                import io.github.jabrena.juno.api.io.usb.BaudRate;
+                import io.github.jabrena.juno.api.io.usb.Serial;
                 public final class Greeting {
                     public static void main(String[] args) {
-                        Serial.begin(9600);
+                        Serial.begin(BaudRate.BAUD_9600);
                         Serial.print("hello");
                         String message = "world";
                         Serial.println(message);
@@ -219,10 +240,11 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.Serial;
+                import io.github.jabrena.juno.api.io.usb.BaudRate;
+                import io.github.jabrena.juno.api.io.usb.Serial;
                 public final class DynamicGreeting {
                     public static void main(String[] args) {
-                        Serial.begin(9600);
+                        Serial.begin(BaudRate.BAUD_9600);
                         String message = Clock.millis() > 0 ? "yes" : "no";
                         Serial.println(message);
                     }
@@ -238,7 +260,7 @@ class JunoCompilerTest {
     void lowersWifiIntrinsicsWithLiteralCredentials() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.Wifi;
+                import io.github.jabrena.juno.api.io.net.Wifi;
                 public final class WifiConnect {
                     public static void main(String[] args) {
                         Wifi.begin("TestNetwork-SSID", "test-password-123");
@@ -263,7 +285,7 @@ class JunoCompilerTest {
         assertThat(pathValue != null && !pathValue.isEmpty()).as("test environment must define PATH").isTrue();
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.Wifi;
+                import io.github.jabrena.juno.api.io.net.Wifi;
                 public final class WifiConnectFromEnv {
                     public static void main(String[] args) {
                         Wifi.begin(System.getenv("PATH"), "password");
@@ -281,7 +303,7 @@ class JunoCompilerTest {
     void rejectsAnUnsetCompileTimeEnvironmentVariable() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.Wifi;
+                import io.github.jabrena.juno.api.io.net.Wifi;
                 public final class WifiConnectFromMissingEnv {
                     public static void main(String[] args) {
                         Wifi.begin(System.getenv("JUNO_TEST_WIFI_SSID_NOT_SET"), "password");
@@ -296,32 +318,10 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rejectsWifiUsageOnTheMinimaWhichHasNoOnboardModule() throws Exception {
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.api.ArduinoUnoR4Minima;
-                import io.github.jabrena.juno.api.Board;
-                import io.github.jabrena.juno.api.net.Wifi;
-                @Board(ArduinoUnoR4Minima.class)
-                public final class MinimaWithWifi {
-                    public static void main(String[] args) {
-                        Wifi.begin("network", "password");
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithWifi", source);
-
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithWifi"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Wifi")
-                .hasMessageContaining("Minima");
-    }
-
-    @Test
     void lowersHttpMethodIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.HttpClient;
+                import io.github.jabrena.juno.api.io.net.HttpClient;
                 public final class HttpDemo {
                     public static void main(String[] args) {
                         byte[] response = new byte[128];
@@ -364,7 +364,7 @@ class JunoCompilerTest {
     void lowersHttpsMethodIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.HttpsClient;
+                import io.github.jabrena.juno.api.io.net.HttpsClient;
                 public final class HttpsDemo {
                     public static void main(String[] args) {
                         byte[] response = new byte[128];
@@ -399,77 +399,10 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rejectsHttpUsageOnTheMinimaWhichHasNoOnboardModule() throws Exception {
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.api.ArduinoUnoR4Minima;
-                import io.github.jabrena.juno.api.Board;
-                import io.github.jabrena.juno.api.net.HttpClient;
-                @Board(ArduinoUnoR4Minima.class)
-                public final class MinimaWithHttp {
-                    public static void main(String[] args) {
-                        byte[] response = new byte[16];
-                        HttpClient.get("example.com", 80, "/", response, response.length);
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithHttp", source);
-
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithHttp"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Minima");
-    }
-
-    @Test
-    void rejectsQueryUsageOnTheMinimaWhichHasNoOnboardModule() throws Exception {
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.api.ArduinoUnoR4Minima;
-                import io.github.jabrena.juno.api.Board;
-                import io.github.jabrena.juno.api.net.HttpClient;
-                @Board(ArduinoUnoR4Minima.class)
-                public final class MinimaWithQuery {
-                    public static void main(String[] args) {
-                        byte[] response = new byte[16];
-                        HttpClient.query("example.com", 80, "/search", "{}",
-                                response, response.length);
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithQuery", source);
-
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithQuery"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Minima");
-    }
-
-    @Test
-    void rejectsHttpsUsageOnTheMinimaWhichHasNoOnboardModule() throws Exception {
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.api.ArduinoUnoR4Minima;
-                import io.github.jabrena.juno.api.Board;
-                import io.github.jabrena.juno.api.net.HttpsClient;
-                @Board(ArduinoUnoR4Minima.class)
-                public final class MinimaWithHttps {
-                    public static void main(String[] args) {
-                        byte[] response = new byte[16];
-                        HttpsClient.get("example.com", 443, "/", response, response.length);
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithHttps", source);
-
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithHttps"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Minima");
-    }
-
-    @Test
     void lowersJsonFieldExtractionIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.Json;
+                import io.github.jabrena.juno.api.io.net.Json;
                 public final class JsonDemo {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];
@@ -524,7 +457,7 @@ class JunoCompilerTest {
     void lowersMouseIntrinsicsAndOmitsUnusedHeader() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Mouse;
+                import io.github.jabrena.juno.api.io.hid.Mouse;
                 public final class Wiggle {
                     public static void main(String[] args) {
                         Mouse.begin();
@@ -543,7 +476,7 @@ class JunoCompilerTest {
 
         String plainSource = """
                 package demo;
-                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.io.Gpio;
                 public final class Plain {
                     public static void main(String[] args) {
                         Gpio.pinMode(13, Gpio.OUTPUT);
@@ -594,7 +527,7 @@ class JunoCompilerTest {
     void compileWithRequestReturnsAReportAlongsideTheGeneratedSource() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.io.Gpio;
                 import io.github.jabrena.juno.api.Delay;
                 public final class Reported {
                     static int addTo(int limit) {
@@ -731,7 +664,7 @@ class JunoCompilerTest {
     void supportsALocalArrayWithBoundsCheckedAccessAndAConstantFoldedLength() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.io.Gpio;
                 public final class ArrayDemo {
                     static int sum(int[] values, int count) {
                         int total = 0;
@@ -1053,7 +986,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.Gpio;
+                import io.github.jabrena.juno.api.io.Gpio;
                 public final class FloatMath {
                     public static void main(String[] args) {
                         float total = 0.0f;
@@ -1191,8 +1124,7 @@ class JunoCompilerTest {
         // Scoped deliberately to ordinal-int representation: an enum constant is never actually
         // constructed (no heap, no objects), it is just its 0-based declaration-order ordinal, a plain
         // int32_t. getstatic on a recognized enum constant resolves directly to that literal; ==/!=
-        // (if_acmpeq/if_acmpne) then works for free, since equal ordinals are equal ints. switch/.name()/
-        // .ordinal()/.values()/.valueOf()/per-constant fields and methods are explicitly out of scope.
+        // (if_acmpeq/if_acmpne) then works for free, since equal ordinals are equal ints.
         String enumSource = """
                 package demo;
                 public enum Direction {
@@ -1227,6 +1159,42 @@ class JunoCompilerTest {
         assertThat(generated.contains(" = 1;")).as("Direction.SOUTH must fold to its ordinal, 1").isTrue();
         assertThat(generated.contains(" = 0;")).as("Direction.NORTH must fold to its ordinal, 0").isTrue();
         assertThat(generated.contains("getstatic")).as("getstatic must be resolved away, not passed through").isFalse();
+    }
+
+    @Test
+    void supportsAnIntegerValueAssociatedWithEachEnumConstant() throws Exception {
+        String enumSource = """
+                package demo;
+                public enum Speed {
+                    NORMAL(9600), FAST(115200);
+                    private final int bitsPerSecond;
+                    Speed(int bitsPerSecond) {
+                        this.bitsPerSecond = bitsPerSecond;
+                    }
+                    public int bitsPerSecond() {
+                        return bitsPerSecond;
+                    }
+                }
+                """;
+        String usingSource = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class UsesEnumValue {
+                    public static void main(String[] args) {
+                        Speed speed = Speed.FAST;
+                        Delay.millis(speed.bitsPerSecond());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Speed", enumSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesEnumValue", usingSource);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesEnumValue");
+
+        assertThat(generated.contains("{9600, 115200}")).isTrue();
+        assertThat(generated.contains("reinterpret_cast<int32_t*>")).isTrue();
+        assertThat(generated.contains("delay(static_cast<unsigned long>(call_arg0))")).isTrue();
+        assertThat(generated.contains("JunoObject_demo_Speed")).isFalse();
     }
 
     @Test

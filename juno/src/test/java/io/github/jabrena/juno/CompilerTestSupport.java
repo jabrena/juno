@@ -39,12 +39,9 @@ public final class CompilerTestSupport {
         return directory;
     }
 
-    // The compiler classpath is resolved relative to the juno module's own working directory during
-    // `mvn test`: `target/classes` holds any cross-class fixtures compiled by an earlier compileJava
-    // call, and `../juno-api/target/classes` holds the api package's classes (Serial, Gpio, ...) that
-    // fixture sources import, now that the api package lives in a sibling module.
-    private static final List<Path> JUNO_CLASSPATH =
-            List.of(Path.of("target/classes"), Path.of("../juno-api/target/classes"));
+    // `target/classes` holds both the compiler's own api/annotations packages and any cross-class
+    // fixtures compiled by an earlier compileJava call.
+    private static final List<Path> JUNO_CLASSPATH = List.of(Path.of("target/classes"));
 
     public static String compileJuno(Path classes, String mainClass) {
         List<Path> classpath = new ArrayList<>(List.of(classes));

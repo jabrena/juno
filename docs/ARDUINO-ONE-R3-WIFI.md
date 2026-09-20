@@ -132,7 +132,7 @@ Generate a Juno sketch, then compile it for the board:
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main <ExampleClassName> \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+  --classpath juno-examples/target/classes:juno/target/classes
 
 arduino-cli compile \
   --fqbn arduino:megaavr:uno2018 \

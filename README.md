@@ -1,7 +1,7 @@
 # Juno: Java for Arduino
 
 Juno is an experimental ahead-of-time compiler for running a practical subset of Java on the
-Arduino UNO R4 WiFi and UNO R4 Minima. It keeps `javac` as the Java frontend, performs
+Arduino UNO R4 WiFi. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits an Arduino C++ sketch which the
 Renesas toolchain compiles to native Cortex-M4 code.
 
@@ -20,15 +20,17 @@ Java source -> javac -> .class -> Juno linker/AOT -> .ino -> Arduino toolchain -
 
 This is a multi-module Maven build:
 
-- [`juno-api/`](juno-api) — the small Java-facing hardware API (`Gpio`, `Delay`, `Clock`,
-  `DigitalOutput`, `LedMatrix`, `Serial`, `Mouse`, …) that Juno recognizes as compiler intrinsics.
-  Has no dependency on the compiler, so example/user code only needs this module on its classpath.
-- [`juno/`](juno) — the Juno compiler itself (`classfile`, `bytecode`, `linker`, `backend`, …).
-  Builds `juno/target/juno-<version>.jar`, an executable jar whose main class is
-  `io.github.jabrena.juno.Main`.
-- [`juno-examples/`](juno-examples) — example Java programs written against `juno-api`, compiled by
-  Maven like any other Java module (`juno-examples/target/classes`) so they are checked for
-  compile errors on every build.
+- [`juno/`](juno) — the Juno compiler itself (`classfile`, `bytecode`, `linker`, `backend`, …),
+  plus the small Java-facing hardware API Juno recognizes as compiler intrinsics
+  (`io.github.jabrena.juno.api`: `Delay`, `Clock`, `LedMatrix`, `api.io.Gpio`,
+  `api.io.DigitalOutput`, `api.io.hid.Mouse`, `api.io.usb.Serial`, …) and the
+  `io.github.jabrena.juno.annotations` package
+  (`Board`, `ArduinoBoard`, `ArduinoUnoR4WiFi`) that entry-point classes use to select a
+  compilation target. Builds `juno/target/juno-<version>.jar`, an executable jar whose main class
+  is `io.github.jabrena.juno.Main`.
+- [`juno-examples/`](juno-examples) — example Java programs written against `juno`'s `api` and
+  `annotations` packages, compiled by Maven like any other Java module
+  (`juno-examples/target/classes`) so they are checked for compile errors on every build.
 
 ## Quick start
 
@@ -38,10 +40,10 @@ Requirements: JDK 25+ and Maven 3.9+.
 ./mvnw clean package
 ```
 
-This builds all three modules: `juno-api/target/classes` (the hardware API),
-`juno/target/juno-0.1.0-SNAPSHOT.jar` (the compiler), and `juno-examples/target/classes` (the
-compiled example programs). To turn an example into a `.ino` sketch and run it on real UNO R4
-hardware with `arduino-cli`, see [docs/ARDUINO.md](docs/ARDUINO.md).
+This builds both modules: `juno/target/juno-0.1.0-SNAPSHOT.jar` (the compiler and hardware API)
+and `juno-examples/target/classes` (the compiled example programs). To turn an example into a
+`.ino` sketch and run it on real UNO R4 hardware with `arduino-cli`, see
+[docs/ARDUINO.md](docs/ARDUINO.md).
 
 ## Java API
 
@@ -49,10 +51,10 @@ Hardware operations are normal Java native declarations at compile time and comp
 at link time:
 
 ```java
-import io.github.jabrena.juno.api.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.api.Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.DigitalOutput;
+import io.github.jabrena.juno.api.io.DigitalOutput;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class Blink {
@@ -74,10 +76,9 @@ extraction, see the [Internet access guide](docs/INTERNET.md).
 
 ### Target board
 
-`@Board` (`io.github.jabrena.juno.api.Board`) on the entry-point class selects which UNO R4 variant
-Juno compiles for: `ArduinoUnoR4WiFi` or `ArduinoUnoR4Minima`. A class with no `@Board` annotation
-targets the WiFi variant by default. The board gates board-specific intrinsics at link time — `LedMatrix`
-requires `ArduinoUnoR4WiFi.class`, since the Minima has no onboard matrix.
+`@Board` (`io.github.jabrena.juno.annotations.Board`) on the entry-point class selects which UNO R4 variant
+Juno compiles for: `ArduinoUnoR4WiFi` (currently the only supported target). A class with no
+`@Board` annotation targets it by default.
 
 ## Supported Java subset
 
@@ -91,7 +92,7 @@ Before generating or uploading a sketch, inspect conservative runtime-risk and r
 ```bash
 java -jar juno/target/juno-0.1.0-SNAPSHOT.jar inspect \
   --main ArenaFeaturesPulse \
-  --classpath juno-examples/target/classes:juno-api/target/classes \
+  --classpath juno-examples/target/classes:juno/target/classes \
   --risks
 ```
 
@@ -110,9 +111,9 @@ memory report remains authoritative for final RAM and flash use.
 - `backend` emits standalone Arduino C++ with compact operand/local stacks. The native compiler
   can then optimize those fixed-size structures.
 
-The above live under [`juno/src/main/java/io/github/jabrena/juno/`](juno/src/main/java/io/github/jabrena/juno).
-The small Java-facing hardware abstraction lives separately, in
-[`juno-api/src/main/java/io/github/jabrena/juno/api/`](juno-api/src/main/java/io/github/jabrena/juno/api).
+The above, along with the small Java-facing hardware abstraction (`api/`) and the `@Board`
+selection types (`annotations/`), live under
+[`juno/src/main/java/io/github/jabrena/juno/`](juno/src/main/java/io/github/jabrena/juno).
 
 ### Experimental: Cortex-M4 assembly backend
 
@@ -145,7 +146,7 @@ compatibility header when one is available.
 ./mvnw javadoc:aggregate
 ```
 
-Generates a combined Javadoc site for `juno-api` and `juno` into `docs/javadocs/<version>/apidocs`,
+Generates a Javadoc site for `juno` into `docs/javadocs/<version>/apidocs`,
 e.g. `docs/javadocs/0.1.0-SNAPSHOT/apidocs/index.html` (`juno-examples` is excluded, since it's
 example programs rather than library API).
 

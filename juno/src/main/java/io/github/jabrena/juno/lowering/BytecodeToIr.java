@@ -83,8 +83,8 @@ public final class BytecodeToIr {
     private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
             "drawChar", "([[ZIII)V");
     /** {@code io.github.jabrena.juno.api.led.LedMatrixFontAscii.GLYPH_WIDTH + 1} (a 5-wide glyph plus a
-     * 1-column gap) — {@code juno-api} is only a test-scoped dependency of this module, so this can't
-     * reference that constant directly; keep the two in sync if the font's geometry ever changes. */
+     * 1-column gap), kept as a literal so codegen doesn't depend on a specific font's internals; keep
+     * the two in sync if the font's geometry ever changes. */
     private static final int DRAW_TEXT_CHAR_SPACING = 6;
 
     private final BytecodeDecoder decoder = new BytecodeDecoder();
@@ -1296,7 +1296,15 @@ public final class BytecodeToIr {
         Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = receiver.nextValueId();
         Value target = new Value(nextValueId++, type);
-        instructions.add(new IrInstruction.LoadField(target, field, receiver.value()));
+        List<Integer> enumFieldValues = resolveEnumIntegerFieldValues(field, classes);
+        if (enumFieldValues != null) {
+            Value values = Value.int32(nextValueId++);
+            instructions.add(new IrInstruction.IntArrayConst(values, enumFieldValues));
+            instructions.add(new IrInstruction.BoundsCheck(receiver.value(), enumFieldValues.size()));
+            instructions.add(new IrInstruction.ArrayLoad(target, ArrayElementType.INT, values, receiver.value()));
+        } else {
+            instructions.add(new IrInstruction.LoadField(target, field, receiver.value()));
+        }
         if (type == JunoType.INT64) {
             Value low = Value.int32(nextValueId++);
             Value high = Value.int32(nextValueId++);
@@ -1993,6 +2001,102 @@ public final class BytecodeToIr {
         JavaClass owner = classes.get(field.owner());
         int ordinal = owner == null || !owner.isEnum() ? -1 : owner.enumConstantNames().indexOf(field.name());
         return ordinal < 0 ? null : ordinal;
+    }
+
+    /**
+     * Resolves an enum's single constructor-associated integer field to one value per ordinal.
+     * {@code javac} represents {@code KEY(123)} as a literal constructor argument in {@code <clinit>}
+     * and a direct parameter-to-field assignment in the enum constructor. Juno keeps enum values as
+     * ordinal ints, so a field read becomes an immutable lookup indexed by that ordinal instead of an
+     * object dereference.
+     */
+    private List<Integer> resolveEnumIntegerFieldValues(FieldRef field, Map<String, JavaClass> classes) {
+        JavaClass enumClass = classes.get(field.owner());
+        if (enumClass == null || !enumClass.isEnum()) {
+            return null;
+        }
+        if (!Descriptor.isIntegerLike(field.descriptor())) {
+            throw new CompileException("Enum associated values must use an integer-like primitive field: "
+                    + field.displayName());
+        }
+
+        String constructorDescriptor = null;
+        for (JavaMethod method : enumClass.methods()) {
+            if (!method.name().equals("<init>")) {
+                continue;
+            }
+            List<Instruction> constructor = decoder.decode(method);
+            for (int index = 2; index < constructor.size(); index++) {
+                Instruction store = constructor.get(index);
+                if (store.opcode() != 181
+                        || !enumClass.constantPool().fieldRef(store.operandA()).equals(field)) {
+                    continue;
+                }
+                Instruction receiverLoad = constructor.get(index - 2);
+                Instruction valueLoad = constructor.get(index - 1);
+                Descriptor descriptor = Descriptor.parse(method.descriptor());
+                if (receiverLoad.opcode() != 42
+                        || integerLocalIndex(valueLoad) != 3
+                        || !descriptor.parameters().equals(List.of("Ljava/lang/String;", "I", "I"))) {
+                    throw new CompileException("Enum associated value must be assigned directly from its single "
+                            + "integer constructor argument: " + field.displayName());
+                }
+                constructorDescriptor = method.descriptor();
+            }
+        }
+        if (constructorDescriptor == null) {
+            throw new CompileException("Cannot resolve enum constructor assignment for " + field.displayName());
+        }
+
+        JavaMethod initializer = enumClass.findMethod("<clinit>", "()V");
+        if (initializer == null) {
+            throw new CompileException("Enum has no initializer for associated values: " + field.displayName());
+        }
+        List<Instruction> bytecode = decoder.decode(initializer);
+        List<String> constantNames = enumClass.enumConstantNames();
+        Integer[] values = new Integer[constantNames.size()];
+        for (int index = 2; index < bytecode.size(); index++) {
+            Instruction store = bytecode.get(index);
+            if (store.opcode() != 179) {
+                continue;
+            }
+            FieldRef constant = enumClass.constantPool().fieldRef(store.operandA());
+            int ordinal = constant.owner().equals(enumClass.name())
+                    ? constantNames.indexOf(constant.name()) : -1;
+            if (ordinal < 0) {
+                continue;
+            }
+            Instruction constructorCall = bytecode.get(index - 1);
+            MethodRef called = constructorCall.opcode() == 183
+                    ? enumClass.constantPool().methodRef(constructorCall.operandA()) : null;
+            if (called == null || !called.owner().equals(enumClass.name()) || !called.name().equals("<init>")
+                    || !called.descriptor().equals(constructorDescriptor)) {
+                throw new CompileException("Cannot resolve enum constant construction for " + constant.displayName());
+            }
+            Integer value = literalValue(bytecode.get(index - 2), enumClass);
+            if (value == null) {
+                throw new CompileException("Enum associated value must be a compile-time integer literal: "
+                        + constant.displayName());
+            }
+            values[ordinal] = value;
+        }
+        List<Integer> resolved = new ArrayList<>(values.length);
+        for (int ordinal = 0; ordinal < values.length; ordinal++) {
+            if (values[ordinal] == null) {
+                throw new CompileException("Cannot resolve associated value for enum constant "
+                        + enumClass.name().replace('/', '.') + "." + constantNames.get(ordinal));
+            }
+            resolved.add(values[ordinal]);
+        }
+        return List.copyOf(resolved);
+    }
+
+    private int integerLocalIndex(Instruction instruction) {
+        return switch (instruction.opcode()) {
+            case 21 -> instruction.operandA();
+            case 26, 27, 28, 29 -> instruction.opcode() - 26;
+            default -> -1;
+        };
     }
 
     private List<Integer> resolveEnumSwitchMap(FieldRef requested, Map<String, JavaClass> classes) {

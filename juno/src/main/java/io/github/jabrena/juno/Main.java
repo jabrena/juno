@@ -281,8 +281,8 @@ public final class Main {
                   --output, -o <file>       Generated .ino file (default: build/juno/<Main>/<Main>.ino)
 
                 The target board is read from the entry-point class's @Board annotation
-                (io.github.jabrena.juno.api.Board); a class with no @Board annotation targets the UNO R4
-                WiFi by default.
+                (io.github.jabrena.juno.annotations.Board); a class with no @Board annotation targets the
+                UNO R4 WiFi by default.
 
                 inspect options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)

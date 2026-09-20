@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.backend;
 
-import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
+import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrBasicBlock;
@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * {@link CortexM4AsmBackendTest#lowersABlinkShapedProgramToLinkableCortexM4Assembly} builds the exact IR
@@ -318,18 +317,22 @@ class CortexM4AsmBackendTest {
     }
 
     @Test
-    void rejectsProgramsOutsideTheSupportedSubset() {
-        // IntArrayConst (compiler-created enum/switch-map arrays) has no asm-backend codegen yet,
-        // unlike long/float/double/HTTP/JSON, which this backend now supports (see the tests below).
+    void emitsCompilerGeneratedEnumArrays() {
         MethodRef entryPoint = new MethodRef("demo/EnumMap", "main", "()V");
         IrBasicBlock block = new IrBasicBlock(0,
-                List.of(new IrInstruction.IntArrayConst(Value.int32(0), List.of(1, 2, 3))),
+                List.of(
+                        new IrInstruction.IntArrayConst(Value.int32(0), List.of(9600, 19200, 115200)),
+                        new IrInstruction.Const(Value.int32(1), 2),
+                        new IrInstruction.ArrayLoad(Value.int32(2), ArrayElementType.INT,
+                                Value.int32(0), Value.int32(1))),
                 new IrTerminator.Return(Optional.empty()));
-        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 1, List.of(), List.of(block));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
 
-        assertThatThrownBy(() -> new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method))))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("does not support");
+        String assembly = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method))).assembly();
+
+        assertThat(assembly.contains(".word 9600, 19200, 115200")).isTrue();
+        assertThat(assembly.contains("ldr r0, =juno_int_array0")).isTrue();
+        assertThat(assembly.contains("ldr r2, [r0, r1]")).isTrue();
     }
 
     @Test
