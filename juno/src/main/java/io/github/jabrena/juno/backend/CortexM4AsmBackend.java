@@ -1332,6 +1332,19 @@ public final class CortexM4AsmBackend {
         }
         shim.append("""
 
+                // Overrides the core's weak yield(): Serial's bool conversion is UNO R4's supported hook
+                // into TinyUSB's tud_task(), so this keeps USB serviced from every yield() call site
+                // (delay() and, per the generated assembly, every loop backedge — see
+                // CortexM4AsmBackend's own `bl yield` emission) — not just programs that call Serial
+                // directly. Declared extern "C" so it resolves under the plain "yield" symbol the
+                // generated assembly's `bl yield` branches to directly (unmangled, unlike ArduinoCppBackend's
+                // C++-linkage override, which never needs to be called from raw assembly).
+                extern "C" void yield() {
+                #ifndef NO_USB
+                  static_cast<void>(static_cast<bool>(Serial));
+                #endif
+                }
+
                 extern "C" [[noreturn]] void juno_panic() {
                   noInterrupts();
                   for (;;) {}
