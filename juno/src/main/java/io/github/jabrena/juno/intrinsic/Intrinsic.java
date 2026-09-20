@@ -31,7 +31,14 @@ public enum Intrinsic {
     WIFI_STATUS,
     HTTP_GET,
     HTTP_POST,
+    HTTP_DELETE,
+    HTTP_PATCH,
+    HTTP_QUERY,
+    JSON_TYPE,
     JSON_GET_INT,
+    JSON_GET_LONG,
+    JSON_GET_DOUBLE,
     JSON_GET_BOOL,
-    JSON_GET_STRING
+    JSON_GET_STRING,
+    JSON_ARRAY_SIZE
 }

@@ -679,6 +679,43 @@ class GeneratedCppSyntaxTest {
     }
 
     @Test
+    void generatedHttpMethodSketchPassesACppSyntaxCheck() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.HttpClient;
+                public final class HttpMethodsSmoke {
+                    public static void main(String[] args) {
+                        byte[] response = new byte[64];
+                        int getBytes = HttpClient.get("example.com", 80, "/items", response, response.length);
+                        int postBytes = HttpClient.post("example.com", 80, "/items", "{\\\"value\\\":1}",
+                                response, response.length);
+                        int deleteBytes = HttpClient.delete("example.com", 80, "/items/1",
+                                response, response.length);
+                        int patchBytes = HttpClient.patch("example.com", 80, "/items/1", "{\\\"value\\\":2}",
+                                response, response.length);
+                        int queryBytes = HttpClient.query("example.com", 80, "/items/search", "{\\\"value\\\":2}",
+                                response, response.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpMethodsSmoke", source);
+        Path sketch = temporaryDirectory.resolve("HttpMethodsSmoke.ino");
+        Files.writeString(sketch, CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpMethodsSmoke"),
+                StandardCharsets.UTF_8);
+
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean finished = process.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "C++ compiler timed out");
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
+    }
+
+    @Test
     void generatedJsonFieldExtractionSketchPassesACppSyntaxCheck() throws Exception {
         String compiler = availableCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
@@ -689,10 +726,15 @@ class GeneratedCppSyntaxTest {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];
                         byte[] name = new byte[16];
+                        int kind = Json.type(buffer, buffer.length, "data.samples[0]");
                         int temperature = Json.getInt(buffer, buffer.length, "data.sensor.temp");
+                        long sequence = Json.getLong(buffer, buffer.length, "sequence");
+                        double precise = Json.getDouble(buffer, buffer.length, "precise");
                         boolean ok = Json.getBool(buffer, buffer.length, "ok");
                         int nameLength = Json.getString(buffer, buffer.length, "name", name, name.length);
-                        int total = temperature + nameLength + (ok ? 1 : 0);
+                        int samples = Json.arraySize(buffer, buffer.length, "data.samples");
+                        int total = kind + temperature + (int) sequence + (int) precise
+                                + nameLength + samples + (ok ? 1 : 0);
                     }
                 }
                 """;
@@ -709,6 +751,91 @@ class GeneratedCppSyntaxTest {
         Assumptions.assumeTrue(finished, "C++ compiler timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
+    }
+
+    @Test
+    void generatedJsonHelpersParseStrictBoundedDocumentsAtRuntime() throws Exception {
+        String compiler = availableCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.Json;
+                public final class JsonRuntime {
+                    public static void main(String[] args) {
+                        byte[] buffer = new byte[1];
+                        byte[] out = new byte[1];
+                        int reachable = Json.type(buffer, 0, "")
+                                + Json.getInt(buffer, 0, "x")
+                                + (int) Json.getLong(buffer, 0, "x")
+                                + (int) Json.getDouble(buffer, 0, "x")
+                                + (Json.getBool(buffer, 0, "x") ? 1 : 0)
+                                + Json.getString(buffer, 0, "x", out, out.length)
+                                + Json.arraySize(buffer, 0, "x");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.JsonRuntime", source);
+        Path sketch = temporaryDirectory.resolve("JsonRuntime.cpp");
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonRuntime");
+        String harness = """
+
+                int main() {
+                  const char json[] = R"json({"users":[{"id":1},{"id":2147483648,"active":false,
+                      "name":"A\\n\\u00e9\\uD83D\\uDE00"}],"numbers":[-12,1.25e2],"nothing":null,
+                      "minimum":-9223372036854775808,"tooLarge":9223372036854775808})json";
+                  const uint8_t* bytes = reinterpret_cast<const uint8_t*>(json);
+                  int32_t length = static_cast<int32_t>(sizeof(json) - 1);
+                  uint8_t out[16] = {};
+                  if (juno_json_type(bytes, length, "users") != JUNO_JSON_ARRAY) return 1;
+                  if (juno_json_array_size(bytes, length, "users") != 2) return 2;
+                  if (juno_json_get_int(bytes, length, "users[0].id") != 1) return 3;
+                  if (juno_json_get_int(bytes, length, "users[1].id") != 0) return 4;
+                  if (juno_json_get_long(bytes, length, "users[1].id") != 2147483648LL) return 5;
+                  if (juno_json_type(bytes, length, "users[1].active") != JUNO_JSON_BOOLEAN) return 6;
+                  if (juno_json_get_bool(bytes, length, "users[1].active")) return 7;
+                  if (juno_json_get_double(bytes, length, "numbers[1]") != 125.0) return 8;
+                  if (juno_json_get_int(bytes, length, "numbers[1]") != 0) return 9;
+                  if (juno_json_type(bytes, length, "nothing") != JUNO_JSON_NULL) return 10;
+                  if (juno_json_type(bytes, length, "missing") != JUNO_JSON_MISSING) return 11;
+                  int32_t written = juno_json_get_string(bytes, length, "users[1].name", out, 16);
+                  const uint8_t expected[] = {'A', '\\n', 0xc3, 0xa9, 0xf0, 0x9f, 0x98, 0x80};
+                  if (written != 8 || memcmp(out, expected, 8) != 0) return 12;
+                  if (juno_json_get_string(bytes, length, "users[1].name", out, 4) != 4) return 13;
+
+                  const char rootArray[] = R"json([true,3])json";
+                  const uint8_t* rootBytes = reinterpret_cast<const uint8_t*>(rootArray);
+                  int32_t rootLength = static_cast<int32_t>(sizeof(rootArray) - 1);
+                  if (juno_json_type(rootBytes, rootLength, "[0]") != JUNO_JSON_BOOLEAN) return 14;
+                  if (juno_json_get_int(rootBytes, rootLength, "[1]") != 3) return 15;
+
+                  const char truncated[] = R"json({"x":[1,2)json";
+                  if (juno_json_type(reinterpret_cast<const uint8_t*>(truncated),
+                                     static_cast<int32_t>(sizeof(truncated) - 1), "x") != JUNO_JSON_INVALID) return 16;
+                  const char malformed[] = R"json({"x":01})json";
+                  if (juno_json_type(reinterpret_cast<const uint8_t*>(malformed),
+                                     static_cast<int32_t>(sizeof(malformed) - 1), "x") != JUNO_JSON_INVALID) return 17;
+                  if (juno_json_get_long(bytes, length, "minimum") != INT64_MIN) return 18;
+                  if (juno_json_get_long(bytes, length, "tooLarge") != 0) return 19;
+                  return 0;
+                }
+                """;
+        Files.writeString(sketch, generated + harness, StandardCharsets.UTF_8);
+        Path executable = temporaryDirectory.resolve("json-runtime");
+
+        Process compile = new ProcessBuilder(compiler, "-std=c++17", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString(), "-o", executable.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean compiled = compile.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(compiled, "C++ compiler timed out");
+        String diagnostics = new String(compile.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(compile.exitValue()).as(diagnostics).isEqualTo(0);
+
+        Process run = new ProcessBuilder(executable.toString()).redirectErrorStream(true).start();
+        boolean finished = run.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "Generated JSON runtime test timed out");
+        String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as("runtime exit code; output: " + output).isEqualTo(0);
     }
 
     private String availableCompiler() {

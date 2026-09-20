@@ -318,7 +318,7 @@ class JunoCompilerTest {
     }
 
     @Test
-    void lowersHttpGetAndPostIntrinsics() throws Exception {
+    void lowersHttpMethodIntrinsics() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.net.HttpClient;
@@ -328,6 +328,12 @@ class JunoCompilerTest {
                         int getBytes = HttpClient.get("example.com", 80, "/status", response, response.length);
                         int postBytes = HttpClient.post("example.com", 80, "/submit", "{\\"ok\\":true}",
                                 response, response.length);
+                        int deleteBytes = HttpClient.delete("example.com", 80, "/items/7",
+                                response, response.length);
+                        int patchBytes = HttpClient.patch("example.com", 80, "/items/7", "{\\"value\\":2}",
+                                response, response.length);
+                        int queryBytes = HttpClient.query("example.com", 80, "/items/search",
+                                "{\\"tag\\":\\"new\\"}", response, response.length);
                     }
                 }
                 """;
@@ -338,10 +344,18 @@ class JunoCompilerTest {
         assertThat(generated.contains("#include <WiFiS3.h>")).isTrue();
         assertThat(generated.contains("juno_http_get(call_str0, call_arg")).isTrue();
         assertThat(generated.contains("juno_http_post(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("juno_http_delete(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("juno_http_patch(call_str0, call_arg")).isTrue();
+        assertThat(generated.contains("juno_http_query(call_str0, call_arg")).isTrue();
         assertThat(generated.contains("const char* call_str0 = \"example.com\";")).isTrue();
         assertThat(generated.contains("const char* call_str1 = \"/status\";")).isTrue();
         assertThat(generated.contains("\"{\\\"ok\\\":true}\"")).isTrue();
+        assertThat(generated.contains("\"{\\\"value\\\":2}\"")).isTrue();
+        assertThat(generated.contains("\"{\\\"tag\\\":\\\"new\\\"}\"")).isTrue();
         assertThat(generated.contains("static int32_t juno_http_request(")).isTrue();
+        assertThat(generated.contains("juno_http_request(\"DELETE\", host, port, path, nullptr")).isTrue();
+        assertThat(generated.contains("juno_http_request(\"PATCH\", host, port, path, body")).isTrue();
+        assertThat(generated.contains("juno_http_request(\"QUERY\", host, port, path, body")).isTrue();
     }
 
     @Test
@@ -367,6 +381,29 @@ class JunoCompilerTest {
     }
 
     @Test
+    void rejectsQueryUsageOnTheMinimaWhichHasNoOnboardModule() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.ArduinoUnoR4Minima;
+                import io.github.jabrena.juno.api.Board;
+                import io.github.jabrena.juno.api.net.HttpClient;
+                @Board(ArduinoUnoR4Minima.class)
+                public final class MinimaWithQuery {
+                    public static void main(String[] args) {
+                        byte[] response = new byte[16];
+                        HttpClient.query("example.com", 80, "/search", "{}",
+                                response, response.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MinimaWithQuery", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MinimaWithQuery"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("Minima");
+    }
+
+    @Test
     void lowersJsonFieldExtractionIntrinsics() throws Exception {
         String source = """
                 package demo;
@@ -375,9 +412,13 @@ class JunoCompilerTest {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];
                         byte[] name = new byte[32];
+                        int valueType = Json.type(buffer, buffer.length, "items[0].value");
                         int temperature = Json.getInt(buffer, buffer.length, "data.sensor.temp");
+                        long sequence = Json.getLong(buffer, buffer.length, "sequence");
+                        double precise = Json.getDouble(buffer, buffer.length, "precise");
                         boolean ok = Json.getBool(buffer, buffer.length, "ok");
                         int nameLength = Json.getString(buffer, buffer.length, "name", name, name.length);
+                        int itemCount = Json.arraySize(buffer, buffer.length, "items");
                     }
                 }
                 """;
@@ -386,11 +427,15 @@ class JunoCompilerTest {
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonDemo");
 
         assertThat(generated.contains("#include <WiFiS3.h>")).as("JSON parsing alone needs no WiFi").isFalse();
+        assertThat(generated.contains("juno_json_type(")).isTrue();
         assertThat(generated.contains("juno_json_get_int(")).isTrue();
+        assertThat(generated.contains("juno_json_get_long(")).isTrue();
+        assertThat(generated.contains("juno_json_get_double(")).isTrue();
         assertThat(generated.contains("juno_json_get_bool(")).isTrue();
         assertThat(generated.contains("juno_json_get_string(")).isTrue();
+        assertThat(generated.contains("juno_json_array_size(")).isTrue();
         assertThat(generated.contains("const char* call_str0 = \"data.sensor.temp\";")).isTrue();
-        assertThat(generated.contains("static bool juno_json_locate(")).isTrue();
+        assertThat(generated.contains("static int32_t juno_json_locate(")).isTrue();
     }
 
     @Test

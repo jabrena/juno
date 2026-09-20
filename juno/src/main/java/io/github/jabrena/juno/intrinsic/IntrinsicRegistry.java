@@ -66,12 +66,26 @@ public final class IntrinsicRegistry {
                     "(Ljava/lang/String;ILjava/lang/String;[BI)I"), Intrinsic.HTTP_GET),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/HttpClient", "post",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI)I"), Intrinsic.HTTP_POST),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/HttpClient", "delete",
+                    "(Ljava/lang/String;ILjava/lang/String;[BI)I"), Intrinsic.HTTP_DELETE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/HttpClient", "patch",
+                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI)I"), Intrinsic.HTTP_PATCH),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/HttpClient", "query",
+                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI)I"), Intrinsic.HTTP_QUERY),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "type",
+                    "([BILjava/lang/String;)I"), Intrinsic.JSON_TYPE),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "getInt",
                     "([BILjava/lang/String;)I"), Intrinsic.JSON_GET_INT),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "getLong",
+                    "([BILjava/lang/String;)J"), Intrinsic.JSON_GET_LONG),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "getDouble",
+                    "([BILjava/lang/String;)D"), Intrinsic.JSON_GET_DOUBLE),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "getBool",
                     "([BILjava/lang/String;)Z"), Intrinsic.JSON_GET_BOOL),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "getString",
-                    "([BILjava/lang/String;[BI)I"), Intrinsic.JSON_GET_STRING));
+                    "([BILjava/lang/String;[BI)I"), Intrinsic.JSON_GET_STRING),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/Json", "arraySize",
+                    "([BILjava/lang/String;)I"), Intrinsic.JSON_ARRAY_SIZE));
 
     private IntrinsicRegistry() {
     }

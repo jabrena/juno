@@ -69,6 +69,9 @@ public final class Blink {
 See the [Javadoc](https://jabrena.github.io/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html)
 for the complete Java API reference.
 
+For Wi-Fi connections, compile-time credentials, HTTP REST calls, and bounded JSON response
+extraction, see the [Internet access guide](docs/INTERNET.md).
+
 ### Target board
 
 `@Board` (`io.github.jabrena.juno.api.Board`) on the entry-point class selects which UNO R4 variant

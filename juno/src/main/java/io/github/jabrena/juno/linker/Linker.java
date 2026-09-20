@@ -27,7 +27,8 @@ public final class Linker {
     private static final Set<Intrinsic> LED_MATRIX_INTRINSICS = EnumSet.of(
             Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME, Intrinsic.LED_MATRIX_CLEAR);
     private static final Set<Intrinsic> WIFI_INTRINSICS = EnumSet.of(Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS,
-            Intrinsic.HTTP_GET, Intrinsic.HTTP_POST);
+            Intrinsic.HTTP_GET, Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH,
+            Intrinsic.HTTP_QUERY);
     private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
             "drawText", "([[ZLjava/lang/String;II)V");
     private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",

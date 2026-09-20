@@ -29,8 +29,8 @@ import io.github.jabrena.juno.api.net.Wifi;
  * ({@code "2026-09-20T01:35+02:00"}); the hour/minute are read directly out of its known character
  * positions (11-12 and 14-15) rather than parsed generically. Open-Meteo's
  * {@code current.temperature_2m} is a JSON number with a decimal fraction (e.g. {@code 21.2});
- * {@link Json#getInt} reads only the leading integer digits, so the displayed value is the
- * temperature truncated toward zero, not rounded.
+ * {@link Json#getDouble} reads the decimal value, which is then truncated toward zero for the
+ * integer-only display rather than rounded.
  */
 @Board(ArduinoUnoR4WiFi.class)
 public final class MadridWeather {
@@ -121,7 +121,7 @@ public final class MadridWeather {
         while (true) {
             int timeBytes = HttpClient.get(TIME_HOST, TIME_PORT, TIME_PATH, response, response.length);
             if (timeBytes > 0) {
-                int timeTextLength = Json.getString(response, response.length, "currentDateTime",
+                int timeTextLength = Json.getString(response, timeBytes, "currentDateTime",
                         timeText, timeText.length);
                 if (timeTextLength > TIME_MINUTE_INDEX + 1) {
                     int length = 0;
@@ -151,7 +151,8 @@ public final class MadridWeather {
             int weatherBytes = HttpClient.get(WEATHER_HOST, WEATHER_PORT, WEATHER_PATH,
                     response, response.length);
             if (weatherBytes > 0) {
-                int temperatureCelsius = Json.getInt(response, response.length, "current.temperature_2m");
+                int temperatureCelsius = (int) Json.getDouble(
+                        response, weatherBytes, "current.temperature_2m");
 
                 int length = 0;
                 length = appendChar(message, length, 'M');

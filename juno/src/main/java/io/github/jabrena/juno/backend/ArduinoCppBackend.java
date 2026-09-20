@@ -33,9 +33,13 @@ public final class ArduinoCppBackend {
             Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME, Intrinsic.LED_MATRIX_CLEAR);
     private static final Set<Intrinsic> MOUSE_INTRINSICS = EnumSet.of(Intrinsic.MOUSE_BEGIN, Intrinsic.MOUSE_MOVE);
     private static final Set<Intrinsic> WIFI_INTRINSICS = EnumSet.of(Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS);
-    private static final Set<Intrinsic> HTTP_INTRINSICS = EnumSet.of(Intrinsic.HTTP_GET, Intrinsic.HTTP_POST);
+    private static final Set<Intrinsic> HTTP_INTRINSICS = EnumSet.of(
+            Intrinsic.HTTP_GET, Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH,
+            Intrinsic.HTTP_QUERY);
     private static final Set<Intrinsic> JSON_INTRINSICS = EnumSet.of(
-            Intrinsic.JSON_GET_INT, Intrinsic.JSON_GET_BOOL, Intrinsic.JSON_GET_STRING);
+            Intrinsic.JSON_TYPE, Intrinsic.JSON_GET_INT, Intrinsic.JSON_GET_LONG,
+            Intrinsic.JSON_GET_DOUBLE, Intrinsic.JSON_GET_BOOL, Intrinsic.JSON_GET_STRING,
+            Intrinsic.JSON_ARRAY_SIZE);
 
     public String generate(IrProgram program) {
         boolean usesLedMatrix = usesAnyIntrinsic(program, LED_MATRIX_INTRINSICS);
@@ -49,7 +53,7 @@ public final class ArduinoCppBackend {
                 .append("// Closed-world entry point: ").append(program.entryPoint().displayName()).append("\n")
                 .append("#include <Arduino.h>\n")
                 .append("#include <stdint.h>\n");
-        if (usesFloatingPoint) {
+        if (usesFloatingPoint || usesJson) {
             output.append("#include <math.h>\n");
         }
         if (usesLedMatrix) {
@@ -732,11 +736,22 @@ public final class ArduinoCppBackend {
                     + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
             case HTTP_POST -> "juno_http_post(call_str0, call_arg0, call_str1, call_str2, "
                     + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
+            case HTTP_DELETE -> "juno_http_delete(call_str0, call_arg0, call_str1, "
+                    + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
+            case HTTP_PATCH -> "juno_http_patch(call_str0, call_arg0, call_str1, call_str2, "
+                    + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
+            case HTTP_QUERY -> "juno_http_query(call_str0, call_arg0, call_str1, call_str2, "
+                    + "reinterpret_cast<uint8_t*>(call_arg1), call_arg2)";
+            case JSON_TYPE -> "juno_json_type(reinterpret_cast<const uint8_t*>(call_arg0), call_arg1, call_str0)";
             case JSON_GET_INT -> "juno_json_get_int(reinterpret_cast<const uint8_t*>(call_arg0), call_arg1, call_str0)";
+            case JSON_GET_LONG -> "juno_json_get_long(reinterpret_cast<const uint8_t*>(call_arg0), call_arg1, call_str0)";
+            case JSON_GET_DOUBLE -> "juno_json_get_double(reinterpret_cast<const uint8_t*>(call_arg0), call_arg1, call_str0)";
             case JSON_GET_BOOL -> "static_cast<int32_t>(juno_json_get_bool("
                     + "reinterpret_cast<const uint8_t*>(call_arg0), call_arg1, call_str0))";
             case JSON_GET_STRING -> "juno_json_get_string(reinterpret_cast<const uint8_t*>(call_arg0), call_arg1, "
                     + "call_str0, reinterpret_cast<uint8_t*>(call_arg2), call_arg3)";
+            case JSON_ARRAY_SIZE -> "juno_json_array_size(reinterpret_cast<const uint8_t*>(call_arg0), "
+                    + "call_arg1, call_str0)";
         };
     }
 
@@ -1079,137 +1094,463 @@ public final class ArduinoCppBackend {
      */
     private String jsonHelpers() {
         return """
+                static constexpr int32_t JUNO_JSON_MISSING = 0;
+                static constexpr int32_t JUNO_JSON_NULL = 1;
+                static constexpr int32_t JUNO_JSON_BOOLEAN = 2;
+                static constexpr int32_t JUNO_JSON_NUMBER = 3;
+                static constexpr int32_t JUNO_JSON_STRING = 4;
+                static constexpr int32_t JUNO_JSON_OBJECT = 5;
+                static constexpr int32_t JUNO_JSON_ARRAY = 6;
+                static constexpr int32_t JUNO_JSON_INVALID = 7;
+                static constexpr int32_t JUNO_JSON_MAX_DEPTH = 32;
+
                 static bool juno_json_is_space(char c) {
                   return c == ' ' || c == '\\t' || c == '\\r' || c == '\\n';
                 }
 
-                static const char* juno_json_skip_string(const char* p, const char* end) {
-                  const char* q = p + 1;
-                  while (q < end) {
-                    if (*q == '\\\\' && q + 1 < end) { q += 2; continue; }
-                    if (*q == '"') { return q + 1; }
-                    q++;
+                static void juno_json_skip_space(const char** cursor, const char* end) {
+                  while (*cursor < end && juno_json_is_space(**cursor)) (*cursor)++;
+                }
+
+                static bool juno_json_is_hex(char c) {
+                  return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+                }
+
+                static bool juno_json_parse_string(const char* start, const char* end, const char** after) {
+                  if (start >= end || *start != '"') return false;
+                  const char* p = start + 1;
+                  while (p < end) {
+                    unsigned char c = static_cast<unsigned char>(*p++);
+                    if (c == '"') { *after = p; return true; }
+                    if (c < 0x20) return false;
+                    if (c != '\\\\') continue;
+                    if (p >= end) return false;
+                    char escape = *p++;
+                    if (escape == '"' || escape == '\\\\' || escape == '/' || escape == 'b'
+                        || escape == 'f' || escape == 'n' || escape == 'r' || escape == 't') continue;
+                    if (escape != 'u' || end - p < 4) return false;
+                    for (int32_t i = 0; i < 4; i++) if (!juno_json_is_hex(p[i])) return false;
+                    p += 4;
                   }
-                  return end;
+                  return false;
                 }
 
-                static const char* juno_json_match_container(const char* p, const char* end) {
-                  char open = *p;
-                  char close = (open == '{') ? '}' : ']';
-                  int32_t depth = 0;
-                  const char* q = p;
-                  while (q < end) {
-                    char c = *q;
-                    if (c == '"') { q = juno_json_skip_string(q, end); continue; }
-                    if (c == open) { depth++; q++; continue; }
-                    if (c == close) { depth--; q++; if (depth == 0) return q; continue; }
-                    q++;
+                static bool juno_json_parse_number(const char* start, const char* end, const char** after) {
+                  const char* p = start;
+                  if (p < end && *p == '-') p++;
+                  if (p >= end) return false;
+                  if (*p == '0') {
+                    p++;
+                    if (p < end && *p >= '0' && *p <= '9') return false;
+                  } else {
+                    if (*p < '1' || *p > '9') return false;
+                    do { p++; } while (p < end && *p >= '0' && *p <= '9');
                   }
-                  return end;
-                }
-
-                static const char* juno_json_value_end(const char* p, const char* end) {
-                  if (p >= end) return p;
-                  char c = *p;
-                  if (c == '"') return juno_json_skip_string(p, end);
-                  if (c == '{' || c == '[') return juno_json_match_container(p, end);
-                  const char* q = p;
-                  while (q < end && *q != ',' && *q != '}' && *q != ']' && !juno_json_is_space(*q)) q++;
-                  return q;
-                }
-
-                /** Scans one object level ([cursor,levelEnd), no surrounding braces) for "key": <value>. */
-                static const char* juno_json_scan_object(const char* cursor, const char* levelEnd,
-                                                          const char* key, int32_t keyLen) {
-                  int32_t depth = 0;
-                  while (cursor < levelEnd) {
-                    char c = *cursor;
-                    if (c == '"') {
-                      const char* contentStart = cursor + 1;
-                      const char* stringEnd = juno_json_skip_string(cursor, levelEnd);
-                      if (depth == 0 && (stringEnd - contentStart - 1) == keyLen
-                          && strncmp(contentStart, key, static_cast<size_t>(keyLen)) == 0) {
-                        const char* p = stringEnd;
-                        while (p < levelEnd && juno_json_is_space(*p)) p++;
-                        if (p < levelEnd && *p == ':') {
-                          p++;
-                          while (p < levelEnd && juno_json_is_space(*p)) p++;
-                          return p;
-                        }
-                      }
-                      cursor = stringEnd;
-                      continue;
-                    }
-                    if (c == '{' || c == '[') { depth++; cursor++; continue; }
-                    if (c == '}' || c == ']') { if (depth == 0) return nullptr; depth--; cursor++; continue; }
-                    cursor++;
+                  if (p < end && *p == '.') {
+                    p++;
+                    if (p >= end || *p < '0' || *p > '9') return false;
+                    do { p++; } while (p < end && *p >= '0' && *p <= '9');
                   }
-                  return nullptr;
+                  if (p < end && (*p == 'e' || *p == 'E')) {
+                    p++;
+                    if (p < end && (*p == '+' || *p == '-')) p++;
+                    if (p >= end || *p < '0' || *p > '9') return false;
+                    do { p++; } while (p < end && *p >= '0' && *p <= '9');
+                  }
+                  *after = p;
+                  return true;
                 }
 
-                /** Resolves a dot-path key (e.g. "a.b.c") against a top-level JSON object. */
-                static bool juno_json_locate(const uint8_t* buffer, int32_t length, const char* key,
-                                              const char** valueStart, const char** valueEnd) {
-                  const char* cursor = reinterpret_cast<const char*>(buffer);
-                  const char* end = cursor + length;
-                  while (cursor < end && juno_json_is_space(*cursor)) cursor++;
-                  if (cursor >= end || *cursor != '{') return false;
-                  const char* objectClose = juno_json_match_container(cursor, end);
-                  cursor = cursor + 1;
-                  end = objectClose - 1;
-                  const char* keyCursor = key;
-                  while (true) {
-                    const char* dot = strchr(keyCursor, '.');
-                    int32_t segmentLen = dot ? static_cast<int32_t>(dot - keyCursor)
-                                              : static_cast<int32_t>(strlen(keyCursor));
-                    const char* found = juno_json_scan_object(cursor, end, keyCursor, segmentLen);
-                    if (found == nullptr) return false;
-                    if (dot == nullptr) {
-                      *valueStart = found;
-                      *valueEnd = juno_json_value_end(found, end);
+                static bool juno_json_parse_value(const char* start, const char* end,
+                                                   const char** after, int32_t depth);
+
+                static bool juno_json_parse_object(const char* start, const char* end,
+                                                    const char** after, int32_t depth) {
+                  const char* p = start + 1;
+                  juno_json_skip_space(&p, end);
+                  if (p < end && *p == '}') { *after = p + 1; return true; }
+                  while (p < end) {
+                    const char* keyEnd;
+                    if (!juno_json_parse_string(p, end, &keyEnd)) return false;
+                    p = keyEnd;
+                    juno_json_skip_space(&p, end);
+                    if (p >= end || *p++ != ':') return false;
+                    juno_json_skip_space(&p, end);
+                    if (!juno_json_parse_value(p, end, &p, depth + 1)) return false;
+                    juno_json_skip_space(&p, end);
+                    if (p < end && *p == '}') { *after = p + 1; return true; }
+                    if (p >= end || *p++ != ',') return false;
+                    juno_json_skip_space(&p, end);
+                    if (p < end && *p == '}') return false;
+                  }
+                  return false;
+                }
+
+                static bool juno_json_parse_array(const char* start, const char* end,
+                                                   const char** after, int32_t depth) {
+                  const char* p = start + 1;
+                  juno_json_skip_space(&p, end);
+                  if (p < end && *p == ']') { *after = p + 1; return true; }
+                  while (p < end) {
+                    if (!juno_json_parse_value(p, end, &p, depth + 1)) return false;
+                    juno_json_skip_space(&p, end);
+                    if (p < end && *p == ']') { *after = p + 1; return true; }
+                    if (p >= end || *p++ != ',') return false;
+                    juno_json_skip_space(&p, end);
+                    if (p < end && *p == ']') return false;
+                  }
+                  return false;
+                }
+
+                static bool juno_json_parse_value(const char* start, const char* end,
+                                                   const char** after, int32_t depth) {
+                  if (depth > JUNO_JSON_MAX_DEPTH) return false;
+                  const char* p = start;
+                  juno_json_skip_space(&p, end);
+                  if (p >= end) return false;
+                  if (*p == '"') return juno_json_parse_string(p, end, after);
+                  if (*p == '{') return juno_json_parse_object(p, end, after, depth);
+                  if (*p == '[') return juno_json_parse_array(p, end, after, depth);
+                  if (end - p >= 4 && strncmp(p, "true", 4) == 0) { *after = p + 4; return true; }
+                  if (end - p >= 5 && strncmp(p, "false", 5) == 0) { *after = p + 5; return true; }
+                  if (end - p >= 4 && strncmp(p, "null", 4) == 0) { *after = p + 4; return true; }
+                  return juno_json_parse_number(p, end, after);
+                }
+
+                static bool juno_json_scan_object(const char* objectStart, const char* objectEnd,
+                                                   const char* key, int32_t keyLength,
+                                                   const char** valueStart, const char** valueEnd) {
+                  const char* p = objectStart + 1;
+                  juno_json_skip_space(&p, objectEnd);
+                  while (p < objectEnd && *p != '}') {
+                    const char* contentStart = p + 1;
+                    const char* keyEnd;
+                    if (!juno_json_parse_string(p, objectEnd, &keyEnd)) return false;
+                    bool matches = (keyEnd - contentStart - 1) == keyLength
+                        && strncmp(contentStart, key, static_cast<size_t>(keyLength)) == 0;
+                    p = keyEnd;
+                    juno_json_skip_space(&p, objectEnd);
+                    if (p >= objectEnd || *p++ != ':') return false;
+                    juno_json_skip_space(&p, objectEnd);
+                    const char* candidateStart = p;
+                    const char* candidateEnd;
+                    if (!juno_json_parse_value(p, objectEnd, &candidateEnd, 1)) return false;
+                    if (matches) {
+                      *valueStart = candidateStart;
+                      *valueEnd = candidateEnd;
                       return true;
                     }
-                    const char* p = found;
-                    while (p < end && juno_json_is_space(*p)) p++;
-                    if (p >= end || *p != '{') return false;
-                    const char* nestedClose = juno_json_match_container(p, end);
-                    cursor = p + 1;
-                    end = nestedClose - 1;
-                    keyCursor = dot + 1;
+                    p = candidateEnd;
+                    juno_json_skip_space(&p, objectEnd);
+                    if (p < objectEnd && *p == ',') { p++; juno_json_skip_space(&p, objectEnd); }
                   }
+                  return false;
+                }
+
+                static bool juno_json_scan_array(const char* arrayStart, const char* arrayEnd, int32_t index,
+                                                  const char** valueStart, const char** valueEnd) {
+                  const char* p = arrayStart + 1;
+                  juno_json_skip_space(&p, arrayEnd);
+                  int32_t current = 0;
+                  while (p < arrayEnd && *p != ']') {
+                    const char* candidateStart = p;
+                    const char* candidateEnd;
+                    if (!juno_json_parse_value(p, arrayEnd, &candidateEnd, 1)) return false;
+                    if (current == index) {
+                      *valueStart = candidateStart;
+                      *valueEnd = candidateEnd;
+                      return true;
+                    }
+                    current++;
+                    p = candidateEnd;
+                    juno_json_skip_space(&p, arrayEnd);
+                    if (p < arrayEnd && *p == ',') { p++; juno_json_skip_space(&p, arrayEnd); }
+                  }
+                  return false;
+                }
+
+                /** Returns 1 when found, 0 when absent/type-mismatched, and -1 for invalid input/path. */
+                static int32_t juno_json_locate(const uint8_t* buffer, int32_t length, const char* path,
+                                                 const char** valueStart, const char** valueEnd) {
+                  if (buffer == nullptr || path == nullptr || length < 0) return -1;
+                  const char* documentStart = reinterpret_cast<const char*>(buffer);
+                  const char* documentEnd = documentStart + length;
+                  const char* rootStart = documentStart;
+                  juno_json_skip_space(&rootStart, documentEnd);
+                  const char* rootEnd;
+                  if (!juno_json_parse_value(rootStart, documentEnd, &rootEnd, 0)) return -1;
+                  const char* trailing = rootEnd;
+                  juno_json_skip_space(&trailing, documentEnd);
+                  if (trailing != documentEnd) return -1;
+
+                  const char* currentStart = rootStart;
+                  const char* currentEnd = rootEnd;
+                  const char* cursor = path;
+                  if (*cursor == '\0') {
+                    *valueStart = currentStart;
+                    *valueEnd = currentEnd;
+                    return 1;
+                  }
+
+                  while (*cursor != '\0') {
+                    if (*cursor == '[') {
+                      if (*currentStart != '[') return 0;
+                      cursor++;
+                      if (*cursor < '0' || *cursor > '9') return -1;
+                      int32_t index = 0;
+                      if (*cursor == '0' && cursor[1] >= '0' && cursor[1] <= '9') return -1;
+                      while (*cursor >= '0' && *cursor <= '9') {
+                        int32_t digit = *cursor++ - '0';
+                        if (index > (INT32_MAX - digit) / 10) return -1;
+                        index = index * 10 + digit;
+                      }
+                      if (*cursor++ != ']') return -1;
+                      if (!juno_json_scan_array(currentStart, currentEnd, index, &currentStart, &currentEnd)) return 0;
+                    } else {
+                      if (*currentStart != '{') return 0;
+                      const char* segmentStart = cursor;
+                      while (*cursor != '\0' && *cursor != '.' && *cursor != '[') cursor++;
+                      int32_t segmentLength = static_cast<int32_t>(cursor - segmentStart);
+                      if (segmentLength == 0) return -1;
+                      if (!juno_json_scan_object(currentStart, currentEnd, segmentStart, segmentLength,
+                                                 &currentStart, &currentEnd)) return 0;
+                    }
+
+                    if (*cursor == '\0') break;
+                    if (*cursor == '[') continue;
+                    if (*cursor != '.') return -1;
+                    cursor++;
+                    if (*cursor == '\0' || *cursor == '.' || *cursor == '[') return -1;
+                  }
+                  *valueStart = currentStart;
+                  *valueEnd = currentEnd;
+                  return 1;
+                }
+
+                static int32_t juno_json_type(const uint8_t* buffer, int32_t length, const char* path) {
+                  const char* start;
+                  const char* end;
+                  int32_t status = juno_json_locate(buffer, length, path, &start, &end);
+                  if (status < 0) return JUNO_JSON_INVALID;
+                  if (status == 0) return JUNO_JSON_MISSING;
+                  if (*start == 'n') return JUNO_JSON_NULL;
+                  if (*start == 't' || *start == 'f') return JUNO_JSON_BOOLEAN;
+                  if (*start == '"') return JUNO_JSON_STRING;
+                  if (*start == '{') return JUNO_JSON_OBJECT;
+                  if (*start == '[') return JUNO_JSON_ARRAY;
+                  return JUNO_JSON_NUMBER;
+                }
+
+                static bool juno_json_parse_long(const char* start, const char* end, int64_t* result) {
+                  const char* parsedEnd;
+                  if (!juno_json_parse_number(start, end, &parsedEnd) || parsedEnd != end) return false;
+                  bool negative = *start == '-';
+                  const char* p = start + (negative ? 1 : 0);
+                  uint64_t limit = negative ? static_cast<uint64_t>(INT64_MAX) + 1u
+                                            : static_cast<uint64_t>(INT64_MAX);
+                  uint64_t value = 0;
+                  while (p < end) {
+                    if (*p < '0' || *p > '9') return false;
+                    uint64_t digit = static_cast<uint64_t>(*p++ - '0');
+                    if (value > (limit - digit) / 10u) return false;
+                    value = value * 10u + digit;
+                  }
+                  if (negative && value == static_cast<uint64_t>(INT64_MAX) + 1u) {
+                    *result = INT64_MIN;
+                  } else {
+                    *result = negative ? -static_cast<int64_t>(value) : static_cast<int64_t>(value);
+                  }
+                  return true;
                 }
 
                 static int32_t juno_json_get_int(const uint8_t* buffer, int32_t length, const char* key) {
                   const char* start;
                   const char* end;
-                  if (!juno_json_locate(buffer, length, key, &start, &end)) return 0;
-                  bool negative = false;
-                  const char* p = start;
-                  if (p < end && *p == '-') { negative = true; p++; }
-                  int32_t value = 0;
-                  while (p < end && *p >= '0' && *p <= '9') { value = value * 10 + (*p - '0'); p++; }
-                  return negative ? -value : value;
+                  if (juno_json_locate(buffer, length, key, &start, &end) != 1) return 0;
+                  int64_t value;
+                  if (!juno_json_parse_long(start, end, &value) || value < INT32_MIN || value > INT32_MAX) return 0;
+                  return static_cast<int32_t>(value);
+                }
+
+                static int64_t juno_json_get_long(const uint8_t* buffer, int32_t length, const char* key) {
+                  const char* start;
+                  const char* end;
+                  if (juno_json_locate(buffer, length, key, &start, &end) != 1) return 0;
+                  int64_t value;
+                  return juno_json_parse_long(start, end, &value) ? value : 0;
+                }
+
+                static bool juno_json_parse_double(const char* start, const char* end, double* result) {
+                  const char* parsedEnd;
+                  if (!juno_json_parse_number(start, end, &parsedEnd) || parsedEnd != end) return false;
+                  bool negative = *start == '-';
+                  const char* p = start + (negative ? 1 : 0);
+                  double significand = 0.0;
+                  int32_t significantDigits = 0;
+                  int64_t decimalExponent = 0;
+                  while (p < end && *p >= '0' && *p <= '9') {
+                    int32_t digit = *p++ - '0';
+                    if (significantDigits < 18 && (significantDigits > 0 || digit != 0)) {
+                      significand = significand * 10.0 + digit;
+                      significantDigits++;
+                    } else if (significantDigits >= 18) {
+                      decimalExponent++;
+                    }
+                  }
+                  if (p < end && *p == '.') {
+                    p++;
+                    while (p < end && *p >= '0' && *p <= '9') {
+                      int32_t digit = *p++ - '0';
+                      if (significantDigits == 0 && digit == 0) {
+                        decimalExponent--;
+                      } else if (significantDigits < 18) {
+                        significand = significand * 10.0 + digit;
+                        significantDigits++;
+                        decimalExponent--;
+                      }
+                    }
+                  }
+                  if (p < end && (*p == 'e' || *p == 'E')) {
+                    p++;
+                    bool exponentNegative = false;
+                    if (*p == '+' || *p == '-') { exponentNegative = *p == '-'; p++; }
+                    int32_t exponent = 0;
+                    while (p < end && *p >= '0' && *p <= '9') {
+                      int32_t digit = *p++ - '0';
+                      if (exponent < 100000) exponent = exponent * 10 + digit;
+                    }
+                    decimalExponent += exponentNegative ? -static_cast<int64_t>(exponent) : exponent;
+                  }
+                  if (significand == 0.0) { *result = negative ? -0.0 : 0.0; return true; }
+                  if (decimalExponent > 400) return false;
+                  if (decimalExponent < -400) { *result = negative ? -0.0 : 0.0; return true; }
+                  double scale = 1.0;
+                  int32_t scalePower = static_cast<int32_t>(decimalExponent < 0 ? -decimalExponent : decimalExponent);
+                  for (int32_t i = 0; i < scalePower; i++) scale *= 10.0;
+                  double value = decimalExponent < 0 ? significand / scale : significand * scale;
+                  if (!isfinite(value)) return false;
+                  *result = negative ? -value : value;
+                  return true;
+                }
+
+                static double juno_json_get_double(const uint8_t* buffer, int32_t length, const char* key) {
+                  const char* start;
+                  const char* end;
+                  if (juno_json_locate(buffer, length, key, &start, &end) != 1) return 0.0;
+                  double value;
+                  return juno_json_parse_double(start, end, &value) ? value : 0.0;
                 }
 
                 static bool juno_json_get_bool(const uint8_t* buffer, int32_t length, const char* key) {
                   const char* start;
                   const char* end;
-                  if (!juno_json_locate(buffer, length, key, &start, &end)) return false;
-                  return (end - start) == 4 && strncmp(start, "true", 4) == 0;
+                  if (juno_json_locate(buffer, length, key, &start, &end) != 1) return false;
+                  return end - start == 4 && strncmp(start, "true", 4) == 0;
+                }
+
+                static int32_t juno_json_hex_value(char c) {
+                  if (c >= '0' && c <= '9') return c - '0';
+                  if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+                  return c - 'A' + 10;
+                }
+
+                static uint32_t juno_json_hex4(const char* p) {
+                  uint32_t value = 0;
+                  for (int32_t i = 0; i < 4; i++) value = value * 16u + static_cast<uint32_t>(juno_json_hex_value(p[i]));
+                  return value;
+                }
+
+                static int32_t juno_json_utf8_length(uint32_t codePoint) {
+                  if (codePoint <= 0x7fu) return 1;
+                  if (codePoint <= 0x7ffu) return 2;
+                  if (codePoint <= 0xffffu) return 3;
+                  return 4;
+                }
+
+                static void juno_json_write_utf8(uint32_t codePoint, uint8_t* out, int32_t* written) {
+                  int32_t p = *written;
+                  if (codePoint <= 0x7fu) {
+                    out[p++] = static_cast<uint8_t>(codePoint);
+                  } else if (codePoint <= 0x7ffu) {
+                    out[p++] = static_cast<uint8_t>(0xc0u | (codePoint >> 6));
+                    out[p++] = static_cast<uint8_t>(0x80u | (codePoint & 0x3fu));
+                  } else if (codePoint <= 0xffffu) {
+                    out[p++] = static_cast<uint8_t>(0xe0u | (codePoint >> 12));
+                    out[p++] = static_cast<uint8_t>(0x80u | ((codePoint >> 6) & 0x3fu));
+                    out[p++] = static_cast<uint8_t>(0x80u | (codePoint & 0x3fu));
+                  } else {
+                    out[p++] = static_cast<uint8_t>(0xf0u | (codePoint >> 18));
+                    out[p++] = static_cast<uint8_t>(0x80u | ((codePoint >> 12) & 0x3fu));
+                    out[p++] = static_cast<uint8_t>(0x80u | ((codePoint >> 6) & 0x3fu));
+                    out[p++] = static_cast<uint8_t>(0x80u | (codePoint & 0x3fu));
+                  }
+                  *written = p;
                 }
 
                 static int32_t juno_json_get_string(const uint8_t* buffer, int32_t length, const char* key,
                                                      uint8_t* out, int32_t outLength) {
                   const char* start;
                   const char* end;
-                  if (!juno_json_locate(buffer, length, key, &start, &end)) return 0;
-                  if (start >= end || *start != '"') return 0;
-                  const char* contentStart = start + 1;
-                  int32_t contentLen = static_cast<int32_t>((end - 1) - contentStart);
-                  if (contentLen < 0) contentLen = 0;
-                  int32_t copyLen = contentLen < outLength ? contentLen : outLength;
-                  for (int32_t i = 0; i < copyLen; i++) out[i] = static_cast<uint8_t>(contentStart[i]);
-                  return copyLen;
+                  if (out == nullptr || outLength <= 0
+                      || juno_json_locate(buffer, length, key, &start, &end) != 1
+                      || start >= end || *start != '"') return 0;
+                  const char* p = start + 1;
+                  const char* contentEnd = end - 1;
+                  int32_t written = 0;
+                  while (p < contentEnd) {
+                    unsigned char c = static_cast<unsigned char>(*p++);
+                    if (c != '\\\\') {
+                      if (written >= outLength) break;
+                      out[written++] = c;
+                      continue;
+                    }
+                    char escape = *p++;
+                    if (escape != 'u') {
+                      uint8_t decoded = static_cast<uint8_t>(escape);
+                      if (escape == 'b') decoded = '\\b';
+                      else if (escape == 'f') decoded = '\\f';
+                      else if (escape == 'n') decoded = '\\n';
+                      else if (escape == 'r') decoded = '\\r';
+                      else if (escape == 't') decoded = '\\t';
+                      if (written >= outLength) break;
+                      out[written++] = decoded;
+                      continue;
+                    }
+                    uint32_t codePoint = juno_json_hex4(p);
+                    p += 4;
+                    if (codePoint >= 0xd800u && codePoint <= 0xdbffu) {
+                      if (contentEnd - p < 6 || p[0] != '\\\\' || p[1] != 'u') return 0;
+                      uint32_t low = juno_json_hex4(p + 2);
+                      if (low < 0xdc00u || low > 0xdfffu) return 0;
+                      codePoint = 0x10000u + ((codePoint - 0xd800u) << 10) + (low - 0xdc00u);
+                      p += 6;
+                    } else if (codePoint >= 0xdc00u && codePoint <= 0xdfffu) {
+                      return 0;
+                    }
+                    int32_t utf8Length = juno_json_utf8_length(codePoint);
+                    if (written > outLength - utf8Length) break;
+                    juno_json_write_utf8(codePoint, out, &written);
+                  }
+                  return written;
+                }
+
+                static int32_t juno_json_array_size(const uint8_t* buffer, int32_t length, const char* key) {
+                  const char* start;
+                  const char* end;
+                  if (juno_json_locate(buffer, length, key, &start, &end) != 1 || *start != '[') return -1;
+                  const char* p = start + 1;
+                  juno_json_skip_space(&p, end);
+                  int32_t size = 0;
+                  while (p < end && *p != ']') {
+                    const char* elementEnd;
+                    if (!juno_json_parse_value(p, end, &elementEnd, 1)) return -1;
+                    if (size == INT32_MAX) return -1;
+                    size++;
+                    p = elementEnd;
+                    juno_json_skip_space(&p, end);
+                    if (p < end && *p == ',') { p++; juno_json_skip_space(&p, end); }
+                  }
+                  return size;
                 }
 
                 """;
@@ -1335,6 +1676,21 @@ public final class ArduinoCppBackend {
                 static int32_t juno_http_post(const char* host, int32_t port, const char* path, const char* body,
                                                uint8_t* responseBuffer, int32_t responseBufferLength) {
                   return juno_http_request("POST", host, port, path, body, responseBuffer, responseBufferLength);
+                }
+
+                static int32_t juno_http_delete(const char* host, int32_t port, const char* path,
+                                                 uint8_t* responseBuffer, int32_t responseBufferLength) {
+                  return juno_http_request("DELETE", host, port, path, nullptr, responseBuffer, responseBufferLength);
+                }
+
+                static int32_t juno_http_patch(const char* host, int32_t port, const char* path, const char* body,
+                                                uint8_t* responseBuffer, int32_t responseBufferLength) {
+                  return juno_http_request("PATCH", host, port, path, body, responseBuffer, responseBufferLength);
+                }
+
+                static int32_t juno_http_query(const char* host, int32_t port, const char* path, const char* body,
+                                                uint8_t* responseBuffer, int32_t responseBufferLength) {
+                  return juno_http_request("QUERY", host, port, path, body, responseBuffer, responseBufferLength);
                 }
 
                 """;
