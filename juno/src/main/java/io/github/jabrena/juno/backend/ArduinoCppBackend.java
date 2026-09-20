@@ -1160,10 +1160,18 @@ public final class ArduinoCppBackend {
         return """
                 // Overrides the core's weak yield(): Serial's bool conversion is UNO R4's supported hook into
                 // TinyUSB's tud_task(), so this keeps USB serviced from every yield() call site (delay() and
-                // loop backedges), not just programs that call Serial directly.
+                // loop backedges), not just programs that call Serial directly. The core's first successful
+                // Serial bool conversion itself calls delay(10), which calls yield() again before that first
+                // conversion is marked complete. Guard that one nested call or USB connection timing turns
+                // the first yield into unbounded recursion and eventual stack exhaustion.
+                static bool juno_yield_active = false;
+
                 void yield() {
                 #ifndef NO_USB
+                  if (juno_yield_active) return;
+                  juno_yield_active = true;
                   static_cast<void>(static_cast<bool>(Serial));
+                  juno_yield_active = false;
                 #endif
                 }
 

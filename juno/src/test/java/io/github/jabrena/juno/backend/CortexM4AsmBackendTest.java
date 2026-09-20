@@ -69,6 +69,9 @@ class CortexM4AsmBackendTest {
         // Loop backedge: yield is emitted right before the branch back to the loop block.
         assertThat(assembly.contains("bl yield\n    b .")).isTrue();
         assertThat(result.runtimeShim().contains("extern \"C\" void* juno_alloc")).isTrue();
+        assertThat(result.runtimeShim()).contains(
+                "if (juno_yield_active) return;",
+                "juno_yield_active = true;\n  static_cast<void>(static_cast<bool>(Serial));\n  juno_yield_active = false;");
     }
 
     /**

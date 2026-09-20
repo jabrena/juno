@@ -1336,12 +1336,19 @@ public final class CortexM4AsmBackend {
                 // into TinyUSB's tud_task(), so this keeps USB serviced from every yield() call site
                 // (delay() and, per the generated assembly, every loop backedge — see
                 // CortexM4AsmBackend's own `bl yield` emission) — not just programs that call Serial
-                // directly. Declared extern "C" so it resolves under the plain "yield" symbol the
-                // generated assembly's `bl yield` branches to directly (unmangled, unlike ArduinoCppBackend's
-                // C++-linkage override, which never needs to be called from raw assembly).
+                // directly. The core's first successful Serial bool conversion itself calls delay(10),
+                // which calls yield() again before that first conversion is marked complete. Guard that
+                // one nested call or USB connection timing turns the first yield into unbounded recursion
+                // and eventual stack exhaustion. Declared extern "C" so it resolves under the plain
+                // "yield" symbol the generated assembly's `bl yield` branches to directly.
+                static bool juno_yield_active = false;
+
                 extern "C" void yield() {
                 #ifndef NO_USB
+                  if (juno_yield_active) return;
+                  juno_yield_active = true;
                   static_cast<void>(static_cast<bool>(Serial));
+                  juno_yield_active = false;
                 #endif
                 }
 

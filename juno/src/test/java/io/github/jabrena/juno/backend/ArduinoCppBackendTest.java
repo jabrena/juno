@@ -41,6 +41,8 @@ class ArduinoCppBackendTest {
         String generated = new ArduinoCppBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.contains("void yield() {")).isTrue();
+        assertThat(generated.contains("if (juno_yield_active) return;")).isTrue();
+        assertThat(generated.contains("juno_yield_active = true;\n  static_cast<void>(static_cast<bool>(Serial));\n  juno_yield_active = false;")).isTrue();
         assertThat(generated.contains("static_cast<void>(static_cast<bool>(Serial));")).isTrue();
         assertThat(generated.contains("  yield();\n  goto juno_pc_0;")).isTrue();
     }
