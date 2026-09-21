@@ -16,6 +16,8 @@
 
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
+        <juno.main>io.github.jabrena.juno.api.Blink</juno.main>
+        <juno.backend>asm</juno.backend>
     </properties>
 
     <dependencies>
@@ -25,4 +27,18 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.github.jabrena</groupId>
+                <artifactId>juno-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <configuration>
+                    <mainClass>${juno.main}</mainClass>
+                    <backend>${juno.backend}</backend>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

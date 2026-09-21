@@ -95,7 +95,7 @@ public final class CortexM4AsmBackend {
      * {@code runtimeShim} is a small {@code extern "C"} C++ source that must be compiled alongside
      * {@code assembly} in the same sketch — see this class's doc.
      */
-    public record Output(String assembly, String runtimeShim) {
+    public record Output(String assembly, String runtimeShim, String entryPointSymbol) {
     }
 
     private final Map<MethodRef, String> functionLabels = new LinkedHashMap<>();
@@ -145,7 +145,7 @@ public final class CortexM4AsmBackend {
         for (IrMethod method : program.methods()) {
             emitMethod(output, method);
         }
-        return new Output(output.toString(), runtimeShim());
+        return new Output(output.toString(), runtimeShim(), functionLabels.get(entryPoint));
     }
 
     /**

@@ -62,6 +62,7 @@ class CortexM4AsmBackendTest {
         CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
+        assertThat(result.entryPointSymbol()).isEqualTo("juno_Blink_asm");
         assertThat(assembly.contains(".global juno_Blink_asm")).isTrue();
         assertThat(assembly.contains("bl pinMode")).isTrue();
         assertThat(assembly.contains("bl digitalWrite")).isTrue();

@@ -27,6 +27,10 @@ This is a multi-module Maven build:
   (`Board`, `ArduinoBoard`, `ArduinoUnoR4WiFi`) that entry-point classes use to select a
   compilation target. Builds `juno/target/juno-<version>.jar`, an executable jar whose main class
   is `io.github.jabrena.juno.Main`.
+- [`juno-maven-plugin/`](juno-maven-plugin) — Maven goals for generating a sketch (`juno:compile`),
+  compiling it with Arduino CLI (`juno:verify`), uploading it (`juno:upload`), and opening the
+  serial monitor (`juno:monitor`). The experimental Cortex-M4 ASM backend is the default; select
+  the Arduino C++ backend with `-Djuno.backend=cpp`.
 - [`juno-examples/`](juno-examples) — example Java programs written against `juno`'s `api` and
   `annotations` packages, compiled by Maven like any other Java module
   (`juno-examples/target/classes`) so they are checked for compile errors on every build.
@@ -36,13 +40,38 @@ This is a multi-module Maven build:
 Requirements: JDK 25+ and Maven 3.9+.
 
 ```bash
-./mvnw clean package
+./mvnw clean install
 ```
 
-This builds both modules: `juno/target/juno-0.1.0-SNAPSHOT.jar` (the compiler and hardware API)
-and `juno-examples/target/classes` (the compiled example programs). To turn an example into a
+This builds all three modules: `juno/target/juno-0.1.0-SNAPSHOT.jar` (the compiler and hardware
+API), `juno-maven-plugin/target/juno-maven-plugin-0.1.0-SNAPSHOT.jar` (the Maven integration), and
+`juno-examples/target/classes` (the compiled example programs). To turn an example into a
 `.ino` sketch and run it on real UNO R4 hardware with `arduino-cli`, see
 [docs/ARDUINO.md](docs/ARDUINO.md).
+
+Use the following commands for the complete `Blink` workflow:
+
+```bash
+# Default ASM backend
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.Blink
+
+# C++ backend
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.backend=cpp
+
+# Upload
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.Blink
+
+# Monitor
+./mvnw -f juno-examples/pom.xml juno:monitor
+```
+
+Upload and monitor auto-detect the port when exactly one matching board is connected. Otherwise,
+select it with `-Djuno.port=<PORT>`. Select another example with
+`-Djuno.main=<fully-qualified-class-name>`.
 
 ## Java API
 

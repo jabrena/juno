@@ -117,28 +117,10 @@ public final class Main {
         }
         List<Path> classPath = parseClassPath(classPathValue);
 
-        CompilationPipeline pipeline = new CompilationPipeline();
-        Program program = pipeline.link(classPath, mainClass);
-        IrProgram optimized = pipeline.optimize(pipeline.lower(program));
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(optimized);
-        try {
-            Path parent = output.toAbsolutePath().getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            Files.writeString(output, result.assembly(), StandardCharsets.UTF_8);
-        } catch (IOException exception) {
-            throw new CompileException("Cannot write generated assembly to " + output, exception);
-        }
-        System.out.println("Generated " + output + " for " + program.board().displayName()
-                + " -- EXPERIMENTAL, not yet flashed to a physical board.");
-
         Path shimOutput = output.resolveSibling(baseName(output) + "Shim.cpp");
-        try {
-            Files.writeString(shimOutput, result.runtimeShim(), StandardCharsets.UTF_8);
-        } catch (IOException exception) {
-            throw new CompileException("Cannot write generated runtime shim to " + shimOutput, exception);
-        }
+        AsmCompilationResult result = new JunoCompiler().compileAsmTo(classPath, mainClass, output, shimOutput);
+        System.out.println("Generated " + output + " for " + result.report().board().displayName()
+                + " -- EXPERIMENTAL, not yet flashed to a physical board.");
         System.out.println("Generated " + shimOutput + " -- compile this alongside the .S file.");
     }
 

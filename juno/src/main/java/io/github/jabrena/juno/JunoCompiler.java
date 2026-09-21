@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.backend.CortexM4AsmBackend;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.Program;
 
@@ -26,15 +27,39 @@ public final class JunoCompiler {
 
     public CompilationResult compileTo(List<Path> classPath, String mainClass, Path output) {
         CompilationResult result = compile(new CompilationRequest(classPath, mainClass));
+        write(output, result.generatedSource(), "sketch");
+        return result;
+    }
+
+    public AsmCompilationResult compileAsm(List<Path> classPath, String mainClass) {
+        return compileAsm(new CompilationRequest(classPath, mainClass));
+    }
+
+    public AsmCompilationResult compileAsm(CompilationRequest request) {
+        Program program = pipeline.link(request.classPath(), request.mainClass());
+        IrProgram optimized = pipeline.optimize(pipeline.lower(program));
+        CortexM4AsmBackend.Output output = new CortexM4AsmBackend().generate(optimized);
+        return new AsmCompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(),
+                CompilationReport.from(program, optimized));
+    }
+
+    public AsmCompilationResult compileAsmTo(List<Path> classPath, String mainClass, Path assemblyOutput,
+                                             Path runtimeShimOutput) {
+        AsmCompilationResult result = compileAsm(classPath, mainClass);
+        write(assemblyOutput, result.assembly(), "assembly");
+        write(runtimeShimOutput, result.runtimeShim(), "runtime shim");
+        return result;
+    }
+
+    private static void write(Path output, String source, String description) {
         try {
             Path parent = output.toAbsolutePath().getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            Files.writeString(output, result.generatedSource(), StandardCharsets.UTF_8);
+            Files.writeString(output, source, StandardCharsets.UTF_8);
         } catch (IOException exception) {
-            throw new CompileException("Cannot write generated sketch to " + output, exception);
+            throw new CompileException("Cannot write generated " + description + " to " + output, exception);
         }
-        return result;
     }
 }

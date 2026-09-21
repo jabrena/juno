@@ -28,56 +28,95 @@ Connect the board and find its serial port:
 arduino-cli board list
 ```
 
-The port usually looks like `/dev/cu.usbmodem...` on macOS. Keep that value for the upload step.
+The port usually looks like `/dev/cu.usbmodem...` on macOS. The plugin auto-detects it when exactly
+one matching board is connected; otherwise pass it with `-Djuno.port=...`.
 
-## Build the Juno compiler and examples
+## Build Juno, the Maven plugin, and examples
 
 From the repository root:
 
 ```bash
-./mvnw clean package
+./mvnw clean install
 ```
 
-This builds the `juno` module's compiler jar and hardware API classes together
-(`juno/target/juno-0.1.0-SNAPSHOT.jar`, `juno/target/classes`), and compiles every program under
-`juno-examples/src/main/java` (`juno-examples/target/classes`). Every example below reuses the
-same classpath, `juno-examples/target/classes:juno/target/classes`, no matter which Juno API it
-uses.
+This builds the compiler and Maven plugin, installs the reactor artifacts in the local Maven
+repository, and compiles every program under `juno-examples/src/main/java`. Installing once lets
+the example module resolve the development version of `juno-maven-plugin` by its `juno` prefix.
 
 ## Compile and upload a sketch
 
-Generate the `.ino` sketch for a given example's main class, then hand it to `arduino-cli`:
+`juno-examples/pom.xml` configures `Blink` as its default entry point and ASM as its default backend.
+Generate its complete ASM sketch:
 
 ```bash
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main <ExampleClassName> \
-  --classpath juno-examples/target/classes:juno/target/classes
-
-arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/<ExampleClassName>
-arduino-cli upload \
-  --port /dev/cu.YOUR_PORT \
-  --fqbn arduino:renesas_uno:unor4wifi \
-  build/juno/<ExampleClassName>
+./mvnw -f juno-examples/pom.xml compile juno:compile
 ```
 
-The generated sketch is `build/juno/<ExampleClassName>/<ExampleClassName>.ino`. Replace
-`/dev/cu.YOUR_PORT` with the port reported by `arduino-cli board list`.
+The plugin generates a complete Arduino sketch directory:
 
-### Example: Blink
+```text
+juno-examples/target/juno/BlinkAsm/
+├── BlinkAsm.ino
+├── Blink.S
+└── BlinkShim.cpp
+```
+
+Verify it with the real Arduino toolchain without touching a connected board:
 
 ```bash
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main io.github.jabrena.juno.api.Blink \
-  --classpath juno-examples/target/classes:juno/target/classes
-
-arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/Blink
-arduino-cli upload \
-  --port /dev/cu.YOUR_PORT \
-  --fqbn arduino:renesas_uno:unor4wifi \
-  build/juno/Blink
+./mvnw -f juno-examples/pom.xml compile juno:verify
 ```
 
-The board's built-in LED (pin 13) should start blinking once a second.
+`juno:verify` derives the FQBN from the entry point's `@Board` annotation. Upload performs the same
+generation and verification first, then uses `arduino-cli board list --json` to select the only
+connected matching board:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload
+```
+
+If more than one matching board is connected, or a specific port is required, select it explicitly:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.port=/dev/cu.YOUR_PORT
+```
+
+Uploading overwrites the board's current firmware. The built-in LED (pin 13) should then blink once
+a second.
+
+To compile another example, override the configured entry point. For example, `SerialCounter`:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+```
+
+Open an interactive serial monitor (9600 baud by default) with:
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:monitor
+```
+
+Use `-Djuno.baudRate=115200` to select another baud rate and `-Djuno.port=...` to select a port.
+Press `Ctrl+C` to exit.
+
+### Select a backend
+
+ASM is the default for `juno:compile`, `juno:verify`, and `juno:upload`. Select Arduino C++
+explicitly with:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.backend=cpp
+```
+
+The C++ backend writes `juno-examples/target/juno/Blink/Blink.ino`. The backend flag composes with
+the entry-point flag, for example:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter \
+  -Djuno.backend=cpp
+```
 
 ### Example: SerialCounter (reading Serial output)
 
@@ -86,22 +125,15 @@ up once a second over USB serial, so it doubles as a check that the toolchain an
 serial port both work end to end:
 
 ```bash
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main io.github.jabrena.juno.api.io.usb.SerialCounter \
-  --classpath juno-examples/target/classes:juno/target/classes
-
-arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/SerialCounter
-arduino-cli upload \
-  --port /dev/cu.YOUR_PORT \
-  --fqbn arduino:renesas_uno:unor4wifi \
-  build/juno/SerialCounter
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
 ```
 
 Then open the serial monitor at the same baud rate the sketch uses
 (`Serial.begin(BaudRate.BAUD_9600)`):
 
 ```bash
-arduino-cli monitor -p /dev/cu.YOUR_PORT -c baudrate=9600
+./mvnw -f juno-examples/pom.xml juno:monitor
 ```
 
 The intended output is `0`, `1`, `2`, ... once a second. Press `Ctrl+C` to exit the monitor.
@@ -114,8 +146,9 @@ supported hook into TinyUSB's `tud_task()`.
 ### LED matrix examples
 
 Any of the `LedMatrix*` example classes (see the main README's Java API section for the full
-list) follow the same pattern as `Blink` above — just swap in the class name, e.g. `--main
-LedMatrixHeart`. They all draw on the UNO R4 WiFi's built-in 12x8 LED matrix.
+list) follow the same pattern as `Blink` above — override `juno.main`, for example
+`-Djuno.main=io.github.jabrena.juno.api.led.LedMatrixHeart`. They all draw on the UNO R4 WiFi's
+built-in 12x8 LED matrix.
 
 ### Example: RatonLoco (USB mouse control)
 
@@ -134,15 +167,8 @@ native USB (UNO R4 WiFi):
 ```bash
 arduino-cli lib install Mouse
 
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main io.github.jabrena.juno.api.io.hid.RatonLoco \
-  --classpath juno-examples/target/classes:juno/target/classes
-
-arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/RatonLoco
-arduino-cli upload \
-  --port /dev/cu.YOUR_PORT \
-  --fqbn arduino:renesas_uno:unor4wifi \
-  build/juno/RatonLoco
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.hid.RatonLoco
 ```
 
 **Re-uploading over a running HID sketch:** `arduino-cli upload` normally resets the board into
@@ -151,50 +177,28 @@ the sketch promptly servicing the USB connection, but `RatonLoco`'s `loop()` is 
 mouse (`Mouse.move` + `delay`), so the automatic reset can be missed. The board may also
 re-enumerate under a different `/dev/cu.*` path once it drops into the bootloader. If the upload
 hangs or fails, double-tap the board's physical reset button to force it into the bootloader
-manually (the onboard LED pulses), then immediately re-run the `arduino-cli upload` command — and
-run `arduino-cli board list` first if you're unsure which port it came back on.
+manually (the onboard LED pulses), then immediately re-run the `juno:upload` command — and
+run `arduino-cli board list` first if you're unsure which port it came back on. Supply the new port
+to the plugin with `-Djuno.port=...`.
 
 ## Experimental: Cortex-M4 assembly backend
 
-`juno asm` emits GNU ARM (Cortex-M4) assembly straight from Juno IR instead of Arduino C++: every
+The Maven plugin uses this backend by default. It emits GNU ARM (Cortex-M4) assembly straight from
+Juno IR instead of Arduino C++: every
 reachable method becomes its own function (real calls between them, including AAPCS stack-passed
 arguments beyond the first four), with branches, `switch`, `int` arithmetic/comparisons, fixed-size
 arrays, arena-allocated objects with fields, mutable static fields, GPIO/delay, `LedMatrix`, and
-`Serial`. Anything else (long/float/double, more than 2 array dimensions) fails at generation time
-with a clear error rather than emitting unchecked code. Every value and local variable lives in a
-fixed stack-frame slot rather than a register, so this doesn't run out of registers regardless of
-how large or branchy a method is.
+`Serial`. Unsupported instructions fail at generation time with a clear error rather than emitting
+unchecked code. Every value and local variable lives in a fixed stack-frame slot rather than a
+register, so this doesn't run out of registers regardless of how large or branchy a method is.
 
 ```bash
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar asm \
-  --main io.github.jabrena.juno.api.Blink \
-  --classpath juno-examples/target/classes:juno/target/classes
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.Blink
 ```
 
-This writes `build/juno/Blink/Blink.S`. It isn't a sketch by itself: put it in its own sketch folder
-(don't share a folder with the normal `.ino` build of the same class — two `setup()`/`loop()`
-definitions in one sketch won't compile) alongside a tiny `.ino` that declares the generated function
-`extern "C"` and calls it from `setup()`:
-
-```cpp
-// build/juno/BlinkAsm/BlinkAsm.ino, next to a copy of the generated Blink.S
-extern "C" void juno_Blink_asm();
-
-void setup() {
-  juno_Blink_asm();
-}
-
-void loop() {
-}
-```
-
-```bash
-arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi build/juno/BlinkAsm
-arduino-cli upload --port /dev/cu.YOUR_PORT --fqbn arduino:renesas_uno:unor4wifi build/juno/BlinkAsm
-```
-
-`juno asm` always also writes a `<Name>Shim.cpp` next to the `.S` file — copy both into the wrapper
-sketch folder and compile them together. It provides `extern "C"` free functions for the things the
+The plugin creates the `.S`, `<Name>Shim.cpp`, and matching `.ino` wrapper together in the isolated
+`<Name>Asm` sketch directory. The shim provides `extern "C"` free functions for the things the
 generated assembly can't call directly: the arena allocator/panic handler backing fixed-size arrays,
 and `ArduinoLEDMatrix`/`Serial` (C++-only objects — `ArduinoLEDMatrix`'s methods are inline-only with
 private timer/frame state, and `Serial` is a `HardwareSerial` instance with virtual dispatch; neither

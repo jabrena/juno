@@ -20,6 +20,32 @@ class JunoCompilerTest {
     Path temporaryDirectory;
 
     @Test
+    void compilesAssemblyAndRuntimeShimThroughCompilerApi() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.Gpio;
+                public final class Blink {
+                    public static void main(String[] args) {
+                        Gpio.pinMode(13, Gpio.OUTPUT);
+                        Gpio.digitalWrite(13, true);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Blink", source);
+        Path assembly = temporaryDirectory.resolve("Blink.S");
+        Path shim = temporaryDirectory.resolve("BlinkShim.cpp");
+
+        AsmCompilationResult result = new JunoCompiler().compileAsmTo(
+                List.of(temporaryDirectory, Path.of("target/classes")), "demo.Blink", assembly, shim);
+
+        assertThat(result.entryPointSymbol()).isEqualTo("juno_Blink_asm");
+        assertThat(result.assembly()).contains(".global juno_Blink_asm", "bl pinMode", "bl digitalWrite");
+        assertThat(assembly).hasContent(result.assembly());
+        assertThat(shim).hasContent(result.runtimeShim());
+        assertThat(result.report().board().fqbn()).isEqualTo("arduino:renesas_uno:unor4wifi");
+    }
+
+    @Test
     void propagatesLoweredLocalCopiesBeforeFoldingConstantBranches() throws Exception {
         String source = """
                 package demo;
