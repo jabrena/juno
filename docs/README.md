@@ -1,5 +1,14 @@
 # Documentation
 
+- [SERIAL.md](SERIAL.md) — the `Serial` USB output API, and why it's the main way to observe a
+  running Juno program.
+- [JUNO-MAVEN-PLUGIN.md](JUNO-MAVEN-PLUGIN.md) — `juno-maven-plugin`'s goals
+  (`compile`/`verify`/`upload`/`monitor`/`env`) and configuration.
+- [LCD-KEYPAD-SHIELD.md](LCD-KEYPAD-SHIELD.md) — driving the 16x2 LCD Keypad Shield's display and
+  5 buttons with `LcdKeypadShield`.
+- [HID.md](HID.md) — acting as a USB HID mouse with `Mouse`.
+- [CLOCK.md](CLOCK.md) — reading elapsed time with `Clock`, and when to prefer it over `Delay`.
+- [INTERNET.md](INTERNET.md) — Wi-Fi, HTTP/HTTPS REST calls, and bounded JSON response extraction.
 - [FEATURES.md](FEATURES.md) — the current inventory of Juno's supported Java subset (what
   compiles today, and what's explicitly not yet supported).
 - [ARDUINO.md](ARDUINO.md) — installing `arduino-cli` and using it to build, upload, and monitor
