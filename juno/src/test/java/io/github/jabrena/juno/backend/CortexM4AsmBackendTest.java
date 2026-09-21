@@ -669,4 +669,52 @@ class CortexM4AsmBackendTest {
         assertThat(generated.runtimeShim()).doesNotContain("juno_json_get_string_value");
         assertThat(generated.runtimeShim()).doesNotContain("JUNO_STRING_SLOT_SIZE");
     }
+
+    /**
+     * {@code analogRead}/{@code delayMicroseconds} resolve straight to the core's real functions, the
+     * same way {@code digitalWrite}/{@code delay} already do — no Juno shim needed.
+     */
+    @Test
+    void lowersAnalogReadAndDelayMicrosToTheCoresRealFunctions() {
+        MethodRef entryPoint = new MethodRef("demo/AnalogProbe", "main", "()I");
+        Value pin = Value.int32(0);
+        Value reading = Value.int32(1);
+        Value settleMicros = Value.int32(2);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(pin, 0),
+                new IrInstruction.IntrinsicCall(Optional.of(reading), Intrinsic.GPIO_ANALOG_READ,
+                        Optional.empty(), List.of(pin), List.of()),
+                new IrInstruction.Const(settleMicros, 40),
+                new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.DELAY_MICROS,
+                        Optional.empty(), List.of(settleMicros), List.of())),
+                new IrTerminator.Return(Optional.of(reading)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+                .generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(generated.assembly()).contains("bl analogRead");
+        assertThat(generated.assembly()).contains("bl delayMicroseconds");
+    }
+
+    /** {@code Clock.millis}/{@code Clock.micros} resolve straight to the core's real functions, taking no arguments. */
+    @Test
+    void lowersClockMillisAndMicrosToTheCoresRealFunctions() {
+        MethodRef entryPoint = new MethodRef("demo/ClockProbe", "main", "()I");
+        Value millis = Value.int32(0);
+        Value micros = Value.int32(1);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.IntrinsicCall(Optional.of(millis), Intrinsic.CLOCK_MILLIS,
+                        Optional.empty(), List.of(), List.of()),
+                new IrInstruction.IntrinsicCall(Optional.of(micros), Intrinsic.CLOCK_MICROS,
+                        Optional.empty(), List.of(), List.of())),
+                new IrTerminator.Return(Optional.of(millis)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 2, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+                .generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(generated.assembly()).contains("bl millis");
+        assertThat(generated.assembly()).contains("bl micros");
+    }
 }

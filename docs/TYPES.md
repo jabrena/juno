@@ -94,10 +94,11 @@ Every instance method (`high`, `low`) receives that same pin number as its recei
 `digitalWrite` directly (`r1 = 1` or `0`) — there is no heap allocation, no vtable, and no field
 storage. `DigitalOutput led = DigitalOutput.of(13)` and the raw pin number `13` compile to
 identical code; the Java type exists purely to make call sites read like object method calls
-(`led.high()` instead of `Gpio.digitalWrite(13, true)`). `toggle()`/`isHigh()` and
-`Gpio.digitalRead`/`analogRead`/`analogWrite` exist in the Java API but the Cortex-M4 assembly
-backend doesn't lower them yet (`CompileException: ... does not support this yet: intrinsic ...`
-at compile time).
+(`led.high()` instead of `Gpio.digitalWrite(13, true)`). `Gpio.analogRead` lowers to the core's real
+`analogRead` the same way `digitalWrite` does. `DigitalOutput.toggle()`/`isHigh()` and
+`Gpio.digitalRead`/`analogWrite` still exist in the Java API but the Cortex-M4 assembly backend
+doesn't lower them yet (`CompileException: ... does not support this yet: intrinsic ...` at compile
+time).
 
 ## What this rules out
 

@@ -15,3 +15,5 @@ build/
 *.ino.bin
 *.ino.elf
 *.ino.hex
+
+.env

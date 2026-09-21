@@ -133,6 +133,32 @@ list) follow the same pattern as `Blink` above — override `juno.main`, for exa
 `-Djuno.main=io.github.jabrena.juno.api.led.LedMatrixHeart`. They all draw on the UNO R4 WiFi's
 built-in 12x8 LED matrix.
 
+### LCD Keypad Shield examples
+
+[`LcdKeypadShield`](../juno/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java)
+drives a common 16x2 HD44780-compatible "LCD Keypad Shield" (LCD on digital pins 4-9, backlight on
+pin 10, 5 buttons on `A0`) — no new compiler intrinsic, built entirely from `Gpio`/`Delay` the same
+way `LedCanvas` is built from `LedMatrix`.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lcd.LcdKeypadDemo
+```
+
+[`LcdKeypadDemo`](../juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java)
+prints a header and shows which button is currently held. Assembled, linked, uploaded to, and
+confirmed working on a real UNO R4 WiFi with this exact shield.
+
+[`Pomodoro`](../juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/pomodoro/Pomodoro.java)
+is a standalone (no network) Pomodoro timer: pick a session length (5-60 minutes) with UP/DOWN,
+confirm with SELECT, and a live `MM:SS` countdown runs on the LCD, logged to Serial every tick; the
+alarm blinks until any button is pressed, then returns to minute selection.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lcd.pomodoro.Pomodoro
+```
+
 ### Example: RatonLoco (USB mouse control)
 
 [`juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java) is a
@@ -215,3 +241,18 @@ PC-relative literal pool that only reaches 4095 bytes forward, and every previou
 enough that the assembler's default end-of-file pool was always in range — fixed by flushing the pool
 (`.ltorg`) after every basic block, always safe since a block's terminator already ends in an
 unconditional branch or return.
+
+**`Gpio.analogRead`, `Delay.micros`, and `Clock.millis`/`Clock.micros` support added.** Each resolves
+straight to the Arduino core's own `analogRead`/`delayMicroseconds`/`millis`/`micros`, the same way
+`digitalWrite`/`delay` already did — no runtime shim needed. `LcdKeypadDemo` (`analogRead` via
+button reads) and `Pomodoro` (`Clock.millis` for the countdown) have both been assembled, linked,
+uploaded to, and confirmed working on a real UNO R4 WiFi with an LCD Keypad Shield attached.
+Reaching reliable characters on that shield took a real hardware lesson, not a code fix: the shield's
+backlight pin must never be driven `HIGH` (float it via `INPUT` instead — driving it actively can
+brown out the shared 5V rail enough to keep the LCD from initializing at all), and 4-bit HD44780
+writes need generously wide settle margins (this driver uses 20us enable pulses and 200us
+settle delays, well past the datasheet minimums) to stay reliable once the UNO R4 WiFi's ESP32-S3
+module is actively drawing current — the exact right bytes were provably being sent (confirmed by
+logging every character code over Serial) while the physical display still showed corrupted
+characters at the datasheet-minimum timings, a byte-perfect-input/wrong-output signature of a
+signal-integrity margin problem rather than a software bug.

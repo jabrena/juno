@@ -78,6 +78,48 @@ Juno evaluates `System.getenv("NAME")` on the development machine during compila
 name must be a string literal, and compilation fails with a clear error if the variable is absent.
 The board does not have an environment and never calls `System.getenv` at runtime.
 
+### Alternative: a `.env` file via `juno-maven-plugin`
+
+For Maven-built examples, `juno-maven-plugin`'s `env` goal is a Maven-level alternative to
+exporting shell environment variables by hand: it reads a git-ignored `.env` file (`KEY=VALUE` per
+line) from the module's base directory and exports every entry into the Maven JVM's real process
+environment, overwriting any value already set for that name. Nothing is generated — programs keep
+using the exact same `System.getenv("NAME")` reads shown above, with no separate class or import.
+Because `juno-maven-plugin:compile` runs later in that same JVM, `System.getenv(...)` sees the
+`.env` values during compilation exactly as if the shell had exported them itself.
+
+Enable it by adding an execution to the module's `juno-maven-plugin` configuration (see
+[`juno-examples/pom.xml`](../juno-examples/pom.xml)):
+
+```xml
+<executions>
+    <execution>
+        <goals>
+            <goal>env</goal>
+        </goals>
+    </execution>
+</executions>
+```
+
+Then create `.env` (never committed — `.env` is in the repository's `.gitignore`) next to that
+module's `pom.xml`:
+
+```text
+JUNO_WIFI_SSID=your-network-name
+JUNO_WIFI_PASSWORD=your-network-password
+```
+
+The `env` goal runs during the `generate-sources` phase, before `compile` — no other configuration
+is needed. A missing `.env` file is not an error: nothing is exported, so modules that don't use
+WiFi are unaffected, and modules that do must still see the variable set some other way (shell
+export, CI secret, etc.) or compilation fails with the same clear error as an unset variable
+always produces.
+
+Mutating the JVM's environment map is an unsupported-but-stable reflection trick, and on JDK 9+ it
+requires the Maven JVM to be launched with `--add-opens java.base/java.lang=ALL-UNNAMED --add-opens
+java.base/java.util=ALL-UNNAMED`. This repository's [`.mvn/jvm.config`](../.mvn/jvm.config)
+already adds both flags to every `mvn`/`mvnw` invocation, so no per-command setup is needed.
+
 Environment variables keep credentials out of Java source and Git history, but they are not runtime
 secret storage. Juno embeds the resolved value in the generated `.ino` sketch and firmware. Keep
 `build/` artifacts private, avoid exposing the firmware, and clear exported variables when they are

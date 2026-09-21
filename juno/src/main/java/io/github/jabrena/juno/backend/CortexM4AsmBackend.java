@@ -897,9 +897,26 @@ public final class CortexM4AsmBackend {
                 load(output, frame, "r1", call.arguments().get(1));
                 output.append("    bl digitalWrite\n");
             }
+            case GPIO_ANALOG_READ -> {
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl analogRead\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case CLOCK_MILLIS -> {
+                output.append("    bl millis\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case CLOCK_MICROS -> {
+                output.append("    bl micros\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
             case DELAY_MILLIS -> {
                 load(output, frame, "r0", call.arguments().get(0));
                 output.append("    bl delay\n");
+            }
+            case DELAY_MICROS -> {
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl delayMicroseconds\n");
             }
             case LED_MATRIX_BEGIN -> output.append("    bl juno_led_matrix_begin\n");
             case LED_MATRIX_LOAD_FRAME -> {
