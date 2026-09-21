@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.maven;
 
-import io.github.jabrena.juno.AsmCompilationResult;
 import io.github.jabrena.juno.CompilationReport;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompileException;
@@ -27,10 +26,6 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     @Parameter(property = "juno.outputDirectory", defaultValue = "${project.build.directory}/juno", required = true)
     private File outputDirectory;
 
-    /** Code-generation backend: {@code asm} (default) or {@code cpp}. */
-    @Parameter(property = "juno.backend", defaultValue = "asm", required = true)
-    private String backend;
-
     final CompiledSketch compileSketch() {
         if (mainClass == null || mainClass.isBlank()) {
             throw new ArduinoCliException("Missing required Juno entry point; configure <mainClass> or -Djuno.main=<class>");
@@ -43,22 +38,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         String simpleName = trimmedMain.substring(trimmedMain.lastIndexOf('.') + 1);
         List<Path> classpath = classpathElements.stream().map(Path::of).toList();
 
-        return switch (JunoBackend.parse(backend)) {
-            case ASM -> compileAsmSketch(classpath, trimmedMain, simpleName);
-            case CPP -> compileCppSketch(classpath, trimmedMain, simpleName);
-        };
-    }
-
-    private CompiledSketch compileCppSketch(List<Path> classpath, String mainClass, String simpleName) {
-        Path sketchDirectory = outputDirectory().resolve(simpleName);
-        Path sketch = sketchDirectory.resolve(simpleName + ".ino");
-
-        CompilationResult result = new JunoCompiler().compileTo(classpath, mainClass, sketch);
-        String targetFqbn = targetFqbn(result.report().board().fqbn());
-        warnForFqbnOverride(targetFqbn, result.report());
-        getLog().info("Generated " + sketch + " for " + result.report().board().displayName()
-                + " with the C++ backend (fqbn " + targetFqbn + ")");
-        return new CompiledSketch(sketchDirectory, targetFqbn, JunoBackend.CPP);
+        return compileAsmSketch(classpath, trimmedMain, simpleName);
     }
 
     private CompiledSketch compileAsmSketch(List<Path> classpath, String mainClass, String simpleName) {
@@ -68,14 +48,14 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         Path shim = sketchDirectory.resolve(simpleName + "Shim.cpp");
         Path wrapper = sketchDirectory.resolve(sketchName + ".ino");
 
-        AsmCompilationResult result = new JunoCompiler().compileAsmTo(classpath, mainClass, assembly, shim);
+        CompilationResult result = new JunoCompiler().compileTo(classpath, mainClass, assembly, shim);
         writeAsmWrapper(wrapper, result.entryPointSymbol());
         String targetFqbn = targetFqbn(result.report().board().fqbn());
         warnForFqbnOverride(targetFqbn, result.report());
         getLog().info("Generated " + assembly + ", " + shim + ", and " + wrapper + " for "
-                + result.report().board().displayName() + " with the experimental ASM backend (fqbn "
+                + result.report().board().displayName() + " with the ASM backend (fqbn "
                 + targetFqbn + ")");
-        return new CompiledSketch(sketchDirectory, targetFqbn, JunoBackend.ASM);
+        return new CompiledSketch(sketchDirectory, targetFqbn);
     }
 
     private Path outputDirectory() {
@@ -110,10 +90,10 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     }
 
     final void verifySketch(ArduinoCli cli, CompiledSketch sketch) {
-        getLog().info("Compiling " + sketch.backend() + " Arduino sketch with arduino-cli");
+        getLog().info("Compiling ASM Arduino sketch with arduino-cli");
         cli.compile(sketch.fqbn(), sketch.directory());
     }
 
-    record CompiledSketch(Path directory, String fqbn, JunoBackend backend) {
+    record CompiledSketch(Path directory, String fqbn) {
     }
 }

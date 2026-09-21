@@ -13,39 +13,21 @@ import java.util.List;
 public final class JunoCompiler {
     private final CompilationPipeline pipeline = new CompilationPipeline();
 
-    public String compile(List<Path> classPath, String mainClass) {
-        return compile(new CompilationRequest(classPath, mainClass)).generatedSource();
-    }
-
     public CompilationResult compile(CompilationRequest request) {
-        Program program = pipeline.link(request.classPath(), request.mainClass());
-        IrProgram ir = pipeline.lower(program);
-        IrProgram optimized = pipeline.optimize(ir);
-        String source = pipeline.generate(optimized);
-        return new CompilationResult(source, CompilationReport.from(program, optimized));
-    }
-
-    public CompilationResult compileTo(List<Path> classPath, String mainClass, Path output) {
-        CompilationResult result = compile(new CompilationRequest(classPath, mainClass));
-        write(output, result.generatedSource(), "sketch");
-        return result;
-    }
-
-    public AsmCompilationResult compileAsm(List<Path> classPath, String mainClass) {
-        return compileAsm(new CompilationRequest(classPath, mainClass));
-    }
-
-    public AsmCompilationResult compileAsm(CompilationRequest request) {
         Program program = pipeline.link(request.classPath(), request.mainClass());
         IrProgram optimized = pipeline.optimize(pipeline.lower(program));
         CortexM4AsmBackend.Output output = new CortexM4AsmBackend().generate(optimized);
-        return new AsmCompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(),
+        return new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(),
                 CompilationReport.from(program, optimized));
     }
 
-    public AsmCompilationResult compileAsmTo(List<Path> classPath, String mainClass, Path assemblyOutput,
-                                             Path runtimeShimOutput) {
-        AsmCompilationResult result = compileAsm(classPath, mainClass);
+    public CompilationResult compile(List<Path> classPath, String mainClass) {
+        return compile(new CompilationRequest(classPath, mainClass));
+    }
+
+    public CompilationResult compileTo(List<Path> classPath, String mainClass, Path assemblyOutput,
+                                       Path runtimeShimOutput) {
+        CompilationResult result = compile(classPath, mainClass);
         write(assemblyOutput, result.assembly(), "assembly");
         write(runtimeShimOutput, result.runtimeShim(), "runtime shim");
         return result;

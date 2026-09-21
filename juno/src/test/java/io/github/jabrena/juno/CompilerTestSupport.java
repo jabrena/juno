@@ -43,7 +43,7 @@ public final class CompilerTestSupport {
     // fixtures compiled by an earlier compileJava call.
     private static final List<Path> JUNO_CLASSPATH = List.of(Path.of("target/classes"));
 
-    public static String compileJuno(Path classes, String mainClass) {
+    public static CompilationResult compileJuno(Path classes, String mainClass) {
         List<Path> classpath = new ArrayList<>(List.of(classes));
         classpath.addAll(JUNO_CLASSPATH);
         return new JunoCompiler().compile(classpath, mainClass);

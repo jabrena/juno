@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
-/** The generated Arduino C++ sketch, plus a {@link CompilationReport} describing how the compiler got there. */
-public record CompilationResult(String generatedSource, CompilationReport report) {
+/** Generated Cortex-M4 assembly, its C++ runtime shim, entry symbol, and compilation report. */
+public record CompilationResult(String assembly, String runtimeShim, String entryPointSymbol,
+                                CompilationReport report) {
 }

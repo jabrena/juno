@@ -1,6 +1,5 @@
 package io.github.jabrena.juno;
 
-import io.github.jabrena.juno.backend.ArduinoCppBackend;
 import io.github.jabrena.juno.classfile.ClassPath;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.ir.IrProgram;
@@ -18,7 +17,7 @@ import java.util.Map;
 
 /**
  * The compiler's stages, named and callable independently: classfiles -&gt; {@link #link} -&gt;
- * {@link #lower} -&gt; {@link #optimize} -&gt; {@link #generate}. {@link JunoCompiler} is the stable public
+ * {@link #lower} -&gt; {@link #optimize}. {@link JunoCompiler} is the stable public
  * entry point that runs them in sequence; this class exists so later work (a compilation report, {@code juno
  * inspect}) can hook into any one stage's output without re-deriving it or re-threading the whole pipeline.
  */
@@ -41,9 +40,5 @@ final class CompilationPipeline {
             optimized = pass.apply(optimized);
         }
         return optimized;
-    }
-
-    String generate(IrProgram program) {
-        return new ArduinoCppBackend().generate(program);
     }
 }

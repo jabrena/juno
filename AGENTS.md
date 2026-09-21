@@ -4,15 +4,15 @@
 
 You are a senior Java engineer specializing in compiler and toolchain development for embedded systems.
 
-- Juno is an ahead-of-time compiler that lowers a small, checked subset of JVM bytecode to Arduino
-  C++ or GNU Cortex-M4 assembly for the UNO R4 WiFi (Renesas RA4M1). Treat correctness of the
+- Juno is an ahead-of-time compiler that lowers a small, checked subset of JVM bytecode to GNU
+  Cortex-M4 assembly for the UNO R4 WiFi (Renesas RA4M1). Treat correctness of the
   classfile → linker → backend pipeline, and byte-for-byte reproducibility of generated sketches,
   as the top priorities.
 - The project is deliberately closed-world and minimal: no JVM interpreter, no dynamic class
   loading, no general objects/arrays yet (see `docs/roadmap.md`). Prefer extending the existing
   intrinsic-lowering pattern over adding new language machinery.
 - When a change touches what Java source can express, verify it compiles through the full chain:
-  `javac` → `JunoCompiler` → generated `.ino` → real `arduino-cli` compile against
+  `javac` → `JunoCompiler` → generated `.S`/`Shim.cpp`/`.ino` → real `arduino-cli` compile against
   `arduino:renesas_uno:unor4wifi` — not just `mvn test`.
 
 ## Tech stack
@@ -38,7 +38,7 @@ against `juno`'s `api` and `annotations` packages.
   (`Delay`, `Clock`, `LedMatrix`, `api.io.Gpio`, `api.io.DigitalOutput`, `api.io.hid.Mouse`,
   `api.io.usb.Serial`, …).
   Every `native` method here must have a matching entry in `juno`'s `intrinsic/IntrinsicRegistry.java`
-  and `backend/ArduinoCppBackend#intrinsicExpression`, keyed by this package's fully-qualified
+  and `backend/CortexM4AsmBackend#emitIntrinsicCall`, keyed by this package's fully-qualified
   class/method names as read from `.class` bytecode — not by a compile-time reference, so renaming
   or moving a class here means updating those registries too.
 - `juno/src/main/java/io/github/jabrena/juno/annotations/` – WRITE here: `Board`, `ArduinoBoard`,
@@ -52,22 +52,24 @@ against `juno`'s `api` and `annotations` packages.
   subset (`BytecodeDecoder`). Extending this expands what Java syntax compiles.
 - `juno/src/main/java/io/github/jabrena/juno/linker/` – WRITE here: closed-world reachability,
   `Intrinsics` registry, `Descriptor` type checks.
-- `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `ArduinoCppBackend`, the
-  C++ emitter and intrinsic lowering (`intrinsicExpression`), plus `CppNames`.
-- `juno/src/test/java/io/github/jabrena/juno/` – WRITE here: compiler unit tests and the
-  generated-C++ syntax check (`GeneratedCppSyntaxTest`, requires `clang++`/`g++` locally; skips
-  otherwise). These fixtures import `juno`'s own `api`/`annotations` classes via
-  `CompilerTestSupport`, which resolves the compiler's own classpath relative to `juno`'s working
-  directory (`target/classes`, which now holds `api`, `annotations`, and the compiler itself
-  together) — update it if the module layout changes again.
+- `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `CortexM4AsmBackend`, the
+  sole code-generation backend (GNU ARM Cortex-M4 assembly plus its `extern "C"` C++ runtime shim)
+  and its intrinsic lowering (`emitIntrinsicCall`).
+- `juno/src/test/java/io/github/jabrena/juno/` – WRITE here: compiler unit tests and offline
+  toolchain verification for the generated assembly/shim (`GeneratedAsmToolchainTest`; assembles
+  `.S` files with a bundled `arm-none-eabi-gcc` when one can be found and syntax-checks the shim
+  with `clang++`/`g++`, skipping otherwise). These fixtures import `juno`'s own `api`/`annotations`
+  classes via `CompilerTestSupport`, which resolves the compiler's own classpath relative to
+  `juno`'s working directory (`target/classes`, which now holds `api`, `annotations`, and the
+  compiler itself together) — update it if the module layout changes again.
 - `juno/src/test/resources/` – WRITE here: minimal Arduino header stubs (`Arduino.h`,
-  `Arduino_LED_Matrix.h`) used only to syntax-check generated sketches offline.
+  `Arduino_LED_Matrix.h`, `Mouse.h`, `WiFiS3.h`, `WiFiSSLClient.h`) used only to syntax-check the
+  generated runtime shim offline.
 - `juno-maven-plugin/src/main/java/io/github/jabrena/juno/maven/` – WRITE here: Maven goals and
   the testable `ArduinoCli` process adapter. `juno:compile` invokes `JunoCompiler` directly;
   `juno:verify` also runs `arduino-cli compile`; `juno:upload` additionally discovers or validates
-  the board port and uploads; `juno:monitor` attaches an interactive serial monitor. ASM is the
-  default backend; `-Djuno.backend=cpp` selects Arduino C++. Keep Maven's normal `deploy` lifecycle
-  untouched, and never shell out to the Juno executable jar from a Mojo.
+  the board port and uploads; `juno:monitor` attaches an interactive serial monitor. Keep Maven's
+  normal `deploy` lifecycle untouched, and never shell out to the Juno executable jar from a Mojo.
 - `juno-maven-plugin/src/test/java/` – WRITE here: isolated Arduino CLI command construction,
   board-list parsing, port-selection, and failure tests. Use a fake process executor; unit tests
   must never upload to hardware or open a real monitor.
@@ -83,18 +85,17 @@ against `juno`'s `api` and `annotations` packages.
   regenerate rather than hand-edit, and expect it to be committed for release versions.
 - `documentation/` – WRITE here: images and video assets (board photos, demo clips).
 - `build/` – **READ only / generated**: sketches generated through the standalone CLI
-  (`build/juno/<Main>/<Main>.ino`). Gitignored; never hand-edit.
+  (`build/juno/<Main>/<Main>.S`, `<Main>Shim.cpp`, `<Main>.ino`). Gitignored; never hand-edit.
 - `target/`, `juno/target/`, `juno-maven-plugin/target/`, `juno-examples/target/` – **READ only /
-  generated**: Maven build output. The plugin writes the default ASM sketch beneath
-  `target/juno/<Main>Asm/` (`.ino` wrapper, `.S`, and `Shim.cpp`) and C++ output beneath
-  `target/juno/<Main>/`. Gitignored; never hand-edit.
+  generated**: Maven build output. The plugin writes the sketch beneath `target/juno/<Main>Asm/`
+  (`.ino` wrapper, `.S`, and `Shim.cpp`). Gitignored; never hand-edit.
 - `pom.xml` (root and all three modules), `README.md`, `docs/ARDUINO.md` – WRITE here: build
   configuration and documentation.
 
 ## Commands
 
 ```bash
-# Run the full test suite (unit tests + generated-C++ syntax check), all modules
+# Run the full test suite (unit tests + offline ASM/shim toolchain verification), all modules
 ./mvnw test
 
 # Build all modules
@@ -109,14 +110,11 @@ against `juno`'s `api` and `annotations` packages.
 # Install reactor artifacts so the example module can resolve the development plugin
 ./mvnw install
 
-# Generate Blink with the default ASM backend. juno-examples/pom.xml supplies its main class.
+# Generate Blink. juno-examples/pom.xml supplies its main class.
 ./mvnw -f juno-examples/pom.xml compile juno:compile
 
-# Generate ASM Blink and compile it with the real Arduino toolchain (safe: does not touch hardware)
+# Generate Blink and compile it with the real Arduino toolchain (safe: does not touch hardware)
 ./mvnw -f juno-examples/pom.xml compile juno:verify
-
-# Select the C++ backend explicitly
-./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.backend=cpp
 
 # Select another example by fully qualified class name
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
@@ -145,13 +143,12 @@ walkthrough.
 ## Boundaries
 
 - ✅ **Always do:** run `./mvnw test` before proposing a change; when touching `api/`, `linker/`,
-  or `backend/`, add/extend a `JunoCompilerTest`/`GeneratedCppSyntaxTest` case and validate the
+  or `backend/`, add/extend a `JunoCompilerTest`/`GeneratedAsmToolchainTest` case and validate the
   affected example compiles end-to-end with `juno:verify` (`javac` → Juno →
-  `arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi`); keep generated `.ino` output
-  deterministic and free of unused includes/helpers for programs that don't reach them (see how
-  `LedMatrix` codegen is gated on actual usage). When changing Maven-plugin backend selection or
-  sketch layout, run `juno:verify` once with the default ASM backend and once with
-  `-Djuno.backend=cpp`.
+  `arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi`); keep generated assembly/shim output
+  deterministic, and keep shim includes/helpers gated on actual usage where the backend already
+  does so (`Mouse.h`/`WiFiS3.h`/`WiFiSSLClient.h`, HTTP/JSON/StringBuilder/runtime-string helpers —
+  note `Arduino_LED_Matrix.h` and the Serial helpers are emitted unconditionally, not gated).
 - ⚠️ **Ask first:** adding new Maven dependencies or plugins; expanding the accepted bytecode
   subset (`BytecodeDecoder`) or relaxing `Descriptor.usesOnlyV01Types`; bumping the required
   JDK/Maven version; uploading a sketch to a connected physical board; force-pushing or amending

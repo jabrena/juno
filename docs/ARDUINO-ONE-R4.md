@@ -122,8 +122,9 @@ Uploading changes the firmware on a connected physical board. Find the port with
 ## Juno compatibility
 
 The UNO R4 WiFi is currently Juno's only target (the Minima is untested and not yet supported).
-Juno generates portable Arduino C++ and the `arduino:renesas_uno` core compiles that sketch to
-native RA4M1 machine code. The entry-point class's `@Board` annotation
+Juno generates GNU ARM (Cortex-M4) assembly plus a small C++ runtime shim, and the
+`arduino:renesas_uno` core assembles/compiles and links them into native RA4M1 machine code. The
+entry-point class's `@Board` annotation
 (`io.github.jabrena.juno.annotations.Board`) selects the target board; a class with no `@Board` annotation
 targets the WiFi variant by default.
 

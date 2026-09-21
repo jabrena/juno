@@ -45,8 +45,8 @@ the example module resolve the development version of `juno-maven-plugin` by its
 
 ## Compile and upload a sketch
 
-`juno-examples/pom.xml` configures `Blink` as its default entry point and ASM as its default backend.
-Generate its complete ASM sketch:
+`juno-examples/pom.xml` configures `Blink` as its default entry point. Generate its complete
+sketch:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:compile
@@ -99,24 +99,6 @@ Open an interactive serial monitor (9600 baud by default) with:
 
 Use `-Djuno.baudRate=115200` to select another baud rate and `-Djuno.port=...` to select a port.
 Press `Ctrl+C` to exit.
-
-### Select a backend
-
-ASM is the default for `juno:compile`, `juno:verify`, and `juno:upload`. Select Arduino C++
-explicitly with:
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.backend=cpp
-```
-
-The C++ backend writes `juno-examples/target/juno/Blink/Blink.ino`. The backend flag composes with
-the entry-point flag, for example:
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter \
-  -Djuno.backend=cpp
-```
 
 ### Example: SerialCounter (reading Serial output)
 
@@ -181,10 +163,10 @@ manually (the onboard LED pulses), then immediately re-run the `juno:upload` com
 run `arduino-cli board list` first if you're unsure which port it came back on. Supply the new port
 to the plugin with `-Djuno.port=...`.
 
-## Experimental: Cortex-M4 assembly backend
+## The Cortex-M4 assembly backend
 
-The Maven plugin uses this backend by default. It emits GNU ARM (Cortex-M4) assembly straight from
-Juno IR instead of Arduino C++: every
+This is Juno's sole code-generation backend. It emits GNU ARM (Cortex-M4) assembly straight from
+Juno IR: every
 reachable method becomes its own function (real calls between them, including AAPCS stack-passed
 arguments beyond the first four), with branches, `switch`, `int` arithmetic/comparisons, fixed-size
 arrays, arena-allocated objects with fields, mutable static fields, GPIO/delay, `LedMatrix`, and
@@ -218,11 +200,10 @@ treat this backend as experimental.
 
 **`long`/`float`/`double` and `Wifi`/`HttpClient`/`HttpsClient`/`Json` support added.** The RA4M1 has
 no hardware FPU, so every nontrivial `long`/`float`/`double` operation is a call to a small
-`extern "C"` runtime-shim helper (soft arithmetic, same idea as calling into `libgcc`, just hand-written
-and reused verbatim from `ArduinoCppBackend`'s own already-verified `long` helpers where possible)
-rather than hand-rolled assembly; see `CortexM4AsmBackend`'s class doc for the exact storage model.
-HTTP/HTTPS/JSON reuse `ArduinoCppBackend`'s own HTTP/1.1 codec and JSON scanner as `extern "C"` shim
-functions. `MadridWeather` (WiFi connect, an HTTPS/TLS request, and JSON field extraction including a
+`extern "C"` runtime-shim helper (soft arithmetic, same idea as calling into `libgcc`, just
+hand-written) rather than hand-rolled assembly; see `CortexM4AsmBackend`'s class doc for the exact
+storage model. HTTP/HTTPS/JSON are backed by an `extern "C"` HTTP/1.1 codec and allocation-free
+JSON scanner in the generated runtime shim. `MadridWeather` (WiFi connect, an HTTPS/TLS request, and JSON field extraction including a
 `Json.getDouble` result immediately narrowed to `int`, matching this backend's `(int)
 Json.getDouble(...)` support) has been assembled and linked against the real toolchain and confirmed
 working on real UNO R4 WiFi hardware via its own USB serial output (`WiFi status: 3`, then repeated
