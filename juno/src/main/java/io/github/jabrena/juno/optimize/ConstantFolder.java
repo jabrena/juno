@@ -32,7 +32,7 @@ public final class ConstantFolder implements CompilerPass {
         for (IrMethod method : program.methods()) {
             methods.add(foldMethod(method));
         }
-        return new IrProgram(program.entryPoint(), List.copyOf(methods));
+        return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis());
     }
 
     private IrMethod foldMethod(IrMethod method) {

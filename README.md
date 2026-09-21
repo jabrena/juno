@@ -172,5 +172,6 @@ example programs rather than library API).
 - https://lejos.sourceforge.io/
 - https://lejos.sourceforge.io/nxt/nxj/api/index.html
 - https://tinyvm.sourceforge.net/
+- https://haiku-vm.sourceforge.net/
 - https://sunspotdev.org/
 - https://sunspotdev.org/docs/index.html

@@ -57,6 +57,7 @@ public final class Main {
         String mainClass = null;
         String classPathValue = "target/classes";
         Path output = null;
+        boolean gcLog = false;
         for (int index = 1; index < args.length; index++) {
             String option = args[index];
             if (option.equals("--main")) {
@@ -65,6 +66,8 @@ public final class Main {
                 classPathValue = value(args, ++index, option);
             } else if (option.equals("--output") || option.equals("-o")) {
                 output = Path.of(value(args, ++index, option));
+            } else if (option.equals("--gc-log")) {
+                gcLog = true;
             } else {
                 throw new CompileException("Unknown option '" + option + "'");
             }
@@ -81,7 +84,7 @@ public final class Main {
         String baseName = baseName(output);
         Path shimOutput = output.resolveSibling(baseName + "Shim.cpp");
         Path wrapperOutput = output.resolveSibling(baseName + ".ino");
-        CompilationResult result = new JunoCompiler().compileTo(classPath, mainClass, output, shimOutput);
+        CompilationResult result = new JunoCompiler().compileTo(classPath, mainClass, output, shimOutput, gcLog);
         writeWrapper(wrapperOutput, result.entryPointSymbol());
         Board board = result.report().board();
         System.out.println("Generated " + output + ", " + shimOutput + ", and " + wrapperOutput
@@ -244,6 +247,10 @@ public final class Main {
                 compile options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
                   --output, -o <file>       Generated .S file (default: build/juno/<Main>/<Main>.S)
+                  --gc-log                  Have the generated garbage collector print one Serial
+                                            line per collection (arena bytes used before/after),
+                                            visible via juno:monitor. Off by default: costs no
+                                            extra flash/RAM/time when omitted.
                   Also emits <Main>Shim.cpp and the matching <Main>.ino wrapper alongside it.
 
                 The target board is read from the entry-point class's @Board annotation

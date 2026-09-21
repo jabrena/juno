@@ -30,7 +30,7 @@ public final class CopyPropagation implements CompilerPass {
         for (IrMethod method : program.methods()) {
             methods.add(propagateMethod(method));
         }
-        return new IrProgram(program.entryPoint(), List.copyOf(methods));
+        return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis());
     }
 
     private IrMethod propagateMethod(IrMethod method) {

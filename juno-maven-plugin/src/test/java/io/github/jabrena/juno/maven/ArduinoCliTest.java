@@ -92,13 +92,15 @@ class ArduinoCliTest {
         Path sketch = Path.of("target/juno/Blink");
 
         cli.upload(FQBN, "COM3", sketch);
-        cli.monitor(FQBN, "COM3", 115200);
+        cli.monitor("COM3", 115200);
 
         assertThat(executor.invocations()).containsExactly(
                 new Invocation(List.of("/opt/arduino-cli", "upload", "--port", "COM3",
                         "--fqbn", FQBN, sketch.toAbsolutePath().normalize().toString()), false),
+                // Deliberately no --fqbn here: arduino-cli monitor 1.5.1 exits immediately with no
+                // diagnostic output when --fqbn is passed alongside --port (see ArduinoCli.monitor).
                 new Invocation(List.of("/opt/arduino-cli", "monitor", "--port", "COM3",
-                        "--fqbn", FQBN, "--config", "baudrate=115200"), true));
+                        "--config", "baudrate=115200"), true));
     }
 
     @Test

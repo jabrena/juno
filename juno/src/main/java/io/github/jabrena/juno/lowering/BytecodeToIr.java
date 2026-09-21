@@ -95,7 +95,7 @@ public final class BytecodeToIr {
         for (LinkedMethod linked : program.methods()) {
             methods.add(lower(linked, program.classes()));
         }
-        return new IrProgram(program.entryPoint(), List.copyOf(methods));
+        return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis());
     }
 
     /** Convenience overload for callers with no enum classes to resolve (e.g. hand-built {@link LinkedMethod}s in tests). */

@@ -103,7 +103,8 @@ public final class Linker {
                 }
             }
         }
-        return new Program(entryPoint, List.copyOf(reachable.values()), classes, board);
+        return new Program(entryPoint, List.copyOf(reachable.values()), classes, board,
+                mainClass.watchdogTimeoutMillis());
     }
 
     private void requireLedMatrixSupport(Board board, Intrinsic intrinsic, MethodRef caller) {

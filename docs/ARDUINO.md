@@ -91,13 +91,14 @@ To compile another example, override the configured entry point. For example, `S
   -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
 ```
 
-Open an interactive serial monitor (9600 baud by default) with:
+Open an interactive serial monitor (115200 baud by default, matching every juno-examples program's
+`Serial.begin(...)` rate) with:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:monitor
 ```
 
-Use `-Djuno.baudRate=115200` to select another baud rate and `-Djuno.port=...` to select a port.
+Use `-Djuno.baudRate=...` to select another baud rate and `-Djuno.port=...` to select a port.
 Press `Ctrl+C` to exit.
 
 ### Example: SerialCounter (reading Serial output)
@@ -112,7 +113,7 @@ serial port both work end to end:
 ```
 
 Then open the serial monitor at the same baud rate the sketch uses
-(`Serial.begin(BaudRate.BAUD_9600)`):
+(`Serial.begin(BaudRate.BAUD_115200)`, `juno:monitor`'s default):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:monitor

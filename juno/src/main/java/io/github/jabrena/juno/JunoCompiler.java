@@ -16,7 +16,7 @@ public final class JunoCompiler {
     public CompilationResult compile(CompilationRequest request) {
         Program program = pipeline.link(request.classPath(), request.mainClass());
         IrProgram optimized = pipeline.optimize(pipeline.lower(program));
-        CortexM4AsmBackend.Output output = new CortexM4AsmBackend().generate(optimized);
+        CortexM4AsmBackend.Output output = new CortexM4AsmBackend(request.gcLoggingEnabled()).generate(optimized);
         return new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(),
                 CompilationReport.from(program, optimized));
     }
@@ -25,9 +25,18 @@ public final class JunoCompiler {
         return compile(new CompilationRequest(classPath, mainClass));
     }
 
+    public CompilationResult compile(List<Path> classPath, String mainClass, boolean gcLoggingEnabled) {
+        return compile(new CompilationRequest(classPath, mainClass, gcLoggingEnabled));
+    }
+
     public CompilationResult compileTo(List<Path> classPath, String mainClass, Path assemblyOutput,
                                        Path runtimeShimOutput) {
-        CompilationResult result = compile(classPath, mainClass);
+        return compileTo(classPath, mainClass, assemblyOutput, runtimeShimOutput, false);
+    }
+
+    public CompilationResult compileTo(List<Path> classPath, String mainClass, Path assemblyOutput,
+                                       Path runtimeShimOutput, boolean gcLoggingEnabled) {
+        CompilationResult result = compile(classPath, mainClass, gcLoggingEnabled);
         write(assemblyOutput, result.assembly(), "assembly");
         write(runtimeShimOutput, result.runtimeShim(), "runtime shim");
         return result;

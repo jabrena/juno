@@ -38,12 +38,19 @@ final class ArduinoCli {
                 sketchDirectory.toAbsolutePath().normalize().toString()), false);
     }
 
-    void monitor(String fqbn, String port, int baudRate) {
+    /**
+     * Deliberately omits {@code --fqbn}: {@code arduino-cli monitor} (confirmed on 1.5.1) exits
+     * immediately with status 0 and no diagnostic output whenever {@code --fqbn} is passed alongside
+     * {@code --port}, regardless of environment — silently doing nothing instead of opening the
+     * monitor. {@code --port} plus an explicit {@code --config baudrate=...} (always supplied by
+     * {@code MonitorMojo}) is sufficient; {@code --fqbn} isn't needed for baud-rate defaulting here.
+     */
+    void monitor(String port, int baudRate) {
         if (baudRate <= 0) {
             throw new ArduinoCliException("Monitor baud rate must be greater than zero");
         }
         runChecked(List.of(executable, "monitor", "--port", requireText(port, "port"),
-                "--fqbn", requireText(fqbn, "FQBN"), "--config", "baudrate=" + baudRate), true);
+                "--config", "baudrate=" + baudRate), true);
     }
 
     String resolvePort(String fqbn, String configuredPort) {

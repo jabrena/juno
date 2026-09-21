@@ -6,6 +6,7 @@ import io.github.jabrena.juno.classfile.MethodRef;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * {@code classes} is every class loaded from the classpath (not just reachable methods' owners) — needed so
@@ -14,8 +15,9 @@ import java.util.Map;
  * {@code <clinit>}/{@code <init>}/{@code values()}/etc. are deliberately never added to {@code methods}).
  *
  * <p>{@code board} is resolved from the entry point's {@code @Board} annotation ({@link Board#DEFAULT} when
- * absent).
+ * absent). {@code watchdogTimeoutMillis} is the entry point's {@code @Watchdog} annotation's
+ * {@code timeoutMillis} value, or empty when the entry point has no {@code @Watchdog} annotation.
  */
 public record Program(MethodRef entryPoint, List<LinkedMethod> methods, Map<String, JavaClass> classes,
-                       Board board) {
+                       Board board, Optional<Integer> watchdogTimeoutMillis) {
 }

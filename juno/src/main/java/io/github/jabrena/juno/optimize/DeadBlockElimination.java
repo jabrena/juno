@@ -26,7 +26,7 @@ public final class DeadBlockElimination implements CompilerPass {
         for (IrMethod method : program.methods()) {
             methods.add(pruneMethod(method));
         }
-        return new IrProgram(program.entryPoint(), List.copyOf(methods));
+        return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis());
     }
 
     private IrMethod pruneMethod(IrMethod method) {

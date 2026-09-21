@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,6 +85,36 @@ class MainTest {
     @Test
     void inspectWithoutMainThrows() {
         assertThatThrownBy(() -> Main.run(new String[]{"inspect"})).isInstanceOf(CompileException.class);
+    }
+
+    @Test
+    void compileWithGcLogFlagEmitsSerialDiagnosticsInTheGeneratedShim() throws Exception {
+        compileFixture();
+        Path output = temporaryDirectory.resolve("out").resolve("Fixture.S");
+
+        Main.run(new String[]{"compile", "--main", "demo.Fixture", "--classpath", classPath(),
+                "--output", output.toString(), "--gc-log"});
+
+        String shim = Files.readString(output.resolveSibling("FixtureShim.cpp"),
+                StandardCharsets.UTF_8);
+        assertThat(shim).contains("Serial.print(\"[juno-gc] collect: used \")");
+    }
+
+    @Test
+    void compileWithoutGcLogFlagOmitsSerialDiagnosticsFromTheGeneratedShim() throws Exception {
+        compileFixture();
+        Path output = temporaryDirectory.resolve("out").resolve("Fixture.S");
+
+        Main.run(new String[]{"compile", "--main", "demo.Fixture", "--classpath", classPath(),
+                "--output", output.toString()});
+
+        String shim = Files.readString(output.resolveSibling("FixtureShim.cpp"),
+                StandardCharsets.UTF_8);
+        // The per-collection line is opt-in and must be absent; the pre-panic OOM diagnostic is
+        // unconditional (a panic is rare/catastrophic, unlike a collection, so it's always emitted
+        // regardless of --gc-log) and is expected here either way.
+        assertThat(shim).doesNotContain("[juno-gc] collect: used");
+        assertThat(shim).contains("[juno-gc] OOM: need");
     }
 
     private String classPath() {

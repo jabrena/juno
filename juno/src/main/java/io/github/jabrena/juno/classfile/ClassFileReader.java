@@ -12,6 +12,13 @@ import java.util.Optional;
 public final class ClassFileReader {
     private static final int CLASS_FILE_MAGIC = 0xCAFEBABE;
     private static final String BOARD_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Board;";
+    private static final String WATCHDOG_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Watchdog;";
+    private static final int WATCHDOG_DEFAULT_TIMEOUT_MILLIS = 5000;
+
+    /** One class's {@code @Board}/{@code @Watchdog} annotation values, as read from its class file. */
+    private record ClassAnnotations(Optional<String> boardApiClassName, Optional<Integer> watchdogTimeoutMillis) {
+        private static final ClassAnnotations NONE = new ClassAnnotations(Optional.empty(), Optional.empty());
+    }
 
     public JavaClass read(byte[] bytes) {
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(bytes))) {
@@ -32,9 +39,9 @@ public final class ClassFileReader {
             skipInterfaces(input);
             List<FieldInfo> fields = readFields(input, pool);
             List<JavaMethod> methods = readMethods(input, pool, className);
-            Optional<String> boardApiClassName = readClassAttributes(input, pool);
+            ClassAnnotations annotations = readClassAttributes(input, pool);
             return new JavaClass(className, classAccessFlags, superClassName, pool, List.copyOf(methods), fields,
-                    boardApiClassName);
+                    annotations.boardApiClassName(), annotations.watchdogTimeoutMillis());
         } catch (IOException exception) {
             throw new CompileException("Cannot read class file", exception);
         }
@@ -140,83 +147,96 @@ public final class ClassFileReader {
         }
     }
 
-    /** Reads the class's own attribute table, extracting {@code @Board}'s value if present. */
-    private Optional<String> readClassAttributes(DataInputStream input, ConstantPool pool) throws IOException {
+    /** Reads the class's own attribute table, extracting {@code @Board}/{@code @Watchdog}'s values if present. */
+    private ClassAnnotations readClassAttributes(DataInputStream input, ConstantPool pool) throws IOException {
         int count = input.readUnsignedShort();
-        String boardApiClassName = null;
+        ClassAnnotations annotations = ClassAnnotations.NONE;
         for (int i = 0; i < count; i++) {
             String attributeName = pool.utf8(input.readUnsignedShort());
             int length = input.readInt();
             if (attributeName.equals("RuntimeVisibleAnnotations")) {
-                String found = readAnnotations(input, pool);
-                if (found != null) {
-                    boardApiClassName = found;
-                }
+                annotations = readAnnotations(input, pool, annotations);
             } else {
                 input.skipNBytes(Integer.toUnsignedLong(length));
             }
         }
-        return Optional.ofNullable(boardApiClassName);
+        return annotations;
     }
 
     /** Reads a {@code RuntimeVisibleAnnotations}/{@code RuntimeInvisibleAnnotations} body. */
-    private String readAnnotations(DataInputStream input, ConstantPool pool) throws IOException {
+    private ClassAnnotations readAnnotations(DataInputStream input, ConstantPool pool, ClassAnnotations annotations)
+            throws IOException {
         int numAnnotations = input.readUnsignedShort();
-        String boardApiClassName = null;
         for (int i = 0; i < numAnnotations; i++) {
-            String found = readAnnotation(input, pool);
-            if (found != null) {
-                boardApiClassName = found;
-            }
+            annotations = readAnnotation(input, pool, annotations);
         }
-        return boardApiClassName;
+        return annotations;
     }
 
-    /** Reads one {@code annotation} structure; returns {@code @Board}'s class value, or {@code null} otherwise. */
-    private String readAnnotation(DataInputStream input, ConstantPool pool) throws IOException {
+    /** Reads one {@code annotation} structure, folding {@code @Board}/{@code @Watchdog}'s values into {@code annotations}. */
+    private ClassAnnotations readAnnotation(DataInputStream input, ConstantPool pool, ClassAnnotations annotations)
+            throws IOException {
         String typeDescriptor = pool.utf8(input.readUnsignedShort());
         boolean isBoard = typeDescriptor.equals(BOARD_ANNOTATION_DESCRIPTOR);
+        boolean isWatchdog = typeDescriptor.equals(WATCHDOG_ANNOTATION_DESCRIPTOR);
         int numPairs = input.readUnsignedShort();
-        String boardApiClassName = null;
+        Optional<String> boardApiClassName = annotations.boardApiClassName();
+        Optional<Integer> watchdogTimeoutMillis = annotations.watchdogTimeoutMillis();
+        if (isWatchdog) {
+            // @Watchdog carries a default (see Watchdog#timeoutMillis) the class file omits entirely
+            // when the source never overrides it — apply that same default here so the annotation's
+            // mere presence is enough, exactly like a real annotation processor would resolve it.
+            watchdogTimeoutMillis = Optional.of(WATCHDOG_DEFAULT_TIMEOUT_MILLIS);
+        }
         for (int i = 0; i < numPairs; i++) {
-            input.readUnsignedShort(); // element_name_index
-            String classValue = readElementValue(input, pool);
-            if (isBoard && classValue != null) {
-                boardApiClassName = classValue;
+            String elementName = pool.utf8(input.readUnsignedShort());
+            ElementValue value = readElementValue(input, pool);
+            if (isBoard && value.classInternalName() != null) {
+                boardApiClassName = Optional.of(value.classInternalName());
+            }
+            if (isWatchdog && elementName.equals("timeoutMillis") && value.intValue() != null) {
+                watchdogTimeoutMillis = Optional.of(value.intValue());
             }
         }
-        return boardApiClassName;
+        return new ClassAnnotations(boardApiClassName, watchdogTimeoutMillis);
     }
 
-    /** Reads one {@code element_value}; returns the referenced class's internal name for a class-typed (tag 'c') value. */
-    private String readElementValue(DataInputStream input, ConstantPool pool) throws IOException {
+    /** One {@code element_value}'s parsed payload — only the fields a supported tag can populate are non-null. */
+    private record ElementValue(String classInternalName, Integer intValue) {
+        private static final ElementValue EMPTY = new ElementValue(null, null);
+    }
+
+    /** Reads one {@code element_value}. */
+    private ElementValue readElementValue(DataInputStream input, ConstantPool pool) throws IOException {
         int tag = input.readUnsignedByte();
         return switch (tag) {
-            case 'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z', 's' -> {
+            case 'I' -> new ElementValue(null, pool.integer(input.readUnsignedShort()));
+            case 'B', 'C', 'D', 'F', 'J', 'S', 'Z', 's' -> {
                 input.readUnsignedShort();
-                yield null;
+                yield ElementValue.EMPTY;
             }
             case 'e' -> {
                 input.readUnsignedShort();
                 input.readUnsignedShort();
-                yield null;
+                yield ElementValue.EMPTY;
             }
             case 'c' -> {
                 String descriptor = pool.utf8(input.readUnsignedShort());
-                yield descriptor.startsWith("L") && descriptor.endsWith(";")
+                String internalName = descriptor.startsWith("L") && descriptor.endsWith(";")
                         ? descriptor.substring(1, descriptor.length() - 1)
                         : descriptor;
+                yield new ElementValue(internalName, null);
             }
             case '@' -> {
-                readAnnotation(input, pool);
-                yield null;
+                readAnnotation(input, pool, ClassAnnotations.NONE);
+                yield ElementValue.EMPTY;
             }
             case '[' -> {
                 int numValues = input.readUnsignedShort();
                 for (int i = 0; i < numValues; i++) {
                     readElementValue(input, pool);
                 }
-                yield null;
+                yield ElementValue.EMPTY;
             }
             default -> throw new CompileException("Unsupported annotation element_value tag " + tag);
         };

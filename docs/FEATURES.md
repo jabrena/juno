@@ -44,8 +44,14 @@ Supported today:
   accessors, and supported primitive/array/reference components. Generated `equals()`/`hashCode()`/
   `toString()` remain unsupported because they require `invokedynamic` and broader object/String support.
 - final closed-world classes with constructors, primitive/reference instance fields, and statically
-  resolvable instance calls. Objects use a fixed 8 KiB zero-filled bump arena with no reclamation; code
-  must not allocate indefinitely inside loops.
+  resolvable instance calls. Objects come from a fixed 8 KiB zero-filled arena backed by a conservative
+  mark/sweep garbage collector: a collection runs automatically when an allocation would otherwise
+  exceed the arena, reclaiming any block no longer reachable from the native call stack (Juno has no
+  reference-typed static fields, so the stack is the collector's only root set). This is Boehm-GC
+  style — no type tags and no compaction, since a collector that can't tell a real pointer from an int
+  that happens to match a heap address can't safely move objects — so a program whose *simultaneously
+  live* objects exceed 8 KiB still exhausts the arena and panics exactly as before; only the total
+  *lifetime* allocation count is no longer bounded by that capacity.
 - direct static calls with closed-world reachability; unused methods are omitted
 - runtime {@code String} references in locals, parameters, and return values, with string literals,
   {@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Integer conversions use eight
@@ -89,13 +95,17 @@ Two board examples make the distinction observable:
 
 - `RuntimeRiskSafePulse` allocates once, has generated bounds checks, and should report no findings;
   it blinks alternating 120/360 ms pulses indefinitely.
-- `RuntimeRiskArenaExhaustion` is intentionally unsafe. It allocates 1 KiB on every loop iteration,
-  shows a one-second startup light, flashes eight more times, and then stops when the ninth allocation
-  exhausts the 8 KiB arena. Its `JUNO-RISK-001` warning predicts that failure before upload.
+- `RuntimeRiskArenaExhaustion` is intentionally unsafe. It allocates 1 KiB on every loop iteration; its
+  `JUNO-RISK-001` warning predicts a pre-collection worst case before upload. With the conservative
+  garbage collector, whether it actually exhausts the arena now depends on reachability: if each
+  iteration's block is dropped before the next (nothing on the stack still points to it), the collector
+  reclaims it and the program keeps running instead of stopping; if every block is kept reachable
+  (e.g. stored into a live array), reclamation is impossible and it still stops — now on whichever
+  iteration first can't fit alongside everything still reachable, rather than always the ninth.
 
 Not yet supported:
 
-- inheritance/polymorphic dispatch, interfaces, object arrays with polymorphism, or garbage collection
+- inheritance/polymorphic dispatch, interfaces, or object arrays with polymorphism
 - general string construction/concatenation and other {@code String} methods, general exceptions, threads,
   reflection, or dynamic loading
 - enum string methods (`.name()`, `.toString()`), `valueOf()`, and enum state beyond one directly

@@ -26,6 +26,14 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     @Parameter(property = "juno.outputDirectory", defaultValue = "${project.build.directory}/juno", required = true)
     private File outputDirectory;
 
+    /**
+     * Have the generated garbage collector print one Serial line per collection (arena bytes used
+     * before/after), visible via {@code juno:monitor}. Off by default: costs no extra
+     * flash/RAM/time when disabled, since the print statements aren't emitted at all.
+     */
+    @Parameter(property = "juno.gcLog", defaultValue = "false")
+    private boolean gcLog;
+
     final CompiledSketch compileSketch() {
         if (mainClass == null || mainClass.isBlank()) {
             throw new ArduinoCliException("Missing required Juno entry point; configure <mainClass> or -Djuno.main=<class>");
@@ -48,7 +56,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         Path shim = sketchDirectory.resolve(simpleName + "Shim.cpp");
         Path wrapper = sketchDirectory.resolve(sketchName + ".ino");
 
-        CompilationResult result = new JunoCompiler().compileTo(classpath, mainClass, assembly, shim);
+        CompilationResult result = new JunoCompiler().compileTo(classpath, mainClass, assembly, shim, gcLog);
         writeAsmWrapper(wrapper, result.entryPointSymbol());
         String targetFqbn = targetFqbn(result.report().board().fqbn());
         warnForFqbnOverride(targetFqbn, result.report());

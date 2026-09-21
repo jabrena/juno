@@ -40,6 +40,8 @@ public final class MadridWeather {
         String temperature = WeatherClient.fetchTemperature(response, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE,
                 headers, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength);
         if (temperature != null) {
+            Serial.print("Weather OK len=");
+            Serial.println(temperature.length());
             display.showTemperature(temperature);
         } else {
             Serial.println("Weather request failed");
@@ -53,6 +55,8 @@ public final class MadridWeather {
                 headers, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength,
                 timeText, TIME_TEXT_BUFFER_SIZE);
         if (time != null) {
+            Serial.print("Time OK len=");
+            Serial.println(time.length());
             display.showTime(time);
         } else {
             Serial.println("Time request failed");
@@ -64,8 +68,14 @@ public final class MadridWeather {
         display.showMessage("Connecting");
         Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
 
+        int waitedSeconds = 0;
         while (Wifi.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(1000);
+            waitedSeconds = waitedSeconds + 1;
+            if (waitedSeconds % 5 == 0) {
+                Serial.print("Still connecting, Wifi.status()=");
+                Serial.println(Wifi.status());
+            }
         }
         Serial.println("WiFi connected");
         display.showMessage("Connected");

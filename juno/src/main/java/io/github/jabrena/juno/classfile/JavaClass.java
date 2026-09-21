@@ -22,7 +22,8 @@ import java.util.Optional;
  * {@link #recordComponents()}.
  */
 public record JavaClass(String name, int accessFlags, String superClassName, ConstantPool constantPool,
-                         List<JavaMethod> methods, List<FieldInfo> fields, Optional<String> boardApiClassName) {
+                         List<JavaMethod> methods, List<FieldInfo> fields, Optional<String> boardApiClassName,
+                         Optional<Integer> watchdogTimeoutMillis) {
     private static final int ACC_ENUM = 0x4000;
     private static final int ACC_FINAL = 0x0010;
     private static final String RECORD_SUPERCLASS = "java/lang/Record";

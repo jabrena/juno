@@ -156,13 +156,16 @@ public final class RuntimeRiskAnalyzer {
                 || recursive.stream().anyMatch(transitiveAllocators::contains);
         for (MethodRef method : loopAllocators) {
             findings.add(new RuntimeRisk("JUNO-RISK-001", RiskSeverity.WARNING, method,
-                    "allocation can repeat in a control-flow loop; the fixed arena may eventually exhaust"));
+                    "allocation can repeat in a control-flow loop; the fixed arena may eventually "
+                            + "exhaust assuming no intermediate garbage collection reclaims space "
+                            + "(the runtime does collect, but this is a static, GC-oblivious estimate)"));
         }
 
         int arenaBytes = startupAllocationEstimate(program, callSites, directAllocation);
         if (arenaBytes > RuntimeLimits.ARENA_CAPACITY_BYTES) {
             findings.add(new RuntimeRisk("JUNO-RISK-002", RiskSeverity.WARNING, program.entryPoint(),
-                    "conservative startup arena estimate is " + arenaBytes + " bytes, exceeding the "
+                    "conservative startup arena estimate (assuming no intermediate garbage collection "
+                            + "reclaims space) is " + arenaBytes + " bytes, exceeding the "
                             + RuntimeLimits.ARENA_CAPACITY_BYTES + " byte capacity"));
         }
 

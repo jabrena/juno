@@ -76,6 +76,58 @@ class CortexM4AsmBackendTest {
     }
 
     /**
+     * The conservative GC's stack scan (see {@code runtimeShim}'s {@code juno_gc_mark}) needs a sound
+     * upper bound on the live stack, so the entry point alone captures {@code sp} into
+     * {@code juno_gc_stack_top} before its own {@code push} touches it — a helper method's prologue
+     * must not repeat this (it isn't where the program's stack starts, and doing it there would
+     * overwrite the true bound with a shallower one).
+     */
+    @Test
+    void capturesTheStackTopOnlyInTheEntryPointPrologueBeforeItsOwnPush() {
+        MethodRef entryPoint = new MethodRef("GcStackTop", "main", "([Ljava/lang/String;)V");
+        MethodRef helper = new MethodRef("GcStackTop", "helper", "()V");
+        IrMethod entryMethod = IrMethod.withInferredValues(entryPoint, 1, 1, List.of(),
+                List.of(new IrBasicBlock(0,
+                        List.of(new IrInstruction.Call(Optional.empty(), helper, List.of())),
+                        new IrTerminator.Return(Optional.empty()))));
+        IrMethod helperMethod = IrMethod.withInferredValues(helper, 0, 0, List.of(),
+                List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty()))));
+
+        CortexM4AsmBackend.Output result = new CortexM4AsmBackend()
+                .generate(new IrProgram(entryPoint, List.of(entryMethod, helperMethod)));
+        String assembly = result.assembly();
+
+        String capture = "ldr r0, =juno_gc_stack_top\n"
+                + "    mov r1, sp\n"
+                + "    str r1, [r0]\n"
+                + "    movw r2, #4096\n"
+                + "    sub r2, r1, r2\n"
+                + "    movs r3, #0\n"
+                + ".LjunoZeroStack:\n"
+                + "    cmp r2, r1\n"
+                + "    bhs .LjunoZeroStackDone\n"
+                + "    str r3, [r2]\n"
+                + "    add r2, r2, #4\n"
+                + "    b .LjunoZeroStack\n"
+                + ".LjunoZeroStackDone:\n"
+                + "    push {r4-r11, lr}\n";
+        assertThat(assembly).contains("juno_GcStackTop_asm:\n    " + capture);
+        // Exactly once: the helper's own prologue must not repeat it.
+        assertThat(countOccurrences(assembly, "ldr r0, =juno_gc_stack_top")).isEqualTo(1);
+        assertThat(assembly).doesNotContain("juno_fn1:\n    " + capture);
+    }
+
+    private static int countOccurrences(String haystack, String needle) {
+        int count = 0;
+        int index = 0;
+        while ((index = haystack.indexOf(needle, index)) != -1) {
+            count++;
+            index += needle.length();
+        }
+        return count;
+    }
+
+    /**
      * Mirrors {@code LedMatrixHeart}'s IR exactly (see {@code juno inspect --ir --main
      * LedMatrixHeart}), including the full-32-bit frame word constants that first exposed the
      * {@code movw}/{@code movt} immediate-loading fix. This assembly + shim pairing has separately

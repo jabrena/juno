@@ -86,6 +86,22 @@ public final class CortexM4AsmBackend {
     private static final int WORD = 4;
     /** Bytes {@code push {r4-r11, lr}} reserves — every prologue/epilogue is built around this. */
     private static final int PUSH_BYTES = 9 * WORD;
+    /**
+     * Bytes of stack the entry-point prologue zeroes below the captured {@code juno_gc_stack_top}
+     * before anything else runs. A reset (watchdog, reset-button, or otherwise) reloads {@code sp}
+     * from the vector table and the standard startup sequence re-zeroes {@code .bss}/{@code .data}
+     * (which is why {@code juno_arena} and the allocator's own bookkeeping always come back clean),
+     * but it does not clear the stack region itself — confirmed on real hardware: a program that
+     * panics mid-collection, then resets, starts its next run with the previous run's stack bytes
+     * (including arena-address-shaped garbage) still physically present, until fresh calls overwrite
+     * them. The conservative collector can't tell that stale data apart from a real live root, so
+     * without this, a post-reset run can find its own arena looking artificially "full of reachable
+     * garbage" from its very first collection. Fixed and conservative rather than reaching for the
+     * real linker-script stack limit: comfortably above what a Juno program's deepest call path
+     * typically needs (see {@code RuntimeRiskAnalyzer}'s own "generated locals on deepest call path"
+     * estimate), without depending on linker-script details this backend doesn't otherwise use.
+     */
+    private static final int STACK_ZERO_BYTES = 4096;
 
     /**
      * {@code runtimeShim} is a small {@code extern "C"} C++ source that must be compiled alongside
@@ -114,9 +130,31 @@ public final class CortexM4AsmBackend {
     private boolean usesRuntimeStrings;
     private boolean usesJsonStringValue;
     private boolean usesStringBuilder;
+    private boolean usesWatchdog;
+    private int watchdogTimeoutMillis;
+    private final boolean gcLoggingEnabled;
+
+    public CortexM4AsmBackend() {
+        this(false);
+    }
+
+    /**
+     * @param gcLoggingEnabled when {@code true}, {@code juno_gc_collect()} in the generated runtime
+     *     shim prints one {@code Serial} line per collection (arena bytes used before/after), letting
+     *     {@code juno:monitor} show reclamation happening in real time. {@code false} (the default)
+     *     costs zero extra flash/RAM/time: the print statements aren't emitted at all, not merely
+     *     disabled at runtime.
+     */
+    public CortexM4AsmBackend(boolean gcLoggingEnabled) {
+        this.gcLoggingEnabled = gcLoggingEnabled;
+    }
 
     public Output generate(IrProgram program) {
         entryPoint = program.entryPoint();
+        program.watchdogTimeoutMillis().ifPresent(millis -> {
+            usesWatchdog = true;
+            watchdogTimeoutMillis = millis;
+        });
         for (int index = 0; index < program.methods().size(); index++) {
             IrMethod method = program.methods().get(index);
             String label = method.reference().equals(entryPoint)
@@ -137,6 +175,7 @@ public final class CortexM4AsmBackend {
                 .append("    .syntax unified\n")
                 .append("    .thumb\n");
         emitStaticStorage(output);
+        emitGcStackTopStorage(output);
         emitStringLiteralStorage(output);
         emitIntArrayStorage(output);
         output.append("    .text\n");
@@ -210,6 +249,25 @@ public final class CortexM4AsmBackend {
             output.append(symbol).append(":\n")
                     .append("    .space 4\n");
         }
+    }
+
+    /**
+     * Unconditional (unlike {@link #emitStaticStorage}, which is skipped entirely when the program
+     * has no static fields): the conservative GC's stack scan needs this bound regardless of
+     * whether the program happens to use static fields.
+     */
+    private void emitGcStackTopStorage(StringBuilder output) {
+        output.append("    .bss\n")
+                .append("    .align 2\n")
+                // Unlike juno_static_* fields (only ever referenced within this same .S file), the
+                // runtime shim's C++ juno_gc_mark() references this symbol too — .global is required
+                // for that cross-object-file link to resolve; without it, `as` gives it local linkage
+                // and only a program that actually calls juno_alloc surfaces the failure (a program
+                // that never allocates has this whole path stripped by the linker's --gc-sections
+                // before the missing symbol would matter).
+                .append("    .global juno_gc_stack_top\n")
+                .append("juno_gc_stack_top:\n")
+                .append("    .space 4\n");
     }
 
     /**
@@ -344,8 +402,33 @@ public final class CortexM4AsmBackend {
             output.append("    .global ").append(label).append('\n');
         }
         output.append("    .type ").append(label).append(", %function\n")
-                .append(label).append(":\n")
-                .append("    push {r4-r11, lr}\n");
+                .append(label).append(":\n");
+        if (isEntryPoint) {
+            // Captured before this function's own prologue touches sp at all: everything the
+            // program ever runs happens in frames below this point, so this is a sound upper bound
+            // for the conservative GC's stack scan (see runtimeShim's juno_gc_stack_top/juno_gc_mark).
+            output.append("    ldr r0, =juno_gc_stack_top\n")
+                    .append("    mov r1, sp\n")
+                    .append("    str r1, [r0]\n");
+            // Zero STACK_ZERO_BYTES below the captured top before anything else runs (see that
+            // constant's doc): a reset doesn't clear the stack the way it clears .bss/.data, so
+            // stale pointer-shaped bytes from a PREVIOUS run could otherwise be misread as live
+            // roots by this run's own first collection. Done here in plain assembly, before the
+            // push below, since a called C++ helper couldn't safely zero this region without first
+            // spilling lr into it.
+            emitLoadImmediate(output, "r2", STACK_ZERO_BYTES);
+            output.append("    sub r2, r1, r2\n")
+                    .append("    movs r3, #0\n")
+                    .append(".LjunoZeroStack:\n")
+                    .append("    cmp r2, r1\n")
+                    // Addresses are unsigned: bhs (unsigned >=), not bge (signed >=).
+                    .append("    bhs .LjunoZeroStackDone\n")
+                    .append("    str r3, [r2]\n")
+                    .append("    add r2, r2, #4\n")
+                    .append("    b .LjunoZeroStack\n")
+                    .append(".LjunoZeroStackDone:\n");
+        }
+        output.append("    push {r4-r11, lr}\n");
         if (frame.frameSize() > 0) {
             // A plain immediate `sub sp,sp,#N` only encodes up to 4095, and Snake-sized frames exceed
             // that; r12 (AAPCS "ip", always caller-saved/scratch) is free here without disturbing the
@@ -354,6 +437,11 @@ public final class CortexM4AsmBackend {
             output.append("    sub sp, sp, r12\n");
         }
         emitParameterSpill(output, frame, parameterCount);
+        // Enabled before anything else the program does (including <clinit>, below), so @Watchdog
+        // protects the whole program lifetime, not just the user's own main() body.
+        if (isEntryPoint && usesWatchdog) {
+            output.append("    bl juno_watchdog_begin\n");
+        }
         // <clinit> is its own reachable method in the IR, but nothing calls it there — the entry
         // point invokes it explicitly, before its own first block, so it runs exactly once up front.
         if (isEntryPoint && clinitLabel != null) {
@@ -1302,6 +1390,14 @@ public final class CortexM4AsmBackend {
      */
     private String runtimeShim() {
         StringBuilder shim = new StringBuilder();
+        // Emitted (or not) once here, at Java-string-generation time — like every other optional
+        // shim feature (usesMouse, usesWifi, ...) — rather than a C++-level runtime branch, so a
+        // program compiled without --gc-log/juno.gcLog pays zero extra flash/RAM/Serial time for it.
+        String gcLogBefore = gcLoggingEnabled ? "uint32_t junoGcLogUsedBefore = juno_arena_used;" : "";
+        String gcLogAfter = gcLoggingEnabled
+                ? "Serial.print(\"[juno-gc] collect: used \"); Serial.print(junoGcLogUsedBefore); "
+                        + "Serial.print(\" -> \"); Serial.println(juno_arena_used);"
+                : "";
         shim.append("""
                 // Generated by Juno's Cortex-M4 assembly backend. Do not edit.
                 // Author: Juan Antonio Brena Moral
@@ -1327,6 +1423,19 @@ public final class CortexM4AsmBackend {
         if (usesFloat || usesDouble || usesJson || usesRuntimeStrings || usesStringBuilder) {
             shim.append("#include <math.h>\n");
         }
+        // WDT (like Arduino_LED_Matrix above) is bundled with the renesas_uno core, not a separate
+        // library install — only pulled in for programs whose entry-point class carries @Watchdog.
+        if (usesWatchdog) {
+            shim.append("#include <WDT.h>\n");
+        }
+        String watchdogRefresh = usesWatchdog ? "WDT.refresh();" : "";
+        String watchdogPanicMessage = usesWatchdog
+                ? "Serial.println(\"[juno-watchdog] panic: board will reset via watchdog in "
+                        + watchdogTimeoutMillis + "ms\");"
+                : "";
+        String watchdogBeginFunction = usesWatchdog
+                ? "\nextern \"C\" void juno_watchdog_begin() {\n  WDT.begin(" + watchdogTimeoutMillis + "u);\n}\n"
+                : "";
         shim.append("""
 
                 // Overrides the core's weak yield(): Serial's bool conversion is UNO R4's supported hook
@@ -1341,6 +1450,7 @@ public final class CortexM4AsmBackend {
                 static bool juno_yield_active = false;
 
                 extern "C" void yield() {
+                  ${JUNO_WATCHDOG_REFRESH}
                 #ifndef NO_USB
                   if (juno_yield_active) return;
                   juno_yield_active = true;
@@ -1350,19 +1460,265 @@ public final class CortexM4AsmBackend {
                 }
 
                 extern "C" [[noreturn]] void juno_panic() {
+                  // The watchdog diagnostic (if any) must print before noInterrupts(): USB CDC
+                  // Serial relies on interrupts/yield() to actually flush bytes out, so anything
+                  // printed after would be silently lost, same as the arena/bounds/etc. panics that
+                  // already print their own diagnostic before calling this function.
+                  ${JUNO_WATCHDOG_PANIC_MESSAGE}
                   noInterrupts();
                   for (;;) {}
                 }
-
+                ${JUNO_WATCHDOG_BEGIN_FUNCTION}
                 static uint8_t juno_arena[${JUNO_ARENA_CAPACITY}] __attribute__((aligned(8)));
                 static uint32_t juno_arena_used = 0;
 
+                // Conservative mark/sweep collector (Boehm-GC style: no type tags, no compaction —
+                // a conservative collector can't safely move objects since it can't tell a real
+                // pointer from an int that happens to match a heap address). Every arena block
+                // (allocated or free) has a 4-byte header immediately before the payload pointer
+                // callers see, so juno_alloc's return value never changes shape: bit 31 is the mark
+                // bit, bit 30 marks a free block, and the low 30 bits hold the block's padded
+                // payload size (always a multiple of 4, so every header stays 4-byte aligned and the
+                // block chain can be walked linearly). juno_gc_stack_top is written once, by the
+                // generated entry-point prologue, with the live sp at program start — see
+                // CortexM4AsmBackend.emitMethod; it bounds every future conservative stack scan.
+                extern "C" uintptr_t juno_gc_stack_top;
+
+                static constexpr uint32_t JUNO_GC_MARK_BIT = 0x80000000u;
+                static constexpr uint32_t JUNO_GC_FREE_BIT = 0x40000000u;
+                static constexpr uint32_t JUNO_GC_SIZE_MASK = 0x3FFFFFFFu;
+                static constexpr uint32_t JUNO_GC_NO_NEXT = 0xFFFFFFFFu;
+                static constexpr uint32_t JUNO_GC_MIN_PAYLOAD = 4u;
+                static constexpr uint32_t JUNO_GC_QUEUE_CAPACITY = 64u;
+
+                static uint32_t juno_gc_free_list_head = JUNO_GC_NO_NEXT;
+                static uint32_t juno_gc_queue[JUNO_GC_QUEUE_CAPACITY];
+                static uint32_t juno_gc_queue_count = 0;
+                static bool juno_gc_queue_overflowed = false;
+
+                static uint32_t juno_gc_round_up4(uint32_t value) {
+                  return (value + 3u) & ~3u;
+                }
+
+                static uint32_t* juno_gc_header_at(uint32_t offset) {
+                  return reinterpret_cast<uint32_t*>(&juno_arena[offset]);
+                }
+
+                static uint32_t juno_gc_block_size(uint32_t header) {
+                  return header & JUNO_GC_SIZE_MASK;
+                }
+
+                // A free block stores its free-list "next" offset in its own payload's first 4
+                // bytes — only possible when the payload is at least JUNO_GC_MIN_PAYLOAD bytes;
+                // smaller freed slivers are accepted v1 fragmentation and never linked.
+                static void juno_gc_push_free(uint32_t offset, uint32_t payload) {
+                  *juno_gc_header_at(offset) = payload | JUNO_GC_FREE_BIT;
+                  if (payload >= JUNO_GC_MIN_PAYLOAD) {
+                    *reinterpret_cast<uint32_t*>(&juno_arena[offset + 4u]) = juno_gc_free_list_head;
+                    juno_gc_free_list_head = offset;
+                  }
+                }
+
+                // First-fit search: unlinks and returns the offset of a free block whose payload is
+                // at least `padded` bytes, splitting off a remainder block when the leftover is worth
+                // keeping, or JUNO_GC_NO_NEXT if nothing free fits.
+                static uint32_t juno_gc_take_free(uint32_t padded) {
+                  uint32_t previous = JUNO_GC_NO_NEXT;
+                  uint32_t offset = juno_gc_free_list_head;
+                  while (offset != JUNO_GC_NO_NEXT) {
+                    uint32_t header = *juno_gc_header_at(offset);
+                    uint32_t payload = juno_gc_block_size(header);
+                    uint32_t next = *reinterpret_cast<uint32_t*>(&juno_arena[offset + 4u]);
+                    if (payload >= padded) {
+                      if (previous == JUNO_GC_NO_NEXT) {
+                        juno_gc_free_list_head = next;
+                      } else {
+                        *reinterpret_cast<uint32_t*>(&juno_arena[previous + 4u]) = next;
+                      }
+                      uint32_t leftover = payload - padded;
+                      if (leftover >= 4u + JUNO_GC_MIN_PAYLOAD) {
+                        *juno_gc_header_at(offset) = padded;
+                        juno_gc_push_free(offset + 4u + padded, leftover - 4u);
+                      } else {
+                        *juno_gc_header_at(offset) = payload;
+                      }
+                      return offset;
+                    }
+                    previous = offset;
+                    offset = next;
+                  }
+                  return JUNO_GC_NO_NEXT;
+                }
+
+                // Is `offset` really the start of a block in [0, juno_arena_used)? An O(n) linear
+                // chain walk rather than a precomputed bitmap: Juno's target programs (LED matrix
+                // animations, sensor loops) have small live-object counts, so this keeps the
+                // allocator simple — revisit only if real-hardware testing shows GC pauses are slow.
+                static bool juno_gc_is_block_start(uint32_t offset) {
+                  uint32_t cursor = 0;
+                  while (cursor < juno_arena_used) {
+                    if (cursor == offset) return true;
+                    if (cursor > offset) return false;
+                    cursor += 4u + juno_gc_block_size(*juno_gc_header_at(cursor));
+                  }
+                  return false;
+                }
+
+                static void juno_gc_enqueue(uint32_t offset) {
+                  if (juno_gc_queue_count < JUNO_GC_QUEUE_CAPACITY) {
+                    juno_gc_queue[juno_gc_queue_count++] = offset;
+                  } else {
+                    juno_gc_queue_overflowed = true;
+                  }
+                }
+
+                // Every word on the live stack, and every word of every marked object's payload, is
+                // a possible reference: with no type tags, the collector can't tell a real pointer
+                // from an int that happens to match a heap address, so it treats anything that lines
+                // up with a real, currently-allocated block's start as live.
+                static void juno_gc_mark_candidate(uintptr_t word) {
+                  uintptr_t base = reinterpret_cast<uintptr_t>(juno_arena);
+                  if (word < base + 4u || word >= base + juno_arena_used) return;
+                  uintptr_t relative = word - base;
+                  if ((relative & 3u) != 0u) return;
+                  uint32_t offset = static_cast<uint32_t>(relative) - 4u;
+                  if (!juno_gc_is_block_start(offset)) return;
+                  uint32_t header = *juno_gc_header_at(offset);
+                  if ((header & JUNO_GC_FREE_BIT) != 0u || (header & JUNO_GC_MARK_BIT) != 0u) return;
+                  *juno_gc_header_at(offset) = header | JUNO_GC_MARK_BIT;
+                  juno_gc_enqueue(offset);
+                }
+
+                // Reads `sizeof(uintptr_t)`-wide, natively-aligned words so this same collector code
+                // correctly recognizes real pointer values both on the 32-bit Cortex-M4 target and
+                // when this shim is compiled and executed natively (e.g. by host-side tests) on a
+                // 64-bit machine.
+                static void juno_gc_scan_range(const uint8_t* from, const uint8_t* to) {
+                  uintptr_t start = (reinterpret_cast<uintptr_t>(from) + sizeof(uintptr_t) - 1u)
+                      & ~(sizeof(uintptr_t) - 1u);
+                  uintptr_t end = reinterpret_cast<uintptr_t>(to);
+                  for (uintptr_t cursor = start; cursor + sizeof(uintptr_t) <= end;
+                       cursor += sizeof(uintptr_t)) {
+                    juno_gc_mark_candidate(*reinterpret_cast<const uintptr_t*>(cursor));
+                  }
+                }
+
+                static void juno_gc_scan_block_payload(uint32_t offset) {
+                  uint32_t payload = juno_gc_block_size(*juno_gc_header_at(offset));
+                  juno_gc_scan_range(&juno_arena[offset + 4u], &juno_arena[offset + 4u + payload]);
+                }
+
+                static void juno_gc_mark() {
+                  juno_gc_queue_count = 0;
+                  juno_gc_queue_overflowed = false;
+                  // The address of a local variable is a portable, widely-used stand-in for "the
+                  // current stack pointer" (the same technique Boehm-GC itself uses): it sits inside
+                  // this function's own frame, deeper than every live Java frame, so scanning from
+                  // here up to juno_gc_stack_top is always a safe superset of the true live stack.
+                  uint8_t stackMarker;
+                  juno_gc_scan_range(&stackMarker, reinterpret_cast<const uint8_t*>(juno_gc_stack_top));
+                  uint32_t index = 0;
+                  while (index < juno_gc_queue_count) {
+                    juno_gc_scan_block_payload(juno_gc_queue[index]);
+                    index++;
+                  }
+                  // Bounded work-queue overflow is a safety net, not the common case: fall back to a
+                  // fixed-point rescan of the whole chain until a full pass finds nothing new.
+                  bool rescanning = juno_gc_queue_overflowed;
+                  while (rescanning) {
+                    juno_gc_queue_overflowed = false;
+                    bool changed = false;
+                    uint32_t cursor = 0;
+                    while (cursor < juno_arena_used) {
+                      uint32_t header = *juno_gc_header_at(cursor);
+                      uint32_t size = juno_gc_block_size(header);
+                      if ((header & JUNO_GC_FREE_BIT) == 0u && (header & JUNO_GC_MARK_BIT) != 0u) {
+                        uint32_t before = juno_gc_queue_count;
+                        juno_gc_scan_block_payload(cursor);
+                        while (before < juno_gc_queue_count) {
+                          juno_gc_scan_block_payload(juno_gc_queue[before]);
+                          before++;
+                        }
+                        if (juno_gc_queue_count > 0) changed = true;
+                        juno_gc_queue_count = 0;
+                      }
+                      cursor += 4u + size;
+                    }
+                    rescanning = juno_gc_queue_overflowed && changed;
+                  }
+                }
+
+                // Rebuilds the free list from scratch: walks the block chain in ascending address
+                // order, coalescing each run of free-or-unmarked blocks into one free-list node
+                // (adjacent dead blocks merge for free, since sweep already visits them in order),
+                // clearing mark bits on survivors, and handing a trailing dead run straight back to
+                // the bump allocator instead of free-listing it.
+                static void juno_gc_sweep() {
+                  juno_gc_free_list_head = JUNO_GC_NO_NEXT;
+                  uint32_t cursor = 0;
+                  uint32_t runStart = JUNO_GC_NO_NEXT;
+                  while (cursor < juno_arena_used) {
+                    uint32_t header = *juno_gc_header_at(cursor);
+                    uint32_t size = juno_gc_block_size(header);
+                    bool dead = (header & JUNO_GC_FREE_BIT) != 0u || (header & JUNO_GC_MARK_BIT) == 0u;
+                    if (dead) {
+                      if (runStart == JUNO_GC_NO_NEXT) runStart = cursor;
+                    } else {
+                      *juno_gc_header_at(cursor) = size;
+                      if (runStart != JUNO_GC_NO_NEXT) {
+                        juno_gc_push_free(runStart, cursor - runStart - 4u);
+                        runStart = JUNO_GC_NO_NEXT;
+                      }
+                    }
+                    cursor += 4u + size;
+                  }
+                  if (runStart != JUNO_GC_NO_NEXT) {
+                    juno_arena_used = runStart;
+                  }
+                }
+
+                static void juno_gc_collect() {
+                  ${JUNO_GC_LOG_BEFORE}
+                  juno_gc_mark();
+                  juno_gc_sweep();
+                  ${JUNO_GC_LOG_AFTER}
+                }
+
+                static void* juno_gc_try_allocate(uint32_t padded) {
+                  uint32_t offset = juno_gc_take_free(padded);
+                  if (offset == JUNO_GC_NO_NEXT) {
+                    if (juno_arena_used + 4u + padded > sizeof(juno_arena)) return nullptr;
+                    offset = juno_arena_used;
+                    *juno_gc_header_at(offset) = padded;
+                    juno_arena_used += 4u + padded;
+                  }
+                  return &juno_arena[offset + 4u];
+                }
+
                 extern "C" void* juno_alloc(uint32_t size, uint32_t alignment) {
-                  uint32_t aligned = (juno_arena_used + alignment - 1u) & ~(alignment - 1u);
-                  if (aligned > sizeof(juno_arena) || size > sizeof(juno_arena) - aligned) juno_panic();
-                  uint8_t* memory = &juno_arena[aligned];
-                  for (uint32_t index = 0; index < size; index++) memory[index] = 0;
-                  juno_arena_used = aligned + size;
+                  if (alignment > 4u) juno_panic();
+                  uint32_t padded = juno_gc_round_up4(size);
+                  void* memory = juno_gc_try_allocate(padded);
+                  if (memory == nullptr) {
+                    juno_gc_collect();
+                    memory = juno_gc_try_allocate(padded);
+                  }
+                  if (memory == nullptr) {
+                    // Unconditional (unlike --gc-log's per-collection lines): a panic is rare and
+                    // catastrophic, so the diagnostic cost is trivial next to the value of knowing
+                    // why the board just froze, even for programs that never opted into --gc-log.
+                    // A no-op if the program never called Serial.begin(), same as every other Serial
+                    // call site here.
+                    Serial.print("[juno-gc] OOM: need ");
+                    Serial.print(padded);
+                    Serial.print(" bytes, arena_used=");
+                    Serial.print(juno_arena_used);
+                    Serial.print("/");
+                    Serial.println(sizeof(juno_arena));
+                    juno_panic();
+                  }
+                  uint8_t* bytes = static_cast<uint8_t*>(memory);
+                  for (uint32_t index = 0; index < padded; index++) bytes[index] = 0;
                   return memory;
                 }
 
@@ -1405,7 +1761,12 @@ public final class CortexM4AsmBackend {
                 extern "C" void juno_serial_println_str(const char* value) {
                   Serial.println(value);
                 }
-                """.replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES)));
+                """.replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES))
+                .replace("${JUNO_GC_LOG_BEFORE}", gcLogBefore)
+                .replace("${JUNO_GC_LOG_AFTER}", gcLogAfter)
+                .replace("${JUNO_WATCHDOG_REFRESH}", watchdogRefresh)
+                .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogPanicMessage)
+                .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogBeginFunction));
         if (usesRuntimeStrings || usesStringBuilder) {
             shim.append(runtimeStringHelpers());
         }

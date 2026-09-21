@@ -110,6 +110,58 @@ class GeneratedAsmToolchainTest {
         assembleAndCompile(armGcc, "demo.AsmArrays", source);
     }
 
+    /**
+     * A regression test for exactly the bug this GC implementation shipped with once: every other
+     * toolchain test here either assembles the {@code .S} alone (no link) or compiles/links the shim
+     * alone on the host (never against the {@code .S}), so all of them kept passing even though
+     * {@code juno_gc_stack_top} was emitted as a bare label with no {@code .global} directive — giving
+     * it local (file-scope) linkage the shim's {@code extern "C"} declaration could never actually
+     * resolve against. It only surfaced building a real allocating example (LedMatrixSnake) with
+     * {@code arduino-cli}, as an "undefined reference to juno_gc_stack_top" link error — because a
+     * non-allocating program like Blink has this whole path stripped by the linker's
+     * {@code --gc-sections} before the missing symbol would ever matter. This test directly checks the
+     * one property that broke: {@code juno_gc_stack_top} must have GLOBAL linkage in the assembled
+     * object (nm's uppercase {@code B}), not local ({@code b}).
+     */
+    @Test
+    void gcStackTopSymbolHasGlobalLinkageInGeneratedAssembly() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String armNm = availableArmNm(armGcc);
+        Assumptions.assumeTrue(armNm != null, "No arm-none-eabi-nm toolchain available");
+        String source = """
+                package demo;
+                public final class AsmAllocatesForLinkage {
+                    public static void main(String[] args) {
+                        int[] xs = new int[3];
+                        xs[0] = 1;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmAllocatesForLinkage", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmAllocatesForLinkage");
+        Path assembly = temporaryDirectory.resolve("AsmAllocatesForLinkage.S");
+        Files.writeString(assembly, result.assembly(), StandardCharsets.UTF_8);
+        Path object = temporaryDirectory.resolve("AsmAllocatesForLinkage.o");
+
+        Process assemble = new ProcessBuilder(armGcc, "-mcpu=cortex-m4", "-mthumb", "-c",
+                assembly.toString(), "-o", object.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean assembled = assemble.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(assembled, "arm-none-eabi-gcc timed out");
+        String assembleDiagnostics = new String(assemble.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(assemble.exitValue()).as(assembleDiagnostics).isEqualTo(0);
+
+        Process nm = new ProcessBuilder(armNm, object.toString()).redirectErrorStream(true).start();
+        boolean nmFinished = nm.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(nmFinished, "arm-none-eabi-nm timed out");
+        String symbols = new String(nm.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(symbols).as("juno_gc_stack_top must have GLOBAL linkage (uppercase nm type 'B'), "
+                + "not local ('b'), so the shim's extern \"C\" declaration can link against it: " + symbols)
+                .containsPattern("(?m)^\\S+ B juno_gc_stack_top$");
+    }
+
     @Test
     void compilesAWifiHttpAndJsonProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
@@ -163,6 +215,170 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    /**
+     * Every generated program's entry-point prologue captures the live {@code sp} into
+     * {@code juno_gc_stack_top} before its own {@code push} (see
+     * {@link io.github.jabrena.juno.backend.CortexM4AsmBackend#emitMethod}) so the conservative GC's
+     * stack scan has a sound upper bound. These host-only harnesses never run that generated
+     * assembly, so each one stands in for it: define the storage {@code juno_alloc}'s shim only
+     * declares {@code extern}, and set it from a local near the top of {@code main()}, the same way
+     * the real prologue does.
+     */
+    private static final String GC_STACK_TOP_PRELUDE = """
+
+            extern "C" { uintptr_t juno_gc_stack_top; }
+            """;
+
+    /**
+     * Capturing here, in {@code main()}'s own minimal frame, before calling into {@code gcTestBody()}
+     * (which holds every local a test actually uses) guarantees this bound sits above everything
+     * {@code gcTestBody()} and its callees touch — a called function's frame is always deeper than
+     * its caller's, regardless of compiler choices. Capturing a local declared alongside a test's own
+     * locals in that same frame instead doesn't have this guarantee: the compiler is free to place
+     * those locals in either order, so such a bound can end up excluding some of them — exactly the
+     * bug this shape avoids (an earlier draft of these tests learned this the hard way: it captured
+     * a marker declared before a large local array in the very same function, the compiler placed
+     * the array outside the resulting bound, and the collector — correctly, given that bad bound —
+     * couldn't see the array's pointers as roots and reclaimed blocks that were still reachable).
+     */
+    private static final String GC_STACK_TOP_MAIN = """
+
+            int main() {
+              uint8_t stackTopMarker;
+              juno_gc_stack_top = reinterpret_cast<uintptr_t>(&stackTopMarker);
+              return gcTestBody();
+            }
+            """;
+
+    @Test
+    void gcReclaimsUnreachableBlocksSoAllocationFarExceedingArenaCapacitySucceeds() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                public final class GcReclaim {
+                    public static void main(String[] args) {
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.GcReclaim", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GcReclaim");
+        String harness = GC_STACK_TOP_PRELUDE + """
+
+                static int gcTestBody() {
+                  // Each iteration's block is dropped (never stored anywhere reachable) before the
+                  // next allocation, so only the collector's reclamation keeps this from exhausting
+                  // the 8 KiB arena: 5000 * 64 bytes is roughly 39x the arena's capacity.
+                  for (int i = 0; i < 5000; i++) {
+                    void* block = juno_alloc(64, 4);
+                    (void) block;
+                  }
+                  return 0;
+                }
+                """ + GC_STACK_TOP_MAIN;
+        Process run = compileAndStart(compiler, result.runtimeShim() + harness, "gc-reclaim");
+        boolean finished = run.waitFor(20, TimeUnit.SECONDS);
+        if (!finished) {
+            run.destroyForcibly();
+        }
+        String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(finished).as("process should not hang if the collector actually reclaims garbage: "
+                + output).isTrue();
+        assertThat(run.exitValue()).as("runtime exit code; output: " + output).isEqualTo(0);
+    }
+
+    @Test
+    void gcCannotReclaimRetainedBlocksSoArenaExhaustionStillPanics() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                public final class GcRetained {
+                    public static void main(String[] args) {
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.GcRetained", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GcRetained");
+        String harness = GC_STACK_TOP_PRELUDE + """
+
+                static int gcTestBody() {
+                  // Every block stays reachable via this stack-local array for the rest of
+                  // gcTestBody(), so the collector must not (and, being conservative, cannot
+                  // incorrectly) reclaim any of them: 200 * 68 bytes (64 payload + 4 header) is well
+                  // past the 8 KiB arena, so this must eventually hit juno_panic()'s
+                  // noInterrupts()+for(;;) halt.
+                  void* retained[200];
+                  for (int i = 0; i < 200; i++) {
+                    retained[i] = juno_alloc(64, 4);
+                  }
+                  return 0;
+                }
+                """ + GC_STACK_TOP_MAIN;
+        Process run = compileAndStart(compiler, result.runtimeShim() + harness, "gc-retained");
+        boolean finished = run.waitFor(3, TimeUnit.SECONDS);
+        if (!finished) {
+            run.destroyForcibly();
+        }
+        assertThat(finished).as("retaining every block leaves nothing for the collector to reclaim, "
+                + "so exhaustion should still reach juno_panic()'s infinite loop instead of returning")
+                .isFalse();
+    }
+
+    @Test
+    void gcReusesAnInteriorFreedBlockRatherThanGrowingTheArena() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                public final class GcFreeList {
+                    public static void main(String[] args) {
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.GcFreeList", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GcFreeList");
+        // juno_arena_used/juno_gc_collect have internal (static) linkage in the generated shim, but
+        // this harness is appended to the very same translation unit (like the JSON runtime test
+        // above), so it can reach them directly to observe the allocator's internal bookkeeping —
+        // exactly what makes this check "surgical" rather than only inferring reclamation indirectly
+        // from whether the process merely finishes, as the two tests above do.
+        String harness = GC_STACK_TOP_PRELUDE + """
+
+                static int gcTestBody() {
+                  void* first = juno_alloc(64, 4);
+                  void* anchor = juno_alloc(64, 4);
+                  (void) first;
+                  (void) anchor;
+                  // `anchor` is allocated after `first` and stays reachable for the rest of
+                  // gcTestBody(), so once `first` becomes unreachable it is an INTERIOR dead block
+                  // (anchor sits above it), not a trailing one — sweep can only reclaim it by
+                  // free-listing it, never via the cheaper "retreat the bump cursor" special case for
+                  // a trailing run.
+                  first = nullptr;
+                  juno_gc_collect();
+
+                  uint32_t usedAfterCollect = juno_arena_used;
+                  void* reused = juno_alloc(64, 4);
+                  (void) reused;
+                  // If this allocation grew juno_arena_used, it was satisfied by bumping the arena,
+                  // not by reusing the free-listed interior block — proof the free-list path itself
+                  // (not just the trailing-run special case a simpler test could pass without it)
+                  // is what satisfied it.
+                  return (juno_arena_used == usedAfterCollect) ? 0 : 1;
+                }
+                """ + GC_STACK_TOP_MAIN;
+        Process run = compileAndStart(compiler, result.runtimeShim() + harness, "gc-free-list");
+        boolean finished = run.waitFor(20, TimeUnit.SECONDS);
+        if (!finished) {
+            run.destroyForcibly();
+        }
+        String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(finished).as("process should not hang: " + output).isTrue();
+        assertThat(run.exitValue()).as("expected the interior freed block to be reused via the "
+                + "free list rather than the arena growing; output: " + output).isEqualTo(0);
+    }
+
     @Test
     void generatedJsonShimParsesStrictBoundedDocumentsAtRuntime() throws Exception {
         String compiler = availableCppCompiler();
@@ -189,7 +405,15 @@ class GeneratedAsmToolchainTest {
         Path sketch = temporaryDirectory.resolve("JsonRuntime.cpp");
         String harness = """
 
+                // juno_alloc's shim declares juno_gc_stack_top extern (the generated entry-point
+                // assembly normally defines and populates it — see CortexM4AsmBackend.emitMethod);
+                // this host-only harness never runs that assembly, so it must provide the storage
+                // itself and set it near the top of main(), the same way the generated prologue does.
+                extern "C" { uintptr_t juno_gc_stack_top; }
+
                 int main() {
+                  uint8_t stackTopMarker;
+                  juno_gc_stack_top = reinterpret_cast<uintptr_t>(&stackTopMarker);
                   const char json[] = R"json({"users":[{"id":1},{"id":2147483648,"active":false,
                       "name":"A\\n\\u00e9\\uD83D\\uDE00"}],"numbers":[-12,1.25e2],"nothing":null,
                       "minimum":-9223372036854775808,"tooLarge":9223372036854775808})json";
@@ -266,6 +490,24 @@ class GeneratedAsmToolchainTest {
         assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
     }
 
+    /** Compiles+links {@code shimSource} natively (like the JSON runtime test) and starts it, unstarted-timeout-free. */
+    private Process compileAndStart(String compiler, String shimSource, String fileBaseName) throws Exception {
+        Path sketch = temporaryDirectory.resolve(fileBaseName + ".cpp");
+        Files.writeString(sketch, shimSource, StandardCharsets.UTF_8);
+        Path executable = temporaryDirectory.resolve(fileBaseName);
+
+        Process compile = new ProcessBuilder(compiler, "-std=c++17", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString(), "-o", executable.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean compiled = compile.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(compiled, "C++ compiler timed out");
+        String diagnostics = new String(compile.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(compile.exitValue()).as(diagnostics).isEqualTo(0);
+
+        return new ProcessBuilder(executable.toString()).redirectErrorStream(true).start();
+    }
+
     private void syntaxCheckCpp(String compiler, Path shim) throws Exception {
         Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
                 "-Isrc/test/resources", shim.toString())
@@ -320,5 +562,22 @@ class GeneratedAsmToolchainTest {
         } catch (IOException exception) {
             return null;
         }
+    }
+
+    /** {@code arm-none-eabi-nm} lives alongside whichever {@code arm-none-eabi-gcc} was found. */
+    private String availableArmNm(String armGcc) {
+        Path sibling = Path.of(armGcc).resolveSibling("arm-none-eabi-nm");
+        if (Files.isExecutable(sibling) && !Files.isDirectory(sibling)) {
+            return sibling.toString();
+        }
+        try {
+            Process process = new ProcessBuilder("arm-none-eabi-nm", "--version").start();
+            if (process.waitFor(5, TimeUnit.SECONDS) && process.exitValue() == 0) {
+                return "arm-none-eabi-nm";
+            }
+        } catch (IOException | InterruptedException ignored) {
+            // Not on PATH either.
+        }
+        return null;
     }
 }

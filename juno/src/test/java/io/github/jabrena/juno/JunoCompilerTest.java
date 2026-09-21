@@ -55,6 +55,95 @@ class JunoCompilerTest {
     }
 
     @Test
+    void watchdogAnnotationEnablesTheHardwareWatchdogWithItsExplicitTimeout() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.Watchdog;
+                import io.github.jabrena.juno.api.Delay;
+                @Board(ArduinoUnoR4WiFi.class)
+                @Watchdog(timeoutMillis = 3000)
+                public final class WatchdogExplicit {
+                    public static void main(String[] args) {
+                        Delay.millis(10);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WatchdogExplicit", source);
+        Path assembly = temporaryDirectory.resolve("WatchdogExplicit.S");
+        Path shim = temporaryDirectory.resolve("WatchdogExplicitShim.cpp");
+
+        CompilationResult result = new JunoCompiler().compileTo(
+                List.of(temporaryDirectory, Path.of("target/classes")), "demo.WatchdogExplicit", assembly, shim);
+
+        // The exact prologue sequence (stack-top capture, stack zeroing, then push) is covered
+        // precisely by CortexM4AsmBackendTest; this just confirms the entry point is real and the
+        // watchdog gets started.
+        assertThat(result.assembly()).contains("juno_WatchdogExplicit_asm:\n    ldr r0, =juno_gc_stack_top");
+        assertThat(result.assembly()).contains("bl juno_watchdog_begin");
+        assertThat(result.runtimeShim()).contains(
+                "#include <WDT.h>",
+                "WDT.refresh();",
+                "WDT.begin(3000u);",
+                "extern \"C\" void juno_watchdog_begin()",
+                "[juno-watchdog] panic: board will reset via watchdog in 3000ms");
+    }
+
+    @Test
+    void watchdogAnnotationWithoutExplicitTimeoutUsesItsDeclaredDefault() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.Watchdog;
+                import io.github.jabrena.juno.api.Delay;
+                @Board(ArduinoUnoR4WiFi.class)
+                @Watchdog
+                public final class WatchdogDefault {
+                    public static void main(String[] args) {
+                        Delay.millis(10);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WatchdogDefault", source);
+        Path assembly = temporaryDirectory.resolve("WatchdogDefault.S");
+        Path shim = temporaryDirectory.resolve("WatchdogDefaultShim.cpp");
+
+        CompilationResult result = new JunoCompiler().compileTo(
+                List.of(temporaryDirectory, Path.of("target/classes")), "demo.WatchdogDefault", assembly, shim);
+
+        assertThat(result.runtimeShim()).contains("WDT.begin(5000u);");
+    }
+
+    @Test
+    void programsWithoutWatchdogAnnotationEmitNoWatchdogCodeAtAll() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class NoWatchdog {
+                    public static void main(String[] args) {
+                        Delay.millis(10);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NoWatchdog", source);
+        Path assembly = temporaryDirectory.resolve("NoWatchdog.S");
+        Path shim = temporaryDirectory.resolve("NoWatchdogShim.cpp");
+
+        CompilationResult result = new JunoCompiler().compileTo(
+                List.of(temporaryDirectory, Path.of("target/classes")), "demo.NoWatchdog", assembly, shim);
+
+        assertThat(result.assembly()).doesNotContain("juno_watchdog_begin");
+        // "watchdog" alone would also match juno_panic()'s always-present explanatory comment about
+        // *why* its diagnostic print has to come before noInterrupts(); check the actual emitted
+        // code/identifiers instead of that prose.
+        assertThat(result.runtimeShim()).doesNotContain(
+                "#include <WDT.h>", "WDT.begin", "WDT.refresh", "juno_watchdog_begin",
+                "[juno-watchdog]");
+    }
+
+    @Test
     void propagatesLoweredLocalCopiesBeforeFoldingConstantBranches() throws Exception {
         String source = """
                 package demo;
@@ -732,7 +821,9 @@ class JunoCompilerTest {
 
         assertThat(generated).contains(".global juno_SameClassConstant_asm");
         // javac must inline the constant: no static field (and hence no .bss slot) for it at all.
-        assertThat(generated).doesNotContain(".bss", "juno_static_");
+        // .bss itself is no longer a signal here: juno_gc_stack_top always gets one for the
+        // conservative GC's stack scan, regardless of whether the program has static fields.
+        assertThat(generated).doesNotContain("juno_static_");
         assertThat(generated).contains("movs r0, #4");
     }
 
@@ -763,7 +854,9 @@ class JunoCompilerTest {
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CrossClassConstant").assembly();
 
         assertThat(generated).contains(".global juno_CrossClassConstant_asm");
-        assertThat(generated).doesNotContain(".bss", "juno_static_");
+        // .bss itself is no longer a signal here: juno_gc_stack_top always gets one for the
+        // conservative GC's stack scan, regardless of whether the program has static fields.
+        assertThat(generated).doesNotContain("juno_static_");
         assertThat(generated).contains("movs r0, #4");
     }
 
@@ -1307,7 +1400,9 @@ class JunoCompilerTest {
 
         assertThat(generated).contains(".global juno_UsesEnum_asm");
         // an enum constant never allocates: no getstatic-equivalent static field/bss slot for Direction.
-        assertThat(generated).doesNotContain(".bss", "juno_static_");
+        // .bss itself is no longer a signal here: juno_gc_stack_top always gets one for the
+        // conservative GC's stack scan, regardless of whether the program has static fields.
+        assertThat(generated).doesNotContain("juno_static_");
         // classify(Direction.NORTH) passes the ordinal 0 directly as an int argument.
         assertThat(generated).contains("bl juno_fn1");
     }
