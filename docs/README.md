@@ -9,6 +9,10 @@
 - [HID.md](HID.md) — acting as a USB HID mouse with `Mouse`.
 - [CLOCK.md](CLOCK.md) — reading elapsed time with `Clock`, and when to prefer it over `Delay`.
 - [INTERNET.md](INTERNET.md) — Wi-Fi, HTTP/HTTPS REST calls, and bounded JSON response extraction.
+- [EMAIL.md](EMAIL.md) — basic email support: sending with `Smtp`, reading a mailbox with
+  `Pop3Client`.
+- [APIS.md](APIS.md) — how Juno's compiler-intrinsic API classes work internally, and the
+  checklist for adding a new one.
 - [FEATURES.md](FEATURES.md) — the current inventory of Juno's supported Java subset (what
   compiles today, and what's explicitly not yet supported).
 - [ARDUINO.md](ARDUINO.md) — installing `arduino-cli` and using it to build, upload, and monitor
