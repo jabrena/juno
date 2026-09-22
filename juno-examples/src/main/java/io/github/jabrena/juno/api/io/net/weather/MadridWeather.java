@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.io.net.weather;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.net.HttpsClient;
+import io.github.jabrena.juno.api.io.net.http.HttpsClient;
 import io.github.jabrena.juno.api.io.net.Wifi;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
@@ -27,7 +27,7 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * positions (11-12 and 14-15) rather than parsed generically. Open-Meteo's
  * {@code current.temperature_2m} is a JSON number with a decimal fraction (e.g. {@code 21.2});
  * {@link WeatherClient} reads its raw JSON text directly via {@link
- * io.github.jabrena.juno.api.io.net.Json#getString(byte[], int, String)} rather than parsing it
+ * io.github.jabrena.juno.api.io.net.http.Json#getString(byte[], int, String)} rather than parsing it
  * to a {@code double} and reformatting, so the displayed value matches Open-Meteo's own text
  * exactly rather than being subject to binary-floating-point rounding.
  */

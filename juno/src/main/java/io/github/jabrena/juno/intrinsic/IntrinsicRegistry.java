@@ -4,9 +4,27 @@ import io.github.jabrena.juno.classfile.MethodRef;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /** The single place that resolves a Java {@link MethodRef} to the {@link Intrinsic} it implements. */
 public final class IntrinsicRegistry {
+    /**
+     * (intrinsic, declared-parameter-index) pairs exempt from the default rule that every
+     * intrinsic {@code String} parameter must be a compile-time literal. {@link
+     * io.github.jabrena.juno.api.io.net.http.HttpServer#respond(int, String, String)}'s {@code body}
+     * (parameter index 2, after {@code status} and {@code contentType}) is the only one: it
+     * already works identically whether the argument is a literal (a {@code .asciz} address) or a
+     * runtime value (a pooled {@code String}'s address) — both are plain null-terminated {@code
+     * const char*} to the generated {@code juno_http_server_respond} shim, so there is nothing
+     * literal-specific about it, unlike e.g. {@code Wifi#begin}'s credentials, which must never be
+     * a runtime value by design.
+     */
+    private static final Set<IntrinsicParameter> RUNTIME_STRING_PARAMETERS = Set.of(
+            new IntrinsicParameter(Intrinsic.HTTP_SERVER_RESPOND, 2));
+
+    private record IntrinsicParameter(Intrinsic intrinsic, int parameterIndex) {
+    }
+
     private static final Map<MethodRef, Intrinsic> METHODS = Map.ofEntries(
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/Gpio", "pinMode", "(II)V"),
                     Intrinsic.GPIO_PIN_MODE),
@@ -36,6 +54,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.STRING_LENGTH),
             Map.entry(new MethodRef("java/lang/String", "charAt", "(I)C"),
                     Intrinsic.STRING_CHAR_AT),
+            Map.entry(new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z"),
+                    Intrinsic.STRING_EQUALS),
             Map.entry(new MethodRef("java/lang/StringBuilder", "<init>", "(I)V"),
                     Intrinsic.STRING_BUILDER_NEW),
             Map.entry(new MethodRef("java/lang/StringBuilder", "append", "(C)Ljava/lang/StringBuilder;"),
@@ -78,42 +98,58 @@ public final class IntrinsicRegistry {
                     "(Ljava/lang/String;Ljava/lang/String;)V"), Intrinsic.WIFI_BEGIN),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Wifi", "status", "()I"),
                     Intrinsic.WIFI_STATUS),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpClient", "get",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Wifi", "localIP", "([I)V"),
+                    Intrinsic.WIFI_LOCAL_IP),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpClient", "get",
                     "(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_GET),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpClient", "post",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpClient", "post",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_POST),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpClient", "delete",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpClient", "delete",
                     "(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_DELETE),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpClient", "patch",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpClient", "patch",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_PATCH),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpClient", "query",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpClient", "query",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_QUERY),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpsClient", "get",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpsClient", "get",
                     "(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I"), Intrinsic.HTTPS_GET),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpsClient", "post",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpsClient", "post",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.HTTPS_POST),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpsClient", "delete",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpsClient", "delete",
                     "(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I"), Intrinsic.HTTPS_DELETE),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpsClient", "patch",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpsClient", "patch",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.HTTPS_PATCH),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/HttpsClient", "query",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpsClient", "query",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.HTTPS_QUERY),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "type",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/Json", "type",
                     "([BILjava/lang/String;)I"), Intrinsic.JSON_TYPE),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "getInt",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/Json", "getInt",
                     "([BILjava/lang/String;)I"), Intrinsic.JSON_GET_INT),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "getLong",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/Json", "getLong",
                     "([BILjava/lang/String;)J"), Intrinsic.JSON_GET_LONG),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "getDouble",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/Json", "getDouble",
                     "([BILjava/lang/String;)D"), Intrinsic.JSON_GET_DOUBLE),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "getBool",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/Json", "getBool",
                     "([BILjava/lang/String;)Z"), Intrinsic.JSON_GET_BOOL),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "getString",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/Json", "getString",
                     "([BILjava/lang/String;[BI)I"), Intrinsic.JSON_GET_STRING),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "getString",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/Json", "getString",
                     "([BILjava/lang/String;)Ljava/lang/String;"), Intrinsic.JSON_GET_STRING_VALUE),
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Json", "arraySize",
-                    "([BILjava/lang/String;)I"), Intrinsic.JSON_ARRAY_SIZE));
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/Json", "arraySize",
+                    "([BILjava/lang/String;)I"), Intrinsic.JSON_ARRAY_SIZE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpServer", "begin", "(I)V"),
+                    Intrinsic.HTTP_SERVER_BEGIN),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpServer", "accept", "([BI)I"),
+                    Intrinsic.HTTP_SERVER_ACCEPT),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpServer", "method", "()Ljava/lang/String;"),
+                    Intrinsic.HTTP_SERVER_METHOD),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpServer", "path", "()Ljava/lang/String;"),
+                    Intrinsic.HTTP_SERVER_PATH),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpServer", "respond",
+                    "(ILjava/lang/String;Ljava/lang/String;)V"), Intrinsic.HTTP_SERVER_RESPOND),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpServer", "respond",
+                    "(ILjava/lang/String;Ljava/lang/StringBuilder;)V"), Intrinsic.HTTP_SERVER_RESPOND_BUILDER),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/Memory", "arenaUsedBytes", "()I"),
+                    Intrinsic.MEMORY_ARENA_USED));
 
     private IntrinsicRegistry() {
     }
@@ -124,5 +160,10 @@ public final class IntrinsicRegistry {
 
     public static boolean isIntrinsic(MethodRef method) {
         return METHODS.containsKey(method);
+    }
+
+    /** Whether {@code intrinsic}'s {@code String} parameter at {@code parameterIndex} must be a compile-time literal. */
+    public static boolean requiresLiteralStringArgument(Intrinsic intrinsic, int parameterIndex) {
+        return !RUNTIME_STRING_PARAMETERS.contains(new IntrinsicParameter(intrinsic, parameterIndex));
     }
 }

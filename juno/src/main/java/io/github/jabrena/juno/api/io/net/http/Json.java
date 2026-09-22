@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.net;
+package io.github.jabrena.juno.api.io.net.http;
 
 /**
  * A bounded, non-allocating JSON field reader recognized as compiler intrinsics by Juno. Reads

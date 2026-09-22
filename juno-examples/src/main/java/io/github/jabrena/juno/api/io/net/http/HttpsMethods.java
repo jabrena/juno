@@ -1,8 +1,9 @@
-package io.github.jabrena.juno.api.io.net;
+package io.github.jabrena.juno.api.io.net.http;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.io.net.Wifi;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 

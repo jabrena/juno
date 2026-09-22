@@ -20,4 +20,13 @@ public final class Wifi {
     public static native void begin(String ssid, String password);
 
     public static native int status();
+
+    /**
+     * Writes the board's current IPv4 address into {@code octets} (caller-owned, at least 4
+     * entries), one byte value (0-255) per element, most significant first — e.g. {@code 192, 168,
+     * 1, 45}. Only meaningful once {@link #status} reports {@link #STATUS_CONNECTED}; Juno has no
+     * heap, so there is no {@code String}-returning form here — print each octet with {@link
+     * io.github.jabrena.juno.api.io.usb.Serial#print(int)} and a literal {@code "."} between them.
+     */
+    public static native void localIP(int[] octets);
 }

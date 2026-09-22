@@ -126,10 +126,12 @@ public final class CortexM4AsmBackend {
     private boolean usesDouble;
     private boolean usesHttp;
     private boolean usesHttps;
+    private boolean usesHttpServer;
     private boolean usesJson;
     private boolean usesRuntimeStrings;
     private boolean usesJsonStringValue;
     private boolean usesStringBuilder;
+    private boolean usesMemory;
     private boolean usesWatchdog;
     private int watchdogTimeoutMillis;
     private final boolean gcLoggingEnabled;
@@ -964,6 +966,13 @@ public final class CortexM4AsmBackend {
                 output.append("    bl juno_string_char_at\n");
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
+            case STRING_EQUALS -> {
+                usesRuntimeStrings = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                load(output, frame, "r1", call.arguments().get(0));
+                output.append("    bl juno_string_equals\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
             case STRING_BUILDER_NEW -> {
                 usesStringBuilder = true;
                 load(output, frame, "r0", call.arguments().get(0));
@@ -1013,6 +1022,11 @@ public final class CortexM4AsmBackend {
                 usesWifi = true;
                 output.append("    bl juno_wifi_status\n");
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case WIFI_LOCAL_IP -> {
+                usesWifi = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl juno_wifi_local_ip\n");
             }
             case MOUSE_BEGIN -> {
                 usesMouse = true;
@@ -1138,6 +1152,62 @@ public final class CortexM4AsmBackend {
                         List.of(new WordSource.FromValue(call.arguments().get(0)),
                                 new WordSource.FromValue(call.arguments().get(1)),
                                 new WordSource.StringAddress(call.literalArguments().get(0))));
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case HTTP_SERVER_BEGIN -> {
+                usesHttpServer = true;
+                usesRuntimeStrings = true;
+                usesStringBuilder = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl juno_http_server_begin\n");
+            }
+            case HTTP_SERVER_ACCEPT -> {
+                usesHttpServer = true;
+                usesRuntimeStrings = true;
+                usesStringBuilder = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                load(output, frame, "r1", call.arguments().get(1));
+                output.append("    bl juno_http_server_accept\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case HTTP_SERVER_METHOD -> {
+                usesHttpServer = true;
+                usesRuntimeStrings = true;
+                usesStringBuilder = true;
+                output.append("    bl juno_http_server_method\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case HTTP_SERVER_PATH -> {
+                usesHttpServer = true;
+                usesRuntimeStrings = true;
+                usesStringBuilder = true;
+                output.append("    bl juno_http_server_path\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case HTTP_SERVER_RESPOND -> {
+                usesHttpServer = true;
+                usesRuntimeStrings = true;
+                usesStringBuilder = true;
+                // body (call.arguments().get(1)) may be a literal's address or a runtime pooled
+                // string's address (see IntrinsicRegistry#requiresLiteralStringArgument) — both are
+                // plain null-terminated const char* to the shim below, so both flow the same way.
+                emitShimCall(output, frame, "juno_http_server_respond",
+                        List.of(new WordSource.FromValue(call.arguments().get(0)),
+                                new WordSource.StringAddress(call.literalArguments().get(0)),
+                                new WordSource.FromValue(call.arguments().get(1))));
+            }
+            case HTTP_SERVER_RESPOND_BUILDER -> {
+                usesHttpServer = true;
+                usesRuntimeStrings = true;
+                usesStringBuilder = true;
+                emitShimCall(output, frame, "juno_http_server_respond_builder",
+                        List.of(new WordSource.FromValue(call.arguments().get(0)),
+                                new WordSource.StringAddress(call.literalArguments().get(0)),
+                                new WordSource.FromValue(call.arguments().get(1))));
+            }
+            case MEMORY_ARENA_USED -> {
+                usesMemory = true;
+                output.append("    bl juno_memory_arena_used\n");
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
             default -> throw unsupported("intrinsic " + call.intrinsic());
@@ -1428,13 +1498,16 @@ public final class CortexM4AsmBackend {
         if (usesMouse) {
             shim.append("#include <Mouse.h>\n");
         }
-        if (usesWifi || usesHttp || usesHttps) {
+        if (usesWifi || usesHttp || usesHttps || usesHttpServer) {
             shim.append("#include <WiFiS3.h>\n");
         }
         if (usesHttps) {
             shim.append("#include <WiFiSSLClient.h>\n");
         }
-        if (usesHttp || usesHttps || usesJson || usesRuntimeStrings) {
+        if (usesHttpServer) {
+            shim.append("#include <new>\n");
+        }
+        if (usesHttp || usesHttps || usesHttpServer || usesJson || usesRuntimeStrings) {
             shim.append("#include <string.h>\n");
         }
         if (usesFloat || usesDouble || usesJson || usesRuntimeStrings || usesStringBuilder) {
@@ -1802,6 +1875,14 @@ public final class CortexM4AsmBackend {
                     }
                     """);
         }
+        if (usesMemory) {
+            shim.append("""
+
+                    extern "C" int32_t juno_memory_arena_used() {
+                      return static_cast<int32_t>(juno_arena_used);
+                    }
+                    """);
+        }
         if (usesWifi) {
             shim.append("""
 
@@ -1811,6 +1892,14 @@ public final class CortexM4AsmBackend {
 
                     extern "C" int32_t juno_wifi_status() {
                       return static_cast<int32_t>(WiFi.status());
+                    }
+
+                    extern "C" void juno_wifi_local_ip(int32_t* octets) {
+                      auto ip = WiFi.localIP();
+                      octets[0] = ip[0];
+                      octets[1] = ip[1];
+                      octets[2] = ip[2];
+                      octets[3] = ip[3];
                     }
                     """);
         }
@@ -1831,6 +1920,9 @@ public final class CortexM4AsmBackend {
         }
         if (usesHttp || usesHttps) {
             shim.append(httpHelpers());
+        }
+        if (usesHttpServer) {
+            shim.append(httpServerHelpers());
         }
         return shim.toString();
     }
@@ -1970,6 +2062,10 @@ public final class CortexM4AsmBackend {
                   int32_t length = static_cast<int32_t>(strlen(text));
                   if (index < 0 || index >= length) juno_panic();
                   return static_cast<uint8_t>(text[index]);
+                }
+
+                extern "C" int32_t juno_string_equals(int32_t a, int32_t b) {
+                  return strcmp(juno_string_pointer(a), juno_string_pointer(b)) == 0 ? 1 : 0;
                 }
                 """.replace("${JUNO_STRING_SLOT_SIZE}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES));
     }
@@ -2873,6 +2969,162 @@ public final class CortexM4AsmBackend {
                     """);
         }
         return helpers.toString();
+    }
+
+    /**
+     * Backs {@link io.github.jabrena.juno.api.io.net.http.HttpServer}: a single static {@code
+     * WiFiServer} (constructed via placement-new into static storage once {@code begin(port)}
+     * runs, since {@code WiFiServer} has no default constructor and this backend never calls the
+     * heap allocator {@code new} for anything Java-visible) plus a single "current" {@code
+     * WiFiClient} held across one {@code accept()}/{@code respond()} pair — this hardware can only
+     * meaningfully serve one request at a time, so there is no connection-handle scheme.
+     * {@code accept()} mirrors {@link #httpHelpers()}'s response-parsing state machine, reversed
+     * to parse a request line and headers instead of a status line.
+     */
+    private String httpServerHelpers() {
+        return """
+
+                alignas(WiFiServer) static unsigned char juno_http_server_storage[sizeof(WiFiServer)];
+                static WiFiServer* juno_http_server_instance = nullptr;
+                static WiFiClient juno_http_server_client;
+                static char juno_http_server_method_buf[8];
+                static char juno_http_server_path_buf[96];
+
+                extern "C" void juno_http_server_begin(int32_t port) {
+                  juno_http_server_instance = new (juno_http_server_storage) WiFiServer(static_cast<uint16_t>(port));
+                  juno_http_server_instance->begin();
+                }
+
+                extern "C" int32_t juno_http_server_accept(uint8_t* bodyBuffer, int32_t bodyBufferLength) {
+                  if (juno_http_server_instance == nullptr) return -1;
+                  WiFiClient client = juno_http_server_instance->available();
+                  if (!client) return -1;
+                  juno_http_server_client = client;
+
+                  int32_t methodLength = 0;
+                  int32_t pathLength = 0;
+                  int32_t requestLinePhase = 0; // 0 = method, 1 = path, 2 = skip rest of the line
+                  bool gotRequestLine = false;
+                  bool inBody = false;
+                  char recent[4] = {0, 0, 0, 0};
+                  bool hasContentLength = false;
+                  bool inContentLengthValue = false;
+                  int32_t contentLength = 0;
+                  int32_t contentLengthMatch = 0;
+                  const char* contentLengthMarker = "content-length:";
+                  int32_t written = 0;
+
+                  const unsigned long deadline = millis() + 5000;
+                  while (millis() < deadline) {
+                    if (!client.available()) {
+                      if (!client.connected()) break;
+                      delay(1);
+                      continue;
+                    }
+                    int value = client.read();
+                    if (value < 0) break;
+                    char c = static_cast<char>(value);
+
+                    if (!gotRequestLine) {
+                      if (requestLinePhase == 0) {
+                        if (c == ' ') {
+                          requestLinePhase = 1;
+                        } else if (methodLength < static_cast<int32_t>(sizeof(juno_http_server_method_buf)) - 1) {
+                          juno_http_server_method_buf[methodLength++] = c;
+                        }
+                      } else if (requestLinePhase == 1) {
+                        if (c == ' ') {
+                          requestLinePhase = 2;
+                        } else if (pathLength < static_cast<int32_t>(sizeof(juno_http_server_path_buf)) - 1) {
+                          juno_http_server_path_buf[pathLength++] = c;
+                        }
+                      } else if (c == '\\n') {
+                        gotRequestLine = true;
+                      }
+                      continue;
+                    }
+
+                    if (!inBody) {
+                      char lower = (c >= 'A' && c <= 'Z') ? static_cast<char>(c - 'A' + 'a') : c;
+                      if (inContentLengthValue) {
+                        if (c >= '0' && c <= '9') contentLength = contentLength * 10 + (c - '0');
+                        else if (c != ' ') inContentLengthValue = false;
+                      } else if (lower == contentLengthMarker[contentLengthMatch]) {
+                        contentLengthMatch++;
+                        if (contentLengthMarker[contentLengthMatch] == 0) {
+                          inContentLengthValue = true;
+                          hasContentLength = true;
+                          contentLength = 0;
+                        }
+                      } else {
+                        contentLengthMatch = (lower == contentLengthMarker[0]) ? 1 : 0;
+                      }
+                      recent[0] = recent[1];
+                      recent[1] = recent[2];
+                      recent[2] = recent[3];
+                      recent[3] = c;
+                      if (recent[0] == '\\r' && recent[1] == '\\n' && recent[2] == '\\r' && recent[3] == '\\n') {
+                        inBody = true;
+                        if (!hasContentLength) break;
+                      }
+                      continue;
+                    }
+
+                    if (written < bodyBufferLength) bodyBuffer[written] = static_cast<uint8_t>(c);
+                    written++;
+                    if (written >= contentLength) break;
+                  }
+                  juno_http_server_method_buf[methodLength] = '\\0';
+                  juno_http_server_path_buf[pathLength] = '\\0';
+                  return written < bodyBufferLength ? written : bodyBufferLength;
+                }
+
+                static int32_t juno_http_server_pool_copy(const char* text, int32_t length) {
+                  if (length < 0 || static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) return 0;
+                  char* slot = juno_string_slots[juno_string_slot_cursor];
+                  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+                  for (int32_t i = 0; i < length; i++) slot[i] = text[i];
+                  slot[length] = '\\0';
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(slot));
+                }
+
+                extern "C" int32_t juno_http_server_method() {
+                  return juno_http_server_pool_copy(juno_http_server_method_buf,
+                      static_cast<int32_t>(strlen(juno_http_server_method_buf)));
+                }
+
+                extern "C" int32_t juno_http_server_path() {
+                  return juno_http_server_pool_copy(juno_http_server_path_buf,
+                      static_cast<int32_t>(strlen(juno_http_server_path_buf)));
+                }
+
+                static void juno_http_server_respond_bytes(int32_t status, const char* contentType,
+                                                             const char* body, int32_t bodyLength) {
+                  WiFiClient& client = juno_http_server_client;
+                  client.print("HTTP/1.1 ");
+                  client.print(status);
+                  client.print(" \\r\\nContent-Type: ");
+                  client.print(contentType);
+                  client.print("\\r\\nContent-Length: ");
+                  client.print(bodyLength);
+                  client.print("\\r\\nConnection: close\\r\\n\\r\\n");
+                  client.write(reinterpret_cast<const uint8_t*>(body), static_cast<size_t>(bodyLength));
+                  client.stop();
+                }
+
+                extern "C" void juno_http_server_respond(int32_t status, const char* contentType, const char* body) {
+                  juno_http_server_respond_bytes(status, contentType, body, static_cast<int32_t>(strlen(body)));
+                }
+
+                extern "C" void juno_http_server_respond_builder(int32_t status, const char* contentType,
+                                                                   int32_t bodyHandle) {
+                  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(bodyHandle));
+                  int32_t length = header[0];
+                  const uint8_t* buffer = juno_string_builder_buffer(bodyHandle);
+                  juno_http_server_respond_bytes(status, contentType, reinterpret_cast<const char*>(buffer), length);
+                }
+
+                """;
     }
 
     private CompileException unsupported(String detail) {

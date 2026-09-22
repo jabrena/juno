@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.io.net.weather;
 
-import io.github.jabrena.juno.api.io.net.HttpsClient;
-import io.github.jabrena.juno.api.io.net.Json;
+import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+import io.github.jabrena.juno.api.io.net.http.Json;
 
 /** Fetches and reads Madrid's current weather from Open-Meteo. */
 public final class WeatherClient {
@@ -24,10 +24,7 @@ public final class WeatherClient {
      * Json#getDouble} and reformatting with {@link String#valueOf(double)}, avoiding that path's
      * binary-floating-point precision loss entirely. {@code statusAndHeadersLength} is
      * caller-owned scratch space (allocated once outside any loop, like the buffers), since Juno
-     * has no heap to allocate it internally — for the same reason, this reads the status/body
-     * directly off {@code statusAndHeadersLength}/the returned body length rather than wrapping
-     * them in an {@link io.github.jabrena.juno.api.io.net.HttpResponse}, since a loop calling this
-     * forever would otherwise allocate one every iteration.
+     * has no heap to allocate it internally.
      */
     public static String fetchTemperature(byte[] response, int responseLength, byte[] headers, int headersLength,
             int[] statusAndHeadersLength) {

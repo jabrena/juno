@@ -490,7 +490,7 @@ class JunoCompilerTest {
     void lowersHttpMethodIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.HttpClient;
+                import io.github.jabrena.juno.api.io.net.http.HttpClient;
                 public final class HttpDemo {
                     public static void main(String[] args) {
                         byte[] response = new byte[128];
@@ -530,7 +530,7 @@ class JunoCompilerTest {
     void lowersHttpsMethodIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.HttpsClient;
+                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
                 public final class HttpsDemo {
                     public static void main(String[] args) {
                         byte[] response = new byte[128];
@@ -562,6 +562,111 @@ class JunoCompilerTest {
                 "juno_http_request(client, \"GET\", host, port, path, nullptr",
                 "juno_http_request(client, \"QUERY\", host, port, path, body")
                 .doesNotContain("juno_http_get");
+    }
+
+    @Test
+    void lowersHttpServerIntrinsicsAndStringEquals() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                public final class HttpServerDemo {
+                    public static void main(String[] args) {
+                        HttpServer.begin(80);
+                        byte[] body = new byte[128];
+                        int bodyLength = HttpServer.accept(body, body.length);
+                        if (bodyLength >= 0) {
+                            String method = HttpServer.method();
+                            String path = HttpServer.path();
+                            if (method.equals("GET") && path.equals("/status")) {
+                                HttpServer.respond(200, "application/json", "{\\"ok\\":true}");
+                            } else {
+                                StringBuilder json = new StringBuilder(32);
+                                json.append('{').append('}');
+                                HttpServer.respond(404, "application/json", json);
+                            }
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpServerDemo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpServerDemo");
+
+        assertThat(result.assembly()).contains(".asciz \"GET\"", ".asciz \"/status\"",
+                ".asciz \"application/json\"", ".asciz \"{\\\"ok\\\":true}\"",
+                "bl juno_http_server_begin", "bl juno_http_server_accept", "bl juno_http_server_method",
+                "bl juno_http_server_path", "bl juno_string_equals", "bl juno_http_server_respond",
+                "bl juno_http_server_respond_builder");
+        assertThat(result.runtimeShim()).contains("#include <WiFiS3.h>", "#include <new>",
+                "extern \"C\" void juno_http_server_begin(int32_t port)",
+                "extern \"C\" int32_t juno_http_server_accept(",
+                "extern \"C\" int32_t juno_http_server_method()",
+                "extern \"C\" int32_t juno_http_server_path()",
+                "extern \"C\" void juno_http_server_respond(",
+                "extern \"C\" void juno_http_server_respond_builder(",
+                "extern \"C\" int32_t juno_string_equals(int32_t a, int32_t b)");
+    }
+
+    /**
+     * {@code HttpServer.respond(int, String, String)}'s {@code body} is the one intrinsic {@code
+     * String} parameter in all of Juno exempt from the compile-time-literal requirement (see
+     * {@link io.github.jabrena.juno.intrinsic.IntrinsicRegistry#requiresLiteralStringArgument}) —
+     * a runtime value built from {@code StringBuilder#toString()} must flow into it exactly like a
+     * literal would, as a plain {@code const char*} argument rather than a {@code .asciz} literal.
+     */
+    @Test
+    void lowersHttpServerRespondWithARuntimeStringBody() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                public final class HttpServerRuntimeBody {
+                    public static void main(String[] args) {
+                        HttpServer.begin(80);
+                        StringBuilder json = new StringBuilder(32);
+                        json.append("{\\"uptime_ms\\":");
+                        String uptime = String.valueOf(Clock.millis());
+                        for (int i = 0; i < uptime.length(); i++) {
+                            json.append(uptime.charAt(i));
+                        }
+                        json.append('}');
+                        HttpServer.respond(200, "application/json", json.toString());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpServerRuntimeBody", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpServerRuntimeBody");
+
+        // The runtime String from toString() must flow into respond's 3rd argument register (r2),
+        // right after the toString() call itself computes it — never as a .asciz body literal.
+        assertThat(result.assembly()).containsPattern(
+                "(?s)bl juno_string_builder_to_string.*ldr r2, \\[sp, #\\d+]\\n\\s*bl juno_http_server_respond\\n");
+    }
+
+    /**
+     * The exemption above is scoped to exactly one parameter of one intrinsic — {@code
+     * contentType} (the same method's other {@code String} parameter) must still be a literal,
+     * proving {@code requiresLiteralStringArgument} didn't accidentally loosen the whole method.
+     */
+    @Test
+    void stillRejectsANonLiteralHttpServerContentType() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                public final class HttpServerDynamicContentType {
+                    public static void main(String[] args) {
+                        HttpServer.begin(80);
+                        String contentType = Clock.millis() > 0 ? "application/json" : "text/plain";
+                        HttpServer.respond(200, contentType, "{}");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpServerDynamicContentType", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpServerDynamicContentType"))
+                .isInstanceOf(CompileException.class);
     }
 
     @Test
@@ -598,7 +703,7 @@ class JunoCompilerTest {
     void lowersJsonFieldExtractionIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Json;
+                import io.github.jabrena.juno.api.io.net.http.Json;
                 public final class JsonDemo {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];
@@ -628,7 +733,7 @@ class JunoCompilerTest {
     void lowersJsonGetStringValueAsARuntimeString() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Json;
+                import io.github.jabrena.juno.api.io.net.http.Json;
                 public final class JsonStringValueDemo {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];
@@ -656,7 +761,7 @@ class JunoCompilerTest {
     void omitsJsonGetStringValueHelperWhenOnlyOtherJsonIntrinsicsAreUsed() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Json;
+                import io.github.jabrena.juno.api.io.net.http.Json;
                 public final class JsonIntOnlyDemo {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];

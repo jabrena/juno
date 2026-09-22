@@ -1,14 +1,14 @@
-package io.github.jabrena.juno.api.io.net;
+package io.github.jabrena.juno.api.io.net.http;
 
 /**
  * A minimal HTTP/1.1 client recognized as compiler intrinsics by Juno, backed by the Arduino
  * {@code WiFiS3} library's {@code WiFiClient}. Requires {@code @Board(ArduinoUnoR4WiFi.class)}
- * (the default board) and an active {@link Wifi#begin} connection.
+ * (the default board) and an active {@link io.github.jabrena.juno.api.io.net.Wifi#begin} connection.
  *
  * <p>{@code host}/{@code path} (and {@code body} for {@link #post}, {@link #patch}, and
  * {@link #query}) must each be a compile-time
  * constant: either a string literal, or {@code System.getenv("NAME")} of a literal
- * environment-variable name, exactly like {@link Wifi#begin}'s credentials. Juno has no heap, so
+ * environment-variable name, exactly like {@link io.github.jabrena.juno.api.io.net.Wifi#begin}'s credentials. Juno has no heap, so
  * none of these can be a runtime-computed {@code String} — this also means these methods must be
  * called directly with the literal in hand, never forwarded through another method's own
  * {@code String} parameter.
@@ -21,9 +21,8 @@ package io.github.jabrena.juno.api.io.net;
  * (a caller-owned {@code int[2]}, allocated once outside any loop like the buffers themselves) is
  * filled with the HTTP status code at index 0 (or {@code 0} if the connection failed before a
  * status line was received) and the number of bytes written into {@code headersBuffer} at index 1.
- * Copy these, together with the returned body length, into an {@link HttpResponse} for a more
- * convenient caller-owned holder. A request that doesn't complete within a fixed 5-second timeout
- * is abandoned and returns whatever was captured so far.
+ * A request that doesn't complete within a fixed 5-second timeout is abandoned and returns
+ * whatever was captured so far.
  */
 public final class HttpClient {
     /** A reasonable default size for a caller's body/headers buffer, in bytes. */

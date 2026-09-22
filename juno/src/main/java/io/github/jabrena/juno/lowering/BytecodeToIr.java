@@ -1175,7 +1175,7 @@ public final class BytecodeToIr {
             } else if (Descriptor.isString(parameterType)) {
                 Popped popped = pop(instructions, stackBase, depth, nextValueId, tracking);
                 nextValueId = popped.nextValueId();
-                if (intrinsic.isPresent()) {
+                if (intrinsic.isPresent() && IntrinsicRegistry.requiresLiteralStringArgument(intrinsic.get(), index)) {
                     String literal = tracking.knownString(popped.value());
                     if (literal == null) {
                         throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "

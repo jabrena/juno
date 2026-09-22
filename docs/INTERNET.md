@@ -4,10 +4,10 @@ Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiF
 
 - connect to a Wi-Fi network with [`Wifi`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/Wifi.java);
 - send plain HTTP or TLS-protected HTTPS `GET`, `POST`, `DELETE`, `PATCH`, and `QUERY` requests with
-  [`HttpClient`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/HttpClient.java) and
-  [`HttpsClient`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/HttpsClient.java); and
+  [`HttpClient`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpClient.java) and
+  [`HttpsClient`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpsClient.java); and
 - extract typed values directly from JSON response bytes with
-  [`Json`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/Json.java).
+  [`Json`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/http/Json.java).
 
 These APIs are compiler intrinsics. Java declares them as `native` methods, and Juno emits their
 Arduino C++ implementations only when the program uses them. Response and string buffers belong to
@@ -431,8 +431,8 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
-import io.github.jabrena.juno.api.io.net.HttpClient;
-import io.github.jabrena.juno.api.io.net.Json;
+import io.github.jabrena.juno.api.io.net.http.HttpClient;
+import io.github.jabrena.juno.api.io.net.http.Json;
 import io.github.jabrena.juno.api.io.net.Wifi;
 
 @Board(ArduinoUnoR4WiFi.class)

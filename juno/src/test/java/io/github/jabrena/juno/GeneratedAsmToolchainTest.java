@@ -168,8 +168,8 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.HttpsClient;
-                import io.github.jabrena.juno.api.io.net.Json;
+                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.io.net.http.Json;
                 import io.github.jabrena.juno.api.io.net.Wifi;
                 public final class AsmNetworking {
                     public static void main(String[] args) {
@@ -186,6 +186,46 @@ class GeneratedAsmToolchainTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmNetworking", source);
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmNetworking");
         Path shim = temporaryDirectory.resolve("AsmNetworkingShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    /**
+     * {@link io.github.jabrena.juno.backend.CortexM4AsmBackend#httpServerHelpers} hand-writes
+     * placement-new construction of a static {@code WiFiServer} and reads a {@code StringBuilder}
+     * handle's raw arena bytes directly — exactly the kind of shim code most likely to have a real
+     * C++ syntax error that a hand-rolled IR unit test would never catch, so this compiles it for
+     * real against the module's mock {@code WiFiS3.h} (extended with a minimal {@code WiFiServer}
+     * for this).
+     */
+    @Test
+    void compilesAnHttpServerProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                public final class AsmHttpServer {
+                    public static void main(String[] args) {
+                        HttpServer.begin(80);
+                        byte[] body = new byte[64];
+                        int bodyLength = HttpServer.accept(body, body.length);
+                        if (bodyLength >= 0) {
+                            if (HttpServer.method().equals("GET") && HttpServer.path().equals("/status")) {
+                                HttpServer.respond(200, "application/json", "{\\"ok\\":true}");
+                            } else {
+                                StringBuilder json = new StringBuilder(32);
+                                json.append('{').append('}');
+                                HttpServer.respond(404, "application/json", json);
+                            }
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHttpServer", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHttpServer");
+        Path shim = temporaryDirectory.resolve("AsmHttpServerShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
         syntaxCheckCpp(compiler, shim);
@@ -385,7 +425,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Json;
+                import io.github.jabrena.juno.api.io.net.http.Json;
                 public final class JsonRuntime {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[1];

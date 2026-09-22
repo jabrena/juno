@@ -6,7 +6,6 @@
  *
  * <p>Unlike {@code led}'s {@code LedMatrix}, a shield here needs no new compiler intrinsic —
  * every operation is built entirely from {@link io.github.jabrena.juno.api.io.Gpio} pin
- * operations and {@link io.github.jabrena.juno.api.Delay}. See {@code docs/LCD-KEYPAD-SHIELD.md}
- * in the project documentation for wiring, the full API, and a worked example.
+ * operations and {@link io.github.jabrena.juno.api.Delay}.
  */
 package io.github.jabrena.juno.api.lcd;

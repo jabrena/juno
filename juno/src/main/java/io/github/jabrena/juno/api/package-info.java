@@ -36,7 +36,6 @@
  *
  * <p>An entry-point class selects its compilation target with a {@link
  * io.github.jabrena.juno.annotations.Board @Board} annotation and then calls into this API from
- * {@code main}; see the project {@code README.md} and {@code docs/} for narrative guides to
- * individual areas (Serial, the LCD Keypad Shield, HID, Clock, and Internet access).
+ * {@code main}.
  */
 package io.github.jabrena.juno.api;

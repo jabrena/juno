@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.io.net.weather;
 
-import io.github.jabrena.juno.api.io.net.HttpsClient;
-import io.github.jabrena.juno.api.io.net.Json;
+import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+import io.github.jabrena.juno.api.io.net.http.Json;
 
 /** Reads Madrid's local time from an Open-Meteo forecast response. */
 public final class TimeClient {
@@ -25,11 +25,7 @@ public final class TimeClient {
      * {@link String} — or {@code null} when the request failed, the response status wasn't
      * {@code 200}, or the response didn't contain the fixed-width time field.
      * {@code statusAndHeadersLength}/{@code timeText} are caller-owned scratch space (allocated
-     * once outside any loop, like the buffers), since Juno has no heap to allocate them internally
-     * — for the same reason, this reads the status/body directly off
-     * {@code statusAndHeadersLength}/the returned body length rather than wrapping them in an
-     * {@link io.github.jabrena.juno.api.io.net.HttpResponse}, since a loop calling this forever
-     * would otherwise allocate one every iteration.
+     * once outside any loop, like the buffers), since Juno has no heap to allocate them internally.
      */
     public static String fetchTime(byte[] response, int responseLength, byte[] headers, int headersLength,
             int[] statusAndHeadersLength, byte[] timeText, int timeTextLength) {
