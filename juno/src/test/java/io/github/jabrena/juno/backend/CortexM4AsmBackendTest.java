@@ -520,6 +520,101 @@ class CortexM4AsmBackendTest {
         assertThat(result2.runtimeShim().contains("juno_http_get")).isFalse();
     }
 
+    @Test
+    void lowersSmtpSendThroughAStarttlsShim() {
+        MethodRef entryPoint = new MethodRef("demo/EmailAlert", "main", "()I");
+        Value port = Value.int32(0);
+        Value result = Value.int32(1);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(port, 587),
+                new IrInstruction.IntrinsicCall(Optional.of(result), Intrinsic.SMTP_SEND, Optional.empty(),
+                        List.of(port),
+                        List.of("mail.example.com", "alerts@example.com", "secret", "alerts@example.com",
+                                "me@example.com", "Arduino alert", "Alarm activated"))),
+                new IrTerminator.Return(Optional.of(result)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 2, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output output = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(output.assembly()).contains("bl juno_smtp_send");
+        assertThat(output.runtimeShim()).contains(
+                "#include <WiFiS3.h>",
+                "#include <ESP_SSLClient.h>",
+                "extern \"C\" int32_t juno_smtp_send",
+                "client.print(\"STARTTLS\\r\\n\")",
+                "client.connectSSL()",
+                "static int32_t juno_base64_encode(");
+        // POP3S (native WiFiSSLClient) must not be pulled in by an SMTP-only program.
+        assertThat(output.runtimeShim())
+                .doesNotContain("#include <WiFiSSLClient.h>", "juno_pop3_message_count", "juno_pop3_read_latest");
+    }
+
+    @Test
+    void lowersPop3ReadLatestWithStackSpilledArgumentsAndAPop3sRuntimeShim() {
+        MethodRef entryPoint = new MethodRef("demo/InboxCount", "main", "()I");
+        Value port = Value.int32(0);
+        Value headersPtr = Value.int32(1);
+        Value headersLength = Value.int32(2);
+        Value bodyPtr = Value.int32(3);
+        Value bodyLength = Value.int32(4);
+        Value statusPtr = Value.int32(5);
+        Value result = Value.int32(6);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(port, 995),
+                new IrInstruction.Const(headersPtr, 0),
+                new IrInstruction.Const(headersLength, 256),
+                new IrInstruction.Const(bodyPtr, 0),
+                new IrInstruction.Const(bodyLength, 512),
+                new IrInstruction.Const(statusPtr, 0),
+                new IrInstruction.IntrinsicCall(Optional.of(result), Intrinsic.POP3_READ_LATEST, Optional.empty(),
+                        List.of(port, headersPtr, headersLength, bodyPtr, bodyLength, statusPtr),
+                        List.of("mail.example.com", "me@example.com", "secret"))),
+                new IrTerminator.Return(Optional.of(result)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output output = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(output.assembly()).contains("bl juno_pop3_read_latest");
+        assertThat(output.assembly()).contains("sub sp, sp, #24"); // 9 words spills 5, rounded to 24
+        assertThat(output.runtimeShim()).contains(
+                "#include <WiFiS3.h>",
+                "#include <WiFiSSLClient.h>",
+                "extern \"C\" int32_t juno_pop3_read_latest",
+                "extern \"C\" int32_t juno_pop3_message_count");
+        // SMTP/STARTTLS must not be pulled in by a POP3-only program.
+        assertThat(output.runtimeShim()).doesNotContain("#include <ESP_SSLClient.h>", "juno_smtp_send");
+    }
+
+    @Test
+    void lowersPop3ReadSubject() {
+        MethodRef entryPoint = new MethodRef("demo/InboxList", "main", "()I");
+        Value port = Value.int32(0);
+        Value messageNumber = Value.int32(1);
+        Value subjectPtr = Value.int32(2);
+        Value subjectLength = Value.int32(3);
+        Value result = Value.int32(4);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(port, 995),
+                new IrInstruction.Const(messageNumber, 1),
+                new IrInstruction.Const(subjectPtr, 0),
+                new IrInstruction.Const(subjectLength, 16),
+                new IrInstruction.IntrinsicCall(Optional.of(result), Intrinsic.POP3_READ_SUBJECT, Optional.empty(),
+                        List.of(port, messageNumber, subjectPtr, subjectLength),
+                        List.of("mail.example.com", "me@example.com", "secret"))),
+                new IrTerminator.Return(Optional.of(result)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 5, List.of(), List.of(block));
+
+        CortexM4AsmBackend.Output output = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+
+        assertThat(output.assembly()).contains("bl juno_pop3_read_subject");
+        assertThat(output.runtimeShim()).contains(
+                "#include <WiFiS3.h>",
+                "#include <WiFiSSLClient.h>",
+                "extern \"C\" int32_t juno_pop3_read_subject",
+                "client.print(\"TOP \")");
+        assertThat(output.runtimeShim()).doesNotContain("#include <ESP_SSLClient.h>", "juno_smtp_send");
+    }
+
     /**
      * {@code new StringBuilder(8)} then {@code .append('1').append("!!").toString()}. Exercises
      * {@link io.github.jabrena.juno.lowering.BytecodeToIr}'s dedicated construction lowering (a

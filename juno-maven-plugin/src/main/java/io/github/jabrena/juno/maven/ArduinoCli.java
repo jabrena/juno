@@ -27,6 +27,14 @@ final class ArduinoCli {
         this.output = output;
     }
 
+    void installCore(String platform) {
+        runChecked(List.of(executable, "core", "install", requireText(platform, "platform")), false);
+    }
+
+    void installLibrary(String library) {
+        runChecked(List.of(executable, "lib", "install", requireText(library, "library")), false);
+    }
+
     void compile(String fqbn, Path sketchDirectory) {
         runChecked(List.of(executable, "compile", "--fqbn", requireText(fqbn, "FQBN"),
                 sketchDirectory.toAbsolutePath().normalize().toString()), false);

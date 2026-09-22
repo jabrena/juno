@@ -10,6 +10,7 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 | Goal | Default phase | What it does |
 |---|---|---|
 | `juno:env` | `generate-sources` | Reads a git-ignored `.env` file and exports its entries into the Maven JVM's real process environment. |
+| `juno:install-deps` | (none — run explicitly) | Installs the Arduino core and every optional library any current example needs (e.g. `Mouse`, `ESP_SSLClient`), once per machine. |
 | `juno:compile` | `process-classes` | Runs Juno's compiler for `<mainClass>` and writes the generated `.S` assembly, `Shim.cpp` runtime, and `.ino` wrapper. |
 | `juno:verify` | `verify` | Runs `juno:compile`, then compiles the generated sketch with `arduino-cli compile` — no board required. |
 | `juno:upload` | (none — run explicitly) | Runs `juno:compile` and `juno:verify`, resolves the board's serial port, and flashes it with `arduino-cli upload`. |
@@ -50,7 +51,7 @@ can be selected without editing the POM.
 | `juno.main` | `compile`, `verify`, `upload` | *(required)* | Fully qualified entry-point class. |
 | `juno.outputDirectory` | `compile`, `verify`, `upload` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
 | `juno.gcLog` | `compile`, `verify`, `upload` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](FEATURES.md)). |
-| `juno.arduinoCli` | `verify`, `upload`, `monitor` | `arduino-cli` | Executable name or path. |
+| `juno.arduinoCli` | `verify`, `upload`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `upload`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `upload`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
 | `juno.baudRate` | `monitor` | `115200` | Must match the program's `Serial.begin(...)` rate (see [docs/SERIAL.md](SERIAL.md)). |
@@ -62,6 +63,9 @@ always wins for a given run.
 ## Typical workflow
 
 ```bash
+# Once per machine: install the core and every optional library any example needs
+./mvnw -f juno-examples/pom.xml juno:install-deps
+
 # Compile and check with arduino-cli, no board required
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.Blink

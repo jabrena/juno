@@ -22,6 +22,14 @@ arduino-cli core install arduino:renesas_uno
 arduino-cli core list
 ```
 
+Some examples also need an optional Arduino library not bundled with that core (`Mouse` for
+`RatonLoco`, `ESP_SSLClient` for `Smtp`'s `STARTTLS` upgrade — see their sections below). Install
+the core and every one of those libraries in one go instead of hunting them down per example:
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:install-deps
+```
+
 Connect the board and find its serial port:
 
 ```bash
@@ -170,12 +178,11 @@ left, up) over USB HID.
 computer the board's USB cable is plugged into — unplug the board or re-flash it with a different
 sketch to stop it.
 
-It needs the `Mouse` library (not bundled with the `arduino:renesas_uno` core) and a board with
+It needs the `Mouse` library (not bundled with the `arduino:renesas_uno` core, installed by
+`juno:install-deps` above, or on its own with `arduino-cli lib install Mouse`) and a board with
 native USB (UNO R4 WiFi):
 
 ```bash
-arduino-cli lib install Mouse
-
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.io.hid.RatonLoco
 ```
@@ -189,6 +196,39 @@ hangs or fails, double-tap the board's physical reset button to force it into th
 manually (the onboard LED pulses), then immediately re-run the `juno:upload` command — and
 run `arduino-cli board list` first if you're unsure which port it came back on. Supply the new port
 to the plugin with `-Djuno.port=...`.
+
+### Example: InboxCount (basic email support)
+
+[`Smtp`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Smtp.java) sends a
+plain-text message to one recipient over `STARTTLS` (mail submission on port 587), and
+[`Pop3Client`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Pop3Client.java)
+reports the mailbox message count and reads the newest message's `From`/`Subject`/body over
+POP3S (port 995) — see that package's Javadoc for the full scope and its deliberate limits (one
+recipient, plain text only, no attachments/HTML/MIME/folders/OAuth2).
+
+`Pop3Client` reuses `HttpsClient`'s native `WiFiSSLClient` and needs no extra library. `Smtp`
+needs the third-party `ESP_SSLClient` library (the UNO R4 WiFi's native TLS client can only
+negotiate TLS from the first byte, not upgrade an existing plaintext connection the way
+`STARTTLS` requires) — installed by `juno:install-deps` above, or on its own with
+`arduino-cli lib install ESP_SSLClient`.
+
+[`InboxCount`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/InboxCount.java)
+connects to WiFi and the mailbox configured by `SMTP_HOST`/`SMPT_USERNAME`/`SMTP_PASSWORD` in
+`.env`, polls `Pop3Client.messageCount` every 30 seconds, and shows the current count on the LCD
+Keypad Shield's first row (`Pop3Client` only, so it does not need `ESP_SSLClient`):
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.net.email.InboxCount
+```
+
+The same package also has
+[`EmailHelloWorld`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorld.java)
+(proves `Smtp.send` actually delivers by checking the inbox count before/after sending) and
+[`EmailClient`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java)
+(a menu-driven client: Inbox count/subject-list, Send Email, About). See
+[docs/EMAIL.md](EMAIL.md) for the full `Smtp`/`Pop3Client` reference, and
+[docs/APIS.md](APIS.md) for how these compiler-intrinsic API classes work internally.
 
 ## The Cortex-M4 assembly backend
 

@@ -99,7 +99,9 @@ See the [Javadoc](https://jabrena.github.io/juno/javadocs/0.1.0-SNAPSHOT/apidocs
 for the complete Java API reference.
 
 For Wi-Fi connections, compile-time credentials, HTTP/HTTPS REST calls, and bounded JSON response
-extraction, see the [Internet access guide](docs/INTERNET.md).
+extraction, see the [Internet access guide](docs/INTERNET.md). For sending and reading email
+(`Smtp`/`Pop3Client`), see [docs/EMAIL.md](docs/EMAIL.md). For how these API classes work
+internally, and the checklist for adding a new one, see [docs/APIS.md](docs/APIS.md).
 
 ### Target board
 
@@ -176,3 +178,5 @@ example programs rather than library API).
 - https://sunspotdev.org/
 - https://sunspotdev.org/docs/index.html
 - https://github.com/dzindra/lcdkeypad
+- https://github.com/arduino-libraries/Mouse
+- https://github.com/mobizt/ESP_SSLClient

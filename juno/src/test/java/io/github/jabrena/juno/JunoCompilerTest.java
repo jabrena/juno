@@ -565,6 +565,45 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersEmailIntrinsics() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.io.net.email.Smtp;
+                public final class EmailDemo {
+                    public static void main(String[] args) {
+                        int sent = Smtp.send("mail.example.com", 587, "alerts@example.com", "secret",
+                                "alerts@example.com", "me@example.com", "Arduino alert", "Alarm activated");
+
+                        int count = Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");
+
+                        byte[] headers = new byte[Pop3Client.DEFAULT_HEADERS_BUFFER_SIZE];
+                        byte[] body = new byte[Pop3Client.DEFAULT_BODY_BUFFER_SIZE];
+                        int[] status = new int[1];
+                        int bodyLength = Pop3Client.readLatest("mail.example.com", 995, "me@example.com", "secret",
+                                headers, headers.length, body, body.length, status);
+
+                        byte[] subject = new byte[16];
+                        int subjectLength = Pop3Client.readSubject("mail.example.com", 995, "me@example.com", "secret",
+                                1, subject, subject.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.EmailDemo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.EmailDemo");
+
+        assertThat(result.assembly()).contains(
+                "bl juno_smtp_send", "bl juno_pop3_message_count", "bl juno_pop3_read_latest",
+                "bl juno_pop3_read_subject");
+        assertThat(result.runtimeShim()).contains(
+                "#include <WiFiS3.h>", "#include <WiFiSSLClient.h>", "#include <ESP_SSLClient.h>",
+                "extern \"C\" int32_t juno_smtp_send", "extern \"C\" int32_t juno_pop3_message_count",
+                "extern \"C\" int32_t juno_pop3_read_latest", "extern \"C\" int32_t juno_pop3_read_subject",
+                "client.print(\"STARTTLS\\r\\n\")", "client.connectSSL()");
+    }
+
+    @Test
     void lowersHttpServerIntrinsicsAndStringEquals() throws Exception {
         String source = """
                 package demo;
@@ -794,6 +833,7 @@ class JunoCompilerTest {
 
         assertThat(result.assembly()).doesNotContain("bl juno_http", "bl juno_json");
         assertThat(result.runtimeShim()).doesNotContain("juno_http_request", "juno_json_locate", "WiFiS3.h");
+        assertThat(result.runtimeShim()).doesNotContain("juno_smtp_send", "juno_pop3_message_count", "ESP_SSLClient.h");
     }
 
     @Test

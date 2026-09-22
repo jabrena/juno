@@ -149,7 +149,16 @@ public final class IntrinsicRegistry {
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpServer", "respond",
                     "(ILjava/lang/String;Ljava/lang/StringBuilder;)V"), Intrinsic.HTTP_SERVER_RESPOND_BUILDER),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/Memory", "arenaUsedBytes", "()I"),
-                    Intrinsic.MEMORY_ARENA_USED));
+                    Intrinsic.MEMORY_ARENA_USED),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Smtp", "send",
+                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+                            + "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I"), Intrinsic.SMTP_SEND),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Pop3Client", "messageCount",
+                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)I"), Intrinsic.POP3_MESSAGE_COUNT),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Pop3Client", "readLatest",
+                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.POP3_READ_LATEST),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Pop3Client", "readSubject",
+                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;I[BI)I"), Intrinsic.POP3_READ_SUBJECT));
 
     private IntrinsicRegistry() {
     }

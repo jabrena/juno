@@ -149,6 +149,19 @@ public final class LcdKeypadShield {
     }
 
     /**
+     * Prints the first {@code length} bytes of {@code buffer} as raw ASCII characters, starting
+     * at the cursor, without wrapping. Unlike {@link #print(String)}, this never builds a runtime
+     * {@code String} — for content that already lives in a caller-owned byte buffer (e.g. {@link
+     * io.github.jabrena.juno.api.io.net.email.Pop3Client#readSubject}'s output) and would
+     * otherwise need a heap allocation just to be displayed.
+     */
+    public static void print(byte[] buffer, int length) {
+        for (int i = 0; i < length; i++) {
+            writeData(buffer[i]);
+        }
+    }
+
+    /**
      * Reads the currently pressed button (undebounced), one of {@link #NONE}, {@link #RIGHT},
      * {@link #UP}, {@link #DOWN}, {@link #LEFT}, {@link #SELECT}.
      */

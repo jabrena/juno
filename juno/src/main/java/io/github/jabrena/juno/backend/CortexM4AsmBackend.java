@@ -127,6 +127,8 @@ public final class CortexM4AsmBackend {
     private boolean usesHttp;
     private boolean usesHttps;
     private boolean usesHttpServer;
+    private boolean usesSmtp;
+    private boolean usesPop3;
     private boolean usesJson;
     private boolean usesRuntimeStrings;
     private boolean usesJsonStringValue;
@@ -1104,6 +1106,54 @@ public final class CortexM4AsmBackend {
                                 new WordSource.FromValue(call.arguments().get(5))));
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
+            case SMTP_SEND -> {
+                usesSmtp = true;
+                emitShimCall(output, frame, "juno_smtp_send",
+                        List.of(new WordSource.StringAddress(call.literalArguments().get(0)),
+                                new WordSource.FromValue(call.arguments().get(0)),
+                                new WordSource.StringAddress(call.literalArguments().get(1)),
+                                new WordSource.StringAddress(call.literalArguments().get(2)),
+                                new WordSource.StringAddress(call.literalArguments().get(3)),
+                                new WordSource.StringAddress(call.literalArguments().get(4)),
+                                new WordSource.StringAddress(call.literalArguments().get(5)),
+                                new WordSource.StringAddress(call.literalArguments().get(6))));
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case POP3_MESSAGE_COUNT -> {
+                usesPop3 = true;
+                emitShimCall(output, frame, "juno_pop3_message_count",
+                        List.of(new WordSource.StringAddress(call.literalArguments().get(0)),
+                                new WordSource.FromValue(call.arguments().get(0)),
+                                new WordSource.StringAddress(call.literalArguments().get(1)),
+                                new WordSource.StringAddress(call.literalArguments().get(2))));
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case POP3_READ_LATEST -> {
+                usesPop3 = true;
+                emitShimCall(output, frame, "juno_pop3_read_latest",
+                        List.of(new WordSource.StringAddress(call.literalArguments().get(0)),
+                                new WordSource.FromValue(call.arguments().get(0)),
+                                new WordSource.StringAddress(call.literalArguments().get(1)),
+                                new WordSource.StringAddress(call.literalArguments().get(2)),
+                                new WordSource.FromValue(call.arguments().get(1)),
+                                new WordSource.FromValue(call.arguments().get(2)),
+                                new WordSource.FromValue(call.arguments().get(3)),
+                                new WordSource.FromValue(call.arguments().get(4)),
+                                new WordSource.FromValue(call.arguments().get(5))));
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case POP3_READ_SUBJECT -> {
+                usesPop3 = true;
+                emitShimCall(output, frame, "juno_pop3_read_subject",
+                        List.of(new WordSource.StringAddress(call.literalArguments().get(0)),
+                                new WordSource.FromValue(call.arguments().get(0)),
+                                new WordSource.StringAddress(call.literalArguments().get(1)),
+                                new WordSource.StringAddress(call.literalArguments().get(2)),
+                                new WordSource.FromValue(call.arguments().get(1)),
+                                new WordSource.FromValue(call.arguments().get(2)),
+                                new WordSource.FromValue(call.arguments().get(3))));
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
             case JSON_TYPE, JSON_GET_INT, JSON_GET_BOOL, JSON_ARRAY_SIZE -> {
                 usesJson = true;
                 String function = switch (call.intrinsic()) {
@@ -1498,16 +1548,23 @@ public final class CortexM4AsmBackend {
         if (usesMouse) {
             shim.append("#include <Mouse.h>\n");
         }
-        if (usesWifi || usesHttp || usesHttps || usesHttpServer) {
+        if (usesWifi || usesHttp || usesHttps || usesHttpServer || usesSmtp || usesPop3) {
             shim.append("#include <WiFiS3.h>\n");
         }
-        if (usesHttps) {
+        if (usesHttps || usesPop3) {
             shim.append("#include <WiFiSSLClient.h>\n");
+        }
+        // ESP_SSLClient is a third-party library (arduino-cli lib install ESP_SSLClient), the same
+        // manual-install pattern as Mouse above: the UNO R4 WiFi's native WiFiSSLClient can only
+        // negotiate TLS from the first byte, so Smtp's STARTTLS upgrade (mail submission on port
+        // 587) needs this wrapper around a plain WiFiClient instead.
+        if (usesSmtp) {
+            shim.append("#include <ESP_SSLClient.h>\n");
         }
         if (usesHttpServer) {
             shim.append("#include <new>\n");
         }
-        if (usesHttp || usesHttps || usesHttpServer || usesJson || usesRuntimeStrings) {
+        if (usesHttp || usesHttps || usesHttpServer || usesJson || usesRuntimeStrings || usesSmtp || usesPop3) {
             shim.append("#include <string.h>\n");
         }
         if (usesFloat || usesDouble || usesJson || usesRuntimeStrings || usesStringBuilder) {
@@ -1923,6 +1980,9 @@ public final class CortexM4AsmBackend {
         }
         if (usesHttpServer) {
             shim.append(httpServerHelpers());
+        }
+        if (usesSmtp || usesPop3) {
+            shim.append(emailHelpers());
         }
         return shim.toString();
     }
@@ -3125,6 +3185,358 @@ public final class CortexM4AsmBackend {
                 }
 
                 """;
+    }
+
+    /**
+     * {@code Smtp}/{@code Pop3Client}'s shim. {@code juno_read_line} is shared and templated over
+     * the two unrelated client types involved: {@code ESP_SSLClient} ({@code Smtp}'s STARTTLS
+     * upgrade wrapper around a plain {@code WiFiClient}) and {@code WiFiSSLClient} ({@code
+     * Pop3Client}'s implicit-TLS connection) — the same template-over-client-type approach as
+     * {@link #httpHelpers()}'s {@code juno_http_request}, reused here because there is no common
+     * base class between the two client types worth naming.
+     */
+    private String emailHelpers() {
+        StringBuilder helpers = new StringBuilder();
+        helpers.append("""
+
+                template <typename Client>
+                static int32_t juno_read_line(Client& client, char* buffer, int32_t bufferCapacity, unsigned long deadline) {
+                  int32_t length = 0;
+                  while (true) {
+                    if (!client.available()) {
+                      if (!client.connected()) return -1;
+                      if (millis() >= deadline) return -1;
+                      delay(1);
+                      continue;
+                    }
+                    int value = client.read();
+                    if (value < 0) return -1;
+                    char c = static_cast<char>(value);
+                    if (c == '\\n') break;
+                    if (c != '\\r' && length < bufferCapacity - 1) buffer[length] = c;
+                    if (c != '\\r') length++;
+                  }
+                  int32_t written = length < bufferCapacity - 1 ? length : bufferCapacity - 1;
+                  buffer[written] = 0;
+                  return written;
+                }
+
+                """);
+        if (usesSmtp) {
+            helpers.append("""
+                    static int32_t juno_base64_encode(const char* data, int32_t length, char* out, int32_t outCapacity) {
+                      static const char table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+                      int32_t needed = ((length + 2) / 3) * 4;
+                      if (needed + 1 > outCapacity) return -1;
+                      int32_t o = 0;
+                      for (int32_t i = 0; i < length; i += 3) {
+                        uint32_t b0 = static_cast<uint8_t>(data[i]);
+                        uint32_t b1 = (i + 1 < length) ? static_cast<uint8_t>(data[i + 1]) : 0;
+                        uint32_t b2 = (i + 2 < length) ? static_cast<uint8_t>(data[i + 2]) : 0;
+                        uint32_t triple = (b0 << 16) | (b1 << 8) | b2;
+                        out[o++] = table[(triple >> 18) & 0x3F];
+                        out[o++] = table[(triple >> 12) & 0x3F];
+                        out[o++] = (i + 1 < length) ? table[(triple >> 6) & 0x3F] : '=';
+                        out[o++] = (i + 2 < length) ? table[triple & 0x3F] : '=';
+                      }
+                      out[o] = 0;
+                      return o;
+                    }
+
+                    static int32_t juno_smtp_read_reply(ESP_SSLClient& client, unsigned long deadline) {
+                      char line[128];
+                      int32_t code = -1;
+                      while (true) {
+                        int32_t lineLength = juno_read_line(client, line, sizeof(line), deadline);
+                        if (lineLength < 4) return -1;
+                        code = (line[0] - '0') * 100 + (line[1] - '0') * 10 + (line[2] - '0');
+                        if (line[3] != '-') break;
+                      }
+                      return code;
+                    }
+
+                    extern "C" int32_t juno_smtp_send(const char* host, int32_t port,
+                                                       const char* username, const char* password,
+                                                       const char* from, const char* to,
+                                                       const char* subject, const char* body) {
+                      WiFiClient plainClient;
+                      ESP_SSLClient client;
+                      client.setInsecure();
+                      client.setBufferSizes(2048, 512);
+                      client.setClient(&plainClient, false);
+
+                      if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
+                      unsigned long deadline = millis() + 15000;
+
+                      if (juno_smtp_read_reply(client, deadline) != 220) { client.stop(); return -2; }
+
+                      client.print("EHLO juno\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 250) { client.stop(); return -3; }
+
+                      client.print("STARTTLS\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 220) { client.stop(); return -11; }
+
+                      if (!client.connectSSL()) { client.stop(); return -12; }
+
+                      // RFC 3207: capabilities must be re-read with a fresh EHLO once TLS is up.
+                      client.print("EHLO juno\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 250) { client.stop(); return -3; }
+
+                      client.print("AUTH LOGIN\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 334) { client.stop(); return -4; }
+
+                      char encoded[196];
+                      if (juno_base64_encode(username, static_cast<int32_t>(strlen(username)), encoded, sizeof(encoded)) < 0) {
+                        client.stop();
+                        return -10;
+                      }
+                      client.print(encoded);
+                      client.print("\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 334) { client.stop(); return -4; }
+
+                      if (juno_base64_encode(password, static_cast<int32_t>(strlen(password)), encoded, sizeof(encoded)) < 0) {
+                        client.stop();
+                        return -10;
+                      }
+                      client.print(encoded);
+                      client.print("\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 235) { client.stop(); return -5; }
+
+                      client.print("MAIL FROM:<");
+                      client.print(from);
+                      client.print(">\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 250) { client.stop(); return -6; }
+
+                      client.print("RCPT TO:<");
+                      client.print(to);
+                      client.print(">\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 250) { client.stop(); return -7; }
+
+                      client.print("DATA\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 354) { client.stop(); return -8; }
+
+                      client.print("From: "); client.print(from); client.print("\\r\\n");
+                      client.print("To: "); client.print(to); client.print("\\r\\n");
+                      client.print("Subject: "); client.print(subject); client.print("\\r\\n\\r\\n");
+                      client.print(body);
+                      client.print("\\r\\n.\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 250) { client.stop(); return -9; }
+
+                      client.print("QUIT\\r\\n");
+                      client.stop();
+                      return 0;
+                    }
+
+                    """);
+        }
+        if (usesPop3) {
+            helpers.append("""
+                    static int32_t juno_pop3_expect_ok(WiFiSSLClient& client, unsigned long deadline) {
+                      char line[64];
+                      int32_t lineLength = juno_read_line(client, line, sizeof(line), deadline);
+                      return (lineLength >= 3 && line[0] == '+' && line[1] == 'O' && line[2] == 'K') ? 1 : 0;
+                    }
+
+                    static int32_t juno_pop3_parse_count(const char* line, int32_t lineLength) {
+                      int32_t i = 3;
+                      while (i < lineLength && line[i] == ' ') i++;
+                      int32_t count = 0;
+                      bool any = false;
+                      while (i < lineLength && line[i] >= '0' && line[i] <= '9') {
+                        count = count * 10 + (line[i] - '0');
+                        any = true;
+                        i++;
+                      }
+                      return any ? count : -1;
+                    }
+
+                    static int32_t juno_pop3_login(WiFiSSLClient& client, const char* username, const char* password,
+                                                    unsigned long deadline) {
+                      if (!juno_pop3_expect_ok(client, deadline)) return -2;
+                      client.print("USER "); client.print(username); client.print("\\r\\n");
+                      if (!juno_pop3_expect_ok(client, deadline)) return -3;
+                      client.print("PASS "); client.print(password); client.print("\\r\\n");
+                      if (!juno_pop3_expect_ok(client, deadline)) return -4;
+                      return 0;
+                    }
+
+                    extern "C" int32_t juno_pop3_message_count(const char* host, int32_t port,
+                                                                const char* username, const char* password) {
+                      WiFiSSLClient client;
+                      if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
+                      unsigned long deadline = millis() + 10000;
+                      int32_t loginResult = juno_pop3_login(client, username, password, deadline);
+                      if (loginResult != 0) { client.stop(); return loginResult; }
+                      client.print("STAT\\r\\n");
+                      char line[64];
+                      int32_t lineLength = juno_read_line(client, line, sizeof(line), deadline);
+                      if (lineLength < 3 || line[0] != '+' || line[1] != 'O' || line[2] != 'K') { client.stop(); return -5; }
+                      int32_t count = juno_pop3_parse_count(line, lineLength);
+                      client.print("QUIT\\r\\n");
+                      client.stop();
+                      return count;
+                    }
+
+                    static bool juno_starts_with_ci(const char* line, int32_t lineLength, const char* prefix) {
+                      int32_t i = 0;
+                      while (prefix[i] != 0) {
+                        if (i >= lineLength) return false;
+                        char a = line[i];
+                        char b = prefix[i];
+                        char la = (a >= 'A' && a <= 'Z') ? static_cast<char>(a - 'A' + 'a') : a;
+                        char lb = (b >= 'A' && b <= 'Z') ? static_cast<char>(b - 'A' + 'a') : b;
+                        if (la != lb) return false;
+                        i++;
+                      }
+                      return true;
+                    }
+
+                    static void juno_pop3_append_header(uint8_t* headersBuffer, int32_t headersBufferLength, int32_t* headersWritten,
+                                                         const char* label, const char* value, int32_t valueLength) {
+                      int32_t written = *headersWritten;
+                      for (int32_t i = 0; label[i] != 0; i++) {
+                        if (written < headersBufferLength) headersBuffer[written] = static_cast<uint8_t>(label[i]);
+                        written++;
+                      }
+                      for (int32_t i = 0; i < valueLength; i++) {
+                        if (written < headersBufferLength) headersBuffer[written] = static_cast<uint8_t>(value[i]);
+                        written++;
+                      }
+                      if (written < headersBufferLength) headersBuffer[written] = '\\n';
+                      written++;
+                      *headersWritten = written;
+                    }
+
+                    static void juno_pop3_extract_header(const char* line, int32_t lineLength, int32_t prefixLength, const char* label,
+                                                          uint8_t* headersBuffer, int32_t headersBufferLength, int32_t* headersWritten) {
+                      int32_t valueStart = prefixLength;
+                      if (valueStart < lineLength && line[valueStart] == ' ') valueStart++;
+                      juno_pop3_append_header(headersBuffer, headersBufferLength, headersWritten, label,
+                                               line + valueStart, lineLength - valueStart);
+                    }
+
+                    extern "C" int32_t juno_pop3_read_latest(const char* host, int32_t port,
+                                                              const char* username, const char* password,
+                                                              uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                              uint8_t* bodyBuffer, int32_t bodyBufferLength,
+                                                              int32_t* status) {
+                      status[0] = 0;
+                      WiFiSSLClient client;
+                      if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
+                      unsigned long deadline = millis() + 20000;
+
+                      int32_t loginResult = juno_pop3_login(client, username, password, deadline);
+                      if (loginResult != 0) { client.stop(); return loginResult; }
+
+                      client.print("STAT\\r\\n");
+                      char statLine[64];
+                      int32_t statLineLength = juno_read_line(client, statLine, sizeof(statLine), deadline);
+                      if (statLineLength < 3 || statLine[0] != '+' || statLine[1] != 'O' || statLine[2] != 'K') {
+                        client.stop();
+                        return -5;
+                      }
+                      int32_t count = juno_pop3_parse_count(statLine, statLineLength);
+                      if (count <= 0) {
+                        client.print("QUIT\\r\\n");
+                        client.stop();
+                        return -6;
+                      }
+
+                      client.print("RETR ");
+                      client.print(count);
+                      client.print("\\r\\n");
+                      if (!juno_pop3_expect_ok(client, deadline)) { client.stop(); return -7; }
+
+                      bool inHeaders = true;
+                      int32_t headersWritten = 0;
+                      int32_t bodyWritten = 0;
+                      char lineBuf[256];
+                      while (true) {
+                        int32_t lineLength = juno_read_line(client, lineBuf, sizeof(lineBuf), deadline);
+                        if (lineLength < 0) { client.stop(); return -8; }
+                        const char* effectiveLine = lineBuf;
+                        int32_t effectiveLength = lineLength;
+                        if (lineLength > 0 && lineBuf[0] == '.') {
+                          effectiveLine = lineBuf + 1;
+                          effectiveLength = lineLength - 1;
+                          if (effectiveLength == 0) break;
+                        }
+                        if (inHeaders) {
+                          if (effectiveLength == 0) {
+                            inHeaders = false;
+                            continue;
+                          }
+                          if (juno_starts_with_ci(effectiveLine, effectiveLength, "from:")) {
+                            juno_pop3_extract_header(effectiveLine, effectiveLength, 5, "From: ",
+                                                      headersBuffer, headersBufferLength, &headersWritten);
+                          } else if (juno_starts_with_ci(effectiveLine, effectiveLength, "subject:")) {
+                            juno_pop3_extract_header(effectiveLine, effectiveLength, 8, "Subject: ",
+                                                      headersBuffer, headersBufferLength, &headersWritten);
+                          }
+                          continue;
+                        }
+                        for (int32_t i = 0; i < effectiveLength; i++) {
+                          if (bodyWritten < bodyBufferLength) bodyBuffer[bodyWritten] = static_cast<uint8_t>(effectiveLine[i]);
+                          bodyWritten++;
+                        }
+                        if (bodyWritten < bodyBufferLength) bodyBuffer[bodyWritten] = '\\n';
+                        bodyWritten++;
+                      }
+
+                      client.print("QUIT\\r\\n");
+                      client.stop();
+                      status[0] = headersWritten < headersBufferLength ? headersWritten : headersBufferLength;
+                      return bodyWritten < bodyBufferLength ? bodyWritten : bodyBufferLength;
+                    }
+
+                    extern "C" int32_t juno_pop3_read_subject(const char* host, int32_t port,
+                                                               const char* username, const char* password,
+                                                               int32_t messageNumber,
+                                                               uint8_t* subjectBuffer, int32_t subjectBufferLength) {
+                      WiFiSSLClient client;
+                      if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
+                      unsigned long deadline = millis() + 15000;
+
+                      int32_t loginResult = juno_pop3_login(client, username, password, deadline);
+                      if (loginResult != 0) { client.stop(); return loginResult; }
+
+                      client.print("TOP ");
+                      client.print(messageNumber);
+                      client.print(" 0\\r\\n");
+                      if (!juno_pop3_expect_ok(client, deadline)) { client.stop(); return -5; }
+
+                      bool foundSubject = false;
+                      int32_t subjectWritten = 0;
+                      char lineBuf[256];
+                      while (true) {
+                        int32_t lineLength = juno_read_line(client, lineBuf, sizeof(lineBuf), deadline);
+                        if (lineLength < 0) { client.stop(); return -6; }
+                        const char* effectiveLine = lineBuf;
+                        int32_t effectiveLength = lineLength;
+                        if (lineLength > 0 && lineBuf[0] == '.') {
+                          effectiveLine = lineBuf + 1;
+                          effectiveLength = lineLength - 1;
+                          if (effectiveLength == 0) break;
+                        }
+                        if (!foundSubject && juno_starts_with_ci(effectiveLine, effectiveLength, "subject:")) {
+                          foundSubject = true;
+                          int32_t valueStart = 8;
+                          if (valueStart < effectiveLength && effectiveLine[valueStart] == ' ') valueStart++;
+                          for (int32_t i = valueStart; i < effectiveLength; i++) {
+                            if (subjectWritten < subjectBufferLength) subjectBuffer[subjectWritten] = static_cast<uint8_t>(effectiveLine[i]);
+                            subjectWritten++;
+                          }
+                        }
+                      }
+
+                      client.print("QUIT\\r\\n");
+                      client.stop();
+                      return subjectWritten < subjectBufferLength ? subjectWritten : subjectBufferLength;
+                    }
+
+                    """);
+        }
+        return helpers.toString();
     }
 
     private CompileException unsupported(String detail) {

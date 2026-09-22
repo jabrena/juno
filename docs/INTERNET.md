@@ -9,9 +9,9 @@ Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiF
 - extract typed values directly from JSON response bytes with
   [`Json`](../juno/src/main/java/io/github/jabrena/juno/api/io/net/http/Json.java).
 
-These APIs are compiler intrinsics. Java declares them as `native` methods, and Juno emits their
-Arduino C++ implementations only when the program uses them. Response and string buffers belong to
-the caller; the implementation does not allocate a JSON document or create runtime Java strings.
+These APIs are compiler intrinsics, like every Juno API — see [docs/APIS.md](APIS.md) for what
+that means, how they're built, and the general rules (compile-time-only `String` arguments,
+caller-owned buffers) this guide relies on. This is the end-user reference for using them.
 
 ## Requirements and current limits
 
@@ -45,86 +45,15 @@ other secrets with plain `HttpClient`.
 ## Supplying Wi-Fi credentials
 
 Do not put Wi-Fi credentials directly in Java source. Pass compile-time environment-variable reads
-to `Wifi.begin` instead:
+to `Wifi.begin` instead — see
+[docs/APIS.md](APIS.md#supplying-compile-time-credentials-with-systemgetenv) for the full
+mechanism, including the `.env`/`juno-maven-plugin` alternative and its security caveats:
 
 ```java
 Wifi.begin(
         System.getenv("JUNO_WIFI_SSID"),
         System.getenv("JUNO_WIFI_PASSWORD"));
 ```
-
-Set the variables in the environment that runs `juno compile`:
-
-```bash
-export JUNO_WIFI_SSID='your-network-name'
-export JUNO_WIFI_PASSWORD='your-network-password'
-
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main InternetExample \
-  --classpath juno-examples/target/classes:juno/target/classes
-```
-
-They can also be scoped to that single command:
-
-```bash
-JUNO_WIFI_SSID='your-network-name' \
-JUNO_WIFI_PASSWORD='your-network-password' \
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
-  --main InternetExample \
-  --classpath juno-examples/target/classes:juno/target/classes
-```
-
-Juno evaluates `System.getenv("NAME")` on the development machine during compilation. The variable
-name must be a string literal, and compilation fails with a clear error if the variable is absent.
-The board does not have an environment and never calls `System.getenv` at runtime.
-
-### Alternative: a `.env` file via `juno-maven-plugin`
-
-For Maven-built examples, `juno-maven-plugin`'s `env` goal is a Maven-level alternative to
-exporting shell environment variables by hand: it reads a git-ignored `.env` file (`KEY=VALUE` per
-line) from the module's base directory and exports every entry into the Maven JVM's real process
-environment, overwriting any value already set for that name. Nothing is generated — programs keep
-using the exact same `System.getenv("NAME")` reads shown above, with no separate class or import.
-Because `juno-maven-plugin:compile` runs later in that same JVM, `System.getenv(...)` sees the
-`.env` values during compilation exactly as if the shell had exported them itself.
-
-Enable it by adding an execution to the module's `juno-maven-plugin` configuration (see
-[`juno-examples/pom.xml`](../juno-examples/pom.xml)):
-
-```xml
-<executions>
-    <execution>
-        <goals>
-            <goal>env</goal>
-        </goals>
-    </execution>
-</executions>
-```
-
-Then create `.env` (never committed — `.env` is in the repository's `.gitignore`) next to that
-module's `pom.xml`:
-
-```text
-JUNO_WIFI_SSID=your-network-name
-JUNO_WIFI_PASSWORD=your-network-password
-```
-
-The `env` goal runs during the `generate-sources` phase, before `compile` — no other configuration
-is needed. A missing `.env` file is not an error: nothing is exported, so modules that don't use
-WiFi are unaffected, and modules that do must still see the variable set some other way (shell
-export, CI secret, etc.) or compilation fails with the same clear error as an unset variable
-always produces.
-
-Mutating the JVM's environment map is an unsupported-but-stable reflection trick, and on JDK 9+ it
-requires the Maven JVM to be launched with `--add-opens java.base/java.lang=ALL-UNNAMED --add-opens
-java.base/java.util=ALL-UNNAMED`. This repository's [`.mvn/jvm.config`](../.mvn/jvm.config)
-already adds both flags to every `mvn`/`mvnw` invocation, so no per-command setup is needed.
-
-Environment variables keep credentials out of Java source and Git history, but they are not runtime
-secret storage. Juno embeds the resolved value in the generated `.ino` sketch and firmware. Keep
-`build/` artifacts private, avoid exposing the firmware, and clear exported variables when they are
-no longer needed. Juno does not automatically read `.env` files; a shell or CI system must export
-their values before invoking the compiler.
 
 The same mechanism can supply an HTTP or HTTPS host, path, or request body when necessary:
 
@@ -181,8 +110,8 @@ int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
 ```
 
 Pass the host without `http://` and normally begin the path with `/`. The host and path must be
-string literals, constant literal expressions, or direct `System.getenv("LITERAL_NAME")` calls;
-Juno cannot construct a runtime `String`.
+compile-time strings — see
+[docs/APIS.md](APIS.md#consuming-an-api-httpclient-walkthrough) for exactly what that means.
 
 For TLS, use the equivalent `HttpsClient` method, conventionally on port 443. Do not include
 `https://` in the host:
@@ -214,9 +143,8 @@ If the body exceeds the buffer, only `response.length` bytes are retained. Choos
 enough for the API response. JSON validation normally reports an incomplete truncated document as
 `Json.TYPE_INVALID`, but the HTTP API does not otherwise expose a separate truncation flag.
 
-Allocate reusable response buffers outside long-running loops. Juno uses a fixed program-lifetime
-arena with no reclamation, so repeatedly allocating a new array inside `while (true)` eventually
-exhausts it:
+Allocate reusable response buffers outside long-running loops instead of inside `while (true)` —
+see [docs/APIS.md](APIS.md#buffers-are-caller-owned-forever) for why:
 
 ```java
 byte[] response = new byte[512];

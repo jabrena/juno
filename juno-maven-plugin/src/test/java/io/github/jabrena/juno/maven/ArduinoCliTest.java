@@ -30,6 +30,21 @@ class ArduinoCliTest {
     }
 
     @Test
+    void installsCoreAndLibraryWithExpectedArguments() {
+        FakeExecutor executor = new FakeExecutor().respond(0, "core installed").respond(0, "lib installed");
+        List<String> output = new ArrayList<>();
+        ArduinoCli cli = new ArduinoCli("arduino-cli", executor, output::add);
+
+        cli.installCore("arduino:renesas_uno");
+        cli.installLibrary("ESP_SSLClient");
+
+        assertThat(executor.invocations()).containsExactly(
+                new Invocation(List.of("arduino-cli", "core", "install", "arduino:renesas_uno"), false),
+                new Invocation(List.of("arduino-cli", "lib", "install", "ESP_SSLClient"), false));
+        assertThat(output).containsExactly("core installed", "lib installed");
+    }
+
+    @Test
     void discoversOnlyMatchingBoard() {
         FakeExecutor executor = new FakeExecutor().respond(0, boardList(
                 detected("/dev/cu.Bluetooth", ""),
