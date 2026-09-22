@@ -5,6 +5,8 @@ io.github.jabrena.juno.api
 io.github.jabrena.juno.api.io
 io.github.jabrena.juno.api.io.hid
 io.github.jabrena.juno.api.io.net
+io.github.jabrena.juno.api.io.net.email
+io.github.jabrena.juno.api.io.net.http
 io.github.jabrena.juno.api.io.usb
 io.github.jabrena.juno.api.lcd
 io.github.jabrena.juno.api.led
