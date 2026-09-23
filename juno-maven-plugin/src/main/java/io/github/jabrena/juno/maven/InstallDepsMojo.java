@@ -19,10 +19,11 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
     /**
      * Every optional Arduino library (not bundled with the {@code arduino:renesas_uno} core) any
      * current Juno example needs: {@code Mouse} for {@code RatonLoco}, {@code ESP_SSLClient} for
-     * {@code Smtp}'s {@code STARTTLS} upgrade. Update this list — and the matching mention in
-     * {@code docs/ARDUINO.md} — together whenever a new example starts needing another one.
+     * {@code Smtp}'s {@code STARTTLS} upgrade, {@code Servo} for {@code Servo}-driven examples.
+     * Update this list — and the matching mention in {@code docs/ARDUINO.md} — together whenever a
+     * new example starts needing another one.
      */
-    private static final List<String> OPTIONAL_LIBRARIES = List.of("Mouse", "ESP_SSLClient");
+    private static final List<String> OPTIONAL_LIBRARIES = List.of("Mouse", "ESP_SSLClient", "Servo");
 
     /** The arduino-cli platform (board family) backing every {@code @Board} target Juno supports today. */
     private static final String CORE_PLATFORM = "arduino:renesas_uno";

@@ -120,6 +120,7 @@ public final class CortexM4AsmBackend {
     private String clinitLabel;
     private int labelCounter;
     private boolean usesMouse;
+    private boolean usesServo;
     private boolean usesWifi;
     private boolean usesLong;
     private boolean usesFloat;
@@ -906,6 +907,11 @@ public final class CortexM4AsmBackend {
                 output.append("    bl analogRead\n");
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
+            case GPIO_ANALOG_WRITE -> {
+                load(output, frame, "r0", call.arguments().get(0));
+                load(output, frame, "r1", call.arguments().get(1));
+                output.append("    bl analogWrite\n");
+            }
             case CLOCK_MILLIS -> {
                 output.append("    bl millis\n");
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
@@ -1039,6 +1045,19 @@ public final class CortexM4AsmBackend {
                 load(output, frame, "r0", call.arguments().get(0));
                 load(output, frame, "r1", call.arguments().get(1));
                 output.append("    bl juno_mouse_move\n");
+            }
+            case SERVO_OF -> {
+                usesServo = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl juno_servo_attach\n");
+                load(output, frame, "r0", call.arguments().get(0));
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case SERVO_WRITE -> {
+                usesServo = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                load(output, frame, "r1", call.arguments().get(0));
+                output.append("    bl juno_servo_write\n");
             }
             case HTTP_GET, HTTP_DELETE -> {
                 usesHttp = true;
@@ -1548,6 +1567,9 @@ public final class CortexM4AsmBackend {
         if (usesMouse) {
             shim.append("#include <Mouse.h>\n");
         }
+        if (usesServo) {
+            shim.append("#include <Servo.h>\n");
+        }
         if (usesWifi || usesHttp || usesHttps || usesHttpServer || usesSmtp || usesPop3) {
             shim.append("#include <WiFiS3.h>\n");
         }
@@ -1929,6 +1951,24 @@ public final class CortexM4AsmBackend {
 
                     extern "C" void juno_mouse_move(int32_t x, int32_t y) {
                       Mouse.move(static_cast<signed char>(x), static_cast<signed char>(y));
+                    }
+                    """);
+        }
+        if (usesServo) {
+            shim.append("""
+
+                    static Servo junoServos[NUM_DIGITAL_PINS];
+
+                    extern "C" void juno_servo_attach(int32_t pin) {
+                      if (pin >= 0 && pin < NUM_DIGITAL_PINS) {
+                        junoServos[pin].attach(pin);
+                      }
+                    }
+
+                    extern "C" void juno_servo_write(int32_t pin, int32_t angleDegrees) {
+                      if (pin >= 0 && pin < NUM_DIGITAL_PINS) {
+                        junoServos[pin].write(angleDegrees);
+                      }
                     }
                     """);
         }

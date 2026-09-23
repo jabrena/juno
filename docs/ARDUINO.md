@@ -23,8 +23,9 @@ arduino-cli core list
 ```
 
 Some examples also need an optional Arduino library not bundled with that core (`Mouse` for
-`RatonLoco`, `ESP_SSLClient` for `Smtp`'s `STARTTLS` upgrade — see their sections below). Install
-the core and every one of those libraries in one go instead of hunting them down per example:
+`RatonLoco`, `ESP_SSLClient` for `Smtp`'s `STARTTLS` upgrade, `Servo` for `ServoSweep` — see their
+sections below). Install the core and every one of those libraries in one go instead of hunting
+them down per example:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:install-deps
@@ -196,6 +197,21 @@ hangs or fails, double-tap the board's physical reset button to force it into th
 manually (the onboard LED pulses), then immediately re-run the `juno:upload` command — and
 run `arduino-cli board list` first if you're unsure which port it came back on. Supply the new port
 to the plugin with `-Djuno.port=...`.
+
+### Example: ServoSweep (hobby servo control)
+
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/motors/ServoSweep.java`](../juno-examples/src/main/java/io/github/jabrena/juno/api/motors/ServoSweep.java)
+sweeps a 3-wire hobby servo back and forth between 0 and 180 degrees using
+[`Servo`](../juno/src/main/java/io/github/jabrena/juno/api/motors/Servo.java) — see its wiring
+diagram in the class Javadoc for how to connect the servo's signal/power/ground wires.
+
+It needs the `Servo` library (not bundled with the `arduino:renesas_uno` core, installed by
+`juno:install-deps` above, or on its own with `arduino-cli lib install Servo`):
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.motors.ServoSweep
+```
 
 ### Example: InboxCount (basic email support)
 

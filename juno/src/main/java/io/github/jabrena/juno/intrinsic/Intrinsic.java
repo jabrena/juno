@@ -36,6 +36,8 @@ public enum Intrinsic {
     SERIAL_PRINTLN_STRING,
     MOUSE_BEGIN,
     MOUSE_MOVE,
+    SERVO_OF,
+    SERVO_WRITE,
     WIFI_BEGIN,
     WIFI_STATUS,
     WIFI_LOCAL_IP,
