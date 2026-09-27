@@ -10,13 +10,19 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: true  # Fetches all submodules
-      # .sdkmanrc pins 25.2.4-graalce, which is the GraalVM CE release number; the JDK it
-      # ships is 25.0.4. setup-java can't resolve that identifier, so pin the JDK explicitly.
+      # .sdkmanrc pins 25.2.4-graalce: GraalVM CE "25 Innovation 2" (JDK 25.0.4), published under
+      # the graal-25.2.4 tag. Neither setup-java nor setup-graalvm resolves Innovation releases,
+      # so download that exact build and install it as a local JDK file.
+      - name: Download GraalVM CE 25.2.4
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/graalvm.tar.gz" \
+            https://github.com/graalvm/graalvm-ce-builds/releases/download/graal-25.2.4/graalvm-community-jdk-25i2-25.0.4_linux-x64_bin.tar.gz
       - name: Set up JDK
-        uses: graalvm/setup-graalvm@v1
+        uses: actions/setup-java@v6
         with:
+          distribution: 'jdkfile'
+          jdkFile: ${{ runner.temp }}/graalvm.tar.gz
           java-version: '25.0.4'
-          distribution: 'graalvm-community'
           cache: 'maven'
       - name: Maven build
         run: ./mvnw --batch-mode --no-transfer-progress verify --file pom.xml
