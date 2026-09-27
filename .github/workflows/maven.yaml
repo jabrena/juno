@@ -10,10 +10,13 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: true  # Fetches all submodules
+      # .sdkmanrc pins 25.2.4-graalce, which is the GraalVM CE release number; the JDK it
+      # ships is 25.0.4. setup-java can't resolve that identifier, so pin the JDK explicitly.
       - name: Set up JDK
-        uses: actions/setup-java@v6
+        uses: graalvm/setup-graalvm@v1
         with:
-          java-version-file: .sdkmanrc
+          java-version: '25.0.4'
+          distribution: 'graalvm-community'
           cache: 'maven'
       - name: Maven build
         run: ./mvnw --batch-mode --no-transfer-progress verify --file pom.xml
