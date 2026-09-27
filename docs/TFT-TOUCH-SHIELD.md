@@ -196,6 +196,29 @@ run out), and a single 52-card deck is reshuffled when fewer than 15 cards remai
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Solitaire
+```
+
+[`Solitaire`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Solitaire.java) — Klondike
+(draw one): tap a card to pick it up (a tableau card brings the cards on top of it along), then tap
+where it should go; tapping a picked-up card again sends it to its foundation. Tap the stock to turn
+a card, and the empty stock to turn the waste back over. Once every card is face up the rest plays
+itself. Scoring follows the usual Windows rules, and `NEW` deals again. The 32x44 cards reuse
+`Blackjack`'s suit bitmaps.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Yahtzee
+```
+
+[`Yahtzee`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Yahtzee.java) — solitaire
+Yahtzee over 13 rounds: `ROLL` up to three times, tapping dice between rolls to hold them, then tap a
+box on the scorecard, which previews what the dice would score in every open box. Includes the
+35-point upper bonus, 100-point Yahtzee bonuses and the official joker rules; the header keeps the
+best score since power-up.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.ConnectFour
 ```
 
@@ -242,6 +265,18 @@ run out), and a single 52-card deck is reshuffled when fewer than 15 cards remai
 ```
 
 [`Pong`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Pong.java) — Pong against the computer in portrait: your paddle follows your finger, the computer's paddle chases the ball with a speed limit, and the hit position sets the bounce angle. First to 7 wins.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.LunarLander
+```
+
+[`LunarLander`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/LunarLander.java) —
+Lunar Lander: hold `<`/`>` to rotate in 15-degree steps and `BURN` to fire the engine. Set down
+upright and slowly (the header's speeds turn red when too fast) with both feet on a yellow pad to
+score 50 times its multiplier (x2, x3, x5; narrower pads pay more). A crash costs 250 fuel, fuel
+carries over between descents, and the game ends when it runs out. The lander is a 15x15 bitmap
+rotated per pixel into a streamed 17x17 block, since the display has no line primitive.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
