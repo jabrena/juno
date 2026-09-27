@@ -23,7 +23,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 
 ## Contents
 
-- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
+- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Checkers](#checkers), [Othello](#othello), [Connect Four](#connect-four), [Tic-Tac-Toe](#tic-tac-toe), [Backgammon](#backgammon), [Mancala](#mancala), [Battleship](#battleship)
 - [Puzzles and simulations](#puzzles-and-simulations): [Minesweeper](#minesweeper), [2048](#2048), [Game of Life](#game-of-life)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem), [Solitaire](#solitaire), [Slot machine](#slot-machine)
@@ -109,6 +109,17 @@ A vector-style tube seen end-on. Touch near the rim to move your claw around it 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.Tempest
+```
+
+### Star Wars
+
+<img src="images/games/star-wars.png" alt="Star Wars on the TFT shield" width="320">
+
+After Atari's 1983 vector arcade game, in landscape: from an X-wing's cockpit, fight TIE fighters in space (Darth Vader's can only be driven off), shoot the tops off the laser towers on the Death Star's surface, then fly the trench and hit the exhaust port. Drag to aim and tap to fire; the four cannons converge where you tapped. In the trench the X-wing follows the crosshair, so you steer around catwalks as you aim. Six shields, one back per destroyed Death Star, and a bonus if the only shot you fire in the trench is the one that hits the port.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.StarWars
 ```
 
 ### Space Paranoids
@@ -402,7 +413,7 @@ On top of these:
   screen and a diff to `juno-examples/target/screenshots`. After an intended visual change,
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
-- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest` and `SpaceParanoidsTest` check rules and computer players: the
+- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest`, `StarWarsTest` and `SpaceParanoidsTest` check rules and computer players: the
   poker hand ranking against a brute-force reference, no chip lost across all-ins and side pots,
   the slot machine's exact payback, Othello's perft counts, Backgammon and Mancala rules, that
   each computer opponent beats a simple player, and that an autopilot clears Space Paranoids sectors.
