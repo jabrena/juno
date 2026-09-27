@@ -19,7 +19,7 @@ Then flash a game by its class name. Every game in this page lists its own comma
 
 `juno:upload` finds the board by itself, or takes `-Djuno.port=<PORT>`. To check that a game builds without touching any hardware, use `juno:verify` instead of `juno:upload`.
 
-The screenshots were rendered on a desktop by running each game's unmodified code, including the real `TftTouchShield` driver and its font, against an emulation of the shield's ILI9341 display controller. The real panel's colors vary slightly.
+The screenshots were rendered on a desktop by running each game's unmodified code, including the real `TftTouchShield` driver and its font, against an emulation of the shield's ILI9341 display controller (see [Testing without the board](#testing-without-the-board)). The real panel's colors vary slightly.
 
 ## Contents
 
@@ -370,3 +370,30 @@ Not a game: pick a color along the top and finger-paint on the rest of the scree
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.TftTouchPaint
 ```
+
+## Testing without the board
+
+`./mvnw test` plays every game on an emulated shield, on any machine and in CI. The tests in
+`juno-examples/src/test/java` replace the handful of `native` hardware classes with plain Java test
+doubles, which come first on the test classpath (the `juno:compile`/`juno:upload` goals still use
+the real ones):
+
+- `Gpio` decodes the ILI9341 bus that the real `TftTouchShield` driver bit-bangs into a
+  framebuffer, and answers the touch panel's analog reads, so tests can tap the screen.
+- `Clock` and `Delay` run on simulated time: waiting is instant and each clock reading costs a
+  millisecond, so frame loops and time-budgeted searches behave the same on every run.
+- `Random` is a seeded `java.util.Random`, and `Serial` discards its output.
+
+On top of these:
+
+- `GameScreenshotTest` plays each game for a few simulated seconds with scripted taps and compares
+  the screen with its picture in [`docs/images/games`](images/games). A mismatch writes the actual
+  screen and a diff to `juno-examples/target/screenshots`. After an intended visual change,
+  regenerate the pictures with
+  `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
+- `CardGamesTest`, `BoardGamesTest` and `ChanceGamesTest` check rules and computer players: the
+  poker hand ranking against a brute-force reference, no chip lost across all-ins and side pots,
+  the slot machine's exact payback, Othello's perft counts, Backgammon and Mancala rules, and that
+  each computer opponent beats a simple player.
+
+This runs the games' Java on the JVM, not the code Juno generates for the board.

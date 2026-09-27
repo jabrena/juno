@@ -78,6 +78,12 @@ against `juno`'s `api` and `annotations` packages.
   supported API; they are a normal Maven module (depends only on the `juno` artifact, for both the
   hardware API and `@Board`/`ArduinoUnoR4WiFi`) so `mvn compile` checks they still build. Keep them
   buildable end-to-end via `arduino-cli` too.
+- `juno-examples/src/test/java/` – WRITE here: tests that play the TFT games on an emulated shield.
+  `io/github/jabrena/juno/api/{Clock,Delay,Random}` and `api/io/{Gpio,usb/Serial}` are test doubles
+  that shadow the `juno` artifact's native classes on the test classpath (`Gpio` emulates the
+  ILI9341 bus and touch panel); `api/tft/GameScreenshotTest` compares each game's screen with
+  `docs/images/games/*.png` (regenerate with `-Djuno.updateScreenshots=true`), and the
+  `*GamesTest` classes check game rules and computer players. See `docs/GAMES.md`.
 - `docs/` – WRITE here: supporting documentation (`ARDUINO.md` for the `arduino-cli` workflow,
   `TYPES.md` for the Java/Arduino type mapping).
 - `docs/javadocs/<version>/` – **generated, currently tracked**: Javadoc HTML for the `juno`
