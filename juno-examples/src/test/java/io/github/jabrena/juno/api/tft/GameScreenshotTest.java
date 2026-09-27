@@ -45,6 +45,7 @@ class GameScreenshotTest {
                 game("Checkers", "checkers", "500:22,198 900:50,170 end:6000"),
                 game("Chess", "chess", "500:134,226 900:134,170 end:8000"),
                 game("ConnectFour", "connect-four", "500:120,160 end:6000"),
+                game("EmpireStrikesBack", "empire-strikes-back", "500:160,130 4200:200,150 end:4600"),
                 game("Game2048", "game-2048", "500:120,160 1200:230,200 1900:10,200 2600:120,300 end:3200"),
                 game("GameOfLife", "game-of-life", "500:120,160 end:6000"),
                 game("LunarLander", "lunar-lander", "500:120,160 1500:120,290 2200:120,290 end:2600"),
