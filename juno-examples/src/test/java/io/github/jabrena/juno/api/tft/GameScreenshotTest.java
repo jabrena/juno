@@ -62,6 +62,7 @@ class GameScreenshotTest {
                 game("Snake", "snake", "500:120,160 end:6000"),
                 game("Solitaire", "solitaire", "500:120,160 end:6000"),
                 game("SpaceInvaders", "space-invaders", "500:120,160 end:6000"),
+                game("SpaceParanoids", "space-paranoids", "500:160,130 end:9000"),
                 game("StarWars", "star-wars", "500:160,130 6500:116,146 end:6700"),
                 game("Tempest", "tempest", "500:120,160 end:6000"),
                 game("Tetris", "tetris", "500:120,160 end:6000"),
