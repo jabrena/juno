@@ -93,6 +93,8 @@ pressure estimate from the last read; presses between 10 and 1000 count as touch
 
 ## Examples
 
+For every game at a glance, sorted by category with screenshots, see [GAMES.md](GAMES.md).
+
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.TftTouchPaint

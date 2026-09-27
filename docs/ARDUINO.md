@@ -191,8 +191,9 @@ is "vanishing" tic-tac-toe (three marks each, the oldest disappears). `Simon`
 (`-Djuno.main=io.github.jabrena.juno.api.tft.Simon`) is the classic memory game, and `Blackjack`
 (`-Djuno.main=io.github.jabrena.juno.api.tft.Blackjack`) plays against the dealer with a bankroll. Further games in the same package: `ConnectFour`,
 `Checkers`, `Game2048`, `Battleship`, `Snake`, `Tetris`, `Pong`, `GameOfLife`, `Solitaire`,
-`Yahtzee`, `LunarLander`, `Othello`, `Mancala` and `Backgammon` — see
-[TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md#examples).
+`Yahtzee`, `LunarLander`, `Othello`, `Mancala`, `Backgammon`, `TexasHoldem`,
+`SlotMachine`, `RussianRoulette` and `RockPaperScissorsLizardSpock` — see
+[TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md#examples) and the illustrated catalogue in [GAMES.md](GAMES.md).
 `TftTouchPaint` is a finger-paint demo that logs raw touch readings for calibration;
 `WifiStatusTFT` is the TFT version of `WifiStatusSD`, reading its credentials from the shield's own
 microSD socket. Both were uploaded to a real UNO R4 WiFi with this shield; `TftTouchPaint`'s drawing and touch
