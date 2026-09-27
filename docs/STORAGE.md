@@ -42,6 +42,9 @@ formatted as FAT16 or FAT32; exFAT is not supported by the shield's documented S
 
 If a different reader or shield routes CS elsewhere, call `SdCard.begin(chipSelectPin)` explicitly.
 
+The ELEGOO 2.8" TFT touch screen shield's microSD socket also uses D10, and shares no pins with its
+display: see [`WifiStatusTFT`](TFT-TOUCH-SHIELD.md#examples) for the same flow shown on the TFT.
+
 ### Using the LCD Keypad Shield at the same time
 
 The LCD Keypad Shield uses D10 for backlight control, while the data logger shield uses D10 for SD

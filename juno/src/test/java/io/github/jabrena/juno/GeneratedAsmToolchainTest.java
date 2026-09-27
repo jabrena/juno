@@ -65,6 +65,28 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    void assemblesATftTouchShieldProgram() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.tft.TftTouchShield;
+                public final class AsmTft {
+                    public static void main(String[] args) {
+                        TftTouchShield.begin();
+                        TftTouchShield.fillScreen(TftTouchShield.BLACK);
+                        TftTouchShield.drawRect(0, 0, 20, 20, TftTouchShield.GREEN);
+                        TftTouchShield.println("Juno");
+                        if (TftTouchShield.readTouch()) {
+                            TftTouchShield.drawPixel(TftTouchShield.touchX(), TftTouchShield.touchY(), TftTouchShield.RED);
+                        }
+                    }
+                }
+                """;
+        assembleAndCompile(armGcc, "demo.AsmTft", source);
+    }
+
+    @Test
     void assemblesALongFloatAndDoubleMathProgram() throws Exception {
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
@@ -185,6 +207,10 @@ class GeneratedAsmToolchainTest {
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
                         HttpsClient.get("example.com", 443, "/status", response, response.length,
+                                headers, headers.length, out);
+                        byte[] path = new byte[8];
+                        path[0] = '/';
+                        HttpsClient.get("example.com", 443, path, 1, response, response.length,
                                 headers, headers.length, out);
                         int temperature = Json.getInt(response, response.length, "data.temp");
                     }

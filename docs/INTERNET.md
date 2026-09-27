@@ -31,7 +31,8 @@ public final class InternetExample {
 
 The current network layer deliberately stays small:
 
-- request hosts, paths, and request bodies must be compile-time strings;
+- request hosts, paths, and request bodies must be compile-time strings — except
+  `HttpsClient.get`'s `byte[]` path overload (see [Runtime request paths](#runtime-request-paths));
 - custom request headers, redirects, cookies, and authentication helpers are not available;
 - HTTPS uses the root CA bundle installed in the board's WiFi firmware; Juno does not yet accept a
   custom CA certificate from Java source;
@@ -159,6 +160,26 @@ while (true) {
     Delay.millis(60000);
 }
 ```
+
+### Runtime request paths
+
+When a path depends on runtime data — for example coordinates returned by an earlier request —
+build it in a `byte[]` and use the `HttpsClient.get` overload that takes the buffer and its length
+instead of a `String`. Runtime `String`s are limited to 31 bytes, which is far too short for a
+typical query string; the buffer overload accepts paths of up to 255 bytes and returns `-1` without
+connecting when `pathLength` is larger:
+
+```java
+byte[] path = new byte[256];
+int pathLength = 0;
+// ... copy "/v1/forecast?latitude=", the runtime latitude, and so on into path ...
+int responseBytes = HttpsClient.get("api.open-meteo.com", 443, path, pathLength,
+        response, response.length, headers, headers.length, statusAndHeaders);
+```
+
+The host must still be a compile-time string. Only HTTPS `GET` has this overload today.
+[`WeatherTFT`](../juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/WeatherTFT.java)
+uses it to pass the coordinates returned by ipinfo.io to Open-Meteo.
 
 ### Choosing an HTTP method
 

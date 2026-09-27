@@ -67,6 +67,7 @@ public enum Intrinsic {
     HTTP_PATCH,
     HTTP_QUERY,
     HTTPS_GET,
+    HTTPS_GET_PATH_BUFFER,
     HTTPS_POST,
     HTTPS_DELETE,
     HTTPS_PATCH,

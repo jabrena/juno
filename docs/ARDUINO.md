@@ -24,7 +24,7 @@ arduino-cli core list
 
 Some examples also need an optional Arduino library not bundled with that core (`Mouse` for
 `RatonLoco`, `ESP_SSLClient` for `Smtp`'s `STARTTLS` upgrade, `Servo` for `ServoSweep`, and `SdFat`
-for `WifiStatusSD` — see their sections below). Install the core and every one of those libraries in one go instead of hunting
+for `WifiStatusSD`/`WifiStatusTFT` — see their sections below). Install the core and every one of those libraries in one go instead of hunting
 them down per example:
 
 ```bash
@@ -167,6 +167,27 @@ alarm blinks until any button is pressed, then returns to minute selection.
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.lcd.pomodoro.Pomodoro
 ```
+
+### TFT touch screen shield examples
+
+[`TftTouchShield`](../juno/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java)
+drives the ELEGOO 2.8" TFT touch screen shield (ILI9341 on an 8-bit parallel bus on D2-D9/`A0`-`A4`,
+resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built entirely from
+`Gpio`/`Delay`. See [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.TftTouchPaint
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusTFT
+```
+
+`WeatherTFT` (`-Djuno.main=io.github.jabrena.juno.api.io.net.weather.WeatherTFT`) is a desk
+weather station: public IP → ipinfo.io location → Open-Meteo weather, with a seven-segment clock.
+`TftTouchPaint` is a finger-paint demo that logs raw touch readings for calibration;
+`WifiStatusTFT` is the TFT version of `WifiStatusSD`, reading its credentials from the shield's own
+microSD socket. Both were uploaded to a real UNO R4 WiFi with this shield; `TftTouchPaint`'s drawing and touch
+mapping are confirmed working.
 
 ### Example: RatonLoco (USB mouse control)
 

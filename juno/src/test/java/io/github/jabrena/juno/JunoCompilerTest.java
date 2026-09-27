@@ -315,6 +315,40 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersTftTouchShieldToGpioWithoutExtraShimLibraries() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.tft.TftTouchShield;
+                public final class TftDemo {
+                    public static void main(String[] args) {
+                        TftTouchShield.begin();
+                        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+                        TftTouchShield.fillScreen(TftTouchShield.BLACK);
+                        TftTouchShield.setTextSize(2);
+                        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLUE);
+                        TftTouchShield.setCursor(10, 10);
+                        TftTouchShield.print("Hi ");
+                        TftTouchShield.print(42);
+                        while (true) {
+                            if (TftTouchShield.readTouch()) {
+                                TftTouchShield.fillRect(TftTouchShield.touchX(), TftTouchShield.touchY(), 3, 3,
+                                        TftTouchShield.color(255, 0, 0));
+                            }
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.TftDemo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.TftDemo");
+
+        // The driver is plain Java over Gpio/Delay: it lowers to Arduino core calls only.
+        assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl analogRead");
+        assertThat(result.runtimeShim()).doesNotContain(
+                "#include <SdFat.h>", "#include <WiFiS3.h>", "#include <Mouse.h>");
+    }
+
+    @Test
     void lowersSerialIntrinsics() throws Exception {
         String source = """
                 package demo;
@@ -690,7 +724,36 @@ class JunoCompilerTest {
                 "WiFiSSLClient client;",
                 "juno_http_request(client, \"GET\", host, port, path, nullptr",
                 "juno_http_request(client, \"QUERY\", host, port, path, body")
-                .doesNotContain("juno_http_get");
+                .doesNotContain("juno_http_get", "juno_https_get_path_buffer");
+    }
+
+    @Test
+    void lowersHttpsGetWithARuntimePathBuffer() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+                public final class HttpsPathBufferDemo {
+                    public static void main(String[] args) {
+                        byte[] path = new byte[16];
+                        path[0] = '/';
+                        path[1] = 'a';
+                        byte[] response = new byte[128];
+                        byte[] headers = new byte[128];
+                        int[] out = new int[2];
+                        int bytes = HttpsClient.get("example.com", 443, path, 2,
+                                response, response.length, headers, headers.length, out);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpsPathBufferDemo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpsPathBufferDemo");
+
+        assertThat(result.assembly()).contains("bl juno_https_get_path_buffer", ".asciz \"example.com\"");
+        assertThat(result.runtimeShim()).contains(
+                "#include <WiFiSSLClient.h>",
+                "extern \"C\" int32_t juno_https_get_path_buffer(const char* host, int32_t port,",
+                "if (pathLength < 0 || pathLength >= JUNO_HTTP_PATH_BUFFER_CAPACITY)");
     }
 
     @Test

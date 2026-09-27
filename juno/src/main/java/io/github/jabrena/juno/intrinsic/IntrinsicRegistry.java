@@ -169,6 +169,8 @@ public final class IntrinsicRegistry {
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_QUERY),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpsClient", "get",
                     "(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I"), Intrinsic.HTTPS_GET),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpsClient", "get",
+                    "(Ljava/lang/String;I[BI[BI[BI[I)I"), Intrinsic.HTTPS_GET_PATH_BUFFER),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpsClient", "post",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.HTTPS_POST),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpsClient", "delete",

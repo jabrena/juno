@@ -28,6 +28,19 @@ public final class HttpsClient {
             byte[] headersBuffer, int headersBufferLength,
             int[] statusAndHeadersLength);
 
+    /**
+     * Sends an HTTPS GET request whose path is the first {@code pathLength} ASCII bytes of
+     * {@code pathBuffer}, rather than a compile-time string — for paths that depend on runtime
+     * data, such as coordinates read from an earlier response (a runtime {@code String} is limited
+     * to 31 bytes, far too short for a typical query string). {@code pathLength} must be less than
+     * 256; a longer or negative length returns {@code -1} without connecting. Everything else
+     * behaves like {@link #get(String, int, String, byte[], int, byte[], int, int[])}.
+     */
+    public static native int get(String host, int port, byte[] pathBuffer, int pathLength,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
     /** Sends a bodyless HTTPS DELETE request. */
     public static native int delete(String host, int port, String path,
             byte[] bodyBuffer, int bodyBufferLength,

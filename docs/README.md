@@ -6,6 +6,8 @@
   (`compile`/`verify`/`upload`/`monitor`/`env`) and configuration.
 - [LCD-KEYPAD-SHIELD.md](LCD-KEYPAD-SHIELD.md) — driving the 16x2 LCD Keypad Shield's display and
   5 buttons with `LcdKeypadShield`.
+- [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md) — driving the ELEGOO 2.8" TFT touch screen shield's
+  color display, resistive touch panel, and microSD socket with `TftTouchShield`.
 - [HID.md](HID.md) — acting as a USB HID mouse with `Mouse`.
 - [CLOCK.md](CLOCK.md) — reading elapsed time with `Clock`, and when to prefer it over `Delay`.
 - [INTERNET.md](INTERNET.md) — Wi-Fi, HTTP/HTTPS REST calls, and bounded JSON response extraction.

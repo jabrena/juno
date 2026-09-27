@@ -28,7 +28,7 @@ public final class Linker {
             Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME, Intrinsic.LED_MATRIX_CLEAR);
     private static final Set<Intrinsic> WIFI_INTRINSICS = EnumSet.of(Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS,
             Intrinsic.WIFI_LOCAL_IP, Intrinsic.HTTP_GET, Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH,
-            Intrinsic.HTTP_QUERY, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE,
+            Intrinsic.HTTP_QUERY, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER, Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE,
             Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY, Intrinsic.HTTP_SERVER_BEGIN,
             Intrinsic.HTTP_SERVER_ACCEPT, Intrinsic.HTTP_SERVER_METHOD, Intrinsic.HTTP_SERVER_PATH,
             Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER);

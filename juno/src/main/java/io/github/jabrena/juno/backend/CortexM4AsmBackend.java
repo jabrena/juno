@@ -132,6 +132,7 @@ public final class CortexM4AsmBackend {
     private boolean usesDouble;
     private boolean usesHttp;
     private boolean usesHttps;
+    private boolean usesHttpsPathBuffer;
     private boolean usesHttpServer;
     private boolean usesSmtp;
     private boolean usesPop3;
@@ -1288,6 +1289,21 @@ public final class CortexM4AsmBackend {
                                 new WordSource.FromValue(call.arguments().get(3)),
                                 new WordSource.FromValue(call.arguments().get(4)),
                                 new WordSource.FromValue(call.arguments().get(5))));
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case HTTPS_GET_PATH_BUFFER -> {
+                usesHttps = true;
+                usesHttpsPathBuffer = true;
+                emitShimCall(output, frame, "juno_https_get_path_buffer",
+                        List.of(new WordSource.StringAddress(call.literalArguments().get(0)),
+                                new WordSource.FromValue(call.arguments().get(0)),
+                                new WordSource.FromValue(call.arguments().get(1)),
+                                new WordSource.FromValue(call.arguments().get(2)),
+                                new WordSource.FromValue(call.arguments().get(3)),
+                                new WordSource.FromValue(call.arguments().get(4)),
+                                new WordSource.FromValue(call.arguments().get(5)),
+                                new WordSource.FromValue(call.arguments().get(6)),
+                                new WordSource.FromValue(call.arguments().get(7))));
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
             case HTTPS_POST, HTTPS_PATCH, HTTPS_QUERY -> {
@@ -3528,6 +3544,30 @@ public final class CortexM4AsmBackend {
                       return juno_http_request(client, "QUERY", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
+                    }
+
+                    """);
+        }
+        if (usesHttpsPathBuffer) {
+            helpers.append("""
+
+                    static const int32_t JUNO_HTTP_PATH_BUFFER_CAPACITY = 256;
+
+                    extern "C" int32_t juno_https_get_path_buffer(const char* host, int32_t port,
+                                                                   const uint8_t* pathBuffer, int32_t pathLength,
+                                                                   uint8_t* responseBuffer, int32_t responseBufferLength,
+                                                                   uint8_t* headersBuffer, int32_t headersBufferLength,
+                                                                   int32_t* statusAndHeadersLength) {
+                      statusAndHeadersLength[0] = 0;
+                      statusAndHeadersLength[1] = 0;
+                      if (pathLength < 0 || pathLength >= JUNO_HTTP_PATH_BUFFER_CAPACITY) {
+                        return -1;
+                      }
+                      char path[JUNO_HTTP_PATH_BUFFER_CAPACITY];
+                      memcpy(path, pathBuffer, (size_t) pathLength);
+                      path[pathLength] = '\\0';
+                      return juno_https_get(host, port, path, responseBuffer, responseBufferLength,
+                                            headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
 
                     """);
