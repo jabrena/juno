@@ -1,6 +1,6 @@
 # Games
 
-Juno ships 31 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is a plain Java class in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
+Juno ships 32 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is a plain Java class in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
 
 ## How to play
 
@@ -23,7 +23,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 
 ## Contents
 
-- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
+- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Checkers](#checkers), [Othello](#othello), [Connect Four](#connect-four), [Tic-Tac-Toe](#tic-tac-toe), [Backgammon](#backgammon), [Mancala](#mancala), [Battleship](#battleship)
 - [Puzzles and simulations](#puzzles-and-simulations): [Minesweeper](#minesweeper), [2048](#2048), [Game of Life](#game-of-life)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem), [Solitaire](#solitaire), [Slot machine](#slot-machine)
@@ -142,6 +142,17 @@ After Atari's 1981 vector arcade game, in landscape: a First World War dogfight 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.RedBaron
+```
+
+### Star Trek
+
+<img src="images/games/star-trek.png" alt="Star Trek on the TFT shield" width="320">
+
+After Sega's 1982 vector arcade game, in landscape: command the Enterprise through sectors of Klingon battlecruisers. The left of the screen is the tactical scanner, a top-down view centered on the Enterprise; the top right is the view ahead from the bridge. Hold a finger on the scanner to turn towards it and run the impulse engines, and press the buttons to fire phasers (a short-range beam straight ahead that recharges quickly), photon torpedoes (few, but their blast destroys everything around them) or warp away out of trouble. Klingons make attack passes and fire torpedoes that drain your shields, and some go after the starbase: dock with it once per sector to restore shields, torpedoes and warps before they destroy it. Anti-matter saucers join from sector 2, and every fourth sector the probe Nomad lays mines. Clear a sector of Klingons (and Nomad) for a bonus; the game ends when the shields reach zero.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.StarTrek
 ```
 
 ### Space Paranoids
@@ -435,10 +446,10 @@ On top of these:
   screen and a diff to `juno-examples/target/screenshots`. After an intended visual change,
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
-- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest`, `StarWarsTest`, `SpaceParanoidsTest`, `RedBaronTest` and `EmpireStrikesBackTest` check rules and computer players: the
+- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest`, `StarWarsTest`, `SpaceParanoidsTest`, `RedBaronTest`, `EmpireStrikesBackTest` and `StarTrekTest` check rules and computer players: the
   poker hand ranking against a brute-force reference, no chip lost across all-ins and side pots,
   the slot machine's exact payback, Othello's perft counts, Backgammon and Mancala rules, that
-  each computer opponent beats a simple player, and that autopilots clear Space Paranoids sectors and whole Red Baron and Empire Strikes Back waves.
+  each computer opponent beats a simple player, and that autopilots clear Space Paranoids and Star Trek sectors and whole Red Baron and Empire Strikes Back waves.
 
 This runs the games' Java on the JVM, not the code Juno generates for the board.
 
