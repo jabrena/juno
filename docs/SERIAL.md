@@ -42,7 +42,8 @@ Serial.println(123456789012L);        // 64-bit integer
 Serial.println(3.14f);                // single-precision floating point
 Serial.println(3.141592653589793);    // double-precision floating point
 Serial.print("Distance: ");           // compile-time string literal, no trailing newline
-Serial.println("Ready");              // compile-time string literal, with a trailing newline
+Serial.println("Ready");              // string, with a trailing newline
+Serial.println(e.getMessage());       // runtime String (prints "null" for null)
 ```
 
 | Method | Argument | Notes |
@@ -53,19 +54,17 @@ Serial.println("Ready");              // compile-time string literal, with a tra
 | `print(long)` / `println(long)` | any `long` expression | preserves the full Java 64-bit value |
 | `print(float)` / `println(float)` | any `float` expression | uses Arduino's floating-point formatting |
 | `print(double)` / `println(double)` | any `double` expression | uses Arduino's floating-point formatting |
-| `print(String)` / `println(String)` | a **compile-time string literal** | see limitation below |
+| `print(String)` / `println(String)` | any `String` expression | literals print straight from flash; a `null` prints `null` |
 
 `BaudRate` provides `BAUD_9600`, `BAUD_19200`, `BAUD_38400`, `BAUD_57600`, and `BAUD_115200`.
 `juno-examples` conventionally uses `BAUD_115200` everywhere, which is also `juno:monitor`'s
 default.
 
-### Limitation: string arguments must be compile-time literals
+### Printing runtime strings
 
-Juno has no heap-backed runtime `String` construction, so `Serial.print(String)` and
-`Serial.println(String)` only accept a compile-time constant string — a literal, or a constant
-expression `javac` folds into one. They cannot print a `String` built at runtime (concatenation
-result, `String.valueOf(...)`, a `StringBuilder` result, a value read from JSON, etc.). To print
-computed data, print its parts as separate calls instead:
+`Serial.print(String)`/`println(String)` also print runtime `String` values — `String.valueOf(...)`,
+a `StringBuilder` result, a JSON string, or an exception's `getMessage()`. String concatenation with
+`+` is still unsupported (`javac` compiles it to `invokedynamic`), so print computed data in parts:
 
 ```java
 int temperature = /* ... */;

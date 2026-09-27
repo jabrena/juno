@@ -43,7 +43,7 @@ public final class ClassPath {
     private void loadDirectory(Path directory, Map<String, JavaClass> classes) throws IOException {
         try (Stream<Path> files = Files.walk(directory)) {
             for (Path file : files.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".class"))
+                    .filter(path -> isCodeClassFile(path.getFileName().toString()))
                     .sorted()
                     .toList()) {
                 add(classes, reader.read(Files.readAllBytes(file)), file.toString());
@@ -55,8 +55,7 @@ public final class ClassPath {
         try (JarFile jar = new JarFile(path.toFile())) {
             List<JarEntry> entries = jar.stream()
                     .filter(entry -> !entry.isDirectory())
-                    .filter(entry -> entry.getName().endsWith(".class"))
-                    .filter(entry -> !entry.getName().equals("module-info.class"))
+                    .filter(entry -> isCodeClassFile(entry.getName()))
                     .sorted((left, right) -> left.getName().compareTo(right.getName()))
                     .toList();
             for (JarEntry entry : entries) {
@@ -65,6 +64,15 @@ public final class ClassPath {
                 }
             }
         }
+    }
+
+    /**
+     * {@code module-info}/{@code package-info} carry only metadata (never code Juno lowers), and two
+     * modules may legitimately each declare the same package's {@code package-info} — reading them
+     * would only turn a harmless split-package Javadoc into a duplicate-class error.
+     */
+    private static boolean isCodeClassFile(String name) {
+        return name.endsWith(".class") && !name.endsWith("module-info.class") && !name.endsWith("package-info.class");
     }
 
     private void add(Map<String, JavaClass> classes, JavaClass javaClass, String source) {

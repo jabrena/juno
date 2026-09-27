@@ -17,6 +17,7 @@ import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.Program;
+import io.github.jabrena.juno.linker.ThrowableTypes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,6 +100,13 @@ public final class RuntimeRiskAnalyzer {
                     } else if (instruction instanceof IrInstruction.LongConst constant) {
                         integerConstants.put(constant.targetLow(), (int) constant.value());
                         integerConstants.put(constant.targetHigh(), (int) (constant.value() >>> 32));
+                    } else if (instruction instanceof IrInstruction.PackLong pack
+                            && integerConstants.containsKey(pack.valueLow())
+                            && integerConstants.containsKey(pack.valueHigh())) {
+                        // Only zero-ness matters for a packed long (see mayDivideByZero).
+                        boolean zero = integerConstants.get(pack.valueLow()) == 0
+                                && integerConstants.get(pack.valueHigh()) == 0;
+                        integerConstants.put(pack.target(), zero ? 0 : 1);
                     }
                     if (instruction instanceof IrInstruction.IntArrayConst array) {
                         constantArrayBytes += array.values().size() * 4;
@@ -196,7 +204,8 @@ public final class RuntimeRiskAnalyzer {
             return allocationUpperBound(array.length() * alignment, alignment);
         }
         if (instruction instanceof IrInstruction.NewObject object) {
-            int size = objectSize(classes.get(object.className()));
+            int size = objectSize(classes.get(object.className()))
+                    + (ThrowableTypes.isThrowable(object.className(), classes) ? ThrowableTypes.HEADER_BYTES : 0);
             int alignment = objectAlignment(classes.get(object.className()));
             return allocationUpperBound(size, alignment);
         }
@@ -288,7 +297,8 @@ public final class RuntimeRiskAnalyzer {
             for (IrInstruction instruction : block.instructions()) {
                 int temporaryBytes = switch (instruction) {
                     case IrInstruction.IntrinsicCall call ->
-                            (call.arguments().size() + (call.receiver().isPresent() ? 1 : 0)) * 4;
+                            (call.arguments().stream().mapToInt(argument -> argument.type().jvmSlots()).sum()
+                                    + (call.receiver().isPresent() ? 1 : 0)) * 4;
                     case IrInstruction.LongBinary ignored -> 24;
                     case IrInstruction.LongShift ignored -> 16;
                     case IrInstruction.LongNegate ignored -> 8;
@@ -303,6 +313,11 @@ public final class RuntimeRiskAnalyzer {
         return maximum;
     }
 
+    /** {@code Math.floorDiv}/{@code floorMod} panic on a zero divisor exactly like {@code /} and {@code %}. */
+    private static final Set<Intrinsic> FLOOR_DIVISIONS = Set.of(
+            Intrinsic.MATH_FLOOR_DIV_INT, Intrinsic.MATH_FLOOR_DIV_LONG, Intrinsic.MATH_FLOOR_DIV_LONG_INT,
+            Intrinsic.MATH_FLOOR_MOD_INT, Intrinsic.MATH_FLOOR_MOD_LONG, Intrinsic.MATH_FLOOR_MOD_LONG_INT);
+
     private boolean mayDivideByZero(IrInstruction instruction, Map<Value, Integer> constants) {
         if (instruction instanceof IrInstruction.Binary binary
                 && (binary.operation() == BinaryOp.DIVIDE || binary.operation() == BinaryOp.REMAINDER)) {
@@ -314,6 +329,9 @@ public final class RuntimeRiskAnalyzer {
             Integer high = constants.get(binary.rightHigh());
             return low == null || high == null || (low == 0 && high == 0);
         }
+        if (instruction instanceof IrInstruction.IntrinsicCall call && FLOOR_DIVISIONS.contains(call.intrinsic())) {
+            return constants.getOrDefault(call.arguments().get(1), 0) == 0;
+        }
         return false;
     }
 
@@ -321,10 +339,21 @@ public final class RuntimeRiskAnalyzer {
         return constants.getOrDefault(value, 1) == 0;
     }
 
+    private boolean endsInNoReturnCall(IrBasicBlock block) {
+        List<IrInstruction> instructions = block.instructions();
+        if (instructions.isEmpty()) {
+            return false;
+        }
+        IrInstruction last = instructions.get(instructions.size() - 1);
+        return last instanceof IrInstruction.Panic
+                || (last instanceof IrInstruction.IntrinsicCall call && call.intrinsic() == Intrinsic.THROW_UNCAUGHT);
+    }
+
     private Set<Integer> cyclicBlocks(IrMethod method) {
         Map<Integer, List<Integer>> edges = new HashMap<>();
         for (IrBasicBlock block : method.blocks()) {
-            edges.put(block.start(), successors(block.terminator()));
+            // A panic or uncaught throw never returns; the self-jump after it only terminates the block.
+            edges.put(block.start(), endsInNoReturnCall(block) ? List.of() : successors(block.terminator()));
         }
         Set<Integer> cyclic = new HashSet<>();
         for (int block : edges.keySet()) {

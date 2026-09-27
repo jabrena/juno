@@ -120,6 +120,7 @@ public final class ClassFileReader {
             int maxStack = 0;
             int maxLocals = 0;
             byte[] code = null;
+            List<ExceptionHandler> exceptionHandlers = List.of();
             for (int j = 0; j < attributeCount; j++) {
                 String attributeName = pool.utf8(input.readUnsignedShort());
                 int length = input.readInt();
@@ -128,13 +129,23 @@ public final class ClassFileReader {
                     maxLocals = input.readUnsignedShort();
                     code = input.readNBytes(input.readInt());
                     int exceptionTableLength = input.readUnsignedShort();
-                    input.skipNBytes((long) exceptionTableLength * 8);
+                    List<ExceptionHandler> handlers = new ArrayList<>(exceptionTableLength);
+                    for (int k = 0; k < exceptionTableLength; k++) {
+                        int startPc = input.readUnsignedShort();
+                        int endPc = input.readUnsignedShort();
+                        int handlerPc = input.readUnsignedShort();
+                        int catchTypeIndex = input.readUnsignedShort();
+                        handlers.add(new ExceptionHandler(startPc, endPc, handlerPc,
+                                catchTypeIndex == 0 ? null : pool.className(catchTypeIndex)));
+                    }
+                    exceptionHandlers = List.copyOf(handlers);
                     skipAttributes(input, pool);
                 } else {
                     input.skipNBytes(Integer.toUnsignedLong(length));
                 }
             }
-            methods.add(new JavaMethod(owner, accessFlags, name, descriptor, maxStack, maxLocals, code));
+            methods.add(new JavaMethod(owner, accessFlags, name, descriptor, maxStack, maxLocals, code,
+                    exceptionHandlers));
         }
         return methods;
     }

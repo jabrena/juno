@@ -18,9 +18,13 @@ inline void delay(unsigned long) {}
 inline void delayMicroseconds(unsigned int) {}
 inline unsigned long millis() { return 0; }
 inline unsigned long micros() { return 0; }
+inline void randomSeed(unsigned long) {}
+inline long random(long bound) { return bound > 0 ? bound - 1 : 0; }
+inline long random(long origin, long bound) { return bound > origin ? bound - 1 : origin; }
 
 struct JunoSerial {
   void begin(unsigned long) {}
+  void println() {}
   void print(int32_t) {}
   void println(int32_t) {}
   void print(uint32_t) {}

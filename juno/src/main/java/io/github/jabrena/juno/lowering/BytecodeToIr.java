@@ -6,6 +6,7 @@ import io.github.jabrena.juno.analysis.ControlFlowGraph;
 import io.github.jabrena.juno.analysis.Terminator;
 import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.classfile.ExceptionHandler;
 import io.github.jabrena.juno.classfile.FieldInfo;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
@@ -30,6 +31,7 @@ import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.Program;
+import io.github.jabrena.juno.linker.ThrowableTypes;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -40,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -91,11 +95,40 @@ public final class BytecodeToIr {
     private final Map<String, List<FieldInfo>> validatedRecords = new HashMap<>();
 
     public IrProgram lower(Program program) {
+        List<String> throwableClasses = throwableClasses(program.methods(), program.classes());
         List<IrMethod> methods = new ArrayList<>();
         for (LinkedMethod linked : program.methods()) {
-            methods.add(lower(linked, program.classes()));
+            methods.add(lower(linked, program.classes(), throwableClasses));
         }
-        return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis());
+        return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis(),
+                throwableClasses);
+    }
+
+    /**
+     * Every throwable class the program allocates, sorted so class ids (their indexes) are deterministic.
+     * An id is one bit of the caught-class mask {@code athrow} passes to the runtime, hence the limit.
+     */
+    private List<String> throwableClasses(List<LinkedMethod> methods, Map<String, JavaClass> classes) {
+        Set<String> names = new TreeSet<>();
+        for (LinkedMethod linked : methods) {
+            for (Instruction instruction : linked.instructions()) {
+                if (instruction.opcode() == 187) {
+                    String className = linked.owner().constantPool().className(instruction.operandA());
+                    if (ThrowableTypes.isThrowable(className, classes)) {
+                        names.add(className);
+                    }
+                }
+                if (isIntegerDivision(instruction.opcode())
+                        && arithmeticHandler(linked, instruction.offset(), classes) != null) {
+                    names.add(ARITHMETIC_EXCEPTION);
+                }
+            }
+        }
+        if (names.size() > Integer.SIZE) {
+            throw new CompileException("Juno supports at most " + Integer.SIZE
+                    + " distinct exception classes per program, found " + names.size());
+        }
+        return List.copyOf(names);
     }
 
     /** Convenience overload for callers with no enum classes to resolve (e.g. hand-built {@link LinkedMethod}s in tests). */
@@ -104,6 +137,10 @@ public final class BytecodeToIr {
     }
 
     public IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes) {
+        return lower(linked, classes, throwableClasses(List.of(linked), classes));
+    }
+
+    private IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes, List<String> throwableClasses) {
         int stackBase = linked.method().maxLocals();
         Descriptor methodDescriptor = Descriptor.parse(linked.method().descriptor());
         Map<Integer, Integer> entryDepths = computeEntryDepths(linked);
@@ -118,6 +155,8 @@ public final class BytecodeToIr {
         int nextValueId = 0;
         for (BasicBlock block : linked.controlFlowGraph().blocks()) {
             List<IrInstruction> instructions = new ArrayList<>();
+            // Advances past a split when a guarded division (see guardZeroDivisor) ends the IR block early.
+            int irBlockStart = block.start();
             int depth = entryDepths.getOrDefault(block.start(), 0);
             tracking.startBlock();
             IrTerminator terminator = null;
@@ -351,10 +390,18 @@ public final class BytecodeToIr {
                         depth -= 2;
                     }
                     case 108 -> {
+                        DivisorGuard guard = guardZeroDivisor(linked, instruction, false, irBlockStart,
+                                instructions, blocks, stackBase, depth, nextValueId, classes);
+                        nextValueId = guard.nextValueId();
+                        irBlockStart = guard.blockStart();
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
                         depth--;
                     }
                     case 109 -> {
+                        DivisorGuard guard = guardZeroDivisor(linked, instruction, true, irBlockStart,
+                                instructions, blocks, stackBase, depth, nextValueId, classes);
+                        nextValueId = guard.nextValueId();
+                        irBlockStart = guard.blockStart();
                         nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
                         depth -= 2;
                     }
@@ -369,10 +416,18 @@ public final class BytecodeToIr {
                         depth -= 2;
                     }
                     case 112 -> {
+                        DivisorGuard guard = guardZeroDivisor(linked, instruction, false, irBlockStart,
+                                instructions, blocks, stackBase, depth, nextValueId, classes);
+                        nextValueId = guard.nextValueId();
+                        irBlockStart = guard.blockStart();
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);
                         depth--;
                     }
                     case 113 -> {
+                        DivisorGuard guard = guardZeroDivisor(linked, instruction, true, irBlockStart,
+                                instructions, blocks, stackBase, depth, nextValueId, classes);
+                        nextValueId = guard.nextValueId();
+                        irBlockStart = guard.blockStart();
                         nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);
                         depth -= 2;
                     }
@@ -743,13 +798,17 @@ public final class BytecodeToIr {
                     case 191 -> {
                         Popped thrown = pop(instructions, stackBase, --depth, nextValueId, tracking);
                         nextValueId = thrown.nextValueId();
-                        instructions.add(new IrInstruction.Panic());
-                        terminator = new IrTerminator.Jump(block.start());
+                        Thrown lowered = lowerThrow(linked, instruction, block, thrown.value(), instructions,
+                                stackBase, nextValueId, tracking, classes, throwableClasses);
+                        nextValueId = lowered.nextValueId();
+                        terminator = lowered.terminator();
                     }
                     case 182 -> {
                         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                         Lowered lowered = isEnumOrdinal(classes, called)
                                 ? lowerEnumOrdinal(instructions, stackBase, depth, nextValueId, tracking)
+                                : ThrowableTypes.isGetMessage(called, classes)
+                                        ? lowerGetMessage(instructions, stackBase, depth, nextValueId, tracking)
                                 : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
                         nextValueId = lowered.nextValueId();
                         depth = lowered.depth();
@@ -775,6 +834,9 @@ public final class BytecodeToIr {
                                 : isPropertiesConstruction(called)
                                         ? lowerPropertiesConstruction(instructions, stackBase, depth,
                                                 nextValueId, tracking)
+                                : ThrowableTypes.isBuiltInConstructor(called)
+                                        ? lowerThrowableConstructor(linked, instruction, called, instructions,
+                                                stackBase, depth, nextValueId, tracking)
                                 : isRuntimeBaseConstructor(called)
                                         ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId, tracking)
                                         : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
@@ -784,6 +846,13 @@ public final class BytecodeToIr {
                     case 187 -> {
                         String className = linked.owner().constantPool().className(instruction.operandA());
                         JavaClass allocatedClass = classes.get(className);
+                        if (ThrowableTypes.isBuiltIn(className)) {
+                            Value exception = Value.int32(nextValueId++);
+                            instructions.add(new IrInstruction.NewObject(exception, className));
+                            storeToStack(instructions, stackBase, depth, exception, tracking);
+                            depth++;
+                            break;
+                        }
                         if (className.startsWith("java/lang/") || className.equals("java/util/Properties")) {
                             nextValueId = pushConst(instructions, stackBase, depth, nextValueId, 0, tracking);
                             depth++;
@@ -965,7 +1034,7 @@ public final class BytecodeToIr {
             if (terminator == null) {
                 terminator = new IrTerminator.Jump(((Terminator.Fallthrough) block.terminator()).target());
             }
-            blocks.add(new IrBasicBlock(block.start(), List.copyOf(instructions), terminator));
+            blocks.add(new IrBasicBlock(irBlockStart, List.copyOf(instructions), terminator));
         }
         return IrMethod.withInferredValues(linked.method().reference(), linked.method().isStatic(),
                 stackBase + linked.method().maxStack(),
@@ -1077,12 +1146,22 @@ public final class BytecodeToIr {
         int entryStart = cfg.entry().start();
         entryDepth.put(entryStart, 0);
         work.add(entryStart);
+        // A handler always starts with just the caught exception on the stack, even when no explicit
+        // throw reaches it (its range may hold only calls, whose exceptions Juno doesn't propagate).
+        for (ExceptionHandler handler : linked.method().exceptionHandlers()) {
+            if (entryDepth.putIfAbsent(handler.handlerPc(), 1) == null) {
+                work.add(handler.handlerPc());
+            }
+        }
         while (!work.isEmpty()) {
             int blockStart = work.removeFirst();
             BasicBlock block = cfg.blockAt(blockStart).orElseThrow();
             int depth = entryDepth.get(blockStart);
             for (Instruction instruction : block.instructions()) {
                 depth += stackDelta(linked, instruction);
+            }
+            if (block.terminator() instanceof Terminator.Throw) {
+                continue;
             }
             for (int successor : successorsOf(block.terminator())) {
                 Integer existing = entryDepth.get(successor);
@@ -1106,6 +1185,7 @@ public final class BytecodeToIr {
             case Terminator.Branch branch -> List.of(branch.trueTarget(), branch.falseTarget());
             case Terminator.Fallthrough fallthrough -> List.of(fallthrough.target());
             case Terminator.Return ignored -> List.of();
+            case Terminator.Throw thrown -> thrown.handlers();
             case Terminator.Switch switched -> {
                 List<Integer> targets = new ArrayList<>(switched.targets());
                 targets.add(switched.defaultTarget());
@@ -1186,6 +1266,10 @@ public final class BytecodeToIr {
                                 + "string literal argument");
                     }
                     literalStrings[index] = literal;
+                } else if (intrinsic.isPresent()
+                        && IntrinsicRegistry.prefersLiteralStringArgument(intrinsic.get(), index)
+                        && tracking.knownString(popped.value()) != null) {
+                    literalStrings[index] = tracking.knownString(popped.value());
                 } else {
                     arguments[index] = popped.value();
                 }
@@ -1385,6 +1469,162 @@ public final class BytecodeToIr {
         tracking.markKnownArray(target, ordinals.size());
         storeToStack(instructions, stackBase, depth, target, tracking);
         return new Lowered(nextValueId, depth + 1);
+    }
+
+    /**
+     * A built-in throwable's {@code ()}/{@code (String)} constructor — on a fresh {@code new} or as a
+     * program exception's {@code super(message)} — records the message in the object header.
+     */
+    private Lowered lowerThrowableConstructor(LinkedMethod linked, Instruction instruction, MethodRef called,
+                                              List<IrInstruction> instructions, int stackBase, int depth,
+                                              int nextValueId, ValueTracking tracking) {
+        if (!ThrowableTypes.isSupportedConstructor(called)) {
+            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                    + instruction.offset() + ": " + called.displayName() + " is not supported yet "
+                    + "(Juno exceptions carry a message only; use the () or (String) constructor)");
+        }
+        Value message = null;
+        if (ThrowableTypes.takesMessage(called)) {
+            Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
+            nextValueId = popped.nextValueId();
+            message = popped.value();
+        }
+        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = receiver.nextValueId();
+        if (message != null) {
+            instructions.add(new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.THROWABLE_SET_MESSAGE,
+                    Optional.of(receiver.value()), List.of(message), List.of()));
+        }
+        return new Lowered(nextValueId, depth);
+    }
+
+    private Lowered lowerGetMessage(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
+                                    ValueTracking tracking) {
+        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = receiver.nextValueId();
+        Value message = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(message), Intrinsic.THROWABLE_GET_MESSAGE,
+                Optional.of(receiver.value()), List.of(), List.of()));
+        storeToStack(instructions, stackBase, depth, message, tracking);
+        return new Lowered(nextValueId, depth + 1);
+    }
+
+    private record Thrown(IrTerminator terminator, int nextValueId) {
+    }
+
+    /** IR-only block ids live above every bytecode offset (a method's code is at most 65535 bytes). */
+    private static final int SYNTHETIC_BLOCK_BASE = 0x10000;
+    private static final String ARITHMETIC_EXCEPTION = "java/lang/ArithmeticException";
+
+    private record DivisorGuard(int nextValueId, int blockStart) {
+    }
+
+    /**
+     * The first handler (in exception-table order) that would catch an {@code ArithmeticException}
+     * thrown at {@code offset}, or {@code null} when none does and a zero divisor should panic as usual.
+     */
+    private Integer arithmeticHandler(LinkedMethod linked, int offset, Map<String, JavaClass> classes) {
+        for (ExceptionHandler handler : linked.method().exceptionHandlers()) {
+            if (handler.covers(offset) && (handler.catchesAny()
+                    || ThrowableTypes.isSubtype(ARITHMETIC_EXCEPTION, handler.catchType(), classes))) {
+                return handler.handlerPc();
+            }
+        }
+        return null;
+    }
+
+    private static boolean isIntegerDivision(int opcode) {
+        return opcode == 108 || opcode == 109 || opcode == 112 || opcode == 113;
+    }
+
+    /**
+     * Java throws {@code ArithmeticException("/ by zero")} for an integer {@code /} or {@code %} by zero.
+     * Where a handler in this method catches it, the current IR block ends here with a zero test: the
+     * zero path builds that exception and jumps straight to the handler (known statically, since the
+     * exception's class is), and the rest of the bytecode block continues in a new IR block. Elsewhere
+     * the division is left alone and a zero divisor still panics.
+     */
+    private DivisorGuard guardZeroDivisor(LinkedMethod linked, Instruction instruction, boolean wide, int blockStart,
+                                          List<IrInstruction> instructions, List<IrBasicBlock> blocks, int stackBase,
+                                          int depth, int nextValueId, Map<String, JavaClass> classes) {
+        Integer handler = arithmeticHandler(linked, instruction.offset(), classes);
+        if (handler == null) {
+            return new DivisorGuard(nextValueId, blockStart);
+        }
+        Value divisor;
+        if (wide) {
+            Value low = Value.int32(nextValueId++);
+            Value high = Value.int32(nextValueId++);
+            instructions.add(new IrInstruction.LoadLocal(low, stackBase + depth - 2));
+            instructions.add(new IrInstruction.LoadLocal(high, stackBase + depth - 1));
+            divisor = Value.int32(nextValueId++);
+            instructions.add(new IrInstruction.Binary(divisor, BinaryOp.OR, low, high));
+        } else {
+            divisor = Value.int32(nextValueId++);
+            instructions.add(new IrInstruction.LoadLocal(divisor, stackBase + depth - 1));
+        }
+        Value zero = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.Const(zero, 0));
+        Value isZero = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.Compare(isZero, Condition.EQUAL, divisor, zero));
+        int continuation = SYNTHETIC_BLOCK_BASE + 2 * instruction.offset();
+        int thrower = continuation + 1;
+        blocks.add(new IrBasicBlock(blockStart, List.copyOf(instructions),
+                new IrTerminator.Branch(isZero, thrower, continuation)));
+        instructions.clear();
+
+        Value exception = Value.int32(nextValueId++);
+        Value message = Value.int32(nextValueId++);
+        blocks.add(new IrBasicBlock(thrower, List.of(
+                new IrInstruction.NewObject(exception, ARITHMETIC_EXCEPTION),
+                new IrInstruction.StringConst(message, "/ by zero"),
+                new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.THROWABLE_SET_MESSAGE,
+                        Optional.of(exception), List.of(message), List.of()),
+                new IrInstruction.StoreLocal(stackBase, exception)),
+                new IrTerminator.Jump(handler)));
+        return new DivisorGuard(nextValueId, continuation);
+    }
+
+    /**
+     * {@code athrow}: resolves, at compile time, which handler of this method (in exception-table order)
+     * catches each of the program's throwable classes. At runtime the thrown object's class id picks the
+     * handler, which starts with the exception as its only operand-stack value; a class no handler here
+     * catches — including every exception thrown outside a {@code try} — panics with its name and message.
+     */
+    private Thrown lowerThrow(LinkedMethod linked, Instruction instruction, BasicBlock block, Value thrown,
+                              List<IrInstruction> instructions, int stackBase, int nextValueId,
+                              ValueTracking tracking, Map<String, JavaClass> classes, List<String> throwableClasses) {
+        Map<Integer, Integer> handlerByClassId = new TreeMap<>();
+        for (int classId = 0; classId < throwableClasses.size(); classId++) {
+            for (ExceptionHandler handler : linked.method().exceptionHandlers()) {
+                if (handler.covers(instruction.offset()) && (handler.catchesAny()
+                        || ThrowableTypes.isSubtype(throwableClasses.get(classId), handler.catchType(), classes))) {
+                    handlerByClassId.put(classId, handler.handlerPc());
+                    break;
+                }
+            }
+        }
+        if (handlerByClassId.isEmpty()) {
+            instructions.add(new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.THROW_UNCAUGHT,
+                    Optional.empty(), List.of(thrown), List.of()));
+            return new Thrown(new IrTerminator.Jump(block.start()), nextValueId);
+        }
+        storeToStack(instructions, stackBase, 0, thrown, tracking);
+        int caughtMask = 0;
+        for (int classId : handlerByClassId.keySet()) {
+            caughtMask |= 1 << classId;
+        }
+        Value mask = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.Const(mask, caughtMask));
+        Value classId = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(classId), Intrinsic.THROW_DISPATCH,
+                Optional.empty(), List.of(thrown, mask), List.of()));
+        List<Integer> keys = List.copyOf(handlerByClassId.keySet());
+        List<Integer> targets = keys.stream().map(handlerByClassId::get).toList();
+        if (Set.copyOf(targets).size() == 1) {
+            return new Thrown(new IrTerminator.Jump(targets.get(0)), nextValueId);
+        }
+        return new Thrown(new IrTerminator.Switch(classId, keys, targets, targets.get(0)), nextValueId);
     }
 
     private Lowered discardInstanceCall(MethodRef called, List<IrInstruction> instructions, int stackBase,

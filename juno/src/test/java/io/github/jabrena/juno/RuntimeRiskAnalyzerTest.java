@@ -108,6 +108,47 @@ class RuntimeRiskAnalyzerTest {
     }
 
     @Test
+    void anUncaughtThrowIsNotAnAllocationLoop() throws Exception {
+        RuntimeRiskReport report = compileReport("demo.Boom", """
+                package demo;
+                public final class Boom {
+                    public static void main() {
+                        throw new IllegalStateException("boom");
+                    }
+                }
+                """);
+
+        assertThat(hasCode(report, "JUNO-RISK-001")).isFalse();
+    }
+
+    @Test
+    void reportsMathFloorDivisionOnlyForAnUnknownDivisor() throws Exception {
+        RuntimeRiskReport safe = compileReport("demo.SafeFloorDiv", """
+                package demo;
+                public final class SafeFloorDiv {
+                    static int bucket(int value) { return Math.floorDiv(value, 4) + Math.floorMod(value, 4); }
+                    static long wide(long value) { return Math.floorDiv(value, 3L); }
+                    public static void main() {
+                        bucket(-9);
+                        wide(-9L);
+                    }
+                }
+                """);
+        RuntimeRiskReport risky = compileReport("demo.RiskyFloorDiv", """
+                package demo;
+                public final class RiskyFloorDiv {
+                    static int bucket(int value, int size) { return Math.floorMod(value, size); }
+                    public static void main() {
+                        bucket(-9, 4);
+                    }
+                }
+                """);
+
+        assertThat(hasCode(safe, "JUNO-RISK-005")).isFalse();
+        assertThat(hasCode(risky, "JUNO-RISK-005")).isTrue();
+    }
+
+    @Test
     void reportsADereferenceOfCompileTimeNull() throws Exception {
         RuntimeRiskReport report = compileReport("demo.NullReceiver", """
                 package demo;

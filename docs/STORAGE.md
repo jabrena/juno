@@ -80,6 +80,6 @@ if (SdCard.begin()) {
 ```
 
 Because the standard `Properties.load(InputStream)` declaration throws `IOException`, the enclosing
-method must declare `throws IOException`; Juno's current embedded implementation does not yet lower
-exception handlers. As specified by the Java API, `load` reads from the stream's current position
+method must declare `throws IOException` (or catch it). Juno's embedded implementation never actually
+throws from `load`, so such a handler is accepted but never runs. As specified by the Java API, `load` reads from the stream's current position
 and leaves it open, so close the `InputStream` explicitly.

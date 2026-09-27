@@ -36,6 +36,7 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.Random;
                 import io.github.jabrena.juno.api.io.Gpio;
                 import io.github.jabrena.juno.api.io.usb.BaudRate;
                 import io.github.jabrena.juno.api.io.usb.Serial;
@@ -46,6 +47,9 @@ class GeneratedAsmToolchainTest {
                         Gpio.pinMode(13, Gpio.OUTPUT);
                         Gpio.digitalWrite(13, mix(4) != 0);
                         Delay.millis(10);
+                        Random.seed(42);
+                        int randomValue = Random.nextInt(1, 7);
+                        Gpio.digitalWrite(12, randomValue > 0);
                         LedMatrix.begin();
                         LedMatrix.loadFrame(0x3184a444, 0x44042081, 0x100a0040);
                         LedMatrix.clear();
@@ -265,6 +269,52 @@ class GeneratedAsmToolchainTest {
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
         syntaxCheckCpp(compiler, shim);
+    }
+
+    private static final String EXCEPTIONS = """
+            package demo;
+            import io.github.jabrena.juno.api.Clock;
+            import io.github.jabrena.juno.api.io.usb.Serial;
+            public final class AsmExceptions {
+                static final class SensorException extends RuntimeException {
+                    final int code;
+                    SensorException(String message, int code) {
+                        super(message);
+                        this.code = code;
+                    }
+                }
+                public static void main(String[] args) {
+                    int reading = Clock.millis();
+                    try {
+                        if (reading < 0) throw new SensorException("offline", 7);
+                        if (reading > 1000) throw new IllegalStateException();
+                    } catch (SensorException e) {
+                        Serial.println(e.code);
+                    } catch (RuntimeException e) {
+                        Serial.println(e.getMessage());
+                    } finally {
+                        Serial.println("done");
+                    }
+                    throw new UnsupportedOperationException("halt");
+                }
+            }
+            """;
+
+    @Test
+    void assemblesAnExceptionsProgramAndCompilesItsShim() throws Exception {
+        String armGcc = availableArmGcc();
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(armGcc != null || compiler != null, "No toolchain available");
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmExceptions", EXCEPTIONS);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmExceptions");
+        if (armGcc != null) {
+            assembleAndCompile(armGcc, "demo.AsmExceptions");
+        }
+        if (compiler != null) {
+            Path shim = temporaryDirectory.resolve("AsmExceptionsShim.cpp");
+            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+            syntaxCheckCpp(compiler, shim);
+        }
     }
 
     @Test
@@ -548,9 +598,232 @@ class GeneratedAsmToolchainTest {
         assertThat(run.exitValue()).as("runtime exit code; output: " + output).isEqualTo(0);
     }
 
+    /** Reaches every supported {@code java.lang.Math} overload, so the shim carries all of their helpers. */
+    private static final String MATH_EVERYTHING = """
+            package demo;
+            import io.github.jabrena.juno.api.Clock;
+            import io.github.jabrena.juno.api.io.usb.Serial;
+            public final class MathEverything {
+                public static void main(String[] args) {
+                    int i = Clock.millis() % 2 == 0 ? 3 : -7;
+                    long l = i * 1000000000000L;
+                    float f = i / 2.0f;
+                    double d = i / 4.0;
+                    int ints = Math.abs(i) + Math.min(i, 2) + Math.max(i, 2) + Math.clamp(l, -5, 5)
+                            + Math.floorDiv(i, 2) + Math.floorMod(i, 2) + Math.floorMod(l, 3) + Math.round(f);
+                    long longs = Math.abs(l) + Math.min(l, 2L) + Math.max(l, 2L) + Math.clamp(l, -5L, 5L)
+                            + Math.floorDiv(l, 2L) + Math.floorMod(l, 2L) + Math.floorDiv(l, 3) + Math.round(d);
+                    float floats = Math.abs(f) + Math.min(f, 1.0f) + Math.max(f, 1.0f)
+                            + Math.clamp(f, -1.0f, 1.0f) + Math.signum(f);
+                    double doubles = Math.abs(d) + Math.min(d, 1.0) + Math.max(d, 1.0) + Math.clamp(d, -1.0, 1.0)
+                            + Math.signum(d) + Math.floor(d) + Math.ceil(d) + Math.sqrt(d) + Math.cbrt(d)
+                            + Math.pow(d, 2.0) + Math.hypot(d, 3.0) + Math.exp(d) + Math.log(d) + Math.log10(d)
+                            + Math.sin(d) + Math.cos(d) + Math.tan(d) + Math.asin(d) + Math.acos(d) + Math.atan(d)
+                            + Math.atan2(d, 2.0) + Math.toRadians(d) + Math.toDegrees(d);
+                    Serial.println(ints);
+                    Serial.println(longs);
+                    Serial.println(floats);
+                    Serial.println(doubles);
+                }
+            }
+            """;
+
+    @Test
+    void assemblesAProgramUsingEveryMathOverload() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        // Math.clamp is Java 21.
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MathEverything", MATH_EVERYTHING, "21");
+        assembleAndCompile(armGcc, "demo.MathEverything");
+    }
+
+    /**
+     * Runs every generated {@code juno_math_*} helper natively and compares it with what the real
+     * {@code java.lang.Math} returns for the same edge-case inputs: bit-exact for every operation Java
+     * specifies exactly, within 1e-14 (relative) for the {@code libm}-backed transcendental functions.
+     */
+    @Test
+    void generatedMathShimMatchesJavaLangMathAtRuntime() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MathEverything", MATH_EVERYTHING, "21");
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MathEverything");
+
+        int[] ints = {0, 1, -1, 7, -7, 2, -2, Integer.MIN_VALUE, Integer.MAX_VALUE};
+        long[] longs = {0L, 1L, -1L, 7L, -7L, 3L, 1L << 40, -(1L << 40) - 3, Long.MIN_VALUE, Long.MAX_VALUE};
+        float[] floats = {0.0f, -0.0f, 1.5f, -1.5f, 2.5f, -2.5f, 0.49999997f, 3.0e9f, -3.0e9f,
+                Float.NaN, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY};
+        double[] doubles = {0.0, -0.0, 0.5, -0.5, 1.0, -1.0, 2.5, -2.5, 0.49999999999999994, 0.75, 10.0,
+                1.0e19, -1.0e19, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY};
+        StringBuilder checks = new StringBuilder();
+        for (int a : ints) {
+            checks.append(exactInt("juno_math_abs_int(" + cInt(a) + ")", Math.abs(a)));
+            checks.append(exactInt("juno_math_round_float(" + cFloat(a) + ")", Math.round((float) a)));
+            for (int b : ints) {
+                checks.append(exactInt("juno_math_min_int(" + cInt(a) + ", " + cInt(b) + ")", Math.min(a, b)));
+                checks.append(exactInt("juno_math_max_int(" + cInt(a) + ", " + cInt(b) + ")", Math.max(a, b)));
+                if (b != 0) {
+                    checks.append(exactInt("juno_math_floor_div_int(" + cInt(a) + ", " + cInt(b) + ")",
+                            Math.floorDiv(a, b)));
+                    checks.append(exactInt("juno_math_floor_mod_int(" + cInt(a) + ", " + cInt(b) + ")",
+                            Math.floorMod(a, b)));
+                }
+            }
+        }
+        for (long a : longs) {
+            checks.append(exactLong("juno_math_abs_long(" + cLong(a) + ")", Math.abs(a)));
+            checks.append(exactInt("juno_math_clamp_int(" + cLong(a) + ", -5, 5)", Math.clamp(a, -5, 5)));
+            checks.append(exactLong("juno_math_clamp_long(" + cLong(a) + ", " + cLong(-3L) + ", " + cLong(1L << 41)
+                    + ")", Math.clamp(a, -3L, 1L << 41)));
+            for (int b : ints) {
+                if (b != 0) {
+                    checks.append(exactLong("juno_math_floor_div_long_int(" + cLong(a) + ", " + cInt(b) + ")",
+                            Math.floorDiv(a, b)));
+                    checks.append(exactInt("juno_math_floor_mod_long_int(" + cLong(a) + ", " + cInt(b) + ")",
+                            Math.floorMod(a, b)));
+                }
+            }
+            for (long b : longs) {
+                checks.append(exactLong("juno_math_min_long(" + cLong(a) + ", " + cLong(b) + ")", Math.min(a, b)));
+                checks.append(exactLong("juno_math_max_long(" + cLong(a) + ", " + cLong(b) + ")", Math.max(a, b)));
+                if (b != 0) {
+                    checks.append(exactLong("juno_math_floor_div_long(" + cLong(a) + ", " + cLong(b) + ")",
+                            Math.floorDiv(a, b)));
+                    checks.append(exactLong("juno_math_floor_mod_long(" + cLong(a) + ", " + cLong(b) + ")",
+                            Math.floorMod(a, b)));
+                }
+            }
+        }
+        for (float a : floats) {
+            checks.append(exactFloat("juno_math_abs_float(" + cFloat(a) + ")", Math.abs(a)));
+            checks.append(exactFloat("juno_math_signum_float(" + cFloat(a) + ")", Math.signum(a)));
+            checks.append(exactInt("juno_math_round_float(" + cFloat(a) + ")", Math.round(a)));
+            checks.append(exactFloat("juno_math_clamp_float(" + cFloat(a) + ", " + cFloat(-0.0f) + ", 2.0f)",
+                    Math.clamp(a, -0.0f, 2.0f)));
+            for (float b : floats) {
+                checks.append(exactFloat("juno_math_min_float(" + cFloat(a) + ", " + cFloat(b) + ")", Math.min(a, b)));
+                checks.append(exactFloat("juno_math_max_float(" + cFloat(a) + ", " + cFloat(b) + ")", Math.max(a, b)));
+            }
+        }
+        for (double a : doubles) {
+            String x = cDouble(a);
+            checks.append(exactDouble("juno_math_abs_double(" + x + ")", Math.abs(a)));
+            checks.append(exactDouble("juno_math_signum_double(" + x + ")", Math.signum(a)));
+            checks.append(exactLong("juno_math_round_double(" + x + ")", Math.round(a)));
+            checks.append(exactDouble("juno_math_clamp_double(" + x + ", " + cDouble(-0.0) + ", 2.0)",
+                    Math.clamp(a, -0.0, 2.0)));
+            checks.append(exactDouble("juno_math_floor(" + x + ")", Math.floor(a)));
+            checks.append(exactDouble("juno_math_ceil(" + x + ")", Math.ceil(a)));
+            checks.append(exactDouble("juno_math_sqrt(" + x + ")", Math.sqrt(a)));
+            checks.append(exactDouble("juno_math_to_radians(" + x + ")", Math.toRadians(a)));
+            checks.append(exactDouble("juno_math_to_degrees(" + x + ")", Math.toDegrees(a)));
+            checks.append(nearDouble("juno_math_cbrt(" + x + ")", Math.cbrt(a)));
+            checks.append(nearDouble("juno_math_exp(" + x + ")", Math.exp(a)));
+            checks.append(nearDouble("juno_math_log(" + x + ")", Math.log(a)));
+            checks.append(nearDouble("juno_math_log10(" + x + ")", Math.log10(a)));
+            checks.append(nearDouble("juno_math_sin(" + x + ")", Math.sin(a)));
+            checks.append(nearDouble("juno_math_cos(" + x + ")", Math.cos(a)));
+            checks.append(nearDouble("juno_math_tan(" + x + ")", Math.tan(a)));
+            checks.append(nearDouble("juno_math_asin(" + x + ")", Math.asin(a)));
+            checks.append(nearDouble("juno_math_acos(" + x + ")", Math.acos(a)));
+            checks.append(nearDouble("juno_math_atan(" + x + ")", Math.atan(a)));
+            for (double b : doubles) {
+                String y = cDouble(b);
+                checks.append(exactDouble("juno_math_min_double(" + x + ", " + y + ")", Math.min(a, b)));
+                checks.append(exactDouble("juno_math_max_double(" + x + ", " + y + ")", Math.max(a, b)));
+                checks.append(nearDouble("juno_math_pow(" + x + ", " + y + ")", Math.pow(a, b)));
+                checks.append(nearDouble("juno_math_hypot(" + x + ", " + y + ")", Math.hypot(a, b)));
+                checks.append(nearDouble("juno_math_atan2(" + x + ", " + y + ")", Math.atan2(a, b)));
+            }
+        }
+        String harness = """
+
+                #include <stdio.h>
+                #include <string.h>
+                extern "C" { uintptr_t juno_gc_stack_top; }
+                static float junoFloatBits(uint32_t bits) { float value; memcpy(&value, &bits, 4); return value; }
+                static double junoDoubleBits(uint64_t bits) { double value; memcpy(&value, &bits, 8); return value; }
+                static int junoFailures = 0;
+                static void junoCheck(bool ok, const char* expression) {
+                  if (!ok) { junoFailures++; printf("mismatch: %s\\n", expression); }
+                }
+                static bool junoSameFloat(float actual, uint32_t expected) {
+                  uint32_t bits; memcpy(&bits, &actual, 4);
+                  bool expectedNaN = (expected & 0x7f800000u) == 0x7f800000u && (expected & 0x007fffffu) != 0;
+                  return expectedNaN ? actual != actual : bits == expected;
+                }
+                static bool junoSameDouble(double actual, uint64_t expected) {
+                  uint64_t bits; memcpy(&bits, &actual, 8);
+                  bool expectedNaN = (expected & 0x7ff0000000000000ull) == 0x7ff0000000000000ull
+                      && (expected & 0x000fffffffffffffull) != 0;
+                  return expectedNaN ? actual != actual : bits == expected;
+                }
+                static bool junoNearDouble(double actual, uint64_t expectedBits) {
+                  double expected; memcpy(&expected, &expectedBits, 8);
+                  if (expected != expected) return actual != actual;
+                  if (actual == expected) return true;
+                  return fabs(actual - expected) <= 1e-14 * fabs(expected);
+                }
+                int main() {
+                  uint8_t stackTopMarker;
+                  juno_gc_stack_top = reinterpret_cast<uintptr_t>(&stackTopMarker);
+                """ + checks + """
+                  return junoFailures == 0 ? 0 : 1;
+                }
+                """;
+        Process run = compileAndStart(compiler, result.runtimeShim() + harness, "math-runtime");
+        boolean finished = run.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "Generated Math runtime test timed out");
+        String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as("mismatches against java.lang.Math:\n" + output).isEqualTo(0);
+    }
+
+    private static String cInt(int value) {
+        return "static_cast<int32_t>(0x" + Integer.toHexString(value) + "u)";
+    }
+
+    private static String cLong(long value) {
+        return "static_cast<int64_t>(0x" + Long.toHexString(value) + "ull)";
+    }
+
+    private static String cFloat(float value) {
+        return "junoFloatBits(0x" + Integer.toHexString(Float.floatToRawIntBits(value)) + "u)";
+    }
+
+    private static String cDouble(double value) {
+        return "junoDoubleBits(0x" + Long.toHexString(Double.doubleToRawLongBits(value)) + "ull)";
+    }
+
+    private static String exactInt(String call, int expected) {
+        return "  junoCheck(" + call + " == " + cInt(expected) + ", \"" + call + "\");\n";
+    }
+
+    private static String exactLong(String call, long expected) {
+        return "  junoCheck(" + call + " == " + cLong(expected) + ", \"" + call + "\");\n";
+    }
+
+    private static String exactFloat(String call, float expected) {
+        return "  junoCheck(junoSameFloat(" + call + ", 0x" + Integer.toHexString(Float.floatToRawIntBits(expected))
+                + "u), \"" + call + "\");\n";
+    }
+
+    private static String exactDouble(String call, double expected) {
+        return "  junoCheck(junoSameDouble(" + call + ", 0x" + Long.toHexString(Double.doubleToRawLongBits(expected))
+                + "ull), \"" + call + "\");\n";
+    }
+
+    private static String nearDouble(String call, double expected) {
+        return "  junoCheck(junoNearDouble(" + call + ", 0x" + Long.toHexString(Double.doubleToRawLongBits(expected))
+                + "ull), \"" + call + "\");\n";
+    }
+
     private void assembleAndCompile(String armGcc, String mainClass, String source) throws Exception {
-        String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
         CompilerTestSupport.compileJava(temporaryDirectory, mainClass, source);
+        assembleAndCompile(armGcc, mainClass);
+    }
+
+    private void assembleAndCompile(String armGcc, String mainClass) throws Exception {
+        String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, mainClass);
         Path assembly = temporaryDirectory.resolve(simpleName + ".S");
         Files.writeString(assembly, result.assembly(), StandardCharsets.UTF_8);

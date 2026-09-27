@@ -69,6 +69,30 @@ Supported today:
   lowering of `java.util.Properties` construction, `load(InputStream)`, `getProperty`, and `size`;
   loaded values have stable arena-backed storage and can be passed directly to `Wifi.begin`
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
+- Arduino-backed pseudorandom numbers through `Random.seed(int)`, `Random.nextInt(bound)`, and
+  `Random.nextInt(origin, bound)`, with exclusive upper bounds
+- `java.lang.Math`: `abs`/`min`/`max` (`int`/`long`/`float`/`double`), `clamp` (Java 21 overloads),
+  `floorDiv`/`floorMod`, `signum`, `round`, `floor`, `ceil`, `sqrt`, `cbrt`, `pow`, `hypot`, `exp`,
+  `log`, `log10`, `sin`/`cos`/`tan`, `asin`/`acos`/`atan`/`atan2`, and `toRadians`/`toDegrees`; `Math.PI`
+  and `Math.E` are ordinary `javac` constants. Each reached overload becomes one runtime-shim helper
+  backed by `libm`, with Java's exact semantics where they differ from C (`min`/`max` of `-0.0`/NaN,
+  `round`'s ties-toward-positive-infinity and saturation, `pow`'s NaN rules, `floorDiv` overflow). Where
+  Java would throw (`floorDiv`/`floorMod` by zero, `clamp` with `min > max`), the program panics, like
+  native integer division by zero.
+- local exception handling: `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
+  `finally`, and nested handlers, when the `throw` and the `catch` are in the same method. Exceptions are
+  8-byte arena objects (class id and message) created with the `()` or `(String)` constructor of
+  `Throwable`, `Exception`, `Error`, `RuntimeException`, `IllegalArgumentException`,
+  `NumberFormatException`, `IllegalStateException`, `ArithmeticException`, `IndexOutOfBoundsException`,
+  `ArrayIndexOutOfBoundsException`, `StringIndexOutOfBoundsException`, `NullPointerException`,
+  `UnsupportedOperationException`, `ClassCastException`, `NegativeArraySizeException`,
+  `InterruptedException`, `java.util.NoSuchElementException`, `java.util.concurrent.TimeoutException`,
+  and `java.io.IOException`, or of a final program class extending one of them (which may add its own
+  fields). `getMessage()` is supported. An exception no handler in its method catches — including one
+  thrown in a called method — prints `Exception in thread "main" <class>: <message>` over `Serial` and
+  panics. An `int`/`long` division or remainder by zero inside a `try` whose handler catches
+  `ArithmeticException` (or a supertype, or `finally`) raises `ArithmeticException("/ by zero")` there;
+  anywhere else it panics, as do Juno's other runtime failures (array bounds, arena exhaustion).
 - `.class` inputs from directories, individual files, or JARs
 
 ## Runtime-risk inspection
@@ -85,7 +109,7 @@ The first analysis slice reports:
 | `JUNO-RISK-002` | The conservative startup allocation estimate exceeds the fixed arena capacity. |
 | `JUNO-RISK-003` | A recursive call cycle makes generated call depth and stack usage unbounded. |
 | `JUNO-RISK-004` | Array accesses exist for which Juno cannot emit a bounds check. |
-| `JUNO-RISK-005` | Integer/long division or remainder may receive a zero divisor and panic. |
+| `JUNO-RISK-005` | Integer/long division or remainder (including `Math.floorDiv`/`floorMod`) may receive a zero divisor and panic. |
 | `JUNO-RISK-006` | A dereference uses a value proven null at compile time. |
 
 The 8 KiB arena capacity and the counts of emitted bounds checks are exact compiler facts. Arena,
@@ -109,8 +133,10 @@ Two board examples make the distinction observable:
 Not yet supported:
 
 - inheritance/polymorphic dispatch, interfaces, or object arrays with polymorphism
-- general string construction/concatenation and other {@code String} methods, general exceptions, threads,
-  reflection, or dynamic loading
+- general string construction/concatenation and other {@code String} methods, threads, reflection, or
+  dynamic loading
+- exceptions propagating out of the method that throws them, exception causes, stack traces, suppressed
+  exceptions (`try`-with-resources), and exception types in method parameters or return values
 - enum string methods (`.name()`, `.toString()`), `valueOf()`, and enum state beyond one directly
   assigned, compile-time integer value per constant (including mutable fields and per-constant class bodies)
 - record `equals()`/`hashCode()`/`toString()` and other `invokedynamic`-based behavior

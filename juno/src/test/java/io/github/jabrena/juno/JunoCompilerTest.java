@@ -55,6 +55,28 @@ class JunoCompilerTest {
     }
 
     @Test
+    void ignoresPackageInfoSharedWithJunosOwnPackage() throws Exception {
+        // juno's own target/classes already holds io/github/jabrena/juno/package-info.class.
+        CompilerTestSupport.compileJava(temporaryDirectory, "io.github.jabrena.juno.package-info",
+                "/** Example programs. */\npackage io.github.jabrena.juno;\n");
+        String source = """
+                package io.github.jabrena.juno;
+                import io.github.jabrena.juno.api.Delay;
+                public final class SharedPackageMain {
+                    public static void main(String[] args) {
+                        Delay.millis(1);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "io.github.jabrena.juno.SharedPackageMain", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(
+                temporaryDirectory, "io.github.jabrena.juno.SharedPackageMain");
+
+        assertThat(result.assembly()).contains("bl delay");
+    }
+
+    @Test
     void watchdogAnnotationEnablesTheHardwareWatchdogWithItsExplicitTimeout() throws Exception {
         String source = """
                 package demo;
@@ -339,8 +361,8 @@ class JunoCompilerTest {
                 "bl juno_serial_print_double", "bl juno_serial_println_double");
         assertThat(result.runtimeShim()).contains(
                 "extern \"C\" void juno_serial_print_long(int64_t value)",
-                "extern \"C\" void juno_serial_print_float(float value)",
-                "extern \"C\" void juno_serial_print_double(double value)");
+                "extern \"C\" JUNO_ASM_ABI void juno_serial_print_float(float value)",
+                "extern \"C\" JUNO_ASM_ABI void juno_serial_print_double(double value)");
     }
 
     @Test
@@ -361,6 +383,31 @@ class JunoCompilerTest {
         assertThat(generated).contains("bl juno_serial_begin");
         // 74880 = 0x124C0: movw/movt immediate-load pair, not a bipush/sipush-sized literal.
         assertThat(generated).contains("movw r0, #9344", "movt r0, #1");
+    }
+
+    @Test
+    void lowersRandomNumberIntrinsics() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Random;
+                public final class Dice {
+                    public static void main(String[] args) {
+                        Random.seed(42);
+                        int zeroBased = Random.nextInt(100);
+                        int die = Random.nextInt(1, 7);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Dice", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Dice");
+
+        assertThat(result.assembly()).contains(
+                "bl juno_random_seed", "bl juno_random_next_bound", "bl juno_random_next_range");
+        assertThat(result.runtimeShim()).contains(
+                "extern \"C\" void juno_random_seed(int32_t seed)",
+                "extern \"C\" int32_t juno_random_next_bound(int32_t bound)",
+                "extern \"C\" int32_t juno_random_next_range(int32_t origin, int32_t bound)");
     }
 
     @Test
@@ -431,11 +478,11 @@ class JunoCompilerTest {
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.RuntimeDecimal");
 
         assertThat(result.assembly()).contains("bl juno_string_value_of_double");
-        assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_string_value_of_double(double value)");
+        assertThat(result.runtimeShim()).contains("extern \"C\" JUNO_ASM_ABI int32_t juno_string_value_of_double(double value)");
     }
 
     @Test
-    void rejectsNonLiteralSerialStringArgument() throws Exception {
+    void printsARuntimeSerialStringArgumentAndKeepsLiteralsDirect() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
@@ -446,13 +493,17 @@ class JunoCompilerTest {
                         Serial.begin(BaudRate.BAUD_9600);
                         String message = Clock.millis() > 0 ? "yes" : "no";
                         Serial.println(message);
+                        Serial.println("done");
                     }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.DynamicGreeting", source);
 
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DynamicGreeting"))
-                .isInstanceOf(CompileException.class);
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DynamicGreeting").assembly();
+
+        // The literal still loads its .asciz address right before the call.
+        assertThat(assembly).contains("ldr r0, =juno_str2\n    bl juno_serial_println_str");
+        assertThat(countOccurrences(assembly, "bl juno_serial_println_str")).isEqualTo(2);
     }
 
     @Test
@@ -1465,7 +1516,7 @@ class JunoCompilerTest {
         assertThat(result.assembly()).contains("juno_static_demo_LongParam_saved_J:", "bl juno_fn1",
                 "bl juno_l2f", "bl juno_f2l");
         assertThat(result.runtimeShim()).contains(
-                "extern \"C\" float juno_l2f(int64_t value)", "extern \"C\" int64_t juno_f2l(float value)");
+                "extern \"C\" JUNO_ASM_ABI float juno_l2f(int64_t value)", "extern \"C\" JUNO_ASM_ABI int64_t juno_f2l(float value)");
     }
 
     @Test
@@ -1499,7 +1550,64 @@ class JunoCompilerTest {
                 "bl juno_frem", "bl juno_f2i", "bl juno_fcmp",
                 // unary float negation is a native sign-bit flip, not a shim call.
                 "eor r0, r0, #0x80000000");
-        assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_fcmp(");
+        assertThat(result.runtimeShim()).contains("extern \"C\" JUNO_ASM_ABI int32_t juno_fcmp(",
+                // The board core builds the shim hard-float; assembly passes floats in core registers.
+                "#define JUNO_ASM_ABI __attribute__((pcs(\"aapcs\")))");
+    }
+
+    @Test
+    void lowersJavaLangMathToUsageGatedShimHelpers() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class Geometry {
+                    public static void main(String[] args) {
+                        int x = Clock.millis();
+                        double angle = Math.toRadians(x);
+                        double length = Math.hypot(Math.cos(angle), Math.sin(angle));
+                        long rounded = Math.round(length * 100.0);
+                        int clamped = Math.clamp(rounded, 0, 255);
+                        Serial.println(Math.max(Math.abs(x), clamped) + Math.floorMod(x, 7));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Geometry", source, "21");
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Geometry");
+
+        assertThat(result.assembly()).contains("bl juno_math_to_radians", "bl juno_math_cos", "bl juno_math_sin",
+                "bl juno_math_hypot", "bl juno_math_round_double", "bl juno_math_clamp_int",
+                "bl juno_math_abs_int", "bl juno_math_max_int", "bl juno_math_floor_mod_int");
+        assertThat(result.runtimeShim()).contains("#include <math.h>",
+                "extern \"C\" JUNO_ASM_ABI double juno_math_hypot(double x, double y) { return hypot(x, y); }",
+                // clamp(long, int, int): the long occupies r0:r1, the int bounds r2 and r3.
+                "extern \"C\" JUNO_ASM_ABI int32_t juno_math_clamp_int(int64_t value, int32_t lo, int32_t hi)");
+        // Only reached overloads are emitted.
+        assertThat(result.runtimeShim()).doesNotContain("juno_math_pow", "juno_math_abs_long", "juno_math_tan(");
+    }
+
+    @Test
+    void alignsLongMathArgumentsToAnEvenRegisterPair() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class WideClamp {
+                    public static void main(String[] args) {
+                        long value = Clock.millis();
+                        Serial.println(Math.clamp(value, -10L, 10L));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WideClamp", source, "21");
+
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WideClamp").assembly();
+
+        // Six argument words: value in r0:r1, lo in r2:r3, hi spilled to an 8-byte stack area.
+        int call = assembly.indexOf("bl juno_math_clamp_long");
+        assertThat(call).isPositive();
+        assertThat(assembly.substring(0, call)).contains("sub sp, sp, #8");
     }
 
     @Test
@@ -1558,7 +1666,7 @@ class JunoCompilerTest {
                 "bl juno_dmul", "bl juno_dadd", "bl juno_drem", "bl juno_d2f", "bl juno_d2i", "bl juno_d2l",
                 "bl juno_i2d", "bl juno_l2d", "bl juno_f2d");
         assertThat(result.runtimeShim()).contains(
-                "extern \"C\" double juno_drem(double a, double b) { return fmod(a, b); }");
+                "extern \"C\" JUNO_ASM_ABI double juno_drem(double a, double b) { return fmod(a, b); }");
     }
 
     @Test

@@ -13,6 +13,16 @@ public sealed interface Terminator {
     /** A supported JVM return opcode, or the implicit return past the last instruction of a method. */
     record Return() implements Terminator {}
 
+    /**
+     * {@code athrow}: control continues at one of {@code handlers} — the distinct handler offsets whose
+     * exception-table ranges cover the throw, in matching order — or leaves the method when none catches it.
+     */
+    record Throw(List<Integer> handlers) implements Terminator {
+        public Throw {
+            handlers = List.copyOf(handlers);
+        }
+    }
+
     /** Falls into the next block without an explicit branch instruction. */
     record Fallthrough(int target) implements Terminator {}
 

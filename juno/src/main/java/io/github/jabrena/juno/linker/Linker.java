@@ -76,7 +76,8 @@ public final class Linker {
             }
             validateMethod(method, reference.equals(entryPoint), classes.keySet());
             List<Instruction> instructions = decoder.decode(method);
-            ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions);
+            ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions,
+                    method.exceptionHandlers());
             reachable.put(reference, new LinkedMethod(owner, method, instructions, cfg));
 
             for (Instruction instruction : instructions) {
@@ -88,6 +89,8 @@ public final class Linker {
                         work.addLast(DRAW_CHAR_METHOD);
                     } else if (!IntrinsicRegistry.isIntrinsic(called)
                             && !isRuntimeBaseConstructor(called)
+                            && !ThrowableTypes.isBuiltInConstructor(called)
+                            && !ThrowableTypes.isGetMessage(called, classes)
                             && !isEnumOperation(classes, called)
                             && !isCompileTimeGetenv(called)) {
                         work.addLast(called);

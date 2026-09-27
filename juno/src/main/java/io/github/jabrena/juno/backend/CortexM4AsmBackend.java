@@ -18,11 +18,15 @@ import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.UnaryOp;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
+import io.github.jabrena.juno.linker.ThrowableTypes;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Emits GNU ARM (Cortex-M4, Thumb-2) assembly straight from Juno IR: every reachable method becomes its own
@@ -36,8 +40,8 @@ import java.util.Optional;
  * code that looks plausible but was never checked.
  *
  * <h2>{@code long}/{@code float}/{@code double}</h2>
- * The RA4M1 (UNO R4's Cortex-M4) has no hardware FPU, and 64-bit values don't fit a single register,
- * so — consistent with this class's existing shim-delegation philosophy — every nontrivial
+ * 64-bit values don't fit a single register and the generated assembly keeps float values in core
+ * registers (never VFP registers), so — consistent with this class's existing shim-delegation philosophy — every nontrivial
  * {@code long}/{@code float}/{@code double} operation (arithmetic, comparison, conversion) is a call
  * to a small {@code extern "C"} runtime-shim function (see {@link #longHelpers}/{@link #floatHelpers}/
  * {@link #doubleHelpers}) rather than hand-rolled soft-float assembly. A {@code long} keeps this
@@ -136,6 +140,10 @@ public final class CortexM4AsmBackend {
     private boolean usesJsonStringValue;
     private boolean usesStringBuilder;
     private boolean usesMemory;
+    private boolean usesRandom;
+    private final Set<Intrinsic> usedMath = EnumSet.noneOf(Intrinsic.class);
+    private List<String> throwableClasses = List.of();
+    private boolean usesExceptions;
     private boolean usesWatchdog;
     private int watchdogTimeoutMillis;
     private final boolean gcLoggingEnabled;
@@ -170,6 +178,7 @@ public final class CortexM4AsmBackend {
                 clinitLabel = label;
             }
         }
+        throwableClasses = program.throwableClasses();
         computeLayouts(program);
 
         StringBuilder output = new StringBuilder();
@@ -232,7 +241,9 @@ public final class CortexM4AsmBackend {
             }
         }
         for (Map.Entry<String, java.util.TreeMap<String, FieldRef>> layout : layouts.entrySet()) {
-            int offset = 0;
+            // A throwable's own fields follow its class-id/message header (see ThrowableTypes).
+            int header = throwableClasses.contains(layout.getKey()) ? ThrowableTypes.HEADER_BYTES : 0;
+            int offset = header;
             for (FieldRef field : layout.getValue().values()) {
                 fieldOffsets.put(field, offset);
                 offset += WORD;
@@ -542,6 +553,12 @@ public final class CortexM4AsmBackend {
                 emitLoadImmediate(output, "r0", objectSizes.get(object.className()));
                 emitLoadImmediate(output, "r1", WORD);
                 output.append("    bl juno_alloc\n");
+                int classId = throwableClasses.indexOf(object.className());
+                if (classId >= 0) {
+                    // juno_alloc zero-fills, so the message word already starts out null.
+                    emitLoadImmediate(output, "r1", classId);
+                    output.append("    str r1, [r0, #").append(ThrowableTypes.CLASS_ID_OFFSET).append("]\n");
+                }
                 store(output, frame, "r0", object.target());
             }
             case IrInstruction.LoadField load -> {
@@ -879,8 +896,67 @@ public final class CortexM4AsmBackend {
         call.target().ifPresent(target -> store(output, frame, "r0", target));
     }
 
+    /**
+     * Every {@code java.lang.Math} overload is a plain shim call whose argument words follow each
+     * argument's IR type: one word for {@code int}/{@code float}, a low/high pair for
+     * {@code long}/{@code double} — padded to an even word, as AAPCS aligns 64-bit arguments.
+     */
+    private void emitMathCall(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call) {
+        usedMath.add(call.intrinsic());
+        List<WordSource> words = new ArrayList<>();
+        for (Value argument : call.arguments()) {
+            if (isWide(argument.type())) {
+                if (words.size() % 2 != 0) {
+                    words.add(new WordSource.Immediate(0));
+                }
+                words.add(new WordSource.FromValueLow(argument));
+                words.add(new WordSource.FromValueHigh(argument));
+            } else {
+                words.add(new WordSource.FromValue(argument));
+            }
+        }
+        emitShimCall(output, frame, MathRuntime.symbol(call.intrinsic()), words);
+        call.target().ifPresent(target -> {
+            if (isWide(target.type())) {
+                store64(output, frame, "r0", "r1", target);
+            } else {
+                store(output, frame, "r0", target);
+            }
+        });
+    }
+
+    private static boolean isWide(JunoType type) {
+        return type == JunoType.INT64 || type == JunoType.FLOAT64;
+    }
+
     private void emitIntrinsicCall(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call) {
+        if (MathRuntime.isMath(call.intrinsic())) {
+            emitMathCall(output, frame, call);
+            return;
+        }
         switch (call.intrinsic()) {
+            case THROWABLE_SET_MESSAGE -> {
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                load(output, frame, "r1", call.arguments().get(0));
+                output.append("    str r1, [r0, #").append(ThrowableTypes.MESSAGE_OFFSET).append("]\n");
+            }
+            case THROWABLE_GET_MESSAGE -> {
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                output.append("    ldr r0, [r0, #").append(ThrowableTypes.MESSAGE_OFFSET).append("]\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case THROW_DISPATCH -> {
+                usesExceptions = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                load(output, frame, "r1", call.arguments().get(1));
+                output.append("    bl juno_throw_dispatch\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case THROW_UNCAUGHT -> {
+                usesExceptions = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl juno_throw_uncaught\n");
+            }
             case DIGITAL_OUTPUT_OF -> {
                 load(output, frame, "r0", call.arguments().get(0));
                 emitLoadImmediate(output, "r1", 1); // OUTPUT
@@ -919,6 +995,24 @@ public final class CortexM4AsmBackend {
             }
             case CLOCK_MICROS -> {
                 output.append("    bl micros\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case RANDOM_SEED -> {
+                usesRandom = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl juno_random_seed\n");
+            }
+            case RANDOM_NEXT_BOUND -> {
+                usesRandom = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl juno_random_next_bound\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case RANDOM_NEXT_RANGE -> {
+                usesRandom = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                load(output, frame, "r1", call.arguments().get(1));
+                output.append("    bl juno_random_next_range\n");
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
             case DELAY_MILLIS -> {
@@ -1032,15 +1126,16 @@ public final class CortexM4AsmBackend {
                 output.append("    bl juno_string_builder_to_string\n");
                 call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
-            case SERIAL_PRINT_STRING -> {
-                output.append("    ldr r0, =")
-                        .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
-                output.append("    bl juno_serial_print_str\n");
-            }
-            case SERIAL_PRINTLN_STRING -> {
-                output.append("    ldr r0, =")
-                        .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
-                output.append("    bl juno_serial_println_str\n");
+            case SERIAL_PRINT_STRING, SERIAL_PRINTLN_STRING -> {
+                if (call.literalArguments().isEmpty()) {
+                    load(output, frame, "r0", call.arguments().get(0));
+                } else {
+                    output.append("    ldr r0, =")
+                            .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
+                }
+                output.append(call.intrinsic() == Intrinsic.SERIAL_PRINT_STRING
+                        ? "    bl juno_serial_print_str\n"
+                        : "    bl juno_serial_println_str\n");
             }
             case WIFI_BEGIN -> {
                 usesWifi = true;
@@ -1649,6 +1744,14 @@ public final class CortexM4AsmBackend {
                 #include <Arduino.h>
                 #include <stdint.h>
                 #include "Arduino_LED_Matrix.h"
+                // The UNO R4 core compiles this shim with -mfloat-abi=hard, but Juno's generated assembly
+                // passes float/double values in core registers; every shim function taking or returning one
+                // opts back into the base procedure-call standard so both sides agree.
+                #if defined(__arm__)
+                #define JUNO_ASM_ABI __attribute__((pcs("aapcs")))
+                #else
+                #define JUNO_ASM_ABI
+                #endif
                 """);
         // Mouse is an optional library (arduino-cli lib install Mouse), unlike the core-bundled
         // LED matrix/Serial above — only pull it in when the program actually uses it, so every
@@ -1682,7 +1785,7 @@ public final class CortexM4AsmBackend {
                 || usesSd) {
             shim.append("#include <string.h>\n");
         }
-        if (usesFloat || usesDouble || usesJson || usesRuntimeStrings || usesStringBuilder) {
+        if (usesFloat || usesDouble || usesJson || usesRuntimeStrings || usesStringBuilder || !usedMath.isEmpty()) {
             shim.append("#include <math.h>\n");
         }
         // WDT (like Arduino_LED_Matrix above) is bundled with the renesas_uno core, not a separate
@@ -2024,28 +2127,29 @@ public final class CortexM4AsmBackend {
                   Serial.println(static_cast<long long>(value));
                 }
 
-                extern "C" void juno_serial_print_float(float value) {
+                extern "C" JUNO_ASM_ABI void juno_serial_print_float(float value) {
                   Serial.print(static_cast<double>(value));
                 }
 
-                extern "C" void juno_serial_println_float(float value) {
+                extern "C" JUNO_ASM_ABI void juno_serial_println_float(float value) {
                   Serial.println(static_cast<double>(value));
                 }
 
-                extern "C" void juno_serial_print_double(double value) {
+                extern "C" JUNO_ASM_ABI void juno_serial_print_double(double value) {
                   Serial.print(value);
                 }
 
-                extern "C" void juno_serial_println_double(double value) {
+                extern "C" JUNO_ASM_ABI void juno_serial_println_double(double value) {
                   Serial.println(value);
                 }
 
+                // A runtime String (e.g. Throwable.getMessage()) may be null; Java prints "null".
                 extern "C" void juno_serial_print_str(const char* value) {
-                  Serial.print(value);
+                  Serial.print(value != nullptr ? value : "null");
                 }
 
                 extern "C" void juno_serial_println_str(const char* value) {
-                  Serial.println(value);
+                  Serial.println(value != nullptr ? value : "null");
                 }
                 """.replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES))
                 .replace("${JUNO_GC_LOG_BEFORE}", gcLogBefore)
@@ -2097,6 +2201,22 @@ public final class CortexM4AsmBackend {
                     }
                     """);
         }
+        if (usesRandom) {
+            shim.append("""
+
+                    extern "C" void juno_random_seed(int32_t seed) {
+                      randomSeed(static_cast<unsigned long>(static_cast<uint32_t>(seed)));
+                    }
+
+                    extern "C" int32_t juno_random_next_bound(int32_t bound) {
+                      return static_cast<int32_t>(random(static_cast<long>(bound)));
+                    }
+
+                    extern "C" int32_t juno_random_next_range(int32_t origin, int32_t bound) {
+                      return static_cast<int32_t>(random(static_cast<long>(origin), static_cast<long>(bound)));
+                    }
+                    """);
+        }
         if (usesWifi) {
             shim.append("""
 
@@ -2128,6 +2248,12 @@ public final class CortexM4AsmBackend {
         }
         if (usesDouble) {
             shim.append(doubleHelpers());
+        }
+        if (!usedMath.isEmpty()) {
+            shim.append(MathRuntime.helpers(usedMath));
+        }
+        if (usesExceptions) {
+            shim.append(exceptionHelpers());
         }
         if (usesJson) {
             shim.append(jsonHelpers());
@@ -2408,7 +2534,7 @@ public final class CortexM4AsmBackend {
                 // fractional part is truncated toward zero at 6 digits (trailing zeros trimmed), so a
                 // value whose exact binary representation sits just below the intended decimal (e.g.
                 // 21.2 stored as 21.199999999999999...) can format one unit low in the last digit.
-                extern "C" int32_t juno_string_value_of_double(double value) {
+                extern "C" JUNO_ASM_ABI int32_t juno_string_value_of_double(double value) {
                   if (isnan(value) || isinf(value)) juno_panic();
                   bool negative = value < 0.0;
                   double magnitude = negative ? -value : value;
@@ -2523,28 +2649,73 @@ public final class CortexM4AsmBackend {
                 """;
     }
 
-    /** {@code extern "C"} soft-float helpers — the RA4M1 (UNO R4's Cortex-M4) has no hardware FPU. */
+    /**
+     * {@code athrow}'s runtime half: the thrown object's class id selects a handler when the throwing
+     * method catches that class ({@code caughtMask} bit set); otherwise it reports the exception the
+     * way the JVM does and panics. {@code throw null} reports a {@code NullPointerException}.
+     */
+    private String exceptionHelpers() {
+        StringBuilder names = new StringBuilder();
+        if (throwableClasses.isEmpty()) {
+            names.append("  \"\",\n"); // only `throw null` reaches the runtime; C++ forbids an empty array
+        }
+        for (String className : throwableClasses) {
+            names.append("  \"").append(className.replace('/', '.')).append("\",\n");
+        }
+        return """
+                static const char* const juno_throwable_names[] = {
+                ${JUNO_THROWABLE_NAMES}};
+
+                extern "C" [[noreturn]] void juno_throw_uncaught(int32_t exception) {
+                  Serial.print("Exception in thread \\"main\\" ");
+                  if (exception == 0) {
+                    Serial.println("java.lang.NullPointerException");
+                    juno_panic();
+                  }
+                  const int32_t* header = reinterpret_cast<const int32_t*>(static_cast<intptr_t>(exception));
+                  Serial.print(juno_throwable_names[header[${JUNO_CLASS_ID_WORD}]]);
+                  const char* message = reinterpret_cast<const char*>(static_cast<intptr_t>(header[${JUNO_MESSAGE_WORD}]));
+                  if (message != nullptr) {
+                    Serial.print(": ");
+                    Serial.print(message);
+                  }
+                  Serial.println();
+                  juno_panic();
+                }
+
+                extern "C" int32_t juno_throw_dispatch(int32_t exception, int32_t caughtMask) {
+                  if (exception == 0) juno_throw_uncaught(exception);
+                  int32_t classId = reinterpret_cast<const int32_t*>(static_cast<intptr_t>(exception))[${JUNO_CLASS_ID_WORD}];
+                  if ((static_cast<uint32_t>(caughtMask) >> classId & 1u) == 0u) juno_throw_uncaught(exception);
+                  return classId;
+                }
+                """.replace("${JUNO_THROWABLE_NAMES}", names.toString())
+                .replace("${JUNO_CLASS_ID_WORD}", Integer.toString(ThrowableTypes.CLASS_ID_OFFSET / WORD))
+                .replace("${JUNO_MESSAGE_WORD}", Integer.toString(ThrowableTypes.MESSAGE_OFFSET / WORD));
+    }
+
+    /** {@code extern "C"} float helpers, called from assembly with float values in core registers (see {@code JUNO_ASM_ABI}). */
     private String floatHelpers() {
         return """
 
-                extern "C" float juno_fadd(float a, float b) { return a + b; }
-                extern "C" float juno_fsub(float a, float b) { return a - b; }
-                extern "C" float juno_fmul(float a, float b) { return a * b; }
-                extern "C" float juno_fdiv(float a, float b) { return a / b; }
-                extern "C" float juno_frem(float a, float b) { return fmodf(a, b); }
-                extern "C" int32_t juno_fcmp(float a, float b, int32_t nanResult) {
+                extern "C" JUNO_ASM_ABI float juno_fadd(float a, float b) { return a + b; }
+                extern "C" JUNO_ASM_ABI float juno_fsub(float a, float b) { return a - b; }
+                extern "C" JUNO_ASM_ABI float juno_fmul(float a, float b) { return a * b; }
+                extern "C" JUNO_ASM_ABI float juno_fdiv(float a, float b) { return a / b; }
+                extern "C" JUNO_ASM_ABI float juno_frem(float a, float b) { return fmodf(a, b); }
+                extern "C" JUNO_ASM_ABI int32_t juno_fcmp(float a, float b, int32_t nanResult) {
                   if (isnan(a) || isnan(b)) return nanResult;
                   return (a > b) - (a < b);
                 }
-                extern "C" float juno_i2f(int32_t value) { return static_cast<float>(value); }
-                extern "C" int32_t juno_f2i(float value) {
+                extern "C" JUNO_ASM_ABI float juno_i2f(int32_t value) { return static_cast<float>(value); }
+                extern "C" JUNO_ASM_ABI int32_t juno_f2i(float value) {
                   if (isnan(value)) return 0;
                   if (value >= 0x1.0p31f) return INT32_MAX;
                   if (value <= -0x1.0p31f) return INT32_MIN;
                   return static_cast<int32_t>(value);
                 }
-                extern "C" float juno_l2f(int64_t value) { return static_cast<float>(value); }
-                extern "C" int64_t juno_f2l(float value) {
+                extern "C" JUNO_ASM_ABI float juno_l2f(int64_t value) { return static_cast<float>(value); }
+                extern "C" JUNO_ASM_ABI int64_t juno_f2l(float value) {
                   if (isnan(value)) return 0;
                   if (value >= 0x1.0p63f) return INT64_MAX;
                   if (value <= -0x1.0p63f) return INT64_MIN;
@@ -2558,31 +2729,31 @@ public final class CortexM4AsmBackend {
     private String doubleHelpers() {
         return """
 
-                extern "C" double juno_dadd(double a, double b) { return a + b; }
-                extern "C" double juno_dsub(double a, double b) { return a - b; }
-                extern "C" double juno_dmul(double a, double b) { return a * b; }
-                extern "C" double juno_ddiv(double a, double b) { return a / b; }
-                extern "C" double juno_drem(double a, double b) { return fmod(a, b); }
-                extern "C" int32_t juno_dcmp(double a, double b, int32_t nanResult) {
+                extern "C" JUNO_ASM_ABI double juno_dadd(double a, double b) { return a + b; }
+                extern "C" JUNO_ASM_ABI double juno_dsub(double a, double b) { return a - b; }
+                extern "C" JUNO_ASM_ABI double juno_dmul(double a, double b) { return a * b; }
+                extern "C" JUNO_ASM_ABI double juno_ddiv(double a, double b) { return a / b; }
+                extern "C" JUNO_ASM_ABI double juno_drem(double a, double b) { return fmod(a, b); }
+                extern "C" JUNO_ASM_ABI int32_t juno_dcmp(double a, double b, int32_t nanResult) {
                   if (isnan(a) || isnan(b)) return nanResult;
                   return (a > b) - (a < b);
                 }
-                extern "C" double juno_i2d(int32_t value) { return static_cast<double>(value); }
-                extern "C" int32_t juno_d2i(double value) {
+                extern "C" JUNO_ASM_ABI double juno_i2d(int32_t value) { return static_cast<double>(value); }
+                extern "C" JUNO_ASM_ABI int32_t juno_d2i(double value) {
                   if (isnan(value)) return 0;
                   if (value >= 0x1.0p31) return INT32_MAX;
                   if (value <= -0x1.0p31) return INT32_MIN;
                   return static_cast<int32_t>(value);
                 }
-                extern "C" double juno_l2d(int64_t value) { return static_cast<double>(value); }
-                extern "C" int64_t juno_d2l(double value) {
+                extern "C" JUNO_ASM_ABI double juno_l2d(int64_t value) { return static_cast<double>(value); }
+                extern "C" JUNO_ASM_ABI int64_t juno_d2l(double value) {
                   if (isnan(value)) return 0;
                   if (value >= 0x1.0p63) return INT64_MAX;
                   if (value <= -0x1.0p63) return INT64_MIN;
                   return static_cast<int64_t>(value);
                 }
-                extern "C" double juno_f2d(float value) { return static_cast<double>(value); }
-                extern "C" float juno_d2f(double value) { return static_cast<float>(value); }
+                extern "C" JUNO_ASM_ABI double juno_f2d(float value) { return static_cast<double>(value); }
+                extern "C" JUNO_ASM_ABI float juno_d2f(double value) { return static_cast<float>(value); }
 
                 """;
     }
@@ -2932,7 +3103,7 @@ public final class CortexM4AsmBackend {
                   return true;
                 }
 
-                extern "C" double juno_json_get_double(const uint8_t* buffer, int32_t length, const char* key) {
+                extern "C" JUNO_ASM_ABI double juno_json_get_double(const uint8_t* buffer, int32_t length, const char* key) {
                   const char* start;
                   const char* end;
                   if (juno_json_locate(buffer, length, key, &start, &end) != 1) return 0.0;

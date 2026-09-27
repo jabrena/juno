@@ -480,7 +480,7 @@ class CortexM4AsmBackendTest {
 
         assertThat(result.assembly().contains("bl juno_json_get_double")).isTrue();
         assertThat(result.assembly().contains("bl juno_d2i")).isTrue();
-        assertThat(result.runtimeShim().contains("extern \"C\" double juno_json_get_double")).isTrue();
+        assertThat(result.runtimeShim().contains("extern \"C\" JUNO_ASM_ABI double juno_json_get_double")).isTrue();
         assertThat(result.runtimeShim().contains("#include <math.h>")).isTrue();
         assertThat(result.runtimeShim().contains("#include <string.h>")).isTrue();
     }
@@ -719,7 +719,7 @@ class CortexM4AsmBackendTest {
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl juno_string_value_of_double");
-        assertThat(generated.runtimeShim()).contains("extern \"C\" int32_t juno_string_value_of_double(double value)");
+        assertThat(generated.runtimeShim()).contains("extern \"C\" JUNO_ASM_ABI int32_t juno_string_value_of_double(double value)");
     }
 
     @Test

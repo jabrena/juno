@@ -2,6 +2,7 @@ package io.github.jabrena.juno.analysis;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.classfile.ExceptionHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,16 @@ import java.util.TreeSet;
  */
 public final class ControlFlowGraphBuilder {
     public ControlFlowGraph build(String methodDisplayName, List<Instruction> instructions) {
+        return build(methodDisplayName, instructions, List.of());
+    }
+
+    /**
+     * Every exception handler starts a block; an {@code athrow} ends one with a {@link Terminator.Throw}
+     * edge to each handler covering it. Only explicit throws get handler edges: Juno's implicit runtime
+     * failures (division by zero, bounds checks) and exceptions leaving a called method still panic.
+     */
+    public ControlFlowGraph build(String methodDisplayName, List<Instruction> instructions,
+                                  List<ExceptionHandler> handlers) {
         TreeMap<Integer, Instruction> byOffset = new TreeMap<>();
         for (Instruction instruction : instructions) {
             byOffset.put(instruction.offset(), instruction);
@@ -21,6 +32,13 @@ public final class ControlFlowGraphBuilder {
 
         TreeSet<Integer> leaders = new TreeSet<>();
         leaders.add(instructions.get(0).offset());
+        for (ExceptionHandler handler : handlers) {
+            if (!byOffset.containsKey(handler.handlerPc())) {
+                throw new CompileException(methodDisplayName + ": invalid exception handler offset "
+                        + handler.handlerPc());
+            }
+            leaders.add(handler.handlerPc());
+        }
         for (Instruction instruction : instructions) {
             if (isSwitch(instruction.opcode())) {
                 addSwitchLeader(methodDisplayName, byOffset, leaders, instruction, instruction.operandA());
@@ -51,13 +69,22 @@ public final class ControlFlowGraphBuilder {
             int endExclusive = index + 1 < leaderOffsets.size() ? leaderOffsets.get(index + 1) : Integer.MAX_VALUE;
             List<Instruction> blockInstructions = List.copyOf(byOffset.subMap(start, endExclusive).values());
             Instruction last = blockInstructions.get(blockInstructions.size() - 1);
-            blocks.add(new BasicBlock(start, blockInstructions, terminatorOf(methodDisplayName, last, byOffset)));
+            blocks.add(new BasicBlock(start, blockInstructions,
+                    terminatorOf(methodDisplayName, last, byOffset, handlers)));
         }
         return new ControlFlowGraph(List.copyOf(blocks));
     }
 
-    private Terminator terminatorOf(String methodDisplayName, Instruction last, TreeMap<Integer, Instruction> byOffset) {
+    private Terminator terminatorOf(String methodDisplayName, Instruction last, TreeMap<Integer, Instruction> byOffset,
+                                    List<ExceptionHandler> handlers) {
         int opcode = last.opcode();
+        if (opcode == 191) {
+            return new Terminator.Throw(handlers.stream()
+                    .filter(handler -> handler.covers(last.offset()))
+                    .map(ExceptionHandler::handlerPc)
+                    .distinct()
+                    .toList());
+        }
         if (opcode == 167) {
             return new Terminator.Jump(last.offset() + last.operandA());
         }
@@ -90,7 +117,7 @@ public final class ControlFlowGraphBuilder {
     }
 
     private boolean isBlockEnd(int opcode) {
-        return isBranch(opcode) || isReturn(opcode);
+        return isBranch(opcode) || isReturn(opcode) || opcode == 191;
     }
 
     private boolean isSwitch(int opcode) {
@@ -109,6 +136,6 @@ public final class ControlFlowGraphBuilder {
 
     private boolean isReturn(int opcode) {
         return opcode == 172 || opcode == 173 || opcode == 174 || opcode == 175 || opcode == 176
-                || opcode == 177 || opcode == 191;
+                || opcode == 177;
     }
 }

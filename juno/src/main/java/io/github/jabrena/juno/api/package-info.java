@@ -14,6 +14,8 @@
  *   <li>{@link io.github.jabrena.juno.api.Delay} — blocking millisecond/microsecond delays.</li>
  *   <li>{@link io.github.jabrena.juno.api.Clock} — the monotonic uptime clock, for measuring
  *       elapsed time without blocking.</li>
+ *   <li>{@link io.github.jabrena.juno.api.Random} — seeded, bounded pseudorandom numbers backed by
+ *       Arduino's generator.</li>
  * </ul>
  *
  * <p>Board-specific or peripheral-specific operations live in subpackages instead, grouped by the

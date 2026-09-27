@@ -27,6 +27,15 @@ public final class IntrinsicRegistry {
             new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 0),
             new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 1));
 
+    /**
+     * Parameters that accept a runtime {@code String} but still take the literal path (a {@code .asciz}
+     * address, no extra IR) when the argument is a known literal: {@code Serial.print(e.getMessage())}
+     * compiles, while {@code Serial.print("text")} generates exactly what it always has.
+     */
+    private static final Set<IntrinsicParameter> LITERAL_WHEN_KNOWN_PARAMETERS = Set.of(
+            new IntrinsicParameter(Intrinsic.SERIAL_PRINT_STRING, 0),
+            new IntrinsicParameter(Intrinsic.SERIAL_PRINTLN_STRING, 0));
+
     private record IntrinsicParameter(Intrinsic intrinsic, int parameterIndex) {
     }
 
@@ -51,6 +60,12 @@ public final class IntrinsicRegistry {
                     Intrinsic.CLOCK_MILLIS),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/Clock", "micros", "()I"),
                     Intrinsic.CLOCK_MICROS),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/Random", "seed", "(I)V"),
+                    Intrinsic.RANDOM_SEED),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/Random", "nextInt", "(I)I"),
+                    Intrinsic.RANDOM_NEXT_BOUND),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/Random", "nextInt", "(II)I"),
+                    Intrinsic.RANDOM_NEXT_RANGE),
             Map.entry(new MethodRef("java/lang/String", "valueOf", "(I)Ljava/lang/String;"),
                     Intrinsic.STRING_VALUE_OF_INT),
             Map.entry(new MethodRef("java/lang/String", "valueOf", "(D)Ljava/lang/String;"),
@@ -200,7 +215,51 @@ public final class IntrinsicRegistry {
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Pop3Client", "readLatest",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;[BI[BI[I)I"), Intrinsic.POP3_READ_LATEST),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Pop3Client", "readSubject",
-                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;I[BI)I"), Intrinsic.POP3_READ_SUBJECT));
+                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;I[BI)I"), Intrinsic.POP3_READ_SUBJECT),
+            Map.entry(new MethodRef("java/lang/Math", "abs", "(I)I"), Intrinsic.MATH_ABS_INT),
+            Map.entry(new MethodRef("java/lang/Math", "abs", "(J)J"), Intrinsic.MATH_ABS_LONG),
+            Map.entry(new MethodRef("java/lang/Math", "abs", "(F)F"), Intrinsic.MATH_ABS_FLOAT),
+            Map.entry(new MethodRef("java/lang/Math", "abs", "(D)D"), Intrinsic.MATH_ABS_DOUBLE),
+            Map.entry(new MethodRef("java/lang/Math", "min", "(II)I"), Intrinsic.MATH_MIN_INT),
+            Map.entry(new MethodRef("java/lang/Math", "min", "(JJ)J"), Intrinsic.MATH_MIN_LONG),
+            Map.entry(new MethodRef("java/lang/Math", "min", "(FF)F"), Intrinsic.MATH_MIN_FLOAT),
+            Map.entry(new MethodRef("java/lang/Math", "min", "(DD)D"), Intrinsic.MATH_MIN_DOUBLE),
+            Map.entry(new MethodRef("java/lang/Math", "max", "(II)I"), Intrinsic.MATH_MAX_INT),
+            Map.entry(new MethodRef("java/lang/Math", "max", "(JJ)J"), Intrinsic.MATH_MAX_LONG),
+            Map.entry(new MethodRef("java/lang/Math", "max", "(FF)F"), Intrinsic.MATH_MAX_FLOAT),
+            Map.entry(new MethodRef("java/lang/Math", "max", "(DD)D"), Intrinsic.MATH_MAX_DOUBLE),
+            Map.entry(new MethodRef("java/lang/Math", "clamp", "(JII)I"), Intrinsic.MATH_CLAMP_INT),
+            Map.entry(new MethodRef("java/lang/Math", "clamp", "(JJJ)J"), Intrinsic.MATH_CLAMP_LONG),
+            Map.entry(new MethodRef("java/lang/Math", "clamp", "(FFF)F"), Intrinsic.MATH_CLAMP_FLOAT),
+            Map.entry(new MethodRef("java/lang/Math", "clamp", "(DDD)D"), Intrinsic.MATH_CLAMP_DOUBLE),
+            Map.entry(new MethodRef("java/lang/Math", "floorDiv", "(II)I"), Intrinsic.MATH_FLOOR_DIV_INT),
+            Map.entry(new MethodRef("java/lang/Math", "floorDiv", "(JJ)J"), Intrinsic.MATH_FLOOR_DIV_LONG),
+            Map.entry(new MethodRef("java/lang/Math", "floorDiv", "(JI)J"), Intrinsic.MATH_FLOOR_DIV_LONG_INT),
+            Map.entry(new MethodRef("java/lang/Math", "floorMod", "(II)I"), Intrinsic.MATH_FLOOR_MOD_INT),
+            Map.entry(new MethodRef("java/lang/Math", "floorMod", "(JJ)J"), Intrinsic.MATH_FLOOR_MOD_LONG),
+            Map.entry(new MethodRef("java/lang/Math", "floorMod", "(JI)I"), Intrinsic.MATH_FLOOR_MOD_LONG_INT),
+            Map.entry(new MethodRef("java/lang/Math", "signum", "(F)F"), Intrinsic.MATH_SIGNUM_FLOAT),
+            Map.entry(new MethodRef("java/lang/Math", "signum", "(D)D"), Intrinsic.MATH_SIGNUM_DOUBLE),
+            Map.entry(new MethodRef("java/lang/Math", "round", "(F)I"), Intrinsic.MATH_ROUND_FLOAT),
+            Map.entry(new MethodRef("java/lang/Math", "round", "(D)J"), Intrinsic.MATH_ROUND_DOUBLE),
+            Map.entry(new MethodRef("java/lang/Math", "floor", "(D)D"), Intrinsic.MATH_FLOOR),
+            Map.entry(new MethodRef("java/lang/Math", "ceil", "(D)D"), Intrinsic.MATH_CEIL),
+            Map.entry(new MethodRef("java/lang/Math", "sqrt", "(D)D"), Intrinsic.MATH_SQRT),
+            Map.entry(new MethodRef("java/lang/Math", "cbrt", "(D)D"), Intrinsic.MATH_CBRT),
+            Map.entry(new MethodRef("java/lang/Math", "pow", "(DD)D"), Intrinsic.MATH_POW),
+            Map.entry(new MethodRef("java/lang/Math", "hypot", "(DD)D"), Intrinsic.MATH_HYPOT),
+            Map.entry(new MethodRef("java/lang/Math", "exp", "(D)D"), Intrinsic.MATH_EXP),
+            Map.entry(new MethodRef("java/lang/Math", "log", "(D)D"), Intrinsic.MATH_LOG),
+            Map.entry(new MethodRef("java/lang/Math", "log10", "(D)D"), Intrinsic.MATH_LOG10),
+            Map.entry(new MethodRef("java/lang/Math", "sin", "(D)D"), Intrinsic.MATH_SIN),
+            Map.entry(new MethodRef("java/lang/Math", "cos", "(D)D"), Intrinsic.MATH_COS),
+            Map.entry(new MethodRef("java/lang/Math", "tan", "(D)D"), Intrinsic.MATH_TAN),
+            Map.entry(new MethodRef("java/lang/Math", "asin", "(D)D"), Intrinsic.MATH_ASIN),
+            Map.entry(new MethodRef("java/lang/Math", "acos", "(D)D"), Intrinsic.MATH_ACOS),
+            Map.entry(new MethodRef("java/lang/Math", "atan", "(D)D"), Intrinsic.MATH_ATAN),
+            Map.entry(new MethodRef("java/lang/Math", "atan2", "(DD)D"), Intrinsic.MATH_ATAN2),
+            Map.entry(new MethodRef("java/lang/Math", "toRadians", "(D)D"), Intrinsic.MATH_TO_RADIANS),
+            Map.entry(new MethodRef("java/lang/Math", "toDegrees", "(D)D"), Intrinsic.MATH_TO_DEGREES));
 
     private IntrinsicRegistry() {
     }
@@ -215,6 +274,12 @@ public final class IntrinsicRegistry {
 
     /** Whether {@code intrinsic}'s {@code String} parameter at {@code parameterIndex} must be a compile-time literal. */
     public static boolean requiresLiteralStringArgument(Intrinsic intrinsic, int parameterIndex) {
-        return !RUNTIME_STRING_PARAMETERS.contains(new IntrinsicParameter(intrinsic, parameterIndex));
+        IntrinsicParameter parameter = new IntrinsicParameter(intrinsic, parameterIndex);
+        return !RUNTIME_STRING_PARAMETERS.contains(parameter) && !LITERAL_WHEN_KNOWN_PARAMETERS.contains(parameter);
+    }
+
+    /** Whether a known-literal argument for this runtime-capable parameter should still be passed as a literal. */
+    public static boolean prefersLiteralStringArgument(Intrinsic intrinsic, int parameterIndex) {
+        return LITERAL_WHEN_KNOWN_PARAMETERS.contains(new IntrinsicParameter(intrinsic, parameterIndex));
     }
 }

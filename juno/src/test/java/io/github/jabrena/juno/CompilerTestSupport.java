@@ -21,6 +21,11 @@ public final class CompilerTestSupport {
     }
 
     public static Path compileJava(Path directory, String className, String source) throws IOException {
+        return compileJava(directory, className, source, "17");
+    }
+
+    public static Path compileJava(Path directory, String className, String source, String release)
+            throws IOException {
         Path sourceFile = directory.resolve(className.replace('.', '/') + ".java");
         Files.createDirectories(sourceFile.getParent());
         Files.writeString(sourceFile, source, StandardCharsets.UTF_8);
@@ -29,7 +34,7 @@ public final class CompilerTestSupport {
         // constant's declaring class) is visible when compiling a later one against it.
         String classPath = System.getProperty("java.class.path") + File.pathSeparator + directory;
         int result = compiler.run(null, null, null,
-                "--release", "17",
+                "--release", release,
                 "-classpath", classPath,
                 "-d", directory.toString(),
                 sourceFile.toString());
