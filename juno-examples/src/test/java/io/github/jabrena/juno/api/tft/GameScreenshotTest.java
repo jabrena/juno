@@ -54,6 +54,7 @@ class GameScreenshotTest {
                 game("Othello", "othello", "500:106,114 end:6000"),
                 game("PacMan", "pacman", "500:120,160 end:6000"),
                 game("Pong", "pong", "500:120,160 end:6000"),
+                game("RedBaron", "red-baron", "500:160,130 3000:160,130 3080:230,130 3160:260,130 3240:270,130 3320:270,130 end:3400"),
                 game("RockPaperScissorsLizardSpock", "rock-paper-scissors-lizard-spock",
                         "500:216,280 3000:24,280 5500:120,280 end:8000"),
                 game("RussianRoulette", "russian-roulette", "500:180,290 3500:180,290 end:6500"),

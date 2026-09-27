@@ -1,6 +1,6 @@
 # Games
 
-Juno ships 29 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is a plain Java class in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
+Juno ships 30 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is a plain Java class in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
 
 ## How to play
 
@@ -23,7 +23,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 
 ## Contents
 
-- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
+- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [Red Baron](#red-baron), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Checkers](#checkers), [Othello](#othello), [Connect Four](#connect-four), [Tic-Tac-Toe](#tic-tac-toe), [Backgammon](#backgammon), [Mancala](#mancala), [Battleship](#battleship)
 - [Puzzles and simulations](#puzzles-and-simulations): [Minesweeper](#minesweeper), [2048](#2048), [Game of Life](#game-of-life)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem), [Solitaire](#solitaire), [Slot machine](#slot-machine)
@@ -120,6 +120,17 @@ After Atari's 1983 vector arcade game, in landscape: from an X-wing's cockpit, f
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.StarWars
+```
+
+### Red Baron
+
+<img src="images/games/red-baron.png" alt="Red Baron on the TFT shield" width="320">
+
+After Atari's 1981 vector arcade game, in landscape: a First World War dogfight from the cockpit of a biplane, over a landscape ringed by mountains. The whole screen is a joystick: press and drag from that point to bank and turn (the horizon rolls as you do) or to climb and dive, and tap to fire both machine guns at whatever is in the sight. Each wave has a dogfight, where enemy biplanes make firing passes and a blimp drifts by for bonus points, and a ground attack, where you fly low to strafe hangars and flak guns without crashing into the pyramids. Three planes, one more every 20,000 points.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.RedBaron
 ```
 
 ### Space Paranoids
@@ -413,10 +424,10 @@ On top of these:
   screen and a diff to `juno-examples/target/screenshots`. After an intended visual change,
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
-- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest`, `StarWarsTest` and `SpaceParanoidsTest` check rules and computer players: the
+- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest`, `StarWarsTest`, `SpaceParanoidsTest` and `RedBaronTest` check rules and computer players: the
   poker hand ranking against a brute-force reference, no chip lost across all-ins and side pots,
   the slot machine's exact payback, Othello's perft counts, Backgammon and Mancala rules, that
-  each computer opponent beats a simple player, and that an autopilot clears Space Paranoids sectors.
+  each computer opponent beats a simple player, and that autopilots clear Space Paranoids sectors and whole Red Baron waves.
 
 This runs the games' Java on the JVM, not the code Juno generates for the board.
 
