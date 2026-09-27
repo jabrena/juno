@@ -1,6 +1,6 @@
 # Games
 
-Juno ships 28 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is a plain Java class in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
+Juno ships 29 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is a plain Java class in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
 
 ## How to play
 
@@ -23,7 +23,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 
 ## Contents
 
-- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
+- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Checkers](#checkers), [Othello](#othello), [Connect Four](#connect-four), [Tic-Tac-Toe](#tic-tac-toe), [Backgammon](#backgammon), [Mancala](#mancala), [Battleship](#battleship)
 - [Puzzles and simulations](#puzzles-and-simulations): [Minesweeper](#minesweeper), [2048](#2048), [Game of Life](#game-of-life)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem), [Solitaire](#solitaire), [Slot machine](#slot-machine)
@@ -109,6 +109,17 @@ A vector-style tube seen end-on. Touch near the rim to move your claw around it 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.Tempest
+```
+
+### Space Paranoids
+
+<img src="images/games/space-paranoids.png" alt="Space Paranoids on the TFT shield" width="320">
+
+After the arcade game from TRON, in landscape: drive a tank through a wireframe maze and destroy every flying hunter before the sector's timer runs out, while enemy tanks and gun turrets fire back. Hold `<`/`>` to turn, `^`/`v` to drive and `FIRE` to shoot (tapping the view fires too); the radar between the buttons shows the maze from above. Hits drain your shield and green energy pools recharge it. Three lives, one more every 10,000 points, and every sector is a new maze with more enemies. The walls are ray cast with hidden lines removed.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.SpaceParanoids
 ```
 
 ### Lunar Lander
@@ -391,10 +402,10 @@ On top of these:
   screen and a diff to `juno-examples/target/screenshots`. After an intended visual change,
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
-- `CardGamesTest`, `BoardGamesTest` and `ChanceGamesTest` check rules and computer players: the
+- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest` and `SpaceParanoidsTest` check rules and computer players: the
   poker hand ranking against a brute-force reference, no chip lost across all-ins and side pots,
-  the slot machine's exact payback, Othello's perft counts, Backgammon and Mancala rules, and that
-  each computer opponent beats a simple player.
+  the slot machine's exact payback, Othello's perft counts, Backgammon and Mancala rules, that
+  each computer opponent beats a simple player, and that an autopilot clears Space Paranoids sectors.
 
 This runs the games' Java on the JVM, not the code Juno generates for the board.
 
