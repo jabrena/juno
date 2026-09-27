@@ -90,7 +90,10 @@ public final class TftTouchShield {
     private static final int DEFAULT_TOUCH_MAX_Y = 920;
     private static final int MIN_PRESSURE = 10;
     private static final int MAX_PRESSURE = 1000;
-    private static final int TOUCH_SETTLE_MICROS = 20;
+    // The touch pins double as display bus pins, so they can still hold charge from drawing when
+    // they switch to analog inputs; a longer settle plus two agreeing samples filters that out.
+    private static final int TOUCH_SETTLE_MICROS = 100;
+    private static final int TOUCH_TOLERANCE = 16;
 
     // ILI9341 commands and the flags this driver sets on them.
     private static final int SOFT_RESET = 0x01;
@@ -309,6 +312,25 @@ public final class TftTouchShield {
         }
     }
 
+    /**
+     * Opens a {@code w}x{@code h} window with its top-left corner at ({@code x}, {@code y}) for
+     * streaming pixels with {@link #pushPixel}, row by row from the top-left — the fast way to draw
+     * a small custom bitmap. Returns {@code false}, opening nothing, unless the window lies entirely
+     * on screen. Push exactly {@code w * h} pixels before any other drawing call.
+     */
+    public static boolean beginPixels(int x, int y, int w, int h) {
+        if (w <= 0 || h <= 0 || x < 0 || y < 0 || x + w > width || y + h > height) {
+            return false;
+        }
+        setAddressWindow(x, y, x + w - 1, y + h - 1);
+        return true;
+    }
+
+    /** Writes the next pixel of the window opened by {@link #beginPixels}. */
+    public static void pushPixel(int color) {
+        writePixel(color);
+    }
+
     /** Moves the text cursor so the next character's top-left corner is at ({@code x}, {@code y}) pixels. */
     public static void setCursor(int x, int y) {
         cursorX = x;
@@ -365,7 +387,9 @@ public final class TftTouchShield {
     }
 
     /**
-     * Samples the touch panel, returning whether it is currently pressed. When it is,
+     * Samples the touch panel, returning whether it is currently pressed — only when two position
+     * and pressure samples agree, which rejects noise from the pins it shares with the display bus.
+     * When it is,
      * {@link #touchX()}/{@link #touchY()} hold the pressed position in screen coordinates for the
      * current rotation. Always leaves the display bus ready for drawing again.
      */
@@ -373,8 +397,20 @@ public final class TftTouchShield {
         touchPressure = readTouchPressure();
         boolean pressed = touchPressure >= MIN_PRESSURE && touchPressure <= MAX_PRESSURE;
         if (pressed) {
-            touchRawX = readTouchRawX();
-            touchRawY = readTouchRawY();
+            int firstX = readTouchRawX();
+            int firstY = readTouchRawY();
+            int secondX = readTouchRawX();
+            int secondY = readTouchRawY();
+            int secondPressure = readTouchPressure();
+            // A real press gives steady readings; residual charge or a glancing contact does not.
+            pressed = secondPressure >= MIN_PRESSURE && secondPressure <= MAX_PRESSURE
+                    && Math.abs(firstX - secondX) <= TOUCH_TOLERANCE
+                    && Math.abs(firstY - secondY) <= TOUCH_TOLERANCE;
+            touchRawX = (firstX + secondX) / 2;
+            touchRawY = (firstY + secondY) / 2;
+            if (!pressed) {
+                touchPressure = 0;
+            }
         }
         restoreBusAfterTouch();
         if (!pressed) {

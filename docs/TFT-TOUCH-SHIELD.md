@@ -51,6 +51,12 @@ TftTouchShield.drawPixel(5, 5, TftTouchShield.RED);
 TftTouchShield.fillCircle(200, 120, 20, TftTouchShield.YELLOW);
 TftTouchShield.drawCircle(200, 120, 24, TftTouchShield.WHITE);
 
+if (TftTouchShield.beginPixels(0, 0, 20, 20)) {        // stream a custom 20x20 bitmap
+    for (int i = 0; i < 20 * 20; i++) {
+        TftTouchShield.pushPixel(TftTouchShield.GREEN); // row by row, from the top left
+    }
+}
+
 TftTouchShield.setCursor(10, 80);                      // pixel coordinates of the next character
 TftTouchShield.setTextSize(2);                         // 1 = 6x8-pixel cells, 2 = 12x16, ...
 TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
@@ -125,3 +131,131 @@ ten minutes, or immediately when the screen is tapped. The footer shows the publ
 and the coordinates sent to Open-Meteo. The first HTTPS request right after WiFi connects can fail,
 so the location lookup waits two seconds and then retries every five (the status line counts the
 attempts). Confirmed running on a real UNO R4 WiFi with this shield.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Minesweeper
+```
+
+[`Minesweeper`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Minesweeper.java) is
+the classic game on a 10x11 field with 16 mines, in `PORTRAIT_FLIPPED` rotation: tap a covered cell
+to open it (the first tap is always safe), press and hold to plant or remove a flag, tap an opened
+number whose neighbouring flags match it to open the rest of its neighbours, and tap the face
+button to start over. The header shows the mines left to flag and the elapsed seconds.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Chess
+```
+
+[`Chess`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Chess.java) plays you
+(White) against a small built-in engine (Black). Pieces are 20x20 bitmaps shaped like the Unicode
+chess symbols, streamed with `beginPixels`/`pushPixel`. Tap one of your pieces to see its legal
+destinations, then tap one to move; `UNDO` takes back your last move together with the engine's reply (repeatable
+back to the start of the game), and `NEW` starts over. The rules are complete apart from draw
+claims: moves into check are rejected, check, checkmate and stalemate are detected, and castling,
+en passant and promotion (always to a queen) work. The fifty-move rule, threefold repetition and
+insufficient material are not detected. The engine is a 3-ply negamax search with alpha-beta
+pruning and a material plus piece-placement evaluation; each of its moves and its thinking time are
+logged to Serial. Its move generator matches the standard perft reference counts (start position,
+"Kiwipete", and endgame positions), apart from the under-promotions it deliberately omits.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.TicTacToe
+```
+
+[`TicTacToe`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TicTacToe.java) is the
+"vanishing" variant of the handheld electronic games: each player owns at most three marks, and
+placing a fourth removes that player's oldest one, which is drawn dimmed while it is next to go, so
+there are no draws. You play X against the computer's O (a 6-ply alpha-beta search); `1P` switches to
+two players sharing the screen, `NEW` starts a new round, and the footer keeps the score.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Simon
+```
+
+[`Simon`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Simon.java) is the classic
+memory game: four colored pads around a central hub light up in a growing sequence that you repeat
+by tapping them. Each round adds a step and plays a little faster; a wrong pad (the right one then
+blinks) or five seconds without a tap ends the game. Tap the hub to start; it shows the score, and the
+header the best score since power-up. The shield has no speaker, so it is lights only.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Blackjack
+```
+
+[`Blackjack`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Blackjack.java) plays
+against the dealer on a green felt table: set your bet with `-`/`+` and `DEAL`, then `HIT`, `STAND`
+or `DBL` (double down on your first two cards). The dealer stands on all 17s, blackjack pays 3:2,
+and ties push; splitting and insurance are not offered. You start with 100 chips (refilled when you
+run out), and a single 52-card deck is reshuffled when fewer than 15 cards remain. Suit symbols are
+9x9 bitmaps, since the display font has no ♠♥♦♣ glyphs.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.ConnectFour
+```
+
+[`ConnectFour`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/ConnectFour.java) — Connect Four against the computer: tap a column to drop a red disc; the computer (yellow) answers with a 4-ply alpha-beta search that tries central columns first. The loser of a game moves first in the next one, and the footer keeps the score.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Checkers
+```
+
+[`Checkers`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Checkers.java) — English draughts against the computer: men move diagonally forward, kings (gold crown) diagonally both ways; captures are mandatory and multi-jumps continue with the same piece (tap each landing square). The computer runs a 5-ply alpha-beta minimax. Its move generator matches the standard English draughts perft counts to depth 7.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Game2048
+```
+
+[`Game2048`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Game2048.java) — 2048: swipe to slide the tiles (or tap near an edge of the grid, for panels that report swipes poorly); equal tiles merge. Reach 2048 to win and keep going; the header shows the score and best score.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Battleship
+```
+
+[`Battleship`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Snake
+```
+
+[`Snake`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Snake.java) — Snake that the CPU plays by itself (shortest path to the food by breadth-first search, taken only when a flood fill shows enough room left; it averages over 100 food in simulation) and restarts after each crash. Tap the header to take over (`YOU`) and back (`CPU`). When playing yourself, tap above/below the head (or left/right of it, when moving vertically) to turn; each bite grows the snake and speeds it up. Only the head, the previous head and the tail are redrawn each step.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Tetris
+```
+
+[`Tetris`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Tetris.java) — Tetris: a 10x20 well with next-piece preview, score, lines and levels; the `<`/`>` (auto-repeat), `ROT` and `DROP` buttons sit beside the well, and tapping the well also rotates. Each frame only the changed cells are redrawn.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Pong
+```
+
+[`Pong`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Pong.java) — Pong against the computer in portrait: your paddle follows your finger, the computer's paddle chases the ball with a speed limit, and the hit position sets the bounce angle. First to 7 wins.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.FlappyBird
+```
+
+[`FlappyBird`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/FlappyBird.java) — A Flappy Bird style game: tap to flap through the pipe gaps. Scrolling pipes only repaint their leading and trailing edge strips each frame, and the bird is a streamed 17x12 sprite.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.GameOfLife
+```
+
+[`GameOfLife`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/GameOfLife.java) — Conway's
+Game of Life on a 40x46 grid whose edges wrap around. `RUN`/`STOP`, `STEP`, `RAND` and `CLR` control
+the simulation; while stopped, drag on the grid to draw cells (a stroke starting on a live cell erases).
+Only cells that change are redrawn, and the header shows the generation and population.
