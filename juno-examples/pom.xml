@@ -18,6 +18,9 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <juno.main>io.github.jabrena.juno.api.Blink</juno.main>
         <juno.envFile>${maven.multiModuleProjectDirectory}/.env</juno.envFile>
+        <!-- ArduinoCliCompileTest needs Docker; it runs only with -Parduino-cli. -->
+        <juno.test.groups></juno.test.groups>
+        <juno.test.excludedGroups>arduino-cli</juno.test.excludedGroups>
     </properties>
 
     <dependencies>
@@ -38,10 +41,30 @@
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <groups>${juno.test.groups}</groups>
+                    <excludedGroups>${juno.test.excludedGroups}</excludedGroups>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>io.github.jabrena</groupId>
                 <artifactId>juno-maven-plugin</artifactId>
@@ -60,4 +83,15 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Compile every TFT game with the real arduino-cli in Docker: ./mvnw -f juno-examples/pom.xml -Parduino-cli test -->
+        <profile>
+            <id>arduino-cli</id>
+            <properties>
+                <juno.test.groups>arduino-cli</juno.test.groups>
+                <juno.test.excludedGroups></juno.test.excludedGroups>
+            </properties>
+        </profile>
+    </profiles>
 </project>

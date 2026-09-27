@@ -21,7 +21,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   see `docs/FEATURES.md`). Build/dev JDK is pinned to 25 (GraalVM CE) via
   `.sdkmanrc` and CI (`.github/workflows/maven.yaml`).
 - **Build:** Maven 3.9.16 via the `./mvnw` wrapper (`.mvn/wrapper/maven-wrapper.properties`).
-- **Test framework:** JUnit (Jupiter) 6.1.3.
+- **Test framework:** JUnit (Jupiter) 6.1.3. `juno-examples` also uses Testcontainers 2.0.5 (test scope) for the
+  opt-in `arduino-cli` compile test.
 - **No runtime frameworks** — `juno` is a standalone CLI (`io.github.jabrena.juno.Main`), packaged
   as an executable jar via `maven-jar-plugin`; `juno-maven-plugin` is a conventional Maven plugin.
 - **External toolchain:** Arduino CLI with the `arduino:renesas_uno` core, used to actually
@@ -83,7 +84,10 @@ against `juno`'s `api` and `annotations` packages.
   that shadow the `juno` artifact's native classes on the test classpath (`Gpio` emulates the
   ILI9341 bus and touch panel); `api/tft/GameScreenshotTest` compares each game's screen with
   `docs/images/games/*.png` (regenerate with `-Djuno.updateScreenshots=true`), and the
-  `*GamesTest` classes check game rules and computer players. See `docs/GAMES.md`.
+  `*GamesTest` classes check game rules and computer players. `api/tft/ArduinoCliCompileTest`
+  (tag `arduino-cli`, opt-in via `-Parduino-cli`) compiles every game with the real `arduino-cli`
+  in a Testcontainers container built from `juno-examples/src/test/docker/arduino-cli/Dockerfile`.
+  See `docs/GAMES.md`.
 - `docs/` – WRITE here: supporting documentation (`ARDUINO.md` for the `arduino-cli` workflow,
   `TYPES.md` for the Java/Arduino type mapping).
 - `docs/javadocs/<version>/` – **generated, currently tracked**: Javadoc HTML for the `juno`
@@ -125,6 +129,9 @@ against `juno`'s `api` and `annotations` packages.
 # Select another example by fully qualified class name
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+
+# Compile every TFT game with the real arduino-cli inside Docker (Testcontainers; needs Docker)
+./mvnw -f juno-examples/pom.xml -Parduino-cli test
 
 # Flash the generated program; auto-detects one matching board, or accepts -Djuno.port=<PORT>
 ./mvnw -f juno-examples/pom.xml compile juno:upload

@@ -397,3 +397,27 @@ On top of these:
   each computer opponent beats a simple player.
 
 This runs the games' Java on the JVM, not the code Juno generates for the board.
+
+## Compiling with the real Arduino toolchain in Docker
+
+`ArduinoCliCompileTest` does what `juno:verify` does for every game — Juno generates the sketch,
+then `arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi` builds and links it with the real
+UNO R4 core — inside a Docker container started with [Testcontainers](https://testcontainers.com),
+so you need Docker but no local Arduino installation. It fails if a game stops compiling or no
+longer fits the board's flash or RAM, and prints each game's usage. It is opt-in:
+
+```bash
+./mvnw install -DskipTests
+./mvnw -f juno-examples/pom.xml -Parduino-cli test
+```
+
+The first run builds the image from
+[`juno-examples/src/test/docker/arduino-cli/Dockerfile`](../juno-examples/src/test/docker/arduino-cli/Dockerfile)
+(`arduino-cli` plus the `arduino:renesas_uno` core, several hundred MB) and Docker caches it for
+later runs. To use an image you built or pulled yourself, add
+`-Djuno.arduinoCliImage=<image>`. Without Docker the test is skipped. If your network blocks
+Docker Hub, also set `TESTCONTAINERS_RYUK_DISABLED=true`, since Testcontainers otherwise pulls its
+cleanup container from there.
+
+What neither test covers is the program running on the chip itself: timing, touch feel and the
+panel's real colors still need the board and `juno:upload`.
