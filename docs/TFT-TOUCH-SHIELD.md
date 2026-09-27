@@ -316,13 +316,6 @@ rotated per pixel into a streamed 17x17 block, since the display has no line pri
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.FlappyBird
-```
-
-[`FlappyBird`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/FlappyBird.java) — A Flappy Bird style game: tap to flap through the pipe gaps. Scrolling pipes only repaint their leading and trailing edge strips each frame, and the bird is a streamed 17x12 sprite.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.GameOfLife
 ```
 
