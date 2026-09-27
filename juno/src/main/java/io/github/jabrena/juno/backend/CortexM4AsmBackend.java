@@ -949,6 +949,29 @@ public final class CortexM4AsmBackend {
                 load(output, frame, "r0", call.arguments().get(0));
                 output.append("    bl juno_serial_println\n");
             }
+            case SERIAL_PRINT_LONG, SERIAL_PRINTLN_LONG -> {
+                String function = call.intrinsic() == Intrinsic.SERIAL_PRINT_LONG
+                        ? "juno_serial_print_long"
+                        : "juno_serial_println_long";
+                emitShimCall(output, frame, function,
+                        List.of(new WordSource.FromValueLow(call.arguments().get(0)),
+                                new WordSource.FromValueHigh(call.arguments().get(0))));
+            }
+            case SERIAL_PRINT_FLOAT, SERIAL_PRINTLN_FLOAT -> {
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl ")
+                        .append(call.intrinsic() == Intrinsic.SERIAL_PRINT_FLOAT
+                                ? "juno_serial_print_float\n"
+                                : "juno_serial_println_float\n");
+            }
+            case SERIAL_PRINT_DOUBLE, SERIAL_PRINTLN_DOUBLE -> {
+                String function = call.intrinsic() == Intrinsic.SERIAL_PRINT_DOUBLE
+                        ? "juno_serial_print_double"
+                        : "juno_serial_println_double";
+                emitShimCall(output, frame, function,
+                        List.of(new WordSource.FromValueLow(call.arguments().get(0)),
+                                new WordSource.FromValueHigh(call.arguments().get(0))));
+            }
             case STRING_VALUE_OF_INT -> {
                 usesRuntimeStrings = true;
                 load(output, frame, "r0", call.arguments().get(0));
@@ -1990,6 +2013,30 @@ public final class CortexM4AsmBackend {
                 }
 
                 extern "C" void juno_serial_println(int32_t value) {
+                  Serial.println(value);
+                }
+
+                extern "C" void juno_serial_print_long(int64_t value) {
+                  Serial.print(static_cast<long long>(value));
+                }
+
+                extern "C" void juno_serial_println_long(int64_t value) {
+                  Serial.println(static_cast<long long>(value));
+                }
+
+                extern "C" void juno_serial_print_float(float value) {
+                  Serial.print(static_cast<double>(value));
+                }
+
+                extern "C" void juno_serial_println_float(float value) {
+                  Serial.println(static_cast<double>(value));
+                }
+
+                extern "C" void juno_serial_print_double(double value) {
+                  Serial.print(value);
+                }
+
+                extern "C" void juno_serial_println_double(double value) {
                   Serial.println(value);
                 }
 

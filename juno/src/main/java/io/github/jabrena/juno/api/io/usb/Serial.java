@@ -37,6 +37,48 @@ public final class Serial {
     public static native void println(int value);
 
     /**
+     * Prints a 64-bit integer without a trailing line ending.
+     *
+     * @param value the integer to print
+     */
+    public static native void print(long value);
+
+    /**
+     * Prints a 64-bit integer followed by a line ending.
+     *
+     * @param value the integer to print
+     */
+    public static native void println(long value);
+
+    /**
+     * Prints a single-precision floating-point value without a trailing line ending.
+     *
+     * @param value the value to print
+     */
+    public static native void print(float value);
+
+    /**
+     * Prints a single-precision floating-point value followed by a line ending.
+     *
+     * @param value the value to print
+     */
+    public static native void println(float value);
+
+    /**
+     * Prints a double-precision floating-point value without a trailing line ending.
+     *
+     * @param value the value to print
+     */
+    public static native void print(double value);
+
+    /**
+     * Prints a double-precision floating-point value followed by a line ending.
+     *
+     * @param value the value to print
+     */
+    public static native void println(double value);
+
+    /**
      * Prints a compile-time string literal without a trailing line ending. Juno has no heap for a
      * runtime string value.
      *

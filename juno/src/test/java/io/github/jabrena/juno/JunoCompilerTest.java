@@ -314,6 +314,36 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersWideAndFloatingPointSerialIntrinsics() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class NumericSerial {
+                    public static void main(String[] args) {
+                        Serial.print(Long.MIN_VALUE);
+                        Serial.println(Long.MAX_VALUE);
+                        Serial.print(Float.MIN_VALUE);
+                        Serial.println(Float.MAX_VALUE);
+                        Serial.print(Double.MIN_VALUE);
+                        Serial.println(Double.MAX_VALUE);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NumericSerial", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NumericSerial");
+
+        assertThat(result.assembly()).contains(
+                "bl juno_serial_print_long", "bl juno_serial_println_long",
+                "bl juno_serial_print_float", "bl juno_serial_println_float",
+                "bl juno_serial_print_double", "bl juno_serial_println_double");
+        assertThat(result.runtimeShim()).contains(
+                "extern \"C\" void juno_serial_print_long(int64_t value)",
+                "extern \"C\" void juno_serial_print_float(float value)",
+                "extern \"C\" void juno_serial_print_double(double value)");
+    }
+
+    @Test
     void lowersACustomSerialBaudRate() throws Exception {
         String source = """
                 package demo;
