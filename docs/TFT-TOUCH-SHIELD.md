@@ -233,6 +233,42 @@ best score since power-up.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Othello
+```
+
+[`Othello`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Othello.java) — Othello
+(Reversi) against the computer: you play black, legal squares show a small dot, and the computer's
+last move carries a red one. Passes are handled automatically. The computer runs an iterative-deepening
+negamax with alpha-beta pruning for up to two seconds a move (square weights plus mobility, and a
+perfect endgame once it can see the end); its move generator matches the standard Othello perft counts.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Mancala
+```
+
+[`Mancala`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Mancala.java) — Kalah with
+six pits and four seeds, in landscape: tap one of your pits (bottom row) to sow it counter-clockwise.
+A last seed in your store earns another turn, one in an empty pit of yours captures the pit opposite,
+and when a row runs empty each side banks what is left. The computer searches with alpha-beta,
+deepening for up to 1.5 seconds a move.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Backgammon
+```
+
+[`Backgammon`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Backgammon.java) —
+Backgammon against the computer, in landscape. `ROLL`, then tap a checker (or the bar) and one of
+the yellow rings that mark its legal destinations, one die at a time; tap your tray to bear off.
+`UNDO` takes back the turn so far and `DONE` ends it. The full rules apply (entering from the bar,
+hitting blots, using both dice or else the higher one, doubles, bearing off), and wins count 1, 2
+for a gammon and 3 for a backgammon; there is no doubling cube. The computer tries every complete
+play of its roll and scores the resulting positions on pips, blocks and primes, and blot exposure.
+Triangles are drawn from horizontal lines, since the display has no line primitive.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.Game2048
 ```
 
