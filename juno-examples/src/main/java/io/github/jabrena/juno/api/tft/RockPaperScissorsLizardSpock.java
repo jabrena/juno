@@ -185,7 +185,7 @@ public final class RockPaperScissorsLizardSpock {
         for (int move = 0; move < MOVES; move++) {
             drawButton(move, false);
         }
-        showOutcome("Pick your move!", TftTouchShield.WHITE);
+        showOutcome("Your move!", TftTouchShield.WHITE);
 
         while (true) {
             int human = waitForMove();

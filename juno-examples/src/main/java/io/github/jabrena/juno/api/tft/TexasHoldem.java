@@ -115,7 +115,7 @@ public final class TexasHoldem {
     private static int deckPosition;
     private static int handNumber;
     private static int raiseTo;
-    private static int toAct;
+    private static int toAct = -1;
     private static boolean seeded;
 
     private TexasHoldem() {
@@ -935,7 +935,7 @@ public final class TexasHoldem {
         TftTouchShield.setTextColor(TftTouchShield.WHITE, SEAT_BACKGROUND);
         TftTouchShield.setCursor(x + 4, SEAT_Y + 4);
         TftTouchShield.print(seatName(seat));
-        if (seat == dealer && state != OUT) {
+        if (seat == dealer && state != OUT && handNumber > 0) {
             drawDealerButton(x + SEAT_WIDTH - 10, SEAT_Y + 7);
         }
         TftTouchShield.setTextColor(CHIP_TEXT, SEAT_BACKGROUND);
