@@ -255,25 +255,27 @@ class CortexM4AsmBackendTest {
         assertThat(shim.contains("extern \"C\" void juno_serial_println_str(const char* value)")).isTrue();
     }
 
-    /** WiFi credentials are two string literals; {@code status()} returns through r0 like any other call. */
+    /** WiFi accepts runtime string values; {@code status()} returns through r0 like any other call. */
     @Test
     void lowersWifiIntrinsicsToLiteralAddressesAndAShim() {
         MethodRef entryPoint = new MethodRef("demo/WifiConnect", "main", "([Ljava/lang/String;)V");
         IrBasicBlock block = new IrBasicBlock(0, List.of(
+                new IrInstruction.StringConst(Value.int32(0), "network"),
+                new IrInstruction.StringConst(Value.int32(1), "password"),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.WIFI_BEGIN,
-                        Optional.empty(), List.of(), List.of("network", "password")),
-                new IrInstruction.IntrinsicCall(Optional.of(Value.int32(0)), Intrinsic.WIFI_STATUS,
+                        Optional.empty(), List.of(Value.int32(0), Value.int32(1)), List.of()),
+                new IrInstruction.IntrinsicCall(Optional.of(Value.int32(2)), Intrinsic.WIFI_STATUS,
                         Optional.empty(), List.of(), List.of())),
                 new IrTerminator.Return(Optional.empty()));
-        IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 1, List.of(), List.of(block));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 3, List.of(), List.of(block));
 
         CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains("juno_str0:\n    .asciz \"network\"")).isTrue();
         assertThat(assembly.contains("juno_str1:\n    .asciz \"password\"")).isTrue();
-        assertThat(assembly.contains("ldr r0, =juno_str0")).isTrue();
-        assertThat(assembly.contains("ldr r1, =juno_str1")).isTrue();
+        assertThat(assembly.contains("ldr r0, [sp,")).isTrue();
+        assertThat(assembly.contains("ldr r1, [sp,")).isTrue();
         assertThat(assembly.contains("bl juno_wifi_begin")).isTrue();
         assertThat(assembly.contains("bl juno_wifi_status")).isTrue();
 

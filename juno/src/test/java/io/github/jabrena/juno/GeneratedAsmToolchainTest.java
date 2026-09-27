@@ -191,6 +191,39 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    @Test
+    void compilesAnSdPropertiesProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.io.storage.SdCard;
+                import java.io.IOException;
+                import java.io.InputStream;
+                import java.util.Properties;
+                public final class AsmSdProperties {
+                    public static void main(String[] args) throws IOException {
+                        if (!SdCard.begin()) return;
+                        InputStream file = SdCard.open("application.properties");
+                        if (file == null) return;
+                        Properties properties = new Properties();
+                        properties.load(file);
+                        file.close();
+                        String ssid = properties.getProperty("wifi.ssid");
+                        String password = properties.getProperty("wifi.password");
+                        if (ssid != null && password != null) Wifi.begin(ssid, password);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmSdProperties", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmSdProperties");
+        Path shim = temporaryDirectory.resolve("AsmSdPropertiesShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
     /**
      * {@link io.github.jabrena.juno.backend.CortexM4AsmBackend#httpServerHelpers} hand-writes
      * placement-new construction of a static {@code WiFiServer} and reads a {@code StringBuilder}

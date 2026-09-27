@@ -12,6 +12,9 @@ public final class RuntimeLimits {
      */
     public static final int STRING_SLOT_CAPACITY_BYTES = 32;
 
+    /** Bounded native storage allocated for one {@code java.util.Properties} instance. */
+    public static final int PROPERTIES_STORAGE_BYTES = 4 + 16 * (32 + 64);
+
     private RuntimeLimits() {
     }
 }

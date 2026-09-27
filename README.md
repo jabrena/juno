@@ -98,8 +98,9 @@ public final class Blink {
 See the [Javadoc](https://jabrena.github.io/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html)
 for the complete Java API reference.
 
-For Wi-Fi connections, compile-time credentials, HTTP/HTTPS REST calls, and bounded JSON response
-extraction, see the [Internet access guide](docs/INTERNET.md). For sending and reading email
+For Wi-Fi connections, HTTP/HTTPS REST calls, and bounded JSON response extraction, see the
+[Internet access guide](docs/INTERNET.md). Credentials can be resolved at compile time or loaded
+from an SD card as described in the [SD-card configuration guide](docs/STORAGE.md). For sending and reading email
 (`Smtp`/`Pop3Client`), see [docs/EMAIL.md](docs/EMAIL.md). For how these API classes work
 internally, and the checklist for adding a new one, see [docs/APIS.md](docs/APIS.md).
 

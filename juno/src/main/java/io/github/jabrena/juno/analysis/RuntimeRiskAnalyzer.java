@@ -203,6 +203,10 @@ public final class RuntimeRiskAnalyzer {
         if (instruction instanceof IrInstruction.NewMultiArray array) {
             return multiArrayBytes(array.leafType(), array.dimensions());
         }
+        if (instruction instanceof IrInstruction.IntrinsicCall call
+                && call.intrinsic() == Intrinsic.PROPERTIES_NEW) {
+            return allocationUpperBound(RuntimeLimits.PROPERTIES_STORAGE_BYTES, 4);
+        }
         return 0;
     }
 

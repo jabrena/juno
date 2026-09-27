@@ -23,8 +23,8 @@ arduino-cli core list
 ```
 
 Some examples also need an optional Arduino library not bundled with that core (`Mouse` for
-`RatonLoco`, `ESP_SSLClient` for `Smtp`'s `STARTTLS` upgrade, `Servo` for `ServoSweep` — see their
-sections below). Install the core and every one of those libraries in one go instead of hunting
+`RatonLoco`, `ESP_SSLClient` for `Smtp`'s `STARTTLS` upgrade, `Servo` for `ServoSweep`, and `SdFat`
+for `WifiStatusSD` — see their sections below). Install the core and every one of those libraries in one go instead of hunting
 them down per example:
 
 ```bash

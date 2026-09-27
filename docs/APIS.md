@@ -50,8 +50,8 @@ if (responseBytes < 0) {
 }
 ```
 
-Every `String` argument (`host`, `path`, request bodies, JSON paths, ...) must be a **compile-time
-constant**: a string literal, a `private static final` compile-time-constant expression, or a
+Unless an API explicitly documents runtime-string support, every `String` argument (`host`, `path`,
+request bodies, JSON paths, ...) must be a **compile-time constant**: a string literal, a `private static final` compile-time-constant expression, or a
 direct `System.getenv("LITERAL_NAME")` call. Juno resolves that last form itself, at compile time,
 by calling the real `System.getenv` in its own JVM process (`BytecodeToIr.isCompileTimeGetenv`/
 `lowerCompileTimeGetenv`) — the variable name must be a literal, and compilation fails with a clear
@@ -180,9 +180,11 @@ intrinsic rather than an ordinary static method call — get the descriptor stri
 back to "ordinary method call," which then fails to link since there's no real method body.
 
 By default, every `String`-typed parameter of every intrinsic must be a compile-time literal (see
-[above](#consuming-an-api-httpclient-walkthrough)); to allow a runtime value instead for one
-specific parameter, add it to `IntrinsicRegistry.RUNTIME_STRING_PARAMETERS` — the one example today
-is `HttpServer#respond`'s body, which is a plain `const char*` to its shim either way.
+[above](#consuming-an-api-httpclient-walkthrough)); to allow a runtime value for one specific
+parameter, add it to `IntrinsicRegistry.RUNTIME_STRING_PARAMETERS`. Current examples are
+`HttpServer#respond`'s body, both `Wifi#begin` credentials, and `java.util.Properties#getProperty`'s key;
+each is a plain `const char*` to its shim whether it originated as a literal or a stable runtime
+string.
 
 ### 4. Backend codegen
 

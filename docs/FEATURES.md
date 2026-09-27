@@ -65,6 +65,9 @@ Supported today:
 - bounded, allocation-free JSON inspection over caller-owned `byte[]` buffers: strict whole-document
   validation, object dot paths and zero-based array indexes, value type/null detection, array sizing,
   32/64-bit integers, decimal/exponent numbers, booleans, and JSON-string escape decoding to UTF-8
+- read-only SPI SD-card files through the standard `java.io.InputStream`, plus intrinsic
+  lowering of `java.util.Properties` construction, `load(InputStream)`, `getProperty`, and `size`;
+  loaded values have stable arena-backed storage and can be passed directly to `Wifi.begin`
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
 - `.class` inputs from directories, individual files, or JARs
 

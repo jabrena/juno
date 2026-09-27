@@ -19,27 +19,48 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
     /**
      * Every optional Arduino library (not bundled with the {@code arduino:renesas_uno} core) any
      * current Juno example needs: {@code Mouse} for {@code RatonLoco}, {@code ESP_SSLClient} for
-     * {@code Smtp}'s {@code STARTTLS} upgrade, {@code Servo} for {@code Servo}-driven examples.
+     * {@code Smtp}'s {@code STARTTLS} upgrade, {@code Servo} for {@code Servo}-driven examples,
+     * and {@code SdFat} for long-file-name-capable removable-storage examples.
      * Update this list — and the matching mention in {@code docs/ARDUINO.md} — together whenever a
      * new example starts needing another one.
      */
-    private static final List<String> OPTIONAL_LIBRARIES = List.of("Mouse", "ESP_SSLClient", "Servo");
+    private static final List<String> OPTIONAL_LIBRARIES = List.of("Mouse", "ESP_SSLClient", "Servo", "SdFat");
 
     /** The arduino-cli platform (board family) backing every {@code @Board} target Juno supports today. */
     private static final String CORE_PLATFORM = "arduino:renesas_uno";
 
     @Override
     public void execute() throws MojoFailureException {
+        int totalSteps = OPTIONAL_LIBRARIES.size() + 1;
+        long installationStarted = System.nanoTime();
+        getLog().info("Installing Arduino dependencies (" + totalSteps + " steps)");
         try {
             ArduinoCli cli = arduinoCli();
-            getLog().info("Installing Arduino core " + CORE_PLATFORM);
-            cli.installCore(CORE_PLATFORM);
-            for (String library : OPTIONAL_LIBRARIES) {
-                getLog().info("Installing Arduino library " + library);
-                cli.installLibrary(library);
+            installStep(1, totalSteps, "Arduino core " + CORE_PLATFORM,
+                    () -> cli.installCore(CORE_PLATFORM));
+            for (int index = 0; index < OPTIONAL_LIBRARIES.size(); index++) {
+                String library = OPTIONAL_LIBRARIES.get(index);
+                installStep(index + 2, totalSteps, "Arduino library " + library,
+                        () -> cli.installLibrary(library));
             }
+            getLog().info("Arduino dependency installation completed in "
+                    + elapsedMillis(installationStarted) + " ms");
         } catch (ArduinoCliException exception) {
+            getLog().error("Arduino dependency installation failed after "
+                    + elapsedMillis(installationStarted) + " ms");
             throw failure(exception);
         }
+    }
+
+    private void installStep(int step, int totalSteps, String description, Runnable installation) {
+        long started = System.nanoTime();
+        String prefix = "[" + step + "/" + totalSteps + "] ";
+        getLog().info(prefix + "Installing " + description);
+        installation.run();
+        getLog().info(prefix + "Installed " + description + " in " + elapsedMillis(started) + " ms");
+    }
+
+    private static long elapsedMillis(long startedNanos) {
+        return (System.nanoTime() - startedNanos) / 1_000_000;
     }
 }

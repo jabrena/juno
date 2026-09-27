@@ -4,11 +4,10 @@ package io.github.jabrena.juno.api.io.net;
  * WiFi connection control recognized as compiler intrinsics by Juno, backed by the Arduino
  * {@code WiFiS3} library. Requires {@code @Board(ArduinoUnoR4WiFi.class)} (the default board).
  *
- * <p>{@code ssid}/{@code password} must each be a compile-time constant: either a string literal, or
- * {@code System.getenv("NAME")} of a literal environment-variable name — Juno resolves that
- * {@code getenv} call itself, at compile time, by reading its own build-time environment (not the
- * device's), then bakes the resulting text into the generated firmware exactly like a literal would be.
- * Juno has no heap, so a WiFi credential is never a runtime value.
+ * <p>{@code ssid}/{@code password} may be string literals, compile-time values resolved from
+ * {@code System.getenv("NAME")}, or stable runtime strings returned by APIs such as
+ * {@link java.util.Properties#getProperty(String)}. This allows a
+ * deployed board to keep credentials on removable storage instead of baking them into firmware.
  */
 public final class Wifi {
     private Wifi() {

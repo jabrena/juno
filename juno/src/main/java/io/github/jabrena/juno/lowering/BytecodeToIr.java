@@ -772,6 +772,9 @@ public final class BytecodeToIr {
                         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                         Lowered lowered = isStringBuilderConstruction(called)
                                 ? lowerStringBuilderConstruction(instructions, stackBase, depth, nextValueId, tracking)
+                                : isPropertiesConstruction(called)
+                                        ? lowerPropertiesConstruction(instructions, stackBase, depth,
+                                                nextValueId, tracking)
                                 : isRuntimeBaseConstructor(called)
                                         ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId, tracking)
                                         : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
@@ -781,7 +784,7 @@ public final class BytecodeToIr {
                     case 187 -> {
                         String className = linked.owner().constantPool().className(instruction.operandA());
                         JavaClass allocatedClass = classes.get(className);
-                        if (className.startsWith("java/lang/")) {
+                        if (className.startsWith("java/lang/") || className.equals("java/util/Properties")) {
                             nextValueId = pushConst(instructions, stackBase, depth, nextValueId, 0, tracking);
                             depth++;
                             break;
@@ -1412,6 +1415,11 @@ public final class BytecodeToIr {
                 && called.descriptor().equals("(I)V");
     }
 
+    private boolean isPropertiesConstruction(MethodRef called) {
+        return called.owner().equals("java/util/Properties") && called.name().equals("<init>")
+                && called.descriptor().equals("()V");
+    }
+
     /**
      * {@code new StringBuilder(capacity)} — {@code new} (opcode 187) already pushed a placeholder
      * {@code 0} for any unrecognized {@code java/lang/*} allocation (see that opcode's handling
@@ -1432,6 +1440,18 @@ public final class BytecodeToIr {
         Value handle = Value.int32(nextValueId++);
         instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.STRING_BUILDER_NEW,
                 Optional.empty(), List.of(capacity.value()), List.of()));
+        storeToStack(instructions, stackBase, depth - 1, handle, tracking);
+        return new Lowered(nextValueId, depth);
+    }
+
+    /** Replaces {@code new Properties()} with Juno's bounded arena-backed properties handle. */
+    private Lowered lowerPropertiesConstruction(List<IrInstruction> instructions, int stackBase, int depth,
+                                                 int nextValueId, ValueTracking tracking) {
+        Popped discardedReceiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = discardedReceiver.nextValueId();
+        Value handle = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.PROPERTIES_NEW,
+                Optional.empty(), List.of(), List.of()));
         storeToStack(instructions, stackBase, depth - 1, handle, tracking);
         return new Lowered(nextValueId, depth);
     }
@@ -2232,7 +2252,8 @@ public final class BytecodeToIr {
         if (Descriptor.isDouble(field.descriptor())) {
             return JunoType.FLOAT64;
         }
-        if (Descriptor.isArrayType(field.descriptor())
+        if (Descriptor.isString(field.descriptor())
+                || Descriptor.isArrayType(field.descriptor())
                 || Descriptor.isReferenceType(field.descriptor(), classes.keySet())) {
             return JunoType.INT32;
         }

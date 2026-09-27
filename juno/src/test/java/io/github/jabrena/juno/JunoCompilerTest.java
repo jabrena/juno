@@ -469,6 +469,54 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersSdCardFilesPropertiesAndRuntimeWifiCredentials() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.io.storage.SdCard;
+                import java.io.IOException;
+                import java.io.InputStream;
+                import java.util.Properties;
+                public final class SdConfiguration {
+                    public static void main(String[] args) throws IOException {
+                        if (!SdCard.begin() || !SdCard.exists("application.properties")) return;
+                        InputStream file = SdCard.open("application.properties");
+                        if (file == null) return;
+                        if (file.available() > 0) {
+                            Properties properties = new Properties();
+                            properties.load(file);
+                            file.close();
+                            if (properties.size() > 0) {
+                                String ssid = properties.getProperty("wifi.ssid");
+                                String password = properties.getProperty("wifi.password", "");
+                                if (ssid != null) Wifi.begin(ssid, password);
+                            }
+                        } else {
+                            file.read();
+                            file.close();
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.SdConfiguration", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SdConfiguration");
+
+        assertThat(result.assembly()).contains(
+                "bl juno_sd_begin", "bl juno_sd_exists", "bl juno_sd_open",
+                "bl juno_sd_file_available", "bl juno_sd_file_read",
+                "bl juno_sd_file_close", "bl juno_properties_new", "bl juno_properties_load",
+                "bl juno_properties_get", "bl juno_properties_get_default",
+                "bl juno_properties_size", "bl juno_wifi_begin");
+        assertThat(result.runtimeShim()).contains(
+                "#include <SdFat.h>", "JUNO_PROPERTIES_MAX_ENTRIES = 16",
+                "extern \"C\" int32_t juno_properties_new()",
+                "extern \"C\" void juno_properties_load(int32_t propertiesHandle, int32_t fileHandle)");
+        assertThat(result.report().runtimeRisks().estimatedArenaBytes())
+                .isGreaterThanOrEqualTo(RuntimeLimits.PROPERTIES_STORAGE_BYTES);
+    }
+
+    @Test
     void rejectsAnUnsetCompileTimeEnvironmentVariable() throws Exception {
         String source = """
                 package demo;
@@ -1752,6 +1800,30 @@ class JunoCompilerTest {
         // Labeled(int[] data, int value): a 2-field, 8-byte record whose first field is a pointer.
         assertThat(generated).contains("movs r0, #8\n    movs r1, #4\n    bl juno_alloc",
                 "str r1, [r0, #0]", "str r1, [r0, #4]");
+    }
+
+    @Test
+    void supportsARecordWithStringComponents() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.net.Wifi;
+                public final class UsesCredentials {
+                    private record Credentials(String ssid, String password) {
+                    }
+                    public static void main(String[] args) {
+                        String runtimeSsid = String.valueOf(42);
+                        Credentials credentials = new Credentials(runtimeSsid, "secret");
+                        Wifi.begin(credentials.ssid(), credentials.password());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesCredentials", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCredentials").assembly();
+
+        assertThat(generated).contains("movs r0, #8\n    movs r1, #4\n    bl juno_alloc",
+                "str r1, [r0, #0]", "str r1, [r0, #4]",
+                "ldr r1, [r0, #0]", "ldr r1, [r0, #4]", "bl juno_wifi_begin");
     }
 
     private static int countOccurrences(String text, String needle) {

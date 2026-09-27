@@ -44,8 +44,9 @@ other secrets with plain `HttpClient`.
 
 ## Supplying Wi-Fi credentials
 
-Do not put Wi-Fi credentials directly in Java source. Pass compile-time environment-variable reads
-to `Wifi.begin` instead — see
+Do not put Wi-Fi credentials directly in Java source. Either load them at runtime from an SD-card
+properties file (see [docs/STORAGE.md](STORAGE.md)) or pass compile-time environment-variable reads
+to `Wifi.begin` — see
 [docs/APIS.md](APIS.md#supplying-compile-time-credentials-with-systemgetenv) for the full
 mechanism, including the `.env`/`juno-maven-plugin` alternative and its security caveats:
 
@@ -68,6 +69,9 @@ int responseBytes = HttpClient.get(
 
 Any value supplied this way is still embedded in the generated firmware. `HttpsClient` protects it
 in transit; `HttpClient` sends it without encryption.
+
+Unlike HTTP hosts, paths, and bodies, `Wifi.begin` also accepts stable runtime strings returned by
+`java.util.Properties.getProperty`, so credentials can remain on removable storage rather than in firmware.
 
 ## Connecting to Wi-Fi
 

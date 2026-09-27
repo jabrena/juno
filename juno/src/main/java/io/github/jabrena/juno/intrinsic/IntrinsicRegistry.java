@@ -12,15 +12,20 @@ public final class IntrinsicRegistry {
      * (intrinsic, declared-parameter-index) pairs exempt from the default rule that every
      * intrinsic {@code String} parameter must be a compile-time literal. {@link
      * io.github.jabrena.juno.api.io.net.http.HttpServer#respond(int, String, String)}'s {@code body}
-     * (parameter index 2, after {@code status} and {@code contentType}) is the only one: it
-     * already works identically whether the argument is a literal (a {@code .asciz} address) or a
+     * (parameter index 2, after {@code status} and {@code contentType}), for example, works
+     * identically whether the argument is a literal (a {@code .asciz} address) or a
      * runtime value (a pooled {@code String}'s address) — both are plain null-terminated {@code
-     * const char*} to the generated {@code juno_http_server_respond} shim, so there is nothing
-     * literal-specific about it, unlike e.g. {@code Wifi#begin}'s credentials, which must never be
-     * a runtime value by design.
+     * const char*} to the generated {@code juno_http_server_respond} shim. {@code Wifi#begin}'s
+     * credentials are also runtime-capable so values loaded from an SD-card {@code Properties}
+     * document can be passed directly to the WiFi driver.
      */
     private static final Set<IntrinsicParameter> RUNTIME_STRING_PARAMETERS = Set.of(
-            new IntrinsicParameter(Intrinsic.HTTP_SERVER_RESPOND, 2));
+            new IntrinsicParameter(Intrinsic.HTTP_SERVER_RESPOND, 2),
+            new IntrinsicParameter(Intrinsic.WIFI_BEGIN, 0),
+            new IntrinsicParameter(Intrinsic.WIFI_BEGIN, 1),
+            new IntrinsicParameter(Intrinsic.PROPERTIES_GET, 0),
+            new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 0),
+            new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 1));
 
     private record IntrinsicParameter(Intrinsic intrinsic, int parameterIndex) {
     }
@@ -104,6 +109,27 @@ public final class IntrinsicRegistry {
                     Intrinsic.WIFI_STATUS),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/Wifi", "localIP", "([I)V"),
                     Intrinsic.WIFI_LOCAL_IP),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/storage/SdCard", "begin", "(I)Z"),
+                    Intrinsic.SD_BEGIN),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/storage/SdCard", "exists",
+                    "(Ljava/lang/String;)Z"), Intrinsic.SD_EXISTS),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/storage/SdCard", "open",
+                    "(Ljava/lang/String;)Ljava/io/InputStream;"), Intrinsic.SD_OPEN),
+            Map.entry(new MethodRef("java/io/InputStream", "available", "()I"),
+                    Intrinsic.SD_FILE_AVAILABLE),
+            Map.entry(new MethodRef("java/io/InputStream", "read", "()I"),
+                    Intrinsic.SD_FILE_READ),
+            Map.entry(new MethodRef("java/io/InputStream", "close", "()V"),
+                    Intrinsic.SD_FILE_CLOSE),
+            Map.entry(new MethodRef("java/util/Properties", "<init>", "()V"), Intrinsic.PROPERTIES_NEW),
+            Map.entry(new MethodRef("java/util/Properties", "load", "(Ljava/io/InputStream;)V"),
+                    Intrinsic.PROPERTIES_LOAD),
+            Map.entry(new MethodRef("java/util/Properties", "getProperty",
+                    "(Ljava/lang/String;)Ljava/lang/String;"), Intrinsic.PROPERTIES_GET),
+            Map.entry(new MethodRef("java/util/Properties", "getProperty",
+                    "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"), Intrinsic.PROPERTIES_GET_DEFAULT),
+            Map.entry(new MethodRef("java/util/Properties", "size", "()I"),
+                    Intrinsic.PROPERTIES_SIZE),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpClient", "get",
                     "(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_GET),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpClient", "post",

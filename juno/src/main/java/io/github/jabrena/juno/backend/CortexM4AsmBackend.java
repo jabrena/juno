@@ -122,6 +122,7 @@ public final class CortexM4AsmBackend {
     private boolean usesMouse;
     private boolean usesServo;
     private boolean usesWifi;
+    private boolean usesSd;
     private boolean usesLong;
     private boolean usesFloat;
     private boolean usesDouble;
@@ -1020,10 +1021,8 @@ public final class CortexM4AsmBackend {
             }
             case WIFI_BEGIN -> {
                 usesWifi = true;
-                output.append("    ldr r0, =")
-                        .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
-                output.append("    ldr r1, =")
-                        .append(stringLiteralSymbols.get(call.literalArguments().get(1))).append('\n');
+                load(output, frame, "r0", call.arguments().get(0));
+                load(output, frame, "r1", call.arguments().get(1));
                 output.append("    bl juno_wifi_begin\n");
             }
             case WIFI_STATUS -> {
@@ -1035,6 +1034,73 @@ public final class CortexM4AsmBackend {
                 usesWifi = true;
                 load(output, frame, "r0", call.arguments().get(0));
                 output.append("    bl juno_wifi_local_ip\n");
+            }
+            case SD_BEGIN -> {
+                usesSd = true;
+                load(output, frame, "r0", call.arguments().get(0));
+                output.append("    bl juno_sd_begin\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case SD_EXISTS -> {
+                usesSd = true;
+                output.append("    ldr r0, =")
+                        .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
+                output.append("    bl juno_sd_exists\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case SD_OPEN -> {
+                usesSd = true;
+                output.append("    ldr r0, =")
+                        .append(stringLiteralSymbols.get(call.literalArguments().get(0))).append('\n');
+                output.append("    bl juno_sd_open\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case SD_FILE_AVAILABLE, SD_FILE_READ -> {
+                usesSd = true;
+                String function = switch (call.intrinsic()) {
+                    case SD_FILE_AVAILABLE -> "juno_sd_file_available";
+                    default -> "juno_sd_file_read";
+                };
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                output.append("    bl ").append(function).append('\n');
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case SD_FILE_CLOSE -> {
+                usesSd = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                output.append("    bl juno_sd_file_close\n");
+            }
+            case PROPERTIES_NEW -> {
+                usesSd = true;
+                output.append("    bl juno_properties_new\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case PROPERTIES_LOAD -> {
+                usesSd = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                load(output, frame, "r1", call.arguments().get(0));
+                output.append("    bl juno_properties_load\n");
+            }
+            case PROPERTIES_GET -> {
+                usesSd = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                load(output, frame, "r1", call.arguments().get(0));
+                output.append("    bl juno_properties_get\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case PROPERTIES_GET_DEFAULT -> {
+                usesSd = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                load(output, frame, "r1", call.arguments().get(0));
+                load(output, frame, "r2", call.arguments().get(1));
+                output.append("    bl juno_properties_get_default\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
+            }
+            case PROPERTIES_SIZE -> {
+                usesSd = true;
+                load(output, frame, "r0", call.receiver().orElseThrow());
+                output.append("    bl juno_properties_size\n");
+                call.target().ifPresent(target -> store(output, frame, "r0", target));
             }
             case MOUSE_BEGIN -> {
                 usesMouse = true;
@@ -1573,6 +1639,9 @@ public final class CortexM4AsmBackend {
         if (usesWifi || usesHttp || usesHttps || usesHttpServer || usesSmtp || usesPop3) {
             shim.append("#include <WiFiS3.h>\n");
         }
+        if (usesSd) {
+            shim.append("#include <SPI.h>\n#include <SdFat.h>\n");
+        }
         if (usesHttps || usesPop3) {
             shim.append("#include <WiFiSSLClient.h>\n");
         }
@@ -1586,7 +1655,8 @@ public final class CortexM4AsmBackend {
         if (usesHttpServer) {
             shim.append("#include <new>\n");
         }
-        if (usesHttp || usesHttps || usesHttpServer || usesJson || usesRuntimeStrings || usesSmtp || usesPop3) {
+        if (usesHttp || usesHttps || usesHttpServer || usesJson || usesRuntimeStrings || usesSmtp || usesPop3
+                || usesSd) {
             shim.append("#include <string.h>\n");
         }
         if (usesFloat || usesDouble || usesJson || usesRuntimeStrings || usesStringBuilder) {
@@ -2000,6 +2070,9 @@ public final class CortexM4AsmBackend {
                     }
                     """);
         }
+        if (usesSd) {
+            shim.append(sdHelpers());
+        }
         if (usesLong) {
             shim.append(longHelpers());
         }
@@ -2025,6 +2098,179 @@ public final class CortexM4AsmBackend {
             shim.append(emailHelpers());
         }
         return shim.toString();
+    }
+
+    /** Read-only Arduino SD bindings plus a bounded, arena-backed {@code key=value} parser. */
+    private String sdHelpers() {
+        return """
+
+                static constexpr int32_t JUNO_SD_MAX_OPEN_FILES = 4;
+                static constexpr int32_t JUNO_PROPERTIES_MAX_ENTRIES = 16;
+                static constexpr int32_t JUNO_PROPERTIES_KEY_CAPACITY = 32;
+                static constexpr int32_t JUNO_PROPERTIES_VALUE_CAPACITY = 64;
+                static constexpr int32_t JUNO_PROPERTIES_LINE_CAPACITY = 96;
+
+                static SdFat32 juno_sd;
+                static File32 juno_sd_files[JUNO_SD_MAX_OPEN_FILES];
+                static bool juno_sd_file_used[JUNO_SD_MAX_OPEN_FILES];
+
+                static File32* juno_sd_file(int32_t handle) {
+                  int32_t index = handle - 1;
+                  if (index < 0 || index >= JUNO_SD_MAX_OPEN_FILES || !juno_sd_file_used[index]) {
+                    juno_panic();
+                  }
+                  return &juno_sd_files[index];
+                }
+
+                extern "C" int32_t juno_sd_begin(int32_t chipSelectPin) {
+                  for (int32_t i = 0; i < JUNO_SD_MAX_OPEN_FILES; i++) {
+                    if (juno_sd_file_used[i]) juno_sd_files[i].close();
+                    juno_sd_file_used[i] = false;
+                  }
+                  return juno_sd.begin(chipSelectPin) ? 1 : 0;
+                }
+
+                extern "C" int32_t juno_sd_exists(const char* path) {
+                  return juno_sd.exists(path) ? 1 : 0;
+                }
+
+                extern "C" int32_t juno_sd_open(const char* path) {
+                  for (int32_t i = 0; i < JUNO_SD_MAX_OPEN_FILES; i++) {
+                    if (!juno_sd_file_used[i]) {
+                      juno_sd_files[i] = juno_sd.open(path, O_RDONLY);
+                      if (!juno_sd_files[i]) return 0;
+                      juno_sd_file_used[i] = true;
+                      return i + 1;
+                    }
+                  }
+                  return 0;
+                }
+
+                extern "C" int32_t juno_sd_file_available(int32_t handle) {
+                  return juno_sd_file(handle)->available() > 0 ? 1 : 0;
+                }
+
+                extern "C" int32_t juno_sd_file_read(int32_t handle) {
+                  return juno_sd_file(handle)->read();
+                }
+
+                extern "C" void juno_sd_file_close(int32_t handle) {
+                  int32_t index = handle - 1;
+                  File32* file = juno_sd_file(handle);
+                  file->close();
+                  juno_sd_file_used[index] = false;
+                }
+
+                struct JunoPropertyEntry {
+                  char key[JUNO_PROPERTIES_KEY_CAPACITY];
+                  char value[JUNO_PROPERTIES_VALUE_CAPACITY];
+                };
+
+                struct JunoProperties {
+                  int32_t count;
+                  JunoPropertyEntry entries[JUNO_PROPERTIES_MAX_ENTRIES];
+                };
+
+                static JunoProperties* juno_properties(int32_t handle) {
+                  if (handle == 0) juno_panic();
+                  return reinterpret_cast<JunoProperties*>(static_cast<intptr_t>(handle));
+                }
+
+                extern "C" int32_t juno_properties_new() {
+                  auto* properties = static_cast<JunoProperties*>(juno_alloc(sizeof(JunoProperties), 4));
+                  properties->count = 0;
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(properties));
+                }
+
+                static char* juno_properties_trim_left(char* text) {
+                  while (*text == ' ' || *text == '\\t' || *text == '\\f') text++;
+                  return text;
+                }
+
+                static void juno_properties_trim_right(char* text) {
+                  int32_t length = static_cast<int32_t>(strlen(text));
+                  while (length > 0) {
+                    char c = text[length - 1];
+                    if (c != ' ' && c != '\\t' && c != '\\f') break;
+                    text[--length] = '\\0';
+                  }
+                }
+
+                static bool juno_properties_put(JunoProperties* properties, char* line) {
+                  char* key = juno_properties_trim_left(line);
+                  juno_properties_trim_right(key);
+                  if (*key == '\\0' || *key == '#' || *key == '!') return true;
+
+                  char* separator = key;
+                  while (*separator != '\\0' && *separator != '=' && *separator != ':') separator++;
+                  if (*separator == '\\0') return true;
+                  *separator = '\\0';
+                  char* value = juno_properties_trim_left(separator + 1);
+                  juno_properties_trim_right(key);
+                  juno_properties_trim_right(value);
+
+                  size_t keyLength = strlen(key);
+                  size_t valueLength = strlen(value);
+                  if (keyLength == 0 || keyLength >= JUNO_PROPERTIES_KEY_CAPACITY
+                      || valueLength >= JUNO_PROPERTIES_VALUE_CAPACITY) return false;
+
+                  int32_t index = 0;
+                  while (index < properties->count && strcmp(properties->entries[index].key, key) != 0) index++;
+                  if (index == properties->count) {
+                    if (properties->count >= JUNO_PROPERTIES_MAX_ENTRIES) return false;
+                    properties->count++;
+                  }
+                  memcpy(properties->entries[index].key, key, keyLength + 1u);
+                  memcpy(properties->entries[index].value, value, valueLength + 1u);
+                  return true;
+                }
+
+                extern "C" void juno_properties_load(int32_t propertiesHandle, int32_t fileHandle) {
+                  File32* file = juno_sd_file(fileHandle);
+                  JunoProperties* properties = juno_properties(propertiesHandle);
+                  char line[JUNO_PROPERTIES_LINE_CAPACITY];
+                  int32_t length = 0;
+                  while (file->available() > 0) {
+                    int32_t value = file->read();
+                    if (value < 0) juno_panic();
+                    if (value == '\\r') continue;
+                    if (value == '\\n') {
+                      line[length] = '\\0';
+                      if (!juno_properties_put(properties, line)) juno_panic();
+                      length = 0;
+                    } else {
+                      if (length >= JUNO_PROPERTIES_LINE_CAPACITY - 1) juno_panic();
+                      line[length++] = static_cast<char>(value);
+                    }
+                  }
+                  if (length > 0) {
+                    line[length] = '\\0';
+                    if (!juno_properties_put(properties, line)) juno_panic();
+                  }
+                }
+
+                extern "C" int32_t juno_properties_get(int32_t handle, const char* key) {
+                  JunoProperties* properties = juno_properties(handle);
+                  for (int32_t i = 0; i < properties->count; i++) {
+                    if (strcmp(properties->entries[i].key, key) == 0) {
+                      return static_cast<int32_t>(reinterpret_cast<intptr_t>(properties->entries[i].value));
+                    }
+                  }
+                  return 0;
+                }
+
+                extern "C" int32_t juno_properties_get_default(
+                    int32_t handle, const char* key, const char* defaultValue) {
+                  int32_t value = juno_properties_get(handle, key);
+                  return value == 0
+                      ? static_cast<int32_t>(reinterpret_cast<intptr_t>(defaultValue))
+                      : value;
+                }
+
+                extern "C" int32_t juno_properties_size(int32_t handle) {
+                  return juno_properties(handle)->count;
+                }
+                """;
     }
 
     /**

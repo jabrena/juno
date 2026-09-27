@@ -71,8 +71,8 @@ public sealed interface IrInstruction {
     /**
      * A call to a hardware operation; {@code receiver} is present only for instance-style intrinsics.
      * {@code literalArguments} holds this call's {@code String}-typed arguments, in their own left-to-right
-     * order, resolved to compile-time literal text (Juno has no heap, so a string can never be a runtime
-     * value); {@code arguments} holds every other (numeric) argument, likewise in its own left-to-right order.
+     * order, resolved to compile-time literal text. {@code arguments} holds every other argument,
+     * including the explicitly supported runtime-String parameters, likewise in left-to-right order.
      */
     record IntrinsicCall(Optional<Value> target, Intrinsic intrinsic, Optional<Value> receiver,
                           List<Value> arguments, List<String> literalArguments) implements IrInstruction {
