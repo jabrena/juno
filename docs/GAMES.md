@@ -124,13 +124,13 @@ After Sega's 1982 vector arcade game, in landscape. It opens with a starfield ru
 
 ### Sundance
 
-<img src="images/games/sundance.png" alt="Sundance on the TFT shield" width="320">
+<img src="videos/games/sundance-cpu.gif" alt="Sundance on the TFT shield played by the CPU" width="320">
 
-After Cinematronics' 1979 vector arcade game, in landscape: two grids of three by three squares face each other in perspective, one above the other, and suns bounce between them, drifting to a neighboring square with every bounce. Tap a square of either grid to open its hatch (the same one in both grids) for a moment, and a sun landing on it falls through and is trapped; only two hatches can be open at once, and a small cross in each sun's color marks where it will land. Trap all the round's suns before the time runs out, and never let two suns collide: a collision bursts them and costs a life, and so does running out of time. Each round brings more suns, more of them at once, bouncing faster; every third round cleared earns a life back.
+After Cinematronics' 1979 vector arcade game, in landscape: two grids of three by three squares face each other in perspective, one above the other, and suns bounce between them, drifting to a neighboring square with every bounce. The initial cover leads to a **HUMAN** or **CPU** choice; the CPU anticipates landings but deliberately mistimes some hatches, and tapping the header switches pilot during play. Tap a square of either grid to open its hatch (the same one in both grids) for a moment, and a sun landing on it falls through and is trapped; only two hatches can be open at once, and a small cross in each sun's color marks where it will land. Trap all the round's suns before the time runs out, and never let two suns collide: a collision bursts them and costs a life, and so does running out of time. Each round brings more suns, more of them at once, bouncing faster; every third round cleared earns a life back.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Sundance
+  -Djuno.main=io.github.jabrena.juno.games.sundance.Sundance
 ```
 
 ### Space Paranoids

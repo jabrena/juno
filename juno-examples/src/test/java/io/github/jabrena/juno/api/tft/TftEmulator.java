@@ -65,18 +65,77 @@ final class TftEmulator {
                     throw exception;
                 }
             }
-            int width = (int) shield.getMethod("width").invoke(null);
-            int height = (int) shield.getMethod("height").invoke(null);
-            int stride = gpio.getField("STRIDE").getInt(null);
-            int[] framebuffer = (int[]) gpio.getField("FRAMEBUFFER").get(null);
-            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    image.setRGB(x, y, toRgb(framebuffer[y * stride + x]));
+            return capture(gpio, shield);
+        }
+    }
+
+    /** Runs a program once and captures frames at a fixed simulated-time interval. */
+    static List<BufferedImage> record(String mainClass, int stopAtMillis, int frameMillis, List<Tap> taps)
+            throws Exception {
+        List<BufferedImage> frames = new ArrayList<>();
+        try (URLClassLoader loader = isolatedLoader()) {
+            Class<?> clock = loader.loadClass("io.github.jabrena.juno.api.Clock");
+            Class<?> delay = loader.loadClass("io.github.jabrena.juno.api.Delay");
+            Class<?> gpio = loader.loadClass("io.github.jabrena.juno.api.io.Gpio");
+            Class<?> shield = loader.loadClass("io.github.jabrena.juno.api.tft.TftTouchShield");
+            Method elapsed = clock.getMethod("elapsed");
+            Field touch = gpio.getField("touch");
+            Field rotation = shield.getDeclaredField("rotation");
+            rotation.setAccessible(true);
+            int[] nextFrame = {0};
+
+            Runnable script = () -> {
+                try {
+                    int now = (int) elapsed.invoke(null);
+                    Tap current = currentTap(taps, now);
+                    touch.set(null, current == null ? null : toPanel(current, rotation.getInt(null)));
+                    if ((int) shield.getMethod("width").invoke(null) > 0) {
+                        while (now >= nextFrame[0] && nextFrame[0] <= stopAtMillis) {
+                            frames.add(capture(gpio, shield));
+                            nextFrame[0] = nextFrame[0] + frameMillis;
+                        }
+                    }
+                    if (now >= stopAtMillis) {
+                        throw new Stop();
+                    }
+                } catch (ReflectiveOperationException exception) {
+                    throw new IllegalStateException(exception);
+                }
+            };
+            delay.getField("afterAdvance").set(null, script);
+            try {
+                loader.loadClass(mainClass).getMethod("main", String[].class).invoke(null, (Object) new String[0]);
+            } catch (InvocationTargetException exception) {
+                if (!(exception.getCause() instanceof Stop)) {
+                    throw exception;
                 }
             }
-            return image;
         }
+        return frames;
+    }
+
+    private static Tap currentTap(List<Tap> taps, int now) {
+        Tap current = null;
+        for (Tap tap : taps) {
+            if (now >= tap.atMillis() && now < tap.atMillis() + TAP_MILLIS) {
+                current = tap;
+            }
+        }
+        return current;
+    }
+
+    private static BufferedImage capture(Class<?> gpio, Class<?> shield) throws ReflectiveOperationException {
+        int width = (int) shield.getMethod("width").invoke(null);
+        int height = (int) shield.getMethod("height").invoke(null);
+        int stride = gpio.getField("STRIDE").getInt(null);
+        int[] framebuffer = (int[]) gpio.getField("FRAMEBUFFER").get(null);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                image.setRGB(x, y, toRgb(framebuffer[y * stride + x]));
+            }
+        }
+        return image;
     }
 
     /** Converts a screen position in the given rotation back to portrait panel coordinates. */

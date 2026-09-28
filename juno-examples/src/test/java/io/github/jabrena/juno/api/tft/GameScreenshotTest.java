@@ -62,7 +62,7 @@ class GameScreenshotTest {
                 game("games.SlotMachine", "slot-machine", "500:160,285 end:5000"),
                 game("games.Solitaire", "solitaire", "500:120,160 end:6000"),
                 game("games.startrek.StarTrek", "star-trek", "5000:160,130 5500:85,140 8000:200,60 8080:200,60 8160:200,60 8240:200,60 8320:200,60 8400:200,60 8480:200,60 8560:200,60 8640:200,60 8720:200,60 8800:200,60 8880:200,60 8960:200,60 9040:200,60 9120:200,60 9200:200,60 9280:200,60 9360:200,60 9440:200,60 9520:200,60 9700:270,120 end:9780"),
-                game("games.Sundance", "sundance", "500:160,130 5080:160,205 end:5200"),
+                game("games.sundance.Sundance", "sundance", "500:160,130 1000:230,140 end:9000"),
                 game("games.spaceparanoids.SpaceParanoids", "space-paranoids", "5500:160,130 6000:85,140 end:14500"),
                 game("games.starwars.StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
                 game("games.Tempest", "tempest", "500:120,160 end:6000"),

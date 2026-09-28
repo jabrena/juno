@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games;
+package io.github.jabrena.juno.games.sundance;
 
 import static io.github.jabrena.juno.api.tft.Internals.call;
 import static io.github.jabrena.juno.api.tft.Internals.callBoolean;
@@ -43,12 +43,12 @@ class SundanceTest {
         lines = new short[2 * 180 * 5];
         suns = new int[6 * STRIDE];
         hatches = new int[9];
-        set(GAME, "score", 0);
-        set(GAME, "round", 1);
-        set(GAME, "lives", 3);
-        set(GAME, "shown", 0);
-        set(GAME, "built", 0);
-        call(GAME, "startRound", suns, hatches);
+        set(Session.class, "score", 0);
+        set(Session.class, "round", 1);
+        set(Session.class, "lives", 3);
+        set(DisplayList.class, "shown", 0);
+        set(DisplayList.class, "built", 0);
+        call(Session.class, "startRound", suns, hatches);
     }
 
     @Test
@@ -57,13 +57,13 @@ class SundanceTest {
             for (int h = 0; h <= 1; h++) {
                 float u = cell % 3 + 0.5f;
                 float d = cell / 3 + 0.5f;
-                int x = callInt(GAME, "screenX", u, d);
-                int y = callInt(GAME, "screenY", d, (float) h);
-                assertThat(callInt(GAME, "cellAt", x, y)).as("square %d of grid %d", cell, h).isEqualTo(cell);
+                int x = callInt(Grid.class, "screenX", u, d);
+                int y = callInt(Grid.class, "screenY", d, (float) h);
+                assertThat(callInt(Grid.class, "cellAt", x, y)).as("square %d of grid %d", cell, h).isEqualTo(cell);
             }
         }
-        assertThat(callInt(GAME, "cellAt", 160, 130)).as("between the grids").isEqualTo(-1);
-        assertThat(callInt(GAME, "cellAt", 4, 225)).as("beside the lower grid").isEqualTo(-1);
+        assertThat(callInt(Grid.class, "cellAt", 160, 130)).as("between the grids").isEqualTo(-1);
+        assertThat(callInt(Grid.class, "cellAt", 4, 225)).as("beside the lower grid").isEqualTo(-1);
     }
 
     @Test
@@ -71,11 +71,11 @@ class SundanceTest {
         noMoreSuns();
         int sun = place(0, 4, 4, 0);
         suns[sun * STRIDE + T] = 39;
-        call(GAME, "openHatch", hatches, 4);
+        call(Controls.class, "openHatch", hatches, 4);
         step();
         assertThat(suns[sun * STRIDE + STATE]).isEqualTo(TRAPPED);
-        assertThat(getInt(GAME, "trapped")).isEqualTo(1);
-        assertThat(getInt(GAME, "score")).isEqualTo(100);
+        assertThat(getInt(Session.class, "trapped")).isEqualTo(1);
+        assertThat(getInt(Session.class, "score")).isEqualTo(100);
     }
 
     @Test
@@ -83,7 +83,7 @@ class SundanceTest {
         noMoreSuns();
         int sun = place(0, 0, 0, 1);
         suns[sun * STRIDE + T] = 39;
-        call(GAME, "openHatch", hatches, 8);
+        call(Controls.class, "openHatch", hatches, 8);
         step();
         int b = sun * STRIDE;
         assertThat(suns[b + STATE]).isEqualTo(FLYING);
@@ -95,7 +95,7 @@ class SundanceTest {
 
     @Test
     void aHatchStaysOpenForAMoment() {
-        call(GAME, "openHatch", hatches, 2);
+        call(Controls.class, "openHatch", hatches, 2);
         for (int i = 0; i < 11; i++) {
             step();
         }
@@ -106,11 +106,11 @@ class SundanceTest {
 
     @Test
     void openingAThirdHatchClosesTheOldest() {
-        call(GAME, "openHatch", hatches, 0);
+        call(Controls.class, "openHatch", hatches, 0);
         step();
-        call(GAME, "openHatch", hatches, 1);
+        call(Controls.class, "openHatch", hatches, 1);
         step();
-        call(GAME, "openHatch", hatches, 2);
+        call(Controls.class, "openHatch", hatches, 2);
         assertThat(hatches[0]).isZero();
         assertThat(hatches[1]).isPositive();
         assertThat(hatches[2]).isPositive();
@@ -121,10 +121,10 @@ class SundanceTest {
         noMoreSuns();
         int a = place(0, 0, 2, 1);
         int b = place(1, 2, 0, 0);
-        for (int i = 0; i < 40 && getInt(GAME, "lives") == 3; i++) {
+        for (int i = 0; i < 40 && getInt(Session.class, "lives") == 3; i++) {
             step();
         }
-        assertThat(getInt(GAME, "lives")).isEqualTo(2);
+        assertThat(getInt(Session.class, "lives")).isEqualTo(2);
         assertThat(suns[a * STRIDE + STATE]).isEqualTo(BURST);
         assertThat(suns[b * STRIDE + STATE]).isEqualTo(BURST);
     }
@@ -137,31 +137,31 @@ class SundanceTest {
         for (int i = 0; i < 39; i++) {
             step();
         }
-        assertThat(callInt(GAME, "count", suns, FLYING)).isEqualTo(2);
-        assertThat(getInt(GAME, "lives")).isEqualTo(3);
+        assertThat(callInt(Session.class, "count", suns, FLYING)).isEqualTo(2);
+        assertThat(getInt(Session.class, "lives")).isEqualTo(3);
     }
 
     @Test
     void sunsAreReleasedUpToTheRoundsLimit() {
-        set(GAME, "round", 5);
-        call(GAME, "startRound", suns, hatches);
-        assertThat(getInt(GAME, "quota")).isEqualTo(8);
+        set(Session.class, "round", 5);
+        call(Session.class, "startRound", suns, hatches);
+        assertThat(getInt(Session.class, "quota")).isEqualTo(8);
         int most = 0;
         for (int i = 0; i < 1000; i++) {
             step();
-            most = Math.max(most, callInt(GAME, "count", suns, FLYING));
+            most = Math.max(most, callInt(Session.class, "count", suns, FLYING));
         }
         assertThat(most).isEqualTo(4);
-        assertThat(getInt(GAME, "released")).isEqualTo(8);
+        assertThat(getInt(Session.class, "released")).isEqualTo(8);
     }
 
     @Test
     void aRoundIsClearedOnceEverySunIsGone() {
         noMoreSuns();
         place(0, 4, 4, 0);
-        assertThat(callBoolean(GAME, "roundCleared", (Object) suns)).isFalse();
+        assertThat(callBoolean(Session.class, "roundCleared", (Object) suns)).isFalse();
         suns[STATE] = 0;
-        assertThat(callBoolean(GAME, "roundCleared", (Object) suns)).isTrue();
+        assertThat(callBoolean(Session.class, "roundCleared", (Object) suns)).isTrue();
     }
 
     @Test
@@ -169,7 +169,7 @@ class SundanceTest {
         for (int i = 0; i < 1500; i++) {
             step();
         }
-        assertThat(getInt(GAME, "timeLeft")).isZero();
+        assertThat(getInt(Session.class, "timeLeft")).isZero();
     }
 
     @Test
@@ -181,11 +181,11 @@ class SundanceTest {
         suns[1 * STRIDE + FROM] = 10;
         suns[1 * STRIDE + TO] = 225;
         suns[1 * STRIDE + 7] = 1;
-        call(GAME, "openHatch", hatches, 6);
-        call(GAME, "render", lines, suns, hatches);
-        int built = getInt(GAME, "shown");
+        call(Controls.class, "openHatch", hatches, 6);
+        call(SceneRenderer.class, "render", lines, suns, hatches);
+        int built = getInt(DisplayList.class, "shown");
         assertThat(built).isPositive();
-        int base = getInt(GAME, "front") * 180 * 5;
+        int base = getInt(DisplayList.class, "front") * 180 * 5;
         for (int i = 0; i < built; i++) {
             for (int k = 0; k < 4; k = k + 2) {
                 assertThat((int) lines[base + i * 5 + k]).isBetween(0, 319);
@@ -202,29 +202,19 @@ class SundanceTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7, 8})
     void anAutopilotClearsWholeRounds(int round) {
-        set(GAME, "round", round);
-        call(GAME, "startRound", suns, hatches);
-        int lastTap = -100;
-        java.util.Random sloppy = new java.util.Random(round);
+        set(Session.class, "round", round);
+        call(Session.class, "startRound", suns, hatches);
+        set(Controls.class, "autopilot", true);
         int lost = 0;
         for (int frame = 0; frame < 1500; frame++) {
-            set(GAME, "frame", frame);
-            if (frame - lastTap >= 6) {
-                int cell = nextLanding();
-                if (cell >= 0) {
-                    if (sloppy.nextInt(100) < 30) {
-                        cell = (cell + 1 + sloppy.nextInt(8)) % 9;
-                    }
-                    call(GAME, "openHatch", hatches, cell);
-                    lastTap = frame;
-                }
-            }
-            int before = getInt(GAME, "lives");
+            set(Session.class, "frame", frame);
+            call(Controls.class, "fly", suns, hatches);
+            int before = getInt(Session.class, "lives");
             step();
-            call(GAME, "render", lines, suns, hatches);
-            lost = lost + before - getInt(GAME, "lives");
-            set(GAME, "lives", 3);
-            if (callBoolean(GAME, "roundCleared", (Object) suns)) {
+            call(SceneRenderer.class, "render", lines, suns, hatches);
+            lost = lost + before - getInt(Session.class, "lives");
+            set(Session.class, "lives", 3);
+            if (callBoolean(Session.class, "roundCleared", (Object) suns)) {
                 assertThat(lost).as("lives lost in round %d", round).isLessThan(3);
                 return;
             }
@@ -232,27 +222,20 @@ class SundanceTest {
         throw new AssertionError("round " + round + " not cleared");
     }
 
-    /** The closed hatch the next sun to land is heading for, if it lands within a few frames. */
-    private int nextLanding() {
-        int best = -1;
-        int soonest = 8;
-        for (int slot = 0; slot < 6; slot++) {
-            int b = slot * STRIDE;
-            int left = suns[b + DUR] - suns[b + T];
-            if (suns[b + STATE] == FLYING && left <= soonest && hatches[suns[b + TO]] == 0) {
-                best = suns[b + TO];
-                soonest = left;
-            }
-        }
-        return best;
+    @Test
+    void thePilotScreenHasAHumanAndACpuButton() {
+        assertThat(callInt(Controls.class, "choiceAt", 80, 140)).isZero();
+        assertThat(callInt(Controls.class, "choiceAt", 230, 140)).isEqualTo(1);
+        assertThat(callInt(Controls.class, "choiceAt", 160, 140)).isEqualTo(-1);
+        assertThat(callInt(Controls.class, "choiceAt", 80, 40)).isEqualTo(-1);
     }
 
     private void step() {
-        call(GAME, "step", suns, hatches);
+        call(Session.class, "step", suns, hatches);
     }
 
     private void noMoreSuns() {
-        set(GAME, "released", getInt(GAME, "quota"));
+        set(Session.class, "released", getInt(Session.class, "quota"));
     }
 
     /** Puts a sun at the start of a crossing from one square to another. */
