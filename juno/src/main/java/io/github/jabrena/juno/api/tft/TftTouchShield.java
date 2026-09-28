@@ -62,25 +62,12 @@ public final class TftTouchShield {
     public static final int CHAR_HEIGHT = 8;
 
     // Display bus: control lines on A0-A4, data bits 0-1 on D8-D9 and bits 2-7 on D2-D7.
+    // Package-private: shared with TftBus (PIN_RS/PIN_WR) and TftTouch (PIN_RS/PIN_CS/PIN_WR).
     private static final int PIN_RD = 14;    // A0
-    private static final int PIN_WR = 15;    // A1
-    private static final int PIN_RS = 16;    // A2, command (low) / data (high)
-    private static final int PIN_CS = 17;    // A3
+    static final int PIN_WR = 15;    // A1
+    static final int PIN_RS = 16;    // A2, command (low) / data (high)
+    static final int PIN_CS = 17;    // A3
     private static final int PIN_RESET = 18; // A4
-    private static final int PIN_D0 = 8;
-    private static final int PIN_D1 = 9;
-    private static final int PIN_D2 = 2;
-    private static final int PIN_D3 = 3;
-    private static final int PIN_D4 = 4;
-    private static final int PIN_D5 = 5;
-    private static final int PIN_D6 = 6;
-    private static final int PIN_D7 = 7;
-
-    // Resistive touch panel, sharing the display bus pins above.
-    private static final int PIN_TOUCH_YP = 17; // A3, analog
-    private static final int PIN_TOUCH_XM = 16; // A2, analog
-    private static final int PIN_TOUCH_YM = 9;
-    private static final int PIN_TOUCH_XP = 8;
 
     // ELEGOO's published calibration for the 2.8" panel (raw ADC readings at the screen edges). Raw X
     // grows with the display's x while raw Y runs opposite to its y, as confirmed on real hardware.
@@ -90,9 +77,6 @@ public final class TftTouchShield {
     private static final int DEFAULT_TOUCH_MAX_Y = 920;
     private static final int MIN_PRESSURE = 10;
     private static final int MAX_PRESSURE = 1000;
-    // The touch pins double as display bus pins, so they can still hold charge from drawing when
-    // they switch to analog inputs; a longer settle plus two agreeing samples filters that out.
-    private static final int TOUCH_SETTLE_MICROS = 100;
     private static final int TOUCH_TOLERANCE = 16;
 
     // ILI9341 commands and the flags this driver sets on them.
@@ -100,9 +84,10 @@ public final class TftTouchShield {
     private static final int SLEEP_OUT = 0x11;
     private static final int DISPLAY_OFF = 0x28;
     private static final int DISPLAY_ON = 0x29;
-    private static final int COLUMN_ADDRESS_SET = 0x2A;
-    private static final int PAGE_ADDRESS_SET = 0x2B;
-    private static final int MEMORY_WRITE = 0x2C;
+    // Package-private: shared with TftBus.setAddressWindow.
+    static final int COLUMN_ADDRESS_SET = 0x2A;
+    static final int PAGE_ADDRESS_SET = 0x2B;
+    static final int MEMORY_WRITE = 0x2C;
     private static final int MEMORY_ACCESS_CONTROL = 0x36;
     private static final int PIXEL_FORMAT = 0x3A;
     private static final int FRAME_CONTROL = 0xB1;
@@ -125,8 +110,6 @@ public final class TftTouchShield {
     private static int textSize;
     private static int textColor;
     private static int textBackground;
-    // Last byte driven onto the data pins, or -1 when their levels are unknown (after touch reads).
-    private static int busData;
 
     private static int touchMinX;
     private static int touchMaxX;
@@ -156,7 +139,7 @@ public final class TftTouchShield {
         Gpio.digitalWrite(PIN_WR, true);
         Gpio.digitalWrite(PIN_RS, true);
         Gpio.digitalWrite(PIN_CS, true);
-        restoreDataPins();
+        TftBus.restoreDataPins();
 
         Gpio.digitalWrite(PIN_RESET, true);
         Delay.millis(5);
@@ -166,19 +149,19 @@ public final class TftTouchShield {
         Delay.millis(150);
         Gpio.digitalWrite(PIN_CS, false);
 
-        command(SOFT_RESET);
+        TftBus.command(SOFT_RESET);
         Delay.millis(50);
-        command(DISPLAY_OFF);
-        command8(POWER_CONTROL_1, 0x23);
-        command8(POWER_CONTROL_2, 0x10);
-        command16(VCOM_CONTROL_1, 0x2B2B);
-        command8(VCOM_CONTROL_2, 0xC0);
-        command8(PIXEL_FORMAT, PIXEL_FORMAT_16_BIT);
-        command16(FRAME_CONTROL, 0x001B);
-        command8(ENTRY_MODE, 0x07);
-        command(SLEEP_OUT);
+        TftBus.command(DISPLAY_OFF);
+        TftBus.command8(POWER_CONTROL_1, 0x23);
+        TftBus.command8(POWER_CONTROL_2, 0x10);
+        TftBus.command16(VCOM_CONTROL_1, 0x2B2B);
+        TftBus.command8(VCOM_CONTROL_2, 0xC0);
+        TftBus.command8(PIXEL_FORMAT, PIXEL_FORMAT_16_BIT);
+        TftBus.command16(FRAME_CONTROL, 0x001B);
+        TftBus.command8(ENTRY_MODE, 0x07);
+        TftBus.command(SLEEP_OUT);
         Delay.millis(150);
-        command(DISPLAY_ON);
+        TftBus.command(DISPLAY_ON);
         Delay.millis(50);
 
         setRotation(PORTRAIT);
@@ -211,7 +194,7 @@ public final class TftTouchShield {
             width = NATIVE_HEIGHT;
             height = NATIVE_WIDTH;
         }
-        command8(MEMORY_ACCESS_CONTROL, madctl);
+        TftBus.command8(MEMORY_ACCESS_CONTROL, madctl);
     }
 
     /** Current width in pixels, for the current rotation. */
@@ -226,90 +209,47 @@ public final class TftTouchShield {
 
     /** Packs 8-bit-per-channel {@code red}, {@code green}, {@code blue} into an RGB565 color. */
     public static int color(int red, int green, int blue) {
-        return ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ((blue & 0xFF) >> 3);
+        return TftGraphics.color(red, green, blue);
     }
 
     /** Fills the whole screen with {@code color}. */
     public static void fillScreen(int color) {
-        fillRect(0, 0, width, height, color);
+        TftGraphics.fillScreen(color);
     }
 
     /** Sets the pixel at ({@code x}, {@code y}) to {@code color}; off-screen pixels are ignored. */
     public static void drawPixel(int x, int y, int color) {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            return;
-        }
-        setAddressWindow(x, y, x, y);
-        writePixels(color, 1);
+        TftGraphics.drawPixel(x, y, color);
     }
 
     /** Fills a {@code w}x{@code h} rectangle whose top-left corner is ({@code x}, {@code y}), clipped to the screen. */
     public static void fillRect(int x, int y, int w, int h, int color) {
-        int left = Math.max(x, 0);
-        int top = Math.max(y, 0);
-        int right = Math.min(x + w, width) - 1;
-        int bottom = Math.min(y + h, height) - 1;
-        if (right < left || bottom < top) {
-            return;
-        }
-        setAddressWindow(left, top, right, bottom);
-        writePixels(color, (right - left + 1) * (bottom - top + 1));
+        TftGraphics.fillRect(x, y, w, h, color);
     }
 
     /** Draws a horizontal line of {@code w} pixels starting at ({@code x}, {@code y}). */
     public static void drawHorizontalLine(int x, int y, int w, int color) {
-        fillRect(x, y, w, 1, color);
+        TftGraphics.drawHorizontalLine(x, y, w, color);
     }
 
     /** Draws a vertical line of {@code h} pixels starting at ({@code x}, {@code y}). */
     public static void drawVerticalLine(int x, int y, int h, int color) {
-        fillRect(x, y, 1, h, color);
+        TftGraphics.drawVerticalLine(x, y, h, color);
     }
 
     /** Draws the 1-pixel outline of a {@code w}x{@code h} rectangle whose top-left corner is ({@code x}, {@code y}). */
     public static void drawRect(int x, int y, int w, int h, int color) {
-        drawHorizontalLine(x, y, w, color);
-        drawHorizontalLine(x, y + h - 1, w, color);
-        drawVerticalLine(x, y, h, color);
-        drawVerticalLine(x + w - 1, y, h, color);
+        TftGraphics.drawRect(x, y, w, h, color);
     }
 
     /** Fills a circle of radius {@code r} centered on ({@code cx}, {@code cy}), clipped to the screen. */
     public static void fillCircle(int cx, int cy, int r, int color) {
-        int dx = r;
-        for (int dy = 0; dy <= r; dy++) {
-            while (dx * dx + dy * dy > r * r) {
-                dx = dx - 1;
-            }
-            drawHorizontalLine(cx - dx, cy - dy, 2 * dx + 1, color);
-            if (dy != 0) {
-                drawHorizontalLine(cx - dx, cy + dy, 2 * dx + 1, color);
-            }
-        }
+        TftGraphics.fillCircle(cx, cy, r, color);
     }
 
     /** Draws the 1-pixel outline of a circle of radius {@code r} centered on ({@code cx}, {@code cy}). */
     public static void drawCircle(int cx, int cy, int r, int color) {
-        int x = r;
-        int y = 0;
-        int error = 1 - r;
-        while (x >= y) {
-            drawPixel(cx + x, cy + y, color);
-            drawPixel(cx + y, cy + x, color);
-            drawPixel(cx - y, cy + x, color);
-            drawPixel(cx - x, cy + y, color);
-            drawPixel(cx - x, cy - y, color);
-            drawPixel(cx - y, cy - x, color);
-            drawPixel(cx + y, cy - x, color);
-            drawPixel(cx + x, cy - y, color);
-            y = y + 1;
-            if (error < 0) {
-                error = error + 2 * y + 1;
-            } else {
-                x = x - 1;
-                error = error + 2 * (y - x) + 1;
-            }
-        }
+        TftGraphics.drawCircle(cx, cy, r, color);
     }
 
     /**
@@ -319,16 +259,12 @@ public final class TftTouchShield {
      * on screen. Push exactly {@code w * h} pixels before any other drawing call.
      */
     public static boolean beginPixels(int x, int y, int w, int h) {
-        if (w <= 0 || h <= 0 || x < 0 || y < 0 || x + w > width || y + h > height) {
-            return false;
-        }
-        setAddressWindow(x, y, x + w - 1, y + h - 1);
-        return true;
+        return TftGraphics.beginPixels(x, y, w, h);
     }
 
     /** Writes the next pixel of the window opened by {@link #beginPixels}. */
     public static void pushPixel(int color) {
-        writePixel(color);
+        TftGraphics.pushPixel(color);
     }
 
     /** Moves the text cursor so the next character's top-left corner is at ({@code x}, {@code y}) pixels. */
@@ -394,14 +330,14 @@ public final class TftTouchShield {
      * current rotation. Always leaves the display bus ready for drawing again.
      */
     public static boolean readTouch() {
-        touchPressure = readTouchPressure();
+        touchPressure = TftTouch.readTouchPressure();
         boolean pressed = touchPressure >= MIN_PRESSURE && touchPressure <= MAX_PRESSURE;
         if (pressed) {
-            int firstX = readTouchRawX();
-            int firstY = readTouchRawY();
-            int secondX = readTouchRawX();
-            int secondY = readTouchRawY();
-            int secondPressure = readTouchPressure();
+            int firstX = TftTouch.readTouchRawX();
+            int firstY = TftTouch.readTouchRawY();
+            int secondX = TftTouch.readTouchRawX();
+            int secondY = TftTouch.readTouchRawY();
+            int secondPressure = TftTouch.readTouchPressure();
             // A real press gives steady readings; residual charge or a glancing contact does not.
             pressed = secondPressure >= MIN_PRESSURE && secondPressure <= MAX_PRESSURE
                     && Math.abs(firstX - secondX) <= TOUCH_TOLERANCE
@@ -412,13 +348,13 @@ public final class TftTouchShield {
                 touchPressure = 0;
             }
         }
-        restoreBusAfterTouch();
+        TftTouch.restoreBusAfterTouch();
         if (!pressed) {
             return false;
         }
 
-        int portraitX = clamp(map(touchRawX, touchMinX, touchMaxX, 0, NATIVE_WIDTH), 0, NATIVE_WIDTH - 1);
-        int portraitY = clamp(map(touchRawY, touchMinY, touchMaxY, 0, NATIVE_HEIGHT), 0, NATIVE_HEIGHT - 1);
+        int portraitX = TftTouch.clamp(TftTouch.map(touchRawX, touchMinX, touchMaxX, 0, NATIVE_WIDTH), 0, NATIVE_WIDTH - 1);
+        int portraitY = TftTouch.clamp(TftTouch.map(touchRawY, touchMinY, touchMaxY, 0, NATIVE_HEIGHT), 0, NATIVE_HEIGHT - 1);
         touchX = portraitX;
         touchY = portraitY;
         if (rotation == LANDSCAPE) {
@@ -498,7 +434,7 @@ public final class TftTouchShield {
         if (x < 0 || y < 0 || x + cellWidth > width || y + cellHeight > height) {
             return;
         }
-        setAddressWindow(x, y, x + cellWidth - 1, y + cellHeight - 1);
+        TftBus.setAddressWindow(x, y, x + cellWidth - 1, y + cellHeight - 1);
         for (int row = 0; row < CHAR_HEIGHT; row++) {
             int rowBits = glyphRowBits(code, row);
             for (int repeat = 0; repeat < textSize; repeat++) {
@@ -508,7 +444,7 @@ public final class TftTouchShield {
                         color = textColor;
                     }
                     for (int dot = 0; dot < textSize; dot++) {
-                        writePixel(color);
+                        TftBus.writePixel(color);
                     }
                 }
             }
@@ -527,158 +463,5 @@ public final class TftTouchShield {
             }
         }
         return bits;
-    }
-
-    private static void setAddressWindow(int left, int top, int right, int bottom) {
-        command(COLUMN_ADDRESS_SET);
-        write16(left);
-        write16(right);
-        command(PAGE_ADDRESS_SET);
-        write16(top);
-        write16(bottom);
-        command(MEMORY_WRITE);
-    }
-
-    private static void writePixels(int color, int count) {
-        for (int i = 0; i < count; i++) {
-            writePixel(color);
-        }
-    }
-
-    private static void writePixel(int color) {
-        write8(color >> 8);
-        write8(color);
-    }
-
-    // Leaves RS high, so the parameter/pixel bytes that follow are sent as data.
-    private static void command(int value) {
-        Gpio.digitalWrite(PIN_RS, false);
-        write8(value);
-        Gpio.digitalWrite(PIN_RS, true);
-    }
-
-    private static void command8(int register, int value) {
-        command(register);
-        write8(value);
-    }
-
-    private static void command16(int register, int value) {
-        command(register);
-        write16(value);
-    }
-
-    private static void write16(int value) {
-        write8(value >> 8);
-        write8(value);
-    }
-
-    // Drives one byte onto the data pins and strobes WR, rewriting only the pins whose level changes.
-    private static void write8(int value) {
-        int data = value & 0xFF;
-        int changed = data ^ busData;
-        if (busData < 0) {
-            changed = 0xFF;
-        }
-        if (changed != 0) {
-            if ((changed & 0x01) != 0) {
-                Gpio.digitalWrite(PIN_D0, (data & 0x01) != 0);
-            }
-            if ((changed & 0x02) != 0) {
-                Gpio.digitalWrite(PIN_D1, (data & 0x02) != 0);
-            }
-            if ((changed & 0x04) != 0) {
-                Gpio.digitalWrite(PIN_D2, (data & 0x04) != 0);
-            }
-            if ((changed & 0x08) != 0) {
-                Gpio.digitalWrite(PIN_D3, (data & 0x08) != 0);
-            }
-            if ((changed & 0x10) != 0) {
-                Gpio.digitalWrite(PIN_D4, (data & 0x10) != 0);
-            }
-            if ((changed & 0x20) != 0) {
-                Gpio.digitalWrite(PIN_D5, (data & 0x20) != 0);
-            }
-            if ((changed & 0x40) != 0) {
-                Gpio.digitalWrite(PIN_D6, (data & 0x40) != 0);
-            }
-            if ((changed & 0x80) != 0) {
-                Gpio.digitalWrite(PIN_D7, (data & 0x80) != 0);
-            }
-            busData = data;
-        }
-        Gpio.digitalWrite(PIN_WR, false);
-        Gpio.digitalWrite(PIN_WR, true);
-    }
-
-    private static void restoreDataPins() {
-        Gpio.pinMode(PIN_D0, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D1, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D2, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D3, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D4, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D5, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D6, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D7, Gpio.OUTPUT);
-        busData = -1;
-    }
-
-    // Adafruit TouchScreen's approach: X+ to ground, Y- to VCC, then compare the two floating plates.
-    private static int readTouchPressure() {
-        Gpio.pinMode(PIN_TOUCH_XP, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_TOUCH_XP, false);
-        Gpio.pinMode(PIN_TOUCH_YM, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_TOUCH_YM, true);
-        Gpio.digitalWrite(PIN_TOUCH_XM, false);
-        Gpio.pinMode(PIN_TOUCH_XM, Gpio.INPUT);
-        Gpio.digitalWrite(PIN_TOUCH_YP, false);
-        Gpio.pinMode(PIN_TOUCH_YP, Gpio.INPUT);
-        Delay.micros(TOUCH_SETTLE_MICROS);
-        int z1 = Gpio.analogRead(PIN_TOUCH_XM);
-        int z2 = Gpio.analogRead(PIN_TOUCH_YP);
-        return 1023 - (z2 - z1);
-    }
-
-    // Drive the X plate end to end and read its voltage through the floating Y plate.
-    private static int readTouchRawX() {
-        Gpio.pinMode(PIN_TOUCH_YP, Gpio.INPUT);
-        Gpio.pinMode(PIN_TOUCH_YM, Gpio.INPUT);
-        Gpio.digitalWrite(PIN_TOUCH_YM, false);
-        Gpio.pinMode(PIN_TOUCH_XP, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_TOUCH_XM, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_TOUCH_XP, true);
-        Gpio.digitalWrite(PIN_TOUCH_XM, false);
-        Delay.micros(TOUCH_SETTLE_MICROS);
-        return 1023 - Gpio.analogRead(PIN_TOUCH_YP);
-    }
-
-    // Drive the Y plate end to end and read its voltage through the floating X plate.
-    private static int readTouchRawY() {
-        Gpio.pinMode(PIN_TOUCH_XP, Gpio.INPUT);
-        Gpio.pinMode(PIN_TOUCH_XM, Gpio.INPUT);
-        Gpio.digitalWrite(PIN_TOUCH_XP, false);
-        Gpio.pinMode(PIN_TOUCH_YP, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_TOUCH_YM, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_TOUCH_YP, true);
-        Gpio.digitalWrite(PIN_TOUCH_YM, false);
-        Delay.micros(TOUCH_SETTLE_MICROS);
-        return 1023 - Gpio.analogRead(PIN_TOUCH_XM);
-    }
-
-    // The touch pins double as RS, CS, and data bits 0-1; hand them back to the display bus.
-    private static void restoreBusAfterTouch() {
-        Gpio.pinMode(PIN_RS, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_CS, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_RS, true);
-        Gpio.digitalWrite(PIN_CS, false);
-        Gpio.digitalWrite(PIN_WR, true);
-        restoreDataPins();
-    }
-
-    private static int map(int value, int fromLow, int fromHigh, int toLow, int toHigh) {
-        return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
-    }
-
-    private static int clamp(int value, int low, int high) {
-        return Math.max(low, Math.min(value, high));
     }
 }
