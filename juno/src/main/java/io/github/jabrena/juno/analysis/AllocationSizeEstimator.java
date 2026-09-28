@@ -1,0 +1,137 @@
+package io.github.jabrena.juno.analysis;
+
+import io.github.jabrena.juno.classfile.FieldInfo;
+import io.github.jabrena.juno.classfile.JavaClass;
+import io.github.jabrena.juno.intrinsic.Intrinsic;
+import io.github.jabrena.juno.ir.ArrayElementType;
+import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.ir.IrMethod;
+import io.github.jabrena.juno.ir.JunoType;
+import io.github.jabrena.juno.ir.Value;
+import io.github.jabrena.juno.linker.Descriptor;
+import io.github.jabrena.juno.linker.ThrowableTypes;
+import io.github.jabrena.juno.RuntimeLimits;
+
+import java.util.List;
+import java.util.Map;
+
+/** Conservative worst-case byte-size estimates for heap allocations and stack frames. */
+final class AllocationSizeEstimator {
+    private AllocationSizeEstimator() {
+    }
+
+    static int allocationBytes(IrInstruction instruction, Map<String, JavaClass> classes) {
+        if (instruction instanceof IrInstruction.NewArray array) {
+            int alignment = elementSize(array.elementType());
+            return allocationUpperBound(array.length() * alignment, alignment);
+        }
+        if (instruction instanceof IrInstruction.NewObject object) {
+            int size = objectSize(classes.get(object.className()))
+                    + (ThrowableTypes.isThrowable(object.className(), classes) ? ThrowableTypes.HEADER_BYTES : 0);
+            int alignment = objectAlignment(classes.get(object.className()));
+            return allocationUpperBound(size, alignment);
+        }
+        if (instruction instanceof IrInstruction.NewMultiArray array) {
+            return multiArrayBytes(array.leafType(), array.dimensions());
+        }
+        if (instruction instanceof IrInstruction.IntrinsicCall call
+                && call.intrinsic() == Intrinsic.PROPERTIES_NEW) {
+            return allocationUpperBound(RuntimeLimits.PROPERTIES_STORAGE_BYTES, 4);
+        }
+        return 0;
+    }
+
+    static int descriptorSize(String descriptor) {
+        if (Descriptor.isLong(descriptor) || Descriptor.isDouble(descriptor)) return 8;
+        return 4;
+    }
+
+    static int estimatedFrameBytes(IrMethod method) {
+        Descriptor descriptor = Descriptor.parse(method.reference().descriptor());
+        boolean typedSlots = method.values().stream().anyMatch(value -> value.type() != JunoType.INT32)
+                || descriptor.parameters().stream().anyMatch(type -> Descriptor.isLong(type)
+                        || Descriptor.isFloat(type) || Descriptor.isDouble(type));
+        int bytes = Math.max(1, method.maxLocals()) * (typedSlots ? 8 : 4);
+        for (Value value : method.values()) {
+            bytes += switch (value.type()) {
+                case INT32, FLOAT32 -> 4;
+                case INT64, FLOAT64 -> 8;
+            };
+        }
+        return bytes + maximumTemporaryBytes(method);
+    }
+
+    private static int maximumTemporaryBytes(IrMethod method) {
+        int maximum = 0;
+        for (var block : method.blocks()) {
+            for (IrInstruction instruction : block.instructions()) {
+                int temporaryBytes = switch (instruction) {
+                    case IrInstruction.IntrinsicCall call ->
+                            (call.arguments().stream().mapToInt(argument -> argument.type().jvmSlots()).sum()
+                                    + (call.receiver().isPresent() ? 1 : 0)) * 4;
+                    case IrInstruction.LongBinary ignored -> 24;
+                    case IrInstruction.LongShift ignored -> 16;
+                    case IrInstruction.LongNegate ignored -> 8;
+                    case IrInstruction.DoubleToLong ignored -> 8;
+                    case IrInstruction.FloatToLong ignored -> 8;
+                    case IrInstruction.LongCompare ignored -> 16;
+                    default -> 0;
+                };
+                maximum = Math.max(maximum, temporaryBytes);
+            }
+        }
+        return maximum;
+    }
+
+    private static int multiArrayBytes(ArrayElementType leafType, List<Integer> dimensions) {
+        int total = 0;
+        int arraysAtLevel = 1;
+        for (int level = 0; level < dimensions.size(); level++) {
+            int elementSize = level == dimensions.size() - 1 ? elementSize(leafType) : 4;
+            total += arraysAtLevel * allocationUpperBound(dimensions.get(level) * elementSize, elementSize);
+            arraysAtLevel *= dimensions.get(level);
+        }
+        return total;
+    }
+
+    private static int allocationUpperBound(int size, int alignment) {
+        return Math.addExact(size, alignment - 1);
+    }
+
+    private static int objectSize(JavaClass javaClass) {
+        if (javaClass == null) {
+            return 1;
+        }
+        int offset = 0;
+        int maximumAlignment = 1;
+        for (FieldInfo field : javaClass.fields()) {
+            if (field.isStatic()) continue;
+            int size = descriptorSize(field.descriptor());
+            int alignment = Math.min(size, 8);
+            maximumAlignment = Math.max(maximumAlignment, alignment);
+            offset = align(offset, alignment) + size;
+        }
+        return Math.max(1, align(offset, maximumAlignment));
+    }
+
+    private static int objectAlignment(JavaClass javaClass) {
+        if (javaClass == null) return 1;
+        return javaClass.fields().stream()
+                .filter(field -> !field.isStatic())
+                .mapToInt(field -> Math.min(descriptorSize(field.descriptor()), 8))
+                .max().orElse(1);
+    }
+
+    private static int elementSize(ArrayElementType type) {
+        return switch (type) {
+            case BYTE -> 1;
+            case CHAR, SHORT -> 2;
+            case INT, REFERENCE, FLOAT -> 4;
+            case LONG, DOUBLE -> 8;
+        };
+    }
+
+    private static int align(int value, int alignment) {
+        return (value + alignment - 1) & -alignment;
+    }
+}
