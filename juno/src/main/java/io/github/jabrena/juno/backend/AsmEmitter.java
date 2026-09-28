@@ -118,7 +118,7 @@ final class AsmEmitter {
 
     /**
      * {@code ldr Rd,[sp,#imm]} only encodes offsets up to 4095; a method with enough live
-     * values/locals (see {@code LedMatrixSnake}) exceeds that easily. Past that, compute the address
+     * values/locals exceeds that easily. Past that, compute the address
      * in r12 (AAPCS "ip", always caller-saved/scratch, never used to hold a Java value here) instead.
      */
     void emitLoad(StringBuilder output, String destinationRegister, int offset) {

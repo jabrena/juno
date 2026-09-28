@@ -54,9 +54,8 @@ import java.util.Set;
  * lives in a fixed offset in its method's own stack frame (never in a register across instructions) —
  * see {@code FrameLayout}. This trades code density for a design that can't run out of registers
  * regardless of how many live values a method has, which matters once methods stop being
- * one-block-with-three-intrinsic-calls (see {@code LedMatrixSnake}, whose helper methods take up to 19
- * {@code int} parameters, and {@code LedMatrixAsciiScroll}, whose full-ASCII-font dispatch tree reaches
- * 116 methods). Registers are used only as scratch within a single instruction's codegen. Arena
+ * one-block-with-three-intrinsic-calls (helper methods with many {@code int} parameters, or
+ * {@code LedMatrixAsciiScroll}, whose full-ASCII-font dispatch tree reaches 116 methods). Registers are used only as scratch within a single instruction's codegen. Arena
  * objects and mutable static fields follow the same principle, without needing any class-file metadata
  * this backend doesn't already have: an object's fields are exactly whichever ones some
  * {@code LoadField}/{@code StoreField} in the whole program actually touches, laid out in
@@ -230,7 +229,7 @@ public final class CortexM4AsmBackend {
         }
         output.append("    push {r4-r11, lr}\n");
         if (frame.frameSize() > 0) {
-            // A plain immediate `sub sp,sp,#N` only encodes up to 4095, and Snake-sized frames exceed
+            // A plain immediate `sub sp,sp,#N` only encodes up to 4095, and large frames exceed
             // that; r12 (AAPCS "ip", always caller-saved/scratch) is free here without disturbing the
             // incoming r0-r3 parameters emitParameterSpill is about to read.
             asm.emitLoadImmediate(output, "r12", frame.frameSize());
