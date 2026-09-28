@@ -9,7 +9,8 @@ import io.github.jabrena.juno.CompileException;
  */
 public enum Board {
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi", "UNO R4 WiFi",
-            "arduino:renesas_uno:unor4wifi", true, true);
+            "arduino:renesas_uno:unor4wifi", true, true, false),
+    UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "UNO Q", "arduino:zephyr:unoq", false, false, true);
 
     public static final Board DEFAULT = UNO_R4_WIFI;
 
@@ -18,13 +19,16 @@ public enum Board {
     private final String fqbn;
     private final boolean hasLedMatrix;
     private final boolean hasWifi;
+    private final boolean zephyrCore;
 
-    Board(String apiClassName, String displayName, String fqbn, boolean hasLedMatrix, boolean hasWifi) {
+    Board(String apiClassName, String displayName, String fqbn, boolean hasLedMatrix, boolean hasWifi,
+          boolean zephyrCore) {
         this.apiClassName = apiClassName;
         this.displayName = displayName;
         this.fqbn = fqbn;
         this.hasLedMatrix = hasLedMatrix;
         this.hasWifi = hasWifi;
+        this.zephyrCore = zephyrCore;
     }
 
     /** {@code apiClassName} is a JVM-internal name, e.g. {@code io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi}. */
@@ -35,7 +39,7 @@ public enum Board {
             }
         }
         throw new CompileException("Unsupported @Board target: " + apiClassName.replace('/', '.')
-                + "; supported boards are ArduinoUnoR4WiFi");
+                + "; supported boards are ArduinoUnoR4WiFi and ArduinoUnoQ");
     }
 
     public String displayName() {
@@ -52,5 +56,14 @@ public enum Board {
 
     public boolean hasWifi() {
         return hasWifi;
+    }
+
+    /**
+     * Whether the board's Arduino core is built on Zephyr (the UNO Q), which provides its own
+     * {@code yield()} and inlines {@code delay()}/{@code delayMicroseconds()}, so generated code
+     * must reach those through shim functions rather than branching to them directly.
+     */
+    public boolean zephyrCore() {
+        return zephyrCore;
     }
 }

@@ -98,6 +98,26 @@ public final class BytecodeDecoder {
                     switchOffsets = List.copyOf(offsets);
                     length = cursor - offset;
                 }
+                case 196 -> {
+                    // wide: the next instruction takes a 16-bit local index (and, for iinc, a 16-bit
+                    // increment); it decodes as that instruction, the same as its narrow form.
+                    require(code, offset, 2, method);
+                    int widened = unsigned(code[offset + 1]);
+                    if (widened == 132) {
+                        require(code, offset, 6, method);
+                        operandA = unsignedShort(code, offset + 2);
+                        operandB = signedShort(code, offset + 4);
+                        length = 6;
+                    } else if ((widened >= 21 && widened <= 25) || (widened >= 54 && widened <= 58)) {
+                        require(code, offset, 4, method);
+                        operandA = unsignedShort(code, offset + 2);
+                        length = 4;
+                    } else {
+                        throw error(method, offset, "unsupported wide opcode 0x" + String.format("%02x", widened)
+                                + " (" + opcodeName(widened) + ")");
+                    }
+                    opcode = widened;
+                }
                 case 197 -> {
                     require(code, offset, 4, method);
                     operandA = unsignedShort(code, offset + 1);
@@ -203,6 +223,7 @@ public final class BytecodeDecoder {
             case 130 -> "ixor";
             case 131 -> "lxor";
             case 132 -> "iinc";
+            case 196 -> "wide";
             case 133 -> "i2l";
             case 134 -> "i2f";
             case 135 -> "i2d";

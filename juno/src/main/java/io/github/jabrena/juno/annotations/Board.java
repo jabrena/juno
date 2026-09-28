@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Declares which Arduino board a Juno program targets, e.g. {@code @Board(ArduinoUnoR4WiFi.class)} on
- * the entry-point class. Juno reads this annotation directly from the class file at compile time; it
+ * Declares which Arduino board a Juno program targets, e.g. {@code @Board(ArduinoUnoR4WiFi.class)} or
+ * {@code @Board(ArduinoUnoQ.class)} on the entry-point class. Juno reads this annotation directly from the class file at compile time; it
  * carries no runtime behavior. A class with no {@code @Board} annotation targets the UNO R4 WiFi by
  * default. The selected board gates board-specific intrinsics, such as {@code LedMatrix}, which only
  * the WiFi variant has.

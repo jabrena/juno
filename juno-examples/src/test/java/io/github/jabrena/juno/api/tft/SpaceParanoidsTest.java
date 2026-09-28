@@ -12,8 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Rules of Space Paranoids: the maze, ray casting, walls, shots, shields and pools, and an autopilot
- * that clears whole sectors through the game's own simulation and rendering.
+ * Rules of Space Paranoids: the maze, ray casting, walls, shots, shields and pools, the pilot screen,
+ * and the CPU driver that clears whole sectors through the game's own simulation and rendering.
  */
 class SpaceParanoidsTest {
     private static final Class<?> GAME = SpaceParanoids.class;
@@ -166,10 +166,11 @@ class SpaceParanoidsTest {
         assertThat(getInt(GAME, "score")).isEqualTo(100);
     }
 
-    /** An autopilot that hunts along the shortest path and shoots what it sees clears three sectors. */
+    /** The CPU driver hunts along the shortest path and shoots what it sees: it clears three sectors. */
     @Test
-    void anAutopilotClearsSectorAfterSector() {
+    void theCpuDriverClearsSectorAfterSector() {
         short[] route = new short[2 * SIZE * SIZE];
+        set(GAME, "autopilot", true);
         for (int level = 1; level <= 3; level++) {
             set(GAME, "level", level);
             call(GAME, "startLevel", maze, paths, fs, is);
@@ -179,10 +180,13 @@ class SpaceParanoidsTest {
                 if (getInt(GAME, "fireCooldown") > 0) {
                     set(GAME, "fireCooldown", getInt(GAME, "fireCooldown") - 1);
                 }
-                pilot(route);
+                call(GAME, "flyAutopilot", maze, route, fs, is);
                 call(GAME, "step", maze, paths, fs, is);
                 call(GAME, "render", maze, lines, depth, faces, fs, is);
-                assertThat(getInt(GAME, "shield")).as("sector %d, frame %d", level, frame).isGreaterThan(0);
+                if (getInt(GAME, "shield") <= 0) {
+                    // It is not a perfect driver: a lost tank costs a life, and the sector goes on.
+                    call(GAME, "respawn", maze, fs, is);
+                }
                 cleared = getInt(GAME, "huntersLeft") == 0;
             }
             assertThat(cleared).as("sector %d cleared within two minutes", level).isTrue();
@@ -190,78 +194,30 @@ class SpaceParanoidsTest {
         assertThat(getInt(GAME, "score")).isGreaterThan(8000);
     }
 
-    private void pilot(short[] route) {
-        float x = (float) get(GAME, "posX");
-        float z = (float) get(GAME, "posZ");
-        float angle = (float) get(GAME, "angle");
-        int aim = -1;
-        float nearest = 6f;
-        for (int slot = 0; slot < 30; slot++) {
-            int type = is[slot * I_STRIDE];
-            float ex = fs[slot * F_STRIDE] / (float) ONE;
-            float ez = fs[slot * F_STRIDE + 1] / (float) ONE;
-            float distance = (float) Math.hypot(ex - x, ez - z);
-            if (type >= 1 && type <= 3 && distance < nearest && callBoolean(GAME, "lineOfSight", maze, x, z, ex, ez)) {
-                nearest = distance;
-                aim = slot;
-            }
+    @Test
+    void theCpuDriverHeadsForAnEnergyPoolWhenItsShieldIsLow() {
+        corridor();
+        set(GAME, "posX", 1.5f);
+        set(GAME, "posZ", 1.5f);
+        call(GAME, "setAngle", 0f);
+        set(GAME, "shield", 30);
+        place(POOL, 5, 1);
+        place(HUNTER, 11, 1);
+        maze[SIZE + 9] = 1;
+        short[] route = new short[2 * SIZE * SIZE];
+        for (int frame = 0; frame < 200 && getInt(GAME, "shield") == 30; frame++) {
+            call(GAME, "flyAutopilot", maze, route, fs, is);
+            call(GAME, "step", maze, paths, fs, is);
         }
-        if (aim >= 0) {
-            float turn = wrap((float) Math.atan2(fs[aim * F_STRIDE + 1] / (float) ONE - z, fs[aim * F_STRIDE] / (float) ONE - x)
-                    - angle);
-            if (Math.abs(turn) > 0.05f) {
-                call(GAME, "setAngle", angle + Math.signum(turn) * Math.min(0.075f, Math.abs(turn)));
-            } else {
-                call(GAME, "fire", fs, is);
-            }
-            return;
-        }
-        int target = -1;
-        for (int type = 1; type <= 3 && target < 0; type++) {
-            for (int slot = 0; slot < 30 && target < 0; slot++) {
-                if (is[slot * I_STRIDE] == type) {
-                    target = slot;
-                }
-            }
-        }
-        if (target < 0) {
-            return;
-        }
-        call(GAME, "bfs", maze, route, (fs[target * F_STRIDE + 1] / ONE) * SIZE + fs[target * F_STRIDE] / ONE);
-        int here = (int) z * SIZE + (int) x;
-        int next = here;
-        for (int d = 0; d < 4; d++) {
-            int cell = here + (d == 0 ? 1 : d == 2 ? -1 : 0) + (d == 1 ? SIZE : d == 3 ? -SIZE : 0);
-            if (maze[cell] == 0 && route[cell] >= 0 && route[cell] < route[next]) {
-                next = cell;
-            }
-        }
-        if (next == here) {
-            return;
-        }
-        float tx = next % SIZE + 0.5f;
-        float tz = next / SIZE + 0.5f;
-        boolean corner = Math.abs(tx - x) > 0.2f && Math.abs(tz - z) > 0.2f;
-        if (corner && Math.hypot(here % SIZE + 0.5f - x, here / SIZE + 0.5f - z) > 0.08f) {
-            tx = here % SIZE + 0.5f;
-            tz = here / SIZE + 0.5f;
-        }
-        float turn = wrap((float) Math.atan2(tz - z, tx - x) - angle);
-        if (Math.abs(turn) > 0.12f) {
-            call(GAME, "setAngle", angle + Math.signum(turn) * Math.min(0.075f, Math.abs(turn)));
-        } else {
-            call(GAME, "drive", maze, 0.07f);
-        }
+        assertThat(getInt(GAME, "shield")).as("picked up the pool").isEqualTo(65);
     }
 
-    private static float wrap(float angle) {
-        while (angle > Math.PI) {
-            angle = angle - (float) (2 * Math.PI);
-        }
-        while (angle < -Math.PI) {
-            angle = angle + (float) (2 * Math.PI);
-        }
-        return angle;
+    @Test
+    void thePilotScreenHasAHumanAndACpuButton() {
+        assertThat((int) call(GAME, "choiceAt", 80, 140)).isZero();
+        assertThat((int) call(GAME, "choiceAt", 230, 140)).isEqualTo(1);
+        assertThat((int) call(GAME, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
+        assertThat((int) call(GAME, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
     }
 
     /** A maze that is solid but for one straight corridor along row 1, from x = 1 to 11. */

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.tft;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
@@ -39,7 +39,7 @@ import io.github.jabrena.juno.api.Random;
  * the bank angle, while the sight and the guns stay fixed. Each frame's lines go into one of two
  * display lists, and only lines that changed since the previous frame are erased and drawn again.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoQ.class)
 public final class RedBaron {
     private static final int FRAME_MILLIS = 40;
 

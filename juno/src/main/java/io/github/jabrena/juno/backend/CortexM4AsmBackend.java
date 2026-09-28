@@ -2,6 +2,7 @@ package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeLimits;
+import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
@@ -148,9 +149,14 @@ public final class CortexM4AsmBackend {
     private boolean usesWatchdog;
     private int watchdogTimeoutMillis;
     private final boolean gcLoggingEnabled;
+    private final Board board;
 
     public CortexM4AsmBackend() {
         this(false);
+    }
+
+    public CortexM4AsmBackend(boolean gcLoggingEnabled) {
+        this(gcLoggingEnabled, Board.DEFAULT);
     }
 
     /**
@@ -159,9 +165,12 @@ public final class CortexM4AsmBackend {
      *     {@code juno:monitor} show reclamation happening in real time. {@code false} (the default)
      *     costs zero extra flash/RAM/time: the print statements aren't emitted at all, not merely
      *     disabled at runtime.
+     * @param board the target board; on a Zephyr-based core ({@link Board#zephyrCore()}) delays go
+     *     through shim wrappers and the core's own {@code yield()} is used
      */
-    public CortexM4AsmBackend(boolean gcLoggingEnabled) {
+    public CortexM4AsmBackend(boolean gcLoggingEnabled, Board board) {
         this.gcLoggingEnabled = gcLoggingEnabled;
+        this.board = board;
     }
 
     public Output generate(IrProgram program) {
@@ -1018,11 +1027,11 @@ public final class CortexM4AsmBackend {
             }
             case DELAY_MILLIS -> {
                 load(output, frame, "r0", call.arguments().get(0));
-                output.append("    bl delay\n");
+                output.append(board.zephyrCore() ? "    bl juno_delay\n" : "    bl delay\n");
             }
             case DELAY_MICROS -> {
                 load(output, frame, "r0", call.arguments().get(0));
-                output.append("    bl delayMicroseconds\n");
+                output.append(board.zephyrCore() ? "    bl juno_delay_microseconds\n" : "    bl delayMicroseconds\n");
             }
             case LED_MATRIX_BEGIN -> output.append("    bl juno_led_matrix_begin\n");
             case LED_MATRIX_LOAD_FRAME -> {
@@ -1759,8 +1768,7 @@ public final class CortexM4AsmBackend {
                 // Author: Juan Antonio Brena Moral
                 #include <Arduino.h>
                 #include <stdint.h>
-                #include "Arduino_LED_Matrix.h"
-                // The UNO R4 core compiles this shim with -mfloat-abi=hard, but Juno's generated assembly
+                ${JUNO_LED_MATRIX_INCLUDE}// The UNO R4 core compiles this shim with -mfloat-abi=hard, but Juno's generated assembly
                 // passes float/double values in core registers; every shim function taking or returning one
                 // opts back into the base procedure-call standard so both sides agree.
                 #if defined(__arm__)
@@ -1768,7 +1776,8 @@ public final class CortexM4AsmBackend {
                 #else
                 #define JUNO_ASM_ABI
                 #endif
-                """);
+                """.replace("${JUNO_LED_MATRIX_INCLUDE}",
+                board.hasLedMatrix() ? "#include \"Arduino_LED_Matrix.h\"\n" : ""));
         // Mouse is an optional library (arduino-cli lib install Mouse), unlike the core-bundled
         // LED matrix/Serial above — only pull it in when the program actually uses it, so every
         // other generated sketch keeps compiling without that library installed.
@@ -1817,8 +1826,43 @@ public final class CortexM4AsmBackend {
         String watchdogBeginFunction = usesWatchdog
                 ? "\nextern \"C\" void juno_watchdog_begin() {\n  WDT.begin(" + watchdogTimeoutMillis + "u);\n}\n"
                 : "";
-        shim.append("""
+        // The LED matrix helpers need the UNO R4's Arduino_LED_Matrix library; the linker already
+        // rejects LedMatrix calls on boards without one, so they are left out there.
+        String ledMatrixFunctions = !board.hasLedMatrix() ? "" : """
+                static ArduinoLEDMatrix juno_led_matrix;
 
+                extern "C" void juno_led_matrix_begin() {
+                  juno_led_matrix.begin();
+                }
+
+                extern "C" void juno_led_matrix_load_frame(int32_t word0, int32_t word1, int32_t word2) {
+                  const uint32_t frame[3] = {
+                    static_cast<uint32_t>(word0),
+                    static_cast<uint32_t>(word1),
+                    static_cast<uint32_t>(word2)
+                  };
+                  juno_led_matrix.loadFrame(frame);
+                }
+
+                extern "C" void juno_led_matrix_clear() {
+                  const uint32_t frame[3] = {0, 0, 0};
+                  juno_led_matrix.loadFrame(frame);
+                }
+
+                """;
+        String yieldFunction = board.zephyrCore() ? """
+                // The Zephyr core provides yield() itself (the generated assembly's `bl yield` reaches
+                // it directly) but inlines delay() and delayMicroseconds(), so the assembly calls them
+                // through these wrappers instead.
+                extern "C" void juno_delay(uint32_t ms) {
+                  delay(ms);
+                }
+
+                extern "C" void juno_delay_microseconds(uint32_t us) {
+                  delayMicroseconds(us);
+                }
+
+                """ : """
                 // Overrides the core's weak yield(): Serial's bool conversion is UNO R4's supported hook
                 // into TinyUSB's tud_task(), so this keeps USB serviced from every yield() call site
                 // (delay() and, per the generated assembly, every loop backedge — see
@@ -1840,7 +1884,10 @@ public final class CortexM4AsmBackend {
                 #endif
                 }
 
-                extern "C" [[noreturn]] void juno_panic() {
+                """;
+        shim.append("""
+
+                ${JUNO_YIELD_FUNCTION}extern "C" [[noreturn]] void juno_panic() {
                   // The watchdog diagnostic (if any) must print before noInterrupts(): USB CDC
                   // Serial relies on interrupts/yield() to actually flush bytes out, so anything
                   // printed after would be silently lost, same as the arena/bounds/etc. panics that
@@ -2103,27 +2150,7 @@ public final class CortexM4AsmBackend {
                   return memory;
                 }
 
-                static ArduinoLEDMatrix juno_led_matrix;
-
-                extern "C" void juno_led_matrix_begin() {
-                  juno_led_matrix.begin();
-                }
-
-                extern "C" void juno_led_matrix_load_frame(int32_t word0, int32_t word1, int32_t word2) {
-                  const uint32_t frame[3] = {
-                    static_cast<uint32_t>(word0),
-                    static_cast<uint32_t>(word1),
-                    static_cast<uint32_t>(word2)
-                  };
-                  juno_led_matrix.loadFrame(frame);
-                }
-
-                extern "C" void juno_led_matrix_clear() {
-                  const uint32_t frame[3] = {0, 0, 0};
-                  juno_led_matrix.loadFrame(frame);
-                }
-
-                extern "C" void juno_serial_begin(int32_t baud) {
+                ${JUNO_LED_MATRIX_FUNCTIONS}extern "C" void juno_serial_begin(int32_t baud) {
                   Serial.begin(static_cast<unsigned long>(baud));
                 }
 
@@ -2167,7 +2194,9 @@ public final class CortexM4AsmBackend {
                 extern "C" void juno_serial_println_str(const char* value) {
                   Serial.println(value != nullptr ? value : "null");
                 }
-                """.replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES))
+                """.replace("${JUNO_YIELD_FUNCTION}", yieldFunction)
+                .replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions)
+                .replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES))
                 .replace("${JUNO_GC_LOG_BEFORE}", gcLogBefore)
                 .replace("${JUNO_GC_LOG_AFTER}", gcLogAfter)
                 .replace("${JUNO_WATCHDOG_REFRESH}", watchdogRefresh)

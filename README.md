@@ -1,10 +1,19 @@
 # Juno: Java for Arduino
 
-Juno is an ahead-of-time compiler for running a practical subset of Java on the Arduino UNO R4 WiFi. It keeps `javac` as the Java frontend, performs
+Juno is an ahead-of-time compiler for running a practical subset of Java on the Arduino UNO R4 WiFi
+and the Arduino UNO Q. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly
 straight from Juno's own IR, plus a small `extern "C"` C++ runtime shim (GPIO/Serial/LED matrix/
-Wi-Fi/HTTP/JSON helpers, the arena allocator, `long`/`float`/`double` support) that the Renesas
-toolchain assembles and links alongside it into native Cortex-M4 code.
+Wi-Fi/HTTP/JSON helpers, the arena allocator, `long`/`float`/`double` support) that the board's
+Arduino toolchain assembles and links alongside it into native code: the Renesas core for the
+UNO R4 WiFi's RA4M1 (Cortex-M4), and the Zephyr core for the UNO Q's STM32U585 microcontroller
+(Cortex-M33, which runs the same Thumb-2 code).
+
+**Arduino UNO Q**
+
+![](./documentation/boards/arduino-one-q.png)
+
+**Arduino UNO R4 WiFi**
 
 ![](./documentation/boards/arduino-one-r4-wifi.png)
 
@@ -14,7 +23,8 @@ compile [`juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java`](ju
 sketch (`.S` assembly + `Shim.cpp` runtime + `.ino` wrapper).
 
 ```text
-Java source -> javac -> .class -> Juno linker/AOT -> .S + Shim.cpp + .ino -> Arduino toolchain -> RA4M1
+Java source -> javac -> .class -> Juno linker/AOT -> .S + Shim.cpp + .ino -> Arduino toolchain -> RA4M1 (UNO R4 WiFi)
+                                                                                                 -> STM32U585 (UNO Q)
 ```
 
 ## Modules
@@ -26,7 +36,7 @@ This is a multi-module Maven build:
   (`io.github.jabrena.juno.api`: `Delay`, `Clock`, `Random`, `LedMatrix`, `api.io.Gpio`,
   `api.io.DigitalOutput`, `api.lcd.LcdKeypadShield`, `api.tft.TftTouchShield`, `api.io.hid.Mouse`, `api.io.usb.Serial`, …) and the
   `io.github.jabrena.juno.annotations` package
-  (`Board`, `ArduinoBoard`, `ArduinoUnoR4WiFi`) that entry-point classes use to select a
+  (`Board`, `ArduinoBoard`, `ArduinoUnoR4WiFi`, `ArduinoUnoQ`) that entry-point classes use to select a
   compilation target. Builds `juno/target/juno-<version>.jar`, an executable jar whose main class
   is `io.github.jabrena.juno.Main`.
 - [`juno-maven-plugin/`](juno-maven-plugin) — Maven goals for generating a sketch (`juno:compile`),
@@ -48,8 +58,9 @@ Requirements: JDK 25+ and Maven 3.9+.
 This builds all three modules: `juno/target/juno-0.1.0-SNAPSHOT.jar` (the compiler and hardware
 API), `juno-maven-plugin/target/juno-maven-plugin-0.1.0-SNAPSHOT.jar` (the Maven integration), and
 `juno-examples/target/classes` (the compiled example programs). To turn an example into a
-`.ino` sketch and run it on real UNO R4 hardware with `arduino-cli`, see
-[docs/ARDUINO.md](docs/ARDUINO.md).
+`.ino` sketch and run it on real UNO R4 WiFi or UNO Q hardware with `arduino-cli`, see
+[docs/ARDUINO.md](docs/ARDUINO.md). The UNO Q also needs Arduino's Zephyr core:
+`arduino-cli core install arduino:zephyr`.
 
 Use the following commands for the complete `Blink` workflow:
 
@@ -106,9 +117,30 @@ internally, and the checklist for adding a new one, see [docs/APIS.md](docs/APIS
 
 ### Target board
 
-`@Board` (`io.github.jabrena.juno.annotations.Board`) on the entry-point class selects which UNO R4 variant
-Juno compiles for: `ArduinoUnoR4WiFi` (currently the only supported target). A class with no
-`@Board` annotation targets it by default.
+`@Board` (`io.github.jabrena.juno.annotations.Board`) on the entry-point class selects the board
+Juno compiles for, and `juno:verify`/`juno:upload` build for its Arduino CLI FQBN:
+
+| Annotation | Board | FQBN |
+|---|---|---|
+| `@Board(ArduinoUnoR4WiFi.class)` | Arduino UNO R4 WiFi | `arduino:renesas_uno:unor4wifi` |
+| `@Board(ArduinoUnoQ.class)` | Arduino UNO Q (its STM32U585 microcontroller) | `arduino:zephyr:unoq` |
+
+A class with no `@Board` annotation targets the UNO R4 WiFi. GPIO, time, Serial and the shields
+built on them (LCD keypad, TFT touch) compile and upload for both boards. The LED matrix, Wi-Fi with HTTP/HTTPS, and
+`@Watchdog` are UNO R4 WiFi only (on the UNO Q, its LED matrix and Wi-Fi belong to the board's
+Linux side), and Juno rejects them at compile time for the UNO Q. The other APIs built on UNO R4
+libraries (email, USB mouse, SD card, servo) have not been tried on the UNO Q yet. The TFT games
+[Star Trek](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/StarTrek.java),
+[Star Wars](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/StarWars.java),
+[The Empire Strikes Back](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/EmpireStrikesBack.java),
+[Red Baron](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/RedBaron.java) and
+[Space Paranoids](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/SpaceParanoids.java)
+target the UNO Q:
+
+```java
+@Board(ArduinoUnoQ.class)
+public final class RedBaron {
+```
 
 ## Supported Java subset
 

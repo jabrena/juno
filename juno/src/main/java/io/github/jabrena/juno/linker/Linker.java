@@ -108,6 +108,10 @@ public final class Linker {
                 }
             }
         }
+        if (board.zephyrCore() && mainClass.watchdogTimeoutMillis().isPresent()) {
+            throw new CompileException("@Watchdog requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
+                    + "'s Zephyr core has no WDT library");
+        }
         return new Program(entryPoint, List.copyOf(reachable.values()), classes, board,
                 mainClass.watchdogTimeoutMillis());
     }

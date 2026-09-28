@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.tft;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
@@ -40,7 +40,7 @@ import io.github.jabrena.juno.api.Random;
  * frame are erased, and only new lines and unchanged lines crossed by an erased one are drawn again,
  * so still parts of the scene (the horizon, far stars, a hovering fighter) cost nothing.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoQ.class)
 public final class StarWars {
     private static final int FRAME_MILLIS = 30;
 

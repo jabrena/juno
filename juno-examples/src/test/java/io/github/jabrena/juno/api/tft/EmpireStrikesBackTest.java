@@ -15,8 +15,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Rules of The Empire Strikes Back: lasers, AT-AT armor, asteroids, shields, the JEDI letters, and an
- * autopilot that flies whole waves through the game's own simulation and rendering.
+ * Rules of The Empire Strikes Back: lasers, AT-AT armor, asteroids, shields, the JEDI letters, the
+ * pilot screen, and the CPU pilot that flies whole waves through the game's own simulation and
+ * rendering.
  */
 class EmpireStrikesBackTest {
     private static final Class<?> GAME = EmpireStrikesBack.class;
@@ -200,11 +201,12 @@ class EmpireStrikesBackTest {
         }
     }
 
-    /** An autopilot that aims at the nearest target and fires when the crosshair is on it. */
+    /** The CPU pilot sweeps the crosshair onto the nearest threat and fires: it flies whole waves. */
     @ParameterizedTest
     @ValueSource(ints = {1, 3})
-    void anAutopilotFliesAWholeWave(int wave) {
+    void theCpuPilotFliesAWholeWave(int wave) {
         set(GAME, "wave", wave);
+        set(GAME, "autopilot", true);
         for (int round = PROBES; round <= ASTEROIDS; round++) {
             assertThat(flyRound(round)).as("round %d of wave %d", round, wave).isTrue();
         }
@@ -216,7 +218,7 @@ class EmpireStrikesBackTest {
         call(GAME, "startRound", round, ents);
         for (int frame = 0; frame < 8000; frame++) {
             set(GAME, "frame", frame);
-            autopilot(frame);
+            call(GAME, "flyAutopilot", (Object) ents);
             call(GAME, "step", (Object) ents);
             call(GAME, "resolveShots", (Object) ents);
             call(GAME, "render", lines, ents);
@@ -231,33 +233,12 @@ class EmpireStrikesBackTest {
         return false;
     }
 
-    private void autopilot(int frame) {
-        int best = -1;
-        int bestZ = Integer.MAX_VALUE;
-        for (int slot = 0; slot < 24; slot++) {
-            int b = slot * STRIDE;
-            int type = ents[b + TYPE];
-            boolean target = type == PROBE || type == ATAT || type == ATST || type == TIE || type == FIREBALL
-                    || (type == ASTEROID && ents[b + Z] < 900);
-            if (target && ents[b + SR] > 0 && ents[b + Z] < bestZ) {
-                best = slot;
-                bestZ = ents[b + Z];
-            }
-        }
-        if (best < 0) {
-            return;
-        }
-        // Like a player: the crosshair follows the target at a finger's pace, a few shots a second.
-        int b = best * STRIDE;
-        int crossX = getInt(GAME, "crossX");
-        int crossY = getInt(GAME, "crossY");
-        int dx = Math.max(-14, Math.min(ents[b + SX] - crossX, 14));
-        int dy = Math.max(-14, Math.min(ents[b + SY] - crossY, 14));
-        set(GAME, "crossX", Math.max(8, Math.min(crossX + dx, 311)));
-        set(GAME, "crossY", Math.max(28, Math.min(crossY + dy, 231)));
-        if (frame % 8 == 0) {
-            call(GAME, "fire", (Object) ents);
-        }
+    @Test
+    void thePilotScreenHasAHumanAndACpuButton() {
+        assertThat(callInt(GAME, "choiceAt", 80, 140)).isZero();
+        assertThat(callInt(GAME, "choiceAt", 230, 140)).isEqualTo(1);
+        assertThat(callInt(GAME, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
+        assertThat(callInt(GAME, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
     }
 
     private void render() {

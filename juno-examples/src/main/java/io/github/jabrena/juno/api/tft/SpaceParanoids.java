@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.tft;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
@@ -19,6 +19,13 @@ import io.github.jabrena.juno.api.Random;
  * and fire ({@code FIRE}); tapping the view fires too. The radar between them shows the maze from
  * above: you in white, hunters in orange, tanks in red, turrets in yellow, pools in green.
  *
+ * <p>The game opens like the film: a laser scan line digitizes the grid, which then rushes past as
+ * a hunter spins in, and the title materializes letter by letter; after each game over it starts
+ * again from there. Tap to start, then choose who drives the tank: <b>HUMAN</b> (you) or
+ * <b>CPU</b>, an autopilot that hunts along the shortest path, heads for an energy pool when its
+ * shield runs low and shoots what it sees, with an aim that wanders enough to miss now and then.
+ * Tap the header during the game to switch between the two ({@code CPU} shows in the header).
+ *
  * <p>The maze is drawn by ray casting with hidden lines removed: rays sampled every
  * {@value #SAMPLE} columns find which wall face each column sees, the boundaries between faces are
  * then found to the pixel by bisection, and each visible stretch of a face becomes its top and
@@ -26,7 +33,7 @@ import io.github.jabrena.juno.api.Random;
  * hidden when a wall stands between them and you. Frames go through two display lists, so only
  * lines that moved are erased and redrawn.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoQ.class)
 public final class SpaceParanoids {
     private static final int FRAME_MILLIS = 33;
 
@@ -134,6 +141,27 @@ public final class SpaceParanoids {
     private static final int RADAR_WALL = 0x2945;
     private static final int BUTTON = 0x3A7F;
 
+    // The opening: the scan line digitizing the grid, then the flight over it.
+    private static final int SCAN_FRAMES = 36;
+    private static final int GRID_FRAMES = 64;
+    private static final int GRID_HORIZON = 90;
+    private static final int GRID_DEPTH = 436;
+    private static final String TITLE = "SPACE PARANOIDS";
+
+    // The HUMAN and CPU buttons of the pilot screen.
+    private static final int CHOICE_X = 20;
+    private static final int CHOICE_Y = 104;
+    private static final int CHOICE_WIDTH = 130;
+    private static final int CHOICE_HEIGHT = 72;
+    private static final int CHOICE_GAP = 20;
+
+    // The CPU driver: how far its aim wanders (hundredths of a radian), how often it changes, how
+    // far it sees, and at what shield it goes for an energy pool.
+    private static final int CPU_WOBBLE = 20;
+    private static final int CPU_WOBBLE_FRAMES = 20;
+    private static final float CPU_SIGHT = 6f;
+    private static final int CPU_LOW_SHIELD = 40;
+
     private static int score;
     private static int best;
     private static int lives;
@@ -145,6 +173,9 @@ public final class SpaceParanoids {
     private static int frame;
     private static int fireCooldown;
     private static int held;
+    private static boolean autopilot;
+    private static boolean headerPressed;
+    private static float aimWobble;
 
     // Camera state.
     private static float posX;
@@ -178,26 +209,23 @@ public final class SpaceParanoids {
         int[] faces = new int[SAMPLES];
         int[] fs = new int[ENTITIES * F_STRIDE];
         int[] is = new int[ENTITIES * I_STRIDE];
+        short[] route = new short[2 * CELLS];
+        byte[] letter = new byte[1];
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        TftTouchShield.fillScreen(SPACE);
-        Random.seed(7);
-        generateMaze(maze, paths);
-        placePlayer(maze);
-        render(maze, lines, depth, faces, fs, is);
-        showCentered("SPACE PARANOIDS", 34, 3, TftTouchShield.ORANGE);
-        showCentered("Destroy every hunter before time runs out", 206, 1, TftTouchShield.WHITE);
-        showCentered("Tap to start", 222, 1, TftTouchShield.CYAN);
-        waitForTap();
-        Random.seed(Clock.micros());
 
         while (true) {
+            opening(lines);
+            drawTitle(maze, paths, lines, depth, faces, fs, is, letter);
+            waitForTap();
+            Random.seed(Clock.micros());
+            choosePilot();
             score = 0;
             lives = START_LIVES;
             level = 1;
             nextBonus = BONUS_EVERY;
-            while (playLevel(maze, paths, radar, lines, depth, faces, fs, is)) {
+            while (playLevel(maze, paths, route, radar, lines, depth, faces, fs, is)) {
                 level = level + 1;
             }
             if (score > best) {
@@ -206,17 +234,15 @@ public final class SpaceParanoids {
             drawHeader();
             clearView();
             showCentered("GAME OVER", 90, 3, TftTouchShield.RED);
-            showCentered("Tap to play again", 140, 1, TftTouchShield.WHITE);
-            Delay.millis(1500);
-            waitForTap();
+            Delay.millis(3000);
         }
     }
 
     // ---- Game flow ----
 
     /** Plays one sector; returns true when it is cleared, false when the last life is lost. */
-    private static boolean playLevel(byte[] maze, short[] paths, byte[] radar, short[] lines, int[] depth,
-            int[] faces, int[] fs, int[] is) {
+    private static boolean playLevel(byte[] maze, short[] paths, short[] route, byte[] radar, short[] lines,
+            int[] depth, int[] faces, int[] fs, int[] is) {
         startLevel(maze, paths, fs, is);
         TftTouchShield.fillScreen(SPACE);
         drawHeader();
@@ -240,6 +266,9 @@ public final class SpaceParanoids {
             }
             frame = frame + 1;
             handleTouch(maze, fs, is);
+            if (autopilot) {
+                flyAutopilot(maze, route, fs, is);
+            }
             step(maze, paths, fs, is);
             render(maze, lines, depth, faces, fs, is);
             if (frame % 6 == 0) {
@@ -503,6 +532,7 @@ public final class SpaceParanoids {
 
     // ---- Input ----
 
+    /** The buttons and the view drive the tank; tapping the header hands it to the CPU or back. */
     private static void handleTouch(byte[] maze, int[] fs, int[] is) {
         if (fireCooldown > 0) {
             fireCooldown = fireCooldown - 1;
@@ -511,7 +541,21 @@ public final class SpaceParanoids {
         if (TftTouchShield.readTouch()) {
             int x = TftTouchShield.touchX();
             int y = TftTouchShield.touchY();
+            if (y < HEADER) {
+                if (!headerPressed) {
+                    autopilot = !autopilot;
+                    drawHeader();
+                }
+                headerPressed = true;
+                return;
+            }
+            headerPressed = false;
+            if (autopilot) {
+                return;
+            }
             held = y >= BAR_TOP ? buttonAt(x) : B_FIRE;
+        } else {
+            headerPressed = false;
         }
         if (held == B_LEFT) {
             setAngle(angle - TURN);
@@ -589,10 +633,64 @@ public final class SpaceParanoids {
         fs[f + F_VZ] = (int) (dirZ * SHOT_SPEED * ONE);
     }
 
+    /** The pilot screen: waits for a tap on HUMAN or CPU. */
+    private static void choosePilot() {
+        TftTouchShield.fillScreen(SPACE);
+        showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.ORANGE);
+        showCentered("Who drives the tank?", 74, 1, TftTouchShield.WHITE);
+        drawChoice(0, "HUMAN", "You drive and fire", false);
+        drawChoice(1, "CPU", "Autopilot plays", false);
+        showCentered("Tap the header in game to switch", 206, 1, WALL_SEAM);
+        int choice = -1;
+        while (choice < 0) {
+            if (TftTouchShield.readTouch()) {
+                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            }
+            Delay.millis(10);
+        }
+        autopilot = choice == 1;
+        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You drive and fire" : "Autopilot plays",
+                true);
+        waitForRelease();
+    }
+
+    /** The pilot button at (x, y): 0 for HUMAN, 1 for CPU, or -1. */
+    private static int choiceAt(int x, int y) {
+        if (y < CHOICE_Y || y >= CHOICE_Y + CHOICE_HEIGHT) {
+            return -1;
+        }
+        for (int index = 0; index < 2; index++) {
+            int left = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+            if (x >= left && x < left + CHOICE_WIDTH) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private static void drawChoice(int index, String label, String hint, boolean chosen) {
+        int x = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+        int color = chosen ? BUTTON : 0x2124;
+        TftTouchShield.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
+        TftTouchShield.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, chosen ? TftTouchShield.WHITE : WALL_TOP);
+        TftTouchShield.setTextSize(3);
+        TftTouchShield.setTextColor(TftTouchShield.ORANGE, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - label.length() * 18) / 2, CHOICE_Y + 16);
+        TftTouchShield.print(label);
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - hint.length() * 6) / 2, CHOICE_Y + 52);
+        TftTouchShield.print(hint);
+    }
+
     private static void waitForTap() {
         while (!TftTouchShield.readTouch()) {
             Delay.millis(10);
         }
+        waitForRelease();
+    }
+
+    private static void waitForRelease() {
         int misses = 0;
         while (misses < 3) {
             if (TftTouchShield.readTouch()) {
@@ -602,6 +700,116 @@ public final class SpaceParanoids {
             }
             Delay.millis(10);
         }
+    }
+
+    // ---- The CPU driver ----
+
+    /**
+     * The CPU at the controls: it turns to face the nearest enemy it can see within
+     * {@value #CPU_SIGHT} cells and fires once it is lined up, its aim off by up to
+     * {@value #CPU_WOBBLE} hundredths of a radian (a new error every {@value #CPU_WOBBLE_FRAMES}
+     * frames), so some shots miss. With nothing in sight it drives along the shortest path towards
+     * the next hunter (then tanks, then turrets), or to an energy pool when its shield is below
+     * {@value #CPU_LOW_SHIELD}.
+     */
+    private static void flyAutopilot(byte[] maze, short[] route, int[] fs, int[] is) {
+        if (frame % CPU_WOBBLE_FRAMES == 0) {
+            aimWobble = Random.nextInt(-CPU_WOBBLE, CPU_WOBBLE + 1) / 100f;
+        }
+        int aim = -1;
+        float nearest = CPU_SIGHT;
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            int type = is[slot * I_STRIDE + I_TYPE];
+            if (type != T_HUNTER && type != T_TANK && type != T_TURRET) {
+                continue;
+            }
+            float ex = fs[slot * F_STRIDE + F_X] * TO_CELLS;
+            float ez = fs[slot * F_STRIDE + F_Z] * TO_CELLS;
+            float distance = (float) Math.sqrt((ex - posX) * (ex - posX) + (ez - posZ) * (ez - posZ));
+            if (distance < nearest && lineOfSight(maze, posX, posZ, ex, ez)) {
+                nearest = distance;
+                aim = slot;
+            }
+        }
+        if (aim >= 0) {
+            float ex = fs[aim * F_STRIDE + F_X] * TO_CELLS;
+            float ez = fs[aim * F_STRIDE + F_Z] * TO_CELLS;
+            float turn = wrapAngle((float) Math.atan2(ez - posZ, ex - posX) + aimWobble - angle);
+            if (Math.abs(turn) > 0.05f) {
+                turnBy(turn);
+            } else {
+                fire(fs, is);
+            }
+            return;
+        }
+        int target = -1;
+        if (shield < CPU_LOW_SHIELD) {
+            target = firstOf(is, T_POOL);
+        }
+        for (int type = T_HUNTER; type <= T_TURRET && target < 0; type++) {
+            target = firstOf(is, type);
+        }
+        if (target < 0) {
+            return;
+        }
+        bfs(maze, route, entityCell(fs, target));
+        int here = cellOf(posX, posZ);
+        int next = here;
+        for (int d = 0; d < 4; d++) {
+            int cell = here + dx(d) + dz(d) * SIZE;
+            if (maze[cell] == OPEN && route[cell] >= 0 && route[cell] < route[next]) {
+                next = cell;
+            }
+        }
+        float tx = next % SIZE + 0.5f;
+        float tz = next / SIZE + 0.5f;
+        if (next == here) {
+            // In the target's own cell: drive right up to it (a pool is only picked up close by).
+            tx = fs[target * F_STRIDE + F_X] * TO_CELLS;
+            tz = fs[target * F_STRIDE + F_Z] * TO_CELLS;
+            if (Math.abs(tx - posX) + Math.abs(tz - posZ) < 0.1f) {
+                return;
+            }
+        }
+        float cx = here % SIZE + 0.5f;
+        float cz = here / SIZE + 0.5f;
+        // Round a corner from the middle of the cell, or the tank scrapes along the wall.
+        boolean corner = Math.abs(tx - posX) > 0.2f && Math.abs(tz - posZ) > 0.2f;
+        if (corner && Math.abs(cx - posX) + Math.abs(cz - posZ) > 0.1f) {
+            tx = cx;
+            tz = cz;
+        }
+        float turn = wrapAngle((float) Math.atan2(tz - posZ, tx - posX) - angle);
+        if (Math.abs(turn) > 0.12f) {
+            turnBy(turn);
+        } else {
+            drive(maze, SPEED);
+        }
+    }
+
+    /** Turns towards {@code turn} radians away, by at most one frame's turn. */
+    private static void turnBy(float turn) {
+        setAngle(angle + (turn > 0 ? Math.min(TURN, turn) : -Math.min(TURN, -turn)));
+    }
+
+    private static float wrapAngle(float value) {
+        float twoPi = (float) (2 * Math.PI);
+        while (value > Math.PI) {
+            value = value - twoPi;
+        }
+        while (value < -Math.PI) {
+            value = value + twoPi;
+        }
+        return value;
+    }
+
+    private static int firstOf(int[] is, int type) {
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            if (is[slot * I_STRIDE + I_TYPE] == type) {
+                return slot;
+            }
+        }
+        return -1;
     }
 
     // ---- Simulation ----
@@ -1365,6 +1573,110 @@ public final class SpaceParanoids {
         radarCell(me, TftTouchShield.WHITE);
     }
 
+    // ---- Opening and title ----
+
+    /**
+     * The opening, after the film: a laser scan line sweeps down the screen, digitizing the grid
+     * behind it, then the grid rushes past as a hunter spins in from the horizon.
+     */
+    private static void opening(short[] lines) {
+        TftTouchShield.fillScreen(SPACE);
+        shown = 0;
+        showCentered("DIGITIZING...", 212, 1, WALL_TOP);
+        for (int f = 0; f <= SCAN_FRAMES; f++) {
+            int scanY = HEADER + (VIEW_BOTTOM - HEADER) * f / SCAN_FRAMES;
+            built = 0;
+            drawGrid(lines, 0, scanY);
+            addLine(lines, 0, scanY, WIDTH - 1, scanY, TftTouchShield.RED);
+            present(lines);
+            Delay.millis(30);
+        }
+        TftTouchShield.fillRect(0, BAR_TOP, WIDTH, HEIGHT - BAR_TOP, SPACE);
+        for (int f = 0; f < GRID_FRAMES; f++) {
+            built = 0;
+            drawGrid(lines, f * 6, VIEW_BOTTOM);
+            // A hunter spins in from the horizon.
+            int size = 4 + f / 3;
+            int cx = CENTER_X + Math.round((float) Math.sin(f * 0.09f) * 40);
+            int cy = GRID_HORIZON - 12 - f / 2;
+            float spin = f * 0.25f;
+            int previousX = 0;
+            int previousY = 0;
+            for (int k = 0; k <= 4; k++) {
+                float a = spin + k * 1.5708f;
+                int x = cx + Math.round((float) Math.cos(a) * size);
+                int y = cy + Math.round((float) Math.sin(a) * size * 0.3f);
+                addLine(lines, cx, cy - size * 6 / 5, x, y, HUNTER);
+                if (k > 0) {
+                    addLine(lines, previousX, previousY, x, y, HUNTER);
+                }
+                if ((k & 1) == 0) {
+                    addLine(lines, cx, cy + size * 6 / 5, x, y, TftTouchShield.YELLOW);
+                }
+                previousX = x;
+                previousY = y;
+            }
+            present(lines);
+            Delay.millis(30);
+        }
+        clearView();
+        Delay.millis(200);
+    }
+
+    /**
+     * The digital grid in perspective: lines across it, {@code travel} sixteenths of a square nearer
+     * each step so it rushes past, and lines along it meeting at the horizon; nothing below
+     * {@code limitY}.
+     */
+    private static void drawGrid(short[] lines, int travel, int limitY) {
+        if (limitY <= GRID_HORIZON) {
+            return;
+        }
+        addLine(lines, 0, GRID_HORIZON, WIDTH - 1, GRID_HORIZON, WALL_TOP);
+        for (int k = 0; k < 12; k++) {
+            int z = 16 + k * 96 + (96 - travel % 96);
+            int y = GRID_HORIZON + GRID_DEPTH * 16 / z;
+            if (y < limitY) {
+                addLine(lines, 0, y, WIDTH - 1, y, WALL_BOTTOM);
+            }
+        }
+        for (int col = -8; col <= 8; col++) {
+            // Along the floor, x - center grows with y - horizon.
+            int nearX = CENTER_X + col * 20 * (limitY - GRID_HORIZON) / 36;
+            addLine(lines, CENTER_X + col * 2, GRID_HORIZON, nearX, limitY, WALL_BOTTOM);
+        }
+    }
+
+    /**
+     * The title screen: the first maze in view and "SPACE PARANOIDS" materializing letter by letter
+     * in scrambled order, then lighting up.
+     */
+    private static void drawTitle(byte[] maze, short[] paths, short[] lines, int[] depth, int[] faces, int[] fs,
+            int[] is, byte[] letter) {
+        Random.seed(7);
+        generateMaze(maze, paths);
+        placePlayer(maze);
+        clearEntities(fs, is);
+        render(maze, lines, depth, faces, fs, is);
+        int left = (WIDTH - TITLE.length() * 18) / 2;
+        TftTouchShield.setTextSize(3);
+        for (int k = 0; k < TITLE.length(); k++) {
+            // 7 and the title's 15 letters share no factor, so this visits every letter once.
+            int i = k * 7 % TITLE.length();
+            letter[0] = (byte) TITLE.charAt(i);
+            TftTouchShield.setTextColor(WALL_TOP, SPACE);
+            TftTouchShield.setCursor(left + i * 18, 34);
+            TftTouchShield.print(letter, 1);
+            Delay.millis(70);
+        }
+        Delay.millis(150);
+        showCentered(TITLE, 34, 3, TftTouchShield.WHITE);
+        Delay.millis(80);
+        showCentered(TITLE, 34, 3, TftTouchShield.ORANGE);
+        showCentered("Destroy every hunter before time runs out", 206, 1, TftTouchShield.WHITE);
+        showCentered("Tap to start", 222, 1, TftTouchShield.CYAN);
+    }
+
     // ---- Records ----
 
     private static int freeSlot(int[] is) {
@@ -1420,6 +1732,11 @@ public final class SpaceParanoids {
         TftTouchShield.setCursor(250, 2);
         TftTouchShield.print("SECTOR ");
         TftTouchShield.print(level);
+        if (autopilot) {
+            TftTouchShield.setTextColor(TftTouchShield.MAGENTA, SPACE);
+            TftTouchShield.setCursor(208, 2);
+            TftTouchShield.print("CPU");
+        }
         TftTouchShield.setTextColor(TftTouchShield.WHITE, SPACE);
         TftTouchShield.setCursor(4, 11);
         TftTouchShield.print("LIVES ");

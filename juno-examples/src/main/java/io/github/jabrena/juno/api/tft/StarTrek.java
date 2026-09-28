@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.tft;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
@@ -35,7 +35,7 @@ import io.github.jabrena.juno.api.Random;
  * to whichever view is being drawn: only lines that changed since the previous frame are erased and
  * drawn again. Positions are fixed point (1/16 unit) in a sector that wraps around at the edges.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoQ.class)
 public final class StarTrek {
     private static final int FRAME_MILLIS = 40;
     private static final int FIX = 16;

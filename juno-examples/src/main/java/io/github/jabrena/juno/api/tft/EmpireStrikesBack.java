@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.tft;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
@@ -26,12 +26,19 @@ import io.github.jabrena.juno.api.Random;
  * completed wave restores one. Finish a round without losing a shield to earn the next letter of
  * <b>JEDI</b>; spell the whole word for a bonus.
  *
+ * <p>The game opens like the film: snow falls on Hoth as an Imperial probe streaks down and lands,
+ * two AT-ATs stride in from the distance, and the title assembles letter by letter; after each game
+ * over it starts again from there. Tap to start, then choose who flies: <b>HUMAN</b> (you) or
+ * <b>CPU</b>, an autopilot that lets targets close in, sweeps the crosshair onto them, dodges what
+ * is about to hit it and misses now and then, like a person would. Tap the header during the game to switch between the
+ * two ({@code CPU} shows in the header).
+ *
  * <p>Everything is drawn in vector style from 3D points perspective-projected onto the screen
  * ({@code x' = cx + x·f/z}), with 3D lines clipped at the near plane and 2D lines clipped to the view,
  * using the same double display lists as {@link StarWars}: only lines that changed since the
  * previous frame are erased and drawn again.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoQ.class)
 public final class EmpireStrikesBack {
     private static final int FRAME_MILLIS = 40;
 
@@ -140,6 +147,30 @@ public final class EmpireStrikesBack {
     private static final int FIRE_B = TftTouchShield.RED;
     private static final int HUD = 0x3A7F;
 
+    // The opening: the probe's fall, then the walkers' advance.
+    private static final int POD_FRAMES = 44;
+    private static final int WALK_FRAMES = 70;
+    private static final String TITLE_TOP = "THE EMPIRE";
+    private static final String TITLE_BOTTOM = "STRIKES BACK";
+
+    // The HUMAN and CPU buttons of the pilot screen.
+    private static final int CHOICE_X = 20;
+    private static final int CHOICE_Y = 104;
+    private static final int CHOICE_WIDTH = 130;
+    private static final int CHOICE_HEIGHT = 72;
+    private static final int CHOICE_GAP = 20;
+
+    // The CPU pilot: how fast it moves the crosshair, how often it may fire, how near a target must
+    // come before it engages, and how often it aims a shot just off the target.
+    private static final int CPU_AIM_SPEED = 20;
+    private static final int CPU_FIRE_FRAMES = 8;
+    private static final int CPU_RANGE = 2000;
+    private static final int CPU_MISS_PERCENT = 10;
+    /** How often the CPU is slow to notice a new target, and lets it come much closer first. */
+    private static final int CPU_LATE_PERCENT = 30;
+    /** How near a fireball or asteroid on a collision course must be before the CPU dodges it. */
+    private static final int CPU_EVADE_Z = 700;
+
     private static int score;
     private static int best;
     private static int shields;
@@ -161,6 +192,13 @@ public final class EmpireStrikesBack {
     private static int releaseMisses;
     private static int startX;
     private static int startY;
+    private static boolean autopilot;
+    private static boolean headerPressed;
+    private static int aimOffsetX;
+    private static int aimOffsetY;
+    /** The target the CPU last picked, and how near it must come before the CPU reacts. */
+    private static int cpuTarget = -1;
+    private static int cpuReaction;
 
     // Display list state.
     private static int front;
@@ -184,15 +222,17 @@ public final class EmpireStrikesBack {
     public static void main(String[] args) {
         short[] lines = new short[2 * LIST_SIZE];
         int[] ents = new int[ENTITIES * E_STRIDE];
+        byte[] letter = new byte[1];
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        TftTouchShield.fillScreen(SPACE);
-        drawTitle(lines);
-        waitForTap();
-        Random.seed(Clock.micros());
 
         while (true) {
+            opening(lines, ents);
+            drawTitle(letter);
+            waitForTap();
+            Random.seed(Clock.micros());
+            choosePilot();
             score = 0;
             shields = START_SHIELDS;
             wave = 1;
@@ -212,9 +252,7 @@ public final class EmpireStrikesBack {
             drawHeader();
             clearView();
             showCentered("GAME OVER", 100, 3, TftTouchShield.RED);
-            showCentered("Tap to play again", 150, 1, TftTouchShield.WHITE);
-            Delay.millis(1500);
-            waitForTap();
+            Delay.millis(3000);
         }
     }
 
@@ -253,6 +291,9 @@ public final class EmpireStrikesBack {
             }
             frame = frame + 1;
             handleTouch(ents);
+            if (autopilot) {
+                flyAutopilot(ents);
+            }
             step(ents);
             resolveShots(ents);
             render(lines, ents);
@@ -360,9 +401,26 @@ public final class EmpireStrikesBack {
 
     // ---- Input ----
 
-    /** Drag moves the crosshair; a short tap that did not move fires where it landed, on release. */
+    /**
+     * Drag moves the crosshair; a short tap that did not move fires where it landed, on release.
+     * Tapping the header hands the controls to the CPU or back.
+     */
     private static void handleTouch(int[] ents) {
-        if (TftTouchShield.readTouch()) {
+        boolean down = TftTouchShield.readTouch();
+        if (down && TftTouchShield.touchY() < HEADER) {
+            if (!headerPressed) {
+                autopilot = !autopilot;
+                touching = false;
+                drawHeader();
+            }
+            headerPressed = true;
+            return;
+        }
+        headerPressed = false;
+        if (autopilot) {
+            return;
+        }
+        if (down) {
             int x = Math.max(8, Math.min(TftTouchShield.touchX(), WIDTH - 9));
             int y = Math.max(HEADER + 8, Math.min(TftTouchShield.touchY(), HEIGHT - 9));
             crossX = x;
@@ -413,10 +471,65 @@ public final class EmpireStrikesBack {
         }
     }
 
+    /** The pilot screen: waits for a tap on HUMAN or CPU. */
+    private static void choosePilot() {
+        TftTouchShield.fillScreen(SPACE);
+        showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.YELLOW);
+        showCentered("Who flies for the Rebellion?", 74, 1, TftTouchShield.WHITE);
+        drawChoice(0, "HUMAN", "You steer and fire", false);
+        drawChoice(1, "CPU", "Autopilot plays", false);
+        showCentered("Tap the header in game to switch", 206, 1, STAR);
+        int choice = -1;
+        while (choice < 0) {
+            if (TftTouchShield.readTouch()) {
+                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            }
+            Delay.millis(10);
+        }
+        autopilot = choice == 1;
+        touching = false;
+        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You steer and fire" : "Autopilot plays",
+                true);
+        waitForRelease();
+    }
+
+    /** The pilot button at (x, y): 0 for HUMAN, 1 for CPU, or -1. */
+    private static int choiceAt(int x, int y) {
+        if (y < CHOICE_Y || y >= CHOICE_Y + CHOICE_HEIGHT) {
+            return -1;
+        }
+        for (int index = 0; index < 2; index++) {
+            int left = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+            if (x >= left && x < left + CHOICE_WIDTH) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private static void drawChoice(int index, String label, String hint, boolean chosen) {
+        int x = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+        int color = chosen ? HUD : 0x2124;
+        TftTouchShield.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
+        TftTouchShield.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, chosen ? TftTouchShield.WHITE : SNOW);
+        TftTouchShield.setTextSize(3);
+        TftTouchShield.setTextColor(TftTouchShield.YELLOW, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - label.length() * 18) / 2, CHOICE_Y + 16);
+        TftTouchShield.print(label);
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - hint.length() * 6) / 2, CHOICE_Y + 52);
+        TftTouchShield.print(hint);
+    }
+
     private static void waitForTap() {
         while (!TftTouchShield.readTouch()) {
             Delay.millis(10);
         }
+        waitForRelease();
+    }
+
+    private static void waitForRelease() {
         int misses = 0;
         while (misses < 3) {
             if (TftTouchShield.readTouch()) {
@@ -426,6 +539,129 @@ public final class EmpireStrikesBack {
             }
             Delay.millis(10);
         }
+    }
+
+    // ---- The CPU pilot ----
+
+    /**
+     * The CPU at the controls, flying like a person rather than a machine: it lets targets come
+     * within {@value #CPU_RANGE} before engaging the nearest (a probe droid, walker, TIE fighter,
+     * fireball, or an asteroid within 900), sweeps the crosshair towards it at
+     * {@value #CPU_AIM_SPEED} pixels a frame, and fires, at most every {@value #CPU_FIRE_FRAMES}
+     * frames, once the crosshair is on its aim point. About {@value #CPU_LATE_PERCENT}% of the time
+     * it is slow to notice a new target (anything but a fireball) and only reacts once it is within
+     * 600 to 1100. About {@value #CPU_MISS_PERCENT}% of its
+     * shots at anything but a fireball are aimed just past the target and miss. The crosshair also
+     * steers the craft, so when a fireball or asteroid on a collision course comes within
+     * {@value #CPU_EVADE_Z}, it dodges first (see {@link #dodge}).
+     */
+    private static void flyAutopilot(int[] ents) {
+        int target = -1;
+        int nearest = CPU_RANGE;
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            int b = slot * E_STRIDE;
+            int type = ents[b + E_TYPE];
+            boolean wanted = type == T_PROBE || type == T_ATAT || type == T_ATST || type == T_TIE
+                    || type == T_FIREBALL || (type == T_ASTEROID && ents[b + E_Z] < 900);
+            if (wanted && ents[b + E_SR] > 0 && ents[b + E_Z] < nearest) {
+                target = slot;
+                nearest = ents[b + E_Z];
+            }
+        }
+        if (target >= 0 && target != cpuTarget) {
+            // A new target: now and then the CPU is slow to notice it, as a person would be.
+            cpuTarget = target;
+            boolean late = ents[target * E_STRIDE + E_TYPE] != T_FIREBALL && Random.nextInt(100) < CPU_LATE_PERCENT;
+            cpuReaction = late ? Random.nextInt(600, 1100) : CPU_RANGE;
+        }
+        if (target >= 0 && nearest >= cpuReaction) {
+            target = -1;
+        }
+        boolean trigger = frame % CPU_FIRE_FRAMES == 0;
+        if (trigger) {
+            // Each shot is aimed true or, now and then, just past the edge of the target.
+            aimOffsetX = 0;
+            aimOffsetY = 0;
+            if (target >= 0 && ents[target * E_STRIDE + E_TYPE] != T_FIREBALL
+                    && Random.nextInt(100) < CPU_MISS_PERCENT) {
+                int off = ents[target * E_STRIDE + E_SR] + Random.nextInt(6, 20);
+                aimOffsetX = Random.nextInt(2) == 0 ? -off : off;
+                aimOffsetY = Random.nextInt(-off, off + 1);
+            }
+        }
+        int aimX = CENTER_X;
+        int aimY = CENTER_Y;
+        if (target >= 0) {
+            aimX = ents[target * E_STRIDE + E_SX] + aimOffsetX;
+            aimY = ents[target * E_STRIDE + E_SY] + aimOffsetY;
+        }
+        // Dodge first: the crosshair steers the craft, so swing it away from whatever is about to hit.
+        int threat = -1;
+        int closest = CPU_EVADE_Z;
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            int b = slot * E_STRIDE;
+            int type = ents[b + E_TYPE];
+            int reach = type == T_FIREBALL ? FIREBALL_REACH : ents[b + E_AUX];
+            if ((type == T_FIREBALL || type == T_ASTEROID) && ents[b + E_Z] < closest
+                    && Math.abs(ents[b + E_X] - camX) < reach + 60 && Math.abs(ents[b + E_Y] - camY) < reach + 60) {
+                threat = slot;
+                closest = ents[b + E_Z];
+            }
+        }
+        if (threat >= 0) {
+            // A dodge is a flick of the finger to wherever steers clear of every close threat.
+            dodge(ents);
+            return;
+        }
+        if (target < 0) {
+            return;
+        }
+        aimX = clamp(aimX, 8, WIDTH - 9);
+        aimY = clamp(aimY, HEADER + 8, HEIGHT - 9);
+        crossX = crossX + clamp(aimX - crossX, -CPU_AIM_SPEED, CPU_AIM_SPEED);
+        crossY = crossY + clamp(aimY - crossY, -CPU_AIM_SPEED, CPU_AIM_SPEED);
+        if (trigger && Math.abs(aimX - crossX) + Math.abs(aimY - crossY) <= 4) {
+            fire(ents);
+        }
+    }
+
+    /**
+     * Tries a grid of crosshair positions and flicks the crosshair to the one that steers the craft
+     * furthest from every fireball and asteroid within {@value #CPU_EVADE_Z}.
+     */
+    private static void dodge(int[] ents) {
+        int bestX = crossX;
+        int bestY = crossY;
+        int bestClearance = Integer.MIN_VALUE;
+        for (int column = 0; column < 5; column++) {
+            for (int row = 0; row < 3; row++) {
+                int x = 8 + column * (WIDTH - 17) / 4;
+                int y = HEADER + 8 + row * (HEIGHT - HEADER - 17) / 2;
+                // Where the craft heads with the crosshair there (see steer()).
+                int headX = clamp((x - CENTER_X) * CAMERA_LIMIT_X / 150, -CAMERA_LIMIT_X, CAMERA_LIMIT_X);
+                int headY = clamp((CENTER_Y - y) * CAMERA_HIGH / 100, CAMERA_LOW, CAMERA_HIGH);
+                int clearance = Integer.MAX_VALUE;
+                for (int slot = 0; slot < ENTITIES; slot++) {
+                    int b = slot * E_STRIDE;
+                    int type = ents[b + E_TYPE];
+                    if ((type != T_FIREBALL && type != T_ASTEROID) || ents[b + E_Z] >= CPU_EVADE_Z) {
+                        continue;
+                    }
+                    int reach = type == T_FIREBALL ? FIREBALL_REACH : ents[b + E_AUX];
+                    int gap = Math.max(Math.abs(ents[b + E_X] - headX), Math.abs(ents[b + E_Y] - headY)) - reach;
+                    clearance = Math.min(clearance, gap);
+                }
+                // Prefer staying close to where the crosshair already is, all else equal.
+                int score = clearance * 4 - Math.abs(x - crossX) - Math.abs(y - crossY);
+                if (score > bestClearance) {
+                    bestClearance = score;
+                    bestX = x;
+                    bestY = y;
+                }
+            }
+        }
+        crossX = bestX;
+        crossY = bestY;
     }
 
     // ---- Simulation ----
@@ -1297,27 +1533,106 @@ public final class EmpireStrikesBack {
         TftTouchShield.fillRect(left, y, right - left + 1, 1, color);
     }
 
-    // ---- Title ----
+    // ---- Opening and title ----
 
-    private static void drawTitle(short[] lines) {
+    /**
+     * The opening, after the film: snow falls on Hoth as an Imperial probe streaks down and lands in
+     * a flash, then two AT-ATs stride in from the distance to where the title screen shows them.
+     */
+    private static void opening(short[] lines, int[] ents) {
+        TftTouchShield.fillScreen(SPACE);
+        shown = 0;
         round = PROBES;
-        built = 0;
-        drawHoth(lines);
-        int[] ents = new int[E_STRIDE];
+        camX = 0;
+        camY = 0;
+        travel = 0;
+        clear(ents, ENTITIES * E_STRIDE);
+        int impactX = 0;
+        for (int f = 0; f < POD_FRAMES; f++) {
+            frame = f;
+            built = 0;
+            drawHoth(lines);
+            drawSnow(lines, f);
+            // The probe's pod: a white-hot head with a fiery tail, falling towards the horizon.
+            int x = 300 - f * 5;
+            int y = HEADER + 4 + f * (CENTER_Y - HEADER - 6) / POD_FRAMES;
+            addLine(lines, x, y, x + 30, y - 16, FIRE_A);
+            addLine(lines, x + 1, y + 1, x + 22, y - 10, FIRE_B);
+            addLine(lines, x - 1, y, x + 1, y, TftTouchShield.WHITE);
+            impactX = x;
+            present(lines);
+            Delay.millis(30);
+        }
+        for (int r = 3; r <= 36; r = r + 3) {
+            TftTouchShield.drawCircle(impactX, CENTER_Y, r, (r & 4) == 0 ? TftTouchShield.WHITE : FIRE_A);
+            Delay.millis(25);
+        }
+        Delay.millis(200);
+        clearView();
+        // The walkers: the near one ends at z 1500, the far one at 2300, as on the title screen.
         ents[E_TYPE] = T_ATAT;
         ents[E_X] = 120;
-        ents[E_Z] = 1500;
         ents[E_HP] = ATAT_HITS;
         ents[E_FLAG] = -1;
-        drawAtat(lines, ents, 0);
-        ents[E_X] = -520;
-        ents[E_Z] = 2300;
-        drawAtat(lines, ents, 0);
-        present(lines);
-        showCentered("THE EMPIRE", 30, 3, TftTouchShield.YELLOW);
-        showCentered("STRIKES BACK", 58, 3, TftTouchShield.YELLOW);
+        ents[E_STRIDE + E_TYPE] = T_ATAT;
+        ents[E_STRIDE + E_X] = -520;
+        ents[E_STRIDE + E_HP] = ATAT_HITS;
+        ents[E_STRIDE + E_FLAG] = -1;
+        for (int f = 0; f <= WALK_FRAMES; f++) {
+            frame = POD_FRAMES + f;
+            built = 0;
+            drawHoth(lines);
+            drawSnow(lines, POD_FRAMES + f);
+            ents[E_Z] = FAR + 1400 - (FAR + 1400 - 1500) * f / WALK_FRAMES;
+            ents[E_STRIDE + E_Z] = FAR + 900 - (FAR + 900 - 2300) * f / WALK_FRAMES;
+            drawAtat(lines, ents, E_STRIDE);
+            drawAtat(lines, ents, 0);
+            present(lines);
+            Delay.millis(30);
+        }
+        clear(ents, ENTITIES * E_STRIDE);
+    }
+
+    /** Snowflakes drifting down and a little sideways, each at its own pace. */
+    private static void drawSnow(short[] lines, int f) {
+        for (int i = 0; i < 30; i++) {
+            int x = (i * 97 + f * (1 + i % 3) / 2) % WIDTH;
+            int y = HEADER + (i * 53 + f * (2 + i % 3)) % (HEIGHT - HEADER);
+            addLine(lines, x, y, x, y, TftTouchShield.WHITE);
+        }
+    }
+
+    /**
+     * The title screen, over the last frame of the opening: the two title lines assemble letter by
+     * letter, their spacing tightening until they lock into place, then flash from white to yellow.
+     */
+    private static void drawTitle(byte[] letter) {
+        // At 27 pixels apart "STRIKES BACK" still fits the screen; any wider and it would wrap.
+        for (int spacing = 27; spacing >= 18; spacing = spacing - 3) {
+            TftTouchShield.fillRect(0, 28, WIDTH, 56, SPACE);
+            spaceOut(TITLE_TOP, 30, spacing, letter);
+            spaceOut(TITLE_BOTTOM, 58, spacing, letter);
+            Delay.millis(110);
+        }
+        showCentered(TITLE_TOP, 30, 3, TftTouchShield.WHITE);
+        showCentered(TITLE_BOTTOM, 58, 3, TftTouchShield.WHITE);
+        Delay.millis(100);
+        showCentered(TITLE_TOP, 30, 3, TftTouchShield.YELLOW);
+        showCentered(TITLE_BOTTOM, 58, 3, TftTouchShield.YELLOW);
         showCentered("Drag to steer and aim, tap to fire", 204, 1, TftTouchShield.WHITE);
         showCentered("Tap to start", 218, 1, TftTouchShield.CYAN);
+    }
+
+    /** One title line at text size 3 with its letters {@code spacing} pixels apart, centered. */
+    private static void spaceOut(String text, int y, int spacing, byte[] letter) {
+        int left = (WIDTH - (text.length() - 1) * spacing - 18) / 2;
+        TftTouchShield.setTextSize(3);
+        TftTouchShield.setTextColor(SNOW, SPACE);
+        for (int i = 0; i < text.length(); i++) {
+            letter[0] = (byte) text.charAt(i);
+            TftTouchShield.setCursor(left + i * spacing, y);
+            TftTouchShield.print(letter, 1);
+        }
     }
 
     // ---- Records ----
@@ -1375,6 +1690,11 @@ public final class EmpireStrikesBack {
         TftTouchShield.setCursor(262, 2);
         TftTouchShield.print("WAVE ");
         TftTouchShield.print(wave);
+        if (autopilot) {
+            TftTouchShield.setTextColor(TftTouchShield.MAGENTA, SPACE);
+            TftTouchShield.setCursor(226, 2);
+            TftTouchShield.print("CPU");
+        }
         int color = TftTouchShield.GREEN;
         if (shields == 0) {
             color = TftTouchShield.RED;

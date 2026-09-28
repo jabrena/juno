@@ -16,7 +16,7 @@ public final class JunoCompiler {
     public CompilationResult compile(CompilationRequest request) {
         Program program = pipeline.link(request.classPath(), request.mainClass());
         IrProgram optimized = pipeline.optimize(pipeline.lower(program));
-        CortexM4AsmBackend.Output output = new CortexM4AsmBackend(request.gcLoggingEnabled()).generate(optimized);
+        CortexM4AsmBackend.Output output = new CortexM4AsmBackend(request.gcLoggingEnabled(), program.board()).generate(optimized);
         return new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(),
                 CompilationReport.from(program, optimized));
     }
