@@ -1,6 +1,6 @@
 # Games
 
-Juno ships 33 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is a plain Java class in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
+Juno ships 33 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/tft`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
 
 ## How to play
 
@@ -14,7 +14,7 @@ Then flash a game by its class name. Every game in this page lists its own comma
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.<Game>
+  -Djuno.main=io.github.jabrena.juno.games.<Game>
 ```
 
 `juno:upload` finds the board by itself, or takes `-Djuno.port=<PORT>`. To check that a game builds without touching any hardware, use `juno:verify` instead of `juno:upload`.
@@ -42,7 +42,7 @@ The arcade's 28x31-tile maze with all 244 dots and four energizers. Touch and ho
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.PacMan
+  -Djuno.main=io.github.jabrena.juno.games.PacMan
 ```
 
 ### Space Invaders
@@ -53,7 +53,7 @@ Touch and hold anywhere: the laser cannon slides towards your finger and fires w
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.SpaceInvaders
+  -Djuno.main=io.github.jabrena.juno.games.SpaceInvaders
 ```
 
 ### Tetris
@@ -64,7 +64,7 @@ A 10x20 well with the seven tetrominoes, a next-piece preview, score, lines and 
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Tetris
+  -Djuno.main=io.github.jabrena.juno.games.Tetris
 ```
 
 ### Snake
@@ -75,7 +75,7 @@ The CPU plays by itself (a breadth-first search to the food, checked with a floo
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Snake
+  -Djuno.main=io.github.jabrena.juno.games.Snake
 ```
 
 ### Pong
@@ -86,7 +86,7 @@ You against the computer. Your paddle at the bottom follows your finger; where t
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Pong
+  -Djuno.main=io.github.jabrena.juno.games.Pong
 ```
 
 ### Missile Command
@@ -97,7 +97,7 @@ Warheads rain down on six cities and three bases; tap the sky to launch an inter
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.MissileCommand
+  -Djuno.main=io.github.jabrena.juno.games.MissileCommand
 ```
 
 ### Tempest
@@ -108,7 +108,7 @@ A vector-style tube seen end-on. Touch near the rim to move your claw around it 
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Tempest
+  -Djuno.main=io.github.jabrena.juno.games.Tempest
 ```
 
 ### Star Wars
@@ -163,7 +163,7 @@ After Cinematronics' 1979 vector arcade game, in landscape: two grids of three b
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Sundance
+  -Djuno.main=io.github.jabrena.juno.games.Sundance
 ```
 
 ### Space Paranoids
@@ -185,7 +185,7 @@ Hold `<`/`>` to rotate and `BURN` to thrust. Land upright and slowly with both f
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.LunarLander
+  -Djuno.main=io.github.jabrena.juno.games.LunarLander
 ```
 
 ### Whac-A-Mole
@@ -196,7 +196,7 @@ Moles pop out of nine holes; tap them before they duck. Golden moles are worth m
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.WhacAMole
+  -Djuno.main=io.github.jabrena.juno.games.WhacAMole
 ```
 
 ### Simon
@@ -207,7 +207,7 @@ The classic memory toy: four colored pads light up in a growing sequence that yo
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Simon
+  -Djuno.main=io.github.jabrena.juno.games.Simon
 ```
 
 ## Board and strategy
@@ -222,7 +222,7 @@ You play White against a 3-ply engine. Tap a piece to see its legal moves, then 
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Chess
+  -Djuno.main=io.github.jabrena.juno.games.Chess
 ```
 
 ### Checkers
@@ -233,7 +233,7 @@ English draughts: captures are mandatory and multi-jumps continue with the same 
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Checkers
+  -Djuno.main=io.github.jabrena.juno.games.Checkers
 ```
 
 ### Othello
@@ -244,7 +244,7 @@ You play black; legal squares show a small dot, and the computer's last move a r
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Othello
+  -Djuno.main=io.github.jabrena.juno.games.Othello
 ```
 
 ### Connect Four
@@ -255,7 +255,7 @@ Tap a column to drop a red disc; the computer answers with a 4-ply search that p
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.ConnectFour
+  -Djuno.main=io.github.jabrena.juno.games.ConnectFour
 ```
 
 ### Tic-Tac-Toe
@@ -266,7 +266,7 @@ The "vanishing" variant: each player keeps at most three marks, so placing a fou
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.TicTacToe
+  -Djuno.main=io.github.jabrena.juno.games.TicTacToe
 ```
 
 ### Backgammon
@@ -277,7 +277,7 @@ In landscape. `ROLL`, then tap a checker and one of the yellow rings that mark w
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Backgammon
+  -Djuno.main=io.github.jabrena.juno.games.Backgammon
 ```
 
 ### Mancala
@@ -288,7 +288,7 @@ Kalah with six pits and four seeds, in landscape. Tap one of your pits (bottom r
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Mancala
+  -Djuno.main=io.github.jabrena.juno.games.Mancala
 ```
 
 ### Battleship
@@ -299,7 +299,7 @@ Random fleets on 10x10 grids. Tap the large enemy grid to fire; your fleet and t
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Battleship
+  -Djuno.main=io.github.jabrena.juno.games.Battleship
 ```
 
 ## Puzzles and simulations
@@ -314,7 +314,7 @@ A 10x11 field with 16 mines. Tap to open (the first tap is always safe), press a
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Minesweeper
+  -Djuno.main=io.github.jabrena.juno.games.Minesweeper
 ```
 
 ### 2048
@@ -325,7 +325,7 @@ Swipe (or tap near an edge) to slide the tiles; equal tiles merge into their sum
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Game2048
+  -Djuno.main=io.github.jabrena.juno.games.Game2048
 ```
 
 ### Game of Life
@@ -336,7 +336,7 @@ Conway's cellular automaton on a 40x46 wrapping grid. `RUN`/`STOP`, `STEP`, `RAN
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.GameOfLife
+  -Djuno.main=io.github.jabrena.juno.games.GameOfLife
 ```
 
 ## Cards and casino
@@ -351,7 +351,7 @@ Set your bet with `-`/`+` and `DEAL`, then `HIT`, `STAND` or `DBL` (double down)
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Blackjack
+  -Djuno.main=io.github.jabrena.juno.games.Blackjack
 ```
 
 ### Texas Hold'em
@@ -362,7 +362,7 @@ No-limit Hold'em against three computer players (Ann plays tight, Bob loose, Cal
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.TexasHoldem
+  -Djuno.main=io.github.jabrena.juno.games.TexasHoldem
 ```
 
 ### Solitaire
@@ -373,7 +373,7 @@ Klondike, draw one. Tap a card to pick it up (with everything on top of it), the
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Solitaire
+  -Djuno.main=io.github.jabrena.juno.games.Solitaire
 ```
 
 ### Slot machine
@@ -384,7 +384,7 @@ A three-reel machine with 7s, BARs, bells, plums, lemons and cherries. `BET` sta
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.SlotMachine
+  -Djuno.main=io.github.jabrena.juno.games.SlotMachine
 ```
 
 ## Dice and chance
@@ -399,7 +399,7 @@ Solitaire Yahtzee over 13 rounds. `ROLL` up to three times, tapping dice to hold
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Yahtzee
+  -Djuno.main=io.github.jabrena.juno.games.Yahtzee
 ```
 
 ### Rock, Paper, Scissors, Lizard, Spock
@@ -410,7 +410,7 @@ Tap one of the five pixel-art buttons. Each move beats two others and loses to t
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.RockPaperScissorsLizardSpock
+  -Djuno.main=io.github.jabrena.juno.games.RockPaperScissorsLizardSpock
 ```
 
 ### Russian roulette
@@ -421,7 +421,7 @@ A cartoon duel with a six-chamber cylinder and no gore: `LOAD` 1 to 3 bullets, `
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.RussianRoulette
+  -Djuno.main=io.github.jabrena.juno.games.RussianRoulette
 ```
 
 ## Demos

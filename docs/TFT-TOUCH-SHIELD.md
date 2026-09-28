@@ -136,10 +136,10 @@ attempts). Confirmed running on a real UNO R4 WiFi with this shield.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Minesweeper
+  -Djuno.main=io.github.jabrena.juno.games.Minesweeper
 ```
 
-[`Minesweeper`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Minesweeper.java) is
+[`Minesweeper`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Minesweeper.java) is
 the classic game on a 10x11 field with 16 mines, in `PORTRAIT_FLIPPED` rotation: tap a covered cell
 to open it (the first tap is always safe), press and hold to plant or remove a flag, tap an opened
 number whose neighbouring flags match it to open the rest of its neighbours, and tap the face
@@ -147,10 +147,10 @@ button to start over. The header shows the mines left to flag and the elapsed se
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Chess
+  -Djuno.main=io.github.jabrena.juno.games.Chess
 ```
 
-[`Chess`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Chess.java) plays you
+[`Chess`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Chess.java) plays you
 (White) against a small built-in engine (Black). Pieces are 20x20 bitmaps shaped like the Unicode
 chess symbols, streamed with `beginPixels`/`pushPixel`. Tap one of your pieces to see its legal
 destinations, then tap one to move; `UNDO` takes back your last move together with the engine's reply (repeatable
@@ -164,10 +164,10 @@ logged to Serial. Its move generator matches the standard perft reference counts
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.TicTacToe
+  -Djuno.main=io.github.jabrena.juno.games.TicTacToe
 ```
 
-[`TicTacToe`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TicTacToe.java) is the
+[`TicTacToe`](../juno-examples/src/main/java/io/github/jabrena/juno/games/TicTacToe.java) is the
 "vanishing" variant of the handheld electronic games: each player owns at most three marks, and
 placing a fourth removes that player's oldest one, which is drawn dimmed while it is next to go, so
 there are no draws. You play X against the computer's O (a 6-ply alpha-beta search); `1P` switches to
@@ -175,10 +175,10 @@ two players sharing the screen, `NEW` starts a new round, and the footer keeps t
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Simon
+  -Djuno.main=io.github.jabrena.juno.games.Simon
 ```
 
-[`Simon`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Simon.java) is the classic
+[`Simon`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Simon.java) is the classic
 memory game: four colored pads around a central hub light up in a growing sequence that you repeat
 by tapping them. Each round adds a step and plays a little faster; a wrong pad (the right one then
 blinks) or five seconds without a tap ends the game. Tap the hub to start; it shows the score, and the
@@ -186,10 +186,10 @@ header the best score since power-up. The shield has no speaker, so it is lights
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Blackjack
+  -Djuno.main=io.github.jabrena.juno.games.Blackjack
 ```
 
-[`Blackjack`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Blackjack.java) plays
+[`Blackjack`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Blackjack.java) plays
 against the dealer on a green felt table: set your bet with `-`/`+` and `DEAL`, then `HIT`, `STAND`
 or `DBL` (double down on your first two cards). The dealer stands on all 17s, blackjack pays 3:2,
 and ties push; splitting and insurance are not offered. You start with 100 chips (refilled when you
@@ -198,10 +198,10 @@ run out), and a single 52-card deck is reshuffled when fewer than 15 cards remai
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Solitaire
+  -Djuno.main=io.github.jabrena.juno.games.Solitaire
 ```
 
-[`Solitaire`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Solitaire.java) — Klondike
+[`Solitaire`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Solitaire.java) — Klondike
 (draw one): tap a card to pick it up (a tableau card brings the cards on top of it along), then tap
 where it should go; tapping a picked-up card again sends it to its foundation. Tap the stock to turn
 a card, and the empty stock to turn the waste back over. Once every card is face up the rest plays
@@ -210,10 +210,10 @@ itself. Scoring follows the usual Windows rules, and `NEW` deals again. The 32x4
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Yahtzee
+  -Djuno.main=io.github.jabrena.juno.games.Yahtzee
 ```
 
-[`Yahtzee`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Yahtzee.java) — solitaire
+[`Yahtzee`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Yahtzee.java) — solitaire
 Yahtzee over 13 rounds: `ROLL` up to three times, tapping dice between rolls to hold them, then tap a
 box on the scorecard, which previews what the dice would score in every open box. Includes the
 35-point upper bonus, 100-point Yahtzee bonuses and the official joker rules; the header keeps the
@@ -221,24 +221,24 @@ best score since power-up.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.ConnectFour
+  -Djuno.main=io.github.jabrena.juno.games.ConnectFour
 ```
 
-[`ConnectFour`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/ConnectFour.java) — Connect Four against the computer: tap a column to drop a red disc; the computer (yellow) answers with a 4-ply alpha-beta search that tries central columns first. The loser of a game moves first in the next one, and the footer keeps the score.
+[`ConnectFour`](../juno-examples/src/main/java/io/github/jabrena/juno/games/ConnectFour.java) — Connect Four against the computer: tap a column to drop a red disc; the computer (yellow) answers with a 4-ply alpha-beta search that tries central columns first. The loser of a game moves first in the next one, and the footer keeps the score.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Checkers
+  -Djuno.main=io.github.jabrena.juno.games.Checkers
 ```
 
-[`Checkers`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Checkers.java) — English draughts against the computer: men move diagonally forward, kings (gold crown) diagonally both ways; captures are mandatory and multi-jumps continue with the same piece (tap each landing square). The computer runs a 5-ply alpha-beta minimax. Its move generator matches the standard English draughts perft counts to depth 7.
+[`Checkers`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Checkers.java) — English draughts against the computer: men move diagonally forward, kings (gold crown) diagonally both ways; captures are mandatory and multi-jumps continue with the same piece (tap each landing square). The computer runs a 5-ply alpha-beta minimax. Its move generator matches the standard English draughts perft counts to depth 7.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Othello
+  -Djuno.main=io.github.jabrena.juno.games.Othello
 ```
 
-[`Othello`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Othello.java) — Othello
+[`Othello`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Othello.java) — Othello
 (Reversi) against the computer: you play black, legal squares show a small dot, and the computer's
 last move carries a red one. Passes are handled automatically. The computer runs an iterative-deepening
 negamax with alpha-beta pruning for up to two seconds a move (square weights plus mobility, and a
@@ -246,10 +246,10 @@ perfect endgame once it can see the end); its move generator matches the standar
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Mancala
+  -Djuno.main=io.github.jabrena.juno.games.Mancala
 ```
 
-[`Mancala`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Mancala.java) — Kalah with
+[`Mancala`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Mancala.java) — Kalah with
 six pits and four seeds, in landscape: tap one of your pits (bottom row) to sow it counter-clockwise.
 A last seed in your store earns another turn, one in an empty pit of yours captures the pit opposite,
 and when a row runs empty each side banks what is left. The computer searches with alpha-beta,
@@ -257,10 +257,10 @@ deepening for up to 1.5 seconds a move.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Backgammon
+  -Djuno.main=io.github.jabrena.juno.games.Backgammon
 ```
 
-[`Backgammon`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Backgammon.java) —
+[`Backgammon`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Backgammon.java) —
 Backgammon against the computer, in landscape. `ROLL`, then tap a checker (or the bar) and one of
 the yellow rings that mark its legal destinations, one die at a time; tap your tray to bear off.
 `UNDO` takes back the turn so far and `DONE` ends it. The full rules apply (entering from the bar,
@@ -271,45 +271,45 @@ Triangles are drawn from horizontal lines, since the display has no line primiti
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Game2048
+  -Djuno.main=io.github.jabrena.juno.games.Game2048
 ```
 
-[`Game2048`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Game2048.java) — 2048: swipe to slide the tiles (or tap near an edge of the grid, for panels that report swipes poorly); equal tiles merge. Reach 2048 to win and keep going; the header shows the score and best score.
+[`Game2048`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Game2048.java) — 2048: swipe to slide the tiles (or tap near an edge of the grid, for panels that report swipes poorly); equal tiles merge. Reach 2048 to win and keep going; the header shows the score and best score.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Battleship
+  -Djuno.main=io.github.jabrena.juno.games.Battleship
 ```
 
-[`Battleship`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks.
+[`Battleship`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Snake
+  -Djuno.main=io.github.jabrena.juno.games.Snake
 ```
 
-[`Snake`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Snake.java) — Snake that the CPU plays by itself (shortest path to the food by breadth-first search, taken only when a flood fill shows enough room left; it averages over 100 food in simulation) and restarts after each crash. Tap the header to take over (`YOU`) and back (`CPU`). When playing yourself, tap above/below the head (or left/right of it, when moving vertically) to turn; each bite grows the snake and speeds it up. Only the head, the previous head and the tail are redrawn each step.
+[`Snake`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Snake.java) — Snake that the CPU plays by itself (shortest path to the food by breadth-first search, taken only when a flood fill shows enough room left; it averages over 100 food in simulation) and restarts after each crash. Tap the header to take over (`YOU`) and back (`CPU`). When playing yourself, tap above/below the head (or left/right of it, when moving vertically) to turn; each bite grows the snake and speeds it up. Only the head, the previous head and the tail are redrawn each step.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Tetris
+  -Djuno.main=io.github.jabrena.juno.games.Tetris
 ```
 
-[`Tetris`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Tetris.java) — Tetris: a 10x20 well with next-piece preview, score, lines and levels; the `<`/`>` (auto-repeat), `ROT` and `DROP` buttons sit beside the well, and tapping the well also rotates. Each frame only the changed cells are redrawn.
+[`Tetris`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Tetris.java) — Tetris: a 10x20 well with next-piece preview, score, lines and levels; the `<`/`>` (auto-repeat), `ROT` and `DROP` buttons sit beside the well, and tapping the well also rotates. Each frame only the changed cells are redrawn.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.Pong
+  -Djuno.main=io.github.jabrena.juno.games.Pong
 ```
 
-[`Pong`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/Pong.java) — Pong against the computer in portrait: your paddle follows your finger, the computer's paddle chases the ball with a speed limit, and the hit position sets the bounce angle. First to 7 wins.
+[`Pong`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Pong.java) — Pong against the computer in portrait: your paddle follows your finger, the computer's paddle chases the ball with a speed limit, and the hit position sets the bounce angle. First to 7 wins.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.LunarLander
+  -Djuno.main=io.github.jabrena.juno.games.LunarLander
 ```
 
-[`LunarLander`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/LunarLander.java) —
+[`LunarLander`](../juno-examples/src/main/java/io/github/jabrena/juno/games/LunarLander.java) —
 Lunar Lander: hold `<`/`>` to rotate in 15-degree steps and `BURN` to fire the engine. Set down
 upright and slowly (the header's speeds turn red when too fast) with both feet on a yellow pad to
 score 50 times its multiplier (x2, x3, x5; narrower pads pay more). A crash costs 250 fuel, fuel
@@ -318,10 +318,10 @@ rotated per pixel into a streamed 17x17 block, since the display has no line pri
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.GameOfLife
+  -Djuno.main=io.github.jabrena.juno.games.GameOfLife
 ```
 
-[`GameOfLife`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/GameOfLife.java) — Conway's
+[`GameOfLife`](../juno-examples/src/main/java/io/github/jabrena/juno/games/GameOfLife.java) — Conway's
 Game of Life on a 40x46 grid whose edges wrap around. `RUN`/`STOP`, `STEP`, `RAND` and `CLR` control
 the simulation; while stopped, drag on the grid to draw cells (a stroke starting on a live cell erases).
 Only cells that change are redrawn, and the header shows the generation and population.

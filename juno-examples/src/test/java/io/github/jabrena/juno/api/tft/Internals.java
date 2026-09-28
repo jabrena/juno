@@ -73,7 +73,7 @@ public final class Internals {
      * the panel at {@code taps.get()} on every {@code period}-th step of simulated time, releasing
      * it in between so each press registers as a separate tap. A null position skips that press.
      */
-    static void tapEvery(int period, Supplier<int[]> taps) {
+    public static void tapEvery(int period, Supplier<int[]> taps) {
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT);
         int[] step = {0};
@@ -83,7 +83,7 @@ public final class Internals {
         };
     }
 
-    static void stopTapping() {
+    public static void stopTapping() {
         Delay.afterAdvance = () -> { };
         Gpio.touch = null;
     }

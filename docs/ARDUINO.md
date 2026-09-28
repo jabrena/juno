@@ -184,12 +184,12 @@ resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built 
 
 `WeatherTFT` (`-Djuno.main=io.github.jabrena.juno.api.io.net.weather.WeatherTFT`) is a desk
 weather station: public IP → ipinfo.io location → Open-Meteo weather, with a seven-segment clock.
-`Minesweeper` (`-Djuno.main=io.github.jabrena.juno.api.tft.Minesweeper`) is the classic game
-(tap to open, hold to flag). `Chess` (`-Djuno.main=io.github.jabrena.juno.api.tft.Chess`) plays you
-against a small 3-ply engine. `TicTacToe` (`-Djuno.main=io.github.jabrena.juno.api.tft.TicTacToe`)
+`Minesweeper` (`-Djuno.main=io.github.jabrena.juno.games.Minesweeper`) is the classic game
+(tap to open, hold to flag). `Chess` (`-Djuno.main=io.github.jabrena.juno.games.Chess`) plays you
+against a small 3-ply engine. `TicTacToe` (`-Djuno.main=io.github.jabrena.juno.games.TicTacToe`)
 is "vanishing" tic-tac-toe (three marks each, the oldest disappears). `Simon`
-(`-Djuno.main=io.github.jabrena.juno.api.tft.Simon`) is the classic memory game, and `Blackjack`
-(`-Djuno.main=io.github.jabrena.juno.api.tft.Blackjack`) plays against the dealer with a bankroll. Further games in the same package: `ConnectFour`,
+(`-Djuno.main=io.github.jabrena.juno.games.Simon`) is the classic memory game, and `Blackjack`
+(`-Djuno.main=io.github.jabrena.juno.games.Blackjack`) plays against the dealer with a bankroll. Further games in the same package: `ConnectFour`,
 `Checkers`, `Game2048`, `Battleship`, `Snake`, `Tetris`, `Pong`, `GameOfLife`, `Solitaire`,
 `Yahtzee`, `LunarLander`, `Othello`, `Mancala`, `Backgammon`, `TexasHoldem`,
 `SlotMachine`, `RussianRoulette` and `RockPaperScissorsLizardSpock` — see

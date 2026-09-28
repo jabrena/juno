@@ -48,8 +48,9 @@ class ArduinoCliCompileTest {
     private static final GenericContainer<?> ARDUINO_CLI = container().withCommand("sleep", "infinity");
 
     /**
-     * Every game's fully qualified class name: those in api.tft and those in games' subpackages. A
-     * game is its {@code @Board} entry point; the other classes of a game's package are its parts.
+     * Every TFT program's fully qualified class name: {@code TftTouchPaint} in api.tft, and every game
+     * in games or one of its subpackages. A game is its {@code @Board} entry point; the other classes
+     * of a multi-class game's subpackage are its parts.
      */
     static Stream<String> games() throws IOException {
         Path sources = BASEDIR.resolve("src/main/java");

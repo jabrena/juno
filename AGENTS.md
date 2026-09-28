@@ -81,13 +81,15 @@ against `juno`'s `api` and `annotations` packages.
   `LedMatrixHeart.java`, `LedMatrixSnake.java`, `SerialCounter.java`, …) demonstrating the
   supported API; they are a normal Maven module (depends only on the `juno` artifact, for both the
   hardware API and `@Board`/`ArduinoUnoR4WiFi`) so `mvn compile` checks they still build. Keep them
-  buildable end-to-end via `arduino-cli` too.
+  buildable end-to-end via `arduino-cli` too. TFT shield games live in `io/github/jabrena/juno/games`
+  (single-class games directly, multi-class games in their own subpackage); `api/tft` keeps only the
+  non-game `TftTouchPaint` demo.
 - `juno-examples/src/test/java/` – WRITE here: tests that play the TFT games on an emulated shield.
   `io/github/jabrena/juno/api/{Clock,Delay,Random}` and `api/io/{Gpio,usb/Serial}` are test doubles
   that shadow the `juno` artifact's native classes on the test classpath (`Gpio` emulates the
   ILI9341 bus and touch panel); `api/tft/GameScreenshotTest` compares each game's screen with
   `docs/images/games/*.png` (regenerate with `-Djuno.updateScreenshots=true`), and the
-  `*GamesTest` classes check game rules and computer players. `api/tft/ArduinoCliCompileTest`
+  `games/*GamesTest` classes check game rules and computer players. `api/tft/ArduinoCliCompileTest`
   (tag `arduino-cli`, opt-in via `-Parduino-cli`) compiles every game with the real `arduino-cli`
   in a Testcontainers container built from `juno-examples/src/test/docker/arduino-cli/Dockerfile`.
   See `docs/GAMES.md`.

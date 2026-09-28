@@ -39,42 +39,42 @@ class GameScreenshotTest {
      */
     static Stream<Arguments> games() {
         return Stream.of(
-                game("Backgammon", "backgammon", "500:290,110 4000:290,110 end:7000"),
-                game("Battleship", "battleship", "500:120,160 end:6000"),
-                game("Blackjack", "blackjack", "500:190,280 end:3000"),
-                game("Checkers", "checkers", "500:22,198 900:50,170 end:6000"),
-                game("Chess", "chess", "500:134,226 900:134,170 end:8000"),
-                game("ConnectFour", "connect-four", "500:120,160 end:6000"),
+                game("games.Backgammon", "backgammon", "500:290,110 4000:290,110 end:7000"),
+                game("games.Battleship", "battleship", "500:120,160 end:6000"),
+                game("games.Blackjack", "blackjack", "500:190,280 end:3000"),
+                game("games.Checkers", "checkers", "500:22,198 900:50,170 end:6000"),
+                game("games.Chess", "chess", "500:134,226 900:134,170 end:8000"),
+                game("games.ConnectFour", "connect-four", "500:120,160 end:6000"),
                 game("games.empirestrikesback.EmpireStrikesBack", "empire-strikes-back", "6000:160,130 6500:85,140 10200:200,150 end:10600"),
-                game("Game2048", "game-2048", "500:120,160 1200:230,200 1900:10,200 2600:120,300 end:3200"),
-                game("GameOfLife", "game-of-life", "500:120,160 end:6000"),
-                game("LunarLander", "lunar-lander", "500:120,160 1500:120,290 2200:120,290 end:2600"),
-                game("Mancala", "mancala", "500:143,146 end:7000"),
-                game("Minesweeper", "minesweeper", "500:120,160 end:6000"),
-                game("MissileCommand", "missile-command", "500:120,160 1500:60,120 2200:180,90 2600:120,150 end:3000"),
-                game("Othello", "othello", "500:106,114 end:6000"),
-                game("PacMan", "pacman", "500:120,160 end:6000"),
-                game("Pong", "pong", "500:120,160 end:6000"),
+                game("games.Game2048", "game-2048", "500:120,160 1200:230,200 1900:10,200 2600:120,300 end:3200"),
+                game("games.GameOfLife", "game-of-life", "500:120,160 end:6000"),
+                game("games.LunarLander", "lunar-lander", "500:120,160 1500:120,290 2200:120,290 end:2600"),
+                game("games.Mancala", "mancala", "500:143,146 end:7000"),
+                game("games.Minesweeper", "minesweeper", "500:120,160 end:6000"),
+                game("games.MissileCommand", "missile-command", "500:120,160 1500:60,120 2200:180,90 2600:120,150 end:3000"),
+                game("games.Othello", "othello", "500:106,114 end:6000"),
+                game("games.PacMan", "pacman", "500:120,160 end:6000"),
+                game("games.Pong", "pong", "500:120,160 end:6000"),
                 game("games.redbaron.RedBaron", "red-baron", "6500:160,130 7000:85,140 9500:160,130 9580:230,130 9660:260,130 9740:270,130 9820:270,130 end:9900"),
-                game("RockPaperScissorsLizardSpock", "rock-paper-scissors-lizard-spock",
+                game("games.RockPaperScissorsLizardSpock", "rock-paper-scissors-lizard-spock",
                         "500:216,280 3000:24,280 5500:120,280 end:8000"),
-                game("RussianRoulette", "russian-roulette", "500:180,290 3500:180,290 end:6500"),
-                game("Simon", "simon", "500:120,190 end:1500"),
-                game("SlotMachine", "slot-machine", "500:160,285 end:5000"),
-                game("Snake", "snake", "500:120,160 end:6000"),
-                game("Solitaire", "solitaire", "500:120,160 end:6000"),
+                game("games.RussianRoulette", "russian-roulette", "500:180,290 3500:180,290 end:6500"),
+                game("games.Simon", "simon", "500:120,190 end:1500"),
+                game("games.SlotMachine", "slot-machine", "500:160,285 end:5000"),
+                game("games.Snake", "snake", "500:120,160 end:6000"),
+                game("games.Solitaire", "solitaire", "500:120,160 end:6000"),
                 game("games.startrek.StarTrek", "star-trek", "5000:160,130 5500:85,140 8000:200,60 8080:200,60 8160:200,60 8240:200,60 8320:200,60 8400:200,60 8480:200,60 8560:200,60 8640:200,60 8720:200,60 8800:200,60 8880:200,60 8960:200,60 9040:200,60 9120:200,60 9200:200,60 9280:200,60 9360:200,60 9440:200,60 9520:200,60 9700:270,120 end:9780"),
-                game("Sundance", "sundance", "500:160,130 5080:160,205 end:5200"),
-                game("SpaceInvaders", "space-invaders", "500:120,160 end:6000"),
+                game("games.Sundance", "sundance", "500:160,130 5080:160,205 end:5200"),
+                game("games.SpaceInvaders", "space-invaders", "500:120,160 end:6000"),
                 game("games.spaceparanoids.SpaceParanoids", "space-paranoids", "5500:160,130 6000:85,140 end:14500"),
                 game("games.starwars.StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
-                game("Tempest", "tempest", "500:120,160 end:6000"),
-                game("Tetris", "tetris", "500:120,160 end:6000"),
-                game("TexasHoldem", "texas-holdem", "500:120,300 end:6000"),
-                game("TftTouchPaint", "tft-touch-paint", paintStrokes()),
-                game("TicTacToe", "tic-tac-toe", "500:120,160 end:6000"),
-                game("WhacAMole", "whac-a-mole", "500:120,160 end:2500"),
-                game("Yahtzee", "yahtzee", "500:120,285 2000:30,205 2400:120,205 3000:120,285 end:5000"));
+                game("games.Tempest", "tempest", "500:120,160 end:6000"),
+                game("games.Tetris", "tetris", "500:120,160 end:6000"),
+                game("games.TexasHoldem", "texas-holdem", "500:120,300 end:6000"),
+                game("api.tft.TftTouchPaint", "tft-touch-paint", paintStrokes()),
+                game("games.TicTacToe", "tic-tac-toe", "500:120,160 end:6000"),
+                game("games.WhacAMole", "whac-a-mole", "500:120,160 end:2500"),
+                game("games.Yahtzee", "yahtzee", "500:120,285 2000:30,205 2400:120,205 3000:120,285 end:5000"));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -127,9 +127,8 @@ class GameScreenshotTest {
                         Integer.parseInt(xy[1])));
             }
         }
-        // Games outside api.tft are named by their package under io.github.jabrena.juno, e.g. games.X.
-        String mainClass = game.contains(".") ? "io.github.jabrena.juno." + game
-                : "io.github.jabrena.juno.api.tft." + game;
+        // Programs are named relative to io.github.jabrena.juno, e.g. games.Chess or api.tft.TftTouchPaint.
+        String mainClass = "io.github.jabrena.juno." + game;
         return TftEmulator.run(mainClass, end, taps);
     }
 
