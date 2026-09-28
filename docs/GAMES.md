@@ -113,9 +113,9 @@ A vector-style tube seen end-on. Touch near the rim to move your claw around it 
 
 ### Star Wars
 
-<img src="images/games/star-wars.png" alt="Star Wars on the TFT shield" width="320">
+<img src="videos/games/star-wars-cpu.gif" alt="Star Wars on the TFT shield, eight waves flown by the CPU" width="320">
 
-After Atari's 1983 vector arcade game, in landscape: from an X-wing's cockpit, fight TIE fighters in space (Darth Vader's can only be driven off), shoot the tops off the laser towers on the Death Star's surface, then fly the trench and hit the exhaust port. Drag to aim and tap to fire; the four cannons converge where you tapped. In the trench the X-wing follows the crosshair, so you steer around catwalks as you aim. Six shields, one back per destroyed Death Star, and a bonus if the only shot you fire in the trench is the one that hits the port.
+After Atari's 1983 vector arcade game, in landscape. It opens like the film: "A long time ago in a galaxy far, far away....", the logo receding into the distance, and a Star Destroyer sliding overhead in pursuit of a rebel ship above a planet, before the title settles into place; every game over returns there. After the title, choose the pilot: **HUMAN** to play yourself, or **CPU** to watch an autopilot that lets targets close in, sweeps its crosshair onto them, misses now and then, and weaves past the trench catwalks; tap the header during the game to switch between the two. From an X-wing's cockpit, fight TIE fighters in space (Darth Vader's can only be driven off), shoot the tops off the laser towers on the Death Star's surface, then fly the trench and hit the exhaust port. Drag to aim and tap to fire; the four cannons converge where you tapped. In the trench the X-wing follows the crosshair, so you steer around catwalks as you aim. Six shields, one back per destroyed Death Star, and a bonus if the only shot you fire in the trench is the one that hits the port.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \

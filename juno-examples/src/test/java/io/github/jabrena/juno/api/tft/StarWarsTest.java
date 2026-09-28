@@ -12,8 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Rules of Star Wars: clipping, lasers, Vader, shields, catwalks, and an autopilot that flies whole
- * waves through the game's own simulation and rendering.
+ * Rules of Star Wars: clipping, lasers, Vader, shields, catwalks, the pilot screen, and the CPU pilot
+ * that flies whole waves through the game's own simulation and rendering.
  */
 class StarWarsTest {
     private static final Class<?> GAME = StarWars.class;
@@ -24,17 +24,17 @@ class StarWarsTest {
     private static final int Z = 3;
     private static final int SX = 8;
     private static final int SY = 9;
-    private static final int SR = 10;
     private static final int TIE = 1;
     private static final int VADER = 2;
     private static final int FIREBALL = 3;
     private static final int TURRET = 5;
     private static final int CATWALK = 6;
     private static final int PORT = 7;
-    private static final int SHOT = 9;
 
     private short[] lines;
     private int[] ents;
+    private int onTarget;
+    private int misses;
 
     @BeforeEach
     void newGame() {
@@ -166,9 +166,10 @@ class StarWarsTest {
         assertThat((boolean) get(GAME, "portDestroyed")).isFalse();
     }
 
-    /** A sharpshooter that fires at the nearest target flies three waves without being destroyed. */
+    /** The CPU pilot flies three waves without being destroyed, though it is not a perfect shot. */
     @Test
-    void anAutopilotDestroysTheDeathStarWaveAfterWave() {
+    void theCpuPilotDestroysTheDeathStarWaveAfterWave() {
+        set(GAME, "autopilot", true);
         for (int wave = 1; wave <= 3; wave++) {
             set(GAME, "wave", wave);
             for (int phase = 0; phase < 3; phase++) {
@@ -180,26 +181,39 @@ class StarWarsTest {
                 }
                 assertThat(done).as("wave %d: exhaust port destroyed", wave).isTrue();
             }
-            assertThat(getInt(GAME, "topsHit")).isEqualTo(getInt(GAME, "towersTotal"));
             call(GAME, "destroyDeathStar");
         }
         assertThat(getInt(GAME, "score")).isGreaterThan(100000);
         assertThat(getInt(GAME, "shields")).isGreaterThan(0);
+        assertThat(misses).as("shots fired at nothing").isPositive();
+        assertThat(onTarget).as("shots fired at a target").isGreaterThan(misses);
+    }
+
+    @Test
+    void theCpuPilotSteersPastCatwalksInTheTrench() {
+        call(GAME, "startPhase", 2, ents);
+        spawn(CATWALK, 0, 60, 900);
+        call(GAME, "flyAutopilot", (Object) ents);
+        assertThat(getInt(GAME, "crossY")).as("below a high catwalk").isEqualTo(210);
+        ents[0] = 0;
+        spawn(CATWALK, 0, -60, 900);
+        call(GAME, "flyAutopilot", (Object) ents);
+        assertThat(getInt(GAME, "crossY")).as("above a low catwalk").isEqualTo(50);
+    }
+
+    @Test
+    void thePilotScreenHasAHumanAndACpuButton() {
+        assertThat((int) call(GAME, "choiceAt", 80, 140)).isZero();
+        assertThat((int) call(GAME, "choiceAt", 230, 140)).isEqualTo(1);
+        assertThat((int) call(GAME, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
+        assertThat((int) call(GAME, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
     }
 
     private void fly(int phase) {
         for (int frame = 1; frame < 5000; frame++) {
             set(GAME, "frame", frame);
-            int target = nearestTarget();
-            if (target >= 0 && frame % 6 == 0) {
-                aimAt(target);
-                call(GAME, "fire", (Object) ents);
-            }
-            if (phase == 2) {
-                int catwalk = find(CATWALK);
-                set(GAME, "crossX", 160);
-                set(GAME, "crossY", catwalk >= 0 && ents[catwalk * STRIDE + Y] > 0 ? 210 : 50);
-            }
+            call(GAME, "flyAutopilot", (Object) ents);
+            countNewShots();
             call(GAME, "step", (Object) ents);
             call(GAME, "resolveShots", (Object) ents);
             call(GAME, "render", lines, ents);
@@ -211,18 +225,18 @@ class StarWarsTest {
         throw new AssertionError("phase " + phase + " never ended");
     }
 
-    private int nearestTarget() {
-        int found = -1;
-        int nearest = Integer.MAX_VALUE;
+    /** Tallies the shots fired this frame: with a target under the crosshair, or at empty space. */
+    private void countNewShots() {
         for (int slot = 0; slot < 24; slot++) {
             int b = slot * STRIDE;
-            boolean port = ents[b + TYPE] == PORT;
-            if (ents[b + SR] > 0 && ents[b + TYPE] != SHOT && ents[b + Z] < nearest && (!port || ents[b + Z] < 900)) {
-                nearest = ents[b + Z];
-                found = slot;
+            if (ents[b + TYPE] == 9 && ents[b + 7] == 4) {
+                if (ents[b + 11] >= 0) {
+                    onTarget = onTarget + 1;
+                } else {
+                    misses = misses + 1;
+                }
             }
         }
-        return found;
     }
 
     private int spawn(int type, int x, int y, int z) {

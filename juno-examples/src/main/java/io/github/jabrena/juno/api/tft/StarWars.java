@@ -27,6 +27,13 @@ import io.github.jabrena.juno.api.Random;
  * tapped. You start with {@value #START_SHIELDS} shields; each fireball or catwalk that hits you takes
  * one, a hit with none left ends the game, and every destroyed Death Star restores one.
  *
+ * <p>The game opens like the film: "A long time ago in a galaxy far, far away....", the logo
+ * receding into the distance, and a Star Destroyer passing overhead in pursuit of a rebel ship,
+ * then the title settles into place; after each game over it starts again from there. Tap to
+ * start, then choose who flies the X-wing: <b>HUMAN</b> (you) or <b>CPU</b>, an autopilot that
+ * locks on to the nearest target and fires, and in the trench steers above or below the catwalks.
+ * Tap the header during the game to switch between the two ({@code CPU} shows in the header).
+ *
  * <p>Everything is drawn in vector style from 3D points perspective-projected onto the screen
  * ({@code x' = cx + x·f/z}), with 3D lines clipped at the near plane and 2D lines clipped to the view.
  * Each frame's lines go into one of two display lists; only lines that changed since the previous
@@ -144,6 +151,31 @@ public final class StarWars {
     private static final int CATWALK = 0xFBE0;
     private static final int PORT_OUTER = TftTouchShield.RED;
     private static final int PORT_INNER = TftTouchShield.YELLOW;
+    private static final int OPENING = 0x4D7F;
+
+    // The opening scene: the Star Destroyer passing over the planet after the rebel ship.
+    private static final int SCENE_FRAMES = 70;
+    private static final int PLANET_Y = 640;
+    private static final int PLANET_RADIUS = 470;
+    private static final int DESTROYER = 0xBDF7;
+    private static final int RUNNER = TftTouchShield.WHITE;
+    private static final String OPENING_LINE_1 = "A long time ago in a galaxy";
+    private static final String OPENING_LINE_2 = "far, far away....";
+
+    // The HUMAN and CPU buttons of the pilot screen.
+    private static final int CHOICE_X = 20;
+    private static final int CHOICE_Y = 104;
+    private static final int CHOICE_WIDTH = 130;
+    private static final int CHOICE_HEIGHT = 72;
+    private static final int CHOICE_GAP = 20;
+
+    // The CPU pilot: how often it fires, how near targets (and the exhaust port) must come before it
+    // shoots, how fast it moves the crosshair, and how often it deliberately aims a little off.
+    private static final int CPU_FIRE_FRAMES = 6;
+    private static final int CPU_RANGE = 1800;
+    private static final int CPU_PORT_RANGE = 900;
+    private static final int CPU_AIM_SPEED = 24;
+    private static final int CPU_MISS_PERCENT = 20;
 
     private static int score;
     private static int best;
@@ -163,6 +195,10 @@ public final class StarWars {
     private static int releaseMisses;
     private static int startX;
     private static int startY;
+    private static boolean autopilot;
+    private static boolean headerPressed;
+    private static int aimOffsetX;
+    private static int aimOffsetY;
 
     // Display list state.
     private static int front;
@@ -191,15 +227,17 @@ public final class StarWars {
     public static void main(String[] args) {
         short[] lines = new short[2 * LIST_SIZE];
         int[] ents = new int[ENTITIES * E_STRIDE];
+        byte[] letter = new byte[1];
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        TftTouchShield.fillScreen(SPACE);
-        drawTitle(lines);
-        waitForTap();
-        Random.seed(Clock.micros());
 
         while (true) {
+            opening(lines, letter);
+            drawTitle(lines);
+            waitForTap();
+            Random.seed(Clock.micros());
+            choosePilot();
             score = 0;
             shields = START_SHIELDS;
             wave = 1;
@@ -216,9 +254,7 @@ public final class StarWars {
             drawHeader();
             clearView();
             showCentered("GAME OVER", 100, 3, TftTouchShield.RED);
-            showCentered("Tap to play again", 150, 1, TftTouchShield.WHITE);
-            Delay.millis(1500);
-            waitForTap();
+            Delay.millis(3000);
         }
     }
 
@@ -289,6 +325,9 @@ public final class StarWars {
             }
             frame = frame + 1;
             handleTouch(ents);
+            if (autopilot) {
+                flyAutopilot(ents);
+            }
             step(ents);
             resolveShots(ents);
             render(lines, ents);
@@ -354,9 +393,26 @@ public final class StarWars {
 
     // ---- Input ----
 
-    /** Drag moves the crosshair; a short tap that did not move fires where it landed, on release. */
+    /**
+     * Drag moves the crosshair; a short tap that did not move fires where it landed, on release.
+     * Tapping the header hands the X-wing to the CPU or back.
+     */
     private static void handleTouch(int[] ents) {
-        if (TftTouchShield.readTouch()) {
+        boolean down = TftTouchShield.readTouch();
+        if (down && TftTouchShield.touchY() < HEADER) {
+            if (!headerPressed) {
+                autopilot = !autopilot;
+                touching = false;
+                drawHeader();
+            }
+            headerPressed = true;
+            return;
+        }
+        headerPressed = false;
+        if (autopilot) {
+            return;
+        }
+        if (down) {
             int x = Math.max(8, Math.min(TftTouchShield.touchX(), WIDTH - 9));
             int y = Math.max(HEADER + 8, Math.min(TftTouchShield.touchY(), HEIGHT - 9));
             crossX = x;
@@ -410,10 +466,64 @@ public final class StarWars {
         }
     }
 
+    /** The pilot screen: waits for a tap on HUMAN or CPU. */
+    private static void choosePilot() {
+        TftTouchShield.fillScreen(SPACE);
+        showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.YELLOW);
+        showCentered("Who flies the X-wing?", 74, 1, TftTouchShield.WHITE);
+        drawChoice(0, "HUMAN", "You aim and fire", false);
+        drawChoice(1, "CPU", "Autopilot plays", false);
+        showCentered("Tap the header in game to switch", 206, 1, STAR);
+        int choice = -1;
+        while (choice < 0) {
+            if (TftTouchShield.readTouch()) {
+                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            }
+            Delay.millis(10);
+        }
+        autopilot = choice == 1;
+        touching = false;
+        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You aim and fire" : "Autopilot plays", true);
+        waitForRelease();
+    }
+
+    /** The pilot button at (x, y): 0 for HUMAN, 1 for CPU, or -1. */
+    private static int choiceAt(int x, int y) {
+        if (y < CHOICE_Y || y >= CHOICE_Y + CHOICE_HEIGHT) {
+            return -1;
+        }
+        for (int index = 0; index < 2; index++) {
+            int left = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+            if (x >= left && x < left + CHOICE_WIDTH) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private static void drawChoice(int index, String label, String hint, boolean chosen) {
+        int x = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+        int color = chosen ? STRUCTURE : 0x2124;
+        TftTouchShield.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
+        TftTouchShield.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, chosen ? TftTouchShield.WHITE : STRUCTURE);
+        TftTouchShield.setTextSize(3);
+        TftTouchShield.setTextColor(TftTouchShield.YELLOW, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - label.length() * 18) / 2, CHOICE_Y + 16);
+        TftTouchShield.print(label);
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - hint.length() * 6) / 2, CHOICE_Y + 52);
+        TftTouchShield.print(hint);
+    }
+
     private static void waitForTap() {
         while (!TftTouchShield.readTouch()) {
             Delay.millis(10);
         }
+        waitForRelease();
+    }
+
+    private static void waitForRelease() {
         int misses = 0;
         while (misses < 3) {
             if (TftTouchShield.readTouch()) {
@@ -422,6 +532,69 @@ public final class StarWars {
                 misses = misses + 1;
             }
             Delay.millis(10);
+        }
+    }
+
+    // ---- The CPU pilot ----
+
+    /**
+     * The CPU at the controls, flying like a person rather than a machine: it lets targets come
+     * within {@value #CPU_RANGE} units (the exhaust port within {@value #CPU_PORT_RANGE}) before
+     * shooting, glides the crosshair towards the nearest one at {@value #CPU_AIM_SPEED} pixels a
+     * frame, and pulls the trigger every {@value #CPU_FIRE_FRAMES} frames once it is on its aim
+     * point. About {@value #CPU_MISS_PERCENT}% of its shots at TIE fighters, towers and turrets are
+     * aimed just outside the target and miss; fireballs and the exhaust port it takes seriously. In the trench the crosshair also steers, so there it aims only for the shot and then
+     * steers high, or low when the next catwalk is high, to pass the catwalks.
+     */
+    private static void flyAutopilot(int[] ents) {
+        int target = -1;
+        int nearest = 1 << 30;
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            int b = slot * E_STRIDE;
+            int type = ents[b + E_TYPE];
+            int z = ents[b + E_Z];
+            int range = type == T_PORT ? CPU_PORT_RANGE : CPU_RANGE;
+            if (ents[b + E_SR] > 0 && type != T_SHOT && z < nearest && z < range) {
+                nearest = z;
+                target = slot;
+            }
+        }
+        boolean trigger = frame % CPU_FIRE_FRAMES == 0;
+        if (trigger) {
+            // Each shot is either aimed true or, now and then, just past the edge of the target.
+            aimOffsetX = 0;
+            aimOffsetY = 0;
+            int type = target >= 0 ? ents[target * E_STRIDE + E_TYPE] : T_NONE;
+            boolean casual = type == T_TIE || type == T_TOWER || type == T_TURRET;
+            if (casual && Random.nextInt(100) < CPU_MISS_PERCENT) {
+                int off = ents[target * E_STRIDE + E_SR] + Random.nextInt(6, 20);
+                aimOffsetX = Random.nextInt(2) == 0 ? -off : off;
+                aimOffsetY = Random.nextInt(-off, off + 1);
+            }
+        }
+        if (phase == TRENCH_PHASE) {
+            if (target >= 0 && trigger) {
+                crossX = ents[target * E_STRIDE + E_SX] + aimOffsetX;
+                crossY = ents[target * E_STRIDE + E_SY] + aimOffsetY;
+                fire(ents);
+            }
+            int catwalk = find(ents, T_CATWALK);
+            crossX = CENTER_X;
+            crossY = catwalk >= 0 && ents[catwalk * E_STRIDE + E_Y] > 0 ? HEIGHT - 30 : HEADER + 30;
+            return;
+        }
+        int aimX = CENTER_X;
+        int aimY = CENTER_Y;
+        if (target >= 0) {
+            aimX = ents[target * E_STRIDE + E_SX] + aimOffsetX;
+            aimY = ents[target * E_STRIDE + E_SY] + aimOffsetY;
+        }
+        aimX = clamp(aimX, 8, WIDTH - 9);
+        aimY = clamp(aimY, HEADER + 8, HEIGHT - 9);
+        crossX = crossX + clamp(aimX - crossX, -CPU_AIM_SPEED, CPU_AIM_SPEED);
+        crossY = crossY + clamp(aimY - crossY, -CPU_AIM_SPEED, CPU_AIM_SPEED);
+        if (target >= 0 && trigger && Math.abs(aimX - crossX) + Math.abs(aimY - crossY) <= 4) {
+            fire(ents);
         }
     }
 
@@ -1232,7 +1405,119 @@ public final class StarWars {
 
     // ---- Interludes ----
 
+    /**
+     * The opening, after the film: "A long time ago in a galaxy far, far away....", the STAR WARS
+     * logo receding into the distance until it is gone, then the first shot of the film.
+     */
+    private static void opening(short[] lines, byte[] letter) {
+        TftTouchShield.fillScreen(SPACE);
+        shown = 0;
+        typeCentered(OPENING_LINE_1, 104, letter);
+        typeCentered(OPENING_LINE_2, 120, letter);
+        Delay.millis(900);
+        TftTouchShield.fillScreen(SPACE);
+        Delay.millis(300);
+        for (int size = 5; size >= 1; size--) {
+            TftTouchShield.fillRect(0, 60, WIDTH, 60, SPACE);
+            showCentered("STAR WARS", 90 - 4 * size, size, TftTouchShield.YELLOW);
+            Delay.millis(size == 5 ? 500 : 260);
+        }
+        TftTouchShield.fillRect(0, 60, WIDTH, 60, SPACE);
+        Delay.millis(300);
+        flyover(lines);
+        TftTouchShield.fillScreen(SPACE);
+        shown = 0;
+        Delay.millis(250);
+    }
+
+    /**
+     * The first shot of the film: above a planet's horizon a small rebel ship flees into the
+     * distance, and the wedge of an Imperial Star Destroyer slides in overhead after it, firing.
+     */
+    private static void flyover(short[] lines) {
+        TftTouchShield.fillScreen(SPACE);
+        shown = 0;
+        for (int f = 0; f < SCENE_FRAMES; f++) {
+            built = 0;
+            drawStars(lines);
+            // The planet's horizon, an arc across the bottom of the screen.
+            int previousX = 0;
+            int previousY = 0;
+            for (int a = -24; a <= 24; a = a + 4) {
+                float radians = (float) Math.toRadians(a);
+                int x = CENTER_X + Math.round((float) Math.sin(radians) * PLANET_RADIUS);
+                int y = PLANET_Y - Math.round((float) Math.cos(radians) * PLANET_RADIUS);
+                if (a > -24) {
+                    addLine(lines, previousX, previousY, x, y, OPENING);
+                }
+                previousX = x;
+                previousY = y;
+            }
+            // The rebel ship, running for the horizon and getting smaller.
+            int runnerX = CENTER_X + 30 - f / 3;
+            int runnerY = 80 + f * 3 / 2;
+            int r = Math.max(1, 6 - f / 14);
+            addLine(lines, runnerX - r, runnerY, runnerX + r, runnerY, RUNNER);
+            addLine(lines, runnerX, runnerY - r, runnerX, runnerY + r / 2, RUNNER);
+            // The Star Destroyer: a wedge whose point slides down from the top, its hull behind it.
+            int apexX = CENTER_X + 10 - f / 4;
+            int apexY = HEADER - 10 + f * 11 / 5;
+            int span = 40 + f * 5;
+            int back = HEADER - 40;
+            addLine(lines, apexX, apexY, apexX - span, back, DESTROYER);
+            addLine(lines, apexX, apexY, apexX + span, back, DESTROYER);
+            addLine(lines, apexX, apexY, apexX, back, DESTROYER);
+            for (int k = 1; k <= 3; k++) {
+                int y = apexY - (apexY - back) * k / 4;
+                int half = span * k / 4;
+                addLine(lines, apexX - half, y, apexX + half, y, STRUCTURE);
+            }
+            // Laser bolts from its forward guns at the fleeing ship.
+            if (f > 10 && f % 6 < 3) {
+                int step = f % 6;
+                int fromX = apexX + (runnerX - apexX) * (step * 30 + 10) / 100;
+                int fromY = apexY + (runnerY - apexY) * (step * 30 + 10) / 100;
+                int toX = apexX + (runnerX - apexX) * (step * 30 + 25) / 100;
+                int toY = apexY + (runnerY - apexY) * (step * 30 + 25) / 100;
+                addLine(lines, fromX, fromY, toX, toY, LASER);
+            }
+            present(lines);
+            Delay.millis(30);
+        }
+        Delay.millis(400);
+    }
+
+    /** Types a line of the opening letter by letter, centered. */
+    private static void typeCentered(String text, int y, byte[] letter) {
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setTextColor(OPENING, SPACE);
+        TftTouchShield.setCursor((WIDTH - text.length() * 6) / 2, y);
+        for (int i = 0; i < text.length(); i++) {
+            letter[0] = (byte) text.charAt(i);
+            TftTouchShield.print(letter, 1);
+            Delay.millis(35);
+        }
+    }
+
+    /**
+     * The title screen: yellow frames close in on "STAR WARS" as the logo settles into place, then
+     * the TIE fighters.
+     */
     private static void drawTitle(short[] lines) {
+        int textLeft = (WIDTH - 9 * 24) / 2;
+        for (int k = 10; k >= 0; k--) {
+            int left = textLeft - 8 - k * (textLeft - 8) / 10;
+            int top = 26 - k * 26 / 10;
+            int right = WIDTH - 1 - left;
+            int bottom = 74 + k * (HEIGHT - 75) / 10;
+            TftTouchShield.drawRect(left, top, right - left + 1, bottom - top + 1, TftTouchShield.YELLOW);
+            Delay.millis(45);
+            TftTouchShield.drawRect(left, top, right - left + 1, bottom - top + 1, SPACE);
+        }
+        showCentered("STAR WARS", 34, 4, TftTouchShield.WHITE);
+        Delay.millis(120);
+        showCentered("STAR WARS", 34, 4, TftTouchShield.YELLOW);
+        Delay.millis(300);
         phase = SPACE_PHASE;
         built = 0;
         drawStars(lines);
@@ -1240,7 +1525,6 @@ public final class StarWars {
         drawTie(lines, projectX(-520, 1500), projectY(160, 1500), 1500, false);
         drawTie(lines, projectX(560, 1800), projectY(120, 1800), 1800, true);
         present(lines);
-        showCentered("STAR WARS", 34, 4, TftTouchShield.YELLOW);
         showCentered("Drag to aim, tap to fire", 198, 1, TftTouchShield.WHITE);
         showCentered("Tap to start", 214, 1, TftTouchShield.CYAN);
     }
@@ -1316,6 +1600,15 @@ public final class StarWars {
         }
     }
 
+    private static int find(int[] ents, int type) {
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            if (ents[slot * E_STRIDE + E_TYPE] == type) {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
     private static int count(int[] ents, int type) {
         int n = 0;
         for (int slot = 0; slot < ENTITIES; slot++) {
@@ -1353,6 +1646,11 @@ public final class StarWars {
         TftTouchShield.setCursor(262, 2);
         TftTouchShield.print("WAVE ");
         TftTouchShield.print(wave);
+        if (autopilot) {
+            TftTouchShield.setTextColor(TftTouchShield.MAGENTA, SPACE);
+            TftTouchShield.setCursor(226, 2);
+            TftTouchShield.print("CPU");
+        }
         int color = TftTouchShield.GREEN;
         if (shields == 0) {
             color = TftTouchShield.RED;
