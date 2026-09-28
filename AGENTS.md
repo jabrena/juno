@@ -39,7 +39,7 @@ against `juno`'s `api` and `annotations` packages.
   (`Delay`, `Clock`, `LedMatrix`, `api.io.Gpio`, `api.io.DigitalOutput`, `api.io.hid.Mouse`,
   `api.io.usb.Serial`, …).
   Every `native` method here must have a matching entry in `juno`'s `intrinsic/IntrinsicRegistry.java`
-  and `backend/CortexM4AsmBackend#emitIntrinsicCall`, keyed by this package's fully-qualified
+  and `backend/IntrinsicLowering.java` (the intrinsic → shim-call table), keyed by this package's fully-qualified
   class/method names as read from `.class` bytecode — not by a compile-time reference, so renaming
   or moving a class here means updating those registries too.
 - `juno/src/main/java/io/github/jabrena/juno/annotations/` – WRITE here: `Board`, `ArduinoBoard`,
@@ -54,8 +54,11 @@ against `juno`'s `api` and `annotations` packages.
 - `juno/src/main/java/io/github/jabrena/juno/linker/` – WRITE here: closed-world reachability,
   `Intrinsics` registry, `Descriptor` type checks.
 - `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `CortexM4AsmBackend`, the
-  sole code-generation backend (GNU ARM Cortex-M4 assembly plus its `extern "C"` C++ runtime shim)
-  and its intrinsic lowering (`emitIntrinsicCall`).
+  sole code-generation backend (GNU ARM Cortex-M4 assembly plus its `extern "C"` C++ runtime shim).
+  It drives codegen and delegates to package-private collaborators: `IntrinsicLowering` (intrinsic
+  lowering as a table of shim-call specs), `RuntimeShim` (the shim, gated on the `ShimFeature`s the
+  lowerings record) with its `ShimLibraries`/`NetworkShimLibraries` helper sources, `ProgramLayout`,
+  `AsmEmitter`, and the `Int`/`Wide` arithmetic and `Array` lowerings.
 - `juno/src/test/java/io/github/jabrena/juno/` – WRITE here: compiler unit tests and offline
   toolchain verification for the generated assembly/shim (`GeneratedAsmToolchainTest`; assembles
   `.S` files with a bundled `arm-none-eabi-gcc` when one can be found and syntax-checks the shim

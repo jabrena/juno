@@ -258,7 +258,7 @@ class GeneratedAsmToolchainTest {
     }
 
     /**
-     * {@link io.github.jabrena.juno.backend.CortexM4AsmBackend#httpServerHelpers} hand-writes
+     * {@code io.github.jabrena.juno.backend.NetworkShimLibraries#httpServerHelpers} hand-writes
      * placement-new construction of a static {@code WiFiServer} and reads a {@code StringBuilder}
      * handle's raw arena bytes directly — exactly the kind of shim code most likely to have a real
      * C++ syntax error that a hand-rolled IR unit test would never catch, so this compiles it for

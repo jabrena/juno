@@ -59,7 +59,7 @@ The generated assembly itself is untyped machine code — every intrinsic call i
 branch with arguments already sitting in registers. Arduino's own type vocabulary
 (`unsigned long`, `uint32_t`, `bool`) only reappears one layer down, inside the generated
 `extern "C"` runtime shim that the assembly calls into and that itself calls the real Arduino API.
-Juno's intrinsic lowering (`CortexM4AsmBackend#emitIntrinsicCall`, plus the shim-side helpers it
+Juno's intrinsic lowering (`backend/IntrinsicLowering`, plus the shim-side helpers it
 calls) is the single place that bridges the two:
 
 | Juno API (Java)                          | Generated assembly call         | Shim / Arduino type notes |

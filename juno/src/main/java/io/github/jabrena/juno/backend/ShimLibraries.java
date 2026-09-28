@@ -1,0 +1,585 @@
+package io.github.jabrena.juno.backend;
+
+import io.github.jabrena.juno.RuntimeLimits;
+import io.github.jabrena.juno.linker.ThrowableTypes;
+
+import java.util.List;
+
+/**
+ * Source text of the runtime shim's optional, self-contained C++ helper blocks for peripherals,
+ * storage, strings, exceptions and 64-bit/floating-point arithmetic — each appended by
+ * {@link RuntimeShim} only when the lowered program actually calls into it.
+ */
+final class ShimLibraries {
+    private ShimLibraries() {
+    }
+
+    /** USB HID mouse bindings; {@code Mouse.h} is an optional library, included only on use. */
+    static String mouseHelpers() {
+        return """
+
+                extern "C" void juno_mouse_begin() {
+                  Mouse.begin();
+                }
+
+                extern "C" void juno_mouse_move(int32_t x, int32_t y) {
+                  Mouse.move(static_cast<signed char>(x), static_cast<signed char>(y));
+                }
+                """;
+    }
+
+    /** One {@code Servo} per digital pin, attached on first use. */
+    static String servoHelpers() {
+        return """
+
+                static Servo junoServos[NUM_DIGITAL_PINS];
+
+                extern "C" void juno_servo_attach(int32_t pin) {
+                  if (pin >= 0 && pin < NUM_DIGITAL_PINS) {
+                    junoServos[pin].attach(pin);
+                  }
+                }
+
+                extern "C" void juno_servo_write(int32_t pin, int32_t angleDegrees) {
+                  if (pin >= 0 && pin < NUM_DIGITAL_PINS) {
+                    junoServos[pin].write(angleDegrees);
+                  }
+                }
+                """;
+    }
+
+    /** Exposes the arena allocator's current usage. */
+    static String memoryHelpers() {
+        return """
+
+                extern "C" int32_t juno_memory_arena_used() {
+                  return static_cast<int32_t>(juno_arena_used);
+                }
+                """;
+    }
+
+    /** Arduino core {@code random()}/{@code randomSeed()} bindings. */
+    static String randomHelpers() {
+        return """
+
+                extern "C" void juno_random_seed(int32_t seed) {
+                  randomSeed(static_cast<unsigned long>(static_cast<uint32_t>(seed)));
+                }
+
+                extern "C" int32_t juno_random_next_bound(int32_t bound) {
+                  return static_cast<int32_t>(random(static_cast<long>(bound)));
+                }
+
+                extern "C" int32_t juno_random_next_range(int32_t origin, int32_t bound) {
+                  return static_cast<int32_t>(random(static_cast<long>(origin), static_cast<long>(bound)));
+                }
+                """;
+    }
+
+    /** {@code WiFiS3} station-mode bindings. */
+    static String wifiHelpers() {
+        return """
+
+                extern "C" void juno_wifi_begin(const char* ssid, const char* password) {
+                  WiFi.begin(ssid, password);
+                }
+
+                extern "C" int32_t juno_wifi_status() {
+                  return static_cast<int32_t>(WiFi.status());
+                }
+
+                extern "C" void juno_wifi_local_ip(int32_t* octets) {
+                  auto ip = WiFi.localIP();
+                  octets[0] = ip[0];
+                  octets[1] = ip[1];
+                  octets[2] = ip[2];
+                  octets[3] = ip[3];
+                }
+                """;
+    }
+
+    /** Read-only Arduino SD bindings plus a bounded, arena-backed {@code key=value} parser. */
+    static String sdHelpers() {
+        return """
+
+                static constexpr int32_t JUNO_SD_MAX_OPEN_FILES = 4;
+                static constexpr int32_t JUNO_PROPERTIES_MAX_ENTRIES = 16;
+                static constexpr int32_t JUNO_PROPERTIES_KEY_CAPACITY = 32;
+                static constexpr int32_t JUNO_PROPERTIES_VALUE_CAPACITY = 64;
+                static constexpr int32_t JUNO_PROPERTIES_LINE_CAPACITY = 96;
+
+                static SdFat32 juno_sd;
+                static File32 juno_sd_files[JUNO_SD_MAX_OPEN_FILES];
+                static bool juno_sd_file_used[JUNO_SD_MAX_OPEN_FILES];
+
+                static File32* juno_sd_file(int32_t handle) {
+                  int32_t index = handle - 1;
+                  if (index < 0 || index >= JUNO_SD_MAX_OPEN_FILES || !juno_sd_file_used[index]) {
+                    juno_panic();
+                  }
+                  return &juno_sd_files[index];
+                }
+
+                extern "C" int32_t juno_sd_begin(int32_t chipSelectPin) {
+                  for (int32_t i = 0; i < JUNO_SD_MAX_OPEN_FILES; i++) {
+                    if (juno_sd_file_used[i]) juno_sd_files[i].close();
+                    juno_sd_file_used[i] = false;
+                  }
+                  return juno_sd.begin(chipSelectPin) ? 1 : 0;
+                }
+
+                extern "C" int32_t juno_sd_exists(const char* path) {
+                  return juno_sd.exists(path) ? 1 : 0;
+                }
+
+                extern "C" int32_t juno_sd_open(const char* path) {
+                  for (int32_t i = 0; i < JUNO_SD_MAX_OPEN_FILES; i++) {
+                    if (!juno_sd_file_used[i]) {
+                      juno_sd_files[i] = juno_sd.open(path, O_RDONLY);
+                      if (!juno_sd_files[i]) return 0;
+                      juno_sd_file_used[i] = true;
+                      return i + 1;
+                    }
+                  }
+                  return 0;
+                }
+
+                extern "C" int32_t juno_sd_file_available(int32_t handle) {
+                  return juno_sd_file(handle)->available() > 0 ? 1 : 0;
+                }
+
+                extern "C" int32_t juno_sd_file_read(int32_t handle) {
+                  return juno_sd_file(handle)->read();
+                }
+
+                extern "C" void juno_sd_file_close(int32_t handle) {
+                  int32_t index = handle - 1;
+                  File32* file = juno_sd_file(handle);
+                  file->close();
+                  juno_sd_file_used[index] = false;
+                }
+
+                struct JunoPropertyEntry {
+                  char key[JUNO_PROPERTIES_KEY_CAPACITY];
+                  char value[JUNO_PROPERTIES_VALUE_CAPACITY];
+                };
+
+                struct JunoProperties {
+                  int32_t count;
+                  JunoPropertyEntry entries[JUNO_PROPERTIES_MAX_ENTRIES];
+                };
+
+                static JunoProperties* juno_properties(int32_t handle) {
+                  if (handle == 0) juno_panic();
+                  return reinterpret_cast<JunoProperties*>(static_cast<intptr_t>(handle));
+                }
+
+                extern "C" int32_t juno_properties_new() {
+                  auto* properties = static_cast<JunoProperties*>(juno_alloc(sizeof(JunoProperties), 4));
+                  properties->count = 0;
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(properties));
+                }
+
+                static char* juno_properties_trim_left(char* text) {
+                  while (*text == ' ' || *text == '\\t' || *text == '\\f') text++;
+                  return text;
+                }
+
+                static void juno_properties_trim_right(char* text) {
+                  int32_t length = static_cast<int32_t>(strlen(text));
+                  while (length > 0) {
+                    char c = text[length - 1];
+                    if (c != ' ' && c != '\\t' && c != '\\f') break;
+                    text[--length] = '\\0';
+                  }
+                }
+
+                static bool juno_properties_put(JunoProperties* properties, char* line) {
+                  char* key = juno_properties_trim_left(line);
+                  juno_properties_trim_right(key);
+                  if (*key == '\\0' || *key == '#' || *key == '!') return true;
+
+                  char* separator = key;
+                  while (*separator != '\\0' && *separator != '=' && *separator != ':') separator++;
+                  if (*separator == '\\0') return true;
+                  *separator = '\\0';
+                  char* value = juno_properties_trim_left(separator + 1);
+                  juno_properties_trim_right(key);
+                  juno_properties_trim_right(value);
+
+                  size_t keyLength = strlen(key);
+                  size_t valueLength = strlen(value);
+                  if (keyLength == 0 || keyLength >= JUNO_PROPERTIES_KEY_CAPACITY
+                      || valueLength >= JUNO_PROPERTIES_VALUE_CAPACITY) return false;
+
+                  int32_t index = 0;
+                  while (index < properties->count && strcmp(properties->entries[index].key, key) != 0) index++;
+                  if (index == properties->count) {
+                    if (properties->count >= JUNO_PROPERTIES_MAX_ENTRIES) return false;
+                    properties->count++;
+                  }
+                  memcpy(properties->entries[index].key, key, keyLength + 1u);
+                  memcpy(properties->entries[index].value, value, valueLength + 1u);
+                  return true;
+                }
+
+                extern "C" void juno_properties_load(int32_t propertiesHandle, int32_t fileHandle) {
+                  File32* file = juno_sd_file(fileHandle);
+                  JunoProperties* properties = juno_properties(propertiesHandle);
+                  char line[JUNO_PROPERTIES_LINE_CAPACITY];
+                  int32_t length = 0;
+                  while (file->available() > 0) {
+                    int32_t value = file->read();
+                    if (value < 0) juno_panic();
+                    if (value == '\\r') continue;
+                    if (value == '\\n') {
+                      line[length] = '\\0';
+                      if (!juno_properties_put(properties, line)) juno_panic();
+                      length = 0;
+                    } else {
+                      if (length >= JUNO_PROPERTIES_LINE_CAPACITY - 1) juno_panic();
+                      line[length++] = static_cast<char>(value);
+                    }
+                  }
+                  if (length > 0) {
+                    line[length] = '\\0';
+                    if (!juno_properties_put(properties, line)) juno_panic();
+                  }
+                }
+
+                extern "C" int32_t juno_properties_get(int32_t handle, const char* key) {
+                  JunoProperties* properties = juno_properties(handle);
+                  for (int32_t i = 0; i < properties->count; i++) {
+                    if (strcmp(properties->entries[i].key, key) == 0) {
+                      return static_cast<int32_t>(reinterpret_cast<intptr_t>(properties->entries[i].value));
+                    }
+                  }
+                  return 0;
+                }
+
+                extern "C" int32_t juno_properties_get_default(
+                    int32_t handle, const char* key, const char* defaultValue) {
+                  int32_t value = juno_properties_get(handle, key);
+                  return value == 0
+                      ? static_cast<int32_t>(reinterpret_cast<intptr_t>(defaultValue))
+                      : value;
+                }
+
+                extern "C" int32_t juno_properties_size(int32_t handle) {
+                  return juno_properties(handle)->count;
+                }
+                """;
+    }
+
+    /**
+     * {@code extern "C"} {@code juno_l*} helpers for 64-bit arithmetic, reused as plain C++ rather
+     * than hand-rolled 64-bit assembly, consistent with this backend's existing shim-delegation
+     * philosophy for anything nontrivial (see this class's doc).
+     */
+    static String longHelpers() {
+        return """
+
+                extern "C" int64_t juno_ladd(int64_t a, int64_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) + static_cast<uint64_t>(b));
+                }
+                extern "C" int64_t juno_lsub(int64_t a, int64_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) - static_cast<uint64_t>(b));
+                }
+                extern "C" int64_t juno_lmul(int64_t a, int64_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) * static_cast<uint64_t>(b));
+                }
+                extern "C" int64_t juno_ldiv(int64_t a, int64_t b) {
+                  if (b == 0) juno_panic();
+                  if (a == INT64_MIN && b == -1) return INT64_MIN;
+                  return a / b;
+                }
+                extern "C" int64_t juno_lrem(int64_t a, int64_t b) {
+                  if (b == 0) juno_panic();
+                  if (a == INT64_MIN && b == -1) return 0;
+                  return a % b;
+                }
+                extern "C" int64_t juno_lneg(int64_t value) {
+                  return static_cast<int64_t>(0ull - static_cast<uint64_t>(value));
+                }
+                extern "C" int64_t juno_lshl(int64_t a, int32_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) << (b & 63));
+                }
+                extern "C" int64_t juno_lshr(int64_t a, int32_t b) {
+                  uint32_t shift = static_cast<uint32_t>(b) & 63u;
+                  uint64_t value = static_cast<uint64_t>(a);
+                  if (shift == 0 || a >= 0) return static_cast<int64_t>(value >> shift);
+                  return static_cast<int64_t>((value >> shift) | (~0ull << (64u - shift)));
+                }
+                extern "C" int64_t juno_lushr(int64_t a, int32_t b) {
+                  return static_cast<int64_t>(static_cast<uint64_t>(a) >> (b & 63));
+                }
+                extern "C" int64_t juno_land(int64_t a, int64_t b) { return a & b; }
+                extern "C" int64_t juno_lor(int64_t a, int64_t b) { return a | b; }
+                extern "C" int64_t juno_lxor(int64_t a, int64_t b) { return a ^ b; }
+                extern "C" int32_t juno_lcmp(int64_t a, int64_t b) {
+                  return (a > b) - (a < b);
+                }
+
+                """;
+    }
+
+    static String runtimeStringHelpers() {
+        return """
+
+                static constexpr uint32_t JUNO_STRING_SLOT_COUNT = 8;
+                static constexpr uint32_t JUNO_STRING_SLOT_SIZE = ${JUNO_STRING_SLOT_SIZE};
+                static char juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE];
+                static uint32_t juno_string_slot_cursor = 0;
+
+                static const char* juno_string_pointer(int32_t value) {
+                  if (value == 0) juno_panic();
+                  return reinterpret_cast<const char*>(static_cast<intptr_t>(value));
+                }
+
+                extern "C" int32_t juno_string_value_of_int(int32_t value) {
+                  char* buffer = juno_string_slots[juno_string_slot_cursor];
+                  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+                  char reversed[JUNO_STRING_SLOT_SIZE];
+                  uint32_t magnitude = value < 0
+                      ? 0u - static_cast<uint32_t>(value)
+                      : static_cast<uint32_t>(value);
+                  uint32_t count = 0;
+                  do {
+                    reversed[count++] = static_cast<char>('0' + magnitude % 10u);
+                    magnitude /= 10u;
+                  } while (magnitude != 0u);
+                  uint32_t index = 0;
+                  if (value < 0) buffer[index++] = '-';
+                  while (count > 0u) buffer[index++] = reversed[--count];
+                  buffer[index] = '\0';
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
+                }
+
+                // Fixed-precision formatting, not Java's shortest-round-trip Double.toString: the
+                // fractional part is truncated toward zero at 6 digits (trailing zeros trimmed), so a
+                // value whose exact binary representation sits just below the intended decimal (e.g.
+                // 21.2 stored as 21.199999999999999...) can format one unit low in the last digit.
+                extern "C" JUNO_ASM_ABI int32_t juno_string_value_of_double(double value) {
+                  if (isnan(value) || isinf(value)) juno_panic();
+                  bool negative = value < 0.0;
+                  double magnitude = negative ? -value : value;
+                  if (magnitude >= 1.0e9) juno_panic();
+                  char* buffer = juno_string_slots[juno_string_slot_cursor];
+                  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+                  auto integerPart = static_cast<uint32_t>(magnitude);
+                  static constexpr uint32_t FRACTION_DIGITS = 6;
+                  static constexpr uint32_t FRACTION_SCALE = 1000000u;
+                  double fraction = magnitude - static_cast<double>(integerPart);
+                  auto fractionDigits = static_cast<uint32_t>(fraction * static_cast<double>(FRACTION_SCALE));
+                  if (fractionDigits >= FRACTION_SCALE) fractionDigits = FRACTION_SCALE - 1u;
+                  char reversed[JUNO_STRING_SLOT_SIZE];
+                  uint32_t count = 0;
+                  uint32_t integerDigits = integerPart;
+                  do {
+                    reversed[count++] = static_cast<char>('0' + integerDigits % 10u);
+                    integerDigits /= 10u;
+                  } while (integerDigits != 0u);
+                  uint32_t index = 0;
+                  if (negative) buffer[index++] = '-';
+                  while (count > 0u) buffer[index++] = reversed[--count];
+                  if (fractionDigits != 0u) {
+                    char fractionText[FRACTION_DIGITS];
+                    for (uint32_t i = FRACTION_DIGITS; i > 0u; --i) {
+                      fractionText[i - 1u] = static_cast<char>('0' + fractionDigits % 10u);
+                      fractionDigits /= 10u;
+                    }
+                    uint32_t fractionLength = FRACTION_DIGITS;
+                    while (fractionLength > 1u && fractionText[fractionLength - 1u] == '0') fractionLength--;
+                    buffer[index++] = '.';
+                    for (uint32_t i = 0; i < fractionLength; ++i) buffer[index++] = fractionText[i];
+                  }
+                  buffer[index] = '\0';
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
+                }
+
+                extern "C" int32_t juno_string_length(int32_t value) {
+                  return static_cast<int32_t>(strlen(juno_string_pointer(value)));
+                }
+
+                extern "C" int32_t juno_string_char_at(int32_t value, int32_t index) {
+                  const char* text = juno_string_pointer(value);
+                  int32_t length = static_cast<int32_t>(strlen(text));
+                  if (index < 0 || index >= length) juno_panic();
+                  return static_cast<uint8_t>(text[index]);
+                }
+
+                extern "C" int32_t juno_string_equals(int32_t a, int32_t b) {
+                  return strcmp(juno_string_pointer(a), juno_string_pointer(b)) == 0 ? 1 : 0;
+                }
+                """.replace("${JUNO_STRING_SLOT_SIZE}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES));
+    }
+
+    /**
+     * {@code StringBuilder} is represented as an arena-allocated header (its {@code length} and
+     * {@code capacity}, as two {@code int32_t}s) immediately followed by its {@code capacity}-byte
+     * buffer — a single {@code juno_alloc} block, addressed by the header's own pointer (cast to
+     * {@code int32_t} the same way every other handle in this file is). {@code toString()} copies
+     * the written bytes into the same rotating string-slot pool {@link #runtimeStringHelpers()}
+     * uses for every other runtime string, so it needs that pool already declared.
+     */
+    static String stringBuilderHelpers() {
+        return """
+
+                static constexpr uint32_t JUNO_STRING_BUILDER_HEADER_WORDS = 2; // length, capacity
+
+                extern "C" int32_t juno_string_builder_new(int32_t capacity) {
+                  if (capacity < 0) juno_panic();
+                  uint32_t bytes = JUNO_STRING_BUILDER_HEADER_WORDS * sizeof(int32_t) + static_cast<uint32_t>(capacity);
+                  auto* header = reinterpret_cast<int32_t*>(juno_alloc(bytes, alignof(int32_t)));
+                  header[0] = 0;         // length
+                  header[1] = capacity;  // capacity
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(header));
+                }
+
+                static uint8_t* juno_string_builder_buffer(int32_t handle) {
+                  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+                  return reinterpret_cast<uint8_t*>(header + JUNO_STRING_BUILDER_HEADER_WORDS);
+                }
+
+                extern "C" int32_t juno_string_builder_append_char(int32_t handle, int32_t value) {
+                  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+                  if (header[0] < header[1]) {
+                    juno_string_builder_buffer(handle)[header[0]] = static_cast<uint8_t>(value);
+                    header[0]++;
+                  }
+                  return handle;
+                }
+
+                extern "C" int32_t juno_string_builder_append_string(int32_t handle, const char* text) {
+                  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+                  uint8_t* buffer = juno_string_builder_buffer(handle);
+                  for (const char* c = text; *c != '\\0' && header[0] < header[1]; c++) {
+                    buffer[header[0]] = static_cast<uint8_t>(*c);
+                    header[0]++;
+                  }
+                  return handle;
+                }
+
+                extern "C" int32_t juno_string_builder_to_string(int32_t handle) {
+                  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+                  int32_t length = header[0];
+                  if (static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) juno_panic();
+                  char* slot = juno_string_slots[juno_string_slot_cursor];
+                  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+                  const uint8_t* buffer = juno_string_builder_buffer(handle);
+                  for (int32_t i = 0; i < length; i++) slot[i] = static_cast<char>(buffer[i]);
+                  slot[length] = '\\0';
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(slot));
+                }
+                """;
+    }
+
+    /**
+     * {@code athrow}'s runtime half: the thrown object's class id selects a handler when the throwing
+     * method catches that class ({@code caughtMask} bit set); otherwise it reports the exception the
+     * way the JVM does and panics. {@code throw null} reports a {@code NullPointerException}.
+     */
+    static String exceptionHelpers(List<String> throwableClasses) {
+        StringBuilder names = new StringBuilder();
+        if (throwableClasses.isEmpty()) {
+            names.append("  \"\",\n"); // only `throw null` reaches the runtime; C++ forbids an empty array
+        }
+        for (String className : throwableClasses) {
+            names.append("  \"").append(className.replace('/', '.')).append("\",\n");
+        }
+        return """
+                static const char* const juno_throwable_names[] = {
+                ${JUNO_THROWABLE_NAMES}};
+
+                extern "C" [[noreturn]] void juno_throw_uncaught(int32_t exception) {
+                  Serial.print("Exception in thread \\"main\\" ");
+                  if (exception == 0) {
+                    Serial.println("java.lang.NullPointerException");
+                    juno_panic();
+                  }
+                  const int32_t* header = reinterpret_cast<const int32_t*>(static_cast<intptr_t>(exception));
+                  Serial.print(juno_throwable_names[header[${JUNO_CLASS_ID_WORD}]]);
+                  const char* message = reinterpret_cast<const char*>(static_cast<intptr_t>(header[${JUNO_MESSAGE_WORD}]));
+                  if (message != nullptr) {
+                    Serial.print(": ");
+                    Serial.print(message);
+                  }
+                  Serial.println();
+                  juno_panic();
+                }
+
+                extern "C" int32_t juno_throw_dispatch(int32_t exception, int32_t caughtMask) {
+                  if (exception == 0) juno_throw_uncaught(exception);
+                  int32_t classId = reinterpret_cast<const int32_t*>(static_cast<intptr_t>(exception))[${JUNO_CLASS_ID_WORD}];
+                  if ((static_cast<uint32_t>(caughtMask) >> classId & 1u) == 0u) juno_throw_uncaught(exception);
+                  return classId;
+                }
+                """.replace("${JUNO_THROWABLE_NAMES}", names.toString())
+                .replace("${JUNO_CLASS_ID_WORD}", Integer.toString(ThrowableTypes.CLASS_ID_OFFSET / AsmEmitter.WORD))
+                .replace("${JUNO_MESSAGE_WORD}", Integer.toString(ThrowableTypes.MESSAGE_OFFSET / AsmEmitter.WORD));
+    }
+
+    /** {@code extern "C"} float helpers, called from assembly with float values in core registers (see {@code JUNO_ASM_ABI}). */
+    static String floatHelpers() {
+        return """
+
+                extern "C" JUNO_ASM_ABI float juno_fadd(float a, float b) { return a + b; }
+                extern "C" JUNO_ASM_ABI float juno_fsub(float a, float b) { return a - b; }
+                extern "C" JUNO_ASM_ABI float juno_fmul(float a, float b) { return a * b; }
+                extern "C" JUNO_ASM_ABI float juno_fdiv(float a, float b) { return a / b; }
+                extern "C" JUNO_ASM_ABI float juno_frem(float a, float b) { return fmodf(a, b); }
+                extern "C" JUNO_ASM_ABI int32_t juno_fcmp(float a, float b, int32_t nanResult) {
+                  if (isnan(a) || isnan(b)) return nanResult;
+                  return (a > b) - (a < b);
+                }
+                extern "C" JUNO_ASM_ABI float juno_i2f(int32_t value) { return static_cast<float>(value); }
+                extern "C" JUNO_ASM_ABI int32_t juno_f2i(float value) {
+                  if (isnan(value)) return 0;
+                  if (value >= 0x1.0p31f) return INT32_MAX;
+                  if (value <= -0x1.0p31f) return INT32_MIN;
+                  return static_cast<int32_t>(value);
+                }
+                extern "C" JUNO_ASM_ABI float juno_l2f(int64_t value) { return static_cast<float>(value); }
+                extern "C" JUNO_ASM_ABI int64_t juno_f2l(float value) {
+                  if (isnan(value)) return 0;
+                  if (value >= 0x1.0p63f) return INT64_MAX;
+                  if (value <= -0x1.0p63f) return INT64_MIN;
+                  return static_cast<int64_t>(value);
+                }
+
+                """;
+    }
+
+    /** {@code extern "C"} soft-float helpers for {@code double}; see {@link #floatHelpers}. */
+    static String doubleHelpers() {
+        return """
+
+                extern "C" JUNO_ASM_ABI double juno_dadd(double a, double b) { return a + b; }
+                extern "C" JUNO_ASM_ABI double juno_dsub(double a, double b) { return a - b; }
+                extern "C" JUNO_ASM_ABI double juno_dmul(double a, double b) { return a * b; }
+                extern "C" JUNO_ASM_ABI double juno_ddiv(double a, double b) { return a / b; }
+                extern "C" JUNO_ASM_ABI double juno_drem(double a, double b) { return fmod(a, b); }
+                extern "C" JUNO_ASM_ABI int32_t juno_dcmp(double a, double b, int32_t nanResult) {
+                  if (isnan(a) || isnan(b)) return nanResult;
+                  return (a > b) - (a < b);
+                }
+                extern "C" JUNO_ASM_ABI double juno_i2d(int32_t value) { return static_cast<double>(value); }
+                extern "C" JUNO_ASM_ABI int32_t juno_d2i(double value) {
+                  if (isnan(value)) return 0;
+                  if (value >= 0x1.0p31) return INT32_MAX;
+                  if (value <= -0x1.0p31) return INT32_MIN;
+                  return static_cast<int32_t>(value);
+                }
+                extern "C" JUNO_ASM_ABI double juno_l2d(int64_t value) { return static_cast<double>(value); }
+                extern "C" JUNO_ASM_ABI int64_t juno_d2l(double value) {
+                  if (isnan(value)) return 0;
+                  if (value >= 0x1.0p63) return INT64_MAX;
+                  if (value <= -0x1.0p63) return INT64_MIN;
+                  return static_cast<int64_t>(value);
+                }
+                extern "C" JUNO_ASM_ABI double juno_f2d(float value) { return static_cast<double>(value); }
+                extern "C" JUNO_ASM_ABI float juno_d2f(double value) { return static_cast<float>(value); }
+
+                """;
+    }
+}
