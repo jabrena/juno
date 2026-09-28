@@ -21,6 +21,10 @@
         <!-- ArduinoCliCompileTest needs Docker; it runs only with -Parduino-cli. -->
         <juno.test.groups></juno.test.groups>
         <juno.test.excludedGroups>arduino-cli</juno.test.excludedGroups>
+        <!-- Example programs are excluded from cyclomatic complexity analysis. -->
+        <pmd.skip>true</pmd.skip>
+        <cpd.skip>true</cpd.skip>
+        <maven.jxr.skip>true</maven.jxr.skip>
     </properties>
 
     <dependencies>
