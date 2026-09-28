@@ -15,8 +15,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Rules of Red Baron: banking, turning, guns, enemy fire, crashes, and an autopilot that flies
- * whole waves through the game's own simulation and rendering.
+ * Rules of Red Baron: banking, turning, guns, enemy fire, crashes, the pilot screen, and the CPU
+ * pilot that flies whole waves through the game's own simulation and rendering.
  */
 class RedBaronTest {
     private static final Class<?> GAME = RedBaron.class;
@@ -250,11 +250,12 @@ class RedBaronTest {
         }
     }
 
-    /** An autopilot that aims at the nearest target and fires when it is in the sight. */
+    /** The CPU pilot chases the nearest target and fires when it is in the sight. */
     @ParameterizedTest
     @ValueSource(ints = {1, 3})
-    void anAutopilotFliesAWholeWave(int wave) {
+    void theCpuPilotFliesAWholeWave(int wave) {
         set(GAME, "wave", wave);
+        set(GAME, "autopilot", true);
         assertThat(flyRound(DOGFIGHT)).as("dogfight, wave %d", wave).isTrue();
         assertThat(getInt(GAME, "kills")).isGreaterThanOrEqualTo(getInt(GAME, "killTarget"));
         assertThat(flyRound(GROUND_ATTACK)).as("ground attack, wave %d", wave).isTrue();
@@ -267,7 +268,7 @@ class RedBaronTest {
         call(GAME, "startRound", round, ents);
         for (int frame = 0; frame < 6000; frame++) {
             set(GAME, "frame", frame);
-            autopilot(frame);
+            call(GAME, "flyAutopilot", (Object) ents);
             call(GAME, "fly", (Object) ents);
             call(GAME, "spawn", (Object) ents);
             call(GAME, "step", (Object) ents);
@@ -284,39 +285,21 @@ class RedBaronTest {
         return false;
     }
 
-    private void autopilot(int frame) {
-        int altitude = getInt(GAME, "altitude");
-        int best = -1;
-        int bestZ = Integer.MAX_VALUE;
-        boolean ground = getInt(GAME, "round") == GROUND_ATTACK;
-        for (int slot = 0; slot < 26; slot++) {
-            int type = ents[slot * STRIDE + TYPE];
-            int z = ents[slot * STRIDE + Z];
-            boolean target = ground ? type == HANGAR || type == FLAK : type == PLANE || type == BLIMP;
-            if (target && z > 60 && z < bestZ) {
-                best = slot;
-                bestZ = z;
-            }
-        }
-        int stickX = 0;
-        int stickY = 0;
-        if (best >= 0) {
-            int x = ents[best * STRIDE + X];
-            int y = ground ? 35 + 26 : ents[best * STRIDE + Y] + 26;
-            stickX = Math.max(-100, Math.min(100, x * 400 / Math.max(bestZ, 1)));
-            stickY = Math.max(-100, Math.min(100, (y - altitude) * 4));
-            if (Math.abs(x) < 40 + bestZ / 12 && Math.abs(y - altitude) < 50 && bestZ < 900 && frame % 3 == 0) {
-                call(GAME, "fire", (Object) ents);
-            }
-        }
-        // Climb over pyramids in the way.
-        for (int slot = 0; slot < 26; slot++) {
-            int b = slot * STRIDE;
-            if (ents[b + TYPE] == PYRAMID && ents[b + Z] < 500 && Math.abs(ents[b + X]) < 120 && altitude < 150) {
-                stickY = 100;
-            }
-        }
-        stick(stickX, stickY);
+    @Test
+    void theCpuPilotClimbsOverAPyramidAhead() {
+        set(GAME, "round", GROUND_ATTACK);
+        set(GAME, "altitude", 100);
+        spawn(PYRAMID, 0, 0, 400);
+        call(GAME, "flyAutopilot", (Object) ents);
+        assertThat(getInt(GAME, "stickY")).isEqualTo(100);
+    }
+
+    @Test
+    void thePilotScreenHasAHumanAndACpuButton() {
+        assertThat(callInt(GAME, "choiceAt", 80, 140)).isZero();
+        assertThat(callInt(GAME, "choiceAt", 230, 140)).isEqualTo(1);
+        assertThat(callInt(GAME, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
+        assertThat(callInt(GAME, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
     }
 
     private void stick(int x, int y) {

@@ -26,6 +26,13 @@ import io.github.jabrena.juno.api.Random;
  * the screen. You start with {@value #START_PLANES} planes and win another every
  * {@value #EXTRA_PLANE_SCORE} points; a hit from enemy fire or a crash costs one.
  *
+ * <p>The game opens in the cockpit: "CONTACT!", the propeller is swung and spins up into a blur,
+ * the plane races down the runway and pulls up into the sky, then the title is spelled out letter
+ * by letter; after each game over it starts again from there. Tap to start, then choose who flies
+ * the plane: <b>HUMAN</b> (you) or <b>CPU</b>, an autopilot that chases the nearest target, climbs
+ * over the pyramids and fires when its aim, which wanders a little, is on target. Tap the header
+ * during the game to switch between the two ({@code CPU} shows in the header).
+ *
  * <p>Everything is drawn in vector style, like the arcade's: the world is kept relative to the
  * plane, so turning rotates it around you and flying moves it towards you; 3D points are
  * perspective-projected ({@code x' = cx + x·f/z}) and then rotated about the center of the view by
@@ -152,6 +159,33 @@ public final class RedBaron {
     private static final int COCKPIT = 0xAD55;
     private static final int SIGHT = TftTouchShield.GREEN;
     private static final int FIRE = TftTouchShield.ORANGE;
+    private static final int PROPELLER = 0xC618;
+    private static final int RUNWAY = 0x8410;
+
+    // The opening: propeller spin-up, then the take-off run.
+    private static final int SPIN_FRAMES = 60;
+    private static final int PROP_LENGTH = 78;
+    private static final int TAKEOFF_FRAMES = 56;
+    private static final int RUNWAY_HALF_WIDTH = 60;
+    private static final int EYE_HEIGHT = 30;
+    private static final String TITLE = "RED BARON";
+
+    // The HUMAN and CPU buttons of the pilot screen.
+    private static final int CHOICE_X = 20;
+    private static final int CHOICE_Y = 104;
+    private static final int CHOICE_WIDTH = 130;
+    private static final int CHOICE_HEIGHT = 72;
+    private static final int CHOICE_GAP = 20;
+    private static final int CHOICE = 0x2124;
+    private static final int CHOICE_CHOSEN = 0x7800;
+
+    // The CPU pilot: how often it may fire, and how far and how often its aim wanders off target.
+    private static final int CPU_FIRE_FRAMES = 3;
+    private static final int CPU_WOBBLE = 60;
+    private static final int CPU_WOBBLE_FRAMES = 25;
+    /** How near an enemy tracer must be, and how close to the line of flight, before the CPU dodges. */
+    private static final int CPU_EVADE_RANGE = 700;
+    private static final int CPU_EVADE_WIDTH = 200;
 
     private static int score;
     private static int best;
@@ -179,6 +213,10 @@ public final class RedBaron {
     private static int releaseMisses;
     private static int originX;
     private static int originY;
+    private static boolean autopilot;
+    private static boolean headerPressed;
+    private static int aimWobbleX;
+    private static int aimWobbleY;
 
     // Display list state.
     private static int front;
@@ -201,15 +239,17 @@ public final class RedBaron {
     public static void main(String[] args) {
         short[] lines = new short[2 * LIST_SIZE];
         int[] ents = new int[ENTITIES * E_STRIDE];
+        byte[] letter = new byte[1];
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        TftTouchShield.fillScreen(SKY);
-        drawTitle(lines);
-        waitForTap();
-        Random.seed(Clock.micros());
 
         while (true) {
+            opening(lines);
+            drawTitle(lines, letter);
+            waitForTap();
+            Random.seed(Clock.micros());
+            choosePilot();
             score = 0;
             planes = START_PLANES;
             nextExtraPlane = EXTRA_PLANE_SCORE;
@@ -227,9 +267,7 @@ public final class RedBaron {
             drawHeader();
             clearView();
             showCentered("GAME OVER", 100, 3, TftTouchShield.RED);
-            showCentered("Tap to play again", 150, 1, TftTouchShield.WHITE);
-            Delay.millis(1500);
-            waitForTap();
+            Delay.millis(3000);
         }
     }
 
@@ -264,6 +302,9 @@ public final class RedBaron {
             }
             frame = frame + 1;
             handleTouch(ents);
+            if (autopilot) {
+                flyAutopilot(ents);
+            }
             fly(ents);
             spawn(ents);
             step(ents);
@@ -374,9 +415,28 @@ public final class RedBaron {
 
     // ---- Input ----
 
-    /** The touch is a joystick centered where it started; a short tap that barely moved fires. */
+    /**
+     * The touch is a joystick centered where it started; a short tap that barely moved fires.
+     * Tapping the header hands the plane to the CPU or back.
+     */
     private static void handleTouch(int[] ents) {
-        if (TftTouchShield.readTouch()) {
+        boolean down = TftTouchShield.readTouch();
+        if (down && TftTouchShield.touchY() < HEADER) {
+            if (!headerPressed) {
+                autopilot = !autopilot;
+                touching = false;
+                stickX = 0;
+                stickY = 0;
+                drawHeader();
+            }
+            headerPressed = true;
+            return;
+        }
+        headerPressed = false;
+        if (autopilot) {
+            return;
+        }
+        if (down) {
             int x = TftTouchShield.touchX();
             int y = TftTouchShield.touchY();
             if (!touching) {
@@ -431,10 +491,64 @@ public final class RedBaron {
         }
     }
 
+    /** The pilot screen: waits for a tap on HUMAN or CPU. */
+    private static void choosePilot() {
+        TftTouchShield.fillScreen(SKY);
+        showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.RED);
+        showCentered("Who flies the biplane?", 74, 1, TftTouchShield.WHITE);
+        drawChoice(0, "HUMAN", "You fly and fire", false);
+        drawChoice(1, "CPU", "Autopilot plays", false);
+        showCentered("Tap the header in game to switch", 206, 1, HORIZON);
+        int choice = -1;
+        while (choice < 0) {
+            if (TftTouchShield.readTouch()) {
+                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            }
+            Delay.millis(10);
+        }
+        autopilot = choice == 1;
+        touching = false;
+        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You fly and fire" : "Autopilot plays", true);
+        waitForRelease();
+    }
+
+    /** The pilot button at (x, y): 0 for HUMAN, 1 for CPU, or -1. */
+    private static int choiceAt(int x, int y) {
+        if (y < CHOICE_Y || y >= CHOICE_Y + CHOICE_HEIGHT) {
+            return -1;
+        }
+        for (int index = 0; index < 2; index++) {
+            int left = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+            if (x >= left && x < left + CHOICE_WIDTH) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private static void drawChoice(int index, String label, String hint, boolean chosen) {
+        int x = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+        int color = chosen ? CHOICE_CHOSEN : CHOICE;
+        TftTouchShield.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
+        TftTouchShield.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, chosen ? TftTouchShield.WHITE : HORIZON);
+        TftTouchShield.setTextSize(3);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - label.length() * 18) / 2, CHOICE_Y + 16);
+        TftTouchShield.print(label);
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setTextColor(TftTouchShield.YELLOW, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - hint.length() * 6) / 2, CHOICE_Y + 52);
+        TftTouchShield.print(hint);
+    }
+
     private static void waitForTap() {
         while (!TftTouchShield.readTouch()) {
             Delay.millis(10);
         }
+        waitForRelease();
+    }
+
+    private static void waitForRelease() {
         int misses = 0;
         while (misses < 3) {
             if (TftTouchShield.readTouch()) {
@@ -443,6 +557,64 @@ public final class RedBaron {
                 misses = misses + 1;
             }
             Delay.millis(10);
+        }
+    }
+
+    // ---- The CPU pilot ----
+
+    /**
+     * The CPU at the stick: it steers towards the nearest target (enemy planes and the blimp in a
+     * dogfight, hangars and flak on the ground, where it flies low enough for its guns to reach),
+     * breaks away from enemy tracers closing in, climbs over pyramids in its way, and fires when the
+     * target is in the sight. Its aim wanders by up to {@value #CPU_WOBBLE} units, a new offset every
+     * {@value #CPU_WOBBLE_FRAMES} frames, so it misses now and then like a person would.
+     */
+    private static void flyAutopilot(int[] ents) {
+        if (frame % CPU_WOBBLE_FRAMES == 0) {
+            aimWobbleX = Random.nextInt(-CPU_WOBBLE, CPU_WOBBLE + 1);
+            aimWobbleY = Random.nextInt(-CPU_WOBBLE / 2, CPU_WOBBLE / 2 + 1);
+        }
+        boolean ground = round == GROUND_ATTACK;
+        int target = -1;
+        int nearest = 1 << 30;
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            int type = ents[slot * E_STRIDE + E_TYPE];
+            int z = ents[slot * E_STRIDE + E_Z];
+            boolean wanted = ground ? type == T_HANGAR || type == T_FLAK : type == T_PLANE || type == T_BLIMP;
+            if (wanted && z > 60 && z < nearest) {
+                target = slot;
+                nearest = z;
+            }
+        }
+        stickX = 0;
+        stickY = 0;
+        if (target >= 0) {
+            int b = target * E_STRIDE;
+            int x = ents[b + E_X] + aimWobbleX;
+            int y = (ground ? HANGAR_HEIGHT / 2 : ents[b + E_Y]) + GUN_OFFSET_Y + aimWobbleY;
+            stickX = clamp(x * 400 / Math.max(nearest, 1), -100, 100);
+            stickY = clamp((y - altitude) * 4, -100, 100);
+            if (Math.abs(x) < 40 + nearest / 12 && Math.abs(y - altitude) < 50 && nearest < 900
+                    && frame % CPU_FIRE_FRAMES == 0) {
+                fire(ents);
+            }
+        }
+        // Break away from enemy fire closing in: hard over, and up or down, away from the tracer.
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            int b = slot * E_STRIDE;
+            if (ents[b + E_TYPE] == T_TRACER && ents[b + E_Z] < CPU_EVADE_RANGE
+                    && Math.abs(ents[b + E_X]) < CPU_EVADE_WIDTH) {
+                stickX = ents[b + E_X] >= 0 ? -100 : 100;
+                stickY = ents[b + E_Y] >= altitude ? -60 : 60;
+            }
+        }
+        // Climb over pyramids in the way.
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            int b = slot * E_STRIDE;
+            if (ents[b + E_TYPE] == T_PYRAMID && ents[b + E_Z] < 500 && Math.abs(ents[b + E_X]) < 120
+                    && altitude < PYRAMID_HEIGHT + 40) {
+                stickY = 100;
+            }
         }
     }
 
@@ -1251,9 +1423,93 @@ public final class RedBaron {
         TftTouchShield.fillRect(left, y, right - left + 1, 1, color);
     }
 
-    // ---- Title ----
+    // ---- Opening and title ----
 
-    private static void drawTitle(short[] lines) {
+    /**
+     * The opening, from the cockpit: "CONTACT!", the propeller is swung and spins up until it is a
+     * blur, then the take-off run down the runway and the climb into the sky.
+     */
+    private static void opening(short[] lines) {
+        TftTouchShield.fillScreen(SKY);
+        shown = 0;
+        bankCos = 1024;
+        bankSin = 0;
+        showCentered("CONTACT!", 28, 2, TftTouchShield.YELLOW);
+        int angle = 0;
+        for (int f = 0; f < SPIN_FRAMES; f++) {
+            int speed = 2 + f * f / 45;
+            angle = (angle + speed) % 360;
+            built = 0;
+            // The engine cowling around the hub.
+            for (int k = 0; k < 8; k++) {
+                addLine(lines, CENTER_X + sightX(k) * 2, CENTER_Y + sightY(k) * 2, CENTER_X + sightX(k + 1) * 2,
+                        CENTER_Y + sightY(k + 1) * 2, COCKPIT);
+            }
+            if (speed > 40) {
+                // Too fast to follow: the blades blur into a disc.
+                for (int k = 0; k < 16; k++) {
+                    float a0 = (float) Math.toRadians(k * 22.5f);
+                    float a1 = (float) Math.toRadians(k * 22.5f + 22.5f);
+                    addLine(lines, CENTER_X + Math.round((float) Math.cos(a0) * PROP_LENGTH),
+                            CENTER_Y + Math.round((float) Math.sin(a0) * PROP_LENGTH),
+                            CENTER_X + Math.round((float) Math.cos(a1) * PROP_LENGTH),
+                            CENTER_Y + Math.round((float) Math.sin(a1) * PROP_LENGTH), HORIZON);
+                }
+            }
+            if (speed <= 60) {
+                float radians = (float) Math.toRadians(angle);
+                int dx = Math.round((float) Math.cos(radians) * PROP_LENGTH);
+                int dy = Math.round((float) Math.sin(radians) * PROP_LENGTH);
+                addLine(lines, CENTER_X - dx, CENTER_Y - dy, CENTER_X + dx, CENTER_Y + dy, PROPELLER);
+            }
+            present(lines);
+            Delay.millis(30);
+        }
+        Delay.millis(200);
+        takeOff(lines);
+        TftTouchShield.fillScreen(SKY);
+        shown = 0;
+        Delay.millis(250);
+    }
+
+    /**
+     * The take-off run: the runway's center line rushes past faster and faster, then the nose comes
+     * up, the horizon sinks and the runway drops away below.
+     */
+    private static void takeOff(short[] lines) {
+        TftTouchShield.fillScreen(SKY);
+        shown = 0;
+        int pitch = 0;
+        int travel = 0;
+        for (int f = 0; f < TAKEOFF_FRAMES; f++) {
+            built = 0;
+            travel = travel + 8 + 2 * f;
+            if (f > TAKEOFF_FRAMES - 22) {
+                pitch = pitch + 7;
+            }
+            int horizon = CENTER_Y + pitch;
+            addLine(lines, 0, horizon, WIDTH - 1, horizon, HORIZON);
+            for (int side = -1; side <= 1; side = side + 2) {
+                addLine(lines, CENTER_X + side * RUNWAY_HALF_WIDTH * FOCAL / NEAR, horizon + EYE_HEIGHT * FOCAL / NEAR,
+                        CENTER_X + side * RUNWAY_HALF_WIDTH * FOCAL / FAR, horizon + EYE_HEIGHT * FOCAL / FAR, RUNWAY);
+            }
+            for (int k = 0; k < 12; k++) {
+                int z = NEAR + k * 120 + (120 - travel % 120);
+                addLine(lines, CENTER_X, horizon + EYE_HEIGHT * FOCAL / z, CENTER_X,
+                        horizon + EYE_HEIGHT * FOCAL / (z + 50), LINE);
+            }
+            drawCockpit(lines);
+            present(lines);
+            Delay.millis(30);
+        }
+        Delay.millis(200);
+    }
+
+    /**
+     * The title screen: the landscape and two enemy biplanes, and "RED BARON" spelled out letter by
+     * letter, each one flashing white like a burst of fire before it turns red.
+     */
+    private static void drawTitle(short[] lines, byte[] letter) {
         built = 0;
         altitude = 300;
         heading = 30;
@@ -1263,7 +1519,20 @@ public final class RedBaron {
         drawBiplane(lines, -120, 330, 520, 150, ENEMY);
         drawBiplane(lines, 260, 420, 1400, 200, ENEMY);
         present(lines);
-        showCentered("RED BARON", 34, 4, TftTouchShield.RED);
+        int left = (WIDTH - TITLE.length() * 24) / 2;
+        TftTouchShield.setTextSize(4);
+        for (int i = 0; i < TITLE.length(); i++) {
+            letter[0] = (byte) TITLE.charAt(i);
+            TftTouchShield.setTextColor(TftTouchShield.WHITE, SKY);
+            TftTouchShield.setCursor(left + i * 24, 34);
+            TftTouchShield.print(letter, 1);
+            Delay.millis(50);
+            TftTouchShield.setTextColor(TftTouchShield.RED, SKY);
+            TftTouchShield.setCursor(left + i * 24, 34);
+            TftTouchShield.print(letter, 1);
+            Delay.millis(70);
+        }
+        Delay.millis(200);
         showCentered("Drag to fly, tap to fire", 198, 1, TftTouchShield.WHITE);
         showCentered("Tap to start", 214, 1, TftTouchShield.CYAN);
     }
@@ -1323,6 +1592,11 @@ public final class RedBaron {
         TftTouchShield.setCursor(262, 2);
         TftTouchShield.print("WAVE ");
         TftTouchShield.print(wave);
+        if (autopilot) {
+            TftTouchShield.setTextColor(TftTouchShield.MAGENTA, SKY);
+            TftTouchShield.setCursor(226, 2);
+            TftTouchShield.print("CPU");
+        }
         TftTouchShield.setTextColor(planes <= 1 ? TftTouchShield.RED : TftTouchShield.GREEN, SKY);
         TftTouchShield.setCursor(4, 11);
         TftTouchShield.print("PLANES ");

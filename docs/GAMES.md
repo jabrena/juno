@@ -135,9 +135,9 @@ After Atari's 1985 vector arcade game, in landscape. Each wave has three rounds:
 
 ### Red Baron
 
-<img src="images/games/red-baron.png" alt="Red Baron on the TFT shield" width="320">
+<img src="videos/games/red-baron-cpu.gif" alt="Red Baron on the TFT shield, three waves flown by the CPU" width="320">
 
-After Atari's 1981 vector arcade game, in landscape: a First World War dogfight from the cockpit of a biplane, over a landscape ringed by mountains. The whole screen is a joystick: press and drag from that point to bank and turn (the horizon rolls as you do) or to climb and dive, and tap to fire both machine guns at whatever is in the sight. Each wave has a dogfight, where enemy biplanes make firing passes and a blimp drifts by for bonus points, and a ground attack, where you fly low to strafe hangars and flak guns without crashing into the pyramids. Three planes, one more every 20,000 points.
+After Atari's 1981 vector arcade game, in landscape. It opens in the cockpit: "CONTACT!", the propeller spins up into a blur, the plane races down the runway and pulls up, and the title is spelled out letter by letter; every game over returns there. After the title, choose the pilot: **HUMAN** to play yourself, or **CPU** to watch an autopilot chase the nearest target, break away from enemy fire and climb over the pyramids, with an aim that wanders enough to miss now and then; tap the header during the game to switch between the two. A First World War dogfight from the cockpit of a biplane, over a landscape ringed by mountains. The whole screen is a joystick: press and drag from that point to bank and turn (the horizon rolls as you do) or to climb and dive, and tap to fire both machine guns at whatever is in the sight. Each wave has a dogfight, where enemy biplanes make firing passes and a blimp drifts by for bonus points, and a ground attack, where you fly low to strafe hangars and flak guns without crashing into the pyramids. Three planes, one more every 20,000 points.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
