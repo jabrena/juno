@@ -21,6 +21,8 @@
   compiles today, and what's explicitly not yet supported).
 - [ARDUINO.md](ARDUINO.md) — installing `arduino-cli` and using it to build, upload, and monitor
   Juno-generated sketches on real UNO R4 hardware.
+- [ARDUINO-ONE-Q.md](ARDUINO-ONE-Q.md) — UNO Q dual-processor hardware specifications, Zephyr
+  toolchain target, Juno compatibility, and the Space Paranoids build/upload example.
 - [ARDUINO-ONE-R4.md](ARDUINO-ONE-R4.md) — UNO R4 Minima/WiFi hardware specifications,
   toolchain targets, and Juno compatibility.
 - [ARDUINO-ONE-R3.md](ARDUINO-ONE-R3.md) — UNO R3 hardware specifications, AVR constraints,
