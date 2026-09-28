@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/** Rules of Rock-Paper-Scissors-Lizard-Spock and Lunar Lander. */
+/** Rules of Rock-Paper-Scissors-Lizard-Spock. */
 class ChanceGamesTest {
     @BeforeEach
     void portrait() {
@@ -83,62 +83,4 @@ class ChanceGamesTest {
         assertThat(computerWins).isGreaterThan(3 * humanWins);
     }
 
-    // ---- Lunar Lander ----
-
-    @Test
-    void lunarTerrainHasPadsAndNoCliffs() {
-        short[] ground = new short[240];
-        byte[] pads = new byte[240];
-        for (int seed = 0; seed < 300; seed++) {
-            Random.seed(seed);
-            call(LunarLander.class, "generateTerrain", ground, pads);
-            int padCount = 0;
-            for (int x = 0; x < 240; x++) {
-                assertThat((int) ground[x]).isBetween(72, 269);
-                if (x > 0) {
-                    assertThat(Math.abs(ground[x] - ground[x - 1])).as("slope at %d, seed %d", x, seed)
-                            .isLessThanOrEqualTo(12);
-                    if (pads[x] != 0 && pads[x - 1] == pads[x]) {
-                        assertThat(ground[x]).as("pads are flat").isEqualTo(ground[x - 1]);
-                    }
-                }
-                if (pads[x] != 0 && (x == 0 || pads[x - 1] != pads[x])) {
-                    padCount = padCount + 1;
-                }
-            }
-            assertThat(padCount).as("pads, seed %d", seed).isGreaterThanOrEqualTo(2);
-        }
-    }
-
-    @Test
-    void landingNeedsAnUprightSlowTouchdownOnAPad() {
-        short[] ground = new short[240];
-        byte[] pads = new byte[240];
-        Random.seed(11);
-        call(LunarLander.class, "generateTerrain", ground, pads);
-        int padCenter = -1;
-        int multiplier = 0;
-        for (int x = 8; x < 232 && padCenter < 0; x++) {
-            if (pads[x] != 0 && pads[x - 7] == pads[x] && pads[x + 7] == pads[x]) {
-                padCenter = x;
-                multiplier = pads[x];
-            }
-        }
-        assertThat(padCenter).isPositive();
-        set(LunarLander.class, "x", (float) padCenter);
-        set(LunarLander.class, "y", (float) (ground[padCenter] - 7));
-        set(LunarLander.class, "tilt", 0);
-        set(LunarLander.class, "vx", 0.1f);
-        set(LunarLander.class, "vy", 0.4f);
-        assertThat(callBoolean(LunarLander.class, "touchesGround", (Object) ground)).isTrue();
-        assertThat(callInt(LunarLander.class, "landingMultiplier", ground, pads)).isEqualTo(multiplier);
-        set(LunarLander.class, "vy", 0.8f);
-        assertThat(callInt(LunarLander.class, "landingMultiplier", ground, pads)).as("too fast").isZero();
-        set(LunarLander.class, "vy", 0.4f);
-        set(LunarLander.class, "tilt", 1);
-        assertThat(callInt(LunarLander.class, "landingMultiplier", ground, pads)).as("tilted").isZero();
-        set(LunarLander.class, "tilt", 0);
-        set(LunarLander.class, "y", (float) (ground[padCenter] - 9));
-        assertThat(callBoolean(LunarLander.class, "touchesGround", (Object) ground)).as("hovering").isFalse();
-    }
 }

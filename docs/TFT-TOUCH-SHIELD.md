@@ -270,11 +270,12 @@ Triangles are drawn from horizontal lines, since the display has no line primiti
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.LunarLander
+  -Djuno.main=io.github.jabrena.juno.games.lunarlander.LunarLander
 ```
 
-[`LunarLander`](../juno-examples/src/main/java/io/github/jabrena/juno/games/LunarLander.java) —
-Lunar Lander: hold `<`/`>` to rotate in 15-degree steps and `BURN` to fire the engine. Set down
+[`LunarLander`](../juno-examples/src/main/java/io/github/jabrena/juno/games/lunarlander/LunarLander.java) —
+Lunar Lander: choose **HUMAN** or **CPU** from the opening screen, and tap the header during a
+descent to switch control. In human mode, hold `<`/`>` to rotate in 15-degree steps and `BURN` to fire the engine. Set down
 upright and slowly (the header's speeds turn red when too fast) with both feet on a yellow pad to
 score 50 times its multiplier (x2, x3, x5; narrower pads pay more). A crash costs 250 fuel, fuel
 carries over between descents, and the game ends when it runs out. The lander is a 15x15 bitmap

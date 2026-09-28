@@ -146,13 +146,13 @@ After the arcade game from TRON, in landscape. It opens like the film: a laser s
 
 ### Lunar Lander
 
-<img src="images/games/lunar-lander.png" alt="Lunar Lander on the TFT shield" width="240">
+<img src="videos/games/lunar-lander-cpu.gif" alt="Lunar Lander on the TFT shield, flown by the CPU" width="240">
 
-Hold `<`/`>` to rotate and `BURN` to thrust. Land upright and slowly with both feet on a yellow pad to score 50 times its multiplier (x2, x3, x5). Crashes cost fuel, and the game ends when the fuel runs out.
+The cover opens into a pilot selection: choose **HUMAN** to hold `<`/`>` to rotate and `BURN` to thrust, or **CPU** to watch the autopilot select a reachable pad and manage the descent. Tap the header during a descent to switch control. Land upright and slowly with both feet on a yellow pad to score 50 times its multiplier (x2, x3, x5). Crashes cost fuel, and the game ends when the fuel runs out.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.LunarLander
+  -Djuno.main=io.github.jabrena.juno.games.lunarlander.LunarLander
 ```
 
 ### Simon

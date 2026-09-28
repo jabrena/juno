@@ -48,7 +48,7 @@ class GameScreenshotTest {
                 game("games.empirestrikesback.EmpireStrikesBack", "empire-strikes-back", "6000:160,130 6500:85,140 10200:200,150 end:10600"),
                 game("games.Game2048", "game-2048", "500:120,160 1200:230,200 1900:10,200 2600:120,300 end:3200"),
                 game("games.GameOfLife", "game-of-life", "500:120,160 end:6000"),
-                game("games.LunarLander", "lunar-lander", "500:120,160 1500:120,290 2200:120,290 end:2600"),
+                game("games.lunarlander.LunarLander", "lunar-lander", "500:120,190 1000:180,140 end:9000"),
                 game("games.Mancala", "mancala", "500:143,146 end:7000"),
                 game("games.Minesweeper", "minesweeper", "500:120,160 end:6000"),
                 game("games.MissileCommand", "missile-command", "500:120,160 1500:60,120 2200:180,90 2600:120,150 end:3000"),
