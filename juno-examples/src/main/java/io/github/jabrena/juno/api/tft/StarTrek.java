@@ -19,6 +19,13 @@ import io.github.jabrena.juno.api.Random;
  * you far ahead, out of trouble. Photon torpedoes and warp jumps are limited; fly into the starbase
  * to dock, which also restores your shields.
  *
+ * <p>The game opens with a starfield rushing past as the Enterprise goes to warp, then the title
+ * zooms in and <i>Strategic Operations Simulator</i> types out beneath it; after each game over it
+ * starts again from there. Tap to start, then choose who commands the Enterprise: <b>HUMAN</b>
+ * (you) or <b>CPU</b>, an autopilot that hunts the nearest enemy, docks when its shields run low
+ * and uses every weapon. Tap the header during the game to switch between the two ({@code CPU}
+ * shows in the header).
+ *
  * <p>Klingons circle you, and sometimes your starbase, firing torpedoes, and a starbase that takes
  * too many hits is lost. From sector 2, anti-matter saucers home in on the Enterprise and drain its
  * shields if they touch it; every fourth sector the space probe Nomad roams the sector laying mines.
@@ -50,6 +57,28 @@ public final class StarTrek {
     private static final int BRIDGE_FOCAL = 60;
     private static final int BUTTON_Y = 102;
     private static final int BUTTON_HEIGHT = 44;
+    // The opening: stars (x, y, depth, and the streak drawn last frame) rushing out from the center.
+    private static final int INTRO_STARS = 32;
+    private static final int S_X = 0;
+    private static final int S_Y = 1;
+    private static final int S_Z = 2;
+    private static final int S_TAIL_X = 3;
+    private static final int S_TAIL_Y = 4;
+    private static final int S_HEAD_X = 5;
+    private static final int S_HEAD_Y = 6;
+    private static final int S_STRIDE = 7;
+    private static final int INTRO_FRAMES = 70;
+    private static final int INTRO_DEPTH = 1024;
+    private static final int INTRO_FOCAL = 64;
+    private static final String SUBTITLE = "STRATEGIC OPERATIONS SIMULATOR";
+    /** The HUMAN and CPU buttons of the pilot screen. */
+    private static final int CHOICE_X = 20;
+    private static final int CHOICE_Y = 104;
+    private static final int CHOICE_WIDTH = 130;
+    private static final int CHOICE_HEIGHT = 72;
+    private static final int CHOICE_GAP = 20;
+    /** {@link #pressed} while a finger is on the header. */
+    private static final int HEADER_PRESSED = 3;
 
     /** The sector wraps around: its size in world units. */
     private static final int SECTOR = 2048;
@@ -100,6 +129,14 @@ public final class StarTrek {
     private static final int MAX_WARPS = 3;
     private static final int WARP_DISTANCE = 700;
     private static final int DOCK_RANGE = 40;
+
+    // The CPU pilot.
+    private static final int DOCK_SHIELDS = 50;
+    private static final int HOLD_OFF = 200;
+    private static final int AIM = 12;
+    private static final int PHOTON_EVERY = 90;
+    private static final int WARP_SHIELDS = 30;
+    private static final int WARP_THREAT = 80;
 
     // Enemies.
     private static final int KLINGON_HP = 2;
@@ -168,6 +205,7 @@ public final class StarTrek {
     private static int steerX;
     private static int steerY;
     private static int pressed = -1;
+    private static boolean autopilot;
 
     // Display list state and the clip rectangle of the view being drawn.
     private static int front;
@@ -187,15 +225,17 @@ public final class StarTrek {
     public static void main(String[] args) {
         short[] lines = new short[2 * LIST_SIZE];
         int[] ents = new int[ENTITIES * E_STRIDE];
+        byte[] letter = new byte[1];
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        TftTouchShield.fillScreen(SPACE);
-        drawTitle(lines, ents);
-        waitForTap();
-        Random.seed(Clock.micros());
 
         while (true) {
+            warpIntro(ents);
+            drawTitle(lines, ents, letter);
+            waitForTap();
+            Random.seed(Clock.micros());
+            choosePilot();
             score = 0;
             sector = 1;
             shields = 100;
@@ -210,9 +250,7 @@ public final class StarTrek {
             drawHeader(ents);
             clearView();
             showCentered("GAME OVER", 100, 3, TftTouchShield.RED);
-            showCentered("Tap to play again", 150, 1, TftTouchShield.WHITE);
-            Delay.millis(1500);
-            waitForTap();
+            Delay.millis(3000);
         }
     }
 
@@ -247,6 +285,9 @@ public final class StarTrek {
             }
             frame = frame + 1;
             handleTouch(ents);
+            if (autopilot) {
+                flyAutopilot(ents);
+            }
             step(ents);
             render(lines, ents);
             if (dead) {
@@ -353,17 +394,32 @@ public final class StarTrek {
 
     /**
      * Holding a finger in the tactical view turns the Enterprise towards it and runs the impulse
-     * engines; the buttons act when pressed.
+     * engines; the buttons act when pressed. Tapping the header hands the helm to the CPU or back.
      */
     private static void handleTouch(int[] ents) {
         if (!TftTouchShield.readTouch()) {
-            steering = false;
+            if (!autopilot) {
+                steering = false;
+            }
             pressed = -1;
             return;
         }
         int x = TftTouchShield.touchX();
         int y = TftTouchShield.touchY();
-        if (x <= TACTICAL_RIGHT && y >= HEADER) {
+        if (y < HEADER) {
+            if (pressed != HEADER_PRESSED) {
+                autopilot = !autopilot;
+                steering = false;
+                status = -1;
+            }
+            pressed = HEADER_PRESSED;
+            return;
+        }
+        if (autopilot) {
+            pressed = -1;
+            return;
+        }
+        if (x <= TACTICAL_RIGHT) {
             steering = true;
             steerX = x;
             steerY = y;
@@ -387,10 +443,64 @@ public final class StarTrek {
         pressed = button;
     }
 
+    /** The pilot screen: waits for a tap on HUMAN or CPU. */
+    private static void choosePilot() {
+        TftTouchShield.fillScreen(SPACE);
+        showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.YELLOW);
+        showCentered("Who commands the Enterprise?", 74, 1, TftTouchShield.WHITE);
+        drawChoice(0, "HUMAN", "You steer and fire", false);
+        drawChoice(1, "CPU", "Autopilot plays", false);
+        showCentered("Tap the header in game to switch", 206, 1, STAR);
+        int choice = -1;
+        while (choice < 0) {
+            if (TftTouchShield.readTouch()) {
+                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            }
+            Delay.millis(10);
+        }
+        autopilot = choice == 1;
+        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You steer and fire" : "Autopilot plays",
+                true);
+        waitForRelease();
+    }
+
+    /** The pilot button at (x, y): 0 for HUMAN, 1 for CPU, or -1. */
+    private static int choiceAt(int x, int y) {
+        if (y < CHOICE_Y || y >= CHOICE_Y + CHOICE_HEIGHT) {
+            return -1;
+        }
+        for (int index = 0; index < 2; index++) {
+            int left = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+            if (x >= left && x < left + CHOICE_WIDTH) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private static void drawChoice(int index, String label, String hint, boolean chosen) {
+        int x = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
+        int color = chosen ? FRAME : BUTTON;
+        TftTouchShield.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
+        TftTouchShield.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, chosen ? TftTouchShield.WHITE : FRAME);
+        TftTouchShield.setTextSize(3);
+        TftTouchShield.setTextColor(TftTouchShield.YELLOW, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - label.length() * 18) / 2, CHOICE_Y + 16);
+        TftTouchShield.print(label);
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
+        TftTouchShield.setCursor(x + (CHOICE_WIDTH - hint.length() * 6) / 2, CHOICE_Y + 52);
+        TftTouchShield.print(hint);
+    }
+
     private static void waitForTap() {
         while (!TftTouchShield.readTouch()) {
             Delay.millis(10);
         }
+        waitForRelease();
+    }
+
+    private static void waitForRelease() {
         int misses = 0;
         while (misses < 3) {
             if (TftTouchShield.readTouch()) {
@@ -400,6 +510,64 @@ public final class StarTrek {
             }
             Delay.millis(10);
         }
+    }
+
+    // ---- The CPU pilot ----
+
+    /**
+     * The CPU at the helm: it steers at the nearest enemy ship, or at the starbase to dock when the
+     * shields run low, but holds off at phaser range instead of ramming it. It fires phasers when the
+     * target is dead ahead, adds a photon torpedo now and then, and warps away when a Klingon
+     * torpedo is about to finish off the shields.
+     */
+    private static void flyAutopilot(int[] ents) {
+        if (warps > 0 && shields <= WARP_SHIELDS && nearestDistance(ents, T_TORPEDO) < WARP_THREAT) {
+            warp(ents);
+            return;
+        }
+        int base = find(ents, T_STARBASE);
+        boolean needDock = shields < DOCK_SHIELDS && base >= 0 && !docked;
+        int target = -1;
+        int nearest = SECTOR;
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            int type = ents[slot * E_STRIDE + E_TYPE];
+            boolean wanted = needDock ? slot == base : type == T_KLINGON || type == T_NOMAD || type == T_SAUCER;
+            if (wanted) {
+                int d = distanceToShip(ents, slot * E_STRIDE);
+                if (d < nearest) {
+                    target = slot;
+                    nearest = d;
+                }
+            }
+        }
+        if (target < 0) {
+            steering = false;
+            return;
+        }
+        int b = target * E_STRIDE;
+        int dx = wrap(ents[b + E_X] - shipX) / FIX;
+        int dy = wrap(ents[b + E_Y] - shipY) / FIX;
+        int off = Math.abs(angleBetween(heading, bearing(dx, dy)));
+        steering = needDock || nearest > HOLD_OFF || off > 20;
+        steerX = TACTICAL_X + dx;
+        steerY = TACTICAL_Y + dy;
+        if (!needDock && off < AIM && nearest < PHASER_RANGE) {
+            firePhasers(ents);
+            if (nearest > 120 && frame % PHOTON_EVERY == 0) {
+                firePhoton(ents);
+            }
+        }
+    }
+
+    /** The distance to the nearest object of a type, or the size of the sector when there is none. */
+    private static int nearestDistance(int[] ents, int type) {
+        int nearest = SECTOR;
+        for (int slot = 0; slot < ENTITIES; slot++) {
+            if (ents[slot * E_STRIDE + E_TYPE] == type) {
+                nearest = Math.min(nearest, distanceToShip(ents, slot * E_STRIDE));
+            }
+        }
+        return nearest;
     }
 
     // ---- The Enterprise ----
@@ -1211,7 +1379,7 @@ public final class StarTrek {
     /** Score, sector, what is left to destroy, and the shields. */
     private static void drawStatus(int[] ents) {
         int klingons = count(ents, T_KLINGON) + count(ents, T_NOMAD);
-        int combined = klingons * 1000 + shields + (baseLost ? 100000 : 0);
+        int combined = klingons * 1000 + shields + (baseLost ? 100000 : 0) + (autopilot ? 200000 : 0);
         if (combined == status && score == shownScore) {
             return;
         }
@@ -1246,6 +1414,9 @@ public final class StarTrek {
         TftTouchShield.print("ENEMY SHIPS ");
         TftTouchShield.print(klingons);
         TftTouchShield.print("  ");
+        TftTouchShield.setTextColor(TftTouchShield.MAGENTA, SPACE);
+        TftTouchShield.setCursor(228, 11);
+        TftTouchShield.print(autopilot ? "CPU" : "   ");
         if (baseLost) {
             TftTouchShield.setTextColor(TftTouchShield.RED, SPACE);
             TftTouchShield.setCursor(250, 11);
@@ -1253,7 +1424,82 @@ public final class StarTrek {
         }
     }
 
-    private static void drawTitle(short[] lines, int[] ents) {
+    /**
+     * The opening: stars rush out from the center of the screen, faster and faster, stretching into
+     * streaks as the Enterprise goes to warp, and a white flash as it jumps.
+     */
+    private static void warpIntro(int[] stars) {
+        TftTouchShield.fillScreen(SPACE);
+        shown = 0;
+        for (int i = 0; i < INTRO_STARS; i++) {
+            placeStar(stars, i * S_STRIDE, Random.nextInt(64, INTRO_DEPTH));
+        }
+        for (int f = 0; f < INTRO_FRAMES; f++) {
+            int speed = 4 + f * f / 60;
+            for (int i = 0; i < INTRO_STARS; i++) {
+                int b = i * S_STRIDE;
+                if (stars[b + S_HEAD_X] >= 0) {
+                    drawLine(stars[b + S_TAIL_X], stars[b + S_TAIL_Y], stars[b + S_HEAD_X], stars[b + S_HEAD_Y], SPACE);
+                }
+                stars[b + S_Z] = stars[b + S_Z] - speed;
+                int z = stars[b + S_Z];
+                int headX = WIDTH / 2 + stars[b + S_X] * INTRO_FOCAL / Math.max(z, 1);
+                int headY = HEIGHT / 2 + stars[b + S_Y] * INTRO_FOCAL / Math.max(z, 1);
+                int tailZ = z + 1 + speed * 2;
+                int tailX = WIDTH / 2 + stars[b + S_X] * INTRO_FOCAL / tailZ;
+                int tailY = HEIGHT / 2 + stars[b + S_Y] * INTRO_FOCAL / tailZ;
+                if (z < 8 || headX < 0 || headX >= WIDTH || headY < 0 || headY >= HEIGHT) {
+                    placeStar(stars, b, INTRO_DEPTH);
+                    continue;
+                }
+                int color = z < INTRO_DEPTH / 3 ? TftTouchShield.WHITE : z < INTRO_DEPTH * 2 / 3 ? STARBASE : STAR;
+                drawLine(tailX, tailY, headX, headY, color);
+                stars[b + S_TAIL_X] = tailX;
+                stars[b + S_TAIL_Y] = tailY;
+                stars[b + S_HEAD_X] = headX;
+                stars[b + S_HEAD_Y] = headY;
+            }
+            Delay.millis(20);
+        }
+        TftTouchShield.fillScreen(TftTouchShield.WHITE);
+        Delay.millis(60);
+        TftTouchShield.fillScreen(SPACE);
+        Delay.millis(250);
+    }
+
+    /** A star far away at a random spot, with no streak on screen yet. */
+    private static void placeStar(int[] stars, int b, int depth) {
+        stars[b + S_X] = Random.nextInt(-WIDTH * 2, WIDTH * 2);
+        stars[b + S_Y] = Random.nextInt(-HEIGHT * 2, HEIGHT * 2);
+        stars[b + S_Z] = depth;
+        stars[b + S_HEAD_X] = -1;
+    }
+
+    /**
+     * The title screen: stars, "STAR TREK" zooming in, the subtitle typing out beneath it, then the
+     * Enterprise among Klingons.
+     */
+    private static void drawTitle(short[] lines, int[] ents, byte[] letter) {
+        for (int i = 0; i < 40; i++) {
+            TftTouchShield.drawPixel((i * 797 + 131) % WIDTH, (i * 523 + 37 * i * i) % HEIGHT, STAR);
+        }
+        for (int size = 1; size <= 4; size++) {
+            TftTouchShield.fillRect(0, 36, WIDTH, 40, SPACE);
+            showCentered("STAR TREK", 56 - 4 * size, size, size == 4 ? TftTouchShield.WHITE : STAR);
+            Delay.millis(90);
+        }
+        Delay.millis(120);
+        showCentered("STAR TREK", 40, 4, TftTouchShield.YELLOW);
+        Delay.millis(200);
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setTextColor(STARBASE, SPACE);
+        TftTouchShield.setCursor((WIDTH - SUBTITLE.length() * 6) / 2, 82);
+        for (int i = 0; i < SUBTITLE.length(); i++) {
+            letter[0] = (byte) SUBTITLE.charAt(i);
+            TftTouchShield.print(letter, 1);
+            Delay.millis(35);
+        }
+        Delay.millis(300);
         sector = 1;
         clear(ents, ENTITIES * E_STRIDE);
         shipX = SECTOR_FIX / 2;
@@ -1266,7 +1512,6 @@ public final class StarTrek {
         drawKlingonTop(lines, 200, 205, 330);
         drawEnterprise(lines);
         present(lines);
-        showCentered("STAR TREK", 40, 4, TftTouchShield.YELLOW);
         showCentered("Hold the tactical view to steer", 206, 1, TftTouchShield.WHITE);
         showCentered("Tap to start", 222, 1, TftTouchShield.CYAN);
     }

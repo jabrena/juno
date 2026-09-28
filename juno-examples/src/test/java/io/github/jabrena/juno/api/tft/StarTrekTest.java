@@ -16,15 +16,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Rules of Star Trek: the wrapping sector, phasers, photon torpedoes, Klingon torpedoes, docking, the
- * starbase, saucers, Nomad's mines, and an autopilot that clears whole sectors.
+ * starbase, saucers, Nomad's mines, the pilot screen, and the CPU pilot that clears whole sectors.
  */
 class StarTrekTest {
     private static final Class<?> GAME = StarTrek.class;
     private static final int FIX = 16;
     private static final int STRIDE = 10;
     private static final int TYPE = 0;
-    private static final int X = 1;
-    private static final int Y = 2;
     private static final int HEADING = 5;
     private static final int HP = 7;
     private static final int COOL = 9;
@@ -215,15 +213,16 @@ class StarTrekTest {
         }
     }
 
-    /** An autopilot that hunts the nearest enemy, docks when the shields run low, and uses its weapons. */
+    /** The CPU pilot hunts the nearest enemy, docks when the shields run low, and uses its weapons. */
     @ParameterizedTest
     @ValueSource(ints = {1, 3, 4, 6, 8})
-    void anAutopilotClearsWholeSectors(int sector) {
+    void theCpuPilotClearsWholeSectors(int sector) {
         set(GAME, "sector", sector);
+        set(GAME, "autopilot", true);
         call(GAME, "startSector", (Object) ents);
         for (int frame = 0; frame < 9000; frame++) {
             set(GAME, "frame", frame);
-            autopilot(frame);
+            call(GAME, "flyAutopilot", (Object) ents);
             call(GAME, "step", (Object) ents);
             call(GAME, "render", lines, ents);
             if ((boolean) get(GAME, "dead")) {
@@ -237,49 +236,33 @@ class StarTrekTest {
         throw new AssertionError("sector " + sector + " not cleared");
     }
 
-    private void autopilot(int frame) {
-        int shipX = getInt(GAME, "shipX");
-        int shipY = getInt(GAME, "shipY");
-        int heading = getInt(GAME, "heading");
-        int base = callInt(GAME, "find", ents, STARBASE);
-        boolean needDock = getInt(GAME, "shields") < 50 && base >= 0 && !(boolean) get(GAME, "docked");
-        int best = -1;
-        int bestDistance = Integer.MAX_VALUE;
-        for (int slot = 0; slot < 24; slot++) {
-            int type = ents[slot * STRIDE + TYPE];
-            boolean wanted = needDock ? slot == base : type == KLINGON || type == NOMAD || type == SAUCER;
-            if (wanted) {
-                int d = distance(slot, shipX, shipY);
-                if (d < bestDistance) {
-                    best = slot;
-                    bestDistance = d;
-                }
-            }
+    @Test
+    void theCpuPilotDocksWhenItsShieldsRunLow() {
+        set(GAME, "shields", 40);
+        spawn(STARBASE, CENTER + 300 * FIX, CENTER, 6);
+        spawn(KLINGON, CENTER, CENTER - 150 * FIX, 2);
+        for (int frame = 0; frame < 600 && !(boolean) get(GAME, "docked"); frame++) {
+            call(GAME, "flyAutopilot", (Object) ents);
+            call(GAME, "step", (Object) ents);
         }
-        if (best < 0) {
-            set(GAME, "steering", false);
-            return;
-        }
-        int dx = callInt(GAME, "wrap", ents[best * STRIDE + X] - shipX) / FIX;
-        int dy = callInt(GAME, "wrap", ents[best * STRIDE + Y] - shipY) / FIX;
-        int bearing = callInt(GAME, "bearing", dx, dy);
-        int off = Math.abs(callInt(GAME, "angleBetween", heading, bearing));
-        // Steer at it, but hold off at phaser range instead of ramming it.
-        set(GAME, "steering", needDock || bestDistance > 200 || off > 20);
-        set(GAME, "steerX", 110 + dx / 3);
-        set(GAME, "steerY", 130 + dy / 3);
-        if (!needDock && off < 12 && bestDistance < 300) {
-            call(GAME, "firePhasers", (Object) ents);
-            if (bestDistance > 120 && frame % 90 == 0) {
-                call(GAME, "firePhoton", (Object) ents);
-            }
-        }
+        assertThat((boolean) get(GAME, "docked")).isTrue();
+        assertThat(getInt(GAME, "shields")).isEqualTo(100);
     }
 
-    private int distance(int slot, int shipX, int shipY) {
-        int dx = callInt(GAME, "wrap", ents[slot * STRIDE + X] - shipX) / FIX;
-        int dy = callInt(GAME, "wrap", ents[slot * STRIDE + Y] - shipY) / FIX;
-        return (int) Math.sqrt((double) dx * dx + (double) dy * dy);
+    @Test
+    void theCpuPilotWarpsAwayFromATorpedoWhenItsShieldsAreLow() {
+        set(GAME, "shields", 20);
+        call(GAME, "fireTorpedo", ents, CENTER, CENTER - 60 * FIX, 180);
+        call(GAME, "flyAutopilot", (Object) ents);
+        assertThat(getInt(GAME, "warps")).isEqualTo(2);
+    }
+
+    @Test
+    void thePilotScreenHasAHumanAndACpuButton() {
+        assertThat(callInt(GAME, "choiceAt", 80, 140)).isZero();
+        assertThat(callInt(GAME, "choiceAt", 230, 140)).isEqualTo(1);
+        assertThat(callInt(GAME, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
+        assertThat(callInt(GAME, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
     }
 
     private void fireAndRecharge() {
