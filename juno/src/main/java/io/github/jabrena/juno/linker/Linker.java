@@ -63,49 +63,10 @@ public final class Linker {
         work.add(entryPoint);
         while (!work.isEmpty()) {
             MethodRef reference = work.removeFirst();
-            if (reachable.containsKey(reference)) {
-                continue;
-            }
-            JavaClass owner = classes.get(reference.owner());
-            if (owner == null) {
-                throw new CompileException("Reachable class not found: " + reference.owner().replace('/', '.'));
-            }
-            JavaMethod method = owner.findMethod(reference.name(), reference.descriptor());
-            if (method == null) {
-                throw new CompileException("Reachable method not found: " + reference.displayName());
-            }
-            validateMethod(method, reference.equals(entryPoint), classes.keySet());
-            List<Instruction> instructions = decoder.decode(method);
-            ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions,
-                    method.exceptionHandlers());
-            reachable.put(reference, new LinkedMethod(owner, method, instructions, cfg));
-
-            for (Instruction instruction : instructions) {
-                if (instruction.opcode() == 182 || instruction.opcode() == 183 || instruction.opcode() == 184) {
-                    MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                    IntrinsicRegistry.resolve(called).ifPresent(intrinsic -> requireLedMatrixSupport(board, intrinsic, reference));
-                    IntrinsicRegistry.resolve(called).ifPresent(intrinsic -> requireWifiSupport(board, intrinsic, reference));
-                    if (isDrawTextCall(called)) {
-                        work.addLast(DRAW_CHAR_METHOD);
-                    } else if (!IntrinsicRegistry.isIntrinsic(called)
-                            && !isRuntimeBaseConstructor(called)
-                            && !ThrowableTypes.isBuiltInConstructor(called)
-                            && !ThrowableTypes.isGetMessage(called, classes)
-                            && !isEnumOperation(classes, called)
-                            && !isCompileTimeGetenv(called)) {
-                        work.addLast(called);
-                    }
-                }
-                if (instruction.opcode() == 178 || instruction.opcode() == 179) {
-                    FieldRef field = owner.constantPool().fieldRef(instruction.operandA());
-                    JavaClass fieldOwner = classes.get(field.owner());
-                    if (fieldOwner != null && !fieldOwner.isEnum() && !field.name().startsWith("$SwitchMap$")) {
-                        JavaMethod initializer = fieldOwner.findMethod("<clinit>", "()V");
-                        if (initializer != null) {
-                            work.addLast(initializer.reference());
-                        }
-                    }
-                }
+            if (!reachable.containsKey(reference)) {
+                LinkedMethod linked = linkMethod(classes, reference, reference.equals(entryPoint));
+                reachable.put(reference, linked);
+                enqueueDependencies(linked, board, classes, work);
             }
         }
         if (board.zephyrCore() && mainClass.watchdogTimeoutMillis().isPresent()) {
@@ -114,6 +75,72 @@ public final class Linker {
         }
         return new Program(entryPoint, List.copyOf(reachable.values()), classes, board,
                 mainClass.watchdogTimeoutMillis());
+    }
+
+    private LinkedMethod linkMethod(Map<String, JavaClass> classes, MethodRef reference, boolean entryPoint) {
+        JavaClass owner = classes.get(reference.owner());
+        if (owner == null) {
+            throw new CompileException("Reachable class not found: " + reference.owner().replace('/', '.'));
+        }
+        JavaMethod method = owner.findMethod(reference.name(), reference.descriptor());
+        if (method == null) {
+            throw new CompileException("Reachable method not found: " + reference.displayName());
+        }
+        validateMethod(method, entryPoint, classes.keySet());
+        List<Instruction> instructions = decoder.decode(method);
+        ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions,
+                method.exceptionHandlers());
+        return new LinkedMethod(owner, method, instructions, cfg);
+    }
+
+    /** Queues every method and static initializer {@code linked}'s invoke/static-field instructions reach. */
+    private void enqueueDependencies(LinkedMethod linked, Board board, Map<String, JavaClass> classes,
+            Deque<MethodRef> work) {
+        JavaClass owner = linked.owner();
+        MethodRef caller = linked.method().reference();
+        for (Instruction instruction : linked.instructions()) {
+            int opcode = instruction.opcode();
+            if (opcode == 182 || opcode == 183 || opcode == 184) {
+                enqueueCall(owner.constantPool().methodRef(instruction.operandA()), caller, board, classes, work);
+            }
+            if (opcode == 178 || opcode == 179) {
+                enqueueStaticInitializer(owner.constantPool().fieldRef(instruction.operandA()), classes, work);
+            }
+        }
+    }
+
+    private void enqueueCall(MethodRef called, MethodRef caller, Board board, Map<String, JavaClass> classes,
+            Deque<MethodRef> work) {
+        IntrinsicRegistry.resolve(called).ifPresent(intrinsic -> {
+            requireLedMatrixSupport(board, intrinsic, caller);
+            requireWifiSupport(board, intrinsic, caller);
+        });
+        if (isDrawTextCall(called)) {
+            work.addLast(DRAW_CHAR_METHOD);
+        } else if (hasReachableBody(called, classes)) {
+            work.addLast(called);
+        }
+    }
+
+    /** Whether {@code called} is an ordinary method whose bytecode must be linked, not one Juno lowers itself. */
+    private boolean hasReachableBody(MethodRef called, Map<String, JavaClass> classes) {
+        return !IntrinsicRegistry.isIntrinsic(called)
+                && !isRuntimeBaseConstructor(called)
+                && !ThrowableTypes.isBuiltInConstructor(called)
+                && !ThrowableTypes.isGetMessage(called, classes)
+                && !isEnumOperation(classes, called)
+                && !isCompileTimeGetenv(called);
+    }
+
+    private void enqueueStaticInitializer(FieldRef field, Map<String, JavaClass> classes, Deque<MethodRef> work) {
+        JavaClass fieldOwner = classes.get(field.owner());
+        if (fieldOwner == null || fieldOwner.isEnum() || field.name().startsWith("$SwitchMap$")) {
+            return;
+        }
+        JavaMethod initializer = fieldOwner.findMethod("<clinit>", "()V");
+        if (initializer != null) {
+            work.addLast(initializer.reference());
+        }
     }
 
     private void requireLedMatrixSupport(Board board, Intrinsic intrinsic, MethodRef caller) {

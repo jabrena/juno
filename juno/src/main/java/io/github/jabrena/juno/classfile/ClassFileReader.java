@@ -14,6 +14,22 @@ public final class ClassFileReader {
     private static final String BOARD_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Board;";
     private static final String WATCHDOG_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Watchdog;";
     private static final int WATCHDOG_DEFAULT_TIMEOUT_MILLIS = 5000;
+    /**
+     * Payload sizes, in bytes and indexed by tag, of the constant-pool entries Juno never resolves
+     * (MethodHandle, MethodType, Dynamic, InvokeDynamic, Module, Package); 0 marks every other tag.
+     */
+    private static final int[] SKIPPED_CONSTANT_SIZES = new int[256];
+    /** {@code element_value} tags whose payload is one ignored {@code const_value_index}. */
+    private static final String SKIPPED_CONST_ELEMENT_TAGS = "BCDFJSZs";
+
+    static {
+        SKIPPED_CONSTANT_SIZES[15] = 3;
+        SKIPPED_CONSTANT_SIZES[16] = 2;
+        SKIPPED_CONSTANT_SIZES[17] = 4;
+        SKIPPED_CONSTANT_SIZES[18] = 4;
+        SKIPPED_CONSTANT_SIZES[19] = 2;
+        SKIPPED_CONSTANT_SIZES[20] = 2;
+    }
 
     /** One class's {@code @Board}/{@code @Watchdog} annotation values, as read from its class file. */
     private record ClassAnnotations(Optional<String> boardApiClassName, Optional<Integer> watchdogTimeoutMillis) {
@@ -68,26 +84,22 @@ public final class ClassFileReader {
                 }
                 case 7 -> new ConstantPool.ClassEntry(input.readUnsignedShort());
                 case 8 -> new ConstantPool.StringEntry(input.readUnsignedShort());
-                case 16, 19, 20 -> {
-                    input.readUnsignedShort();
-                    yield new Object();
-                }
                 case 9, 10, 11 -> new ConstantPool.RefEntry(input.readUnsignedShort(), input.readUnsignedShort());
                 case 12 -> new ConstantPool.NameAndTypeEntry(input.readUnsignedShort(), input.readUnsignedShort());
-                case 15 -> {
-                    input.readUnsignedByte();
-                    input.readUnsignedShort();
-                    yield new Object();
-                }
-                case 17, 18 -> {
-                    input.readUnsignedShort();
-                    input.readUnsignedShort();
-                    yield new Object();
-                }
-                default -> throw new CompileException("Unsupported constant-pool tag " + tag);
+                default -> skipConstant(input, tag);
             };
         }
         return new ConstantPool(entries);
+    }
+
+    /** Skips an entry listed in {@link #SKIPPED_CONSTANT_SIZES}, returning an opaque placeholder for its slot. */
+    private Object skipConstant(DataInputStream input, int tag) throws IOException {
+        int size = SKIPPED_CONSTANT_SIZES[tag];
+        if (size == 0) {
+            throw new CompileException("Unsupported constant-pool tag " + tag);
+        }
+        input.skipNBytes(size);
+        return new Object();
     }
 
     private void skipInterfaces(DataInputStream input) throws IOException {
@@ -117,37 +129,44 @@ public final class ClassFileReader {
             String name = pool.utf8(input.readUnsignedShort());
             String descriptor = pool.utf8(input.readUnsignedShort());
             int attributeCount = input.readUnsignedShort();
-            int maxStack = 0;
-            int maxLocals = 0;
-            byte[] code = null;
-            List<ExceptionHandler> exceptionHandlers = List.of();
+            CodeAttribute codeAttribute = CodeAttribute.ABSENT;
             for (int j = 0; j < attributeCount; j++) {
                 String attributeName = pool.utf8(input.readUnsignedShort());
                 int length = input.readInt();
                 if (attributeName.equals("Code")) {
-                    maxStack = input.readUnsignedShort();
-                    maxLocals = input.readUnsignedShort();
-                    code = input.readNBytes(input.readInt());
-                    int exceptionTableLength = input.readUnsignedShort();
-                    List<ExceptionHandler> handlers = new ArrayList<>(exceptionTableLength);
-                    for (int k = 0; k < exceptionTableLength; k++) {
-                        int startPc = input.readUnsignedShort();
-                        int endPc = input.readUnsignedShort();
-                        int handlerPc = input.readUnsignedShort();
-                        int catchTypeIndex = input.readUnsignedShort();
-                        handlers.add(new ExceptionHandler(startPc, endPc, handlerPc,
-                                catchTypeIndex == 0 ? null : pool.className(catchTypeIndex)));
-                    }
-                    exceptionHandlers = List.copyOf(handlers);
-                    skipAttributes(input, pool);
+                    codeAttribute = readCodeAttribute(input, pool);
                 } else {
                     input.skipNBytes(Integer.toUnsignedLong(length));
                 }
             }
-            methods.add(new JavaMethod(owner, accessFlags, name, descriptor, maxStack, maxLocals, code,
-                    exceptionHandlers));
+            methods.add(new JavaMethod(owner, accessFlags, name, descriptor, codeAttribute.maxStack(),
+                    codeAttribute.maxLocals(), codeAttribute.code(), codeAttribute.exceptionHandlers()));
         }
         return methods;
+    }
+
+    /** A method's {@code Code} attribute; {@link #ABSENT} for abstract and native methods. */
+    private record CodeAttribute(int maxStack, int maxLocals, byte[] code, List<ExceptionHandler> exceptionHandlers) {
+        private static final CodeAttribute ABSENT = new CodeAttribute(0, 0, null, List.of());
+    }
+
+    /** Reads a {@code Code} attribute body, just past its name and length. */
+    private CodeAttribute readCodeAttribute(DataInputStream input, ConstantPool pool) throws IOException {
+        int maxStack = input.readUnsignedShort();
+        int maxLocals = input.readUnsignedShort();
+        byte[] code = input.readNBytes(input.readInt());
+        int exceptionTableLength = input.readUnsignedShort();
+        List<ExceptionHandler> handlers = new ArrayList<>(exceptionTableLength);
+        for (int k = 0; k < exceptionTableLength; k++) {
+            int startPc = input.readUnsignedShort();
+            int endPc = input.readUnsignedShort();
+            int handlerPc = input.readUnsignedShort();
+            int catchTypeIndex = input.readUnsignedShort();
+            handlers.add(new ExceptionHandler(startPc, endPc, handlerPc,
+                    catchTypeIndex == 0 ? null : pool.className(catchTypeIndex)));
+        }
+        skipAttributes(input, pool);
+        return new CodeAttribute(maxStack, maxLocals, code, List.copyOf(handlers));
     }
 
     private void skipAttributes(DataInputStream input, ConstantPool pool) throws IOException {
@@ -222,10 +241,6 @@ public final class ClassFileReader {
         int tag = input.readUnsignedByte();
         return switch (tag) {
             case 'I' -> new ElementValue(null, pool.integer(input.readUnsignedShort()));
-            case 'B', 'C', 'D', 'F', 'J', 'S', 'Z', 's' -> {
-                input.readUnsignedShort();
-                yield ElementValue.EMPTY;
-            }
             case 'e' -> {
                 input.readUnsignedShort();
                 input.readUnsignedShort();
@@ -249,7 +264,16 @@ public final class ClassFileReader {
                 }
                 yield ElementValue.EMPTY;
             }
-            default -> throw new CompileException("Unsupported annotation element_value tag " + tag);
+            default -> skipConstElementValue(input, tag);
         };
+    }
+
+    /** Skips an {@code element_value} tagged with one of {@link #SKIPPED_CONST_ELEMENT_TAGS}. */
+    private ElementValue skipConstElementValue(DataInputStream input, int tag) throws IOException {
+        if (SKIPPED_CONST_ELEMENT_TAGS.indexOf(tag) < 0) {
+            throw new CompileException("Unsupported annotation element_value tag " + tag);
+        }
+        input.readUnsignedShort();
+        return ElementValue.EMPTY;
     }
 }
