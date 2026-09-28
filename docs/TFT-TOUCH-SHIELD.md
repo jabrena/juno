@@ -136,17 +136,6 @@ attempts). Confirmed running on a real UNO R4 WiFi with this shield.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Minesweeper
-```
-
-[`Minesweeper`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Minesweeper.java) is
-the classic game on a 10x11 field with 16 mines, in `PORTRAIT_FLIPPED` rotation: tap a covered cell
-to open it (the first tap is always safe), press and hold to plant or remove a flag, tap an opened
-number whose neighbouring flags match it to open the rest of its neighbours, and tap the face
-button to start over. The header shows the mines left to flag and the elapsed seconds.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.Chess
 ```
 
@@ -161,17 +150,6 @@ insufficient material are not detected. The engine is a 3-ply negamax search wit
 pruning and a material plus piece-placement evaluation; each of its moves and its thinking time are
 logged to Serial. Its move generator matches the standard perft reference counts (start position,
 "Kiwipete", and endgame positions), apart from the under-promotions it deliberately omits.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Simon
-```
-
-[`Simon`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Simon.java) is the classic
-memory game: four colored pads around a central hub light up in a growing sequence that you repeat
-by tapping them. Each round adds a step and plays a little faster; a wrong pad (the right one then
-blinks) or five seconds without a tap ends the game. Tap the hub to start; it shows the score, and the
-header the best score since power-up. The shield has no speaker, so it is lights only.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
@@ -199,39 +177,10 @@ itself. Scoring follows the usual Windows rules, and `NEW` deals again. The 32x4
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.ConnectFour
-```
-
-[`ConnectFour`](../juno-examples/src/main/java/io/github/jabrena/juno/games/ConnectFour.java) — Connect Four against the computer: tap a column to drop a red disc; the computer (yellow) answers with a 4-ply alpha-beta search that tries central columns first. The loser of a game moves first in the next one, and the footer keeps the score.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.Checkers
 ```
 
 [`Checkers`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Checkers.java) — English draughts against the computer: men move diagonally forward, kings (gold crown) diagonally both ways; captures are mandatory and multi-jumps continue with the same piece (tap each landing square). The computer runs a 5-ply alpha-beta minimax. Its move generator matches the standard English draughts perft counts to depth 7.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Othello
-```
-
-[`Othello`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Othello.java) — Othello
-(Reversi) against the computer: you play black, legal squares show a small dot, and the computer's
-last move carries a red one. Passes are handled automatically. The computer runs an iterative-deepening
-negamax with alpha-beta pruning for up to two seconds a move (square weights plus mobility, and a
-perfect endgame once it can see the end); its move generator matches the standard Othello perft counts.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Mancala
-```
-
-[`Mancala`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Mancala.java) — Kalah with
-six pits and four seeds, in landscape: tap one of your pits (bottom row) to sow it counter-clockwise.
-A last seed in your store earns another turn, one in an empty pit of yours captures the pit opposite,
-and when a row runs empty each side banks what is left. The computer searches with alpha-beta,
-deepening for up to 1.5 seconds a move.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
@@ -249,24 +198,10 @@ Triangles are drawn from horizontal lines, since the display has no line primiti
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Game2048
-```
-
-[`Game2048`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Game2048.java) — 2048: swipe to slide the tiles (or tap near an edge of the grid, for panels that report swipes poorly); equal tiles merge. Reach 2048 to win and keep going; the header shows the score and best score.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.Battleship
 ```
 
 [`Battleship`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Pong
-```
-
-[`Pong`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Pong.java) — Pong against the computer in portrait: your paddle follows your finger, the computer's paddle chases the ball with a speed limit, and the hit position sets the bounce angle. First to 7 wins.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
