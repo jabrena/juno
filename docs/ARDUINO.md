@@ -186,12 +186,11 @@ resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built 
 weather station: public IP → ipinfo.io location → Open-Meteo weather, with a seven-segment clock.
 `Minesweeper` (`-Djuno.main=io.github.jabrena.juno.games.Minesweeper`) is the classic game
 (tap to open, hold to flag). `Chess` (`-Djuno.main=io.github.jabrena.juno.games.Chess`) plays you
-against a small 3-ply engine. `TicTacToe` (`-Djuno.main=io.github.jabrena.juno.games.TicTacToe`)
-is "vanishing" tic-tac-toe (three marks each, the oldest disappears). `Simon`
-(`-Djuno.main=io.github.jabrena.juno.games.Simon`) is the classic memory game, and `Blackjack`
+against a small 3-ply engine. `Simon` (`-Djuno.main=io.github.jabrena.juno.games.Simon`) is the
+classic memory game, and `Blackjack`
 (`-Djuno.main=io.github.jabrena.juno.games.Blackjack`) plays against the dealer with a bankroll. Further games in the same package: `ConnectFour`,
-`Checkers`, `Game2048`, `Battleship`, `Snake`, `Tetris`, `Pong`, `GameOfLife`, `Solitaire`,
-`Yahtzee`, `LunarLander`, `Othello`, `Mancala`, `Backgammon`, `TexasHoldem`,
+`Checkers`, `Game2048`, `Battleship`, `Pong`, `GameOfLife`, `Solitaire`, `LunarLander`,
+`Othello`, `Mancala`, `Backgammon`, `TexasHoldem`,
 `SlotMachine`, `RussianRoulette` and `RockPaperScissorsLizardSpock` — see
 [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md#examples) and the illustrated catalogue in [GAMES.md](GAMES.md).
 `TftTouchPaint` is a finger-paint demo that logs raw touch readings for calibration;

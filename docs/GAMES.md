@@ -1,6 +1,6 @@
 # Games
 
-Juno ships 33 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/tft`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
+Juno ships 28 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/tft`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
 
 ## How to play
 
@@ -23,11 +23,11 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 
 ## Contents
 
-- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Sundance](#sundance), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
-- [Board and strategy](#board-and-strategy): [Chess](#chess), [Checkers](#checkers), [Othello](#othello), [Connect Four](#connect-four), [Tic-Tac-Toe](#tic-tac-toe), [Backgammon](#backgammon), [Mancala](#mancala), [Battleship](#battleship)
+- [Arcade](#arcade): [Pac-Man](#pac-man), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Sundance](#sundance), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Simon](#simon)
+- [Board and strategy](#board-and-strategy): [Chess](#chess), [Checkers](#checkers), [Othello](#othello), [Connect Four](#connect-four), [Backgammon](#backgammon), [Mancala](#mancala), [Battleship](#battleship)
 - [Puzzles and simulations](#puzzles-and-simulations): [Minesweeper](#minesweeper), [2048](#2048), [Game of Life](#game-of-life)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem), [Solitaire](#solitaire), [Slot machine](#slot-machine)
-- [Dice and chance](#dice-and-chance): [Yahtzee](#yahtzee), [Rock, Paper, Scissors, Lizard, Spock](#rock-paper-scissors-lizard-spock), [Russian roulette](#russian-roulette)
+- [Dice and chance](#dice-and-chance): [Rock, Paper, Scissors, Lizard, Spock](#rock-paper-scissors-lizard-spock), [Russian roulette](#russian-roulette)
 - [Demos](#demos): [Touch paint](#touch-paint)
 
 ## Arcade
@@ -43,39 +43,6 @@ The arcade's 28x31-tile maze with all 244 dots and four energizers. Touch and ho
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.PacMan
-```
-
-### Space Invaders
-
-<img src="images/games/space-invaders.png" alt="Space Invaders on the TFT shield" width="240">
-
-Touch and hold anywhere: the laser cannon slides towards your finger and fires whenever its shot is ready. The formation ripples and speeds up as it thins out, the shields crumble, and a mystery ship crosses the top now and then. Three lives.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.SpaceInvaders
-```
-
-### Tetris
-
-<img src="images/games/tetris.png" alt="Tetris on the TFT shield" width="240">
-
-A 10x20 well with the seven tetrominoes, a next-piece preview, score, lines and levels. `<` and `>` move (and repeat while held), `ROT` rotates (so does tapping the well) and `DROP` drops the piece.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Tetris
-```
-
-### Snake
-
-<img src="images/games/snake.png" alt="Snake on the TFT shield" width="240">
-
-The CPU plays by itself (a breadth-first search to the food, checked with a flood fill) until you tap the header to take over. Then tap above/below or left/right of the head to turn; every bite makes the snake longer and faster.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Snake
 ```
 
 ### Pong
@@ -188,17 +155,6 @@ Hold `<`/`>` to rotate and `BURN` to thrust. Land upright and slowly with both f
   -Djuno.main=io.github.jabrena.juno.games.LunarLander
 ```
 
-### Whac-A-Mole
-
-<img src="images/games/whac-a-mole.png" alt="Whac-A-Mole on the TFT shield" width="240">
-
-Moles pop out of nine holes; tap them before they duck. Golden moles are worth more and hide faster, and tapping a bomb costs points. Rounds get busier as the timer bar shrinks.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.WhacAMole
-```
-
 ### Simon
 
 <img src="images/games/simon.png" alt="Simon on the TFT shield" width="240">
@@ -256,17 +212,6 @@ Tap a column to drop a red disc; the computer answers with a 4-ply search that p
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.ConnectFour
-```
-
-### Tic-Tac-Toe
-
-<img src="images/games/tic-tac-toe.png" alt="Tic-Tac-Toe on the TFT shield" width="240">
-
-The "vanishing" variant: each player keeps at most three marks, so placing a fourth removes the oldest (drawn dimmed) and there are no draws. `1P` switches to two players.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.TicTacToe
 ```
 
 ### Backgammon
@@ -390,17 +335,6 @@ A three-reel machine with 7s, BARs, bells, plums, lemons and cherries. `BET` sta
 ## Dice and chance
 
 Short games of luck, nerve and prediction.
-
-### Yahtzee
-
-<img src="images/games/yahtzee.png" alt="Yahtzee on the TFT shield" width="240">
-
-Solitaire Yahtzee over 13 rounds. `ROLL` up to three times, tapping dice to hold them, then tap a scorecard box (it previews what the dice would score). Includes the upper bonus, Yahtzee bonuses and the joker rules.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Yahtzee
-```
 
 ### Rock, Paper, Scissors, Lizard, Spock
 

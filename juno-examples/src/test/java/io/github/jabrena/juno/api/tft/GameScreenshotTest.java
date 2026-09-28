@@ -61,20 +61,14 @@ class GameScreenshotTest {
                 game("games.RussianRoulette", "russian-roulette", "500:180,290 3500:180,290 end:6500"),
                 game("games.Simon", "simon", "500:120,190 end:1500"),
                 game("games.SlotMachine", "slot-machine", "500:160,285 end:5000"),
-                game("games.Snake", "snake", "500:120,160 end:6000"),
                 game("games.Solitaire", "solitaire", "500:120,160 end:6000"),
                 game("games.startrek.StarTrek", "star-trek", "5000:160,130 5500:85,140 8000:200,60 8080:200,60 8160:200,60 8240:200,60 8320:200,60 8400:200,60 8480:200,60 8560:200,60 8640:200,60 8720:200,60 8800:200,60 8880:200,60 8960:200,60 9040:200,60 9120:200,60 9200:200,60 9280:200,60 9360:200,60 9440:200,60 9520:200,60 9700:270,120 end:9780"),
                 game("games.Sundance", "sundance", "500:160,130 5080:160,205 end:5200"),
-                game("games.SpaceInvaders", "space-invaders", "500:120,160 end:6000"),
                 game("games.spaceparanoids.SpaceParanoids", "space-paranoids", "5500:160,130 6000:85,140 end:14500"),
                 game("games.starwars.StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
                 game("games.Tempest", "tempest", "500:120,160 end:6000"),
-                game("games.Tetris", "tetris", "500:120,160 end:6000"),
                 game("games.TexasHoldem", "texas-holdem", "500:120,300 end:6000"),
-                game("api.tft.TftTouchPaint", "tft-touch-paint", paintStrokes()),
-                game("games.TicTacToe", "tic-tac-toe", "500:120,160 end:6000"),
-                game("games.WhacAMole", "whac-a-mole", "500:120,160 end:2500"),
-                game("games.Yahtzee", "yahtzee", "500:120,285 2000:30,205 2400:120,205 3000:120,285 end:5000"));
+                game("api.tft.TftTouchPaint", "tft-touch-paint", paintStrokes()));
     }
 
     @ParameterizedTest(name = "{0}")

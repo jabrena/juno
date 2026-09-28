@@ -164,17 +164,6 @@ logged to Serial. Its move generator matches the standard perft reference counts
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.TicTacToe
-```
-
-[`TicTacToe`](../juno-examples/src/main/java/io/github/jabrena/juno/games/TicTacToe.java) is the
-"vanishing" variant of the handheld electronic games: each player owns at most three marks, and
-placing a fourth removes that player's oldest one, which is drawn dimmed while it is next to go, so
-there are no draws. You play X against the computer's O (a 6-ply alpha-beta search); `1P` switches to
-two players sharing the screen, `NEW` starts a new round, and the footer keeps the score.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.Simon
 ```
 
@@ -207,17 +196,6 @@ where it should go; tapping a picked-up card again sends it to its foundation. T
 a card, and the empty stock to turn the waste back over. Once every card is face up the rest plays
 itself. Scoring follows the usual Windows rules, and `NEW` deals again. The 32x44 cards reuse
 `Blackjack`'s suit bitmaps.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Yahtzee
-```
-
-[`Yahtzee`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Yahtzee.java) — solitaire
-Yahtzee over 13 rounds: `ROLL` up to three times, tapping dice between rolls to hold them, then tap a
-box on the scorecard, which previews what the dice would score in every open box. Includes the
-35-point upper bonus, 100-point Yahtzee bonuses and the official joker rules; the header keeps the
-best score since power-up.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
@@ -282,20 +260,6 @@ Triangles are drawn from horizontal lines, since the display has no line primiti
 ```
 
 [`Battleship`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Snake
-```
-
-[`Snake`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Snake.java) — Snake that the CPU plays by itself (shortest path to the food by breadth-first search, taken only when a flood fill shows enough room left; it averages over 100 food in simulation) and restarts after each crash. Tap the header to take over (`YOU`) and back (`CPU`). When playing yourself, tap above/below the head (or left/right of it, when moving vertically) to turn; each bite grows the snake and speeds it up. Only the head, the previous head and the tail are redrawn each step.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Tetris
-```
-
-[`Tetris`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Tetris.java) — Tetris: a 10x20 well with next-piece preview, score, lines and levels; the `<`/`>` (auto-repeat), `ROT` and `DROP` buttons sit beside the well, and tapping the well also rotates. Each frame only the changed cells are redrawn.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \

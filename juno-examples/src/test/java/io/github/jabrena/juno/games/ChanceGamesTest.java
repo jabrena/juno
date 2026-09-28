@@ -15,10 +15,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/** Rules of Yahtzee, Rock-Paper-Scissors-Lizard-Spock, Russian roulette and Lunar Lander. */
+/** Rules of Rock-Paper-Scissors-Lizard-Spock, Russian roulette and Lunar Lander. */
 class ChanceGamesTest {
     @BeforeEach
     void portrait() {
@@ -28,65 +27,6 @@ class ChanceGamesTest {
     @AfterEach
     void releaseThePanel() {
         Internals.stopTapping();
-    }
-
-    // ---- Yahtzee ----
-
-    /** Dice, then the expected score of each of the 13 boxes (aces ... chance) on an empty card. */
-    @ParameterizedTest(name = "{0}")
-    @CsvSource(delimiter = '|', value = {
-        "1,1,1,2,2 | 3,4,0,0,0,0,7,0,25,0,0,0,7",
-        "2,3,4,5,6 | 0,2,3,4,5,6,0,0,0,30,40,0,20",
-        "1,2,3,4,6 | 1,2,3,4,0,6,0,0,0,30,0,0,16",
-        "3,4,5,6,6 | 0,0,3,4,5,12,0,0,0,30,0,0,24",
-        "4,4,4,4,2 | 0,2,0,16,0,0,18,18,0,0,0,0,18",
-        "5,5,5,5,5 | 0,0,0,0,25,0,25,25,0,0,0,50,25",
-        "1,3,4,5,5 | 1,0,3,4,10,0,0,0,0,0,0,0,18"})
-    void yahtzeeScoresEveryBox(String dice, String expected) {
-        int[] scores = openCard();
-        int[] roll = ints(dice);
-        int[] want = ints(expected);
-        for (int box = 0; box < 13; box++) {
-            assertThat(callInt(Yahtzee.class, "score", box, roll, scores)).as("box %d", box).isEqualTo(want[box]);
-        }
-    }
-
-    @Test
-    void yahtzeeJokerRules() {
-        int[] fives = {5, 5, 5, 5, 5};
-        int[] card = openCard();
-        card[11] = 50;
-        assertThat(callBoolean(Yahtzee.class, "allowed", 4, fives, card)).as("open matching upper box first").isTrue();
-        assertThat(callBoolean(Yahtzee.class, "allowed", 8, fives, card)).isFalse();
-        card[4] = 25;
-        assertThat(callBoolean(Yahtzee.class, "allowed", 8, fives, card)).as("then any lower box").isTrue();
-        assertThat(callInt(Yahtzee.class, "score", 8, fives, card)).isEqualTo(25);
-        assertThat(callInt(Yahtzee.class, "score", 10, fives, card)).isEqualTo(40);
-        assertThat(callBoolean(Yahtzee.class, "allowed", 0, fives, card)).isFalse();
-        for (int box = 6; box < 13; box++) {
-            card[box] = 0;
-        }
-        assertThat(callBoolean(Yahtzee.class, "allowed", 0, fives, card)).as("finally any upper box").isTrue();
-    }
-
-    @Test
-    void yahtzeeTotalsIncludeBothBonuses() {
-        int[] card = new int[13];
-        card[0] = 3;
-        card[1] = 6;
-        card[2] = 9;
-        card[3] = 12;
-        card[4] = 15;
-        card[5] = 18;
-        set(Yahtzee.class, "yahtzeeBonus", 100);
-        assertThat(callInt(Yahtzee.class, "total", (Object) card)).isEqualTo(63 + 35 + 100);
-        set(Yahtzee.class, "yahtzeeBonus", 0);
-    }
-
-    private static int[] openCard() {
-        int[] card = new int[13];
-        Arrays.fill(card, -1);
-        return card;
     }
 
     private static int[] ints(String csv) {
