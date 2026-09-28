@@ -37,9 +37,6 @@ class RedBaronTest {
     private static final int HANGAR = 6;
     private static final int FLAK = 7;
     private static final int PYRAMID = 8;
-    private static final int DOGFIGHT = 0;
-    private static final int GROUND_ATTACK = 1;
-
     private short[] lines;
     private int[] ents;
 
@@ -50,34 +47,34 @@ class RedBaronTest {
         Random.seed(42);
         lines = new short[2 * 180 * 5];
         ents = new int[26 * STRIDE];
-        set(GAME, "score", 0);
-        set(GAME, "planes", 3);
-        set(GAME, "nextExtraPlane", 20000);
-        set(GAME, "wave", 1);
-        set(GAME, "shown", 0);
-        set(GAME, "built", 0);
-        set(GAME, "heading", 0f);
-        set(GAME, "frame", 0);
-        call(GAME, "startRound", DOGFIGHT, ents);
+        set(Session.class, "score", 0);
+        set(Session.class, "planes", 3);
+        set(Session.class, "nextExtraPlane", 20000);
+        set(Session.class, "wave", 1);
+        set(DisplayList.class, "shown", 0);
+        set(DisplayList.class, "built", 0);
+        set(Camera.class, "heading", 0f);
+        set(Session.class, "frame", 0);
+        call(GAME, "startRound", Round.DOGFIGHT, ents);
         clearAll();
     }
 
     @Test
     void levelFlightKeepsTheHorizonLevelAndBankingRollsIt() {
         stick(0, 0);
-        call(GAME, "fly", (Object) ents);
-        assertThat(callInt(GAME, "rollY", 0, 132)).isEqualTo(132);
-        assertThat(callInt(GAME, "rollY", 319, 132)).isEqualTo(132);
+        call(Camera.class, "steer", (Object) ents);
+        assertThat(callInt(Camera.class, "rollY", 0, 132)).isEqualTo(132);
+        assertThat(callInt(Camera.class, "rollY", 319, 132)).isEqualTo(132);
         for (int i = 0; i < 20; i++) {
             stick(100, 0);
-            call(GAME, "fly", (Object) ents);
+            call(Camera.class, "steer", (Object) ents);
         }
-        assertThat((float) get(GAME, "bank")).isEqualTo(35f);
+        assertThat((float) get(Camera.class, "bank")).isEqualTo(35f);
         // Banked right, the right wing drops, so the ground rises on the right of the view: the
         // horizon's right end goes up the screen and its left end down.
-        assertThat(callInt(GAME, "rollY", 319, 132)).isLessThan(132 - 50);
-        assertThat(callInt(GAME, "rollY", 0, 132)).isGreaterThan(132 + 50);
-        assertThat(callInt(GAME, "rollX", 160, 132)).as("the center stays put").isEqualTo(160);
+        assertThat(callInt(Camera.class, "rollY", 319, 132)).isLessThan(132 - 50);
+        assertThat(callInt(Camera.class, "rollY", 0, 132)).isGreaterThan(132 + 50);
+        assertThat(callInt(Camera.class, "rollX", 160, 132)).as("the center stays put").isEqualTo(160);
     }
 
     @Test
@@ -85,50 +82,50 @@ class RedBaronTest {
         int plane = spawn(PLANE, 0, 300, 1000);
         for (int i = 0; i < 30; i++) {
             stick(100, 0);
-            call(GAME, "fly", (Object) ents);
+            call(Camera.class, "steer", (Object) ents);
         }
         assertThat(ents[plane * STRIDE + X]).isLessThan(-100);
-        assertThat((float) get(GAME, "heading")).isGreaterThan(20f);
+        assertThat((float) get(Camera.class, "heading")).isGreaterThan(20f);
     }
 
     @Test
     void stickUpClimbsAndTheAltitudeIsBounded() {
         for (int i = 0; i < 200; i++) {
             stick(0, 100);
-            call(GAME, "fly", (Object) ents);
+            call(Camera.class, "steer", (Object) ents);
         }
-        assertThat(getInt(GAME, "altitude")).isEqualTo(520);
+        assertThat(getInt(Camera.class, "altitude")).isEqualTo(520);
         for (int i = 0; i < 200; i++) {
             stick(0, -100);
-            call(GAME, "fly", (Object) ents);
+            call(Camera.class, "steer", (Object) ents);
         }
-        assertThat(getInt(GAME, "altitude")).isEqualTo(40);
+        assertThat(getInt(Camera.class, "altitude")).isEqualTo(40);
     }
 
     @Test
     void theGunsShootDownAPlaneInTheSight() {
         int plane = spawn(PLANE, 0, 300, 500);
         ents[plane * STRIDE + VZ] = 24;
-        call(GAME, "fire", (Object) ents);
+        call(Combat.class, "fire", (Object) ents);
         assertThat(count(BULLET)).isEqualTo(2);
         for (int i = 0; i < 12 && ents[plane * STRIDE + TYPE] == PLANE; i++) {
-            call(GAME, "step", (Object) ents);
+            call(Entities.class, "move", (Object) ents);
             ents[plane * STRIDE + X] = 0;
             ents[plane * STRIDE + Y] = 300;
-            call(GAME, "resolveBullets", (Object) ents);
+            call(Combat.class, "resolveBullets", (Object) ents);
         }
         assertThat(ents[plane * STRIDE + TYPE]).isEqualTo(FALLING);
-        assertThat(getInt(GAME, "kills")).isEqualTo(1);
-        assertThat(getInt(GAME, "score")).isEqualTo(1000);
+        assertThat(getInt(DogfightRound.class, "kills")).isEqualTo(1);
+        assertThat(getInt(Session.class, "score")).isEqualTo(1000);
     }
 
     @Test
     void aPlaneOffTheSightIsMissed() {
         int plane = spawn(PLANE, 400, 300, 500);
-        call(GAME, "fire", (Object) ents);
+        call(Combat.class, "fire", (Object) ents);
         for (int i = 0; i < 14; i++) {
-            call(GAME, "resolveBullets", (Object) ents);
-            call(GAME, "step", (Object) ents);
+            call(Combat.class, "resolveBullets", (Object) ents);
+            call(Entities.class, "move", (Object) ents);
             ents[plane * STRIDE + X] = 400;
             ents[plane * STRIDE + Z] = 500;
         }
@@ -141,23 +138,23 @@ class RedBaronTest {
         int blimp = spawn(BLIMP, 0, 300, 600);
         ents[blimp * STRIDE + 9] = 4;
         for (int shot = 1; shot <= 4; shot++) {
-            call(GAME, "hit", ents, blimp);
+            call(Combat.class, "hit", ents, blimp);
             if (shot < 4) {
                 assertThat(ents[blimp * STRIDE + TYPE]).isEqualTo(BLIMP);
             }
         }
         assertThat(ents[blimp * STRIDE + TYPE]).as("destroyed").isNotEqualTo(BLIMP);
-        assertThat(getInt(GAME, "score")).isEqualTo(5000);
+        assertThat(getInt(Session.class, "score")).isEqualTo(5000);
     }
 
     @Test
     void aTracerThatReachesYouHits() {
         int tracer = spawn(TRACER, 0, 300, 200);
         ents[tracer * STRIDE + VZ] = -40 + 24;
-        for (int i = 0; i < 20 && !(boolean) get(GAME, "shotDown"); i++) {
-            call(GAME, "step", (Object) ents);
+        for (int i = 0; i < 20 && !(boolean) get(Session.class, "shotDown"); i++) {
+            call(Entities.class, "move", (Object) ents);
         }
-        assertThat((boolean) get(GAME, "shotDown")).isTrue();
+        assertThat((boolean) get(Session.class, "shotDown")).isTrue();
     }
 
     @Test
@@ -165,12 +162,12 @@ class RedBaronTest {
         int hits = 0;
         for (int burst = 0; burst < 60; burst++) {
             clearAll();
-            set(GAME, "shotDown", false);
-            call(GAME, "enemyFires", ents, 0, 300, 600, false);
+            set(Session.class, "shotDown", false);
+            call(Entities.class, "enemyFires", ents, 0, 300, 600, false);
             for (int i = 0; i < 40 && count(TRACER) > 0; i++) {
-                call(GAME, "step", (Object) ents);
+                call(Entities.class, "move", (Object) ents);
             }
-            if ((boolean) get(GAME, "shotDown")) {
+            if ((boolean) get(Session.class, "shotDown")) {
                 hits = hits + 1;
             }
         }
@@ -179,70 +176,71 @@ class RedBaronTest {
 
     @Test
     void turningAwayDodgesATracer() {
-        call(GAME, "enemyFires", ents, 0, 300, 900, false);
+        call(Entities.class, "enemyFires", ents, 0, 300, 900, false);
         for (int i = 0; i < 60; i++) {
             stick(100, 0);
-            call(GAME, "fly", (Object) ents);
-            call(GAME, "step", (Object) ents);
+            call(Camera.class, "steer", (Object) ents);
+            call(Entities.class, "move", (Object) ents);
         }
-        assertThat((boolean) get(GAME, "shotDown")).isFalse();
+        assertThat((boolean) get(Session.class, "shotDown")).isFalse();
     }
 
     @Test
     void flyingLowIntoAPyramidCrashes() {
-        set(GAME, "altitude", 80);
+        set(Camera.class, "altitude", 80);
         spawn(PYRAMID, 0, 0, 60);
-        call(GAME, "step", (Object) ents);
-        call(GAME, "step", (Object) ents);
-        assertThat((boolean) get(GAME, "shotDown")).isTrue();
+        call(Entities.class, "move", (Object) ents);
+        call(Entities.class, "move", (Object) ents);
+        assertThat((boolean) get(Session.class, "shotDown")).isTrue();
     }
 
     @Test
     void flyingHighClearsAPyramid() {
-        set(GAME, "altitude", 200);
+        set(Camera.class, "altitude", 200);
         spawn(PYRAMID, 0, 0, 60);
-        call(GAME, "step", (Object) ents);
-        call(GAME, "step", (Object) ents);
-        assertThat((boolean) get(GAME, "shotDown")).isFalse();
+        call(Entities.class, "move", (Object) ents);
+        call(Entities.class, "move", (Object) ents);
+        assertThat((boolean) get(Session.class, "shotDown")).isFalse();
     }
 
     @Test
     void groundTargetsCanOnlyBeHitFromLowDown() {
         int hangar = spawn(HANGAR, 0, 0, 400);
-        set(GAME, "altitude", 300);
-        assertThat(callInt(GAME, "targetHitBy", ents, 0, 274, 400)).as("bullets pass high over it").isEqualTo(-1);
-        assertThat(callInt(GAME, "targetHitBy", ents, 0, 40, 400)).isEqualTo(hangar);
+        set(Camera.class, "altitude", 300);
+        assertThat(callInt(Combat.class, "targetHitBy", ents, 0, 274, 400))
+                .as("bullets pass high over it").isEqualTo(-1);
+        assertThat(callInt(Combat.class, "targetHitBy", ents, 0, 40, 400)).isEqualTo(hangar);
     }
 
     @Test
     void theLastPlaneLostEndsTheGame() {
-        set(GAME, "planes", 1);
-        assertThat(callBoolean(GAME, "loseAPlane", (Object) ents)).isFalse();
-        assertThat((boolean) get(GAME, "dead")).isTrue();
-        set(GAME, "planes", 3);
-        assertThat(callBoolean(GAME, "loseAPlane", (Object) ents)).isTrue();
-        assertThat(getInt(GAME, "planes")).isEqualTo(2);
+        set(Session.class, "planes", 1);
+        assertThat(callBoolean(Session.class, "loseAPlane", (Object) ents)).isFalse();
+        assertThat((boolean) get(Session.class, "dead")).isTrue();
+        set(Session.class, "planes", 3);
+        assertThat(callBoolean(Session.class, "loseAPlane", (Object) ents)).isTrue();
+        assertThat(getInt(Session.class, "planes")).isEqualTo(2);
     }
 
     @Test
     void anExtraPlaneEveryTwentyThousandPoints() {
-        set(GAME, "score", 19500);
-        call(GAME, "addScore", 1000);
-        assertThat(getInt(GAME, "planes")).isEqualTo(4);
-        call(GAME, "addScore", 1000);
-        assertThat(getInt(GAME, "planes")).isEqualTo(4);
+        set(Session.class, "score", 19500);
+        call(Session.class, "addScore", 1000);
+        assertThat(getInt(Session.class, "planes")).isEqualTo(4);
+        call(Session.class, "addScore", 1000);
+        assertThat(getInt(Session.class, "planes")).isEqualTo(4);
     }
 
     @Test
     void everyLineIsClippedToTheView() {
-        set(GAME, "bank", 30f);
-        call(GAME, "fly", (Object) ents);
+        set(Camera.class, "bank", 30f);
+        call(Camera.class, "steer", (Object) ents);
         spawn(PLANE, -200, 250, 80);
         spawn(PYRAMID, 100, 0, 200);
-        call(GAME, "render", lines, ents);
-        int built = getInt(GAME, "shown");
+        call(SceneRenderer.class, "render", lines, ents);
+        int built = getInt(DisplayList.class, "shown");
         assertThat(built).isPositive();
-        int base = getInt(GAME, "front") * 180 * 5;
+        int base = getInt(DisplayList.class, "front") * 180 * 5;
         for (int i = 0; i < built; i++) {
             for (int k = 0; k < 4; k = k + 2) {
                 assertThat((int) lines[base + i * 5 + k]).isBetween(0, 319);
@@ -255,29 +253,29 @@ class RedBaronTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 3})
     void theCpuPilotFliesAWholeWave(int wave) {
-        set(GAME, "wave", wave);
-        set(GAME, "autopilot", true);
-        assertThat(flyRound(DOGFIGHT)).as("dogfight, wave %d", wave).isTrue();
-        assertThat(getInt(GAME, "kills")).isGreaterThanOrEqualTo(getInt(GAME, "killTarget"));
-        assertThat(flyRound(GROUND_ATTACK)).as("ground attack, wave %d", wave).isTrue();
-        assertThat(getInt(GAME, "targetsHit")).as("ground targets destroyed").isPositive();
-        assertThat(getInt(GAME, "score")).isPositive();
+        set(Session.class, "wave", wave);
+        set(Controls.class, "autopilot", true);
+        assertThat(flyRound(Round.DOGFIGHT)).as("dogfight, wave %d", wave).isTrue();
+        assertThat(getInt(DogfightRound.class, "kills"))
+                .isGreaterThanOrEqualTo(getInt(DogfightRound.class, "killTarget"));
+        assertThat(flyRound(Round.GROUND_ATTACK)).as("ground attack, wave %d", wave).isTrue();
+        assertThat(getInt(GroundAttackRound.class, "targetsHit")).as("ground targets destroyed").isPositive();
+        assertThat(getInt(Session.class, "score")).isPositive();
     }
 
     /** Plays a round with the game's own per-frame steps; false if it does not finish in time. */
-    private boolean flyRound(int round) {
+    private boolean flyRound(Round round) {
         call(GAME, "startRound", round, ents);
         for (int frame = 0; frame < 6000; frame++) {
-            set(GAME, "frame", frame);
-            call(GAME, "flyAutopilot", (Object) ents);
-            call(GAME, "fly", (Object) ents);
-            call(GAME, "spawn", (Object) ents);
+            set(Session.class, "frame", frame);
+            call(AutopilotRB.class, "fly", (Object) ents);
+            call(Camera.class, "steer", (Object) ents);
             call(GAME, "step", (Object) ents);
-            call(GAME, "resolveBullets", (Object) ents);
-            call(GAME, "render", lines, ents);
-            if ((boolean) get(GAME, "shotDown")) {
-                set(GAME, "planes", 3);
-                call(GAME, "loseAPlane", (Object) ents);
+            call(Combat.class, "resolveBullets", (Object) ents);
+            call(SceneRenderer.class, "render", lines, ents);
+            if ((boolean) get(Session.class, "shotDown")) {
+                set(Session.class, "planes", 3);
+                call(Session.class, "loseAPlane", (Object) ents);
             }
             if (callBoolean(GAME, "roundOver", (Object) ents)) {
                 return true;
@@ -288,28 +286,28 @@ class RedBaronTest {
 
     @Test
     void theCpuPilotClimbsOverAPyramidAhead() {
-        set(GAME, "round", GROUND_ATTACK);
-        set(GAME, "altitude", 100);
+        set(Session.class, "round", Round.GROUND_ATTACK);
+        set(Camera.class, "altitude", 100);
         spawn(PYRAMID, 0, 0, 400);
-        call(GAME, "flyAutopilot", (Object) ents);
-        assertThat(getInt(GAME, "stickY")).isEqualTo(100);
+        call(AutopilotRB.class, "fly", (Object) ents);
+        assertThat(getInt(Controls.class, "stickY")).isEqualTo(100);
     }
 
     @Test
     void thePilotScreenHasAHumanAndACpuButton() {
-        assertThat(callInt(GAME, "choiceAt", 80, 140)).isZero();
-        assertThat(callInt(GAME, "choiceAt", 230, 140)).isEqualTo(1);
-        assertThat(callInt(GAME, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
-        assertThat(callInt(GAME, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
+        assertThat(callInt(Controls.class, "choiceAt", 80, 140)).isZero();
+        assertThat(callInt(Controls.class, "choiceAt", 230, 140)).isEqualTo(1);
+        assertThat(callInt(Controls.class, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
+        assertThat(callInt(Controls.class, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
     }
 
     private void stick(int x, int y) {
-        set(GAME, "stickX", x);
-        set(GAME, "stickY", y);
+        set(Controls.class, "stickX", x);
+        set(Controls.class, "stickY", y);
     }
 
     private int spawn(int type, int x, int y, int z) {
-        int slot = callInt(GAME, "freeSlot", (Object) ents);
+        int slot = callInt(Entities.class, "freeSlot", (Object) ents);
         int b = slot * STRIDE;
         ents[b + TYPE] = type;
         ents[b + X] = x;
@@ -322,7 +320,7 @@ class RedBaronTest {
     }
 
     private int count(int type) {
-        return callInt(GAME, "count", ents, type);
+        return callInt(Entities.class, "count", ents, type);
     }
 
     private void clearAll() {
