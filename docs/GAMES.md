@@ -152,7 +152,7 @@ After Sega's 1982 vector arcade game, in landscape. It opens with a starfield ru
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.StarTrek
+  -Djuno.main=io.github.jabrena.juno.games.startrek.StarTrek
 ```
 
 ### Sundance

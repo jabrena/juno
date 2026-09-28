@@ -130,7 +130,7 @@ built on them (LCD keypad, TFT touch) compile and upload for both boards. The LE
 `@Watchdog` are UNO R4 WiFi only (on the UNO Q, its LED matrix and Wi-Fi belong to the board's
 Linux side), and Juno rejects them at compile time for the UNO Q. The other APIs built on UNO R4
 libraries (email, USB mouse, SD card, servo) have not been tried on the UNO Q yet. The TFT games
-[Star Trek](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/StarTrek.java),
+[Star Trek](juno-examples/src/main/java/io/github/jabrena/juno/games/startrek/StarTrek.java),
 [Star Wars](juno-examples/src/main/java/io/github/jabrena/juno/games/starwars/StarWars.java),
 [The Empire Strikes Back](juno-examples/src/main/java/io/github/jabrena/juno/games/empirestrikesback/EmpireStrikesBack.java),
 [Red Baron](juno-examples/src/main/java/io/github/jabrena/juno/games/redbaron/RedBaron.java) and
