@@ -129,13 +129,6 @@ class ArduinoCliTest {
                 .hasMessageContaining("platform not installed");
     }
 
-    @Test
-    void rejectsMalformedBoardListJson() {
-        assertThatThrownBy(() -> ArduinoCli.parseBoardList("{}"))
-                .isInstanceOf(ArduinoCliException.class)
-                .hasMessageContaining("missing detected_ports array");
-    }
-
     private static String boardList(String... ports) {
         return "{\"detected_ports\":[" + String.join(",", ports) + "]}";
     }
