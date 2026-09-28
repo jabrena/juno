@@ -94,11 +94,6 @@
                             <printFailingErrors>true</printFailingErrors>
                             <linkXRef>true</linkXRef>
                             <minimumTokens>100</minimumTokens>
-                            <!-- Example programs are excluded from the reactor-level aggregate report. -->
-                            <excludeRoots>
-                                <excludeRoot>${maven.multiModuleProjectDirectory}/juno-examples/src/main/java</excludeRoot>
-                                <excludeRoot>${maven.multiModuleProjectDirectory}/juno-examples/src/test/java</excludeRoot>
-                            </excludeRoots>
                         </configuration>
                         <executions>
                             <execution>
@@ -131,11 +126,6 @@
                                 <ruleset>${maven.multiModuleProjectDirectory}/pmd/pmd-cyclomatic-complexity.xml</ruleset>
                             </rulesets>
                             <linkXRef>true</linkXRef>
-                            <!-- Example programs are excluded from the reactor-level aggregate report. -->
-                            <excludeRoots>
-                                <excludeRoot>${maven.multiModuleProjectDirectory}/juno-examples/src/main/java</excludeRoot>
-                                <excludeRoot>${maven.multiModuleProjectDirectory}/juno-examples/src/test/java</excludeRoot>
-                            </excludeRoots>
                         </configuration>
                     </plugin>
                     <!-- JXR Plugin for Source Cross-Reference -->
