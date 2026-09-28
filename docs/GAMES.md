@@ -1,6 +1,6 @@
 # Games
 
-Juno ships 32 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is a plain Java class in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
+Juno ships 33 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is a plain Java class in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
 
 ## How to play
 
@@ -23,7 +23,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 
 ## Contents
 
-- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
+- [Arcade](#arcade): [Pac-Man](#pac-man), [Space Invaders](#space-invaders), [Tetris](#tetris), [Snake](#snake), [Pong](#pong), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Sundance](#sundance), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander), [Whac-A-Mole](#whac-a-mole), [Simon](#simon)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Checkers](#checkers), [Othello](#othello), [Connect Four](#connect-four), [Tic-Tac-Toe](#tic-tac-toe), [Backgammon](#backgammon), [Mancala](#mancala), [Battleship](#battleship)
 - [Puzzles and simulations](#puzzles-and-simulations): [Minesweeper](#minesweeper), [2048](#2048), [Game of Life](#game-of-life)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem), [Solitaire](#solitaire), [Slot machine](#slot-machine)
@@ -153,6 +153,17 @@ After Sega's 1982 vector arcade game, in landscape: command the Enterprise throu
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.StarTrek
+```
+
+### Sundance
+
+<img src="images/games/sundance.png" alt="Sundance on the TFT shield" width="320">
+
+After Cinematronics' 1979 vector arcade game, in landscape: two grids of three by three squares face each other in perspective, one above the other, and suns bounce between them, drifting to a neighboring square with every bounce. Tap a square of either grid to open its hatch (the same one in both grids) for a moment, and a sun landing on it falls through and is trapped; only two hatches can be open at once, and a small cross in each sun's color marks where it will land. Trap all the round's suns before the time runs out, and never let two suns collide: a collision bursts them and costs a life, and so does running out of time. Each round brings more suns, more of them at once, bouncing faster; every third round cleared earns a life back.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.Sundance
 ```
 
 ### Space Paranoids
@@ -446,10 +457,10 @@ On top of these:
   screen and a diff to `juno-examples/target/screenshots`. After an intended visual change,
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
-- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest`, `StarWarsTest`, `SpaceParanoidsTest`, `RedBaronTest`, `EmpireStrikesBackTest` and `StarTrekTest` check rules and computer players: the
+- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest`, `StarWarsTest`, `SpaceParanoidsTest`, `RedBaronTest`, `EmpireStrikesBackTest`, `StarTrekTest` and `SundanceTest` check rules and computer players: the
   poker hand ranking against a brute-force reference, no chip lost across all-ins and side pots,
   the slot machine's exact payback, Othello's perft counts, Backgammon and Mancala rules, that
-  each computer opponent beats a simple player, and that autopilots clear Space Paranoids and Star Trek sectors and whole Red Baron and Empire Strikes Back waves.
+  each computer opponent beats a simple player, and that autopilots clear Space Paranoids and Star Trek sectors, Sundance rounds, and whole Red Baron and Empire Strikes Back waves.
 
 This runs the games' Java on the JVM, not the code Juno generates for the board.
 

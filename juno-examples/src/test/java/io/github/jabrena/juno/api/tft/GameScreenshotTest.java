@@ -64,6 +64,7 @@ class GameScreenshotTest {
                 game("Snake", "snake", "500:120,160 end:6000"),
                 game("Solitaire", "solitaire", "500:120,160 end:6000"),
                 game("StarTrek", "star-trek", "500:160,130 3000:200,60 3080:200,60 3160:200,60 3240:200,60 3320:200,60 3400:200,60 3480:200,60 3560:200,60 3640:200,60 3720:200,60 3800:200,60 3880:200,60 3960:200,60 4040:200,60 4120:200,60 4200:200,60 4280:200,60 4360:200,60 4440:200,60 4520:200,60 4700:270,120 end:4780"),
+                game("Sundance", "sundance", "500:160,130 5080:160,205 end:5200"),
                 game("SpaceInvaders", "space-invaders", "500:120,160 end:6000"),
                 game("SpaceParanoids", "space-paranoids", "500:160,130 end:9000"),
                 game("StarWars", "star-wars", "500:160,130 6500:116,146 end:6700"),
