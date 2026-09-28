@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/** Rules of Rock-Paper-Scissors-Lizard-Spock, Russian roulette and Lunar Lander. */
+/** Rules of Rock-Paper-Scissors-Lizard-Spock and Lunar Lander. */
 class ChanceGamesTest {
     @BeforeEach
     void portrait() {
@@ -81,32 +81,6 @@ class ChanceGamesTest {
             set(RockPaperScissorsLizardSpock.class, "previous", human);
         }
         assertThat(computerWins).isGreaterThan(3 * humanWins);
-    }
-
-    // ---- Russian roulette ----
-
-    /** A player who always pulls: every round loads the chosen bullets and ends with one loser. */
-    @ParameterizedTest
-    @ValueSource(ints = {1, 2, 3})
-    void everyRouletteRoundHasExactlyOneLoser(int bullets) {
-        Internals.tapEvery(4, () -> new int[] {180, 290});
-        set(RussianRoulette.class, "bullets", bullets);
-        boolean[] loaded = new boolean[6];
-        byte[] seen = new byte[6];
-        for (int round = 0; round < 10; round++) {
-            Random.seed(round * 7 + bullets);
-            int human = getInt(RussianRoulette.class, "humanWins");
-            int computer = getInt(RussianRoulette.class, "computerWins");
-            call(RussianRoulette.class, "playRound", loaded, seen);
-            int count = 0;
-            for (boolean chamber : loaded) {
-                count = count + (chamber ? 1 : 0);
-            }
-            assertThat(count).isEqualTo(bullets);
-            int losers = getInt(RussianRoulette.class, "humanWins") - human
-                    + getInt(RussianRoulette.class, "computerWins") - computer;
-            assertThat(losers).isEqualTo(1);
-        }
     }
 
     // ---- Lunar Lander ----

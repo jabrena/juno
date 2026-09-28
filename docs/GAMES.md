@@ -1,6 +1,6 @@
 # Games
 
-Juno ships 28 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/tft`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
+Juno ships 27 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/tft`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
 
 ## How to play
 
@@ -27,7 +27,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Checkers](#checkers), [Othello](#othello), [Connect Four](#connect-four), [Backgammon](#backgammon), [Mancala](#mancala), [Battleship](#battleship)
 - [Puzzles and simulations](#puzzles-and-simulations): [Minesweeper](#minesweeper), [2048](#2048), [Game of Life](#game-of-life)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem), [Solitaire](#solitaire), [Slot machine](#slot-machine)
-- [Dice and chance](#dice-and-chance): [Rock, Paper, Scissors, Lizard, Spock](#rock-paper-scissors-lizard-spock), [Russian roulette](#russian-roulette)
+- [Dice and chance](#dice-and-chance): [Rock, Paper, Scissors, Lizard, Spock](#rock-paper-scissors-lizard-spock)
 - [Demos](#demos): [Touch paint](#touch-paint)
 
 ## Arcade
@@ -345,17 +345,6 @@ Tap one of the five pixel-art buttons. Each move beats two others and loses to t
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.RockPaperScissorsLizardSpock
-```
-
-### Russian roulette
-
-<img src="images/games/russian-roulette.png" alt="Russian roulette on the TFT shield" width="240">
-
-A cartoon duel with a six-chamber cylinder and no gore: `LOAD` 1 to 3 bullets, `START`, then take turns to `PULL`. Each player may `SPIN` the cylinder once per round, and chambers known to be empty are crossed out.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.RussianRoulette
 ```
 
 ## Demos

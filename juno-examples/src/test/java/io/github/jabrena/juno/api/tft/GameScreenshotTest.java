@@ -58,7 +58,6 @@ class GameScreenshotTest {
                 game("games.redbaron.RedBaron", "red-baron", "6500:160,130 7000:85,140 9500:160,130 9580:230,130 9660:260,130 9740:270,130 9820:270,130 end:9900"),
                 game("games.RockPaperScissorsLizardSpock", "rock-paper-scissors-lizard-spock",
                         "500:216,280 3000:24,280 5500:120,280 end:8000"),
-                game("games.RussianRoulette", "russian-roulette", "500:180,290 3500:180,290 end:6500"),
                 game("games.Simon", "simon", "500:120,190 end:1500"),
                 game("games.SlotMachine", "slot-machine", "500:160,285 end:5000"),
                 game("games.Solitaire", "solitaire", "500:120,160 end:6000"),
