@@ -6,6 +6,7 @@ import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.JunoCompiler;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,25 +47,33 @@ class ArduinoCliCompileTest {
     @Container
     private static final GenericContainer<?> ARDUINO_CLI = container().withCommand("sleep", "infinity");
 
-    /** Every game's fully qualified class name: those in api.tft and those in games' subpackages. */
+    /**
+     * Every game's fully qualified class name: those in api.tft and those in games' subpackages. A
+     * game is its {@code @Board} entry point; the other classes of a game's package are its parts.
+     */
     static Stream<String> games() throws IOException {
         Path sources = BASEDIR.resolve("src/main/java");
         List<String> games = new ArrayList<>();
         for (Path directory : List.of(sources.resolve("io/github/jabrena/juno/api/tft"),
                 sources.resolve("io/github/jabrena/juno/games"))) {
             try (Stream<Path> files = Files.walk(directory)) {
-                files.filter(path -> {
-                    String name = path.getFileName().toString();
-                    return name.endsWith(".java") && !name.equals("TftTouchShield.java")
-                            && !name.equals("package-info.java");
-                }).forEach(path -> {
-                    String relative = sources.relativize(path).toString();
-                    games.add(relative.substring(0, relative.length() - ".java".length())
-                            .replace(path.getFileSystem().getSeparator(), "."));
-                });
+                files.filter(path -> path.getFileName().toString().endsWith(".java") && isEntryPoint(path))
+                        .forEach(path -> {
+                            String relative = sources.relativize(path).toString();
+                            games.add(relative.substring(0, relative.length() - ".java".length())
+                                    .replace(path.getFileSystem().getSeparator(), "."));
+                        });
             }
         }
         return games.stream().sorted();
+    }
+
+    private static boolean isEntryPoint(Path source) {
+        try {
+            return Files.readString(source, StandardCharsets.UTF_8).contains("@Board(");
+        } catch (IOException exception) {
+            throw new UncheckedIOException(exception);
+        }
     }
 
     @ParameterizedTest(name = "{0}")

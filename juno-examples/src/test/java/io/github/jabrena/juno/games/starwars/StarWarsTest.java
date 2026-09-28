@@ -44,23 +44,23 @@ class StarWarsTest {
         Random.seed(42);
         lines = new short[2 * 180 * 5];
         ents = new int[24 * STRIDE];
-        set(GAME, "score", 0);
-        set(GAME, "shields", 6);
-        set(GAME, "wave", 1);
-        set(GAME, "shown", 0);
-        set(GAME, "built", 0);
-        set(GAME, "crossX", 160);
-        set(GAME, "crossY", 130);
-        call(GAME, "startPhase", 0, ents);
+        set(Session.class, "score", 0);
+        set(Session.class, "shields", 6);
+        set(Session.class, "wave", 1);
+        set(DisplayList.class, "shown", 0);
+        set(DisplayList.class, "built", 0);
+        set(Controls.class, "crossX", 160);
+        set(Controls.class, "crossY", 130);
+        call(GAME, "startPhase", Phase.SPACE, ents);
     }
 
     @Test
     void linesAreClippedToTheView() {
-        call(GAME, "addLine", lines, -5000, -2000, 5000, 2260, 0xFFFF);
-        call(GAME, "addLine", lines, -50, 10, -10, 400, 0xFFFF);
-        call(GAME, "addLine", lines, 100, 100, 100, 100, 0xFFFF);
-        assertThat(getInt(GAME, "built")).as("the second line is wholly off screen").isEqualTo(2);
-        int base = (1 - getInt(GAME, "front")) * 180 * 5;
+        call(DisplayList.class, "addLine", lines, -5000, -2000, 5000, 2260, 0xFFFF);
+        call(DisplayList.class, "addLine", lines, -50, 10, -10, 400, 0xFFFF);
+        call(DisplayList.class, "addLine", lines, 100, 100, 100, 100, 0xFFFF);
+        assertThat(getInt(DisplayList.class, "built")).as("the second line is wholly off screen").isEqualTo(2);
+        int base = (1 - getInt(DisplayList.class, "front")) * 180 * 5;
         for (int i = 0; i < 2; i++) {
             for (int k = 0; k < 4; k = k + 2) {
                 assertThat((int) lines[base + i * 5 + k]).isBetween(0, 319);
@@ -74,23 +74,23 @@ class StarWarsTest {
         int tie = spawn(TIE, 60, -40, 700);
         render();
         aimAt(tie);
-        call(GAME, "fire", (Object) ents);
+        call(Combat.class, "fire", (Object) ents);
         converge();
         assertThat(ents[tie * STRIDE + TYPE]).as("destroyed").isNotEqualTo(TIE);
-        assertThat(getInt(GAME, "kills")).isEqualTo(1);
-        assertThat(getInt(GAME, "score")).isEqualTo(1000);
+        assertThat(getInt(SpacePhase.class, "kills")).isEqualTo(1);
+        assertThat(getInt(Session.class, "score")).isEqualTo(1000);
     }
 
     @Test
     void lasersFiredAtEmptySpaceMiss() {
         int tie = spawn(TIE, 60, -40, 700);
         render();
-        set(GAME, "crossX", 20);
-        set(GAME, "crossY", 30);
-        call(GAME, "fire", (Object) ents);
+        set(Controls.class, "crossX", 20);
+        set(Controls.class, "crossY", 30);
+        call(Combat.class, "fire", (Object) ents);
         converge();
         assertThat(ents[tie * STRIDE + TYPE]).isEqualTo(TIE);
-        assertThat(getInt(GAME, "score")).isZero();
+        assertThat(getInt(Session.class, "score")).isZero();
     }
 
     @Test
@@ -98,127 +98,127 @@ class StarWarsTest {
         int vader = spawn(VADER, 0, 0, 600);
         render();
         aimAt(vader);
-        call(GAME, "fire", (Object) ents);
+        call(Combat.class, "fire", (Object) ents);
         converge();
         assertThat(ents[vader * STRIDE + TYPE]).isEqualTo(VADER);
         assertThat(ents[vader * STRIDE + 6]).as("flying away").isPositive();
-        assertThat(getInt(GAME, "kills")).isZero();
-        assertThat(getInt(GAME, "score")).isZero();
+        assertThat(getInt(SpacePhase.class, "kills")).isZero();
+        assertThat(getInt(Session.class, "score")).isZero();
     }
 
     @Test
     void fireballsCostAShieldAndTheLastHitEndsTheGame() {
-        call(GAME, "fireball", ents, 300, 200, 900);
-        for (int frame = 0; frame < 200 && getInt(GAME, "shields") == 6; frame++) {
+        call(Entities.class, "fireball", ents, 300, 200, 900);
+        for (int frame = 0; frame < 200 && getInt(Session.class, "shields") == 6; frame++) {
             call(GAME, "step", (Object) ents);
         }
-        assertThat(getInt(GAME, "shields")).isEqualTo(5);
+        assertThat(getInt(Session.class, "shields")).isEqualTo(5);
         assertThat(callBoolean(GAME, "phaseOver", (Object) ents)).isFalse();
-        set(GAME, "shields", 0);
-        call(GAME, "shieldHit");
-        assertThat((boolean) get(GAME, "dead")).isTrue();
+        set(Session.class, "shields", 0);
+        call(Session.class, "shieldHit");
+        assertThat((boolean) get(Session.class, "dead")).isTrue();
     }
 
     @Test
     void shootingAFireballDownScores() {
-        call(GAME, "fireball", ents, 0, 0, 1200);
+        call(Entities.class, "fireball", ents, 0, 0, 1200);
         int fireball = find(FIREBALL);
         render();
         aimAt(fireball);
-        call(GAME, "fire", (Object) ents);
+        call(Combat.class, "fire", (Object) ents);
         converge();
         assertThat(find(FIREBALL)).isNegative();
-        assertThat(getInt(GAME, "score")).isEqualTo(33);
-        assertThat(getInt(GAME, "shields")).isEqualTo(6);
+        assertThat(getInt(Session.class, "score")).isEqualTo(33);
+        assertThat(getInt(Session.class, "shields")).isEqualTo(6);
     }
 
     @Test
     void catwalksMustBeClearedAboveOrBelow() {
-        call(GAME, "startPhase", 2, ents);
-        set(GAME, "trenchLength", 1 << 29);
-        set(GAME, "spawnCountdown", 1 << 29);
+        call(GAME, "startPhase", Phase.TRENCH, ents);
+        set(TrenchPhase.class, "trenchLength", 1 << 29);
+        set(Session.class, "spawnCountdown", 1 << 29);
         int catwalk = spawn(CATWALK, 0, 0, 400);
         for (int frame = 0; frame < 40 && ents[catwalk * STRIDE + TYPE] == CATWALK; frame++) {
             call(GAME, "step", (Object) ents);
         }
-        assertThat(getInt(GAME, "shields")).as("flying straight into it").isEqualTo(5);
+        assertThat(getInt(Session.class, "shields")).as("flying straight into it").isEqualTo(5);
 
-        set(GAME, "crossY", 30);
+        set(Controls.class, "crossY", 30);
         for (int frame = 0; frame < 20; frame++) {
-            call(GAME, "steer");
+            call(Camera.class, "steer");
         }
-        assertThat(getInt(GAME, "camY")).isEqualTo(110);
+        assertThat(getInt(Camera.class, "camY")).isEqualTo(110);
         catwalk = spawn(CATWALK, 0, 0, 400);
         for (int frame = 0; frame < 40 && ents[catwalk * STRIDE + TYPE] == CATWALK; frame++) {
             call(GAME, "step", (Object) ents);
         }
-        assertThat(getInt(GAME, "shields")).as("passing above").isEqualTo(5);
+        assertThat(getInt(Session.class, "shields")).as("passing above").isEqualTo(5);
     }
 
     @Test
     void missingTheExhaustPortEndsTheRunWithoutDestroyingIt() {
-        call(GAME, "startPhase", 2, ents);
+        call(GAME, "startPhase", Phase.TRENCH, ents);
         spawn(PORT, 0, -150, 600);
-        set(GAME, "portSpawned", true);
+        set(TrenchPhase.class, "portSpawned", true);
         for (int frame = 0; frame < 100 && !callBoolean(GAME, "phaseOver", (Object) ents); frame++) {
             call(GAME, "step", (Object) ents);
         }
-        assertThat((boolean) get(GAME, "portMissed")).isTrue();
-        assertThat((boolean) get(GAME, "portDestroyed")).isFalse();
+        assertThat((boolean) get(TrenchPhase.class, "portMissed")).isTrue();
+        assertThat((boolean) get(TrenchPhase.class, "portDestroyed")).isFalse();
     }
 
     /** The CPU pilot flies three waves without being destroyed, though it is not a perfect shot. */
     @Test
     void theCpuPilotDestroysTheDeathStarWaveAfterWave() {
-        set(GAME, "autopilot", true);
+        set(Controls.class, "autopilot", true);
         for (int wave = 1; wave <= 3; wave++) {
-            set(GAME, "wave", wave);
-            for (int phase = 0; phase < 3; phase++) {
+            set(Session.class, "wave", wave);
+            for (Phase phase : Phase.values()) {
                 boolean done = false;
                 for (int attempt = 0; attempt < 4 && !done; attempt++) {
                     call(GAME, "startPhase", phase, ents);
                     fly(phase);
-                    done = phase != 2 || (boolean) get(GAME, "portDestroyed");
+                    done = phase != Phase.TRENCH || (boolean) get(TrenchPhase.class, "portDestroyed");
                 }
                 assertThat(done).as("wave %d: exhaust port destroyed", wave).isTrue();
             }
-            call(GAME, "destroyDeathStar");
+            call(Interludes.class, "destroyDeathStar");
         }
-        assertThat(getInt(GAME, "score")).isGreaterThan(100000);
-        assertThat(getInt(GAME, "shields")).isGreaterThan(0);
+        assertThat(getInt(Session.class, "score")).isGreaterThan(100000);
+        assertThat(getInt(Session.class, "shields")).isGreaterThan(0);
         assertThat(misses).as("shots fired at nothing").isPositive();
         assertThat(onTarget).as("shots fired at a target").isGreaterThan(misses);
     }
 
     @Test
     void theCpuPilotSteersPastCatwalksInTheTrench() {
-        call(GAME, "startPhase", 2, ents);
+        call(GAME, "startPhase", Phase.TRENCH, ents);
         spawn(CATWALK, 0, 60, 900);
-        call(GAME, "flyAutopilot", (Object) ents);
-        assertThat(getInt(GAME, "crossY")).as("below a high catwalk").isEqualTo(210);
+        call(AutopilotSW.class, "fly", (Object) ents);
+        assertThat(getInt(Controls.class, "crossY")).as("below a high catwalk").isEqualTo(210);
         ents[0] = 0;
         spawn(CATWALK, 0, -60, 900);
-        call(GAME, "flyAutopilot", (Object) ents);
-        assertThat(getInt(GAME, "crossY")).as("above a low catwalk").isEqualTo(50);
+        call(AutopilotSW.class, "fly", (Object) ents);
+        assertThat(getInt(Controls.class, "crossY")).as("above a low catwalk").isEqualTo(50);
     }
 
     @Test
     void thePilotScreenHasAHumanAndACpuButton() {
-        assertThat((int) call(GAME, "choiceAt", 80, 140)).isZero();
-        assertThat((int) call(GAME, "choiceAt", 230, 140)).isEqualTo(1);
-        assertThat((int) call(GAME, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
-        assertThat((int) call(GAME, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
+        assertThat((int) call(Controls.class, "choiceAt", 80, 140)).isZero();
+        assertThat((int) call(Controls.class, "choiceAt", 230, 140)).isEqualTo(1);
+        assertThat((int) call(Controls.class, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
+        assertThat((int) call(Controls.class, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
     }
 
-    private void fly(int phase) {
+    private void fly(Phase phase) {
         for (int frame = 1; frame < 5000; frame++) {
-            set(GAME, "frame", frame);
-            call(GAME, "flyAutopilot", (Object) ents);
+            set(Session.class, "frame", frame);
+            call(AutopilotSW.class, "fly", (Object) ents);
             countNewShots();
             call(GAME, "step", (Object) ents);
-            call(GAME, "resolveShots", (Object) ents);
-            call(GAME, "render", lines, ents);
-            assertThat((boolean) get(GAME, "dead")).as("destroyed in phase %d", phase).isFalse();
+            call(Combat.class, "resolveShots", (Object) ents);
+            call(SceneRenderer.class, "render", lines, ents);
+            assertThat((boolean) get(Session.class, "dead")).as("destroyed in phase %s", phase).isFalse();
             if (callBoolean(GAME, "phaseOver", (Object) ents)) {
                 return;
             }
@@ -241,7 +241,7 @@ class StarWarsTest {
     }
 
     private int spawn(int type, int x, int y, int z) {
-        int slot = (int) call(GAME, "freeSlot", (Object) ents);
+        int slot = (int) call(Entities.class, "freeSlot", (Object) ents);
         ents[slot * STRIDE + TYPE] = type;
         ents[slot * STRIDE + X] = x;
         ents[slot * STRIDE + Y] = y;
@@ -262,18 +262,18 @@ class StarWarsTest {
     }
 
     private void render() {
-        call(GAME, "render", lines, ents);
+        call(SceneRenderer.class, "render", lines, ents);
     }
 
     private void aimAt(int slot) {
-        set(GAME, "crossX", ents[slot * STRIDE + SX]);
-        set(GAME, "crossY", ents[slot * STRIDE + SY]);
+        set(Controls.class, "crossX", ents[slot * STRIDE + SX]);
+        set(Controls.class, "crossY", ents[slot * STRIDE + SY]);
     }
 
     /** Lets the lasers reach the crosshair, with nothing else moving. */
     private void converge() {
         for (int frame = 0; frame < 4; frame++) {
-            call(GAME, "resolveShots", (Object) ents);
+            call(Combat.class, "resolveShots", (Object) ents);
         }
     }
 }
