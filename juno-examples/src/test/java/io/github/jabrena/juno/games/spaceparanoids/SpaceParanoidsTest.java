@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
  * and the CPU driver that clears whole sectors through the game's own simulation and rendering.
  */
 class SpaceParanoidsTest {
-    private static final Class<?> GAME = SpaceParanoids.class;
     private static final int SIZE = 13;
     private static final int ONE = 1024;
     private static final int F_STRIDE = 6;
@@ -47,22 +46,22 @@ class SpaceParanoidsTest {
         faces = new int[81];
         fs = new int[30 * F_STRIDE];
         is = new int[30 * I_STRIDE];
-        set(GAME, "score", 0);
-        set(GAME, "lives", 3);
-        set(GAME, "level", 1);
-        set(GAME, "nextBonus", 10000);
-        set(GAME, "shield", 100);
-        set(GAME, "shown", 0);
-        set(GAME, "built", 0);
-        set(GAME, "fireCooldown", 0);
+        set(Session.class, "score", 0);
+        set(Session.class, "lives", 3);
+        set(Session.class, "level", 1);
+        set(Session.class, "nextBonus", 10000);
+        set(Session.class, "shield", 100);
+        set(DisplayList.class, "shown", 0);
+        set(DisplayList.class, "built", 0);
+        set(Combat.class, "fireCooldown", 0);
     }
 
     @Test
     void everyRoomOfEveryMazeIsReachableAndTheBorderIsSolid() {
         for (int seed = 0; seed < 100; seed++) {
             Random.seed(seed);
-            call(GAME, "generateMaze", maze, paths);
-            call(GAME, "bfs", maze, paths, SIZE + 1);
+            call(Maze.class, "generate", maze, paths);
+            call(Maze.class, "bfs", maze, paths, SIZE + 1);
             for (int z = 0; z < SIZE; z++) {
                 for (int x = 0; x < SIZE; x++) {
                     int cell = z * SIZE + x;
@@ -80,75 +79,77 @@ class SpaceParanoidsTest {
     @Test
     void raysMeasureThePerpendicularDistanceToTheWall() {
         corridor();
-        set(GAME, "posX", 1.5f);
-        set(GAME, "posZ", 1.5f);
-        call(GAME, "setAngle", 0f);
-        call(GAME, "castRay", maze, 160);
-        assertThat(Math.round((float) get(GAME, "rayDistance") * 100)).as("straight down the corridor").isEqualTo(1050);
-        call(GAME, "castRay", maze, 319);
-        assertThat(Math.round((float) get(GAME, "rayDistance") * 100)).as("the side wall, 45 degrees off").isEqualTo(50);
+        set(Camera.class, "posX", 1.5f);
+        set(Camera.class, "posZ", 1.5f);
+        call(Camera.class, "setAngle", 0f);
+        call(Camera.class, "castRay", maze, 160);
+        assertThat(Math.round((float) get(Camera.class, "rayDistance") * 100))
+                .as("straight down the corridor").isEqualTo(1050);
+        call(Camera.class, "castRay", maze, 319);
+        assertThat(Math.round((float) get(Camera.class, "rayDistance") * 100))
+                .as("the side wall, 45 degrees off").isEqualTo(50);
     }
 
     @Test
     void wallsStopTheTank() {
         corridor();
-        set(GAME, "posX", 1.5f);
-        set(GAME, "posZ", 1.5f);
-        call(GAME, "setAngle", (float) Math.PI);
+        set(Camera.class, "posX", 1.5f);
+        set(Camera.class, "posZ", 1.5f);
+        call(Camera.class, "setAngle", (float) Math.PI);
         for (int i = 0; i < 40; i++) {
-            call(GAME, "drive", maze, 0.07f);
+            call(Camera.class, "drive", maze, 0.07f);
         }
-        assertThat((float) get(GAME, "posX")).isGreaterThanOrEqualTo(1.26f);
-        call(GAME, "setAngle", 0f);
+        assertThat((float) get(Camera.class, "posX")).isGreaterThanOrEqualTo(1.26f);
+        call(Camera.class, "setAngle", 0f);
         for (int i = 0; i < 400; i++) {
-            call(GAME, "drive", maze, 0.07f);
+            call(Camera.class, "drive", maze, 0.07f);
         }
-        assertThat((float) get(GAME, "posX")).isLessThanOrEqualTo(11.74f).isGreaterThan(11.5f);
+        assertThat((float) get(Camera.class, "posX")).isLessThanOrEqualTo(11.74f).isGreaterThan(11.5f);
     }
 
     @Test
     void aShotDownTheCorridorDestroysTheHunter() {
         corridor();
-        set(GAME, "posX", 1.5f);
-        set(GAME, "posZ", 1.5f);
-        call(GAME, "setAngle", 0f);
+        set(Camera.class, "posX", 1.5f);
+        set(Camera.class, "posZ", 1.5f);
+        call(Camera.class, "setAngle", 0f);
         int hunter = place(HUNTER, 6, 1);
-        set(GAME, "huntersLeft", 1);
+        set(Session.class, "huntersLeft", 1);
         is[hunter * I_STRIDE + 2] = 1000;
-        call(GAME, "fire", fs, is);
+        call(Combat.class, "fire", fs, is);
         for (int frame = 0; frame < 30; frame++) {
-            call(GAME, "step", maze, paths, fs, is);
+            call(Entities.class, "move", maze, paths, fs, is);
         }
         assertThat(is[hunter * I_STRIDE]).as("destroyed").isNotEqualTo(HUNTER);
-        assertThat(getInt(GAME, "huntersLeft")).isZero();
-        assertThat(getInt(GAME, "score")).isEqualTo(1000);
+        assertThat(getInt(Session.class, "huntersLeft")).isZero();
+        assertThat(getInt(Session.class, "score")).isEqualTo(1000);
     }
 
     @Test
     void wallsStopShots() {
         corridor();
         maze[SIZE + 4] = 1;
-        set(GAME, "posX", 1.5f);
-        set(GAME, "posZ", 1.5f);
-        call(GAME, "setAngle", 0f);
+        set(Camera.class, "posX", 1.5f);
+        set(Camera.class, "posZ", 1.5f);
+        call(Camera.class, "setAngle", 0f);
         int turret = place(TURRET, 6, 1);
-        call(GAME, "fire", fs, is);
+        call(Combat.class, "fire", fs, is);
         for (int frame = 0; frame < 30; frame++) {
-            call(GAME, "step", maze, paths, fs, is);
+            call(Entities.class, "move", maze, paths, fs, is);
         }
         assertThat(is[turret * I_STRIDE]).isEqualTo(TURRET);
-        assertThat(getInt(GAME, "score")).isZero();
+        assertThat(getInt(Session.class, "score")).isZero();
     }
 
     @Test
     void enemyFireDrainsTheShieldAndPoolsRechargeIt() {
         corridor();
-        set(GAME, "posX", 1.5f);
-        set(GAME, "posZ", 1.5f);
-        call(GAME, "setAngle", 0f);
+        set(Camera.class, "posX", 1.5f);
+        set(Camera.class, "posZ", 1.5f);
+        call(Camera.class, "setAngle", 0f);
         int turret = place(TURRET, 5, 1);
         is[turret * I_STRIDE + 2] = 1;
-        call(GAME, "enemyFires", maze, fs, is, turret);
+        call(Combat.class, "enemyFires", maze, fs, is, turret);
         is[turret * I_STRIDE + 2] = 1000;
         int shot = -1;
         for (int slot = 0; slot < 30; slot++) {
@@ -158,67 +159,67 @@ class SpaceParanoidsTest {
         }
         assertThat(shot).as("the turret fired").isGreaterThanOrEqualTo(0);
         for (int frame = 0; frame < 60 && is[shot * I_STRIDE] == ENEMY_SHOT; frame++) {
-            call(GAME, "step", maze, paths, fs, is);
+            call(Entities.class, "move", maze, paths, fs, is);
         }
-        assertThat(getInt(GAME, "shield")).isEqualTo(80);
+        assertThat(getInt(Session.class, "shield")).isEqualTo(80);
         place(POOL, 1, 1);
-        call(GAME, "step", maze, paths, fs, is);
-        assertThat(getInt(GAME, "shield")).isEqualTo(100);
-        assertThat(getInt(GAME, "score")).isEqualTo(100);
+        call(Entities.class, "move", maze, paths, fs, is);
+        assertThat(getInt(Session.class, "shield")).isEqualTo(100);
+        assertThat(getInt(Session.class, "score")).isEqualTo(100);
     }
 
     /** The CPU driver hunts along the shortest path and shoots what it sees: it clears three sectors. */
     @Test
     void theCpuDriverClearsSectorAfterSector() {
         short[] route = new short[2 * SIZE * SIZE];
-        set(GAME, "autopilot", true);
+        set(Controls.class, "autopilot", true);
         for (int level = 1; level <= 3; level++) {
-            set(GAME, "level", level);
-            call(GAME, "startLevel", maze, paths, fs, is);
+            set(Session.class, "level", level);
+            call(Sector.class, "start", maze, paths, fs, is);
             boolean cleared = false;
             for (int frame = 1; frame < 30 * 120 && !cleared; frame++) {
-                set(GAME, "frame", frame);
-                if (getInt(GAME, "fireCooldown") > 0) {
-                    set(GAME, "fireCooldown", getInt(GAME, "fireCooldown") - 1);
+                set(Session.class, "frame", frame);
+                if (getInt(Combat.class, "fireCooldown") > 0) {
+                    set(Combat.class, "fireCooldown", getInt(Combat.class, "fireCooldown") - 1);
                 }
-                call(GAME, "flyAutopilot", maze, route, fs, is);
-                call(GAME, "step", maze, paths, fs, is);
-                call(GAME, "render", maze, lines, depth, faces, fs, is);
-                if (getInt(GAME, "shield") <= 0) {
+                call(AutopilotSP.class, "fly", maze, route, fs, is);
+                call(Entities.class, "move", maze, paths, fs, is);
+                call(SceneRenderer.class, "render", maze, lines, depth, faces, fs, is);
+                if (getInt(Session.class, "shield") <= 0) {
                     // It is not a perfect driver: a lost tank costs a life, and the sector goes on.
-                    call(GAME, "respawn", maze, fs, is);
+                    call(Sector.class, "respawn", maze, is);
                 }
-                cleared = getInt(GAME, "huntersLeft") == 0;
+                cleared = getInt(Session.class, "huntersLeft") == 0;
             }
             assertThat(cleared).as("sector %d cleared within two minutes", level).isTrue();
         }
-        assertThat(getInt(GAME, "score")).isGreaterThan(8000);
+        assertThat(getInt(Session.class, "score")).isGreaterThan(8000);
     }
 
     @Test
     void theCpuDriverHeadsForAnEnergyPoolWhenItsShieldIsLow() {
         corridor();
-        set(GAME, "posX", 1.5f);
-        set(GAME, "posZ", 1.5f);
-        call(GAME, "setAngle", 0f);
-        set(GAME, "shield", 30);
+        set(Camera.class, "posX", 1.5f);
+        set(Camera.class, "posZ", 1.5f);
+        call(Camera.class, "setAngle", 0f);
+        set(Session.class, "shield", 30);
         place(POOL, 5, 1);
         place(HUNTER, 11, 1);
         maze[SIZE + 9] = 1;
         short[] route = new short[2 * SIZE * SIZE];
-        for (int frame = 0; frame < 200 && getInt(GAME, "shield") == 30; frame++) {
-            call(GAME, "flyAutopilot", maze, route, fs, is);
-            call(GAME, "step", maze, paths, fs, is);
+        for (int frame = 0; frame < 200 && getInt(Session.class, "shield") == 30; frame++) {
+            call(AutopilotSP.class, "fly", maze, route, fs, is);
+            call(Entities.class, "move", maze, paths, fs, is);
         }
-        assertThat(getInt(GAME, "shield")).as("picked up the pool").isEqualTo(65);
+        assertThat(getInt(Session.class, "shield")).as("picked up the pool").isEqualTo(65);
     }
 
     @Test
     void thePilotScreenHasAHumanAndACpuButton() {
-        assertThat((int) call(GAME, "choiceAt", 80, 140)).isZero();
-        assertThat((int) call(GAME, "choiceAt", 230, 140)).isEqualTo(1);
-        assertThat((int) call(GAME, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
-        assertThat((int) call(GAME, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
+        assertThat((int) call(Controls.class, "choiceAt", 80, 140)).isZero();
+        assertThat((int) call(Controls.class, "choiceAt", 230, 140)).isEqualTo(1);
+        assertThat((int) call(Controls.class, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
+        assertThat((int) call(Controls.class, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
     }
 
     /** A maze that is solid but for one straight corridor along row 1, from x = 1 to 11. */
@@ -232,7 +233,7 @@ class SpaceParanoidsTest {
     }
 
     private int place(int type, int x, int z) {
-        int slot = (int) call(GAME, "freeSlot", (Object) is);
+        int slot = (int) call(Entities.class, "freeSlot", (Object) is);
         is[slot * I_STRIDE] = type;
         is[slot * I_STRIDE + 2] = 1000;
         fs[slot * F_STRIDE] = x * ONE + ONE / 2;
