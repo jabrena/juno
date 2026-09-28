@@ -1,10 +1,11 @@
-package io.github.jabrena.juno.api.tft;
+package io.github.jabrena.juno.games.starwars;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * Star Wars on the ELEGOO 2.8" TFT touch screen shield, after Atari's 1983 vector arcade game, in

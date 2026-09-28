@@ -45,7 +45,7 @@ class GameScreenshotTest {
                 game("Checkers", "checkers", "500:22,198 900:50,170 end:6000"),
                 game("Chess", "chess", "500:134,226 900:134,170 end:8000"),
                 game("ConnectFour", "connect-four", "500:120,160 end:6000"),
-                game("EmpireStrikesBack", "empire-strikes-back", "6000:160,130 6500:85,140 10200:200,150 end:10600"),
+                game("games.empirestrikesback.EmpireStrikesBack", "empire-strikes-back", "6000:160,130 6500:85,140 10200:200,150 end:10600"),
                 game("Game2048", "game-2048", "500:120,160 1200:230,200 1900:10,200 2600:120,300 end:3200"),
                 game("GameOfLife", "game-of-life", "500:120,160 end:6000"),
                 game("LunarLander", "lunar-lander", "500:120,160 1500:120,290 2200:120,290 end:2600"),
@@ -55,7 +55,7 @@ class GameScreenshotTest {
                 game("Othello", "othello", "500:106,114 end:6000"),
                 game("PacMan", "pacman", "500:120,160 end:6000"),
                 game("Pong", "pong", "500:120,160 end:6000"),
-                game("RedBaron", "red-baron", "6500:160,130 7000:85,140 9500:160,130 9580:230,130 9660:260,130 9740:270,130 9820:270,130 end:9900"),
+                game("games.redbaron.RedBaron", "red-baron", "6500:160,130 7000:85,140 9500:160,130 9580:230,130 9660:260,130 9740:270,130 9820:270,130 end:9900"),
                 game("RockPaperScissorsLizardSpock", "rock-paper-scissors-lizard-spock",
                         "500:216,280 3000:24,280 5500:120,280 end:8000"),
                 game("RussianRoulette", "russian-roulette", "500:180,290 3500:180,290 end:6500"),
@@ -66,8 +66,8 @@ class GameScreenshotTest {
                 game("StarTrek", "star-trek", "5000:160,130 5500:85,140 8000:200,60 8080:200,60 8160:200,60 8240:200,60 8320:200,60 8400:200,60 8480:200,60 8560:200,60 8640:200,60 8720:200,60 8800:200,60 8880:200,60 8960:200,60 9040:200,60 9120:200,60 9200:200,60 9280:200,60 9360:200,60 9440:200,60 9520:200,60 9700:270,120 end:9780"),
                 game("Sundance", "sundance", "500:160,130 5080:160,205 end:5200"),
                 game("SpaceInvaders", "space-invaders", "500:120,160 end:6000"),
-                game("SpaceParanoids", "space-paranoids", "5500:160,130 6000:85,140 end:14500"),
-                game("StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
+                game("games.spaceparanoids.SpaceParanoids", "space-paranoids", "5500:160,130 6000:85,140 end:14500"),
+                game("games.starwars.StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
                 game("Tempest", "tempest", "500:120,160 end:6000"),
                 game("Tetris", "tetris", "500:120,160 end:6000"),
                 game("TexasHoldem", "texas-holdem", "500:120,300 end:6000"),
@@ -127,7 +127,10 @@ class GameScreenshotTest {
                         Integer.parseInt(xy[1])));
             }
         }
-        return TftEmulator.run("io.github.jabrena.juno.api.tft." + game, end, taps);
+        // Games outside api.tft are named by their package under io.github.jabrena.juno, e.g. games.X.
+        String mainClass = game.contains(".") ? "io.github.jabrena.juno." + game
+                : "io.github.jabrena.juno.api.tft." + game;
+        return TftEmulator.run(mainClass, end, taps);
     }
 
     private static void save(BufferedImage image, String name) throws IOException {

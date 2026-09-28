@@ -11,12 +11,12 @@ import java.util.function.Supplier;
  * Reaches into a game's private static methods and fields, so rule tests can exercise the same
  * code the board runs without widening its visibility, and scripts taps on the emulated panel.
  */
-final class Internals {
+public final class Internals {
     private Internals() {
     }
 
     /** Calls the private static method {@code name} taking {@code args.length} parameters. */
-    static Object call(Class<?> type, String name, Object... args) {
+    public static Object call(Class<?> type, String name, Object... args) {
         for (Method method : type.getDeclaredMethods()) {
             if (method.getName().equals(name) && method.getParameterCount() == args.length) {
                 method.setAccessible(true);
@@ -35,15 +35,15 @@ final class Internals {
         throw new IllegalArgumentException(type.getSimpleName() + " has no method " + name + "/" + args.length);
     }
 
-    static int callInt(Class<?> type, String name, Object... args) {
+    public static int callInt(Class<?> type, String name, Object... args) {
         return (int) call(type, name, args);
     }
 
-    static boolean callBoolean(Class<?> type, String name, Object... args) {
+    public static boolean callBoolean(Class<?> type, String name, Object... args) {
         return (boolean) call(type, name, args);
     }
 
-    static Object get(Class<?> type, String name) {
+    public static Object get(Class<?> type, String name) {
         try {
             Field field = type.getDeclaredField(name);
             field.setAccessible(true);
@@ -53,11 +53,11 @@ final class Internals {
         }
     }
 
-    static int getInt(Class<?> type, String name) {
+    public static int getInt(Class<?> type, String name) {
         return (int) get(type, name);
     }
 
-    static void set(Class<?> type, String name, Object value) {
+    public static void set(Class<?> type, String name, Object value) {
         try {
             Field field = type.getDeclaredField(name);
             field.setAccessible(true);

@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.tft;
+package io.github.jabrena.juno.games.redbaron;
 
 import static io.github.jabrena.juno.api.tft.Internals.call;
 import static io.github.jabrena.juno.api.tft.Internals.callBoolean;
@@ -9,6 +9,7 @@ import static io.github.jabrena.juno.api.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

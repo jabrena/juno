@@ -1,10 +1,11 @@
-package io.github.jabrena.juno.api.tft;
+package io.github.jabrena.juno.games.empirestrikesback;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * The Empire Strikes Back on the ELEGOO 2.8" TFT touch screen shield, after Atari's 1985 vector
@@ -35,7 +36,7 @@ import io.github.jabrena.juno.api.Random;
  *
  * <p>Everything is drawn in vector style from 3D points perspective-projected onto the screen
  * ({@code x' = cx + x·f/z}), with 3D lines clipped at the near plane and 2D lines clipped to the view,
- * using the same double display lists as {@link StarWars}: only lines that changed since the
+ * using the same double display lists as {@link io.github.jabrena.juno.games.starwars.StarWars}: only lines that changed since the
  * previous frame are erased and drawn again.
  */
 @Board(ArduinoUnoQ.class)

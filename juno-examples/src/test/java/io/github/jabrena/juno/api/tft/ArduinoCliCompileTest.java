@@ -46,16 +46,25 @@ class ArduinoCliCompileTest {
     @Container
     private static final GenericContainer<?> ARDUINO_CLI = container().withCommand("sleep", "infinity");
 
+    /** Every game's fully qualified class name: those in api.tft and those in games' subpackages. */
     static Stream<String> games() throws IOException {
-        try (Stream<Path> sources = Files.list(BASEDIR.resolve("src/main/java/io/github/jabrena/juno/api/tft"))) {
-            return sources.map(path -> path.getFileName().toString())
-                    .filter(name -> name.endsWith(".java") && !name.equals("TftTouchShield.java")
-                            && !name.equals("package-info.java"))
-                    .map(name -> name.substring(0, name.length() - ".java".length()))
-                    .sorted()
-                    .toList()
-                    .stream();
+        Path sources = BASEDIR.resolve("src/main/java");
+        List<String> games = new ArrayList<>();
+        for (Path directory : List.of(sources.resolve("io/github/jabrena/juno/api/tft"),
+                sources.resolve("io/github/jabrena/juno/games"))) {
+            try (Stream<Path> files = Files.walk(directory)) {
+                files.filter(path -> {
+                    String name = path.getFileName().toString();
+                    return name.endsWith(".java") && !name.equals("TftTouchShield.java")
+                            && !name.equals("package-info.java");
+                }).forEach(path -> {
+                    String relative = sources.relativize(path).toString();
+                    games.add(relative.substring(0, relative.length() - ".java".length())
+                            .replace(path.getFileSystem().getSeparator(), "."));
+                });
+            }
         }
+        return games.stream().sorted();
     }
 
     @ParameterizedTest(name = "{0}")
@@ -79,12 +88,13 @@ class ArduinoCliCompileTest {
     }
 
     /** Runs Juno on the game, writing the same sketch directory {@code juno:compile} does. */
-    private static Path generateSketch(String game) throws IOException {
+    private static Path generateSketch(String mainClass) throws IOException {
+        String game = mainClass.substring(mainClass.lastIndexOf('.') + 1);
         String sketchName = game + "Asm";
         Path directory = BASEDIR.resolve("target/arduino-cli-sketches").resolve(sketchName);
         Files.createDirectories(directory);
         CompilationResult result = new JunoCompiler().compileTo(junoClasspath(),
-                "io.github.jabrena.juno.api.tft." + game, directory.resolve(game + ".S"),
+                mainClass, directory.resolve(game + ".S"),
                 directory.resolve(game + "Shim.cpp"), false);
         // The .ino wrapper juno-maven-plugin writes (AbstractJunoMojo#writeAsmWrapper).
         String wrapper = """

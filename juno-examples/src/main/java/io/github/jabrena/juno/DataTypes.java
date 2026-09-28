@@ -15,6 +15,7 @@ public class DataTypes {
         System.out.println("double: " + Double.BYTES + " bytes, range: " + Double.MIN_VALUE + " to " + Double.MAX_VALUE);
         */
 
+        Serial.begin(BaudRate.BAUD_115200);
         Serial.println("Data types demo");
         Serial.print("byte: ");
         Serial.print(Byte.BYTES);

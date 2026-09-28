@@ -119,7 +119,7 @@ After Atari's 1983 vector arcade game, in landscape. It opens like the film: "A 
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.StarWars
+  -Djuno.main=io.github.jabrena.juno.games.starwars.StarWars
 ```
 
 ### The Empire Strikes Back
@@ -130,7 +130,7 @@ After Atari's 1985 vector arcade game, in landscape. It opens like the film: sno
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.EmpireStrikesBack
+  -Djuno.main=io.github.jabrena.juno.games.empirestrikesback.EmpireStrikesBack
 ```
 
 ### Red Baron
@@ -141,7 +141,7 @@ After Atari's 1981 vector arcade game, in landscape. It opens in the cockpit: "C
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.RedBaron
+  -Djuno.main=io.github.jabrena.juno.games.redbaron.RedBaron
 ```
 
 ### Star Trek
@@ -174,7 +174,7 @@ After the arcade game from TRON, in landscape. It opens like the film: a laser s
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.SpaceParanoids
+  -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
 ```
 
 ### Lunar Lander

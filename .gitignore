@@ -3,6 +3,9 @@ target/
 .idea/
 .vscode/
 .cursor/
+.agents/
+.claude/
+skills-lock.json
 .flattened-pom.xml
 *.log
 .classpath

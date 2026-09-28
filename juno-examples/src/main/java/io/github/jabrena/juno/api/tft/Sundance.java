@@ -20,7 +20,7 @@ import io.github.jabrena.juno.api.Random;
  * more of them at once, bouncing faster.
  *
  * <p>The grids are drawn in perspective, and everything is drawn in vector style with the double
- * display lists of {@link StarWars}: only lines that changed since the previous frame are erased and
+ * display lists of {@link io.github.jabrena.juno.games.starwars.StarWars}: only lines that changed since the previous frame are erased and
  * drawn again.
  */
 @Board(ArduinoUnoR4WiFi.class)

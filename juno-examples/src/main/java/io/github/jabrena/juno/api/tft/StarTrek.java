@@ -31,7 +31,7 @@ import io.github.jabrena.juno.api.Random;
  * shields if they touch it; every fourth sector the space probe Nomad roams the sector laying mines.
  * Every hit takes some of your shields; when they are gone, so is the Enterprise.
  *
- * <p>Everything is drawn in vector style with the double display lists of {@link StarWars}, clipped
+ * <p>Everything is drawn in vector style with the double display lists of {@link io.github.jabrena.juno.games.starwars.StarWars}, clipped
  * to whichever view is being drawn: only lines that changed since the previous frame are erased and
  * drawn again. Positions are fixed point (1/16 unit) in a sector that wraps around at the edges.
  */

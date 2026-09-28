@@ -131,10 +131,10 @@ built on them (LCD keypad, TFT touch) compile and upload for both boards. The LE
 Linux side), and Juno rejects them at compile time for the UNO Q. The other APIs built on UNO R4
 libraries (email, USB mouse, SD card, servo) have not been tried on the UNO Q yet. The TFT games
 [Star Trek](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/StarTrek.java),
-[Star Wars](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/StarWars.java),
-[The Empire Strikes Back](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/EmpireStrikesBack.java),
-[Red Baron](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/RedBaron.java) and
-[Space Paranoids](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/SpaceParanoids.java)
+[Star Wars](juno-examples/src/main/java/io/github/jabrena/juno/games/starwars/StarWars.java),
+[The Empire Strikes Back](juno-examples/src/main/java/io/github/jabrena/juno/games/empirestrikesback/EmpireStrikesBack.java),
+[Red Baron](juno-examples/src/main/java/io/github/jabrena/juno/games/redbaron/RedBaron.java) and
+[Space Paranoids](juno-examples/src/main/java/io/github/jabrena/juno/games/spaceparanoids/SpaceParanoids.java)
 target the UNO Q:
 
 ```java
@@ -197,6 +197,32 @@ check reachability and failure diagnostics, assemble generated `.S` files with a
 Generates a Javadoc site for `juno` into `docs/javadocs/<version>/apidocs`,
 e.g. `docs/javadocs/0.1.0-SNAPSHOT/apidocs/index.html` (`juno-examples` is excluded, since it's
 example programs rather than library API).
+
+### Cyclomatic complexity
+
+The `cyclomatic-complexity` profile runs PMD's
+[CyclomaticComplexity](https://pmd.github.io/pmd/pmd_rules_java_design.html#cyclomaticcomplexity)
+rule on every module with the thresholds in
+[`pmd/pmd-cyclomatic-complexity.xml`](pmd/pmd-cyclomatic-complexity.xml) (methods above 25,
+classes above 70):
+
+```bash
+# Check: fails the build on any method or class over the thresholds
+./mvnw clean verify -Pcyclomatic-complexity
+
+# Report: the aggregate PMD report for all modules, cross-linked to the source
+./mvnw -Pcyclomatic-complexity -DskipTests site
+```
+
+The report is written to `target/site/pmd.html` (and per module to `<module>/target/site/pmd.html`).
+Serve it with the JDK's built-in web server, `jwebserver` (JDK 18+; it needs an absolute path),
+then open <http://127.0.0.1:8000/pmd.html>:
+
+```bash
+jwebserver -d "$(pwd)/target/site" -p 8000
+```
+
+Stop the server with `Ctrl+C`.
 
 ## References
 
