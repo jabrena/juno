@@ -310,8 +310,9 @@ class JunoCompilerTest {
 
         assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame");
         // A digit-only program reaches drawDigit/packWord/setPixel and nothing from the unused
-        // letter-glyph tables: locked at 18 (main + 17 helpers), far fewer than every glyph would pull in.
-        assertThat(result.report().reachableMethods()).isEqualTo(18);
+        // letter-glyph tables: locked at 20 (main + 19 helpers, including the LedMatrixDigits0to4/
+        // LedMatrixDigits5to9 shard dispatchers), far fewer than every glyph would pull in.
+        assertThat(result.report().reachableMethods()).isEqualTo(20);
     }
 
     @Test
