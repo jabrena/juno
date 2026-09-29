@@ -16,11 +16,12 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * screen, once per level. Each level changes the tube's shape (circle, square, star, clover) and
  * adds faster flippers. Three lives.
  *
- * <p>Every phase has its transition (see {@link Interludes}): the cover pulses a ring out to the rim
- * and hops the claw around it; each level's tube grows out of its vanishing point under a title card;
- * clearing a level shows a bonus card, then the claw rides down its lane as the rings rush in, like
- * the arcade's warp; the Superzapper sweeps a white ring through the tube; a lost claw shows how many
- * are left; and at game over the tube collapses before the final score. Then choose the pilot:
+ * <p>Every phase has its transition (see {@link Interludes}): chromatic rings race through the cover,
+ * the claw launches from the tube and circles the rim, and the title zooms into place; each level's
+ * tube grows out of its vanishing point under a title card; clearing a level shows a bonus card, then
+ * the claw rides down its lane as the rings rush in, like the arcade's warp; the Superzapper sweeps a
+ * white ring through the tube; a lost claw shows how many are left; and at game over the tube
+ * collapses before the final score. Then choose the pilot:
  * <b>HUMAN</b> to play yourself, or <b>CPU</b> to watch an autopilot that lets flippers climb into
  * view before sweeping onto whichever is closest to the rim, occasionally hesitating or misjudging
  * its lane, and firing the Superzapper when swarmed; tap the header during play to switch between the
@@ -48,12 +49,11 @@ public final class Tempest {
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
-        Interludes.cover(tube);
-        Controls.waitForTap();
-        Controls.choosePilot();
-        Random.seed(Clock.micros());
-
         while (true) {
+            Interludes.cover(tube);
+            Controls.waitForTap();
+            Controls.choosePilot();
+            Random.seed(Clock.micros());
             Session.newGame();
             boolean playing = true;
             while (playing) {

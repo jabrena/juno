@@ -8,6 +8,7 @@ import static io.github.jabrena.juno.api.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.io.Gpio;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ class MissileCommandTest {
     void newWave() {
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        Controls.autopilot = false;
         Random.seed(7);
         missiles = new int[Session.MISSILES * Session.T_STRIDE];
         shots = new int[Session.SHOTS * Session.T_STRIDE];
@@ -98,6 +100,24 @@ class MissileCommandTest {
         assertThat(callInt(Controls.class, "choiceAt", 200, 180)).isEqualTo(1);
         assertThat(callInt(Controls.class, "choiceAt", 120, 180)).isEqualTo(-1);
         assertThat(callInt(Controls.class, "choiceAt", 60, 40)).isEqualTo(-1);
+    }
+
+    @Test
+    void theCpuLabelStaysInsideTheHeader() {
+        TftTouchShield.fillScreen(TftTouchShield.BLACK);
+        Controls.autopilot = true;
+
+        Hud.drawHeader();
+
+        int pixelsBelowHeader = 0;
+        for (int y = Session.HEADER; y < Session.HEADER + 8; y++) {
+            for (int x = 0; x < Session.WIDTH; x++) {
+                if (Gpio.FRAMEBUFFER[y * Gpio.STRIDE + x] != TftTouchShield.BLACK) {
+                    pixelsBelowHeader = pixelsBelowHeader + 1;
+                }
+            }
+        }
+        assertThat(pixelsBelowHeader).isZero();
     }
 
     /**

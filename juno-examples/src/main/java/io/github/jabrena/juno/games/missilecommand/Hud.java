@@ -22,7 +22,7 @@ final class Hud {
         TftTouchShield.print(Session.best);
         TftTouchShield.setTextColor(Controls.autopilot ? TftTouchShield.MAGENTA : TftTouchShield.CYAN,
                 HEADER_BACKGROUND);
-        TftTouchShield.setCursor(190, 7);
+        TftTouchShield.setCursor(Controls.autopilot ? 166 : 190, 7);
         TftTouchShield.print("WAVE ");
         TftTouchShield.print(Session.wave);
         TftTouchShield.print(Controls.autopilot ? " CPU" : "");

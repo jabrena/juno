@@ -48,7 +48,7 @@ class GameScreenshotTest {
                 game("games.GameOfLife", "game-of-life", "500:120,160 end:6000"),
                 game("games.lunarlander.LunarLander", "lunar-lander", "500:120,190 1000:180,140 end:9000"),
                 game("games.missilecommand.MissileCommand", "missile-command",
-                        "600:120,160 1200:60,180 3000:60,120 3700:180,90 4100:120,150 end:4500"),
+                        "1700:120,160 2300:60,180 4100:60,120 4800:180,90 5200:120,150 end:5600"),
                 game("games.PacMan", "pacman", "500:120,160 end:6000"),
                 game("games.redbaron.RedBaron", "red-baron", "6500:160,130 7000:85,140 9500:160,130 9580:230,130 9660:260,130 9740:270,130 9820:270,130 end:9900"),
                 game("games.RockPaperScissorsLizardSpock", "rock-paper-scissors-lizard-spock",
@@ -59,7 +59,7 @@ class GameScreenshotTest {
                 game("games.sundance.Sundance", "sundance", "500:160,130 1000:230,140 end:9000"),
                 game("games.spaceparanoids.SpaceParanoids", "space-paranoids", "5500:160,130 6000:85,140 end:14500"),
                 game("games.starwars.StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
-                game("games.tempest.Tempest", "tempest", "1500:120,160 1900:200,180 end:8900"),
+                game("games.tempest.Tempest", "tempest", "2785:120,160 3185:200,180 end:10185"),
                 game("games.TexasHoldem", "texas-holdem", "500:120,300 end:6000"),
                 game("api.tft.TftTouchPaint", "tft-touch-paint", paintStrokes()));
     }

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
@@ -19,11 +19,11 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * {@value Session#CITY_BONUS} each; every {@value Session#BONUS_CITY_SCORE} points rebuilds a lost
  * city. The game ends when a wave finishes with no city standing.
  *
- * <p>The cover shows a strike already under way, then choose the pilot: <b>HUMAN</b> to play
- * yourself, or <b>CPU</b> to watch an autopilot that intercepts whichever warhead is closest to the
- * ground, leading its aim a little, hesitating and missing now and then, and never wasting a shot on
- * a warhead another interceptor is already heading for; tap the header during a wave to switch
- * between the two.
+ * <p>The cover animates two falling warheads, a rising interceptor, chain-reaction fireballs and a
+ * zooming title, then lets you choose the pilot: <b>HUMAN</b> to play yourself, or <b>CPU</b> to
+ * watch an autopilot that intercepts whichever warhead is closest to the ground, leading its aim a
+ * little, hesitating and missing now and then, and never wasting a shot on a warhead another
+ * interceptor is already heading for; tap the header during a wave to switch between the two.
  *
  * <p>The package is split by responsibility: {@link Session} owns the rules, score and record
  * layout; {@link Controls} owns touch input and pilot selection; {@link AutopilotMissileCommand} is
@@ -33,7 +33,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * circles); {@link Hud} and {@link Interludes} own the header and the non-gameplay screens. This
  * class only orchestrates the game loop.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoQ.class)
 public final class MissileCommand {
     private static final int FRAME_MILLIS = 20;
 
@@ -49,12 +49,11 @@ public final class MissileCommand {
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
-        Interludes.cover(alive, ammo);
-        Controls.waitForTap();
-        Controls.choosePilot();
-        Random.seed(Clock.micros());
-
         while (true) {
+            Interludes.cover(alive, ammo);
+            Controls.waitForTap();
+            Controls.choosePilot();
+            Random.seed(Clock.micros());
             Session.newGame(alive);
             boolean citiesStanding = true;
             while (citiesStanding) {

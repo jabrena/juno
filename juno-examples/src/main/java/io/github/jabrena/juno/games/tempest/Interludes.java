@@ -15,6 +15,13 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 final class Interludes {
     private static final int CRAWL_STRIDE = 2;
     private static final int CRAWL_MILLIS = 60;
+    private static final int LAUNCH_STEPS = 10;
+    private static final int LAUNCH_MILLIS = 35;
+    private static final int TITLE_MILLIS = 90;
+    private static final int TITLE_X = 8;
+    private static final int TITLE_Y = 32;
+    private static final int TITLE_WIDTH = 224;
+    private static final int TITLE_HEIGHT = 40;
     private static final int RIDE_STEPS = 10;
     private static final int RIDE_MILLIS = 40;
 
@@ -30,19 +37,31 @@ final class Interludes {
     private Interludes() {
     }
 
-    /**
-     * A self-contained cover: a ring pulses out from the tube's vanishing point to its rim, the web
-     * settles, and the claw hops once around the rim before the title appears.
-     */
+    /** A self-contained cover: chromatic pulses, a launched claw, and a title zoom. */
     static void cover(int[] tube) {
         Tube.build(0, tube);
         TftTouchShield.fillScreen(Hud.SPACE);
+        SceneRenderer.sweepRing(tube, 0, Tube.DEPTH, SceneRenderer.WARP);
+        SceneRenderer.sweepRing(tube, Tube.DEPTH, 0, SceneRenderer.FLIPPER_TIPS);
         SceneRenderer.sweepRing(tube, 0, Tube.DEPTH, SceneRenderer.LANE_HIGHLIGHT);
         SceneRenderer.drawWeb(tube, -1);
+        launchClaw(tube);
         crawlClaw(tube);
-        Hud.showCentered("TEMPEST", 40, 4, SceneRenderer.FLIPPER);
+        zoomTitle();
+        Hud.showCentered("TAP TO CHOOSE A PILOT", 278, 1, SceneRenderer.WARP);
         Hud.showCentered("Touch the rim to move and fire", 292, 1, TftTouchShield.WHITE);
         Hud.showCentered("Tap the center to superzap", 306, 1, TftTouchShield.WHITE);
+    }
+
+    /** A bright lane segment races out of the vanishing point and resolves into the claw. */
+    private static void launchClaw(int[] tube) {
+        int step = Tube.DEPTH / LAUNCH_STEPS;
+        for (int depth = 0; depth <= Tube.DEPTH; depth = depth + step) {
+            drawBar(tube, 0, depth, SceneRenderer.CLAW);
+            Delay.millis(LAUNCH_MILLIS);
+            drawBar(tube, 0, depth, Hud.SPACE);
+        }
+        SceneRenderer.drawWeb(tube, -1);
     }
 
     /** The claw hops around the rim in a few big strides, the way it will once you take hold of it. */
@@ -56,6 +75,20 @@ final class Interludes {
             SceneRenderer.drawClaw(tube, next, SceneRenderer.CLAW);
             lane = next;
         }
+    }
+
+    /** Four centered frames make the logo appear to fly out of the tube toward the player. */
+    private static void zoomTitle() {
+        titleFrame(1, 55, SceneRenderer.WARP);
+        titleFrame(2, 50, SceneRenderer.FLIPPER_TIPS);
+        titleFrame(3, 45, SceneRenderer.CLAW);
+        titleFrame(4, 40, SceneRenderer.FLIPPER);
+    }
+
+    private static void titleFrame(int size, int y, int color) {
+        TftTouchShield.fillRect(TITLE_X, TITLE_Y, TITLE_WIDTH, TITLE_HEIGHT, Hud.SPACE);
+        Hud.showCentered("TEMPEST", y, size, color);
+        Delay.millis(TITLE_MILLIS);
     }
 
     /** The next level's tube grows out from its vanishing point to the rim, then its web settles. */
@@ -128,6 +161,7 @@ final class Interludes {
         Hud.drawHeader();
         Hud.showCentered("GAME OVER", 150, 3, SceneRenderer.FLIPPER);
         Hud.showCenteredValue("FINAL SCORE ", Session.score, 190, 1, TftTouchShield.WHITE);
+        Hud.showCentered("TAP TO CONTINUE", 214, 1, SceneRenderer.WARP);
         Delay.millis(1500);
     }
 
