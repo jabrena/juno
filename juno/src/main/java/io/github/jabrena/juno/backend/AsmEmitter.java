@@ -91,7 +91,7 @@ final class AsmEmitter {
     /**
      * Calls an {@code extern "C"} runtime-shim function taking exactly {@code words.size()} plain
      * 32-bit AAPCS argument words (register args 0-3, any beyond that on a transient stack area) —
-     * the same overflow-to-stack mechanism as {@link CortexM4AsmBackend}'s calls between generated
+     * the same overflow-to-stack mechanism as {@link Thumb2AsmBackend}'s calls between generated
      * methods, generalized to sources that aren't necessarily a single whole {@link Value} (a wide
      * {@code long}/{@code double} argument supplies two of these, one low-word source and one
      * high-word source).

@@ -135,7 +135,7 @@ final class IntrinsicLowering {
         }
         Lowering lowering = lowerings.get(call.intrinsic());
         if (lowering == null) {
-            throw CortexM4AsmBackend.unsupported("intrinsic " + call.intrinsic());
+            throw Thumb2AsmBackend.unsupported("intrinsic " + call.intrinsic());
         }
         lowering.emit(output, frame, call);
     }

@@ -205,7 +205,7 @@ final class WideArithmeticLowering {
                 asm.store(output, frame, "r0", conversion.targetLow());
                 asm.store(output, frame, "r1", conversion.targetHigh());
             }
-            default -> throw CortexM4AsmBackend.unsupported(instruction.getClass().getSimpleName());
+            default -> throw Thumb2AsmBackend.unsupported(instruction.getClass().getSimpleName());
         }
     }
 

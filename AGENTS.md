@@ -57,8 +57,8 @@ generator that builds the documentation site published to `docs/`.
   subset (`BytecodeDecoder`). Extending this expands what Java syntax compiles.
 - `juno/src/main/java/io/github/jabrena/juno/linker/` – WRITE here: closed-world reachability,
   `Intrinsics` registry, `Descriptor` type checks.
-- `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `CortexM4AsmBackend`, the
-  sole code-generation backend (GNU ARM Cortex-M4 assembly plus its `extern "C"` C++ runtime shim).
+- `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `Thumb2AsmBackend`, the
+  sole code-generation backend (GNU ARM Thumb-2 assembly, shared by every board, plus its `extern "C"` C++ runtime shim).
   It drives codegen and delegates to package-private collaborators: `IntrinsicLowering` (intrinsic
   lowering as a table of shim-call specs), `RuntimeShim` (the shim, gated on the `ShimFeature`s the
   lowerings record) with its `ShimLibraries`/`NetworkShimLibraries` helper sources, `CoreRuntime`
