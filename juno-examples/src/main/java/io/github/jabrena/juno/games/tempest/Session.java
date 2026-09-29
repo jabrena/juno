@@ -141,7 +141,7 @@ final class Session {
     static void zapAllEnemies(int[] tube, int[] enemies) {
         for (int slot = 0; slot < ENEMIES; slot++) {
             if (enemies[slot * E_STRIDE + E_ACTIVE] != 0) {
-                killEnemy(tube, enemies, slot);
+                Enemies.killEnemy(tube, enemies, slot);
                 score = score + FLIPPER_POINTS;
             }
         }
@@ -179,7 +179,7 @@ final class Session {
             int base = e * E_STRIDE;
             if (enemies[base + E_ACTIVE] != 0 && enemies[base + E_LANE] == lane
                     && Math.abs(enemies[base + E_DEPTH] - depth) <= HIT_DEPTH) {
-                killEnemy(tube, enemies, e);
+                Enemies.killEnemy(tube, enemies, e);
                 score = score + FLIPPER_POINTS;
                 return true;
             }
@@ -221,7 +221,7 @@ final class Session {
         return hit;
     }
 
-    private static void fireBullet(int[] bullets, int lane, int depth) {
+    static void fireBullet(int[] bullets, int lane, int depth) {
         int slot = firstInactive(bullets, BULLETS, S_STRIDE);
         if (slot < 0) {
             return;
@@ -231,100 +231,6 @@ final class Session {
         bullets[base + S_LANE] = lane;
         bullets[base + S_DEPTH] = depth + ENEMY_HALF_DEPTH;
         bullets[base + S_SHOWN_X] = -1;
-    }
-
-    // ---- Enemies ----
-
-    static void spawnEnemies(int[] enemies) {
-        if (toSpawn == 0) {
-            return;
-        }
-        spawnCountdown = spawnCountdown - 1;
-        if (spawnCountdown > 0) {
-            return;
-        }
-        spawnCountdown = Math.max(20, Random.nextInt(40, 110) - level * 5);
-        int slot = firstInactive(enemies, ENEMIES, E_STRIDE);
-        if (slot < 0) {
-            return;
-        }
-        int base = slot * E_STRIDE;
-        enemies[base + E_ACTIVE] = 1;
-        enemies[base + E_LANE] = Random.nextInt(Tube.LANES);
-        enemies[base + E_DEPTH] = ENEMY_HALF_DEPTH + 8;
-        enemies[base + E_SHOWN_LANE] = -1;
-        enemies[base + E_ON_RIM] = 0;
-        enemies[base + E_TIMER] = Random.nextInt(20, 60);
-        toSpawn = toSpawn - 1;
-    }
-
-    /**
-     * Climbs, flips, fires and crawls; each enemy is redrawn on alternate frames. Returns true when
-     * a flipper grabs the claw.
-     */
-    static boolean moveEnemies(int[] tube, int[] enemies, int[] bullets, int frame) {
-        boolean caught = false;
-        for (int slot = 0; slot < ENEMIES; slot++) {
-            int base = slot * E_STRIDE;
-            if (enemies[base + E_ACTIVE] == 0 || ((slot + frame) & 1) != 0) {
-                continue;
-            }
-            if (enemies[base + E_ON_RIM] == 0) {
-                climb(enemies, bullets, base);
-            } else if (enemies[base + E_LANE] == playerLane) {
-                caught = onRimInPlayerLane(enemies, base) || caught;
-            } else {
-                crawlAlongRim(enemies, base);
-            }
-            SceneRenderer.drawEnemy(tube, enemies, slot);
-        }
-        return caught;
-    }
-
-    /** Climbs towards the rim; along the way it may veer a lane or fire back at you. */
-    private static void climb(int[] enemies, int[] bullets, int base) {
-        int timer = enemies[base + E_TIMER] - 1;
-        int depth = enemies[base + E_DEPTH] + climbSpeed * 2;
-        int lane = enemies[base + E_LANE];
-        if (depth >= RIM_DEPTH) {
-            depth = RIM_DEPTH;
-            enemies[base + E_ON_RIM] = 1;
-            timer = 8;
-        } else if (timer <= 0) {
-            timer = Random.nextInt(15, 50);
-            if (Random.nextInt(3) == 0) {
-                fireBullet(bullets, lane, depth);
-            } else {
-                lane = (lane + Tube.LANES + Random.nextInt(2) * 2 - 1) % Tube.LANES;
-            }
-        }
-        enemies[base + E_DEPTH] = depth;
-        enemies[base + E_LANE] = lane;
-        enemies[base + E_TIMER] = timer;
-    }
-
-    /** On the rim in your lane: a short grace period to shoot it, then it grabs you. */
-    private static boolean onRimInPlayerLane(int[] enemies, int base) {
-        int timer = enemies[base + E_TIMER] - 1;
-        enemies[base + E_TIMER] = timer;
-        return timer <= 0;
-    }
-
-    /** On the rim elsewhere: crawls a lane closer to you once its pause ends. */
-    private static void crawlAlongRim(int[] enemies, int base) {
-        int timer = enemies[base + E_TIMER] - 1;
-        if (timer > 0) {
-            enemies[base + E_TIMER] = timer;
-            return;
-        }
-        int lane = Tube.stepToward(enemies[base + E_LANE], playerLane);
-        enemies[base + E_LANE] = lane;
-        enemies[base + E_TIMER] = lane == playerLane ? 10 : Math.max(4, 14 - level);
-    }
-
-    private static void killEnemy(int[] tube, int[] enemies, int slot) {
-        enemies[slot * E_STRIDE + E_ACTIVE] = 0;
-        SceneRenderer.eraseEnemy(tube, enemies, slot);
     }
 
     // ---- Life loss ----
@@ -344,7 +250,7 @@ final class Session {
 
     // ---- Records ----
 
-    private static int firstInactive(int[] records, int slots, int stride) {
+    static int firstInactive(int[] records, int slots, int stride) {
         for (int slot = 0; slot < slots; slot++) {
             if (records[slot * stride] == 0) {
                 return slot;

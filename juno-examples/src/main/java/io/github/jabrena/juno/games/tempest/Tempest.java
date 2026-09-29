@@ -96,8 +96,8 @@ public final class Tempest {
                 superzap(tube, enemies, bullets);
             }
             Session.moveShots(tube, shots, enemies, bullets);
-            Session.spawnEnemies(enemies);
-            boolean caught = Session.moveEnemies(tube, enemies, bullets, frame);
+            Enemies.spawnEnemies(enemies);
+            boolean caught = Enemies.moveEnemies(tube, enemies, bullets, frame);
             if (Session.moveBullets(tube, bullets)) {
                 caught = true;
             }

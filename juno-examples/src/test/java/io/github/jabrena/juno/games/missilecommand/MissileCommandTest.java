@@ -54,7 +54,7 @@ class MissileCommandTest {
         blasts[base + Session.B_Y] = 150;
         blasts[base + Session.B_AGE] = 5;
         blasts[base + Session.B_RADIUS] = 5;
-        call(Session.class, "updateBlasts", missiles, blasts, alive, ammo);
+        call(Blasts.class, "updateBlasts", missiles, blasts, alive, ammo);
         assertThat(missiles[Session.T_ACTIVE]).isZero();
         assertThat(getInt(Session.class, "score")).isEqualTo(Session.MISSILE_POINTS);
     }
@@ -134,7 +134,7 @@ class MissileCommandTest {
             call(Session.class, "spawnEnemies", missiles, (Object) alive);
             call(Session.class, "moveShots", shots, blasts);
             call(Session.class, "moveMissiles", missiles, blasts, alive, ammo);
-            call(Session.class, "updateBlasts", missiles, blasts, alive, ammo);
+            call(Blasts.class, "updateBlasts", missiles, blasts, alive, ammo);
             if (callBoolean(Session.class, "waveOver", missiles, shots, blasts)) {
                 assertThat(callInt(Session.class, "countCities", (Object) alive))
                         .as("wave %d", wave).isPositive();

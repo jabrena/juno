@@ -115,8 +115,8 @@ class TempestTest {
                 call(Session.class, "zapAllEnemies", tube, enemies);
             }
             call(Session.class, "moveShots", tube, shots, enemies, bullets);
-            call(Session.class, "spawnEnemies", enemies);
-            boolean caught = callBoolean(Session.class, "moveEnemies", tube, enemies, bullets, frame);
+            call(Enemies.class, "spawnEnemies", enemies);
+            boolean caught = callBoolean(Enemies.class, "moveEnemies", tube, enemies, bullets, frame);
             if (callBoolean(Session.class, "moveBullets", tube, bullets)) {
                 caught = true;
             }

@@ -175,7 +175,7 @@ final class Session {
                 int target = missiles[base + T_TARGET];
                 SceneRenderer.eraseTrail(missiles, slot);
                 hitTarget(target, alive, ammo);
-                startBlast(blasts, targetX(target), targetY(target));
+                Blasts.startBlast(blasts, targetX(target), targetY(target));
                 continue;
             }
             int x = missiles[base + T_HEAD_X];
@@ -244,84 +244,9 @@ final class Session {
                 int y = shots[base + T_END_Y];
                 SceneRenderer.eraseTrail(shots, slot);
                 SceneRenderer.drawMarker(x, y, SceneRenderer.SKY);
-                startBlast(blasts, x, y);
+                Blasts.startBlast(blasts, x, y);
             }
         }
-    }
-
-    // ---- Explosions ----
-
-    private static void startBlast(int[] blasts, int x, int y) {
-        int slot = firstInactive(blasts, BLASTS, B_STRIDE);
-        if (slot < 0) {
-            return;
-        }
-        int base = slot * B_STRIDE;
-        blasts[base + B_ACTIVE] = 1;
-        blasts[base + B_X] = x;
-        blasts[base + B_Y] = y;
-        blasts[base + B_AGE] = 0;
-        blasts[base + B_RADIUS] = 0;
-    }
-
-    static void updateBlasts(int[] missiles, int[] blasts, boolean[] alive, int[] ammo) {
-        boolean groundTouched = false;
-        boolean headerTouched = false;
-        for (int slot = 0; slot < BLASTS; slot++) {
-            int base = slot * B_STRIDE;
-            if (blasts[base + B_ACTIVE] == 0) {
-                continue;
-            }
-            int x = blasts[base + B_X];
-            int y = blasts[base + B_Y];
-            int age = blasts[base + B_AGE] + 1;
-            blasts[base + B_AGE] = age;
-            int radius = blastRadius(age);
-            int shown = blasts[base + B_RADIUS];
-            if (age >= BLAST_LIFE) {
-                TftTouchShield.fillCircle(x, y, shown, SceneRenderer.SKY);
-                blasts[base + B_ACTIVE] = 0;
-                groundTouched = groundTouched || y + BLAST_RADIUS >= GROUND_Y - 16;
-                headerTouched = headerTouched || y - BLAST_RADIUS <= HEADER;
-                continue;
-            }
-            SceneRenderer.drawBlast(x, y, shown, radius, age);
-            blasts[base + B_RADIUS] = radius;
-
-            // Any warhead inside the fireball explodes too.
-            for (int m = 0; m < MISSILES; m++) {
-                int mBase = m * T_STRIDE;
-                if (missiles[mBase + T_ACTIVE] == 0) {
-                    continue;
-                }
-                int dx = missiles[mBase + T_HEAD_X] - x;
-                int dy = missiles[mBase + T_HEAD_Y] - y;
-                if (dx * dx + dy * dy <= radius * radius) {
-                    int headX = missiles[mBase + T_HEAD_X];
-                    int headY = missiles[mBase + T_HEAD_Y];
-                    SceneRenderer.eraseTrail(missiles, m);
-                    addScore(MISSILE_POINTS * multiplier(), alive);
-                    Hud.drawHeader();
-                    startBlast(blasts, headX, headY);
-                }
-            }
-        }
-        if (groundTouched) {
-            SceneRenderer.drawGround(alive, ammo);
-        }
-        if (headerTouched) {
-            Hud.drawHeader();
-        }
-    }
-
-    private static int blastRadius(int age) {
-        if (age <= BLAST_RADIUS) {
-            return age;
-        }
-        if (age <= BLAST_RADIUS + BLAST_HOLD) {
-            return BLAST_RADIUS;
-        }
-        return Math.max(0, BLAST_LIFE - age);
     }
 
     // ---- Targets ----
@@ -352,7 +277,7 @@ final class Session {
         }
     }
 
-    private static int firstInactive(int[] records, int slots, int stride) {
+    static int firstInactive(int[] records, int slots, int stride) {
         for (int slot = 0; slot < slots; slot++) {
             if (records[slot * stride] == 0) {
                 return slot;

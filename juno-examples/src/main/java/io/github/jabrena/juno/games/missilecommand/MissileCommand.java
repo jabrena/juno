@@ -92,7 +92,7 @@ public final class MissileCommand {
             Session.spawnEnemies(missiles, alive);
             Session.moveShots(shots, blasts);
             Session.moveMissiles(missiles, blasts, alive, ammo);
-            Session.updateBlasts(missiles, blasts, alive, ammo);
+            Blasts.updateBlasts(missiles, blasts, alive, ammo);
 
             if (Session.waveOver(missiles, shots, blasts)) {
                 return;
