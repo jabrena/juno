@@ -2,6 +2,7 @@ package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.board.Capability;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.Set;
  */
 final class RuntimeShim {
     private final Board board;
+    private final CoreRuntime core;
     private final boolean gcLoggingEnabled;
     private final Set<ShimFeature> features;
     private final Set<Intrinsic> usedMath;
@@ -27,13 +29,15 @@ final class RuntimeShim {
     private final int watchdogTimeoutMillis;
 
     /**
+     * @param core {@code board}'s per-core runtime glue (see {@link CoreRuntime#of})
      * @param features every optional shim feature the lowered program uses
      * @param usedMath every {@code java.lang.Math} intrinsic the lowered program calls
      * @param watchdogTimeoutMillis the entry point's {@code @Watchdog} timeout, if it has one
      */
-    RuntimeShim(Board board, boolean gcLoggingEnabled, Set<ShimFeature> features, Set<Intrinsic> usedMath,
-                List<String> throwableClasses, Optional<Integer> watchdogTimeoutMillis) {
+    RuntimeShim(Board board, CoreRuntime core, boolean gcLoggingEnabled, Set<ShimFeature> features,
+                Set<Intrinsic> usedMath, List<String> throwableClasses, Optional<Integer> watchdogTimeoutMillis) {
         this.board = board;
+        this.core = core;
         this.gcLoggingEnabled = gcLoggingEnabled;
         this.features = features;
         this.usedMath = usedMath;
@@ -58,7 +62,7 @@ final class RuntimeShim {
                 #define JUNO_ASM_ABI
                 #endif
                 """.replace("${JUNO_LED_MATRIX_INCLUDE}",
-                board.hasLedMatrix() ? "#include \"Arduino_LED_Matrix.h\"\n" : ""));
+                board.supports(Capability.LED_MATRIX) ? "#include \"Arduino_LED_Matrix.h\"\n" : ""));
         appendIncludes(shim);
         shim.append(coreRuntime());
         appendHelpers(shim);
@@ -142,7 +146,7 @@ final class RuntimeShim {
                 ? "\nextern \"C\" void juno_watchdog_begin() {\n  WDT.begin(" + watchdogTimeoutMillis + "u);\n}\n"
                 : "";
         String ledMatrixFunctions = ledMatrixFunctions();
-        String yieldFunction = yieldFunction();
+        String yieldFunction = core.yieldFunction();
         return """
 
                 ${JUNO_YIELD_FUNCTION}extern "C" [[noreturn]] void juno_panic() {
@@ -465,7 +469,7 @@ final class RuntimeShim {
     private String ledMatrixFunctions() {
         // The LED matrix helpers need the UNO R4's Arduino_LED_Matrix library; the linker already
         // rejects LedMatrix calls on boards without one, so they are left out there.
-        return !board.hasLedMatrix() ? "" : """
+        return !board.supports(Capability.LED_MATRIX) ? "" : """
                 static ArduinoLEDMatrix juno_led_matrix;
 
                 extern "C" void juno_led_matrix_begin() {
@@ -484,44 +488,6 @@ final class RuntimeShim {
                 extern "C" void juno_led_matrix_clear() {
                   const uint32_t frame[3] = {0, 0, 0};
                   juno_led_matrix.loadFrame(frame);
-                }
-
-                """;
-    }
-
-    private String yieldFunction() {
-        return board.zephyrCore() ? """
-                // The Zephyr core provides yield() itself (the generated assembly's `bl yield` reaches
-                // it directly) but inlines delay() and delayMicroseconds(), so the assembly calls them
-                // through these wrappers instead.
-                extern "C" void juno_delay(uint32_t ms) {
-                  delay(ms);
-                }
-
-                extern "C" void juno_delay_microseconds(uint32_t us) {
-                  delayMicroseconds(us);
-                }
-
-                """ : """
-                // Overrides the core's weak yield(): Serial's bool conversion is UNO R4's supported hook
-                // into TinyUSB's tud_task(), so this keeps USB serviced from every yield() call site
-                // (delay() and, per the generated assembly, every loop backedge — see
-                // CortexM4AsmBackend's own `bl yield` emission) — not just programs that call Serial
-                // directly. The core's first successful Serial bool conversion itself calls delay(10),
-                // which calls yield() again before that first conversion is marked complete. Guard that
-                // one nested call or USB connection timing turns the first yield into unbounded recursion
-                // and eventual stack exhaustion. Declared extern "C" so it resolves under the plain
-                // "yield" symbol the generated assembly's `bl yield` branches to directly.
-                static bool juno_yield_active = false;
-
-                extern "C" void yield() {
-                  ${JUNO_WATCHDOG_REFRESH}
-                #ifndef NO_USB
-                  if (juno_yield_active) return;
-                  juno_yield_active = true;
-                  static_cast<void>(static_cast<bool>(Serial));
-                  juno_yield_active = false;
-                #endif
                 }
 
                 """;
