@@ -136,10 +136,10 @@ attempts). Confirmed running on a real UNO R4 WiFi with this shield.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Chess
+  -Djuno.main=io.github.jabrena.juno.games.chess.Chess
 ```
 
-[`Chess`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Chess.java) plays you
+[`Chess`](../juno-examples/src/main/java/io/github/jabrena/juno/games/chess/Chess.java) plays you
 (White) against a small built-in engine (Black). Pieces are 20x20 bitmaps shaped like the Unicode
 chess symbols, streamed with `beginPixels`/`pushPixel`. Tap one of your pieces to see its legal
 destinations, then tap one to move; `UNDO` takes back your last move together with the engine's reply (repeatable
@@ -153,10 +153,10 @@ logged to Serial. Its move generator matches the standard perft reference counts
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Blackjack
+  -Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack
 ```
 
-[`Blackjack`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Blackjack.java) plays
+[`Blackjack`](../juno-examples/src/main/java/io/github/jabrena/juno/games/blackjack/Blackjack.java) plays
 against the dealer on a green felt table: set your bet with `-`/`+` and `DEAL`, then `HIT`, `STAND`
 or `DBL` (double down on your first two cards). The dealer stands on all 17s, blackjack pays 3:2,
 and ties push; splitting and insurance are not offered. You start with 100 chips (refilled when you
@@ -165,10 +165,10 @@ run out), and a single 52-card deck is reshuffled when fewer than 15 cards remai
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Battleship
+  -Djuno.main=io.github.jabrena.juno.games.battleship.Battleship
 ```
 
-[`Battleship`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks.
+[`Battleship`](../juno-examples/src/main/java/io/github/jabrena/juno/games/battleship/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \

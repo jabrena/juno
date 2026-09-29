@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games;
+package io.github.jabrena.juno.games.texasholdem;
 
 import static io.github.jabrena.juno.api.tft.Internals.call;
 import static io.github.jabrena.juno.api.tft.Internals.callInt;
@@ -36,7 +36,7 @@ class CardGamesTest {
             for (int i = 0; i < 7; i++) {
                 work[17 + i] = cards[i];
             }
-            scores[hand] = callInt(TexasHoldem.class, "evaluate", work, 7);
+            scores[hand] = callInt(HandEvaluator.class, "evaluate", work, 7);
             reference[hand] = bestOfSeven(cards);
             categories[scores[hand] >> 20] = categories[scores[hand] >> 20] + 1;
             assertThat(scores[hand] >> 20).as("category of %s", Arrays.toString(cards))
@@ -59,10 +59,10 @@ class CardGamesTest {
         set(TexasHoldem.class, "boardCount", 0);
         cards[54] = 0;
         cards[55] = 13;
-        float aces = (float) call(TexasHoldem.class, "equity", cards, work, 1, 1);
+        float aces = (float) call(Players.class, "equity", cards, work, 1, 1);
         cards[54] = 6;
         cards[55] = 14;
-        float sevenTwo = (float) call(TexasHoldem.class, "equity", cards, work, 1, 1);
+        float sevenTwo = (float) call(Players.class, "equity", cards, work, 1, 1);
         assertThat(aces).as("pocket aces heads-up").isBetween(0.78f, 0.92f);
         assertThat(sevenTwo).as("seven-two offsuit heads-up").isBetween(0.25f, 0.42f);
     }
@@ -93,9 +93,9 @@ class CardGamesTest {
         int allIns = 0;
         for (int game = 0; game < 8; game++) {
             int[] seats = new int[24];
-            call(TexasHoldem.class, "newGame", seats);
+            call(Table.class, "newGame", seats);
             for (int hand = 0; hand < 60; hand++) {
-                call(TexasHoldem.class, "playHand", cards, seats, work);
+                call(Table.class, "playHand", cards, seats, work);
                 int total = 0;
                 for (int seat = 0; seat < 4; seat++) {
                     assertThat(seats[seat]).isNotNegative();
@@ -106,7 +106,7 @@ class CardGamesTest {
                     }
                 }
                 assertThat(total).as("chips on the table, game %d hand %d", game, hand).isEqualTo(4000);
-                if (seats[0] == 0 || callInt(TexasHoldem.class, "alive", (Object) seats) == 1) {
+                if (seats[0] == 0 || callInt(Deck.class, "alive", (Object) seats) == 1) {
                     break;
                 }
             }

@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.api.tft;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -9,7 +11,7 @@ import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-/** Writes emulator frames on demand; ffmpeg turns these generated test artifacts into documentation media. */
+/** Writes fresh emulator frames on demand; ffmpeg turns them into documentation media. */
 class GameRecordingTest {
     @Test
     @EnabledIfSystemProperty(named = "juno.recording.game", matches = ".+")
@@ -20,10 +22,19 @@ class GameRecordingTest {
         int interval = Integer.getInteger("juno.recording.interval", 100);
         Path output = Path.of(System.getProperty("basedir", "."), "target", "recordings", game);
         Files.createDirectories(output);
+        clearFrames(output);
         List<BufferedImage> frames = TftEmulator.record(
                 "io.github.jabrena.juno." + game, duration, interval, taps(script));
         for (int index = 0; index < frames.size(); index++) {
             ImageIO.write(frames.get(index), "png", output.resolve("frame-%05d.png".formatted(index)).toFile());
+        }
+    }
+
+    private static void clearFrames(Path output) throws IOException {
+        try (DirectoryStream<Path> frames = Files.newDirectoryStream(output, "frame-*.png")) {
+            for (Path frame : frames) {
+                Files.delete(frame);
+            }
         }
     }
 

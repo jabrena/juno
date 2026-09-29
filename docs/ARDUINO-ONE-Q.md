@@ -106,7 +106,7 @@ loaded by the board's Zephyr firmware.
 | `Delay`, `Clock` and `Random` | Yes | Uses Arduino/Zephyr timing support |
 | `Serial` | Yes | Uses the MCU sketch's serial path |
 | LCD keypad and TFT touch shields | Yes | Built on GPIO, timing and analog input |
-| TFT games | Yes | Star Wars, Empire Strikes Back, Red Baron, Star Trek and Space Paranoids target UNO Q |
+| TFT games | Yes | Chess and Battleship support UNO Q and UNO R4 WiFi; Star Wars, Empire Strikes Back, Red Baron, Star Trek and Space Paranoids target UNO Q |
 | Onboard LED matrix | No | The UNO Q matrix belongs to the Linux side |
 | Juno Wi-Fi/HTTP APIs | No | Current intrinsics target the UNO R4 WiFi libraries |
 | `@Watchdog` | No | Currently implemented only for the UNO R4 WiFi |

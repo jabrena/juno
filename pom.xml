@@ -77,7 +77,7 @@
         <profile>
             <id>cyclomatic-complexity</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <build>
                 <plugins>

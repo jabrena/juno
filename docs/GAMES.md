@@ -150,24 +150,42 @@ Turn-based games against a computer opponent that searches ahead.
 
 ### Chess
 
-<img src="images/games/chess.png" alt="Chess on the TFT shield" width="240">
+<img src="videos/games/chess-cpu.gif" alt="Chess on the TFT shield, played by the CPU" width="240">
 
-You play White against a 3-ply engine. Tap a piece to see its legal moves, then a destination; `UNDO` takes back a move pair and `NEW` starts over. Castling, en passant, promotion, check, checkmate and stalemate are all handled.
+An animated board assembles beneath a centered, pulsing title, then loops after 60 seconds until tapped. Choose **HUMAN** to play White against the 3-ply engine, or **CPU** to watch the same engine play both colors; tap the header during a human game to hand White to the CPU. Tap a piece to see its legal moves, then a destination; `UNDO` takes back a move pair and `NEW` starts over. Castling, en passant, promotion, check, checkmate and stalemate are handled. A finished match shows its result briefly, then returns to the animated title. The full three-minute GIF explicitly shows the title, CPU selection, a complete match and the return to the title. Chess supports both UNO Q and UNO R4 WiFi; select the connected board explicitly.
 
 ```bash
+# Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Chess
+  -Djuno.main=io.github.jabrena.juno.games.chess.Chess \
+  -Djuno.board=arduino-uno-q
+```
+
+```bash
+# Arduino UNO R4 WiFi
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.chess.Chess \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ### Battleship
 
-<img src="images/games/battleship.png" alt="Battleship on the TFT shield" width="240">
+<img src="videos/games/battleship-cpu.gif" alt="Battleship on the TFT shield, played by the CPU" width="240">
 
-Random fleets on 10x10 grids. Tap the large enemy grid to fire; your fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard and follows lines of hits.
+The cover opens with a radar sweep, incoming shells and a centered, color-cycling title, repeating after the 60-second attract timeout. Choose **HUMAN** to fire on the large enemy grid, or **CPU** to watch two commanders exchange salvos; the small grid shows your fleet and the opponent's shots. The targeting AI hunts on a checkerboard, follows adjacent hits and extends a discovered line until the ship sinks. Destroying either random fleet ends the game and returns to the title. The three-minute GIF shows the title, CPU selection, a complete battle and the return to the title. Battleship supports both UNO Q and UNO R4 WiFi; select the connected board explicitly.
 
 ```bash
+# Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Battleship
+  -Djuno.main=io.github.jabrena.juno.games.battleship.Battleship \
+  -Djuno.board=arduino-uno-q
+```
+
+```bash
+# Arduino UNO R4 WiFi
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.battleship.Battleship \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ## Cards and casino
@@ -176,24 +194,42 @@ Card games and games of chance, played for chips or credits only.
 
 ### Blackjack
 
-<img src="images/games/blackjack.png" alt="Blackjack on the TFT shield" width="240">
+<img src="videos/games/blackjack-cpu.gif" alt="Blackjack on the TFT shield, played by the CPU" width="240">
 
-Set your bet with `-`/`+` and `DEAL`, then `HIT`, `STAND` or `DBL` (double down). The dealer stands on all 17s and blackjack pays 3:2. You start with 100 chips.
+Cards fan across green felt while chips orbit the centered, animated title; the cover repeats after 60 seconds until tapped. Choose **HUMAN** to set the bet with `-`/`+` and `DEAL`, then use `HIT`, `STAND` or `DBL`, or choose **CPU** to watch an automated player hit below 17 and double suitable 9–11 totals. The dealer stands on all 17s and blackjack pays 3:2. You start with 100 chips; losing the bankroll ends the session and returns to the title. The four-minute GIF shows the title, CPU selection, a complete session and the return to the title. Blackjack supports both UNO Q and UNO R4 WiFi; select the connected board explicitly.
 
 ```bash
+# Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Blackjack
+  -Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack \
+  -Djuno.board=arduino-uno-q
+```
+
+```bash
+# Arduino UNO R4 WiFi
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ### Texas Hold'em
 
-<img src="images/games/texas-holdem.png" alt="Texas Hold'em on the TFT shield" width="240">
+<img src="videos/games/texas-holdem-cpu.gif" alt="Texas Hold'em on the TFT shield, played by the CPU" width="240">
 
-No-limit Hold'em against three computer players (Ann plays tight, Bob loose, Cal aggressive), 1000 chips each, with blinds doubling every eight hands. `FOLD`, `CHECK`/`CALL`, or set an amount with `-`/`+`/`ALL` and `BET`/`RAISE`. Side pots are handled. The computer players estimate their chances by dealing out the unknown cards at random.
+The animated cover fans three cards over a moving chip rack beneath centered `TEXAS HOLD'EM` and `NO LIMIT` lines, and loops on the 60-second timeout. Choose **HUMAN** to take the fourth seat or **CPU** to let all four seats play automatically. No-limit Hold'em starts everyone with 1000 chips and doubles the blinds every eight hands. Use `FOLD`, `CHECK`/`CALL`, or set an amount with `-`/`+`/`ALL` and `BET`/`RAISE`; side pots are handled. Ann plays tight, Bob loose and Cal aggressive, while every CPU estimates its equity by repeatedly dealing the unknown cards. Going broke or winning every chip ends the tournament and returns to the cover. The six-minute, forty-second GIF runs through the title, CPU selection and an entire tournament, ending only after the title returns. Texas Hold'em supports both UNO Q and UNO R4 WiFi; select the connected board explicitly.
 
 ```bash
+# Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.TexasHoldem
+  -Djuno.main=io.github.jabrena.juno.games.texasholdem.TexasHoldem \
+  -Djuno.board=arduino-uno-q
+```
+
+```bash
+# Arduino UNO R4 WiFi
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.texasholdem.TexasHoldem \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ## Testing without the board

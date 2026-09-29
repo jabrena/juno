@@ -39,9 +39,9 @@ class GameScreenshotTest {
      */
     static Stream<Arguments> games() {
         return Stream.of(
-                game("games.Battleship", "battleship", "500:120,160 end:6000"),
-                game("games.Blackjack", "blackjack", "500:190,280 end:3000"),
-                game("games.Chess", "chess", "500:134,226 900:134,170 end:8000"),
+                game("games.battleship.Battleship", "battleship", "35000:120,160 50000:180,170 end:70000"),
+                game("games.blackjack.Blackjack", "blackjack", "35000:120,160 50000:180,170 end:70000"),
+                game("games.chess.Chess", "chess", "35000:120,160 50000:180,170 end:70000"),
                 game("games.empirestrikesback.EmpireStrikesBack", "empire-strikes-back", "6000:160,130 6500:85,140 10200:200,150 end:10600"),
                 game("games.lunarlander.LunarLander", "lunar-lander", "500:120,190 1000:180,140 end:9000"),
                 game("games.missilecommand.MissileCommand", "missile-command",
@@ -53,7 +53,7 @@ class GameScreenshotTest {
                 game("games.spaceparanoids.SpaceParanoids", "space-paranoids", "5500:160,130 6000:85,140 end:14500"),
                 game("games.starwars.StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
                 game("games.tempest.Tempest", "tempest", "2785:120,160 3185:200,180 end:10185"),
-                game("games.TexasHoldem", "texas-holdem", "500:120,300 end:6000"),
+                game("games.texasholdem.TexasHoldem", "texas-holdem", "35000:120,160 50000:180,170 end:70000"),
                 game("api.tft.TftTouchPaint", "tft-touch-paint", paintStrokes()));
     }
 
@@ -107,7 +107,7 @@ class GameScreenshotTest {
                         Integer.parseInt(xy[1])));
             }
         }
-        // Programs are named relative to io.github.jabrena.juno, e.g. games.Chess or api.tft.TftTouchPaint.
+        // Programs are relative to io.github.jabrena.juno, e.g. games.chess.Chess or api.tft.TftTouchPaint.
         String mainClass = "io.github.jabrena.juno." + game;
         return TftEmulator.run(mainClass, end, taps);
     }
