@@ -121,7 +121,7 @@ arduino-cli compile \
 ```
 
 Uploading changes the firmware on a connected physical board. Find the port with
-`arduino-cli board list` and follow the upload procedure in [ARDUINO.md](/arduino).
+`arduino-cli board list` and follow the upload procedure in [ARDUINO.md](../arduino).
 
 ## Juno compatibility
 

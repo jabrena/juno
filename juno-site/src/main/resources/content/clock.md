@@ -74,13 +74,13 @@ only measures time — it never pauses execution.
 The repository's
 [Pomodoro timer](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/pomodoro/RunPomodoro.java)
 uses the same pattern for real: `Clock.millis()` is its sole time source for a countdown displayed
-on an [`LcdKeypadShield`](/lcd-keypad-shield), so the displayed time stays accurate regardless of
+on an [`LcdKeypadShield`](../lcd-keypad-shield), so the displayed time stays accurate regardless of
 how long each tick's own display/print work takes.
 
 ## Measuring how long something took
 
 `Clock.micros()` is precise enough to profile a routine's execution time directly on the board,
-which is useful when [`Serial`](/serial) is the only visibility into a running program:
+which is useful when [`Serial`](../serial) is the only visibility into a running program:
 
 ```java
 int start = Clock.micros();

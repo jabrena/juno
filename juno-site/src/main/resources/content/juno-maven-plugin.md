@@ -7,7 +7,7 @@ layout: page
 [`juno-maven-plugin`](https://github.com/jabrena/juno/tree/main/juno-maven-plugin) is the Maven integration for Juno. It turns compiling
 a Java entry point into a sketch, verifying it with `arduino-cli`, uploading it, and opening the
 serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle needs no hand-written
-`arduino-cli` invocations. See [docs/ARDUINO.md](/arduino) for installing `arduino-cli` itself.
+`arduino-cli` invocations. See [docs/ARDUINO.md](../arduino) for installing `arduino-cli` itself.
 
 ## Goals
 
@@ -54,12 +54,12 @@ can be selected without editing the POM.
 |---|---|---|---|
 | `juno.main` | `compile`, `verify`, `upload` | *(required)* | Fully qualified entry-point class. |
 | `juno.outputDirectory` | `compile`, `verify`, `upload` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
-| `juno.gcLog` | `compile`, `verify`, `upload` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](/features)). |
+| `juno.gcLog` | `compile`, `verify`, `upload` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../features)). |
 | `juno.board` | `compile`, `verify`, `upload` | *(required only if `@Board` declares more than one board)* | Which declared board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`). |
 | `juno.arduinoCli` | `verify`, `upload`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `upload`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `upload`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
-| `juno.baudRate` | `monitor` | `115200` | Must match the program's `Serial.begin(...)` rate (see [docs/SERIAL.md](/serial)). |
+| `juno.baudRate` | `monitor` | `115200` | Must match the program's `Serial.begin(...)` rate (see [docs/SERIAL.md](../serial)). |
 | `juno.envFile` | `env` | `${project.basedir}/.env` | The `KEY=VALUE` file to export. |
 
 Every property can be set in `<configuration>` or passed with `-D` on the command line; `-D`
@@ -92,7 +92,7 @@ the same port logic as `upload` and defaults to the baud rate every `juno-exampl
 
 `juno:env` is a Maven-level alternative to exporting shell environment variables by hand for
 programs that call `System.getenv(...)` (Wi-Fi SSID/password, hosts, paths — see
-[docs/INTERNET.md](/internet)). It reads `.env` (`KEY=VALUE` per line, git-ignored, never
+[docs/INTERNET.md](../internet)). It reads `.env` (`KEY=VALUE` per line, git-ignored, never
 committed) from the module's base directory and exports each entry into the real process
 environment before `juno:compile` runs in the same JVM:
 
@@ -102,7 +102,7 @@ JUNO_WIFI_PASSWORD=your-network-password
 ```
 
 A missing `.env` file is not an error — nothing is exported, and modules that don't need it are
-unaffected. See [docs/INTERNET.md](/internet#alternative-a-env-file-via-juno-maven-plugin) for
+unaffected. See [docs/INTERNET.md](../internet#alternative-a-env-file-via-juno-maven-plugin) for
 the full explanation, including the `--add-opens` JVM flags this goal needs (already configured in
 [`.mvn/jvm.config`](https://github.com/jabrena/juno/blob/main/.mvn/jvm.config)).
 

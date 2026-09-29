@@ -15,11 +15,11 @@ UNO R4 WiFi's RA4M1 (Cortex-M4), and the Zephyr core for the UNO Q's STM32U585 m
 
 **Arduino UNO Q**
 
-![](/images/boards/arduino-one-q.png)
+![](../images/boards/arduino-one-q.png)
 
 **Arduino UNO R4 WiFi**
 
-![](/images/boards/arduino-one-r4-wifi.png)
+![](../images/boards/arduino-one-r4-wifi.png)
 
 This repository contains a working v0.1 compiler, not a JVM interpreter. The first milestone
 supports 32-bit integer code, static methods, branches, loops, and GPIO/time intrinsics. It can
@@ -63,7 +63,7 @@ This builds all three modules: `juno/target/juno-0.1.0-SNAPSHOT.jar` (the compil
 API), `juno-maven-plugin/target/juno-maven-plugin-0.1.0-SNAPSHOT.jar` (the Maven integration), and
 `juno-examples/target/classes` (the compiled example programs). To turn an example into a
 `.ino` sketch and run it on real UNO R4 WiFi or UNO Q hardware with `arduino-cli`, see
-[docs/ARDUINO.md](/arduino). The UNO Q also needs Arduino's Zephyr core:
+[docs/ARDUINO.md](../arduino). The UNO Q also needs Arduino's Zephyr core:
 `arduino-cli core install arduino:zephyr`.
 
 Use the following commands for the complete `Blink` workflow:
@@ -114,10 +114,10 @@ See the [Javadoc](https://jabrena.github.io/juno/javadocs/0.1.0-SNAPSHOT/apidocs
 for the complete Java API reference.
 
 For Wi-Fi connections, HTTP/HTTPS REST calls, and bounded JSON response extraction, see the
-[Internet access guide](/internet). Credentials can be resolved at compile time or loaded
-from an SD card as described in the [SD-card configuration guide](/storage). For sending and reading email
-(`Smtp`/`Pop3Client`), see [docs/EMAIL.md](/email). For how these API classes work
-internally, and the checklist for adding a new one, see [docs/APIS.md](/apis).
+[Internet access guide](../internet). Credentials can be resolved at compile time or loaded
+from an SD card as described in the [SD-card configuration guide](../storage). For sending and reading email
+(`Smtp`/`Pop3Client`), see [docs/EMAIL.md](../email). For how these API classes work
+internally, and the checklist for adding a new one, see [docs/APIS.md](../apis).
 
 ### Target board
 
@@ -150,7 +150,7 @@ public final class RedBaron {
 
 Juno deliberately fails at link time when reachable code uses something outside the current
 subset. Diagnostics identify the method, bytecode offset, and unsupported opcode. See
-[docs/FEATURES.md](/features) for the full, up-to-date inventory of what's supported and
+[docs/FEATURES.md](../features) for the full, up-to-date inventory of what's supported and
 what isn't.
 
 Before generating or uploading a sketch, inspect conservative runtime-risk and resource estimates:

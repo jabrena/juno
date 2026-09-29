@@ -29,9 +29,9 @@
   <meta name="twitter:description" content="How the Java-facing hardware API classes are wired to compiler intrinsics, and the checklist for adding a new one.">
 
   <!-- SEO URL -->
-  <link rel="canonical" href="https://jabrena.github.io/juno/apis/" />
-  <meta property="og:url" content="https://jabrena.github.io/juno/apis/" />
-  <meta name="twitter:url" content="https://jabrena.github.io/juno/apis/">
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/apis/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/apis/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/apis/">
 
   <!-- SEO TYPE -->
   <meta property="og:type" content="website" />
@@ -45,7 +45,7 @@
 
 <!-- Favicon -->
 
-<base href="/apis/">
+<base href="/juno/apis/">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -54,8 +54,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
 
 
-    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
-      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+    <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
 
 </head>
 <body >
@@ -75,31 +75,31 @@
 <section class="menu">
   <h3 class="section-title menu-title">MENU</h3>
   <ul>
-    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
-    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
-    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
-    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li><a class="" href="/juno/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
     <li class="menu-group"><span>Boards</span></li>
-    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
-    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
-    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
-    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
-    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/juno/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/juno/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/juno/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/juno/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
     <li class="menu-group"><span>Hardware APIs</span></li>
-    <li><a class="active" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
-    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
-    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
-    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
-    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
-    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
-    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
-    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li><a class="active" href="/juno/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/juno/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
     <li class="menu-group"><span>Shields</span></li>
-    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
-    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li><a class="" href="/juno/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/juno/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
     <li class="menu-group"><span>Tooling</span></li>
-    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
-    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="/juno/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
     <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
   </ul>
 </section>
@@ -142,7 +142,7 @@
 checklist for <em>creating</em> a new one. It uses <code>HttpClient</code> as the running example throughout,
 because it is small, already has both a plain-Java-adjacent sibling (<code>HttpsClient</code>) and a
 non-trivial argument shape (mixed <code>String</code>/<code>byte[]</code>/<code>int[]</code> parameters), and is documented in full
-end-user detail in <a href="/internet">the Internet access guide</a>.</p>
+end-user detail in <a href="../internet">the Internet access guide</a>.</p>
 <h2 id="what-an-api-class-actually-is">What an API class actually is</h2>
 <p>There is no JVM on the board, so a method like <code>HttpClient.get(...)</code> never runs as real Java.
 Every operation Juno recognizes is declared as a <code>public static native</code> method:</p>
@@ -230,7 +230,7 @@ exposing the firmware, and clear exported variables when they are no longer need
 <h3 id="buffers-are-caller-owned-forever">Buffers are caller-owned, forever</h3>
 <p>Juno has no general heap — every <code>new T[N]</code> (<code>N</code> a compile-time constant) is allocated from a
 fixed, program-lifetime arena reclaimed by a conservative mark/sweep collector (see
-<a href="/features">docs/FEATURES.md</a>). Declaring a fresh response buffer inside <code>while (true)</code> still
+<a href="../features">docs/FEATURES.md</a>). Declaring a fresh response buffer inside <code>while (true)</code> still
 works, but it churns the arena on every iteration for no reason; declare it once, outside the loop,
 and reuse it:</p>
 <pre><code class="language-java">byte[] response = new byte[512];
@@ -243,7 +243,7 @@ while (true) {
 <h3 id="result-codes-are-just-documented-conventions">Result codes are just documented conventions</h3>
 <p>There is no exception mechanism here — every intrinsic reports success/failure through its
 returned <code>int</code>. <code>HttpClient.get</code> returns <code>-1</code> for a failed TCP connection, <code>0</code> for an empty body,
-or the number of body bytes captured; <code>Smtp.send</code> (see <a href="/email">docs/EMAIL.md</a>) instead uses a
+or the number of body bytes captured; <code>Smtp.send</code> (see <a href="../email">docs/EMAIL.md</a>) instead uses a
 distinct negative code per failing protocol step. Each API's Javadoc is the source of truth for
 its own codes — read it before assuming <code>&lt; 0</code> always means the same thing across different APIs.</p>
 <h2 id="anatomy-of-an-api-piece-by-piece">Anatomy of an API, piece by piece</h2>
@@ -347,21 +347,21 @@ pipeline (<code>CompilerTestSupport.compileJava</code> + <code>compileJuno</code
 assembly/shim text — see <code>lowersEmailIntrinsics</code>.</li>
 <li>If the API needs a third-party Arduino library not bundled with <code>arduino:renesas_uno</code>, add it
 to <code>InstallDepsMojo.OPTIONAL_LIBRARIES</code> and document the manual-install command in
-<a href="/arduino">docs/ARDUINO.md</a>.</li>
+<a href="../arduino">docs/ARDUINO.md</a>.</li>
 <li>Add or extend a <code>juno-examples</code> program, and — before considering the feature done — actually
 flash it to a real board and confirm the behavior; a clean <code>arduino-cli compile</code> only proves the
 generated C++ is syntactically valid, not that the protocol logic is correct.</li>
-<li>Write (or extend) an end-user doc under <code>docs/</code> — see <a href="/email">docs/EMAIL.md</a> for the
+<li>Write (or extend) an end-user doc under <code>docs/</code> — see <a href="../email">docs/EMAIL.md</a> for the
 <code>Smtp</code>/<code>Pop3Client</code> example this guide was written alongside.</li>
 </ol>
 <h2 id="see-also">See also</h2>
 <ul>
-<li><a href="/internet">docs/INTERNET.md</a> — full end-user reference for <code>Wifi</code>/<code>HttpClient</code>/
+<li><a href="../internet">docs/INTERNET.md</a> — full end-user reference for <code>Wifi</code>/<code>HttpClient</code>/
 <code>HttpsClient</code>/<code>Json</code>.</li>
-<li><a href="/email">docs/EMAIL.md</a> — full end-user reference for <code>Smtp</code>/<code>Pop3Client</code>, and a second worked
+<li><a href="../email">docs/EMAIL.md</a> — full end-user reference for <code>Smtp</code>/<code>Pop3Client</code>, and a second worked
 example of everything in this guide (including a case where an intrinsic needed a third-party
 library).</li>
-<li><a href="/features">docs/FEATURES.md</a> — the supported Java subset these APIs are built on top of
+<li><a href="../features">docs/FEATURES.md</a> — the supported Java subset these APIs are built on top of
 (arrays, the arena, runtime strings, ...).</li>
 </ul>
     </div>

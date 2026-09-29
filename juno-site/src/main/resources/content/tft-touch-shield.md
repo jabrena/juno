@@ -9,7 +9,7 @@ drives the ELEGOO 2.8" TFT touch screen shield for UNO ("Pantalla Táctil TFT de
 240x320 ILI9341 color display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a
 microSD socket.
 
-Like the [LCD Keypad Shield](/lcd-keypad-shield), it needs no new compiler intrinsic and no
+Like the [LCD Keypad Shield](../lcd-keypad-shield), it needs no new compiler intrinsic and no
 extra Arduino library: every operation is built from
 [`Gpio`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/Gpio.java) pin operations and
 [`Delay`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java). The trade-off is speed:
@@ -34,7 +34,7 @@ used by ELEGOO's `Elegoo_TFTLCD` and `TouchScreen` libraries:
 
 The touch panel shares pins with the display bus, so `readTouch()` temporarily reconfigures them
 and restores the bus before it returns. The SD socket shares nothing with the display, so
-[`SdCard.begin()`](/storage) (chip select on D10) works unchanged alongside it.
+[`SdCard.begin()`](../storage) (chip select on D10) works unchanged alongside it.
 
 ## API
 
@@ -97,7 +97,7 @@ pressure estimate from the last read; presses between 10 and 1000 count as touch
 
 ## Examples
 
-For every game at a glance, sorted by category with screenshots, see [GAMES.md](/games).
+For every game at a glance, sorted by category with screenshots, see [GAMES.md](../games).
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
@@ -116,7 +116,7 @@ calibration. Confirmed working on a real UNO R4 WiFi with this shield.
 ```
 
 [`WifiStatusTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/WifiStatusTFT.java)
-is the TFT version of [`WifiStatusSD`](/storage): it loads `wifi.ssid`/`wifi.password` from
+is the TFT version of [`WifiStatusSD`](../storage): it loads `wifi.ssid`/`wifi.password` from
 `application.properties` on the shield's own microSD card, connects, and shows the connection
 state, SSID, and `Wifi.status()` value in landscape. If loading or connecting fails, tap the
 screen to reload the card and retry.

@@ -91,7 +91,7 @@ public final class LcdKeypadDemo {
 This is
 [`juno-examples/.../lcd/LcdKeypadDemo.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java).
 Build, flash, and run it with `juno-maven-plugin` (see
-[docs/JUNO-MAVEN-PLUGIN.md](/juno-maven-plugin)):
+[docs/JUNO-MAVEN-PLUGIN.md](../juno-maven-plugin)):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
@@ -120,5 +120,5 @@ completion — a good reference for a multi-screen, button-driven program built 
   bursts on the UNO R4 WiFi) at the cost of a few extra microseconds per operation — never
   noticeable for a display updated a few times a second.
 - `print(String)` writes each character with `charAt(i)`, so a compile-time literal or any runtime
-  `String` supporting `length()`/`charAt(int)` (see [docs/FEATURES.md](/features)) both work,
-  unlike [`Serial.print(String)`](/serial), which is literal-only.
+  `String` supporting `length()`/`charAt(int)` (see [docs/FEATURES.md](../features)) both work,
+  unlike [`Serial.print(String)`](../serial), which is literal-only.

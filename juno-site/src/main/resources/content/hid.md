@@ -77,7 +77,7 @@ The repository ships a fuller version of this idea as
 which also blinks the built-in LED and draws a
 [mouse-face icon](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/MouseIcon.java)
 on the LED matrix first. Build, flash, and run it with `juno-maven-plugin` (see
-[docs/JUNO-MAVEN-PLUGIN.md](/juno-maven-plugin)):
+[docs/JUNO-MAVEN-PLUGIN.md](../juno-maven-plugin)):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \

@@ -13,7 +13,7 @@ Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiF
 - extract typed values directly from JSON response bytes with
   [`Json`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/http/Json.java).
 
-These APIs are compiler intrinsics, like every Juno API — see [docs/APIS.md](/apis) for what
+These APIs are compiler intrinsics, like every Juno API — see [docs/APIS.md](../apis) for what
 that means, how they're built, and the general rules (compile-time-only `String` arguments,
 caller-owned buffers) this guide relies on. This is the end-user reference for using them.
 
@@ -50,9 +50,9 @@ other secrets with plain `HttpClient`.
 ## Supplying Wi-Fi credentials
 
 Do not put Wi-Fi credentials directly in Java source. Either load them at runtime from an SD-card
-properties file (see [docs/STORAGE.md](/storage)) or pass compile-time environment-variable reads
+properties file (see [docs/STORAGE.md](../storage)) or pass compile-time environment-variable reads
 to `Wifi.begin` — see
-[docs/APIS.md](/apis#supplying-compile-time-credentials-with-systemgetenv) for the full
+[docs/APIS.md](../apis#supplying-compile-time-credentials-with-systemgetenv) for the full
 mechanism, including the `.env`/`juno-maven-plugin` alternative and its security caveats:
 
 ```java
@@ -120,7 +120,7 @@ int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
 
 Pass the host without `http://` and normally begin the path with `/`. The host and path must be
 compile-time strings — see
-[docs/APIS.md](/apis#consuming-an-api-httpclient-walkthrough) for exactly what that means.
+[docs/APIS.md](../apis#consuming-an-api-httpclient-walkthrough) for exactly what that means.
 
 For TLS, use the equivalent `HttpsClient` method, conventionally on port 443. Do not include
 `https://` in the host:
@@ -153,7 +153,7 @@ enough for the API response. JSON validation normally reports an incomplete trun
 `Json.TYPE_INVALID`, but the HTTP API does not otherwise expose a separate truncation flag.
 
 Allocate reusable response buffers outside long-running loops instead of inside `while (true)` —
-see [docs/APIS.md](/apis#buffers-are-caller-owned-forever) for why:
+see [docs/APIS.md](../apis#buffers-are-caller-owned-forever) for why:
 
 ```java
 byte[] response = new byte[512];
@@ -465,7 +465,7 @@ arduino-cli monitor \
 
 Uploading replaces the board's current firmware. Find the correct port first with
 `arduino-cli board list`. For the broader build/upload workflow, see
-[`docs/ARDUINO.md`](/arduino). The repository includes
+[`docs/ARDUINO.md`](../arduino). The repository includes
 [`HttpMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/HttpMethods.java), which verifies all supported
 methods over plain HTTP,
 [`HttpsMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/HttpsMethods.java), which repeats the checks with

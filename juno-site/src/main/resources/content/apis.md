@@ -9,7 +9,7 @@ This is a developer-facing guide to Juno's Java-facing API classes (`Delay`, `Gp
 checklist for *creating* a new one. It uses `HttpClient` as the running example throughout,
 because it is small, already has both a plain-Java-adjacent sibling (`HttpsClient`) and a
 non-trivial argument shape (mixed `String`/`byte[]`/`int[]` parameters), and is documented in full
-end-user detail in [the Internet access guide](/internet).
+end-user detail in [the Internet access guide](../internet).
 
 ## What an API class actually is
 
@@ -128,7 +128,7 @@ exposing the firmware, and clear exported variables when they are no longer need
 
 Juno has no general heap — every `new T[N]` (`N` a compile-time constant) is allocated from a
 fixed, program-lifetime arena reclaimed by a conservative mark/sweep collector (see
-[docs/FEATURES.md](/features)). Declaring a fresh response buffer inside `while (true)` still
+[docs/FEATURES.md](../features)). Declaring a fresh response buffer inside `while (true)` still
 works, but it churns the arena on every iteration for no reason; declare it once, outside the loop,
 and reuse it:
 
@@ -145,7 +145,7 @@ while (true) {
 
 There is no exception mechanism here — every intrinsic reports success/failure through its
 returned `int`. `HttpClient.get` returns `-1` for a failed TCP connection, `0` for an empty body,
-or the number of body bytes captured; `Smtp.send` (see [docs/EMAIL.md](/email)) instead uses a
+or the number of body bytes captured; `Smtp.send` (see [docs/EMAIL.md](../email)) instead uses a
 distinct negative code per failing protocol step. Each API's Javadoc is the source of truth for
 its own codes — read it before assuming `< 0` always means the same thing across different APIs.
 
@@ -274,19 +274,19 @@ Not every new capability needs a new intrinsic:
    assembly/shim text — see `lowersEmailIntrinsics`.
 8. If the API needs a third-party Arduino library not bundled with `arduino:renesas_uno`, add it
    to `InstallDepsMojo.OPTIONAL_LIBRARIES` and document the manual-install command in
-   [docs/ARDUINO.md](/arduino).
+   [docs/ARDUINO.md](../arduino).
 9. Add or extend a `juno-examples` program, and — before considering the feature done — actually
    flash it to a real board and confirm the behavior; a clean `arduino-cli compile` only proves the
    generated C++ is syntactically valid, not that the protocol logic is correct.
-10. Write (or extend) an end-user doc under `docs/` — see [docs/EMAIL.md](/email) for the
+10. Write (or extend) an end-user doc under `docs/` — see [docs/EMAIL.md](../email) for the
     `Smtp`/`Pop3Client` example this guide was written alongside.
 
 ## See also
 
-- [docs/INTERNET.md](/internet) — full end-user reference for `Wifi`/`HttpClient`/
+- [docs/INTERNET.md](../internet) — full end-user reference for `Wifi`/`HttpClient`/
   `HttpsClient`/`Json`.
-- [docs/EMAIL.md](/email) — full end-user reference for `Smtp`/`Pop3Client`, and a second worked
+- [docs/EMAIL.md](../email) — full end-user reference for `Smtp`/`Pop3Client`, and a second worked
   example of everything in this guide (including a case where an intrinsic needed a third-party
   library).
-- [docs/FEATURES.md](/features) — the supported Java subset these APIs are built on top of
+- [docs/FEATURES.md](../features) — the supported Java subset these APIs are built on top of
   (arrays, the arena, runtime strings, ...).

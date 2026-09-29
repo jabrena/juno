@@ -165,8 +165,12 @@ generator that builds the documentation site published to `docs/`.
 # in one command (see README's Documentation site section)
 ./mvnw clean verify -Psite
 
-# Preview the regenerated docs/ exactly as GitHub Pages will serve it
-jwebserver -d "$(pwd)/docs" -p 8000
+# Preview the regenerated docs/ exactly as GitHub Pages will serve it (a project site under
+# /juno/, not the domain root — every generated link is prefixed accordingly, so nest docs/
+# under a juno/ folder before serving, matching README's Documentation site section)
+rm -rf /tmp/juno-preview && mkdir -p /tmp/juno-preview/juno
+cp -R docs/. /tmp/juno-preview/juno/
+jwebserver -d /tmp/juno-preview -p 8000   # then open http://127.0.0.1:8000/juno/
 ```
 
 See the [Arduino CLI Workflow](https://jabrena.github.io/juno/arduino) for the full

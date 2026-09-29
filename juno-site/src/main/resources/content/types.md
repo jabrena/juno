@@ -4,7 +4,7 @@ description: "How Java types and bytecode map onto Cortex-M4 assembly and the C+
 layout: page
 ---
 
-Juno only accepts a small slice of Java's type system (see [FEATURES.md](/features)). Its IR now
+Juno only accepts a small slice of Java's type system (see [FEATURES.md](../features)). Its IR now
 records an explicit `JunoType` for every `Value`; accepted bytecodes lower to `INT32`, `INT64`,
 `FLOAT32`, and `FLOAT64` values. This note explains the current representations and where the Java
 and Arduino type systems meet.
@@ -27,7 +27,7 @@ admits eight primitive JVM descriptor types as ordinary scalar method parameters
 | `double`  | `D` |
 
 Primitive arrays, simple enums, records, and final closed-world object types are also supported as
-parameters/results under the restrictions in [FEATURES.md](/features). `DigitalOutput` remains a
+parameters/results under the restrictions in [FEATURES.md](../features). `DigitalOutput` remains a
 compiler-erased handle rather than an arena object.
 
 ## Typed IR scalar lanes
@@ -71,7 +71,7 @@ calls) is the single place that bridges the two:
 | `Gpio.digitalWrite(int pin, boolean high)` | `bl digitalWrite`                | Java `boolean` (0/1) is loaded straight into the register Arduino's `digitalWrite` reads as `HIGH`/`LOW`; no C++ `bool` conversion involved |
 | `Delay.millis(int ms)`                     | `bl delay` (calls Arduino's `delay` directly, no shim) | Arduino's `delay` takes `unsigned long`; the raw `int32_t` register value is reinterpreted as `unsigned long` at the call boundary itself, with no explicit cast anywhere in generated code |
 | `Serial.begin(BaudRate baudRate)`           | resolves the enum to an `int`, then `bl juno_serial_begin` | shim casts to `unsigned long`; type-safe convenience overload for the five common rates in `BaudRate` |
-| `Serial.println(int value)`                | `bl juno_serial_println`         | prints a signed decimal `int32_t`; overloads for `long`, `float`, and `double` call type-specific shims, while `Serial.println(String)` compiles to `bl juno_serial_println_str` for a compile-time string literal (see [FEATURES.md](/features) for the current runtime-`String` support) |
+| `Serial.println(int value)`                | `bl juno_serial_println`         | prints a signed decimal `int32_t`; overloads for `long`, `float`, and `double` call type-specific shims, while `Serial.println(String)` compiles to `bl juno_serial_println_str` for a compile-time string literal (see [FEATURES.md](../features) for the current runtime-`String` support) |
 | `LedMatrix.loadFrame(int, int, int)`       | `bl juno_led_matrix_load_frame`  | the shim reinterprets each Java `int` bit-for-bit as `uint32_t` (a packed pixel bitmask, not a numeric value) |
 | `Mouse.move(int x, int y)`                 | `bl juno_mouse_move`             | the shim narrows each Java `int` to Arduino's `signed char` (-128..127), sign-extended — out-of-range values wrap instead of clamping |
 
@@ -113,10 +113,10 @@ a call, field, or array boundary. Remaining exclusions include:
 - general `String` construction/concatenation and most `String`/`StringBuilder` methods — a bounded
   set of runtime-`String` operations is supported instead (string literals, `String.valueOf(int)`/
   `(double)`, `length()`, `charAt(int)`, and a fixed-capacity `StringBuilder`); see
-  [FEATURES.md](/features) for the exact list. Multi-character LED matrix display (see
+  [FEATURES.md](../features) for the exact list. Multi-character LED matrix display (see
   [`LedCanvas`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java)) still works
   character-by-character with hand-encoded font tables rather than string data
 - polymorphic objects/inheritance and unbounded allocation. Final closed-world objects and records use
   one-slot handles into a fixed 8 KiB program-lifetime arena with no reclamation
 
-See [FEATURES.md](/features) for the full, authoritative list.
+See [FEATURES.md](../features) for the full, authoritative list.

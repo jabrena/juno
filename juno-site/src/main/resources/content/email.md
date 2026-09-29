@@ -11,7 +11,7 @@ Juno provides a small, allocation-free email stack for the Arduino UNO R4 WiFi. 
 - report a mailbox's message count, read the newest message, and read any message's subject with
   [`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Pop3Client.java).
 
-Like `HttpClient`/`HttpsClient` (see [the Internet access guide](/internet)), these are compiler
+Like `HttpClient`/`HttpsClient` (see [the Internet access guide](../internet)), these are compiler
 intrinsics: Java declares them as `native` methods, and Juno emits their Arduino C++
 implementations only when the program uses them. Every buffer belongs to the caller; nothing here
 allocates a runtime `String` or a heap object.
@@ -50,13 +50,13 @@ needs no extra library. `Smtp` needs the third-party `ESP_SSLClient` library —
 ```
 
 (or on its own with `arduino-cli lib install ESP_SSLClient`; see
-[docs/JUNO-MAVEN-PLUGIN.md](/juno-maven-plugin)).
+[docs/JUNO-MAVEN-PLUGIN.md](../juno-maven-plugin)).
 
 ## Supplying mailbox credentials
 
 Do not put mailbox credentials directly in Java source. Read them the same way as any other
 compile-time credential — see
-[docs/APIS.md](/apis#supplying-compile-time-credentials-with-systemgetenv) for the full
+[docs/APIS.md](../apis#supplying-compile-time-credentials-with-systemgetenv) for the full
 mechanism (either exported in the shell running `juno compile`, or via a git-ignored `.env` file
 and `juno-maven-plugin`'s `env` goal):
 
@@ -252,5 +252,5 @@ Build and upload any of them the same way as every other example:
 - **A subject/body/header looks truncated:** the caller-owned buffer was smaller than the actual
   content; every read here is bounded, never dynamically sized.
 - **Compilation says `SMTP_HOST`/`SMPT_USERNAME`/`SMTP_PASSWORD` is not set:** see
-  [the Internet access guide's environment-variable troubleshooting](/internet#troubleshooting) —
+  [the Internet access guide's environment-variable troubleshooting](../internet#troubleshooting) —
   the same rules apply (export it where `juno compile` runs, or use a `.env` file).

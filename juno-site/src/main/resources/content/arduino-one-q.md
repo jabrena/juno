@@ -156,7 +156,7 @@ The post-refactor build uses 30% of the 786,432-byte program partition and 64% o
 reference for the current toolchain, not fixed hardware reservations; core, compiler and linker
 updates can change them.
 
-See [GAMES.md](/games#space-paranoids) for gameplay and controls, and [ARDUINO.md](/arduino)
+See [GAMES.md](../games#space-paranoids) for gameplay and controls, and [ARDUINO.md](../arduino)
 for the general Juno compile, upload and monitor workflow.
 
 ## Official references

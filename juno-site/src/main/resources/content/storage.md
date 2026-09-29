@@ -47,7 +47,7 @@ formatted as FAT16 or FAT32; exFAT is not supported by the shield's documented S
 If a different reader or shield routes CS elsewhere, call `SdCard.begin(chipSelectPin)` explicitly.
 
 The ELEGOO 2.8" TFT touch screen shield's microSD socket also uses D10, and shares no pins with its
-display: see [`WifiStatusTFT`](/tft-touch-shield#examples) for the same flow shown on the TFT.
+display: see [`WifiStatusTFT`](../tft-touch-shield#examples) for the same flow shown on the TFT.
 
 ### Using the LCD Keypad Shield at the same time
 

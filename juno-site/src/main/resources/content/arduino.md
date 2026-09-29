@@ -177,7 +177,7 @@ alarm blinks until any button is pressed, then returns to minute selection.
 [`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java)
 drives the ELEGOO 2.8" TFT touch screen shield (ILI9341 on an 8-bit parallel bus on D2-D9/`A0`-`A4`,
 resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built entirely from
-`Gpio`/`Delay`. See [TFT-TOUCH-SHIELD.md](/tft-touch-shield).
+`Gpio`/`Delay`. See [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
@@ -192,7 +192,7 @@ weather station: public IP → ipinfo.io location → Open-Meteo weather, with a
 against a small 3-ply engine, and `Blackjack`
 (`-Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack`) plays against the dealer with a bankroll. Further games in this catalogue:
 `battleship.Battleship`, `texasholdem.TexasHoldem` and the arcade games (`pacman.PacMan`, `lunarlander.LunarLander`, …) — see
-[TFT-TOUCH-SHIELD.md](/tft-touch-shield#examples) and the illustrated catalogue in [GAMES.md](/games).
+[TFT-TOUCH-SHIELD.md](../tft-touch-shield#examples) and the illustrated catalogue in [GAMES.md](../games).
 `TftTouchPaint` is a finger-paint demo that logs raw touch readings for calibration;
 `WifiStatusTFT` is the TFT version of `WifiStatusSD`, reading its credentials from the shield's own
 microSD socket. Both were uploaded to a real UNO R4 WiFi with this shield; `TftTouchPaint`'s drawing and touch
@@ -273,8 +273,8 @@ The same package also has
 (proves `Smtp.send` actually delivers by checking the inbox count before/after sending) and
 [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java)
 (a menu-driven client: Inbox count/subject-list, Send Email, About). See
-[docs/EMAIL.md](/email) for the full `Smtp`/`Pop3Client` reference, and
-[docs/APIS.md](/apis) for how these compiler-intrinsic API classes work internally.
+[docs/EMAIL.md](../email) for the full `Smtp`/`Pop3Client` reference, and
+[docs/APIS.md](../apis) for how these compiler-intrinsic API classes work internally.
 
 ## The Cortex-M4 assembly backend
 
