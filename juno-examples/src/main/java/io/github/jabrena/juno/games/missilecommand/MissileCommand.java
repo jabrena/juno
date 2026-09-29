@@ -36,6 +36,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 @Board(ArduinoUnoQ.class)
 public final class MissileCommand {
     private static final int FRAME_MILLIS = 20;
+    private static final int COVER_TIMEOUT_MILLIS = 60_000;
 
     private MissileCommand() {
     }
@@ -50,8 +51,11 @@ public final class MissileCommand {
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         while (true) {
-            Interludes.cover(alive, ammo);
-            Controls.waitForTap();
+            boolean tapped = false;
+            while (!tapped) {
+                Interludes.cover(alive, ammo);
+                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+            }
             Controls.choosePilot();
             Random.seed(Clock.micros());
             Session.newGame(alive);
@@ -69,7 +73,7 @@ public final class MissileCommand {
             }
             Session.finishGame();
             Interludes.gameOver();
-            Controls.waitForTap();
+            Controls.waitForTap(COVER_TIMEOUT_MILLIS);
         }
     }
 
