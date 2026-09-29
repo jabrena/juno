@@ -341,6 +341,40 @@ class CortexM4AsmBackendTest {
     }
 
     /**
+     * Every reachable class's {@code <clinit>} runs at startup, not just one: {@code PacMan}'s
+     * {@code MazePixels.wallColor} stayed 0 (walls drawn black on black) because only
+     * {@code Interludes}'s initializer was called.
+     */
+    @Test
+    void entryPointCallsEveryStaticInitializerInProgramOrder() {
+        MethodRef mainRef = new MethodRef("demo/Main", "main", "()V");
+        MethodRef firstClinitRef = new MethodRef("demo/Main", "<clinit>", "()V");
+        MethodRef secondClinitRef = new MethodRef("demo/Colors", "<clinit>", "()V");
+        FieldRef first = new FieldRef("demo/Main", "a", "I");
+        FieldRef second = new FieldRef("demo/Colors", "wall", "I");
+
+        IrMethod firstClinit = IrMethod.withInferredValues(firstClinitRef, 0, 1, List.of(),
+                List.of(new IrBasicBlock(0, List.of(new IrInstruction.Const(Value.int32(0), 7),
+                        new IrInstruction.StoreStatic(first, Value.int32(0))),
+                        new IrTerminator.Return(Optional.empty()))));
+        IrMethod secondClinit = IrMethod.withInferredValues(secondClinitRef, 0, 1, List.of(),
+                List.of(new IrBasicBlock(0, List.of(new IrInstruction.Const(Value.int32(0), 0x211F),
+                        new IrInstruction.StoreStatic(second, Value.int32(0))),
+                        new IrTerminator.Return(Optional.empty()))));
+        IrMethod main = IrMethod.withInferredValues(mainRef, 0, 0, List.of(),
+                List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty()))));
+
+        String assembly = new CortexM4AsmBackend()
+                .generate(new IrProgram(mainRef, List.of(firstClinit, secondClinit, main)))
+                .assembly();
+
+        int entry = assembly.indexOf("juno_Main_asm:");
+        String prologue = assembly.substring(entry, assembly.indexOf(".Ljuno_Main_asmblock0:", entry));
+        assertThat(prologue).contains("bl juno_fn0").contains("bl juno_fn1");
+        assertThat(prologue.indexOf("bl juno_fn0")).isLessThan(prologue.indexOf("bl juno_fn1"));
+    }
+
+    /**
      * Mirrors {@code RatonLoco}'s {@code Mouse.begin()}/{@code Mouse.move(x, y)} usage.
      * {@code Mouse} is an optional Arduino library (unlike the core-bundled LED matrix/Serial), so
      * the {@code #include <Mouse.h>} and the wrapper functions must only appear when a program

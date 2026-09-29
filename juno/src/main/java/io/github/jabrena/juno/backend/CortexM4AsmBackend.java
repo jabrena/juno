@@ -14,6 +14,7 @@ import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -117,7 +118,7 @@ public final class CortexM4AsmBackend {
     private final boolean gcLoggingEnabled;
     private final Board board;
     private MethodRef entryPoint;
-    private String clinitLabel;
+    private final List<String> clinitLabels = new ArrayList<>();
     private boolean usesWatchdog;
     private ProgramLayout layout;
     private AsmEmitter asm;
@@ -157,7 +158,7 @@ public final class CortexM4AsmBackend {
                     ? asmFunctionName(method) : "juno_fn" + index;
             functionLabels.put(method.reference(), label);
             if (method.reference().name().equals("<clinit>")) {
-                clinitLabel = label;
+                clinitLabels.add(label);
             }
         }
         layout = new ProgramLayout(program);
@@ -241,10 +242,13 @@ public final class CortexM4AsmBackend {
         if (isEntryPoint && usesWatchdog) {
             output.append("    bl juno_watchdog_begin\n");
         }
-        // <clinit> is its own reachable method in the IR, but nothing calls it there — the entry
-        // point invokes it explicitly, before its own first block, so it runs exactly once up front.
-        if (isEntryPoint && clinitLabel != null) {
-            output.append("    bl ").append(clinitLabel).append('\n');
+        // Each reachable <clinit> is its own method in the IR, but nothing calls it there — the entry
+        // point invokes every one explicitly, before its own first block, so each runs exactly once
+        // up front, in the linker's order (the main class's own initializer first).
+        if (isEntryPoint) {
+            for (String clinitLabel : clinitLabels) {
+                output.append("    bl ").append(clinitLabel).append('\n');
+            }
         }
 
         for (IrBasicBlock block : method.blocks()) {
