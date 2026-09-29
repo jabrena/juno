@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
@@ -131,11 +132,17 @@ final class Controls {
         TftTouchShield.print(hint);
     }
 
-    static void waitForTap() {
+    /** Waits for a tap, giving up and returning {@code false} if none arrives within {@code timeoutMillis}. */
+    static boolean waitForTap(int timeoutMillis) {
+        int start = Clock.millis();
         while (!TftTouchShield.readTouch()) {
+            if (Clock.millis() - start >= timeoutMillis) {
+                return false;
+            }
             Delay.millis(10);
         }
         waitForRelease();
+        return true;
     }
 
     private static void waitForRelease() {

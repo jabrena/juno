@@ -15,6 +15,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 @Board(ArduinoUnoQ.class)
 public final class SpaceParanoids {
     private static final int FRAME_MILLIS = 33;
+    private static final int COVER_TIMEOUT_MILLIS = 60_000;
 
     private SpaceParanoids() {
     }
@@ -35,9 +36,12 @@ public final class SpaceParanoids {
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
 
         while (true) {
-            Interludes.opening(lines);
-            Interludes.drawTitle(maze, paths, lines, depth, faces, fs, is, letter);
-            Controls.waitForTap();
+            boolean tapped = false;
+            while (!tapped) {
+                Interludes.opening(lines);
+                Interludes.drawTitle(maze, paths, lines, depth, faces, fs, is, letter);
+                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+            }
             Random.seed(Clock.micros());
             Controls.choosePilot();
             Session.newGame();

@@ -46,6 +46,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 @Board(ArduinoUnoQ.class)
 public final class StarTrek {
     private static final int FRAME_MILLIS = 40;
+    private static final int COVER_TIMEOUT_MILLIS = 60_000;
 
     private StarTrek() {
     }
@@ -59,9 +60,12 @@ public final class StarTrek {
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
 
         while (true) {
-            Interludes.warpIntro(ents);
-            Interludes.drawTitle(lines, ents, letter);
-            Controls.waitForTap();
+            boolean tapped = false;
+            while (!tapped) {
+                Interludes.warpIntro(ents);
+                Interludes.drawTitle(lines, ents, letter);
+                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+            }
             Random.seed(Clock.micros());
             Controls.choosePilot();
             Session.newGame();

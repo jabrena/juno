@@ -49,6 +49,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 @Board(ArduinoUnoQ.class)
 public final class EmpireStrikesBack {
     private static final int FRAME_MILLIS = 40;
+    private static final int COVER_TIMEOUT_MILLIS = 60_000;
 
     private EmpireStrikesBack() {
     }
@@ -62,9 +63,12 @@ public final class EmpireStrikesBack {
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
 
         while (true) {
-            Interludes.opening(lines, ents);
-            Interludes.drawTitle(letter);
-            Controls.waitForTap();
+            boolean tapped = false;
+            while (!tapped) {
+                Interludes.opening(lines, ents);
+                Interludes.drawTitle(letter);
+                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+            }
             Random.seed(Clock.micros());
             Controls.choosePilot();
             Session.newGame();

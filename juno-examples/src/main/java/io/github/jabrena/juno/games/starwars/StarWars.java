@@ -51,6 +51,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 @Board(ArduinoUnoQ.class)
 public final class StarWars {
     private static final int FRAME_MILLIS = 30;
+    private static final int COVER_TIMEOUT_MILLIS = 60_000;
 
     private StarWars() {
     }
@@ -64,9 +65,12 @@ public final class StarWars {
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
 
         while (true) {
-            Interludes.opening(lines, letter);
-            Interludes.drawTitle(lines);
-            Controls.waitForTap();
+            boolean tapped = false;
+            while (!tapped) {
+                Interludes.opening(lines, letter);
+                Interludes.drawTitle(lines);
+                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+            }
             Random.seed(Clock.micros());
             Controls.choosePilot();
             Session.newGame();

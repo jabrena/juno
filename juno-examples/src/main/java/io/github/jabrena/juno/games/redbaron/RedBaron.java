@@ -22,6 +22,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 @Board(ArduinoUnoQ.class)
 public final class RedBaron {
     private static final int FRAME_MILLIS = 40;
+    private static final int COVER_TIMEOUT_MILLIS = 60_000;
 
     private RedBaron() {
     }
@@ -35,9 +36,12 @@ public final class RedBaron {
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
 
         while (true) {
-            Interludes.opening(lines);
-            Interludes.drawTitle(lines, letter);
-            Controls.waitForTap();
+            boolean tapped = false;
+            while (!tapped) {
+                Interludes.opening(lines);
+                Interludes.drawTitle(lines, letter);
+                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+            }
             Random.seed(Clock.micros());
             Controls.choosePilot();
             Session.newGame();
