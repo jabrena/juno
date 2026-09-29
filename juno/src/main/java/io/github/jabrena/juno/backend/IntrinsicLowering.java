@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.backend;
 
-import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
@@ -113,12 +112,12 @@ final class IntrinsicLowering {
      * @param features collects every optional shim feature a lowered intrinsic needs
      * @param usedMath collects every {@code java.lang.Math} intrinsic lowered, for {@link MathRuntime#helpers}
      */
-    IntrinsicLowering(AsmEmitter asm, Board board, Set<ShimFeature> features, Set<Intrinsic> usedMath) {
+    IntrinsicLowering(AsmEmitter asm, CoreRuntime coreRuntime, Set<ShimFeature> features, Set<Intrinsic> usedMath) {
         this.asm = asm;
         this.features = features;
         this.usedMath = usedMath;
         registerExceptions();
-        registerGpio(board);
+        registerGpio(coreRuntime);
         registerSerial();
         registerStrings();
         registerStorage();
@@ -159,7 +158,7 @@ final class IntrinsicLowering {
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */
-    private void registerGpio(Board board) {
+    private void registerGpio(CoreRuntime coreRuntime) {
         shim(Intrinsic.DIGITAL_OUTPUT_OF, "pinMode", Result.FIRST_ARGUMENT, List.of(arg(0), immediate(1))); // OUTPUT
         shim(Intrinsic.GPIO_PIN_MODE, "pinMode", Result.NONE, List.of(arg(0), arg(1)));
         shim(Intrinsic.DIGITAL_OUTPUT_HIGH, "digitalWrite", Result.NONE, List.of(RECEIVER, immediate(1)));
@@ -174,10 +173,8 @@ final class IntrinsicLowering {
                 ShimFeature.RANDOM);
         shim(Intrinsic.RANDOM_NEXT_RANGE, "juno_random_next_range", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.RANDOM);
-        // The Zephyr core inlines delay()/delayMicroseconds(), so it is reached through shim wrappers.
-        shim(Intrinsic.DELAY_MILLIS, board.zephyrCore() ? "juno_delay" : "delay", Result.NONE, List.of(arg(0)));
-        shim(Intrinsic.DELAY_MICROS, board.zephyrCore() ? "juno_delay_microseconds" : "delayMicroseconds",
-                Result.NONE, List.of(arg(0)));
+        shim(Intrinsic.DELAY_MILLIS, coreRuntime.delayMillisFunction(), Result.NONE, List.of(arg(0)));
+        shim(Intrinsic.DELAY_MICROS, coreRuntime.delayMicrosFunction(), Result.NONE, List.of(arg(0)));
         shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of());
         shim(Intrinsic.LED_MATRIX_LOAD_FRAME, "juno_led_matrix_load_frame", Result.NONE,
                 List.of(arg(0), arg(1), arg(2)));

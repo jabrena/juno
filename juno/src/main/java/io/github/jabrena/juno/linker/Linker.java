@@ -4,6 +4,7 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.analysis.ControlFlowGraph;
 import io.github.jabrena.juno.analysis.ControlFlowGraphBuilder;
 import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.board.Capability;
 import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.JavaClass;
@@ -14,8 +15,10 @@ import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
-import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,14 +28,8 @@ import java.util.stream.Collectors;
 
 /** Performs closed-world reachability and resolves every static call before code generation. */
 public final class Linker {
-    private static final Set<Intrinsic> LED_MATRIX_INTRINSICS = EnumSet.of(
-            Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME, Intrinsic.LED_MATRIX_CLEAR);
-    private static final Set<Intrinsic> WIFI_INTRINSICS = EnumSet.of(Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS,
-            Intrinsic.WIFI_LOCAL_IP, Intrinsic.HTTP_GET, Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH,
-            Intrinsic.HTTP_QUERY, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER, Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE,
-            Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY, Intrinsic.HTTP_SERVER_BEGIN,
-            Intrinsic.HTTP_SERVER_ACCEPT, Intrinsic.HTTP_SERVER_METHOD, Intrinsic.HTTP_SERVER_PATH,
-            Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER);
+    /** The on-board {@link Capability} each capability-dependent intrinsic needs; every other intrinsic is portable. */
+    private static final Map<Intrinsic, Capability> REQUIRED_CAPABILITIES = requiredCapabilities();
     private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
             "drawText", "([[ZLjava/lang/String;II)V");
     private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
@@ -83,7 +80,7 @@ public final class Linker {
             }
         }
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
-            requireWatchdogSupport(declaredBoards);
+            requireCapability(declaredBoards, Capability.WATCHDOG, "");
         }
         return new Program(entryPoint, List.copyOf(reachable.values()), classes, board,
                 mainClass.watchdogTimeoutMillis());
@@ -113,13 +110,6 @@ public final class Linker {
                     + "--board=<id> for the standalone CLI");
         }
         return declaredBoards.get(0);
-    }
-
-    private void requireWatchdogSupport(List<Board> declaredBoards) {
-        declaredBoards.stream().filter(Board::zephyrCore).findFirst().ifPresent(board -> {
-            throw new CompileException("@Watchdog requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
-                    + "'s Zephyr core has no WDT library");
-        });
     }
 
     private static String displayNames(List<Board> boards) {
@@ -161,10 +151,8 @@ public final class Linker {
 
     private void enqueueCall(MethodRef called, MethodRef caller, List<Board> declaredBoards,
             Map<String, JavaClass> classes, Deque<MethodRef> work) {
-        IntrinsicRegistry.resolve(called).ifPresent(intrinsic -> {
-            requireLedMatrixSupport(declaredBoards, intrinsic, caller);
-            requireWifiSupport(declaredBoards, intrinsic, caller);
-        });
+        IntrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
+                requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
         if (isDrawTextCall(called)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {
@@ -193,25 +181,37 @@ public final class Linker {
         }
     }
 
-    /** Every declared board must support an intrinsic a portable program uses, not just the one it builds for. */
-    private void requireLedMatrixSupport(List<Board> declaredBoards, Intrinsic intrinsic, MethodRef caller) {
-        if (!LED_MATRIX_INTRINSICS.contains(intrinsic)) {
-            return;
-        }
-        declaredBoards.stream().filter(board -> !board.hasLedMatrix()).findFirst().ifPresent(board -> {
-            throw new CompileException("LedMatrix requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
-                    + " has no onboard LED matrix (used from " + caller.displayName() + ")");
+    /**
+     * Every declared board must provide {@code capability}, not just the one this build targets, so a
+     * portable program never compiles for one of its boards and fails on another.
+     */
+    private void requireCapability(List<Board> declaredBoards, Capability capability, String context) {
+        declaredBoards.stream().filter(board -> !board.supports(capability)).findFirst().ifPresent(board -> {
+            throw new CompileException(capability.apiName() + " requires @Board("
+                    + supportingBoards(capability) + "): " + capability.unsupportedReason(board) + context);
         });
     }
 
-    private void requireWifiSupport(List<Board> declaredBoards, Intrinsic intrinsic, MethodRef caller) {
-        if (!WIFI_INTRINSICS.contains(intrinsic)) {
-            return;
+    private static String supportingBoards(Capability capability) {
+        return Arrays.stream(Board.values()).filter(board -> board.supports(capability))
+                .map(Board::annotationArgument).collect(Collectors.joining(" or "));
+    }
+
+    private static Map<Intrinsic, Capability> requiredCapabilities() {
+        Map<Intrinsic, Capability> required = new EnumMap<>(Intrinsic.class);
+        for (Intrinsic intrinsic : List.of(Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME,
+                Intrinsic.LED_MATRIX_CLEAR)) {
+            required.put(intrinsic, Capability.LED_MATRIX);
         }
-        declaredBoards.stream().filter(board -> !board.hasWifi()).findFirst().ifPresent(board -> {
-            throw new CompileException("Wifi requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
-                    + " has no onboard WiFi module (used from " + caller.displayName() + ")");
-        });
+        for (Intrinsic intrinsic : List.of(Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS, Intrinsic.WIFI_LOCAL_IP,
+                Intrinsic.HTTP_GET, Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH,
+                Intrinsic.HTTP_QUERY, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER, Intrinsic.HTTPS_POST,
+                Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY, Intrinsic.HTTP_SERVER_BEGIN,
+                Intrinsic.HTTP_SERVER_ACCEPT, Intrinsic.HTTP_SERVER_METHOD, Intrinsic.HTTP_SERVER_PATH,
+                Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER)) {
+            required.put(intrinsic, Capability.WIFI);
+        }
+        return Collections.unmodifiableMap(required);
     }
 
     /**
