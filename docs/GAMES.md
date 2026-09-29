@@ -1,6 +1,6 @@
 # Games
 
-Juno ships 20 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/tft`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
+Juno ships 14 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](../juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/tft`](../juno-examples/src/main/java/io/github/jabrena/juno/api/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](FEATURES.md) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md).
 
 ## How to play
 
@@ -24,10 +24,8 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 ## Contents
 
 - [Arcade](#arcade): [Pac-Man](#pac-man), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Sundance](#sundance), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander)
-- [Board and strategy](#board-and-strategy): [Chess](#chess), [Checkers](#checkers), [Backgammon](#backgammon), [Battleship](#battleship)
-- [Puzzles and simulations](#puzzles-and-simulations): [Game of Life](#game-of-life)
-- [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem), [Solitaire](#solitaire), [Slot machine](#slot-machine)
-- [Dice and chance](#dice-and-chance): [Rock, Paper, Scissors, Lizard, Spock](#rock-paper-scissors-lizard-spock)
+- [Board and strategy](#board-and-strategy): [Chess](#chess), [Battleship](#battleship)
+- [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem)
 
 ## Arcade
 
@@ -35,13 +33,13 @@ Real-time games driven by touch.
 
 ### Pac-Man
 
-<img src="images/games/pacman.png" alt="Pac-Man on the TFT shield" width="240">
+<img src="videos/games/pacman-cpu.gif" alt="Pac-Man on the TFT shield, played by the CPU" width="240">
 
-The arcade's 28x31-tile maze with all 244 dots and four energizers. Touch and hold beside, above or below Pac-Man to steer; he turns at the next junction where it fits. The ghosts follow the arcade's targeting rules (Blinky chases, Pinky ambushes, Inky mirrors, Clyde wanders) with scatter and chase phases. Three lives.
+The cover animates two ghosts chasing Pac-Man across the screen, an energizer turning the tables so he chases them back, and the title zooming into a soft drop shadow. Then choose the pilot: **HUMAN** to play yourself, or **CPU** to watch an autopilot that favors dots and energizers, flees an active ghost nearby and hunts down a frightened one instead, missing a turn now and then like a person would; tap the header during a life to switch between the two. The arcade's 28x31-tile maze with all 244 dots and four energizers. Touch and hold beside, above or below Pac-Man to steer; he turns at the next junction where it fits. The ghosts follow the arcade's targeting rules (Blinky chases, Pinky ambushes, Inky mirrors, Clyde wanders) with scatter and chase phases. Three lives, an extra one at 10,000 points. Pac-Man targets the **Arduino UNO Q** (`@Board(ArduinoUnoQ.class)`).
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.PacMan
+  -Djuno.main=io.github.jabrena.juno.games.pacman.PacMan
 ```
 
 ### Missile Command
@@ -158,28 +156,6 @@ You play White against a 3-ply engine. Tap a piece to see its legal moves, then 
   -Djuno.main=io.github.jabrena.juno.games.Chess
 ```
 
-### Checkers
-
-<img src="images/games/checkers.png" alt="Checkers on the TFT shield" width="240">
-
-English draughts: captures are mandatory and multi-jumps continue with the same piece (tap each landing square). The computer runs a 5-ply alpha-beta search.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Checkers
-```
-
-### Backgammon
-
-<img src="images/games/backgammon.png" alt="Backgammon on the TFT shield" width="320">
-
-In landscape. `ROLL`, then tap a checker and one of the yellow rings that mark where it may go; tap your tray to bear off. `UNDO` takes back the turn, `DONE` ends it. Full rules, with gammons and backgammons scored; no doubling cube.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Backgammon
-```
-
 ### Battleship
 
 <img src="images/games/battleship.png" alt="Battleship on the TFT shield" width="240">
@@ -189,21 +165,6 @@ Random fleets on 10x10 grids. Tap the large enemy grid to fire; your fleet and t
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.Battleship
-```
-
-## Puzzles and simulations
-
-Games you play against the board itself.
-
-### Game of Life
-
-<img src="images/games/game-of-life.png" alt="Game of Life on the TFT shield" width="240">
-
-Conway's cellular automaton on a 40x46 wrapping grid. `RUN`/`STOP`, `STEP`, `RAND` and `CLR` control it; while stopped, drag on the grid to draw cells.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.GameOfLife
 ```
 
 ## Cards and casino
@@ -232,43 +193,6 @@ No-limit Hold'em against three computer players (Ann plays tight, Bob loose, Cal
   -Djuno.main=io.github.jabrena.juno.games.TexasHoldem
 ```
 
-### Solitaire
-
-<img src="images/games/solitaire.png" alt="Solitaire on the TFT shield" width="240">
-
-Klondike, draw one. Tap a card to pick it up (with everything on top of it), then tap where it should go; tapping a picked-up card again sends it to its foundation. Once every card is face up, the rest plays itself.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Solitaire
-```
-
-### Slot machine
-
-<img src="images/games/slot-machine.png" alt="Slot machine on the TFT shield" width="240">
-
-A three-reel machine with 7s, BARs, bells, plums, lemons and cherries. `BET` stakes 1 to 3 credits and `SPIN` pulls; the center row pays. The reels are weighted like a real machine for a long-run payback of 89.6%.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.SlotMachine
-```
-
-## Dice and chance
-
-Short games of luck, nerve and prediction.
-
-### Rock, Paper, Scissors, Lizard, Spock
-
-<img src="images/games/rock-paper-scissors-lizard-spock.png" alt="Rock, Paper, Scissors, Lizard, Spock on the TFT shield" width="240">
-
-Tap one of the five pixel-art buttons. Each move beats two others and loses to two ("Spock vaporizes Rock"); the deciding rule lights up. The computer learns which move you tend to play next and counters it.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.RockPaperScissorsLizardSpock
-```
-
 ## Testing without the board
 
 `./mvnw test` plays every game on an emulated shield, on any machine and in CI. The tests in
@@ -289,10 +213,12 @@ On top of these:
   screen and a diff to `juno-examples/target/screenshots`. After an intended visual change,
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
-- `CardGamesTest`, `BoardGamesTest`, `ChanceGamesTest`, `StarWarsTest`, `SpaceParanoidsTest`, `RedBaronTest`, `EmpireStrikesBackTest`, `StarTrekTest` and `SundanceTest` check rules and computer players: the
-  poker hand ranking against a brute-force reference, no chip lost across all-ins and side pots,
-  the slot machine's exact payback, Backgammon rules, that
-  each computer opponent beats a simple player, and that autopilots clear Space Paranoids and Star Trek sectors, Sundance rounds, and whole Red Baron and Empire Strikes Back waves.
+- `CardGamesTest`, `PacManTest`, `MissileCommandTest`, `TempestTest`, `StarWarsTest`,
+  `EmpireStrikesBackTest`, `RedBaronTest`, `StarTrekTest`, `SundanceTest`, `SpaceParanoidsTest` and
+  `LunarLanderTest` check rules and computer players: the poker hand ranking against a brute-force
+  reference, no chip lost across all-ins and side pots, and that autopilots clear Missile Command
+  waves, Tempest levels, Space Paranoids and Star Trek sectors, Sundance rounds, whole Red Baron and
+  Empire Strikes Back waves, and nearly every dot of a Pac-Man maze.
 
 This runs the games' Java on the JVM, not the code Juno generates for the board.
 

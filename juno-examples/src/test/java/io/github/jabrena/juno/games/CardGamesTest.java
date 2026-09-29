@@ -1,25 +1,20 @@
 package io.github.jabrena.juno.games;
 
 import static io.github.jabrena.juno.api.tft.Internals.call;
-import static io.github.jabrena.juno.api.tft.Internals.callBoolean;
 import static io.github.jabrena.juno.api.tft.Internals.callInt;
-import static io.github.jabrena.juno.api.tft.Internals.getInt;
 import static io.github.jabrena.juno.api.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.tft.Internals;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-/** Rules and invariants of Texas Hold'em, the slot machine and Solitaire. */
+/** Rules and invariants of Texas Hold'em. */
 class CardGamesTest {
     @AfterEach
     void releaseThePanel() {
@@ -117,147 +112,6 @@ class CardGamesTest {
             }
         }
         assertThat(allIns).as("all-ins exercised side pots").isPositive();
-    }
-
-    // ---- Slot machine ----
-
-    @Test
-    void slotMachinePaysBackExactly89Point6Percent() {
-        int paid = 0;
-        for (int a = 0; a < 20; a++) {
-            for (int b = 0; b < 20; b++) {
-                for (int c = 0; c < 20; c++) {
-                    paid = paid + callInt(SlotMachine.class, "payout",
-                            callInt(SlotMachine.class, "symbol", 0, a),
-                            callInt(SlotMachine.class, "symbol", 1, b),
-                            callInt(SlotMachine.class, "symbol", 2, c));
-                }
-            }
-        }
-        assertThat(paid / 8000.0).isEqualTo(0.89625);
-    }
-
-    @Test
-    void slotReelsStopWhereTheSpinDecidedAndCreditsAddUp() {
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT);
-        set(SlotMachine.class, "seeded", true);
-        set(SlotMachine.class, "credits", 100);
-        set(SlotMachine.class, "bet", 1);
-        int[] positions = new int[3];
-        int[] ticks = new int[3];
-        for (int spin = 0; spin < 60; spin++) {
-            Random.seed(1000 + spin);
-            java.util.Random same = new java.util.Random(1000 + spin);
-            int[] stops = {same.nextInt(20), same.nextInt(20), same.nextInt(20)};
-            if (getInt(SlotMachine.class, "credits") == 0) {
-                set(SlotMachine.class, "credits", 100);
-            }
-            int before = getInt(SlotMachine.class, "credits");
-            call(SlotMachine.class, "spin", positions, ticks);
-            assertThat(positions).isEqualTo(stops);
-            assertThat(getInt(SlotMachine.class, "credits"))
-                    .isEqualTo(before - 1 + getInt(SlotMachine.class, "lastWin"));
-        }
-    }
-
-    // ---- Solitaire ----
-
-    @Test
-    void solitaireKeepsEveryRuleWhileABotPlays() {
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT);
-        int wins = 0;
-        for (int game = 0; game < 60; game++) {
-            Random.seed(game);
-            byte[] cards = new byte[13 * 24];
-            int[] meta = new int[20];
-            call(Solitaire.class, "deal", cards, meta, new byte[52]);
-            assertSolitaireInvariants(cards, meta);
-            int idle = 0;
-            for (int step = 0; step < 3000 && !callBoolean(Solitaire.class, "won", meta); step++) {
-                if (solitaireBotMove(cards, meta)) {
-                    idle = 0;
-                } else {
-                    if (meta[11] == 0 && meta[12] == 0) {
-                        break;
-                    }
-                    if (meta[11] == 0 && ++idle > 2) {
-                        break;
-                    }
-                    call(Solitaire.class, "turnStock", cards, meta);
-                }
-                assertSolitaireInvariants(cards, meta);
-            }
-            if (callBoolean(Solitaire.class, "won", meta)) {
-                wins = wins + 1;
-            }
-        }
-        assertThat(wins).as("games won, which exercises the automatic finish").isPositive();
-    }
-
-    /** Foundations first, then tableau moves that uncover cards, then the waste. */
-    private static boolean solitaireBotMove(byte[] cards, int[] meta) {
-        for (int pile : new int[] {12, 0, 1, 2, 3, 4, 5, 6}) {
-            if (meta[pile] > 0) {
-                int card = cards[pile * 24 + meta[pile] - 1];
-                if (tryMove(cards, meta, pile, meta[pile] - 1, 7 + card / 13)) {
-                    return true;
-                }
-            }
-        }
-        for (int from = 0; from < 7; from++) {
-            int hidden = meta[13 + from];
-            boolean kingAlreadyAtBottom = hidden == 0 && meta[from] > 0 && cards[from * 24] % 13 == 12;
-            if (meta[from] == 0 || kingAlreadyAtBottom) {
-                continue;
-            }
-            for (int to = 0; to < 7; to++) {
-                if (tryMove(cards, meta, from, hidden, to)) {
-                    return true;
-                }
-            }
-        }
-        for (int to = 0; to < 7 && meta[12] > 0; to++) {
-            if (tryMove(cards, meta, 12, meta[12] - 1, to)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean tryMove(byte[] cards, int[] meta, int from, int index, int to) {
-        if (!callBoolean(Solitaire.class, "move", cards, meta, from, index, to)) {
-            return false;
-        }
-        call(Solitaire.class, "checkEnd", cards, meta);
-        return true;
-    }
-
-    private static void assertSolitaireInvariants(byte[] cards, int[] meta) {
-        Set<Integer> seen = new HashSet<>();
-        for (int pile = 0; pile < 13; pile++) {
-            for (int i = 0; i < meta[pile]; i++) {
-                assertThat(seen.add((int) cards[pile * 24 + i])).as("card appears once").isTrue();
-            }
-        }
-        assertThat(seen).hasSize(52);
-        for (int suit = 0; suit < 4; suit++) {
-            for (int i = 0; i < meta[7 + suit]; i++) {
-                assertThat((int) cards[(7 + suit) * 24 + i]).as("foundation order").isEqualTo(suit * 13 + i);
-            }
-        }
-        for (int column = 0; column < 7; column++) {
-            assertThat(meta[13 + column] < meta[column] || meta[column] == 0).as("top card face up").isTrue();
-            for (int i = meta[13 + column] + 1; i < meta[column]; i++) {
-                int below = cards[column * 24 + i - 1];
-                int above = cards[column * 24 + i];
-                assertThat(below % 13).isEqualTo(above % 13 + 1);
-                assertThat(isRed(below)).isNotEqualTo(isRed(above));
-            }
-        }
-    }
-
-    private static boolean isRed(int card) {
-        return card / 13 == 1 || card / 13 == 2;
     }
 
     // ---- A brute-force poker reference: the best five of seven, compared as a long ----

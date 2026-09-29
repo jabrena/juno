@@ -186,10 +186,8 @@ resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built 
 weather station: public IP → ipinfo.io location → Open-Meteo weather, with a seven-segment clock.
 `Chess` (`-Djuno.main=io.github.jabrena.juno.games.Chess`) plays you
 against a small 3-ply engine, and `Blackjack`
-(`-Djuno.main=io.github.jabrena.juno.games.Blackjack`) plays against the dealer with a bankroll. Further games in this catalogue: `Checkers`,
-`Battleship`, `GameOfLife`, `Solitaire`, `lunarlander.LunarLander`,
-`Backgammon`, `TexasHoldem`,
-`SlotMachine` and `RockPaperScissorsLizardSpock` — see
+(`-Djuno.main=io.github.jabrena.juno.games.Blackjack`) plays against the dealer with a bankroll. Further games in this catalogue:
+`Battleship`, `TexasHoldem` and the arcade games (`pacman.PacMan`, `lunarlander.LunarLander`, …) — see
 [TFT-TOUCH-SHIELD.md](TFT-TOUCH-SHIELD.md#examples) and the illustrated catalogue in [GAMES.md](GAMES.md).
 `TftTouchPaint` is a finger-paint demo that logs raw touch readings for calibration;
 `WifiStatusTFT` is the TFT version of `WifiStatusSD`, reading its credentials from the shield's own

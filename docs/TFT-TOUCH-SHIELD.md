@@ -165,39 +165,6 @@ run out), and a single 52-card deck is reshuffled when fewer than 15 cards remai
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Solitaire
-```
-
-[`Solitaire`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Solitaire.java) — Klondike
-(draw one): tap a card to pick it up (a tableau card brings the cards on top of it along), then tap
-where it should go; tapping a picked-up card again sends it to its foundation. Tap the stock to turn
-a card, and the empty stock to turn the waste back over. Once every card is face up the rest plays
-itself. Scoring follows the usual Windows rules, and `NEW` deals again. The 32x44 cards reuse
-`Blackjack`'s suit bitmaps.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Checkers
-```
-
-[`Checkers`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Checkers.java) — English draughts against the computer: men move diagonally forward, kings (gold crown) diagonally both ways; captures are mandatory and multi-jumps continue with the same piece (tap each landing square). The computer runs a 5-ply alpha-beta minimax. Its move generator matches the standard English draughts perft counts to depth 7.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Backgammon
-```
-
-[`Backgammon`](../juno-examples/src/main/java/io/github/jabrena/juno/games/Backgammon.java) —
-Backgammon against the computer, in landscape. `ROLL`, then tap a checker (or the bar) and one of
-the yellow rings that mark its legal destinations, one die at a time; tap your tray to bear off.
-`UNDO` takes back the turn so far and `DONE` ends it. The full rules apply (entering from the bar,
-hitting blots, using both dice or else the higher one, doubles, bearing off), and wins count 1, 2
-for a gammon and 3 for a backgammon; there is no doubling cube. The computer tries every complete
-play of its roll and scores the resulting positions on pips, blocks and primes, and blot exposure.
-Triangles are drawn from horizontal lines, since the display has no line primitive.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.Battleship
 ```
 
@@ -215,13 +182,3 @@ upright and slowly (the header's speeds turn red when too fast) with both feet o
 score 50 times its multiplier (x2, x3, x5; narrower pads pay more). A crash costs 250 fuel, fuel
 carries over between descents, and the game ends when it runs out. The lander is a 15x15 bitmap
 rotated per pixel into a streamed 17x17 block, since the display has no line primitive.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.GameOfLife
-```
-
-[`GameOfLife`](../juno-examples/src/main/java/io/github/jabrena/juno/games/GameOfLife.java) — Conway's
-Game of Life on a 40x46 grid whose edges wrap around. `RUN`/`STOP`, `STEP`, `RAND` and `CLR` control
-the simulation; while stopped, drag on the grid to draw cells (a stroke starting on a live cell erases).
-Only cells that change are redrawn, and the header shows the generation and population.
