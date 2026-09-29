@@ -1,6 +1,6 @@
 package io.github.jabrena.juno;
 
-import io.github.jabrena.juno.backend.CortexM4AsmBackend;
+import io.github.jabrena.juno.backend.Thumb2AsmBackend;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.Program;
 
@@ -17,7 +17,7 @@ public final class JunoCompiler {
     public CompilationResult compile(CompilationRequest request) {
         Program program = pipeline.link(request.classPath(), request.mainClass(), request.requestedBoard());
         IrProgram optimized = pipeline.optimize(pipeline.lower(program));
-        CortexM4AsmBackend.Output output = new CortexM4AsmBackend(request.gcLoggingEnabled(), program.board()).generate(optimized);
+        Thumb2AsmBackend.Output output = new Thumb2AsmBackend(request.gcLoggingEnabled(), program.board()).generate(optimized);
         return new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(),
                 CompilationReport.from(program, optimized));
     }

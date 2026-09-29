@@ -192,7 +192,7 @@ string.
 
 ### 4. Backend codegen
 
-`io.github.jabrena.juno.backend.CortexM4AsmBackend` has one big `switch (call.intrinsic())`. Each
+`io.github.jabrena.juno.backend.Thumb2AsmBackend` has one big `switch (call.intrinsic())`. Each
 case does two things:
 
 - emits the ARM assembly to load the call's arguments and `bl` into a shim function, via
@@ -266,7 +266,7 @@ Not every new capability needs a new intrinsic:
    shim helper.
 5. Write the C++ shim as a text block in a `usesXyz()`-gated helper method, reusing existing
    helpers (`emitShimCall`'s target functions, `juno_read_line`-style primitives) where they fit.
-6. Add a backend unit test (`CortexM4AsmBackendTest`) asserting the emitted `bl <shim>`, the
+6. Add a backend unit test (`Thumb2AsmBackendTest`) asserting the emitted `bl <shim>`, the
    `#include`(s), and that an unrelated program does *not* pull the new shim in — see
    `lowersSmtpSendThroughAStarttlsShim` for the pattern.
 7. Add an end-to-end test (`JunoCompilerTest`) that compiles real Java source through the full

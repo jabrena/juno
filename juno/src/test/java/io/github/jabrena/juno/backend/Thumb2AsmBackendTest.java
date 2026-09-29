@@ -20,16 +20,16 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * {@link CortexM4AsmBackendTest#lowersABlinkShapedProgramToLinkableCortexM4Assembly} builds the exact IR
+ * {@link Thumb2AsmBackendTest#lowersABlinkShapedProgramToLinkableThumb2Assembly} builds the exact IR
  * {@code Blink} lowers to (see {@code juno-examples/src/main/java/Blink.java} and {@code juno inspect --ir
  * --main Blink}). That exact backend output has separately been assembled and linked against the real
  * {@code arduino:renesas_uno} toolchain from a tiny {@code extern "C"} wrapper sketch, with
  * {@code pinMode}/{@code digitalWrite}/{@code delay}/{@code yield} all resolving to the core's real
- * addresses (see {@link CortexM4AsmBackend}'s class doc) — this test only re-checks the generated text.
+ * addresses (see {@link Thumb2AsmBackend}'s class doc) — this test only re-checks the generated text.
  */
-class CortexM4AsmBackendTest {
+class Thumb2AsmBackendTest {
     @Test
-    void lowersABlinkShapedProgramToLinkableCortexM4Assembly() {
+    void lowersABlinkShapedProgramToLinkableThumb2Assembly() {
         MethodRef entryPoint = new MethodRef("Blink", "main", "([Ljava/lang/String;)V");
         IrBasicBlock setupBlock = new IrBasicBlock(0, List.of(
                 new IrInstruction.Const(Value.int32(0), 13),
@@ -59,7 +59,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Jump(6));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 3, 11, List.of(), List.of(setupBlock, loopBlock));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(result.entryPointSymbol()).isEqualTo("juno_Blink_asm");
@@ -93,7 +93,7 @@ class CortexM4AsmBackendTest {
         IrMethod helperMethod = IrMethod.withInferredValues(helper, 0, 0, List.of(),
                 List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty()))));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend()
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(entryMethod, helperMethod)));
         String assembly = result.assembly();
 
@@ -132,7 +132,7 @@ class CortexM4AsmBackendTest {
      * LedMatrixHeart}), including the full-32-bit frame word constants that first exposed the
      * {@code movw}/{@code movt} immediate-loading fix. This assembly + shim pairing has separately
      * been assembled, linked, uploaded to, and run on a real UNO R4 WiFi (see
-     * {@link CortexM4AsmBackend}'s class doc).
+     * {@link Thumb2AsmBackend}'s class doc).
      */
     @Test
     void lowersALedMatrixShapedProgramAndEmitsARuntimeShim() {
@@ -163,7 +163,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Jump(3));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 4, 9, List.of(), List.of(setupBlock, loopBlock));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains("bl juno_led_matrix_begin")).isTrue();
@@ -214,7 +214,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Jump(8));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 4, 13, List.of(), List.of(setupBlock, loopBlock));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains("bl juno_serial_begin")).isTrue();
@@ -239,7 +239,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 0, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains(".section .rodata")).isTrue();
@@ -269,7 +269,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 3, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains("juno_str0:\n    .asciz \"network\"")).isTrue();
@@ -289,7 +289,7 @@ class CortexM4AsmBackendTest {
      * Mirrors {@code ArenaFeaturesPulse}'s shape (arena object with a field, a mutable static field
      * set in {@code <clinit>}, and an enum-style {@code switch}) — see {@code juno inspect --ir --main
      * ArenaFeaturesPulse}. This exact combination has separately been assembled, linked, and uploaded
-     * to real UNO R4 WiFi hardware (see {@link CortexM4AsmBackend}'s class doc).
+     * to real UNO R4 WiFi hardware (see {@link Thumb2AsmBackend}'s class doc).
      */
     @Test
     void lowersArenaObjectsStaticFieldsAndSwitchDispatch() {
@@ -327,7 +327,7 @@ class CortexM4AsmBackendTest {
         IrMethod main = IrMethod.withInferredValues(mainRef, 1, 11, List.of(),
                 List.of(entryBlock, caseZero, caseOne, defaultCase, join));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend()
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend()
                 .generate(new IrProgram(mainRef, List.of(clinit, main)));
         String assembly = result.assembly();
 
@@ -364,7 +364,7 @@ class CortexM4AsmBackendTest {
         IrMethod main = IrMethod.withInferredValues(mainRef, 0, 0, List.of(),
                 List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty()))));
 
-        String assembly = new CortexM4AsmBackend()
+        String assembly = new Thumb2AsmBackend()
                 .generate(new IrProgram(mainRef, List.of(firstClinit, secondClinit, main)))
                 .assembly();
 
@@ -393,7 +393,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 2, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(result.assembly().contains("bl juno_mouse_begin")).isTrue();
         assertThat(result.assembly().contains("bl juno_mouse_move")).isTrue();
@@ -402,7 +402,7 @@ class CortexM4AsmBackendTest {
 
         // A program that never touches Mouse must not require that library to compile.
         MethodRef noArgsEntry = new MethodRef("RatonLoco", "main", "()V");
-        CortexM4AsmBackend.Output withoutMouse = new CortexM4AsmBackend().generate(
+        Thumb2AsmBackend.Output withoutMouse = new Thumb2AsmBackend().generate(
                 new IrProgram(noArgsEntry, List.of(IrMethod.withInferredValues(noArgsEntry, 0, 0, List.of(),
                         List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty())))))));
         assertThat(withoutMouse.runtimeShim().contains("Mouse")).isFalse();
@@ -420,7 +420,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
 
-        String assembly = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method))).assembly();
+        String assembly = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method))).assembly();
 
         assertThat(assembly.contains(".word 9600, 19200, 115200")).isTrue();
         assertThat(assembly.contains("ldr r0, =juno_int_array0")).isTrue();
@@ -454,7 +454,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(Value.int32(1))));
         IrMethod main = IrMethod.withInferredValues(mainRef, 0, 2, List.of(), List.of(mainEntry));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend()
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend()
                 .generate(new IrProgram(mainRef, List.of(main, classify)));
         String assembly = result.assembly();
 
@@ -477,13 +477,13 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(Value.int32(6))));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(result.assembly().contains("bl juno_ladd")).isTrue();
         assertThat(result.runtimeShim().contains("extern \"C\" int64_t juno_ladd")).isTrue();
         // A program that never touches long must not pull the helper block in at all.
         MethodRef intOnlyEntry = new MethodRef("demo/IntOnly", "main", "()V");
-        CortexM4AsmBackend.Output withoutLong = new CortexM4AsmBackend().generate(new IrProgram(intOnlyEntry,
+        Thumb2AsmBackend.Output withoutLong = new Thumb2AsmBackend().generate(new IrProgram(intOnlyEntry,
                 List.of(IrMethod.withInferredValues(intOnlyEntry, 0, 0, List.of(),
                         List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty())))))));
         assertThat(withoutLong.runtimeShim().contains("juno_ladd")).isFalse();
@@ -510,7 +510,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(intResult)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(result.assembly().contains("bl juno_json_get_double")).isTrue();
         assertThat(result.assembly().contains("bl juno_d2i")).isTrue();
@@ -545,7 +545,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(result)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output result2 = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result2 = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(result2.assembly().contains("bl juno_https_get")).isTrue();
         assertThat(result2.assembly().contains("sub sp, sp, #16")).isTrue(); // 8 words spills 4, rounded to 16
@@ -570,7 +570,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(result)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 2, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output output = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output output = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(output.assembly()).contains("bl juno_smtp_send");
         assertThat(output.runtimeShim()).contains(
@@ -608,7 +608,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(result)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output output = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output output = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(output.assembly()).contains("bl juno_pop3_read_latest");
         assertThat(output.assembly()).contains("sub sp, sp, #24"); // 9 words spills 5, rounded to 24
@@ -640,7 +640,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(result)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 5, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output output = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output output = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(output.assembly()).contains("bl juno_pop3_read_subject");
         assertThat(output.runtimeShim()).contains(
@@ -683,7 +683,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 6, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output result = new CortexM4AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains("bl juno_string_builder_new")).isTrue();
@@ -722,7 +722,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(length)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 5, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl juno_string_value_of_int");
@@ -749,7 +749,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(text)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl juno_string_value_of_double");
@@ -770,7 +770,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(text)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl juno_json_get_string_value");
@@ -793,7 +793,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(temperature)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl juno_json_get_int");
@@ -821,7 +821,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(reading)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl analogRead");
@@ -842,7 +842,7 @@ class CortexM4AsmBackendTest {
                 new IrTerminator.Return(Optional.of(millis)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 2, List.of(), List.of(block));
 
-        CortexM4AsmBackend.Output generated = new CortexM4AsmBackend()
+        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl millis");

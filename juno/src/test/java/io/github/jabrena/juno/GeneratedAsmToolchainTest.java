@@ -370,7 +370,7 @@ class GeneratedAsmToolchainTest {
     /**
      * Every generated program's entry-point prologue captures the live {@code sp} into
      * {@code juno_gc_stack_top} before its own {@code push} (see
-     * {@link io.github.jabrena.juno.backend.CortexM4AsmBackend#emitMethod}) so the conservative GC's
+     * {@link io.github.jabrena.juno.backend.Thumb2AsmBackend#emitMethod}) so the conservative GC's
      * stack scan has a sound upper bound. These host-only harnesses never run that generated
      * assembly, so each one stands in for it: define the storage {@code juno_alloc}'s shim only
      * declares {@code extern}, and set it from a local near the top of {@code main()}, the same way
@@ -558,7 +558,7 @@ class GeneratedAsmToolchainTest {
         String harness = """
 
                 // juno_alloc's shim declares juno_gc_stack_top extern (the generated entry-point
-                // assembly normally defines and populates it — see CortexM4AsmBackend.emitMethod);
+                // assembly normally defines and populates it — see Thumb2AsmBackend.emitMethod);
                 // this host-only harness never runs that assembly, so it must provide the storage
                 // itself and set it near the top of main(), the same way the generated prologue does.
                 extern "C" { uintptr_t juno_gc_stack_top; }

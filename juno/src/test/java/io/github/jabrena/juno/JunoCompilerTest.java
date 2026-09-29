@@ -16,13 +16,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * End-to-end (Java source -&gt; javac -&gt; classfile -&gt; link -&gt; IR -&gt; {@link CortexM4AsmBackend})
+ * End-to-end (Java source -&gt; javac -&gt; classfile -&gt; link -&gt; IR -&gt; {@link Thumb2AsmBackend})
  * compiler tests. Assertions target the generated assembly's real conventions rather than the retired
  * C++ backend's textual ones: a user method is a sequential {@code juno_fnN} label (never a
  * name-mangled symbol), a hardware/runtime intrinsic is a {@code bl <function>} call, a static field is
  * {@code juno_static_<Class>_<field>_<T>} in {@code .bss}, and a string literal is {@code juno_strN} in
  * {@code .rodata}. Every assertion below was checked against the real backend output for its fixture
- * (see the ASM/backend/CortexM4AsmBackend.java class doc) before being written.
+ * (see the ASM/backend/Thumb2AsmBackend.java class doc) before being written.
  */
 class JunoCompilerTest {
     @TempDir
@@ -100,7 +100,7 @@ class JunoCompilerTest {
                 List.of(temporaryDirectory, Path.of("target/classes")), "demo.WatchdogExplicit", assembly, shim);
 
         // The exact prologue sequence (stack-top capture, stack zeroing, then push) is covered
-        // precisely by CortexM4AsmBackendTest; this just confirms the entry point is real and the
+        // precisely by Thumb2AsmBackendTest; this just confirms the entry point is real and the
         // watchdog gets started.
         assertThat(result.assembly()).contains("juno_WatchdogExplicit_asm:\n    ldr r0, =juno_gc_stack_top");
         assertThat(result.assembly()).contains("bl juno_watchdog_begin");
@@ -285,7 +285,7 @@ class JunoCompilerTest {
         String plainGenerated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Plain").assembly();
 
         // Unlike the retired C++ backend, the ASM backend's shim always links in the LED matrix driver
-        // (see CortexM4AsmBackend's class doc); only the call sites themselves are conditional.
+        // (see Thumb2AsmBackend's class doc); only the call sites themselves are conditional.
         assertThat(plainGenerated).doesNotContain("bl juno_led_matrix_begin", "bl juno_led_matrix_load_frame",
                 "bl juno_led_matrix_clear");
     }
@@ -1408,7 +1408,7 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatArrays", source);
 
-        // The ASM backend does not yet support arrays of float/long/double (see CortexM4AsmBackend's
+        // The ASM backend does not yet support arrays of float/long/double (see Thumb2AsmBackend's
         // class doc and the sibling long/double array tests below) -- unlike the retired C++ backend,
         // which handled every element type uniformly.
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatArrays"))
@@ -1736,7 +1736,7 @@ class JunoCompilerTest {
     @Test
     void supportsDoubleArraysAreNotYetSupportedByTheAsmBackend() throws Exception {
         // Unlike double locals/fields/parameters (see the test above), the ASM backend does not yet
-        // support arrays of double -- same gap as float[] and long[] (see CortexM4AsmBackend's class
+        // support arrays of double -- same gap as float[] and long[] (see Thumb2AsmBackend's class
         // doc). This mirrors the retired C++ backend's supportsDoubleLocalsCallsFieldsArraysAndConversions
         // test, minus the array portion that no longer compiles.
         String source = """

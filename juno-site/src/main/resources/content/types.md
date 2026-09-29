@@ -39,10 +39,10 @@ narrowing on store (`i2b`, `i2s`) or when a `char` needs zero-extension.
 Juno represents every symbolic IR register as `Value(id, JunoType)`. `JunoType` defines `INT32`,
 `INT64`, `FLOAT32`, and `FLOAT64`, and the backend declares each value using its recorded type.
 
-The Cortex-M4 assembly backend gives every JVM local slot a full, fixed 8-byte region in the
+The Thumb-2 assembly backend gives every JVM local slot a full, fixed 8-byte region in the
 method's stack frame, regardless of its actual type — so a `long`/`double` local can never overlap
 the next slot's storage, at the cost of wasting 4 bytes per plain `int` local (see
-`CortexM4AsmBackend`'s class doc for the exact frame-layout algorithm). Array references remain
+`Thumb2AsmBackend`'s class doc for the exact frame-layout algorithm). Array references remain
 32-bit handles on Cortex-M4, enums are ordinals (with associated integer values stored in
 compiler-generated lookup tables), and each half of Juno's split `long` representation is 32 bits.
 
@@ -100,7 +100,7 @@ storage. `DigitalOutput led = DigitalOutput.of(13)` and the raw pin number `13` 
 identical code; the Java type exists purely to make call sites read like object method calls
 (`led.high()` instead of `Gpio.digitalWrite(13, true)`). `Gpio.analogRead` lowers to the core's real
 `analogRead` the same way `digitalWrite` does. `DigitalOutput.toggle()`/`isHigh()` and
-`Gpio.digitalRead`/`analogWrite` still exist in the Java API but the Cortex-M4 assembly backend
+`Gpio.digitalRead`/`analogWrite` still exist in the Java API but the Thumb-2 assembly backend
 doesn't lower them yet (`CompileException: ... does not support this yet: intrinsic ...` at compile
 time).
 
