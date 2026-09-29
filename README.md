@@ -219,23 +219,23 @@ in one command — the site first, then the Javadoc on top of it:
 To edit a page, edit its Markdown under `juno-site/src/main/resources/content/` (not `docs/`) and
 re-run the command above. Live-preview edits with `./mvnw -f juno-site/pom.xml quarkus:dev`.
 
-### Previewing the regenerated docs/ locally
+### Previewing the site locally
 
-After `./mvnw clean verify -Psite`, serve the exact output that GitHub Pages will publish with the
-JDK's built-in web server, `jwebserver` (JDK 18+; it needs an absolute path). `jabrena/juno` is a
-GitHub Pages *project* site (served under `/juno/`, not at the domain root), and every generated
-page/asset link is prefixed accordingly (`quarkus.http.root-path=/juno` in
-`juno-site/src/main/resources/application.properties`), so mirror that locally by nesting `docs/`
-under a `juno/` folder before serving it — serving `docs/` directly at the web root will 404 on
-every CSS/JS/image/nav link:
+`jabrena/juno` is a GitHub Pages *project* site (served under `/juno/`, not at the domain root), so
+`docs/` itself has that prefix baked into every page/asset link
+(`%prod.quarkus.http.root-path=/juno` in `juno-site/src/main/resources/application.properties`) —
+serving `docs/` directly at the web root 404s on every CSS/JS/image/nav link. For a local preview
+that serves correctly at the root, override the prefix back to `/` and generate into
+`juno-site/target/` instead (a build artifact, never `docs/`):
 
 ```bash
-rm -rf /tmp/juno-preview && mkdir -p /tmp/juno-preview/juno
-cp -R docs/. /tmp/juno-preview/juno/
-jwebserver -d /tmp/juno-preview -p 8000
+./mvnw -f juno-site/pom.xml clean package quarkus:run -Dquarkus.http.root-path=/
+jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000
 ```
 
-Then open <http://127.0.0.1:8000/juno/>. Stop the server with `Ctrl+C`.
+Then open <http://127.0.0.1:8000/>. Stop the server with `Ctrl+C`. This previews content and
+navigation faithfully; it just doesn't exercise the `/juno` prefix itself — that's only worth
+checking after `./mvnw clean verify -Psite`, by diffing `docs/index.html`'s `<base href>`.
 
 ### Cyclomatic complexity
 
