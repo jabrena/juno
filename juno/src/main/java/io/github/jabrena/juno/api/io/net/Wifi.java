@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.io.net;
 
 /**
  * WiFi connection control recognized as compiler intrinsics by Juno, backed by the Arduino
- * {@code WiFiS3} library. Requires {@code @Board(ArduinoUnoR4WiFi.class)} (the default board).
+ * board core's Wi-Fi library ({@code WiFiS3} on UNO R4 WiFi, {@code WiFi} on UNO Q).
  *
  * <p>{@code ssid}/{@code password} may be string literals, compile-time values resolved from
  * {@code System.getenv("NAME")}, or stable runtime strings returned by APIs such as

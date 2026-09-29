@@ -10,6 +10,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -562,6 +563,47 @@ class JunoCompilerTest {
         assertThat(result.runtimeShim()).contains("#include <WiFiS3.h>",
                 "extern \"C\" void juno_wifi_begin(const char* ssid, const char* password)",
                 "WiFi.begin(ssid, password);");
+    }
+
+    @Test
+    void lowersPortableUdpIntrinsicsForUnoR4WifiAndUnoQ() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.net.Udp;
+                @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+                public final class PortableUdp {
+                    public static void main(String[] args) {
+                        byte[] payload = new byte[16];
+                        int[] peer = new int[Udp.ENDPOINT_SIZE];
+                        if (Udp.listen(5000)) {
+                            Udp.broadcast(5000, payload, 4);
+                            Udp.send(peer, peer[Udp.PORT], payload, 4);
+                            Udp.receive(payload, payload.length, peer);
+                            Udp.stop();
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortableUdp", source);
+        List<Path> classpath = List.of(temporaryDirectory, Path.of("target/classes"));
+        JunoCompiler compiler = new JunoCompiler();
+
+        CompilationResult r4 = compiler.compile(classpath, "demo.PortableUdp", false,
+                Optional.of("arduino-uno-r4-wifi"));
+        CompilationResult q = compiler.compile(classpath, "demo.PortableUdp", false,
+                Optional.of("arduino-uno-q"));
+
+        assertThat(r4.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast",
+                "bl juno_udp_send", "bl juno_udp_receive", "bl juno_udp_stop");
+        assertThat(r4.runtimeShim()).contains("#include <WiFiS3.h>", "static WiFiUDP juno_udp;",
+                "IPAddress broadcast(255, 255, 255, 255);");
+        assertThat(q.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast",
+                "bl juno_udp_send", "bl juno_udp_receive", "bl juno_udp_stop");
+        assertThat(q.runtimeShim()).contains("#include <WiFi.h>", "#include <WiFiUdp.h>",
+                "static WiFiUDP juno_udp;").doesNotContain("#include <WiFiS3.h>");
     }
 
     @Test

@@ -17,6 +17,11 @@ record ZephyrCoreRuntime() implements CoreRuntime {
     }
 
     @Override
+    public String wifiIncludes(boolean udp) {
+        return udp ? "#include <WiFi.h>\n#include <WiFiUdp.h>\n" : "#include <WiFi.h>\n";
+    }
+
+    @Override
     public String yieldFunction() {
         return """
                 // The Zephyr core provides yield() itself (the generated assembly's `bl yield` reaches

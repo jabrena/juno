@@ -18,6 +18,12 @@ record RenesasCoreRuntime() implements CoreRuntime {
     }
 
     @Override
+    public String wifiIncludes(boolean udp) {
+        // WiFiS3.h exposes WiFi, WiFiClient, WiFiServer, WiFiSSLClient and WiFiUDP.
+        return "#include <WiFiS3.h>\n";
+    }
+
+    @Override
     public String yieldFunction() {
         return """
                 // Overrides the core's weak yield(): Serial's bool conversion is UNO R4's supported hook

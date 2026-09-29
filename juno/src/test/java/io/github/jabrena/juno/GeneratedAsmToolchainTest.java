@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -222,6 +224,46 @@ class GeneratedAsmToolchainTest {
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
         syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
+    void compilesPortableUdpShimsForBothArduinoCores() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.net.Udp;
+                @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+                public final class AsmUdp {
+                    public static void main(String[] args) {
+                        byte[] payload = new byte[12];
+                        int[] source = new int[Udp.ENDPOINT_SIZE];
+                        Udp.listen(5000);
+                        Udp.broadcast(5000, payload, payload.length);
+                        Udp.send(source, 5000, payload, payload.length);
+                        Udp.receive(payload, payload.length, source);
+                        Udp.stop();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUdp", source);
+        List<Path> classpath = List.of(temporaryDirectory, Path.of("target/classes"));
+        JunoCompiler juno = new JunoCompiler();
+
+        CompilationResult r4 = juno.compile(classpath, "demo.AsmUdp", false,
+                Optional.of("arduino-uno-r4-wifi"));
+        Path r4Shim = temporaryDirectory.resolve("AsmUdpR4Shim.cpp");
+        Files.writeString(r4Shim, r4.runtimeShim(), StandardCharsets.UTF_8);
+        syntaxCheckCpp(compiler, r4Shim);
+
+        CompilationResult q = juno.compile(classpath, "demo.AsmUdp", false,
+                Optional.of("arduino-uno-q"));
+        Path qShim = temporaryDirectory.resolve("AsmUdpQShim.cpp");
+        Files.writeString(qShim, q.runtimeShim(), StandardCharsets.UTF_8);
+        syntaxCheckCpp(compiler, qShim);
     }
 
     @Test

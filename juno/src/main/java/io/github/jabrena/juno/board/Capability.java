@@ -18,6 +18,12 @@ public enum Capability {
             return board.displayName() + " has no onboard WiFi module";
         }
     },
+    WIFI_S3_NETWORKING("HTTP/HTTPS/email networking") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " does not provide the WiFiS3 networking stack";
+        }
+    },
     WATCHDOG("@Watchdog") {
         @Override
         public String unsupportedReason(Board board) {

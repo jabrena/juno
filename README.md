@@ -132,11 +132,13 @@ Juno compiles for, and `juno:verify`/`juno:upload` build for its Arduino CLI FQB
 | `@Board(ArduinoUnoR4WiFi.class)` | Arduino UNO R4 WiFi | `arduino:renesas_uno:unor4wifi` |
 | `@Board(ArduinoUnoQ.class)` | Arduino UNO Q (its STM32U585 microcontroller) | `arduino:zephyr:unoq` |
 
-A class with no `@Board` annotation targets the UNO R4 WiFi. GPIO, time, Serial and the shields
-built on them (LCD keypad, TFT touch) compile and upload for both boards. The LED matrix, Wi-Fi with HTTP/HTTPS, and
-`@Watchdog` are UNO R4 WiFi only (on the UNO Q, its LED matrix and Wi-Fi belong to the board's
-Linux side), and Juno rejects them at compile time for the UNO Q. The other APIs built on UNO R4
-libraries (email, USB mouse, SD card, servo) have not been tried on the UNO Q yet. The TFT games
+A class with no `@Board` annotation targets the UNO R4 WiFi. GPIO, time, Serial, `Wifi`/`Udp`,
+and the shields built on them (LCD keypad, TFT touch) compile and upload for both boards. The LED
+matrix, Wi-Fi with HTTP/HTTPS/email, and `@Watchdog` are UNO R4 WiFi only (on the UNO Q, the LED
+matrix belongs to the board's Linux side, and its Zephyr core has no HTTP/HTTPS/email libraries
+Juno can lower to — plain `Wifi`/`Udp` still work through the MCU's own Zephyr networking), and
+Juno rejects the R4-only APIs at compile time for the UNO Q. The other APIs built on UNO R4
+libraries (USB mouse, SD card, servo) have not been tried on the UNO Q yet. The TFT games
 [Star Trek](juno-examples/src/main/java/io/github/jabrena/juno/games/startrek/StarTrek.java),
 [Star Wars](juno-examples/src/main/java/io/github/jabrena/juno/games/starwars/StarWars.java),
 [The Empire Strikes Back](juno-examples/src/main/java/io/github/jabrena/juno/games/empirestrikesback/EmpireStrikesBack.java),

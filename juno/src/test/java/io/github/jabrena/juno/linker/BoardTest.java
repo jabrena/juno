@@ -218,24 +218,24 @@ class BoardTest {
     }
 
     @Test
-    void theUnoQHasNoWifi() throws Exception {
+    void theUnoQSupportsPortableWifiAndUdp() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.io.net.Udp;
                 @Board(ArduinoUnoQ.class)
                 public final class WifiOnUnoQ {
                     public static void main(String[] args) {
                         Wifi.status();
+                        Udp.listen(5000);
                     }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiOnUnoQ", source);
-        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.WifiOnUnoQ"))
-                .isInstanceOf(CompileException.class)
-                .hasMessage("Wifi requires @Board(ArduinoUnoR4WiFi.class): UNO Q has no onboard WiFi module"
-                        + " (used from demo.WifiOnUnoQ.main([Ljava/lang/String;)V)");
+        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.WifiOnUnoQ").board())
+                .isEqualTo(Board.UNO_Q);
     }
 
     @Test
@@ -243,6 +243,9 @@ class BoardTest {
         assertThat(Board.UNO_R4_WIFI.core()).isEqualTo(ArduinoCore.RENESAS_UNO);
         assertThat(Capability.values()).allMatch(Board.UNO_R4_WIFI::supports);
         assertThat(Board.UNO_Q.core()).isEqualTo(ArduinoCore.ZEPHYR);
-        assertThat(Capability.values()).noneMatch(Board.UNO_Q::supports);
+        assertThat(Board.UNO_Q.supports(Capability.WIFI)).isTrue();
+        assertThat(Board.UNO_Q.supports(Capability.LED_MATRIX)).isFalse();
+        assertThat(Board.UNO_Q.supports(Capability.WIFI_S3_NETWORKING)).isFalse();
+        assertThat(Board.UNO_Q.supports(Capability.WATCHDOG)).isFalse();
     }
 }

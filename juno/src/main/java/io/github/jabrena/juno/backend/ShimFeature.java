@@ -9,6 +9,7 @@ enum ShimFeature {
     MOUSE,
     SERVO,
     WIFI,
+    UDP,
     SD,
     LONG,
     FLOAT,

@@ -92,9 +92,9 @@ final class RuntimeShim {
         if (uses(ShimFeature.SERVO)) {
             shim.append("#include <Servo.h>\n");
         }
-        if (usesAny(ShimFeature.WIFI, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
+        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.SMTP, ShimFeature.POP3)) {
-            shim.append("#include <WiFiS3.h>\n");
+            shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
         }
         if (uses(ShimFeature.SD)) {
             shim.append("#include <SPI.h>\n#include <SdFat.h>\n");
@@ -514,6 +514,9 @@ final class RuntimeShim {
         }
         if (uses(ShimFeature.WIFI)) {
             shim.append(ShimLibraries.wifiHelpers());
+        }
+        if (uses(ShimFeature.UDP)) {
+            shim.append(NetworkShimLibraries.udpHelpers());
         }
         if (uses(ShimFeature.SD)) {
             shim.append(ShimLibraries.sdHelpers());

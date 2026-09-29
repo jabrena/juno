@@ -24,6 +24,13 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime {
     String delayMicrosFunction();
 
     /**
+     * Core-provided headers for station-mode Wi-Fi and, when requested, UDP. The classes exposed by
+     * these headers share Arduino's {@code WiFi}/{@code WiFiUDP} API even though the library names
+     * differ between cores.
+     */
+    String wifiIncludes(boolean udp);
+
+    /**
      * The shim's {@code yield()} and delay glue, emitted ahead of {@code juno_panic}. It must provide
      * (or leave to the core) the plain {@code yield} symbol every generated loop backedge calls, and
      * define {@link #delayMillisFunction()}/{@link #delayMicrosFunction()} when those aren't core

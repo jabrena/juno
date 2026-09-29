@@ -204,12 +204,18 @@ public final class Linker {
             required.put(intrinsic, Capability.LED_MATRIX);
         }
         for (Intrinsic intrinsic : List.of(Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS, Intrinsic.WIFI_LOCAL_IP,
-                Intrinsic.HTTP_GET, Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH,
+                Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
+                Intrinsic.UDP_STOP)) {
+            required.put(intrinsic, Capability.WIFI);
+        }
+        for (Intrinsic intrinsic : List.of(Intrinsic.HTTP_GET, Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE,
+                Intrinsic.HTTP_PATCH,
                 Intrinsic.HTTP_QUERY, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER, Intrinsic.HTTPS_POST,
                 Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY, Intrinsic.HTTP_SERVER_BEGIN,
                 Intrinsic.HTTP_SERVER_ACCEPT, Intrinsic.HTTP_SERVER_METHOD, Intrinsic.HTTP_SERVER_PATH,
-                Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER)) {
-            required.put(intrinsic, Capability.WIFI);
+                Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER, Intrinsic.SMTP_SEND,
+                Intrinsic.POP3_MESSAGE_COUNT, Intrinsic.POP3_READ_LATEST, Intrinsic.POP3_READ_SUBJECT)) {
+            required.put(intrinsic, Capability.WIFI_S3_NETWORKING);
         }
         return Collections.unmodifiableMap(required);
     }

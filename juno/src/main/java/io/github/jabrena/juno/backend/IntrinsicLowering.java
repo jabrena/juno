@@ -245,6 +245,14 @@ final class IntrinsicLowering {
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_STATUS, "juno_wifi_status", Result.WORD, List.of(), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_LOCAL_IP, "juno_wifi_local_ip", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
+        shim(Intrinsic.UDP_LISTEN, "juno_udp_listen", Result.WORD, List.of(arg(0)), ShimFeature.UDP);
+        shim(Intrinsic.UDP_SEND, "juno_udp_send", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.UDP);
+        shim(Intrinsic.UDP_BROADCAST, "juno_udp_broadcast", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.UDP);
+        shim(Intrinsic.UDP_RECEIVE, "juno_udp_receive", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.UDP);
+        shim(Intrinsic.UDP_STOP, "juno_udp_stop", Result.NONE, List.of(), ShimFeature.UDP);
     }
 
     /**
