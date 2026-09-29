@@ -46,6 +46,11 @@ This is a multi-module Maven build:
 - [`juno-examples/`](juno-examples) — example Java programs written against `juno`'s `api` and
   `annotations` packages, compiled by Maven like any other Java module
   (`juno-examples/target/classes`) so they are checked for compile errors on every build.
+- [`juno-site/`](juno-site) — the [Roq](https://iamroq.dev)/Quarkus static site generator project
+  behind the [documentation site](https://jabrena.github.io/juno/). `docs/` is entirely generated
+  output (like `docs/javadocs` already was): the Markdown source for every page lives under
+  `juno-site/src/main/resources/content/`, not in `docs/` itself. See
+  [Documentation site](#documentation-site) below to regenerate it.
 
 ## Quick start
 
@@ -55,12 +60,12 @@ Requirements: JDK 25+ and Maven 3.9+.
 ./mvnw clean install
 ```
 
-This builds all three modules: `juno/target/juno-0.1.0-SNAPSHOT.jar` (the compiler and hardware
-API), `juno-maven-plugin/target/juno-maven-plugin-0.1.0-SNAPSHOT.jar` (the Maven integration), and
-`juno-examples/target/classes` (the compiled example programs). To turn an example into a
-`.ino` sketch and run it on real UNO R4 WiFi or UNO Q hardware with `arduino-cli`, see
-[docs/ARDUINO.md](docs/ARDUINO.md). The UNO Q also needs Arduino's Zephyr core:
-`arduino-cli core install arduino:zephyr`.
+This builds the compiler/Maven-plugin/examples modules: `juno/target/juno-0.1.0-SNAPSHOT.jar` (the
+compiler and hardware API), `juno-maven-plugin/target/juno-maven-plugin-0.1.0-SNAPSHOT.jar` (the
+Maven integration), and `juno-examples/target/classes` (the compiled example programs). To turn an
+example into a `.ino` sketch and run it on real UNO R4 WiFi or UNO Q hardware with `arduino-cli`,
+see [Arduino CLI Workflow](https://jabrena.github.io/juno/arduino). The UNO Q also needs Arduino's
+Zephyr core: `arduino-cli core install arduino:zephyr`.
 
 Use the following commands for the complete `Blink` workflow:
 
@@ -110,10 +115,12 @@ See the [Javadoc](https://jabrena.github.io/juno/javadocs/0.1.0-SNAPSHOT/apidocs
 for the complete Java API reference.
 
 For Wi-Fi connections, HTTP/HTTPS REST calls, and bounded JSON response extraction, see the
-[Internet access guide](docs/INTERNET.md). Credentials can be resolved at compile time or loaded
-from an SD card as described in the [SD-card configuration guide](docs/STORAGE.md). For sending and reading email
-(`Smtp`/`Pop3Client`), see [docs/EMAIL.md](docs/EMAIL.md). For how these API classes work
-internally, and the checklist for adding a new one, see [docs/APIS.md](docs/APIS.md).
+[Internet access guide](https://jabrena.github.io/juno/internet). Credentials can be resolved at
+compile time or loaded from an SD card as described in the
+[SD-card configuration guide](https://jabrena.github.io/juno/storage). For sending and reading
+email (`Smtp`/`Pop3Client`), see the [email guide](https://jabrena.github.io/juno/email). For how
+these API classes work internally, and the checklist for adding a new one, see
+[Hardware API Internals](https://jabrena.github.io/juno/apis).
 
 ### Target board
 
@@ -146,8 +153,8 @@ public final class RedBaron {
 
 Juno deliberately fails at link time when reachable code uses something outside the current
 subset. Diagnostics identify the method, bytecode offset, and unsupported opcode. See
-[docs/FEATURES.md](docs/FEATURES.md) for the full, up-to-date inventory of what's supported and
-what isn't.
+the [Feature Inventory](https://jabrena.github.io/juno/features) for the full, up-to-date
+inventory of what's supported and what isn't.
 
 Before generating or uploading a sketch, inspect conservative runtime-risk and resource estimates:
 
@@ -197,6 +204,32 @@ check reachability and failure diagnostics, assemble generated `.S` files with a
 Generates a Javadoc site for `juno` into `docs/javadocs/<version>/apidocs`,
 e.g. `docs/javadocs/0.1.0-SNAPSHOT/apidocs/index.html` (`juno-examples` is excluded, since it's
 example programs rather than library API).
+
+### Documentation site
+
+`docs/` is entirely generated output, rebuilt from scratch every time — nothing under it is
+hand-edited. The prose lives in [`juno-site/`](juno-site) (a [Roq](https://iamroq.dev)/Quarkus
+static site) and is published to <https://jabrena.github.io/juno/>. Regenerate `docs/` completely
+in one command — the site first, then the Javadoc on top of it:
+
+```bash
+./mvnw clean verify -Psite
+```
+
+To edit a page, edit its Markdown under `juno-site/src/main/resources/content/` (not `docs/`) and
+re-run the command above. Live-preview edits with `./mvnw -f juno-site/pom.xml quarkus:dev`.
+
+### Previewing the regenerated docs/ locally
+
+After `./mvnw clean verify -Psite`, serve the exact output that GitHub Pages will publish with the
+JDK's built-in web server, `jwebserver` (JDK 18+; it needs an absolute path), then open
+<http://127.0.0.1:8000>:
+
+```bash
+jwebserver -d "$(pwd)/docs" -p 8000
+```
+
+Stop the server with `Ctrl+C`.
 
 ### Cyclomatic complexity
 

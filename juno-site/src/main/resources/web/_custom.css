@@ -1,0 +1,26 @@
+/* Juno theme: PCB teal accent, copper/solder pop color. */
+@theme inline {
+    --color-accent-50: #eefaf7;
+    --color-accent-100: #d3f1ea;
+    --color-accent-200: #a8e3d6;
+    --color-accent-300: #75cebc;
+    --color-accent-400: #45b09c;
+    --color-accent-500: #2c9382;
+    --color-accent-600: #21766a;
+    --color-accent-700: #1c5f56;
+    --color-accent-800: #194c46;
+    --color-accent-900: #163f3a;
+    --color-accent-950: #092422;
+
+    --color-pop-50: #fdf6ec;
+    --color-pop-100: #fae8cc;
+    --color-pop-200: #f4cd94;
+    --color-pop-300: #edac5c;
+    --color-pop-400: #e68f38;
+    --color-pop-500: #d5701f;
+    --color-pop-600: #b25518;
+    --color-pop-700: #8e3f18;
+    --color-pop-800: #74341a;
+    --color-pop-900: #612d19;
+    --color-pop-950: #37150b;
+}

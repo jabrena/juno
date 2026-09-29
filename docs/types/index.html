@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Java/Arduino Type Mapping - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Java/Arduino Type Mapping" />
+  <meta name="twitter:title" content="Java/Arduino Type Mapping">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="How Java types and bytecode map onto Cortex-M4 assembly and the C++ runtime shim.">
+  <meta property="og:description" content="How Java types and bytecode map onto Cortex-M4 assembly and the C++ runtime shim." />
+  <meta name="twitter:description" content="How Java types and bytecode map onto Cortex-M4 assembly and the C++ runtime shim.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/types/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/types/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/types/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/types/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="active" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Java/Arduino Type Mapping</h1>
+  <p class="page-header-intro">
+    How Java types and bytecode map onto Cortex-M4 assembly and the C++ runtime shim.
+  </p>
+</section>    <div class="content-prose">
+<p>Juno only accepts a small slice of Java's type system (see <a href="/features">FEATURES.md</a>). Its IR now
+records an explicit <code>JunoType</code> for every <code>Value</code>; accepted bytecodes lower to <code>INT32</code>, <code>INT64</code>,
+<code>FLOAT32</code>, and <code>FLOAT64</code> values. This note explains the current representations and where the Java
+and Arduino type systems meet.</p>
+<h2 id="supported-java-types">Supported Java types</h2>
+<p>Method descriptor validation (in
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java"><code>juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java</code></a>)
+admits eight primitive JVM descriptor types as ordinary scalar method parameters/results:</p>
+<table>
+<thead>
+<tr>
+<th>Java type</th>
+<th>JVM descriptor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>boolean</code></td>
+<td><code>Z</code></td>
+</tr>
+<tr>
+<td><code>byte</code></td>
+<td><code>B</code></td>
+</tr>
+<tr>
+<td><code>char</code></td>
+<td><code>C</code></td>
+</tr>
+<tr>
+<td><code>short</code></td>
+<td><code>S</code></td>
+</tr>
+<tr>
+<td><code>int</code></td>
+<td><code>I</code></td>
+</tr>
+<tr>
+<td><code>long</code></td>
+<td><code>J</code></td>
+</tr>
+<tr>
+<td><code>float</code></td>
+<td><code>F</code></td>
+</tr>
+<tr>
+<td><code>double</code></td>
+<td><code>D</code></td>
+</tr>
+</tbody>
+</table>
+<p>Primitive arrays, simple enums, records, and final closed-world object types are also supported as
+parameters/results under the restrictions in <a href="/features">FEATURES.md</a>. <code>DigitalOutput</code> remains a
+compiler-erased handle rather than an arena object.</p>
+<h2 id="typed-ir-scalar-lanes">Typed IR scalar lanes</h2>
+<p>The JVM itself never gives <code>boolean</code>, <code>byte</code>, <code>char</code>, or <code>short</code> their own operand-stack
+representation — bytecode always computes with them as a 32-bit <code>int</code> on the stack, only
+narrowing on store (<code>i2b</code>, <code>i2s</code>) or when a <code>char</code> needs zero-extension.</p>
+<p>Juno represents every symbolic IR register as <code>Value(id, JunoType)</code>. <code>JunoType</code> defines <code>INT32</code>,
+<code>INT64</code>, <code>FLOAT32</code>, and <code>FLOAT64</code>, and the backend declares each value using its recorded type.</p>
+<p>The Cortex-M4 assembly backend gives every JVM local slot a full, fixed 8-byte region in the
+method's stack frame, regardless of its actual type — so a <code>long</code>/<code>double</code> local can never overlap
+the next slot's storage, at the cost of wasting 4 bytes per plain <code>int</code> local (see
+<code>CortexM4AsmBackend</code>'s class doc for the exact frame-layout algorithm). Array references remain
+32-bit handles on Cortex-M4, enums are ordinals (with associated integer values stored in
+compiler-generated lookup tables), and each half of Juno's split <code>long</code> representation is 32 bits.</p>
+<p>So a Java <code>byte</code>, <code>char</code>, <code>short</code>, <code>boolean</code>, or <code>int</code> intentionally share the <code>INT32</code> runtime
+representation. The narrowing bytecodes are lowered
+to explicit casts that reproduce Java's sign/zero-extension semantics:</p>
+<ul>
+<li><code>i2b</code> (opcode 145) → <code>juno_i2b</code>, sign-extends the low 8 bits</li>
+<li><code>i2c</code> (opcode 146) → a plain <code>static_cast&lt;uint16_t&gt;</code>, zero-extending like Java's <code>char</code></li>
+<li><code>i2s</code> (opcode 147) → <code>juno_i2s</code>, sign-extends the low 16 bits</li>
+</ul>
+<p>These only run where the <em>Java source</em> narrows explicitly (a cast, or storing into a narrower
+local); arithmetic itself is always full-width <code>int32_t</code>, exactly as the JVM specifies.</p>
+<h2 id="where-arduinos-own-types-show-up">Where Arduino's own types show up</h2>
+<p>The generated assembly itself is untyped machine code — every intrinsic call is a plain <code>bl</code>
+branch with arguments already sitting in registers. Arduino's own type vocabulary
+(<code>unsigned long</code>, <code>uint32_t</code>, <code>bool</code>) only reappears one layer down, inside the generated
+<code>extern &quot;C&quot;</code> runtime shim that the assembly calls into and that itself calls the real Arduino API.
+Juno's intrinsic lowering (<code>backend/IntrinsicLowering</code>, plus the shim-side helpers it
+calls) is the single place that bridges the two:</p>
+<table>
+<thead>
+<tr>
+<th>Juno API (Java)</th>
+<th>Generated assembly call</th>
+<th>Shim / Arduino type notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio.digitalWrite(int pin, boolean high)</code></td>
+<td><code>bl digitalWrite</code></td>
+<td>Java <code>boolean</code> (0/1) is loaded straight into the register Arduino's <code>digitalWrite</code> reads as <code>HIGH</code>/<code>LOW</code>; no C++ <code>bool</code> conversion involved</td>
+</tr>
+<tr>
+<td><code>Delay.millis(int ms)</code></td>
+<td><code>bl delay</code> (calls Arduino's <code>delay</code> directly, no shim)</td>
+<td>Arduino's <code>delay</code> takes <code>unsigned long</code>; the raw <code>int32_t</code> register value is reinterpreted as <code>unsigned long</code> at the call boundary itself, with no explicit cast anywhere in generated code</td>
+</tr>
+<tr>
+<td><code>Serial.begin(BaudRate baudRate)</code></td>
+<td>resolves the enum to an <code>int</code>, then <code>bl juno_serial_begin</code></td>
+<td>shim casts to <code>unsigned long</code>; type-safe convenience overload for the five common rates in <code>BaudRate</code></td>
+</tr>
+<tr>
+<td><code>Serial.println(int value)</code></td>
+<td><code>bl juno_serial_println</code></td>
+<td>prints a signed decimal <code>int32_t</code>; overloads for <code>long</code>, <code>float</code>, and <code>double</code> call type-specific shims, while <code>Serial.println(String)</code> compiles to <code>bl juno_serial_println_str</code> for a compile-time string literal (see <a href="/features">FEATURES.md</a> for the current runtime-<code>String</code> support)</td>
+</tr>
+<tr>
+<td><code>LedMatrix.loadFrame(int, int, int)</code></td>
+<td><code>bl juno_led_matrix_load_frame</code></td>
+<td>the shim reinterprets each Java <code>int</code> bit-for-bit as <code>uint32_t</code> (a packed pixel bitmask, not a numeric value)</td>
+</tr>
+<tr>
+<td><code>Mouse.move(int x, int y)</code></td>
+<td><code>bl juno_mouse_move</code></td>
+<td>the shim narrows each Java <code>int</code> to Arduino's <code>signed char</code> (-128..127), sign-extended — out-of-range values wrap instead of clamping</td>
+</tr>
+</tbody>
+</table>
+<p>The recurring pattern: Java's type system has no <code>unsigned</code> and no distinct <code>bool</code> at the ABI
+level, so every Arduino API that expects <code>unsigned long</code>, <code>uint32_t</code>, or a <code>HIGH</code>/<code>LOW</code>/<code>bool</code>
+convention gets an explicit cast/reinterpretation inside the shim, one call removed from the
+generated assembly. Application code never sees or writes these casts; the affected hardware APIs
+retain their Java integer-like signatures.</p>
+<h2 id="digitaloutput-an-object-with-no-runtime-representation"><code>DigitalOutput</code>: an object with no runtime representation</h2>
+<p><code>DigitalOutput</code> is an object-shaped API but not a real object at runtime. The
+&quot;constructor&quot; <code>DigitalOutput.of(int pin)</code> inlines directly into the caller's own assembly — load
+the pin number, load <code>OUTPUT</code> (1), <code>bl pinMode</code>, then keep the pin number itself as the &quot;handle&quot;:</p>
+<pre><code class="language-asm">    ldr  r0, &lt;pin&gt;
+    movs r1, #1        @ OUTPUT
+    bl   pinMode
+    ldr  r0, &lt;pin&gt;     @ the &quot;handle&quot; is just the pin number again
+</code></pre>
+<p>Every instance method (<code>high</code>, <code>low</code>) receives that same pin number as its receiver and calls
+<code>digitalWrite</code> directly (<code>r1 = 1</code> or <code>0</code>) — there is no heap allocation, no vtable, and no field
+storage. <code>DigitalOutput led = DigitalOutput.of(13)</code> and the raw pin number <code>13</code> compile to
+identical code; the Java type exists purely to make call sites read like object method calls
+(<code>led.high()</code> instead of <code>Gpio.digitalWrite(13, true)</code>). <code>Gpio.analogRead</code> lowers to the core's real
+<code>analogRead</code> the same way <code>digitalWrite</code> does. <code>DigitalOutput.toggle()</code>/<code>isHigh()</code> and
+<code>Gpio.digitalRead</code>/<code>analogWrite</code> still exist in the Java API but the Cortex-M4 assembly backend
+doesn't lower them yet (<code>CompileException: ... does not support this yet: intrinsic ...</code> at compile
+time).</p>
+<h2 id="what-this-rules-out">What this rules out</h2>
+<p>Juno supports typed <code>INT64</code>, <code>FLOAT32</code>, and <code>FLOAT64</code> boundary values in addition to its normal
+<code>INT32</code> values. JVM <code>long</code> stack/local values remain paired 32-bit halves and are packed when crossing
+a call, field, or array boundary. Remaining exclusions include:</p>
+<ul>
+<li>general <code>String</code> construction/concatenation and most <code>String</code>/<code>StringBuilder</code> methods — a bounded
+set of runtime-<code>String</code> operations is supported instead (string literals, <code>String.valueOf(int)</code>/
+<code>(double)</code>, <code>length()</code>, <code>charAt(int)</code>, and a fixed-capacity <code>StringBuilder</code>); see
+<a href="/features">FEATURES.md</a> for the exact list. Multi-character LED matrix display (see
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java"><code>LedCanvas</code></a>) still works
+character-by-character with hand-encoded font tables rather than string data</li>
+<li>polymorphic objects/inheritance and unbounded allocation. Final closed-world objects and records use
+one-slot handles into a fixed 8 KiB program-lifetime arena with no reclamation</li>
+</ul>
+<p>See <a href="/features">FEATURES.md</a> for the full, authoritative list.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

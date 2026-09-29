@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino UNO R3 WiFi - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino UNO R3 WiFi" />
+  <meta name="twitter:title" content="Arduino UNO R3 WiFi">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the Arduino UNO R3 WiFi.">
+  <meta property="og:description" content="Board notes for the Arduino UNO R3 WiFi." />
+  <meta name="twitter:description" content="Board notes for the Arduino UNO R3 WiFi.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/arduino-one-r3-wifi/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/arduino-one-r3-wifi/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/arduino-one-r3-wifi/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/arduino-one-r3-wifi/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="active" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Arduino UNO R3 WiFi</h1>
+  <p class="page-header-intro">
+    Board notes for the Arduino UNO R3 WiFi.
+  </p>
+</section>    <div class="content-prose">
+<blockquote>
+<p>The linked board's official product name is <strong>Arduino UNO WiFi Rev2</strong>, not “UNO R3 WiFi.” This
+file keeps <code>ARDUINO-ONE-R3-WIFI.md</code> as its requested filename, but the hardware is based on the
+ATmega4809 and Arduino's megaAVR core rather than the UNO R3's ATmega328P and classic AVR core.</p>
+</blockquote>
+<p>The UNO WiFi Rev2 combines an 8-bit ATmega4809 application microcontroller with a u-blox
+NINA-W102 radio module. It retains the familiar UNO form factor and 5 V GPIO while adding Wi-Fi,
+Bluetooth, a secure element and a six-axis inertial measurement unit (IMU).</p>
+<h2 id="core-specification">Core specification</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th align="right">UNO WiFi Rev2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product SKU</td>
+<td align="right">ABX00021</td>
+</tr>
+<tr>
+<td>Main microcontroller</td>
+<td align="right">Microchip ATmega4809</td>
+</tr>
+<tr>
+<td>CPU architecture</td>
+<td align="right">8-bit megaAVR</td>
+</tr>
+<tr>
+<td>CPU clock</td>
+<td align="right">16 MHz</td>
+</tr>
+<tr>
+<td>Program flash</td>
+<td align="right">48 kB</td>
+</tr>
+<tr>
+<td>SRAM</td>
+<td align="right">6,144 bytes</td>
+</tr>
+<tr>
+<td>EEPROM</td>
+<td align="right">256 bytes</td>
+</tr>
+<tr>
+<td>Logic and operating voltage</td>
+<td align="right">5 V</td>
+</tr>
+<tr>
+<td>Digital I/O</td>
+<td align="right">14 pins, D0-D13</td>
+</tr>
+<tr>
+<td>PWM-capable pins</td>
+<td align="right">5: D3, D5, D6, D9 and D10</td>
+</tr>
+<tr>
+<td>Analog inputs</td>
+<td align="right">6 pins, A0-A5</td>
+</tr>
+<tr>
+<td>Analog output</td>
+<td align="right">No true DAC; <code>analogWrite</code> produces PWM</td>
+</tr>
+<tr>
+<td>USB connector</td>
+<td align="right">USB Type-B</td>
+</tr>
+<tr>
+<td>Built-in LED</td>
+<td align="right">Logical Arduino pin 25</td>
+</tr>
+<tr>
+<td>Radio module</td>
+<td align="right">u-blox NINA-W102</td>
+</tr>
+<tr>
+<td>Secure element</td>
+<td align="right">Microchip ATECC608A</td>
+</tr>
+<tr>
+<td>IMU</td>
+<td align="right">STMicroelectronics LSM6DS3TR</td>
+</tr>
+<tr>
+<td>Arduino CLI FQBN</td>
+<td align="right"><code>arduino:megaavr:uno2018</code></td>
+</tr>
+</tbody>
+</table>
+<p>The ATmega4809 executes the Arduino sketch. The NINA-W102 is a separate radio processor with its
+own firmware and TCP/IP stack. Applications normally communicate with it through Arduino's WiFiNINA
+and ArduinoBLE libraries instead of programming the module directly.</p>
+<h2 id="power-and-electrical-characteristics">Power and electrical characteristics</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Specification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO logic level</td>
+<td>5 V</td>
+</tr>
+<tr>
+<td>Recommended VIN/barrel-jack input</td>
+<td>6-20 V</td>
+</tr>
+<tr>
+<td>USB power</td>
+<td>5 V through USB Type-B</td>
+</tr>
+<tr>
+<td>DC current per I/O pin</td>
+<td>20 mA</td>
+</tr>
+<tr>
+<td>3.3 V pin maximum</td>
+<td>50 mA</td>
+</tr>
+</tbody>
+</table>
+<p>The traditional UNO headers use 5 V logic, but the radio and other onboard components operate in
+lower-voltage domains through board-level translation and regulation. Do not connect external
+loads directly to internal radio-module signals or exceed the documented header-pin limits.</p>
+<p>Motors, relays and other high-current loads require an appropriate transistor, MOSFET or driver
+circuit and normally a separate power supply. The per-pin limit is not a power budget for the
+whole microcontroller; aggregate port and device-current limits also apply.</p>
+<h2 id="io-and-buses">I/O and buses</h2>
+<ul>
+<li><strong>Digital:</strong> D0-D13. Unlike the UNO R3 and R4, the onboard LED is not attached to D13; Arduino
+maps <code>LED_BUILTIN</code> to internal logical pin 25.</li>
+<li><strong>PWM:</strong> D3, D5, D6, D9 and D10.</li>
+<li><strong>Analog:</strong> A0-A5, backed by the ATmega4809 ADC.</li>
+<li><strong>UART:</strong> D0/RX and D1/TX expose the user hardware serial interface. The USB serial monitor uses
+a separate internal serial path.</li>
+<li><strong>I2C/TWI:</strong> exposed through SDA/SCL and the matching UNO header positions.</li>
+<li><strong>SPI:</strong> exposed through the ICSP header; board-level SPI connections are also used to
+communicate with the NINA-W102.</li>
+<li><strong>USB:</strong> used for programming and serial monitoring through the board's USB interface. The
+ATmega4809 does not provide native USB HID to the application sketch.</li>
+</ul>
+<p>The ATmega4809 is not register-compatible with the UNO R3's ATmega328P. Arduino's megaAVR core
+provides a compatibility layer for portable sketches, but libraries that manipulate AVR registers,
+interrupt vectors or timers directly may require changes.</p>
+<h2 id="wireless-security-and-motion-hardware">Wireless, security and motion hardware</h2>
+<h3 id="nina-w102-radio">NINA-W102 radio</h3>
+<p>The u-blox NINA-W102 is a self-contained radio module with 2.4 GHz Wi-Fi and Bluetooth/Bluetooth
+Low Energy support. Its network stack and Arduino firmware allow the ATmega4809 to use wireless
+features without implementing radio protocols itself. Wi-Fi is normally accessed through the
+<code>WiFiNINA</code> library and Bluetooth Low Energy through <code>ArduinoBLE</code>.</p>
+<p>The module can be reflashed or programmed directly for advanced experiments, but doing so is
+outside the standard Arduino sketch workflow and can invalidate the module's radio certification.</p>
+<h3 id="atecc608a-secure-element">ATECC608A secure element</h3>
+<p>The secure element provides hardware-backed storage and cryptographic operations used for secure
+network identity and TLS-related workflows. Applications access it through compatible Arduino
+libraries; it is not ordinary EEPROM or general-purpose application memory.</p>
+<h3 id="lsm6ds3tr-imu">LSM6DS3TR IMU</h3>
+<p>The onboard LSM6DS3TR combines a three-axis accelerometer and three-axis gyroscope. It is connected
+internally to the application MCU and is supported by Arduino's IMU libraries. Its presence does
+not consume any of the six user-facing analog input pins.</p>
+<h2 id="memory-and-performance-constraints">Memory and performance constraints</h2>
+<p>The board has three times the SRAM and 50% more flash than the UNO R3, but it remains an 8-bit
+target with much less memory than either UNO R4 variant. SRAM is shared by global/static data, the
+heap and the call stack. Wireless and IMU libraries also need working memory, reducing the amount
+available to application code.</p>
+<p>Juno represents supported Java values and generated temporaries as 32-bit integers. On the
+ATmega4809, arithmetic on those values requires multiple 8-bit operations, and every live 32-bit
+local consumes four bytes. Larger generated methods therefore need careful flash, SRAM and stack
+budgeting even though the board is less constrained than the UNO R3.</p>
+<h2 id="physical-compatibility">Physical compatibility</h2>
+<p>The board follows the UNO shield outline and header arrangement. Its nominal dimensions are
+68.6 mm by 53.4 mm and its nominal weight is 25 g.</p>
+<p>Mechanical compatibility does not guarantee software compatibility. Shields and libraries can
+depend on R3-specific registers, timers or interrupt behavior, and the WiFi Rev2 reuses internal
+SPI and serial resources for its onboard peripherals. Check the board pinout and library support
+before selecting a shield.</p>
+<h2 id="arduino-toolchain">Arduino toolchain</h2>
+<p>The UNO WiFi Rev2 uses Arduino's <strong>megaAVR</strong> core, not the classic <code>arduino:avr</code> core used by the
+UNO R3:</p>
+<pre><code class="language-bash">arduino-cli core update-index
+arduino-cli core install arduino:megaavr
+</code></pre>
+<p>Generate a Juno sketch, then compile it for the board:</p>
+<pre><code class="language-bash">java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+  --main &lt;ExampleClassName&gt; \
+  --classpath juno-examples/target/classes:juno/target/classes
+
+arduino-cli compile \
+  --fqbn arduino:megaavr:uno2018 \
+  build/juno/&lt;ExampleClassName&gt;
+</code></pre>
+<p>Uploading changes the firmware on a connected physical board. Find its port with
+<code>arduino-cli board list</code> before using <code>arduino-cli upload</code>.</p>
+<h2 id="juno-compatibility">Juno compatibility</h2>
+<p>The UNO WiFi Rev2 is not currently a declared or continuously tested Juno target. The Juno backend
+emits standard Arduino calls for its portable APIs, so the basic GPIO, timing and serial subset is
+expected to work with the megaAVR core. It still requires end-to-end compiler and hardware testing
+before being considered officially supported.</p>
+<table>
+<thead>
+<tr>
+<th>Juno API or feature</th>
+<th align="right">UNO WiFi Rev2</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio</code> and <code>DigitalOutput</code></td>
+<td align="right">Expected</td>
+<td>Uses standard Arduino GPIO calls</td>
+</tr>
+<tr>
+<td><code>Delay</code> and <code>Clock</code></td>
+<td align="right">Expected</td>
+<td>Uses Arduino delay and time functions</td>
+</tr>
+<tr>
+<td><code>Serial</code></td>
+<td align="right">Expected</td>
+<td>Uses the board's USB serial-monitor path</td>
+</tr>
+<tr>
+<td><code>Mouse</code></td>
+<td align="right">No</td>
+<td>The application MCU has no native USB HID support</td>
+</tr>
+<tr>
+<td><code>LedMatrix</code></td>
+<td align="right">No</td>
+<td>There is no onboard 12x8 LED matrix</td>
+</tr>
+<tr>
+<td>Wi-Fi and Bluetooth</td>
+<td align="right">Not yet exposed</td>
+<td>Juno has no WiFiNINA or ArduinoBLE intrinsic API</td>
+</tr>
+<tr>
+<td>IMU and secure element</td>
+<td align="right">Not yet exposed</td>
+<td>Juno has no intrinsic API for these peripherals</td>
+</tr>
+</tbody>
+</table>
+<p>The existing <code>Blink</code> example selects pin 13 explicitly and therefore does not address this board's
+onboard LED. A WiFi Rev2-specific example must use logical pin 25 unless Juno gains a board-aware
+<code>LED_BUILTIN</code> abstraction.</p>
+<h2 id="comparison-with-the-uno-r3-and-r4">Comparison with the UNO R3 and R4</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th align="right">UNO R3</th>
+<th align="right">UNO WiFi Rev2</th>
+<th align="right">UNO R4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main MCU</td>
+<td align="right">ATmega328P</td>
+<td align="right">ATmega4809</td>
+<td align="right">Renesas RA4M1</td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td align="right">8-bit AVR</td>
+<td align="right">8-bit megaAVR</td>
+<td align="right">32-bit Arm Cortex-M4</td>
+</tr>
+<tr>
+<td>Clock</td>
+<td align="right">16 MHz</td>
+<td align="right">16 MHz</td>
+<td align="right">48 MHz</td>
+</tr>
+<tr>
+<td>Flash</td>
+<td align="right">32 kB</td>
+<td align="right">48 kB</td>
+<td align="right">256 kB</td>
+</tr>
+<tr>
+<td>SRAM</td>
+<td align="right">2 kB</td>
+<td align="right">6 kB</td>
+<td align="right">32 kB</td>
+</tr>
+<tr>
+<td>Built-in wireless</td>
+<td align="right">No</td>
+<td align="right">Wi-Fi and Bluetooth</td>
+<td align="right">WiFi variant only</td>
+</tr>
+<tr>
+<td>Native USB on sketch MCU</td>
+<td align="right">No</td>
+<td align="right">No</td>
+<td align="right">Yes</td>
+</tr>
+<tr>
+<td>Built-in LED pin</td>
+<td align="right">D13</td>
+<td align="right">Logical pin 25</td>
+<td align="right">D13</td>
+</tr>
+<tr>
+<td>Arduino core</td>
+<td align="right"><code>arduino:avr</code></td>
+<td align="right"><code>arduino:megaavr</code></td>
+<td align="right"><code>arduino:renesas_uno</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="official-references">Official references</h2>
+<ul>
+<li><a href="https://store.arduino.cc/products/arduino-uno-wifi-rev2">UNO WiFi Rev2 product page</a></li>
+<li><a href="https://docs.arduino.cc/hardware/uno-wifi-rev2/">UNO WiFi Rev2 documentation</a></li>
+<li><a href="https://docs.arduino.cc/resources/pinouts/ABX00021-full-pinout.pdf">UNO WiFi Rev2 pinout</a></li>
+<li><a href="https://docs.arduino.cc/resources/schematics/ABX00021-schematics.pdf">UNO WiFi Rev2 schematic</a></li>
+<li><a href="https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega4808-4809-Data-Sheet-DS40002173A.pdf">ATmega4808/4809 datasheet</a></li>
+<li><a href="https://content.arduino.cc/assets/Arduino_NINA-W10_DataSheet_%28UBX-17065507%29.pdf">NINA-W10 series datasheet</a></li>
+<li><a href="https://www.st.com/resource/en/datasheet/lsm6ds3.pdf">LSM6DS3 datasheet</a></li>
+<li><a href="https://github.com/arduino/ArduinoCore-megaavr">ArduinoCore-megaavr</a></li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

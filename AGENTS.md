@@ -18,22 +18,26 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ## Tech stack
 
 - **Language:** Java, `maven.compiler.release=25` (bytecode subset Juno accepts is far narrower —
-  see `docs/FEATURES.md`). Build/dev JDK is pinned to 25 (GraalVM CE) via
-  `.sdkmanrc` and CI (`.github/workflows/maven.yaml`).
+  see the [Feature Inventory](https://jabrena.github.io/juno/features)). Build/dev JDK is pinned
+  to 25 (GraalVM CE) via `.sdkmanrc` and CI (`.github/workflows/maven.yaml`).
 - **Build:** Maven 3.9.16 via the `./mvnw` wrapper (`.mvn/wrapper/maven-wrapper.properties`).
 - **Test framework:** JUnit (Jupiter) 6.1.3. `juno-examples` also uses Testcontainers 2.0.5 (test scope) for the
   opt-in `arduino-cli` compile test.
-- **No runtime frameworks** — `juno` is a standalone CLI (`io.github.jabrena.juno.Main`), packaged
-  as an executable jar via `maven-jar-plugin`; `juno-maven-plugin` is a conventional Maven plugin.
+- **No runtime frameworks in the compiler/plugin/examples modules** — `juno` is a standalone CLI
+  (`io.github.jabrena.juno.Main`), packaged as an executable jar via `maven-jar-plugin`;
+  `juno-maven-plugin` is a conventional Maven plugin. The one deliberate exception is `juno-site`,
+  a Quarkus/[Roq](https://iamroq.dev) static site generator used only to build the documentation
+  site at build time — it has no runtime footprint on the board or in the other modules.
 - **External toolchain:** Arduino CLI with the `arduino:renesas_uno` core, used to actually
   compile/upload generated sketches to real UNO R4 hardware; not a Maven dependency.
 
 ## File structure
 
-This is a three-module Maven build: `juno` is the compiler, bundling the Java-facing hardware API
+This is a four-module Maven build: `juno` is the compiler, bundling the Java-facing hardware API
 and `@Board` annotation types it recognizes as intrinsics; `juno-maven-plugin` integrates the
-compiler and external Arduino CLI with Maven; and `juno-examples` contains example programs written
-against `juno`'s `api` and `annotations` packages.
+compiler and external Arduino CLI with Maven; `juno-examples` contains example programs written
+against `juno`'s `api` and `annotations` packages; and `juno-site` is the Roq/Quarkus static site
+generator that builds the documentation site published to `docs/`.
 
 - `juno/src/main/java/io/github/jabrena/juno/api/` – WRITE here: the Java-facing hardware API
   (`Delay`, `Clock`, `LedMatrix`, `api.io.Gpio`, `api.io.DigitalOutput`, `api.io.hid.Mouse`,
@@ -92,20 +96,30 @@ against `juno`'s `api` and `annotations` packages.
   `games/*GamesTest` classes check game rules and computer players. `api/tft/ArduinoCliCompileTest`
   (tag `arduino-cli`, opt-in via `-Parduino-cli`) compiles every game with the real `arduino-cli`
   in a Testcontainers container built from `juno-examples/src/test/docker/arduino-cli/Dockerfile`.
-  See `docs/GAMES.md`.
-- `docs/` – WRITE here: supporting documentation (`ARDUINO.md` for the `arduino-cli` workflow,
-  `TYPES.md` for the Java/Arduino type mapping).
-- `docs/javadocs/<version>/` – **generated, currently tracked**: Javadoc HTML for the `juno`
-  module (`./mvnw javadoc:aggregate`, run from the repo root). Not gitignored by request —
-  regenerate rather than hand-edit, and expect it to be committed for release versions.
+  See the [Games guide](https://jabrena.github.io/juno/games)
+  (`juno-site/src/main/resources/content/games.md`).
+- `juno-site/src/main/resources/content/` – WRITE here: the documentation site's prose, one
+  Markdown (or `.html` for the home page) file per page, with YAML frontmatter
+  (`title`/`description`/`layout`). This is the source of truth for what gets published to
+  `docs/` — never hand-edit `docs/` directly.
+- `juno-site/src/main/resources/{data,web,templates,public}/` – WRITE here: `data/menu.yml` (the
+  sidebar navigation) and `data/authors.yml`; `web/_custom.css` (the Juno teal/copper theme
+  override on top of the `quarkus-roq-theme-default` Tailwind theme); `templates/partials/` (theme
+  partial overrides, e.g. the grouped `sidebar-menu.html`); `public/images/` (site assets,
+  including the game screenshots and CPU-played gifs — copy new binary assets in here, don't
+  reference `docs/` from the site).
+- `docs/` – **generated, regenerate rather than hand-edit**: the published documentation site
+  (built by `juno-site`) plus `docs/javadocs/<version>/` (`./mvnw javadoc:aggregate`, run from the
+  repo root). `docs/` is rebuilt from scratch on every regenerate — see `juno-site`'s Commands
+  entry below — so nothing under it is hand-maintained, only committed for GitHub Pages to serve.
 - `documentation/` – WRITE here: images and video assets (board photos, demo clips).
 - `build/` – **READ only / generated**: sketches generated through the standalone CLI
   (`build/juno/<Main>/<Main>.S`, `<Main>Shim.cpp`, `<Main>.ino`). Gitignored; never hand-edit.
 - `target/`, `juno/target/`, `juno-maven-plugin/target/`, `juno-examples/target/` – **READ only /
   generated**: Maven build output. The plugin writes the sketch beneath `target/juno/<Main>Asm/`
   (`.ino` wrapper, `.S`, and `Shim.cpp`). Gitignored; never hand-edit.
-- `pom.xml` (root and all three modules), `README.md`, `docs/ARDUINO.md` – WRITE here: build
-  configuration and documentation.
+- `pom.xml` (root and all four modules), `README.md` – WRITE here: build configuration and
+  top-level documentation.
 
 ## Commands
 
@@ -143,10 +157,20 @@ against `juno`'s `api` and `annotations` packages.
 
 # Attach the serial monitor at 9600 baud (override with -Djuno.baudRate=<RATE>)
 ./mvnw -f juno-examples/pom.xml juno:monitor
+
+# Live-preview the documentation site while editing juno-site/src/main/resources/content/*.md
+./mvnw -f juno-site/pom.xml quarkus:dev
+
+# Regenerate docs/ completely: wipes it, rebuilds the site, then the Javadoc on top — in order,
+# in one command (see README's Documentation site section)
+./mvnw clean verify -Psite
+
+# Preview the regenerated docs/ exactly as GitHub Pages will serve it
+jwebserver -d "$(pwd)/docs" -p 8000
 ```
 
-See [docs/ARDUINO.md](docs/ARDUINO.md) for the full `arduino-cli` install/build/upload/monitor
-walkthrough.
+See the [Arduino CLI Workflow](https://jabrena.github.io/juno/arduino) for the full
+`arduino-cli` install/build/upload/monitor walkthrough.
 
 ## Git workflow
 
@@ -171,7 +195,8 @@ walkthrough.
   subset (`BytecodeDecoder`) or relaxing `Descriptor.usesOnlyV01Types`; bumping the required
   JDK/Maven version; uploading a sketch to a connected physical board; force-pushing or amending
   published commits.
-- 🚫 **Never do:** hand-edit files under `build/` or `target/` (regenerate them instead); commit
+- 🚫 **Never do:** hand-edit files under `build/`, `target/`, or `docs/` (regenerate them
+  instead — edit `juno-site/src/main/resources/content/` for documentation prose); commit
   secrets, board serial identifiers as credentials, or other sensitive data; silently swallow an
   unsupported-opcode/intrinsic error instead of surfacing a `CompileException`; skip tests to get
   a change merged faster.

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>LCD Keypad Shield - Juno: Java for Arduino</title>
+  <meta property="og:title" content="LCD Keypad Shield" />
+  <meta name="twitter:title" content="LCD Keypad Shield">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Driving a standard Hitachi HD44780 LCD keypad shield.">
+  <meta property="og:description" content="Driving a standard Hitachi HD44780 LCD keypad shield." />
+  <meta name="twitter:description" content="Driving a standard Hitachi HD44780 LCD keypad shield.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/lcd-keypad-shield/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/lcd-keypad-shield/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/lcd-keypad-shield/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/lcd-keypad-shield/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="active" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">LCD Keypad Shield</h1>
+  <p class="page-header-intro">
+    Driving a standard Hitachi HD44780 LCD keypad shield.
+  </p>
+</section>    <div class="content-prose">
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java"><code>LcdKeypadShield</code></a>
+drives the common &quot;LCD Keypad Shield&quot; — a 16x2 HD44780-compatible character LCD in 4-bit mode,
+plus 5 buttons wired through a single resistor ladder into one analog pin — using its standard
+pinout, as used by e.g. <a href="https://github.com/dzindra/lcdkeypad">dzindra/lcdkeypad</a>.</p>
+<p>Unlike the <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedMatrix.java">LED matrix</a>, this
+shield needs no new compiler intrinsic: every operation is built entirely from
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/Gpio.java"><code>Gpio</code></a> pin operations and
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java"><code>Delay</code></a>, so it works today on any
+board Juno's ASM backend targets.</p>
+<h2 id="wiring">Wiring</h2>
+<p>The driver assumes the shield's standard pinout and needs no additional configuration:</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Pin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LCD <code>RS</code></td>
+<td>digital 8</td>
+</tr>
+<tr>
+<td>LCD <code>Enable</code></td>
+<td>digital 9</td>
+</tr>
+<tr>
+<td>LCD data (<code>D4</code>-<code>D7</code>)</td>
+<td>digital 4-7</td>
+</tr>
+<tr>
+<td>Backlight</td>
+<td>digital 10</td>
+</tr>
+<tr>
+<td>Buttons (analog ladder)</td>
+<td><code>A0</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="api">API</h2>
+<pre><code class="language-java">import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
+
+LcdKeypadShield.begin();                 // pin setup + HD44780 4-bit init + backlight on
+LcdKeypadShield.clear();                 // clear display, cursor to (0, 0)
+LcdKeypadShield.home();                  // cursor to (0, 0), keep contents
+LcdKeypadShield.setCursor(0, 1);         // column 0-15, row 0-1
+LcdKeypadShield.print(&quot;Hello&quot;);          // print text at the cursor, no wrapping
+LcdKeypadShield.print(42);               // print an int in decimal
+LcdKeypadShield.backlight(false);        // turn the backlight off (or on)
+
+int button = LcdKeypadShield.readButton(); // undebounced read of the currently pressed button
+</code></pre>
+<p><code>readButton()</code> returns one of <code>LcdKeypadShield.NONE</code>, <code>RIGHT</code>, <code>UP</code>, <code>DOWN</code>, <code>LEFT</code>, or <code>SELECT</code>.
+<code>COLUMNS</code> (16) and <code>ROWS</code> (2) describe the character grid. Reads are undebounced — a program that
+needs a clean single &quot;press&quot; event should only act when the value changes from <code>NONE</code>, as the
+example below does.</p>
+<h2 id="example-showing-which-button-is-pressed">Example: showing which button is pressed</h2>
+<pre><code class="language-java">import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
+
+@Board(ArduinoUnoR4WiFi.class)
+public final class LcdKeypadDemo {
+    public static void main(String[] args) {
+        LcdKeypadShield.begin();
+        LcdKeypadShield.print(&quot;Press a button&quot;);
+
+        int lastButton = -1;
+        while (true) {
+            int button = LcdKeypadShield.readButton();
+            if (button != lastButton) {
+                LcdKeypadShield.setCursor(0, 1);
+                String label = &quot;NONE  &quot;;
+                if (button == LcdKeypadShield.RIGHT) {
+                    label = &quot;RIGHT &quot;;
+                } else if (button == LcdKeypadShield.UP) {
+                    label = &quot;UP    &quot;;
+                } else if (button == LcdKeypadShield.DOWN) {
+                    label = &quot;DOWN  &quot;;
+                } else if (button == LcdKeypadShield.LEFT) {
+                    label = &quot;LEFT  &quot;;
+                } else if (button == LcdKeypadShield.SELECT) {
+                    label = &quot;SELECT&quot;;
+                }
+                LcdKeypadShield.print(label);
+                lastButton = button;
+            }
+            Delay.millis(50);
+        }
+    }
+}
+</code></pre>
+<p>This is
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java"><code>juno-examples/.../lcd/LcdKeypadDemo.java</code></a>.
+Build, flash, and run it with <code>juno-maven-plugin</code> (see
+<a href="/juno-maven-plugin">docs/JUNO-MAVEN-PLUGIN.md</a>):</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lcd.LcdKeypadDemo
+</code></pre>
+<p>Note that each printed label is padded to a fixed width (<code>&quot;NONE  &quot;</code>, <code>&quot;SELECT&quot;</code>) so a shorter new
+label fully overwrites a longer previous one on the fixed 16-column display — <code>print</code> does not
+clear the rest of the row.</p>
+<h3 id="a-larger-example-pomodoro">A larger example: Pomodoro</h3>
+<p><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/pomodoro"><code>juno-examples/.../lcd/pomodoro</code></a>
+implements a small Pomodoro timer entirely on the shield: <code>ConfigurePomodoroView</code> lets the buttons
+set a duration, <code>RunPomodoro</code> counts it down while showing elapsed time, and <code>TimeUpView</code> signals
+completion — a good reference for a multi-screen, button-driven program built only from
+<code>LcdKeypadShield</code> and <code>Delay</code>.</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li><code>backlight(true)</code> floats the backlight pin (<code>INPUT</code>) rather than driving it <code>HIGH</code>, because the
+shield's backlight LED has no current-limiting resistor on some board revisions and driving the
+pin <code>HIGH</code> can pull the shared 5V rail down hard enough to keep the LCD from initializing at all.</li>
+<li>The HD44780 init sequence and every command/data write include generous settle delays; this
+keeps the shield reliable under voltage sag from other onboard activity (for example WiFi radio
+bursts on the UNO R4 WiFi) at the cost of a few extra microseconds per operation — never
+noticeable for a display updated a few times a second.</li>
+<li><code>print(String)</code> writes each character with <code>charAt(i)</code>, so a compile-time literal or any runtime
+<code>String</code> supporting <code>length()</code>/<code>charAt(int)</code> (see <a href="/features">docs/FEATURES.md</a>) both work,
+unlike <a href="/serial"><code>Serial.print(String)</code></a>, which is literal-only.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

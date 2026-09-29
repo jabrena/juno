@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Feature Inventory - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Feature Inventory" />
+  <meta name="twitter:title" content="Feature Inventory">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="The full, up-to-date inventory of what Juno supports and what&#39;s still missing.">
+  <meta property="og:description" content="The full, up-to-date inventory of what Juno supports and what&#39;s still missing." />
+  <meta name="twitter:description" content="The full, up-to-date inventory of what Juno supports and what&#39;s still missing.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/features/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/features/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/features/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/features/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="active" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Feature Inventory</h1>
+  <p class="page-header-intro">
+    The full, up-to-date inventory of what Juno supports and what&#39;s still missing.
+  </p>
+</section>    <div class="content-prose">
+<p>Juno deliberately fails at link time when reachable code uses something outside the current
+subset. Diagnostics identify the method, bytecode offset, and unsupported opcode.</p>
+<p>Supported today:</p>
+<ul>
+<li><code>static void main(String[])</code> and the embedded-friendly <code>static void main()</code></li>
+<li>static methods with primitive arguments/results, including two-slot <code>long</code> and <code>double</code> values</li>
+<li>local variables, integer constants, arithmetic, bitwise operations, shifts, comparisons,
+conditionals, and loops</li>
+<li><code>private/static final</code> primitive constants (<code>boolean</code>/<code>byte</code>/<code>char</code>/<code>short</code>/<code>int</code>) initialized
+with a compile-time constant expression, same class or a different one — <code>javac</code> inlines these
+as ordinary literals (JLS 4.12.4), so Juno never sees a field read</li>
+<li>mutable static primitive fields with JVM default-zero initialization. Reachable <code>&lt;clinit&gt;</code> methods
+that use the supported subset execute during generated startup; full JVM initialization ordering
+and cycle semantics are not yet modeled.</li>
+<li>arrays of <code>boolean</code>/<code>byte</code>/<code>char</code>/<code>short</code>/<code>int</code>/<code>long</code>/<code>float</code>/<code>double</code>: <code>new T[N]</code> with a compile-time-constant <code>N</code>
+(there is no general heap, so every array is allocated from the fixed program-lifetime arena at
+its natural width —
+<code>byte[]</code>/<code>boolean[]</code> as <code>int8_t</code>, <code>char[]</code> as <code>uint16_t</code>, <code>short[]</code> as <code>int16_t</code>, <code>int[]</code> as
+<code>int32_t</code>, <code>long[]</code> as <code>int64_t</code>, <code>float[]</code> as <code>float</code>, and <code>double[]</code> as <code>double</code>); passing an array
+to another static method (pointer semantics); returning an array is
+safe for locally created arrays because array storage comes from Juno's fixed 8 KiB program-lifetime
+arena. <code>arr.length</code> and
+bounds-checked <code>arr[i]</code>/<code>arr[i] = v</code> work only on an array local that is assigned exactly once in
+its method (i.e. &quot;effectively final&quot;) right after <code>new T[...]</code> — an array received as a
+parameter, or a reassigned local, still supports <code>arr[i]</code>/<code>arr[i] = v</code> but without a bounds check
+and without <code>.length</code>, since its size isn't known at compile time there. Fixed-size multidimensional
+primitive arrays are supported when every dimension is a compile-time constant.</li>
+<li><code>long</code> locals, method parameters/results, fields, and arrays, with arithmetic, shifts, bitwise
+operations, comparisons, numeric conversions, calls, returns, and loops. JVM locals/stack values are
+represented internally as paired 32-bit halves and packed to native <code>int64_t</code> at storage/call boundaries.</li>
+<li><code>float</code> locals and static method parameters/results, with constants, arithmetic (including remainder),
+negation, comparisons, <code>int</code>/<code>float</code> conversions, calls, returns, and loops. Java's NaN comparison rules
+and saturating/NaN-to-zero numeric narrowing are preserved. Float fields and arrays are supported.</li>
+<li><code>double</code> locals, static method parameters/results, fields, arrays, arithmetic, comparisons, numeric
+conversions, calls, and returns. Two JVM slots are preserved for every <code>double</code> local and parameter.</li>
+<li><code>enum</code> constants as plain 0-based ordinal <code>int</code>s, including <code>ordinal()</code>, <code>values()</code>, equality, method
+parameters/results, and <code>switch</code>. An enum may associate one compile-time integer value with each
+constant through a constructor and expose it through a simple field accessor; Juno emits an immutable
+ordinal-indexed lookup rather than allocating enum objects.</li>
+<li>records as arena objects, including parameters/results, canonical and compact constructors, custom
+accessors, and supported primitive/array/reference components. Generated <code>equals()</code>/<code>hashCode()</code>/
+<code>toString()</code> remain unsupported because they require <code>invokedynamic</code> and broader object/String support.</li>
+<li>final closed-world classes with constructors, primitive/reference instance fields, and statically
+resolvable instance calls. Objects come from a fixed 8 KiB zero-filled arena backed by a conservative
+mark/sweep garbage collector: a collection runs automatically when an allocation would otherwise
+exceed the arena, reclaiming any block no longer reachable from the native call stack (Juno has no
+reference-typed static fields, so the stack is the collector's only root set). This is Boehm-GC
+style — no type tags and no compaction, since a collector that can't tell a real pointer from an int
+that happens to match a heap address can't safely move objects — so a program whose <em>simultaneously
+live</em> objects exceed 8 KiB still exhausts the arena and panics exactly as before; only the total
+<em>lifetime</em> allocation count is no longer bounded by that capacity.</li>
+<li>direct static calls with closed-world reachability; unused methods are omitted</li>
+<li>runtime {@code String} references in locals, parameters, and return values, with string literals,
+{@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Integer conversions use eight
+rotating 12-byte UTF-8 slots instead of the arena, so conversion-heavy loops remain allocation-free;
+a converted value must be consumed before eight newer conversions overwrite its slot. APIs documented
+as compile-time-string-only (including networking paths/bodies and LED text unrolling) retain that rule.</li>
+<li>opaque <code>DigitalOutput</code> handles which compile down to integer pin numbers without heap allocation</li>
+<li>UNO R4 WiFi networking through allocation-free <code>Wifi</code>, plain HTTP, and certificate-validated HTTPS
+<code>GET</code>, <code>POST</code>, <code>DELETE</code>, <code>PATCH</code>, and RFC 10008 <code>QUERY</code> intrinsics; request bodies use compile-time
+JSON strings</li>
+<li>bounded, allocation-free JSON inspection over caller-owned <code>byte[]</code> buffers: strict whole-document
+validation, object dot paths and zero-based array indexes, value type/null detection, array sizing,
+32/64-bit integers, decimal/exponent numbers, booleans, and JSON-string escape decoding to UTF-8</li>
+<li>read-only SPI SD-card files through the standard <code>java.io.InputStream</code>, plus intrinsic
+lowering of <code>java.util.Properties</code> construction, <code>load(InputStream)</code>, <code>getProperty</code>, and <code>size</code>;
+loaded values have stable arena-backed storage and can be passed directly to <code>Wifi.begin</code></li>
+<li>Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior</li>
+<li>Arduino-backed pseudorandom numbers through <code>Random.seed(int)</code>, <code>Random.nextInt(bound)</code>, and
+<code>Random.nextInt(origin, bound)</code>, with exclusive upper bounds</li>
+<li><code>java.lang.Math</code>: <code>abs</code>/<code>min</code>/<code>max</code> (<code>int</code>/<code>long</code>/<code>float</code>/<code>double</code>), <code>clamp</code> (Java 21 overloads),
+<code>floorDiv</code>/<code>floorMod</code>, <code>signum</code>, <code>round</code>, <code>floor</code>, <code>ceil</code>, <code>sqrt</code>, <code>cbrt</code>, <code>pow</code>, <code>hypot</code>, <code>exp</code>,
+<code>log</code>, <code>log10</code>, <code>sin</code>/<code>cos</code>/<code>tan</code>, <code>asin</code>/<code>acos</code>/<code>atan</code>/<code>atan2</code>, and <code>toRadians</code>/<code>toDegrees</code>; <code>Math.PI</code>
+and <code>Math.E</code> are ordinary <code>javac</code> constants. Each reached overload becomes one runtime-shim helper
+backed by <code>libm</code>, with Java's exact semantics where they differ from C (<code>min</code>/<code>max</code> of <code>-0.0</code>/NaN,
+<code>round</code>'s ties-toward-positive-infinity and saturation, <code>pow</code>'s NaN rules, <code>floorDiv</code> overflow). Where
+Java would throw (<code>floorDiv</code>/<code>floorMod</code> by zero, <code>clamp</code> with <code>min &gt; max</code>), the program panics, like
+native integer division by zero.</li>
+<li>local exception handling: <code>throw</code>, <code>try</code>/<code>catch</code> (including multi-catch and catching by a supertype),
+<code>finally</code>, and nested handlers, when the <code>throw</code> and the <code>catch</code> are in the same method. Exceptions are
+8-byte arena objects (class id and message) created with the <code>()</code> or <code>(String)</code> constructor of
+<code>Throwable</code>, <code>Exception</code>, <code>Error</code>, <code>RuntimeException</code>, <code>IllegalArgumentException</code>,
+<code>NumberFormatException</code>, <code>IllegalStateException</code>, <code>ArithmeticException</code>, <code>IndexOutOfBoundsException</code>,
+<code>ArrayIndexOutOfBoundsException</code>, <code>StringIndexOutOfBoundsException</code>, <code>NullPointerException</code>,
+<code>UnsupportedOperationException</code>, <code>ClassCastException</code>, <code>NegativeArraySizeException</code>,
+<code>InterruptedException</code>, <code>java.util.NoSuchElementException</code>, <code>java.util.concurrent.TimeoutException</code>,
+and <code>java.io.IOException</code>, or of a final program class extending one of them (which may add its own
+fields). <code>getMessage()</code> is supported. An exception no handler in its method catches — including one
+thrown in a called method — prints <code>Exception in thread &quot;main&quot; &lt;class&gt;: &lt;message&gt;</code> over <code>Serial</code> and
+panics. An <code>int</code>/<code>long</code> division or remainder by zero inside a <code>try</code> whose handler catches
+<code>ArithmeticException</code> (or a supertype, or <code>finally</code>) raises <code>ArithmeticException(&quot;/ by zero&quot;)</code> there;
+anywhere else it panics, as do Juno's other runtime failures (array bounds, arena exhaustion).</li>
+<li><code>.class</code> inputs from directories, individual files, or JARs</li>
+</ul>
+<h2 id="runtime-risk-inspection">Runtime-risk inspection</h2>
+<p><code>juno inspect --main &lt;class&gt; --classpath &lt;paths&gt; --risks</code> analyzes the optimized, closed-world IR
+without running or uploading the program. The resulting <code>CompilationReport.runtimeRisks()</code> data is
+also available programmatically as immutable records with stable diagnostic codes.</p>
+<p>The first analysis slice reports:</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JUNO-RISK-001</code></td>
+<td>Arena allocation occurs directly or transitively inside a control-flow loop.</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-002</code></td>
+<td>The conservative startup allocation estimate exceeds the fixed arena capacity.</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-003</code></td>
+<td>A recursive call cycle makes generated call depth and stack usage unbounded.</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-004</code></td>
+<td>Array accesses exist for which Juno cannot emit a bounds check.</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-005</code></td>
+<td>Integer/long division or remainder (including <code>Math.floorDiv</code>/<code>floorMod</code>) may receive a zero divisor and panic.</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-006</code></td>
+<td>A dereference uses a value proven null at compile time.</td>
+</tr>
+</tbody>
+</table>
+<p>The 8 KiB arena capacity and the counts of emitted bounds checks are exact compiler facts. Arena,
+static-RAM, and stack figures are conservative source-level estimates: alignment is overestimated,
+branch feasibility is not modeled, and the downstream C++ compiler may optimize stack locals. The
+Arduino linker's final memory report is authoritative. Risk findings warn; they do not currently
+reject compilation.</p>
+<p>Two board examples make the distinction observable:</p>
+<ul>
+<li><code>RuntimeRiskSafePulse</code> allocates once, has generated bounds checks, and should report no findings;
+it blinks alternating 120/360 ms pulses indefinitely.</li>
+<li><code>RuntimeRiskArenaExhaustion</code> is intentionally unsafe. It allocates 1 KiB on every loop iteration; its
+<code>JUNO-RISK-001</code> warning predicts a pre-collection worst case before upload. With the conservative
+garbage collector, whether it actually exhausts the arena now depends on reachability: if each
+iteration's block is dropped before the next (nothing on the stack still points to it), the collector
+reclaims it and the program keeps running instead of stopping; if every block is kept reachable
+(e.g. stored into a live array), reclamation is impossible and it still stops — now on whichever
+iteration first can't fit alongside everything still reachable, rather than always the ninth.</li>
+</ul>
+<p>Not yet supported:</p>
+<ul>
+<li>inheritance/polymorphic dispatch, interfaces, or object arrays with polymorphism</li>
+<li>general string construction/concatenation and other {@code String} methods, threads, reflection, or
+dynamic loading</li>
+<li>exceptions propagating out of the method that throws them, exception causes, stack traces, suppressed
+exceptions (<code>try</code>-with-resources), and exception types in method parameters or return values</li>
+<li>enum string methods (<code>.name()</code>, <code>.toString()</code>), <code>valueOf()</code>, and enum state beyond one directly
+assigned, compile-time integer value per constant (including mutable fields and per-constant class bodies)</li>
+<li>record <code>equals()</code>/<code>hashCode()</code>/<code>toString()</code> and other <code>invokedynamic</code>-based behavior</li>
+<li>the desktop JDK class library</li>
+</ul>
+<p>The <code>String[]</code> parameter of a conventional <code>main</code> is accepted as an entrypoint convention, but
+there are no command-line arguments on the board and it must not be accessed.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino CLI Workflow - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino CLI Workflow" />
+  <meta name="twitter:title" content="Arduino CLI Workflow">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Installing arduino-cli, and the compile/verify/upload/monitor workflow for generated sketches.">
+  <meta property="og:description" content="Installing arduino-cli, and the compile/verify/upload/monitor workflow for generated sketches." />
+  <meta name="twitter:description" content="Installing arduino-cli, and the compile/verify/upload/monitor workflow for generated sketches.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/arduino/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/arduino/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/arduino/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/arduino/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="active" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Arduino CLI Workflow</h1>
+  <p class="page-header-intro">
+    Installing arduino-cli, and the compile/verify/upload/monitor workflow for generated sketches.
+  </p>
+</section>    <div class="content-prose">
+<p>This guide covers installing <code>arduino-cli</code>, and using it to compile, upload, and monitor
+Juno-generated sketches on a real UNO R4 board. See the main <a href="https://github.com/jabrena/juno/blob/main/README.md">README</a> for the
+project overview and the Java API.</p>
+<h2 id="install-arduino-cli-on-macos">Install Arduino CLI on macOS</h2>
+<p>Install Arduino CLI with Homebrew and confirm that it is available:</p>
+<pre><code class="language-bash">brew update
+brew install arduino-cli
+arduino-cli version
+</code></pre>
+<p>Then update the board index and install the UNO R4 toolchain:</p>
+<pre><code class="language-bash">arduino-cli core update-index
+arduino-cli core install arduino:renesas_uno
+arduino-cli core list
+</code></pre>
+<p>Some examples also need an optional Arduino library not bundled with that core (<code>Mouse</code> for
+<code>RatonLoco</code>, <code>ESP_SSLClient</code> for <code>Smtp</code>'s <code>STARTTLS</code> upgrade, <code>Servo</code> for <code>ServoSweep</code>, and <code>SdFat</code>
+for <code>WifiStatusSD</code>/<code>WifiStatusTFT</code> — see their sections below). Install the core and every one of those libraries in one go instead of hunting
+them down per example:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps
+</code></pre>
+<p>Connect the board and find its serial port:</p>
+<pre><code class="language-bash">arduino-cli board list
+</code></pre>
+<p>The port usually looks like <code>/dev/cu.usbmodem...</code> on macOS. The plugin auto-detects it when exactly
+one matching board is connected; otherwise pass it with <code>-Djuno.port=...</code>.</p>
+<h2 id="build-juno-the-maven-plugin-and-examples">Build Juno, the Maven plugin, and examples</h2>
+<p>From the repository root:</p>
+<pre><code class="language-bash">./mvnw clean install
+</code></pre>
+<p>This builds the compiler and Maven plugin, installs the reactor artifacts in the local Maven
+repository, and compiles every program under <code>juno-examples/src/main/java</code>. Installing once lets
+the example module resolve the development version of <code>juno-maven-plugin</code> by its <code>juno</code> prefix.</p>
+<h2 id="compile-and-upload-a-sketch">Compile and upload a sketch</h2>
+<p><code>juno-examples/pom.xml</code> configures <code>Blink</code> as its default entry point. Generate its complete
+sketch:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:compile
+</code></pre>
+<p>The plugin generates a complete Arduino sketch directory:</p>
+<pre><code class="language-text">juno-examples/target/juno/BlinkAsm/
+├── BlinkAsm.ino
+├── Blink.S
+└── BlinkShim.cpp
+</code></pre>
+<p>Verify it with the real Arduino toolchain without touching a connected board:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify
+</code></pre>
+<p><code>juno:verify</code> derives the FQBN from the entry point's <code>@Board</code> annotation. Upload performs the same
+generation and verification first, then uses <code>arduino-cli board list --json</code> to select the only
+connected matching board:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload
+</code></pre>
+<p>If more than one matching board is connected, or a specific port is required, select it explicitly:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.port=/dev/cu.YOUR_PORT
+</code></pre>
+<p>Uploading overwrites the board's current firmware. The built-in LED (pin 13) should then blink once
+a second.</p>
+<p>To compile another example, override the configured entry point. For example, <code>SerialCounter</code>:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+</code></pre>
+<p>Open an interactive serial monitor (115200 baud by default, matching every juno-examples program's
+<code>Serial.begin(...)</code> rate) with:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor
+</code></pre>
+<p>Use <code>-Djuno.baudRate=...</code> to select another baud rate and <code>-Djuno.port=...</code> to select a port.
+Press <code>Ctrl+C</code> to exit.</p>
+<h3 id="example-serialcounter-reading-serial-output">Example: SerialCounter (reading Serial output)</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java</code></a> counts
+up once a second over USB serial, so it doubles as a check that the toolchain and the board's
+serial port both work end to end:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+</code></pre>
+<p>Then open the serial monitor at the same baud rate the sketch uses
+(<code>Serial.begin(BaudRate.BAUD_115200)</code>, <code>juno:monitor</code>'s default):</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor
+</code></pre>
+<p>The intended output is <code>0</code>, <code>1</code>, <code>2</code>, ... once a second. Press <code>Ctrl+C</code> to exit the monitor.</p>
+<p>Generated sketches keep the UNO R4's USB service polled even though the Java entry point never
+returns (Juno invokes it from Arduino <code>setup()</code>): the backend emits a <code>yield()</code> call at every loop
+backedge, and the generated <code>yield()</code> override polls <code>Serial</code>'s boolean conversion, the core's
+supported hook into TinyUSB's <code>tud_task()</code>.</p>
+<h3 id="led-matrix-examples">LED matrix examples</h3>
+<p>Any of the <code>LedMatrix*</code> example classes (see the main README's Java API section for the full
+list) follow the same pattern as <code>Blink</code> above — override <code>juno.main</code>, for example
+<code>-Djuno.main=io.github.jabrena.juno.api.led.LedMatrixHeart</code>. They all draw on the UNO R4 WiFi's
+built-in 12x8 LED matrix.</p>
+<h3 id="lcd-keypad-shield-examples">LCD Keypad Shield examples</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java"><code>LcdKeypadShield</code></a>
+drives a common 16x2 HD44780-compatible &quot;LCD Keypad Shield&quot; (LCD on digital pins 4-9, backlight on
+pin 10, 5 buttons on <code>A0</code>) — no new compiler intrinsic, built entirely from <code>Gpio</code>/<code>Delay</code> the same
+way <code>LedCanvas</code> is built from <code>LedMatrix</code>.</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lcd.LcdKeypadDemo
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java"><code>LcdKeypadDemo</code></a>
+prints a header and shows which button is currently held. Assembled, linked, uploaded to, and
+confirmed working on a real UNO R4 WiFi with this exact shield.</p>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/pomodoro/Pomodoro.java"><code>Pomodoro</code></a>
+is a standalone (no network) Pomodoro timer: pick a session length (5-60 minutes) with UP/DOWN,
+confirm with SELECT, and a live <code>MM:SS</code> countdown runs on the LCD, logged to Serial every tick; the
+alarm blinks until any button is pressed, then returns to minute selection.</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lcd.pomodoro.Pomodoro
+</code></pre>
+<h3 id="tft-touch-screen-shield-examples">TFT touch screen shield examples</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java"><code>TftTouchShield</code></a>
+drives the ELEGOO 2.8&quot; TFT touch screen shield (ILI9341 on an 8-bit parallel bus on D2-D9/<code>A0</code>-<code>A4</code>,
+resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built entirely from
+<code>Gpio</code>/<code>Delay</code>. See <a href="/tft-touch-shield">TFT-TOUCH-SHIELD.md</a>.</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.tft.TftTouchPaint
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusTFT
+</code></pre>
+<p><code>WeatherTFT</code> (<code>-Djuno.main=io.github.jabrena.juno.api.io.net.weather.WeatherTFT</code>) is a desk
+weather station: public IP → ipinfo.io location → Open-Meteo weather, with a seven-segment clock.
+<code>Chess</code> (<code>-Djuno.main=io.github.jabrena.juno.games.chess.Chess</code>) plays you
+against a small 3-ply engine, and <code>Blackjack</code>
+(<code>-Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack</code>) plays against the dealer with a bankroll. Further games in this catalogue:
+<code>battleship.Battleship</code>, <code>texasholdem.TexasHoldem</code> and the arcade games (<code>pacman.PacMan</code>, <code>lunarlander.LunarLander</code>, …) — see
+<a href="/tft-touch-shield#examples">TFT-TOUCH-SHIELD.md</a> and the illustrated catalogue in <a href="/games">GAMES.md</a>.
+<code>TftTouchPaint</code> is a finger-paint demo that logs raw touch readings for calibration;
+<code>WifiStatusTFT</code> is the TFT version of <code>WifiStatusSD</code>, reading its credentials from the shield's own
+microSD socket. Both were uploaded to a real UNO R4 WiFi with this shield; <code>TftTouchPaint</code>'s drawing and touch
+mapping are confirmed working.</p>
+<h3 id="example-ratonloco-usb-mouse-control">Example: RatonLoco (USB mouse control)</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java</code></a> is a
+port of <a href="https://github.com/jabrena/raton-loco/blob/main/arduino/raton-loco.ino">raton-loco.ino</a>:
+it blinks the built-in LED, then drags the host computer's mouse cursor in a square (right, down,
+left, up) over USB HID.</p>
+<p><strong>Warning:</strong> once uploaded, this sketch takes control of the real mouse cursor on whatever
+computer the board's USB cable is plugged into — unplug the board or re-flash it with a different
+sketch to stop it.</p>
+<p>It needs the <code>Mouse</code> library (not bundled with the <code>arduino:renesas_uno</code> core, installed by
+<code>juno:install-deps</code> above, or on its own with <code>arduino-cli lib install Mouse</code>) and a board with
+native USB (UNO R4 WiFi):</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.hid.RatonLoco
+</code></pre>
+<p><strong>Re-uploading over a running HID sketch:</strong> <code>arduino-cli upload</code> normally resets the board into
+its bootloader by opening the serial port at 1200 baud and closing it again. That trick relies on
+the sketch promptly servicing the USB connection, but <code>RatonLoco</code>'s <code>loop()</code> is busy driving the
+mouse (<code>Mouse.move</code> + <code>delay</code>), so the automatic reset can be missed. The board may also
+re-enumerate under a different <code>/dev/cu.*</code> path once it drops into the bootloader. If the upload
+hangs or fails, double-tap the board's physical reset button to force it into the bootloader
+manually (the onboard LED pulses), then immediately re-run the <code>juno:upload</code> command — and
+run <code>arduino-cli board list</code> first if you're unsure which port it came back on. Supply the new port
+to the plugin with <code>-Djuno.port=...</code>.</p>
+<h3 id="example-servosweep-hobby-servo-control">Example: ServoSweep (hobby servo control)</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/motors/ServoSweep.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/motors/ServoSweep.java</code></a>
+sweeps a 3-wire hobby servo back and forth between 0 and 180 degrees using
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/motors/Servo.java"><code>Servo</code></a> — see its wiring
+diagram in the class Javadoc for how to connect the servo's signal/power/ground wires.</p>
+<p>It needs the <code>Servo</code> library (not bundled with the <code>arduino:renesas_uno</code> core, installed by
+<code>juno:install-deps</code> above, or on its own with <code>arduino-cli lib install Servo</code>):</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.motors.ServoSweep
+</code></pre>
+<h3 id="example-inboxcount-basic-email-support">Example: InboxCount (basic email support)</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Smtp.java"><code>Smtp</code></a> sends a
+plain-text message to one recipient over <code>STARTTLS</code> (mail submission on port 587), and
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Pop3Client.java"><code>Pop3Client</code></a>
+reports the mailbox message count and reads the newest message's <code>From</code>/<code>Subject</code>/body over
+POP3S (port 995) — see that package's Javadoc for the full scope and its deliberate limits (one
+recipient, plain text only, no attachments/HTML/MIME/folders/OAuth2).</p>
+<p><code>Pop3Client</code> reuses <code>HttpsClient</code>'s native <code>WiFiSSLClient</code> and needs no extra library. <code>Smtp</code>
+needs the third-party <code>ESP_SSLClient</code> library (the UNO R4 WiFi's native TLS client can only
+negotiate TLS from the first byte, not upgrade an existing plaintext connection the way
+<code>STARTTLS</code> requires) — installed by <code>juno:install-deps</code> above, or on its own with
+<code>arduino-cli lib install ESP_SSLClient</code>.</p>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/InboxCount.java"><code>InboxCount</code></a>
+connects to WiFi and the mailbox configured by <code>SMTP_HOST</code>/<code>SMPT_USERNAME</code>/<code>SMTP_PASSWORD</code> in
+<code>.env</code>, polls <code>Pop3Client.messageCount</code> every 30 seconds, and shows the current count on the LCD
+Keypad Shield's first row (<code>Pop3Client</code> only, so it does not need <code>ESP_SSLClient</code>):</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.net.email.InboxCount
+</code></pre>
+<p>The same package also has
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorld.java"><code>EmailHelloWorld</code></a>
+(proves <code>Smtp.send</code> actually delivers by checking the inbox count before/after sending) and
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java"><code>EmailClient</code></a>
+(a menu-driven client: Inbox count/subject-list, Send Email, About). See
+<a href="/email">docs/EMAIL.md</a> for the full <code>Smtp</code>/<code>Pop3Client</code> reference, and
+<a href="/apis">docs/APIS.md</a> for how these compiler-intrinsic API classes work internally.</p>
+<h2 id="the-cortex-m4-assembly-backend">The Cortex-M4 assembly backend</h2>
+<p>This is Juno's sole code-generation backend. It emits GNU ARM (Cortex-M4) assembly straight from
+Juno IR: every
+reachable method becomes its own function (real calls between them, including AAPCS stack-passed
+arguments beyond the first four), with branches, <code>switch</code>, <code>int</code> arithmetic/comparisons, fixed-size
+arrays, arena-allocated objects with fields, mutable static fields, GPIO/delay, <code>LedMatrix</code>, and
+<code>Serial</code>. Unsupported instructions fail at generation time with a clear error rather than emitting
+unchecked code. Every value and local variable lives in a fixed stack-frame slot rather than a
+register, so this doesn't run out of registers regardless of how large or branchy a method is.</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.Blink
+</code></pre>
+<p>The plugin creates the <code>.S</code>, <code>&lt;Name&gt;Shim.cpp</code>, and matching <code>.ino</code> wrapper together in the isolated
+<code>&lt;Name&gt;Asm</code> sketch directory. The shim provides <code>extern &quot;C&quot;</code> free functions for the things the
+generated assembly can't call directly: the arena allocator/panic handler backing fixed-size arrays,
+and <code>ArduinoLEDMatrix</code>/<code>Serial</code> (C++-only objects — <code>ArduinoLEDMatrix</code>'s methods are inline-only with
+private timer/frame state, and <code>Serial</code> is a <code>HardwareSerial</code> instance with virtual dispatch; neither
+has a stable symbol to call without knowing its private layout or vtable).</p>
+<p><strong>Verification status:</strong> <code>Blink</code>, <code>LedMatrixCircles</code>, <code>LedMatrixCountUp</code>, and <code>ArenaFeaturesPulse</code>
+(arena objects with fields, a mutable static field set in <code>&lt;clinit&gt;</code>, and an enum <code>switch</code>) have all
+been assembled, linked, uploaded to, and run on a real UNO R4 WiFi, confirmed working. <code>SerialCounter</code>
+was independently confirmed by reading the board's actual USB serial output: it printed an
+incrementing counter once per second, exactly as expected. <code>LedMatrixHeart</code>, <code>LedMatrixSnake</code> (16
+reachable methods, branches, <code>int</code> arithmetic including hardware <code>sdiv</code>/<code>mls</code>, and a <code>boolean[][]</code>
+frame buffer via the arena allocator), and <code>LedMatrixAsciiScroll</code> (116 reachable methods, 1343 IR
+blocks — the full printable-ASCII font dispatch tree) have all been assembled and linked against the
+real <code>arduino:renesas_uno</code> toolchain and uploaded to real hardware; on-device confirmation of their
+actual on-screen behavior is pending. Any other program is unverified beyond &quot;assembles and links&quot;;
+treat this backend as experimental.</p>
+<p><strong><code>long</code>/<code>float</code>/<code>double</code> and <code>Wifi</code>/<code>HttpClient</code>/<code>HttpsClient</code>/<code>Json</code> support added.</strong> The RA4M1 has
+no hardware FPU, so every nontrivial <code>long</code>/<code>float</code>/<code>double</code> operation is a call to a small
+<code>extern &quot;C&quot;</code> runtime-shim helper (soft arithmetic, same idea as calling into <code>libgcc</code>, just
+hand-written) rather than hand-rolled assembly; see <code>CortexM4AsmBackend</code>'s class doc for the exact
+storage model. HTTP/HTTPS/JSON are backed by an <code>extern &quot;C&quot;</code> HTTP/1.1 codec and allocation-free
+JSON scanner in the generated runtime shim. <code>MadridWeather</code> (WiFi connect, an HTTPS/TLS request, and JSON field extraction including a
+<code>Json.getDouble</code> result immediately narrowed to <code>int</code>, matching this backend's <code>(int) Json.getDouble(...)</code> support) has been assembled and linked against the real toolchain and confirmed
+working on real UNO R4 WiFi hardware via its own USB serial output (<code>WiFi status: 3</code>, then repeated
+<code>HTTPS response bytes: N</code> / <code>HTTPS JSON: OK</code> cycles); its LED-matrix display output itself still needs
+the user's own eyes, same as <code>LedMatrixHeart</code>/<code>Snake</code>/<code>AsciiScroll</code> above. Assembling a program this
+large also surfaced a new toolchain-only bug: <code>ldr rN, =symbol</code> (string literals, static fields) uses a
+PC-relative literal pool that only reaches 4095 bytes forward, and every previous program was small
+enough that the assembler's default end-of-file pool was always in range — fixed by flushing the pool
+(<code>.ltorg</code>) after every basic block, always safe since a block's terminator already ends in an
+unconditional branch or return.</p>
+<p><strong><code>Gpio.analogRead</code>, <code>Delay.micros</code>, and <code>Clock.millis</code>/<code>Clock.micros</code> support added.</strong> Each resolves
+straight to the Arduino core's own <code>analogRead</code>/<code>delayMicroseconds</code>/<code>millis</code>/<code>micros</code>, the same way
+<code>digitalWrite</code>/<code>delay</code> already did — no runtime shim needed. <code>LcdKeypadDemo</code> (<code>analogRead</code> via
+button reads) and <code>Pomodoro</code> (<code>Clock.millis</code> for the countdown) have both been assembled, linked,
+uploaded to, and confirmed working on a real UNO R4 WiFi with an LCD Keypad Shield attached.
+Reaching reliable characters on that shield took a real hardware lesson, not a code fix: the shield's
+backlight pin must never be driven <code>HIGH</code> (float it via <code>INPUT</code> instead — driving it actively can
+brown out the shared 5V rail enough to keep the LCD from initializing at all), and 4-bit HD44780
+writes need generously wide settle margins (this driver uses 20us enable pulses and 200us
+settle delays, well past the datasheet minimums) to stay reliable once the UNO R4 WiFi's ESP32-S3
+module is actively drawing current — the exact right bytes were provably being sent (confirmed by
+logging every character code over Serial) while the physical display still showed corrupted
+characters at the datasheet-minimum timings, a byte-perfect-input/wrong-output signature of a
+signal-integrity margin problem rather than a software bug.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

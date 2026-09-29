@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>SD Card Storage - Juno: Java for Arduino</title>
+  <meta property="og:title" content="SD Card Storage" />
+  <meta name="twitter:title" content="SD Card Storage">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Loading configuration and credentials from an SD card at boot.">
+  <meta property="og:description" content="Loading configuration and credentials from an SD card at boot." />
+  <meta name="twitter:description" content="Loading configuration and credentials from an SD card at boot.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/storage/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/storage/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/storage/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/storage/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="active" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">SD Card Storage</h1>
+  <p class="page-header-intro">
+    Loading configuration and credentials from an SD card at boot.
+  </p>
+</section>    <div class="content-prose">
+<p>Juno exposes read-only <code>SdFat32</code>/<code>File32</code> operations through <code>SdCard</code> as the standard
+<code>java.io.InputStream</code>, so application code can construct a real <code>java.util.Properties</code> object and
+call <code>Properties.load(InputStream)</code>. Juno recognizes those
+standard-library bytecode calls and lowers them to a bounded embedded implementation; it does not
+link the desktop JDK's <code>Hashtable</code> implementation into the sketch. <code>SdFat</code> is used instead of
+Arduino's legacy <code>SD</code> library because <code>application.properties</code> is a long filename; the legacy
+library is limited to DOS 8.3 names.</p>
+<h2 id="card-contents">Card contents</h2>
+<p>Create <code>application.properties</code> in the SD card root:</p>
+<pre><code class="language-properties">wifi.ssid=YOUR_WIFI_SSID
+wifi.password=YOUR_WIFI_PASSWORD
+</code></pre>
+<p>The embedded parser accepts blank lines, <code>#</code>/<code>!</code> comments, and <code>key=value</code> or <code>key:value</code> entries.
+It does not yet implement Java's escape, Unicode-escape, or continuation syntax. A document can
+contain at most 16 entries; keys are limited to 31 bytes, values to 63, and physical lines to 95.
+Exceeding a bound or encountering a card read failure invokes Juno's runtime panic handler.</p>
+<h2 id="azdelivery-data-logger-module-data-recorder-shield">AZDelivery Data Logger Module Data Recorder Shield</h2>
+<p><code>WifiStatusSD</code> is configured for the AZDelivery Data Logger Module Data Recorder Shield. Seat the
+shield directly on the UNO R4 WiFi; its SD interface uses the classic UNO SPI pin mapping:</p>
+<table>
+<thead>
+<tr>
+<th>SD module</th>
+<th>UNO R4 WiFi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CS</td>
+<td>D10</td>
+</tr>
+<tr>
+<td>MOSI</td>
+<td>D11</td>
+</tr>
+<tr>
+<td>MISO</td>
+<td>D12</td>
+</tr>
+<tr>
+<td>SCK</td>
+<td>D13</td>
+</tr>
+<tr>
+<td>VCC</td>
+<td>module-appropriate supply</td>
+</tr>
+<tr>
+<td>GND</td>
+<td>GND</td>
+</tr>
+</tbody>
+</table>
+<p><code>SdCard.begin()</code> uses D10 by default, matching this shield and the standard Arduino shield layout.
+The shield also contains an RTC, but this example does not initialize or use it. The card must be
+formatted as FAT16 or FAT32; exFAT is not supported by the shield's documented SD setup.</p>
+<p>If a different reader or shield routes CS elsewhere, call <code>SdCard.begin(chipSelectPin)</code> explicitly.</p>
+<p>The ELEGOO 2.8&quot; TFT touch screen shield's microSD socket also uses D10, and shares no pins with its
+display: see <a href="/tft-touch-shield#examples"><code>WifiStatusTFT</code></a> for the same flow shown on the TFT.</p>
+<h3 id="using-the-lcd-keypad-shield-at-the-same-time">Using the LCD Keypad Shield at the same time</h3>
+<p>The LCD Keypad Shield uses D10 for backlight control, while the data logger shield uses D10 for SD
+chip select. Do not stack both shields unchanged: electrically isolate or reroute the LCD
+backlight's D10 connection first. <code>WifiStatusSD</code> initializes the LCD before the SD card and never
+changes the backlight after SD initialization, but software ordering cannot remove the physical pin
+conflict. The LCD itself continues to use D4-D9 and can display the connection state once D10 has
+been isolated.</p>
+<h2 id="build">Build</h2>
+<p>Install the Arduino <code>SdFat</code> library once, then compile the example through the real toolchain:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusSD
+</code></pre>
+<p>The essential Java flow is:</p>
+<pre><code class="language-java">import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+if (SdCard.begin()) {
+    InputStream file = SdCard.open(&quot;application.properties&quot;);
+    Properties properties = new Properties();
+    properties.load(file);
+    file.close();
+    Wifi.begin(
+        properties.getProperty(&quot;wifi.ssid&quot;),
+        properties.getProperty(&quot;wifi.password&quot;));
+}
+</code></pre>
+<p>Because the standard <code>Properties.load(InputStream)</code> declaration throws <code>IOException</code>, the enclosing
+method must declare <code>throws IOException</code> (or catch it). Juno's embedded implementation never actually
+throws from <code>load</code>, so such a handler is accepted but never runs. As specified by the Java API, <code>load</code> reads from the stream's current position
+and leaves it open, so close the <code>InputStream</code> explicitly.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino UNO R4 WiFi - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino UNO R4 WiFi" />
+  <meta name="twitter:title" content="Arduino UNO R4 WiFi">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the Arduino UNO R4 WiFi (Renesas RA4M1), Juno&#39;s primary target.">
+  <meta property="og:description" content="Board notes for the Arduino UNO R4 WiFi (Renesas RA4M1), Juno&#39;s primary target." />
+  <meta name="twitter:description" content="Board notes for the Arduino UNO R4 WiFi (Renesas RA4M1), Juno&#39;s primary target.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/arduino-one-r4/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/arduino-one-r4/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/arduino-one-r4/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/arduino-one-r4/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="active" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Arduino UNO R4 WiFi</h1>
+  <p class="page-header-intro">
+    Board notes for the Arduino UNO R4 WiFi (Renesas RA4M1), Juno&#39;s primary target.
+  </p>
+</section>    <div class="content-prose">
+<blockquote>
+<p>The official product name is <strong>Arduino UNO R4</strong>. This file keeps <code>ONE</code> in its filename to match
+the repository's requested documentation naming convention.</p>
+</blockquote>
+<p>The UNO R4 family retains the classic UNO form factor and 5 V GPIO while replacing the 8-bit AVR
+processor used by the UNO R3 with a 32-bit Renesas RA4M1. It is available as the <strong>UNO R4 Minima</strong>
+and <strong>UNO R4 WiFi</strong>. Both variants run Arduino sketches on the RA4M1; the WiFi variant adds a
+separate ESP32-S3 connectivity module and several board-level peripherals.</p>
+<h2 id="core-specification">Core specification</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th align="right">UNO R4 Minima</th>
+<th align="right">UNO R4 WiFi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main microcontroller</td>
+<td align="right">Renesas R7FA4M1AB3CFM (RA4M1)</td>
+<td align="right">Renesas R7FA4M1AB3CFM (RA4M1)</td>
+</tr>
+<tr>
+<td>CPU architecture</td>
+<td align="right">32-bit Arm Cortex-M4 with floating-point unit</td>
+<td align="right">32-bit Arm Cortex-M4 with floating-point unit</td>
+</tr>
+<tr>
+<td>Main CPU clock</td>
+<td align="right">48 MHz</td>
+<td align="right">48 MHz</td>
+</tr>
+<tr>
+<td>Program flash</td>
+<td align="right">256 kB</td>
+<td align="right">256 kB</td>
+</tr>
+<tr>
+<td>SRAM</td>
+<td align="right">32 kB</td>
+<td align="right">32 kB</td>
+</tr>
+<tr>
+<td>Data memory</td>
+<td align="right">8 kB</td>
+<td align="right">8 kB</td>
+</tr>
+<tr>
+<td>Logic and operating voltage</td>
+<td align="right">5 V</td>
+<td align="right">5 V</td>
+</tr>
+<tr>
+<td>Digital I/O</td>
+<td align="right">14 pins, D0-D13</td>
+<td align="right">14 pins, D0-D13</td>
+</tr>
+<tr>
+<td>PWM-capable pins</td>
+<td align="right">6</td>
+<td align="right">6</td>
+</tr>
+<tr>
+<td>Analog inputs</td>
+<td align="right">6 pins, A0-A5, up to 14-bit resolution</td>
+<td align="right">6 pins, A0-A5, up to 14-bit resolution</td>
+</tr>
+<tr>
+<td>Analog output</td>
+<td align="right">One 12-bit DAC output on A0</td>
+<td align="right">One 12-bit DAC output on A0</td>
+</tr>
+<tr>
+<td>USB connector</td>
+<td align="right">USB-C</td>
+<td align="right">USB-C</td>
+</tr>
+<tr>
+<td>Built-in LED</td>
+<td align="right">D13</td>
+<td align="right">D13</td>
+</tr>
+<tr>
+<td>Wireless coprocessor</td>
+<td align="right">None</td>
+<td align="right">ESP32-S3-MINI-1-N8</td>
+</tr>
+<tr>
+<td>Onboard LED matrix</td>
+<td align="right">None</td>
+<td align="right">12 columns by 8 rows, 96 LEDs</td>
+</tr>
+<tr>
+<td>Qwiic connector</td>
+<td align="right">None</td>
+<td align="right">Yes, connected to the I2C bus</td>
+</tr>
+<tr>
+<td>Arduino CLI FQBN</td>
+<td align="right"><code>arduino:renesas_uno:minima</code></td>
+<td align="right"><code>arduino:renesas_uno:unor4wifi</code></td>
+</tr>
+</tbody>
+</table>
+<p>The RA4M1 also provides a real-time clock, a 12-bit DAC, an operational amplifier and a CAN
+controller. CAN use requires an external transceiver; the board does not translate the MCU's CAN
+logic signals to the differential CANH/CANL bus by itself.</p>
+<p>The WiFi variant's ESP32-S3 supplies 2.4 GHz Wi-Fi and Bluetooth connectivity. It is a secondary
+processor rather than the MCU that executes the main Arduino sketch. Communication between the
+RA4M1 and ESP32-S3 is handled by the board core and relevant Arduino libraries.</p>
+<h2 id="power-and-electrical-characteristics">Power and electrical characteristics</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Specification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO logic level</td>
+<td>5 V</td>
+</tr>
+<tr>
+<td>VIN/barrel-jack input range</td>
+<td>6-24 V</td>
+</tr>
+<tr>
+<td>USB power</td>
+<td>5 V through USB-C</td>
+</tr>
+<tr>
+<td>Per-pin output current</td>
+<td>8 mA maximum recommended by Arduino</td>
+</tr>
+<tr>
+<td>3.3 V pin</td>
+<td>Generated by the onboard regulator; observe the board datasheet's current limit</td>
+</tr>
+</tbody>
+</table>
+<p>The UNO R4 is a 5 V board, but not every shield written for an AVR-based UNO is automatically
+software compatible. A shield may depend on AVR registers, timers, interrupt numbering or other
+ATmega328P-specific behavior even when its electrical interface is safe at 5 V.</p>
+<p>Do not apply more than the documented voltage to an I/O pin, and do not use the microcontroller
+pins to power motors, relays or other high-current loads directly. Use a suitable driver and an
+external supply for those loads.</p>
+<h2 id="io-and-buses">I/O and buses</h2>
+<ul>
+<li><strong>Digital:</strong> D0-D13; D13 also drives the built-in LED.</li>
+<li><strong>Analog:</strong> A0-A5; the Arduino core supports selectable ADC resolution up to 14 bits.</li>
+<li><strong>DAC:</strong> A0 can act as the 12-bit analog output when configured for DAC use.</li>
+<li><strong>UART:</strong> exposed on D0/RX and D1/TX.</li>
+<li><strong>I2C:</strong> exposed on SDA/SCL and duplicated on the matching UNO header positions. The WiFi model
+also exposes this bus through its Qwiic connector.</li>
+<li><strong>SPI:</strong> exposed through the six-pin ICSP header and the board's mapped digital pins.</li>
+<li><strong>CAN:</strong> the RA4M1 CAN signals are exposed, but an external CAN transceiver is required.</li>
+<li><strong>USB:</strong> the RA4M1 has native USB support, enabling serial communication and HID devices such as
+a keyboard or mouse.</li>
+</ul>
+<p>Always check the official pinout for timer, interrupt and alternate-function assignments before
+designing hardware around a peripheral. Not every RA4M1 peripheral signal is exposed on the UNO
+headers.</p>
+<h2 id="r4-variant-specific-hardware">R4 variant-specific hardware</h2>
+<h3 id="uno-r4-minima">UNO R4 Minima</h3>
+<p>The Minima is the simpler variant. It has the RA4M1, native USB-C, UNO headers, RTC, DAC and CAN
+capability, but no wireless coprocessor, Qwiic connector or LED matrix.</p>
+<h3 id="uno-r4-wifi">UNO R4 WiFi</h3>
+<p>The WiFi model adds:</p>
+<ul>
+<li>an ESP32-S3-MINI-1-N8 module for Wi-Fi and Bluetooth;</li>
+<li>a 12x8 onboard LED matrix driven through the board support package;</li>
+<li>a Qwiic connector for 3.3 V I2C peripherals;</li>
+<li>additional board-level status LEDs and connectivity support.</li>
+</ul>
+<p>The Qwiic connector uses 3.3 V signaling even though the traditional UNO GPIO headers operate at
+5 V. Treat the two connector families according to their documented voltage domains.</p>
+<h2 id="physical-compatibility">Physical compatibility</h2>
+<p>Both variants follow the established UNO shield outline and header arrangement. The official
+board drawings should be used for enclosure tolerances and mechanical design; nominal dimensions
+are approximately 68.9 mm by 53.3 mm. Header placement is designed for UNO-form-factor shields,
+subject to the electrical and software compatibility warning above.</p>
+<h2 id="arduino-toolchain">Arduino toolchain</h2>
+<p>Install the Renesas UNO core:</p>
+<pre><code class="language-bash">arduino-cli core update-index
+arduino-cli core install arduino:renesas_uno
+</code></pre>
+<p>Compile for the WiFi variant:</p>
+<pre><code class="language-bash">arduino-cli compile \
+  --fqbn arduino:renesas_uno:unor4wifi \
+  build/juno/&lt;ExampleClassName&gt;
+</code></pre>
+<p>Uploading changes the firmware on a connected physical board. Find the port with
+<code>arduino-cli board list</code> and follow the upload procedure in <a href="/arduino">ARDUINO.md</a>.</p>
+<h2 id="juno-compatibility">Juno compatibility</h2>
+<p>The UNO R4 WiFi is currently Juno's only target (the Minima is untested and not yet supported).
+Juno generates GNU ARM (Cortex-M4) assembly plus a small C++ runtime shim, and the
+<code>arduino:renesas_uno</code> core assembles/compiles and links them into native RA4M1 machine code. The
+entry-point class's <code>@Board</code> annotation
+(<code>io.github.jabrena.juno.annotations.Board</code>) selects the target board; a class with no <code>@Board</code> annotation
+targets the WiFi variant by default.</p>
+<table>
+<thead>
+<tr>
+<th>Juno API or feature</th>
+<th align="right">R4 WiFi</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio</code> and <code>DigitalOutput</code></td>
+<td align="right">Yes</td>
+<td>Uses standard Arduino GPIO calls</td>
+</tr>
+<tr>
+<td><code>Delay</code> and <code>Clock</code></td>
+<td align="right">Yes</td>
+<td>Uses Arduino delay and time functions</td>
+</tr>
+<tr>
+<td><code>Serial</code></td>
+<td align="right">Yes</td>
+<td>Uses the board's USB serial support</td>
+</tr>
+<tr>
+<td><code>Mouse</code></td>
+<td align="right">Yes</td>
+<td>Requires the Arduino <code>Mouse</code> library and native USB HID support</td>
+</tr>
+<tr>
+<td><code>LedMatrix</code></td>
+<td align="right">Yes</td>
+<td>Requires the WiFi model's onboard 12x8 matrix</td>
+</tr>
+<tr>
+<td>Wi-Fi and Bluetooth</td>
+<td align="right">Yes (Wi-Fi)</td>
+<td>Bluetooth has no Juno intrinsic API yet</td>
+</tr>
+<tr>
+<td>DAC, RTC and CAN</td>
+<td align="right">Not yet exposed</td>
+<td>Hardware exists, but Juno has no intrinsic API for it yet</td>
+</tr>
+</tbody>
+</table>
+<p>Juno currently represents supported Java values as 32-bit integers. That maps naturally to the
+RA4M1 and leaves substantially more SRAM than on the UNO R3 for generated locals and temporary
+values.</p>
+<h2 id="official-references">Official references</h2>
+<ul>
+<li><a href="https://docs.arduino.cc/hardware/uno-r4-minima/">UNO R4 Minima board page</a></li>
+<li><a href="https://docs.arduino.cc/resources/datasheets/ABX00080-datasheet.pdf">UNO R4 Minima datasheet</a></li>
+<li><a href="https://docs.arduino.cc/resources/pinouts/ABX00080-full-pinout.pdf">UNO R4 Minima pinout</a></li>
+<li><a href="https://docs.arduino.cc/hardware/uno-r4-wifi/">UNO R4 WiFi board page</a></li>
+<li><a href="https://docs.arduino.cc/resources/datasheets/ABX00087-datasheet.pdf">UNO R4 WiFi datasheet</a></li>
+<li><a href="https://docs.arduino.cc/resources/pinouts/ABX00087-full-pinout.pdf">UNO R4 WiFi pinout</a></li>
+<li><a href="https://github.com/arduino/ArduinoCore-renesas">ArduinoCore-renesas</a></li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

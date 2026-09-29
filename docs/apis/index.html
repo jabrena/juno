@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Hardware API Internals - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Hardware API Internals" />
+  <meta name="twitter:title" content="Hardware API Internals">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="How the Java-facing hardware API classes are wired to compiler intrinsics, and the checklist for adding a new one.">
+  <meta property="og:description" content="How the Java-facing hardware API classes are wired to compiler intrinsics, and the checklist for adding a new one." />
+  <meta name="twitter:description" content="How the Java-facing hardware API classes are wired to compiler intrinsics, and the checklist for adding a new one.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/apis/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/apis/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/apis/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/apis/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="active" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Hardware API Internals</h1>
+  <p class="page-header-intro">
+    How the Java-facing hardware API classes are wired to compiler intrinsics, and the checklist for adding a new one.
+  </p>
+</section>    <div class="content-prose">
+<p>This is a developer-facing guide to Juno's Java-facing API classes (<code>Delay</code>, <code>Gpio</code>, <code>HttpClient</code>,
+<code>Smtp</code>, ...): what they actually are, how to <em>consume</em> one from an example program, and the
+checklist for <em>creating</em> a new one. It uses <code>HttpClient</code> as the running example throughout,
+because it is small, already has both a plain-Java-adjacent sibling (<code>HttpsClient</code>) and a
+non-trivial argument shape (mixed <code>String</code>/<code>byte[]</code>/<code>int[]</code> parameters), and is documented in full
+end-user detail in <a href="/internet">the Internet access guide</a>.</p>
+<h2 id="what-an-api-class-actually-is">What an API class actually is</h2>
+<p>There is no JVM on the board, so a method like <code>HttpClient.get(...)</code> never runs as real Java.
+Every operation Juno recognizes is declared as a <code>public static native</code> method:</p>
+<pre><code class="language-java">// juno/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpClient.java
+public static native int get(String host, int port, String path,
+        byte[] responseBuffer, int responseBufferLength,
+        byte[] headersBuffer, int headersBufferLength,
+        int[] statusAndHeadersLength);
+</code></pre>
+<p><code>native</code> here is not JNI — it is simply a method with no bytecode body, which <code>javac</code> accepts
+without complaint. Juno's own compiler resolves the call at link time by matching the method's
+exact <code>(owner, name, descriptor)</code> triple against a fixed table (<code>IntrinsicRegistry</code>); anything not
+in that table is a compile error (&quot;Juno does not support this yet&quot;), never a runtime failure.</p>
+<p>Consuming code (<code>juno-examples</code>) calls <code>HttpClient.get(...)</code> exactly like any other static method.
+Compiling it with plain <code>javac</code> (as <code>juno-examples</code>'s own Maven build does, on every commit) works
+fine and produces a real <code>.class</code> file — it is only <em>Juno's own</em> compiler that treats the call
+specially.</p>
+<h2 id="consuming-an-api-httpclient-walkthrough">Consuming an API: <code>HttpClient</code> walkthrough</h2>
+<p>The general shape, common to every Juno API that touches hardware or network state:</p>
+<ol>
+<li>Declare caller-owned buffers up front, outside any loop that runs more than once — see
+<a href="#buffers-are-caller-owned-forever">below</a> for why.</li>
+<li>Call the operation, passing buffer/length pairs.</li>
+<li>Check the returned <code>int</code> against that method's documented result codes before trusting the
+buffer's contents.</li>
+</ol>
+<pre><code class="language-java">byte[] response = new byte[512];
+int responseBytes = HttpClient.get(&quot;api.example.com&quot;, 80, &quot;/status&quot;, response, response.length);
+if (responseBytes &lt; 0) {
+    Serial.println(&quot;HTTP connection failed&quot;);
+} else {
+    // response[0..responseBytes) is the body.
+}
+</code></pre>
+<p>Unless an API explicitly documents runtime-string support, every <code>String</code> argument (<code>host</code>, <code>path</code>,
+request bodies, JSON paths, ...) must be a <strong>compile-time constant</strong>: a string literal, a <code>private static final</code> compile-time-constant expression, or a
+direct <code>System.getenv(&quot;LITERAL_NAME&quot;)</code> call. Juno resolves that last form itself, at compile time,
+by calling the real <code>System.getenv</code> in its own JVM process (<code>BytecodeToIr.isCompileTimeGetenv</code>/
+<code>lowerCompileTimeGetenv</code>) — the variable name must be a literal, and compilation fails with a clear
+error if the variable is unset. None of this happens on the board; there is no environment there,
+and the resolved value is baked into the generated firmware as an ordinary string constant.</p>
+<h3 id="supplying-compile-time-credentials-with-systemgetenv">Supplying compile-time credentials with <code>System.getenv</code></h3>
+<p>Every API that needs a host, path, username, or similar value not fit for committing to source
+reads it the same way — a direct <code>System.getenv(&quot;LITERAL_NAME&quot;)</code> call, resolved by Juno itself at
+compile time as described above:</p>
+<pre><code class="language-java">Wifi.begin(
+        System.getenv(&quot;JUNO_WIFI_SSID&quot;),
+        System.getenv(&quot;JUNO_WIFI_PASSWORD&quot;));
+</code></pre>
+<p>Set the variable in the environment that runs <code>juno compile</code>:</p>
+<pre><code class="language-bash">export JUNO_WIFI_SSID='your-network-name'
+export JUNO_WIFI_PASSWORD='your-network-password'
+</code></pre>
+<p>Compilation fails with a clear error if the variable is unset, or if the argument isn't a literal
+string at all.</p>
+<h4 id="alternative-a-env-file-via-juno-maven-plugin">Alternative: a <code>.env</code> file via <code>juno-maven-plugin</code></h4>
+<p>For Maven-built examples, <code>juno-maven-plugin</code>'s <code>env</code> goal is a Maven-level alternative to
+exporting shell environment variables by hand: it reads a git-ignored <code>.env</code> file (<code>KEY=VALUE</code> per
+line) from the module's base directory and exports every entry into the Maven JVM's real process
+environment, overwriting any value already set for that name, before <code>juno-maven-plugin:compile</code>
+runs later in that same JVM. Enable it with an execution in the module's plugin configuration (see
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/pom.xml"><code>juno-examples/pom.xml</code></a>):</p>
+<pre><code class="language-xml">&lt;executions&gt;
+    &lt;execution&gt;
+        &lt;goals&gt;
+            &lt;goal&gt;env&lt;/goal&gt;
+        &lt;/goals&gt;
+    &lt;/execution&gt;
+&lt;/executions&gt;
+</code></pre>
+<p>Then create <code>.env</code> (never committed — it's in this repository's <code>.gitignore</code>) next to that
+module's <code>pom.xml</code>:</p>
+<pre><code class="language-text">JUNO_WIFI_SSID=your-network-name
+JUNO_WIFI_PASSWORD=your-network-password
+</code></pre>
+<p>A missing <code>.env</code> file is not an error — nothing is exported, so modules that don't need it are
+unaffected. Mutating the JVM's environment map is an unsupported-but-stable reflection trick that,
+on JDK 9+, needs the Maven JVM launched with <code>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</code> — this repository's
+<a href="https://github.com/jabrena/juno/blob/main/.mvn/jvm.config"><code>.mvn/jvm.config</code></a> already adds both flags to every <code>mvn</code>/<code>mvnw</code> invocation.</p>
+<h4 id="this-is-not-runtime-secret-storage">This is not runtime secret storage</h4>
+<p>Environment variables keep credentials out of Java source and Git history, but Juno embeds the
+resolved value directly into the generated <code>.ino</code> sketch and firmware as a plain string constant —
+anyone who extracts the compiled firmware can read it back out. Keep build artifacts private, avoid
+exposing the firmware, and clear exported variables when they are no longer needed.</p>
+<h3 id="buffers-are-caller-owned-forever">Buffers are caller-owned, forever</h3>
+<p>Juno has no general heap — every <code>new T[N]</code> (<code>N</code> a compile-time constant) is allocated from a
+fixed, program-lifetime arena reclaimed by a conservative mark/sweep collector (see
+<a href="/features">docs/FEATURES.md</a>). Declaring a fresh response buffer inside <code>while (true)</code> still
+works, but it churns the arena on every iteration for no reason; declare it once, outside the loop,
+and reuse it:</p>
+<pre><code class="language-java">byte[] response = new byte[512];
+while (true) {
+    int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
+    // ...
+    Delay.millis(60000);
+}
+</code></pre>
+<h3 id="result-codes-are-just-documented-conventions">Result codes are just documented conventions</h3>
+<p>There is no exception mechanism here — every intrinsic reports success/failure through its
+returned <code>int</code>. <code>HttpClient.get</code> returns <code>-1</code> for a failed TCP connection, <code>0</code> for an empty body,
+or the number of body bytes captured; <code>Smtp.send</code> (see <a href="/email">docs/EMAIL.md</a>) instead uses a
+distinct negative code per failing protocol step. Each API's Javadoc is the source of truth for
+its own codes — read it before assuming <code>&lt; 0</code> always means the same thing across different APIs.</p>
+<h2 id="anatomy-of-an-api-piece-by-piece">Anatomy of an API, piece by piece</h2>
+<p>Adding (or understanding) an intrinsic touches four places, all in the <code>juno</code> module. Numbers
+below match <code>HttpClient.get</code>'s real wiring.</p>
+<h3 id="1-the-java-facing-api-class">1. The Java-facing API class</h3>
+<p><code>io.github.jabrena.juno.api.io.net.http.HttpClient</code> — <code>final</code>, private constructor, one <code>public static native</code> method per operation. This is the only file <code>juno-examples</code> code ever imports;
+everything past this point is internal to <code>juno</code> itself.</p>
+<h3 id="2-an-intrinsic-enum-constant">2. An <code>Intrinsic</code> enum constant</h3>
+<p><code>io.github.jabrena.juno.intrinsic.Intrinsic</code> gets one constant per distinct operation
+(<code>HTTP_GET</code>, <code>HTTP_POST</code>, <code>SMTP_SEND</code>, <code>POP3_READ_SUBJECT</code>, ...) — the compiler's own internal name
+for &quot;the hardware/network thing this call means,&quot; independent of the exact Java method signature
+that reaches it.</p>
+<h3 id="3-an-intrinsicregistry-entry">3. An <code>IntrinsicRegistry</code> entry</h3>
+<p><code>io.github.jabrena.juno.intrinsic.IntrinsicRegistry</code> maps the method's exact JVM-internal
+<code>MethodRef</code> (owner as a slash-separated internal name, plus the JVM descriptor string) to that
+<code>Intrinsic</code> constant:</p>
+<pre><code class="language-java">Map.entry(new MethodRef(&quot;io/github/jabrena/juno/api/io/net/http/HttpClient&quot;, &quot;get&quot;,
+        &quot;(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I&quot;), Intrinsic.HTTP_GET),
+</code></pre>
+<p>This is the single place <code>BytecodeToIr</code> (bytecode-lowering time) decides a given call site is an
+intrinsic rather than an ordinary static method call — get the descriptor string wrong (a missing
+<code>;</code>, the wrong primitive letter) and the registry entry simply never matches, silently falling
+back to &quot;ordinary method call,&quot; which then fails to link since there's no real method body.</p>
+<p>By default, every <code>String</code>-typed parameter of every intrinsic must be a compile-time literal (see
+<a href="#consuming-an-api-httpclient-walkthrough">above</a>); to allow a runtime value for one specific
+parameter, add it to <code>IntrinsicRegistry.RUNTIME_STRING_PARAMETERS</code>. Current examples are
+<code>HttpServer#respond</code>'s body, both <code>Wifi#begin</code> credentials, and <code>java.util.Properties#getProperty</code>'s key;
+each is a plain <code>const char*</code> to its shim whether it originated as a literal or a stable runtime
+string.</p>
+<h3 id="4-backend-codegen">4. Backend codegen</h3>
+<p><code>io.github.jabrena.juno.backend.CortexM4AsmBackend</code> has one big <code>switch (call.intrinsic())</code>. Each
+case does two things:</p>
+<ul>
+<li>emits the ARM assembly to load the call's arguments and <code>bl</code> into a shim function, via
+<code>emitShimCall</code> — a helper that loads up to four words into <code>r0</code>-<code>r3</code> and spills any more onto the
+stack, so it handles an arbitrarily long argument list without hand-written register allocation;</li>
+<li>sets a <code>usesHttp</code>-style boolean field, so the corresponding <code>#include</code> and C++ shim
+implementation are only emitted into the generated sketch when the program actually calls that
+API — every other generated sketch keeps compiling without paying for code it never uses.</li>
+</ul>
+<pre><code class="language-java">case HTTP_GET, HTTP_DELETE -&gt; {
+    usesHttp = true;
+    emitShimCall(output, frame,
+            call.intrinsic() == Intrinsic.HTTP_GET ? &quot;juno_http_get&quot; : &quot;juno_http_delete&quot;,
+            List.of(new WordSource.StringAddress(call.literalArguments().get(0)),
+                    new WordSource.FromValue(call.arguments().get(0)),
+                    new WordSource.StringAddress(call.literalArguments().get(1)),
+                    new WordSource.FromValue(call.arguments().get(1)),
+                    new WordSource.FromValue(call.arguments().get(2)),
+                    new WordSource.FromValue(call.arguments().get(3)),
+                    new WordSource.FromValue(call.arguments().get(4)),
+                    new WordSource.FromValue(call.arguments().get(5))));
+    call.target().ifPresent(target -&gt; store(output, frame, &quot;r0&quot;, target));
+}
+</code></pre>
+<h4 id="arguments-vs-literalarguments"><code>arguments()</code> vs. <code>literalArguments()</code></h4>
+<p><code>IrInstruction.IntrinsicCall</code> splits a call's arguments into two lists, each in the method's own
+left-to-right declaration order: <code>literalArguments()</code> holds every <code>String</code>-typed argument (already
+resolved to its compile-time value), and <code>arguments()</code> holds everything else (<code>int</code>, <code>byte[]</code>,
+<code>int[]</code>, ...). Wiring a new case means walking the method's declared parameters left to right and
+pulling the next item off whichever list matches that parameter's type — <code>HttpClient.get(String host, int port, String path, byte[] responseBuffer, ...)</code> above pulls <code>literalArguments().get(0)</code>
+(host), then <code>arguments().get(0)</code> (port), then <code>literalArguments().get(1)</code> (path), then
+<code>arguments().get(1..)</code> for the rest. Get this interleaving wrong and arguments silently land in
+the wrong shim parameter — there is no type-level check tying the two lists back to the original
+signature.</p>
+<h4 id="the-c-shim">The C++ shim</h4>
+<p>Anything nontrivial (an HTTP request/response loop, a POP3 login handshake, string parsing) is not
+hand-written assembly — it is generated <strong>C++ text</strong>, emitted as a Java text block from a
+<code>usesXyz()</code>-gated helper method (e.g. <code>httpHelpers()</code>, <code>emailHelpers()</code>) and appended to the
+sketch's <code>Shim.cpp</code>. The Arduino toolchain compiles this like any other C++ source file in the
+sketch. This is a deliberate, established pattern in this backend: reach for it before hand-rolling
+new assembly, and reuse an existing shim helper (e.g. <code>juno_read_line</code>) across APIs that need the
+same primitive instead of duplicating it — see <code>emailHelpers()</code>'s doc comment for why <code>Smtp</code> and
+<code>Pop3Client</code> share it despite using two unrelated Arduino client types.</p>
+<h2 id="two-different-recipes-depending-on-what-youre-adding">Two different recipes, depending on what you're adding</h2>
+<p>Not every new capability needs a new intrinsic:</p>
+<ul>
+<li><strong>A pure Java convenience wrapper</strong> around existing intrinsics needs none of the above — see
+<code>Delay.seconds(int)</code>, a plain (non-<code>native</code>) static method that just calls <code>millis(seconds * 1000)</code>. It compiles down to an ordinary user method (a <code>juno_fnN</code> label calling <code>bl juno_delay_millis</code>), not a new <code>Intrinsic</code> constant. Prefer this whenever the operation is fully
+expressible in terms of what already exists.</li>
+<li><strong>A genuinely new hardware/protocol operation</strong> (a new network protocol, a new peripheral) needs
+the full four-piece wiring above, plus a C++ shim implementation.</li>
+</ul>
+<h3 id="checklist-for-a-new-intrinsic">Checklist for a new intrinsic</h3>
+<ol>
+<li>Add the <code>public static native</code> method(s) to a (possibly new) API class, with full Javadoc
+covering compile-time-string requirements and every result code.</li>
+<li>Add one <code>Intrinsic</code> enum constant per operation.</li>
+<li>Add the <code>IntrinsicRegistry</code> entry (or entries, for overloads) with the exact JVM descriptor.</li>
+<li>Add the backend <code>switch</code> case: <code>emitShimCall</code> with correctly-interleaved
+<code>arguments()</code>/<code>literalArguments()</code>, plus a <code>usesXyz</code> flag gating both the <code>#include</code>(s) and the
+shim helper.</li>
+<li>Write the C++ shim as a text block in a <code>usesXyz()</code>-gated helper method, reusing existing
+helpers (<code>emitShimCall</code>'s target functions, <code>juno_read_line</code>-style primitives) where they fit.</li>
+<li>Add a backend unit test (<code>CortexM4AsmBackendTest</code>) asserting the emitted <code>bl &lt;shim&gt;</code>, the
+<code>#include</code>(s), and that an unrelated program does <em>not</em> pull the new shim in — see
+<code>lowersSmtpSendThroughAStarttlsShim</code> for the pattern.</li>
+<li>Add an end-to-end test (<code>JunoCompilerTest</code>) that compiles real Java source through the full
+pipeline (<code>CompilerTestSupport.compileJava</code> + <code>compileJuno</code>) and asserts on the generated
+assembly/shim text — see <code>lowersEmailIntrinsics</code>.</li>
+<li>If the API needs a third-party Arduino library not bundled with <code>arduino:renesas_uno</code>, add it
+to <code>InstallDepsMojo.OPTIONAL_LIBRARIES</code> and document the manual-install command in
+<a href="/arduino">docs/ARDUINO.md</a>.</li>
+<li>Add or extend a <code>juno-examples</code> program, and — before considering the feature done — actually
+flash it to a real board and confirm the behavior; a clean <code>arduino-cli compile</code> only proves the
+generated C++ is syntactically valid, not that the protocol logic is correct.</li>
+<li>Write (or extend) an end-user doc under <code>docs/</code> — see <a href="/email">docs/EMAIL.md</a> for the
+<code>Smtp</code>/<code>Pop3Client</code> example this guide was written alongside.</li>
+</ol>
+<h2 id="see-also">See also</h2>
+<ul>
+<li><a href="/internet">docs/INTERNET.md</a> — full end-user reference for <code>Wifi</code>/<code>HttpClient</code>/
+<code>HttpsClient</code>/<code>Json</code>.</li>
+<li><a href="/email">docs/EMAIL.md</a> — full end-user reference for <code>Smtp</code>/<code>Pop3Client</code>, and a second worked
+example of everything in this guide (including a case where an intrinsic needed a third-party
+library).</li>
+<li><a href="/features">docs/FEATURES.md</a> — the supported Java subset these APIs are built on top of
+(arrays, the arena, runtime strings, ...).</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

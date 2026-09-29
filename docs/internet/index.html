@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Internet Access - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Internet Access" />
+  <meta name="twitter:title" content="Internet Access">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Wi-Fi, HTTP and JSON intrinsics for network-connected sketches.">
+  <meta property="og:description" content="Wi-Fi, HTTP and JSON intrinsics for network-connected sketches." />
+  <meta name="twitter:description" content="Wi-Fi, HTTP and JSON intrinsics for network-connected sketches.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/internet/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/internet/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/internet/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/internet/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="active" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Internet Access</h1>
+  <p class="page-header-intro">
+    Wi-Fi, HTTP and JSON intrinsics for network-connected sketches.
+  </p>
+</section>    <div class="content-prose">
+<p>Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiFi. Programs can:</p>
+<ul>
+<li>connect to a Wi-Fi network with <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/Wifi.java"><code>Wifi</code></a>;</li>
+<li>send plain HTTP or TLS-protected HTTPS <code>GET</code>, <code>POST</code>, <code>DELETE</code>, <code>PATCH</code>, and <code>QUERY</code> requests with
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpClient.java"><code>HttpClient</code></a> and
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpsClient.java"><code>HttpsClient</code></a>; and</li>
+<li>extract typed values directly from JSON response bytes with
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/http/Json.java"><code>Json</code></a>.</li>
+</ul>
+<p>These APIs are compiler intrinsics, like every Juno API — see <a href="/apis">docs/APIS.md</a> for what
+that means, how they're built, and the general rules (compile-time-only <code>String</code> arguments,
+caller-owned buffers) this guide relies on. This is the end-user reference for using them.</p>
+<h2 id="requirements-and-current-limits">Requirements and current limits</h2>
+<p>Wi-Fi, HTTP, and HTTPS require an UNO R4 WiFi entry point:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
+
+@Board(ArduinoUnoR4WiFi.class)
+public final class InternetExample {
+    // ...
+}
+</code></pre>
+<p><code>Json</code> itself does not touch the network and can parse any local <code>byte[]</code>.</p>
+<p>The current network layer deliberately stays small:</p>
+<ul>
+<li>request hosts, paths, and request bodies must be compile-time strings — except
+<code>HttpsClient.get</code>'s <code>byte[]</code> path overload (see <a href="#runtime-request-paths">Runtime request paths</a>);</li>
+<li>custom request headers, redirects, cookies, and authentication helpers are not available;</li>
+<li>HTTPS uses the root CA bundle installed in the board's WiFi firmware; Juno does not yet accept a
+custom CA certificate from Java source;</li>
+<li>the response status line and headers are consumed but are not exposed to Java code;</li>
+<li>each request has a fixed five-second timeout; and</li>
+<li>the response body may be truncated when it is larger than the supplied buffer.</li>
+</ul>
+<p>Prefer <code>HttpsClient</code> for Internet services. Do not send API tokens, personal data, credentials, or
+other secrets with plain <code>HttpClient</code>.</p>
+<h2 id="supplying-wi-fi-credentials">Supplying Wi-Fi credentials</h2>
+<p>Do not put Wi-Fi credentials directly in Java source. Either load them at runtime from an SD-card
+properties file (see <a href="/storage">docs/STORAGE.md</a>) or pass compile-time environment-variable reads
+to <code>Wifi.begin</code> — see
+<a href="/apis#supplying-compile-time-credentials-with-systemgetenv">docs/APIS.md</a> for the full
+mechanism, including the <code>.env</code>/<code>juno-maven-plugin</code> alternative and its security caveats:</p>
+<pre><code class="language-java">Wifi.begin(
+        System.getenv(&quot;JUNO_WIFI_SSID&quot;),
+        System.getenv(&quot;JUNO_WIFI_PASSWORD&quot;));
+</code></pre>
+<p>The same mechanism can supply an HTTP or HTTPS host, path, or request body when necessary:</p>
+<pre><code class="language-java">int responseBytes = HttpClient.get(
+        System.getenv(&quot;JUNO_API_HOST&quot;),
+        80,
+        System.getenv(&quot;JUNO_API_PATH&quot;),
+        response,
+        response.length);
+</code></pre>
+<p>Any value supplied this way is still embedded in the generated firmware. <code>HttpsClient</code> protects it
+in transit; <code>HttpClient</code> sends it without encryption.</p>
+<p>Unlike HTTP hosts, paths, and bodies, <code>Wifi.begin</code> also accepts stable runtime strings returned by
+<code>java.util.Properties.getProperty</code>, so credentials can remain on removable storage rather than in firmware.</p>
+<h2 id="connecting-to-wi-fi">Connecting to Wi-Fi</h2>
+<p><code>Wifi.begin</code> starts the connection. Poll <code>Wifi.status()</code> until it equals
+<code>Wifi.STATUS_CONNECTED</code>. A bounded retry loop lets the program report or display a failure instead
+of waiting forever:</p>
+<pre><code class="language-java">Wifi.begin(
+        System.getenv(&quot;JUNO_WIFI_SSID&quot;),
+        System.getenv(&quot;JUNO_WIFI_PASSWORD&quot;));
+
+int attempts = 0;
+while (Wifi.status() != Wifi.STATUS_CONNECTED &amp;&amp; attempts &lt; 30) {
+    Delay.millis(1000);
+    attempts = attempts + 1;
+}
+
+if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+    Serial.println(&quot;WiFi connection failed&quot;);
+}
+</code></pre>
+<p>Call HTTP or HTTPS operations only after the connection succeeds. Applications that run indefinitely
+should also decide how to handle a later disconnection, for example by waiting for connectivity or
+calling <code>Wifi.begin</code> again before the next request.</p>
+<h2 id="calling-rest-apis">Calling REST APIs</h2>
+<p><code>HttpClient.get</code> takes a host name, TCP port, path, response buffer, and buffer capacity:</p>
+<pre><code class="language-java">private static final String HOST = &quot;api.open-meteo.com&quot;;
+private static final int PORT = 80;
+private static final String PATH = &quot;/v1/forecast?latitude=40.4168&amp;longitude=-3.7038&quot;
+        + &quot;&amp;current=temperature_2m&quot;;
+
+byte[] response = new byte[512];
+int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
+</code></pre>
+<p>Pass the host without <code>http://</code> and normally begin the path with <code>/</code>. The host and path must be
+compile-time strings — see
+<a href="/apis#consuming-an-api-httpclient-walkthrough">docs/APIS.md</a> for exactly what that means.</p>
+<p>For TLS, use the equivalent <code>HttpsClient</code> method, conventionally on port 443. Do not include
+<code>https://</code> in the host:</p>
+<pre><code class="language-java">int responseBytes = HttpsClient.get(
+        &quot;httpbin.org&quot;, 443, &quot;/anything&quot;, response, response.length);
+</code></pre>
+<p>Juno emits Arduino's <code>WiFiSSLClient</code>, which validates the server certificate against the root CA
+bundle installed in the UNO R4 WiFi firmware. A missing, expired, or untrusted CA makes the
+connection return <code>-1</code>. Arduino documents how to update the bundle with
+<a href="https://support.arduino.cc/hc/en-us/articles/360016119219-Upload-SSL-root-certificates">Upload SSL root certificates</a>.
+Juno currently uses that bundle as-is and does not expose <code>setCACert</code> for a per-program custom CA.</p>
+<p>The result is:</p>
+<table>
+<thead>
+<tr>
+<th align="right">Result</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>-1</code></td>
+<td>The TCP connection failed.</td>
+</tr>
+<tr>
+<td align="right"><code>0</code></td>
+<td>No response-body bytes were captured.</td>
+</tr>
+<tr>
+<td align="right"><code>1..response.length</code></td>
+<td>Number of body bytes stored in the buffer.</td>
+</tr>
+</tbody>
+</table>
+<p>The implementation consumes HTTP headers, supports ordinary and chunked response bodies, and puts
+only body bytes into <code>response</code>. Because the HTTP status code is not exposed, applications must
+validate the response body rather than assuming every positive result is a successful API response.</p>
+<p>If the body exceeds the buffer, only <code>response.length</code> bytes are retained. Choose a buffer large
+enough for the API response. JSON validation normally reports an incomplete truncated document as
+<code>Json.TYPE_INVALID</code>, but the HTTP API does not otherwise expose a separate truncation flag.</p>
+<p>Allocate reusable response buffers outside long-running loops instead of inside <code>while (true)</code> —
+see <a href="/apis#buffers-are-caller-owned-forever">docs/APIS.md</a> for why:</p>
+<pre><code class="language-java">byte[] response = new byte[512];
+
+while (true) {
+    int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
+    // Process response[0..responseBytes).
+    Delay.millis(60000);
+}
+</code></pre>
+<h3 id="runtime-request-paths">Runtime request paths</h3>
+<p>When a path depends on runtime data — for example coordinates returned by an earlier request —
+build it in a <code>byte[]</code> and use the <code>HttpsClient.get</code> overload that takes the buffer and its length
+instead of a <code>String</code>. Runtime <code>String</code>s are limited to 31 bytes, which is far too short for a
+typical query string; the buffer overload accepts paths of up to 255 bytes and returns <code>-1</code> without
+connecting when <code>pathLength</code> is larger:</p>
+<pre><code class="language-java">byte[] path = new byte[256];
+int pathLength = 0;
+// ... copy &quot;/v1/forecast?latitude=&quot;, the runtime latitude, and so on into path ...
+int responseBytes = HttpsClient.get(&quot;api.open-meteo.com&quot;, 443, path, pathLength,
+        response, response.length, headers, headers.length, statusAndHeaders);
+</code></pre>
+<p>The host must still be a compile-time string. Only HTTPS <code>GET</code> has this overload today.
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/WeatherTFT.java"><code>WeatherTFT</code></a>
+uses it to pass the coordinates returned by ipinfo.io to Open-Meteo.</p>
+<h3 id="choosing-an-http-method">Choosing an HTTP method</h3>
+<p>Both <code>HttpClient</code> and <code>HttpsClient</code> provide the following methods. They write the response body into
+the supplied buffer and return the same result values described above:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Request body</th>
+<th>Typical purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get</code></td>
+<td>None</td>
+<td>Read a resource.</td>
+</tr>
+<tr>
+<td><code>post</code></td>
+<td>JSON</td>
+<td>Create a resource or invoke a non-idempotent operation.</td>
+</tr>
+<tr>
+<td><code>delete</code></td>
+<td>None</td>
+<td>Delete a resource.</td>
+</tr>
+<tr>
+<td><code>patch</code></td>
+<td>JSON</td>
+<td>Partially update a resource.</td>
+</tr>
+<tr>
+<td><code>query</code></td>
+<td>JSON</td>
+<td>Perform a safe, idempotent query whose parameters do not fit naturally in a URI.</td>
+</tr>
+</tbody>
+</table>
+<p><code>QUERY</code> is the HTTP method standardized by <a href="https://www.rfc-editor.org/rfc/rfc10008.html">RFC 10008</a>.
+The remote server must explicitly support it; many existing REST services do not. Juno sends
+<code>Content-Type: application/json</code> for <code>POST</code>, <code>PATCH</code>, and <code>QUERY</code>, and currently provides no way to
+select a different media type.</p>
+<h3 id="sending-json-with-post-patch-or-query">Sending JSON with POST, PATCH, or QUERY</h3>
+<p>The body-carrying methods send a compile-time JSON body. For example, <code>post</code> can create a resource:</p>
+<pre><code class="language-java">private static final String BODY = &quot;{\&quot;sensor\&quot;:\&quot;outside\&quot;,\&quot;value\&quot;:23}&quot;;
+
+int responseBytes = HttpClient.post(
+        &quot;example.com&quot;,
+        80,
+        &quot;/api/readings&quot;,
+        BODY,
+        response,
+        response.length);
+</code></pre>
+<p><code>patch</code> uses the same signature to partially update a resource:</p>
+<pre><code class="language-java">int responseBytes = HttpClient.patch(
+        &quot;example.com&quot;,
+        80,
+        &quot;/api/readings/7&quot;,
+        &quot;{\&quot;value\&quot;:24}&quot;,
+        response,
+        response.length);
+</code></pre>
+<p>Use <code>query</code> only with a server that implements RFC 10008:</p>
+<pre><code class="language-java">int responseBytes = HttpClient.query(
+        &quot;example.com&quot;,
+        80,
+        &quot;/api/readings/search&quot;,
+        &quot;{\&quot;sensor\&quot;:\&quot;outside\&quot;}&quot;,
+        response,
+        response.length);
+</code></pre>
+<p>The body cannot be assembled from runtime sensor readings yet because Juno has no runtime <code>String</code>
+construction. Custom authorization headers are also unsupported.</p>
+<h3 id="deleting-a-resource">Deleting a resource</h3>
+<p><code>delete</code> sends no request body:</p>
+<pre><code class="language-java">int responseBytes = HttpClient.delete(
+        &quot;example.com&quot;,
+        80,
+        &quot;/api/readings/7&quot;,
+        response,
+        response.length);
+</code></pre>
+<h2 id="extracting-information-from-json-responses">Extracting information from JSON responses</h2>
+<p>Always pass the number returned by <code>HttpClient</code>, not the array capacity, to <code>Json</code>:</p>
+<pre><code class="language-java">int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
+if (responseBytes &gt; 0) {
+    double temperature = Json.getDouble(
+            response, responseBytes, &quot;current.temperature_2m&quot;);
+}
+</code></pre>
+<p>The parser validates the complete bounded document and reads values directly from the response
+buffer. It supports objects, arrays, strings, numbers, booleans, and <code>null</code>, with nesting up to 32
+levels.</p>
+<h3 id="paths">Paths</h3>
+<p>Object fields use dots and array elements use zero-based bracket indexes:</p>
+<table>
+<thead>
+<tr>
+<th>JSON</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{&quot;temperature&quot;: 21}</code></td>
+<td><code>&quot;temperature&quot;</code></td>
+</tr>
+<tr>
+<td><code>{&quot;current&quot;:{&quot;temperature&quot;:21}}</code></td>
+<td><code>&quot;current.temperature&quot;</code></td>
+</tr>
+<tr>
+<td><code>{&quot;users&quot;:[{&quot;name&quot;:&quot;Ada&quot;}]}</code></td>
+<td><code>&quot;users[0].name&quot;</code></td>
+</tr>
+<tr>
+<td><code>[{&quot;id&quot;:7}]</code></td>
+<td><code>&quot;[0].id&quot;</code></td>
+</tr>
+<tr>
+<td>Any root value</td>
+<td><code>&quot;&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Paths must be compile-time string literals. A path cannot be assembled dynamically, so a runtime
+loop cannot generate <code>&quot;items[&quot; + index + &quot;]&quot;</code>; programs currently access known indexes using
+separate literal paths. Field names containing <code>.</code>, <code>[</code>, or <code>]</code>, and field names encoded with JSON
+escapes, cannot currently be addressed.</p>
+<h3 id="detecting-missing-null-wrong-type-and-invalid-values">Detecting missing, null, wrong-type, and invalid values</h3>
+<p>Typed getters return convenient zero values on failure. That means <code>getInt(...) == 0</code> and
+<code>getBool(...) == false</code> are ambiguous by themselves. Use <code>Json.type</code> when the distinction matters:</p>
+<pre><code class="language-java">int valueType = Json.type(response, responseBytes, &quot;current.temperature_2m&quot;);
+if (valueType == Json.TYPE_NUMBER) {
+    double temperature = Json.getDouble(
+            response, responseBytes, &quot;current.temperature_2m&quot;);
+} else if (valueType == Json.TYPE_NULL) {
+    Serial.println(&quot;Temperature is null&quot;);
+} else if (valueType == Json.TYPE_MISSING) {
+    Serial.println(&quot;Temperature is missing&quot;);
+} else if (valueType == Json.TYPE_INVALID) {
+    Serial.println(&quot;Invalid or truncated JSON&quot;);
+}
+</code></pre>
+<p>Available type constants are:</p>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TYPE_MISSING</code></td>
+<td>The path does not resolve.</td>
+</tr>
+<tr>
+<td><code>TYPE_NULL</code></td>
+<td>JSON <code>null</code>.</td>
+</tr>
+<tr>
+<td><code>TYPE_BOOLEAN</code></td>
+<td><code>true</code> or <code>false</code>.</td>
+</tr>
+<tr>
+<td><code>TYPE_NUMBER</code></td>
+<td>A valid JSON number.</td>
+</tr>
+<tr>
+<td><code>TYPE_STRING</code></td>
+<td>A JSON string.</td>
+</tr>
+<tr>
+<td><code>TYPE_OBJECT</code></td>
+<td>A JSON object.</td>
+</tr>
+<tr>
+<td><code>TYPE_ARRAY</code></td>
+<td>A JSON array.</td>
+</tr>
+<tr>
+<td><code>TYPE_INVALID</code></td>
+<td>The document, length, or path syntax is invalid.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="reading-numbers-and-booleans">Reading numbers and booleans</h3>
+<p>Use the getter matching the response schema:</p>
+<pre><code class="language-java">int count = Json.getInt(response, responseBytes, &quot;count&quot;);
+long sequence = Json.getLong(response, responseBytes, &quot;sequence&quot;);
+double temperature = Json.getDouble(response, responseBytes, &quot;temperature&quot;);
+boolean enabled = Json.getBool(response, responseBytes, &quot;enabled&quot;);
+</code></pre>
+<p><code>getInt</code> and <code>getLong</code> accept JSON integer tokens and reject fractions, exponents, and values outside
+their signed range by returning zero. <code>getDouble</code> accepts integer, fractional, and exponent forms
+such as <code>12</code>, <code>-0.125</code>, and <code>1.25e2</code>. Check <code>Json.type</code> first when zero or <code>false</code> is a legitimate
+value that must be distinguished from a conversion failure.</p>
+<h3 id="reading-strings">Reading strings</h3>
+<p>Juno cannot create a runtime Java <code>String</code>, so <code>Json.getString</code> decodes into a caller-owned UTF-8
+byte buffer:</p>
+<pre><code class="language-java">byte[] name = new byte[32];
+int nameBytes = Json.getString(
+        response, responseBytes, &quot;user.name&quot;, name, name.length);
+
+int index = 0;
+while (index &lt; nameBytes) {
+    int unsignedByte = name[index] &amp; 255;
+    // Consume the UTF-8 byte here.
+    index = index + 1;
+}
+</code></pre>
+<p>The method decodes JSON escapes such as <code>\n</code>, <code>\&quot;</code>, and <code>\u00e9</code>, including Unicode surrogate
+pairs. It returns the number of bytes written, does not append a NUL terminator, and never writes
+more than the supplied output length. A small output buffer truncates the decoded result.</p>
+<h3 id="inspecting-arrays">Inspecting arrays</h3>
+<p>Use <code>arraySize</code> to validate an expected array shape, and literal indexed paths to read known
+elements:</p>
+<pre><code class="language-java">int userCount = Json.arraySize(response, responseBytes, &quot;users&quot;);
+if (userCount &gt; 0) {
+    int firstUserId = Json.getInt(response, responseBytes, &quot;users[0].id&quot;);
+}
+</code></pre>
+<p><code>arraySize</code> returns <code>-1</code> when the path is missing, invalid, or not an array. Dynamic traversal of an
+arbitrary-length array is not yet available because JSON paths must be literals.</p>
+<h2 id="complete-rest-example">Complete REST example</h2>
+<p>This example connects with build-time credentials, requests Madrid's current temperature, validates
+the JSON type, and prints an integer temperature over USB serial once a minute:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.io.usb.BaudRate;
+import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.net.http.HttpClient;
+import io.github.jabrena.juno.api.io.net.http.Json;
+import io.github.jabrena.juno.api.io.net.Wifi;
+
+@Board(ArduinoUnoR4WiFi.class)
+public final class InternetExample {
+    private static final String HOST = &quot;api.open-meteo.com&quot;;
+    private static final String PATH = &quot;/v1/forecast?latitude=40.4168&amp;longitude=-3.7038&quot;
+            + &quot;&amp;current=temperature_2m&quot;;
+
+    public static void main(String[] args) {
+        Serial.begin(BaudRate.BAUD_115200);
+        Wifi.begin(
+                System.getenv(&quot;JUNO_WIFI_SSID&quot;),
+                System.getenv(&quot;JUNO_WIFI_PASSWORD&quot;));
+
+        int attempts = 0;
+        while (Wifi.status() != Wifi.STATUS_CONNECTED &amp;&amp; attempts &lt; 30) {
+            Delay.millis(1000);
+            attempts = attempts + 1;
+        }
+
+        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+            while (true) {
+                Serial.println(&quot;WiFi connection failed&quot;);
+                Delay.millis(5000);
+            }
+        }
+
+        byte[] response = new byte[512];
+        while (true) {
+            int responseBytes = HttpClient.get(HOST, 80, PATH, response, response.length);
+            if (responseBytes &lt; 0) {
+                Serial.println(&quot;HTTP connection failed&quot;);
+            } else if (Json.type(response, responseBytes,
+                    &quot;current.temperature_2m&quot;) == Json.TYPE_NUMBER) {
+                int temperature = (int) Json.getDouble(
+                        response, responseBytes, &quot;current.temperature_2m&quot;);
+                Serial.print(&quot;Temperature C: &quot;);
+                Serial.println(temperature);
+            } else {
+                Serial.println(&quot;Unexpected JSON response&quot;);
+            }
+            Delay.millis(60000);
+        }
+    }
+}
+</code></pre>
+<p>Place the class in <code>juno-examples/src/main/java/InternetExample.java</code>, then build, compile, upload,
+and monitor it:</p>
+<pre><code class="language-bash">./mvnw package
+
+JUNO_WIFI_SSID='your-network-name' \
+JUNO_WIFI_PASSWORD='your-network-password' \
+java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+  --main InternetExample \
+  --classpath juno-examples/target/classes:juno/target/classes
+
+arduino-cli compile \
+  --fqbn arduino:renesas_uno:unor4wifi \
+  build/juno/InternetExample
+
+arduino-cli upload \
+  --port /dev/cu.YOUR_PORT \
+  --fqbn arduino:renesas_uno:unor4wifi \
+  build/juno/InternetExample
+
+arduino-cli monitor \
+  --port /dev/cu.YOUR_PORT \
+  --config baudrate=115200
+</code></pre>
+<p>Uploading replaces the board's current firmware. Find the correct port first with
+<code>arduino-cli board list</code>. For the broader build/upload workflow, see
+<a href="/arduino"><code>docs/ARDUINO.md</code></a>. The repository includes
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/HttpMethods.java"><code>HttpMethods.java</code></a>, which verifies all supported
+methods over plain HTTP,
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/HttpsMethods.java"><code>HttpsMethods.java</code></a>, which repeats the checks with
+certificate-validated TLS, and
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/MadridWeather.java"><code>MadridWeather.java</code></a>, which extracts live API
+data for display on the LED matrix.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong>Compilation says an environment variable is not set:</strong> export it in the same shell or CI step
+that invokes <code>juno compile</code>; setting it only for <code>mvn package</code> is not sufficient.</li>
+<li><strong>Wi-Fi never reaches <code>STATUS_CONNECTED</code>:</strong> verify the SSID/password and signal strength, and use
+a bounded retry loop so the failure is observable.</li>
+<li><strong><code>HttpClient</code> returns <code>-1</code>:</strong> the TCP connection failed. Confirm Wi-Fi connectivity, the host,
+port, DNS availability, and that the service accepts plain HTTP.</li>
+<li><strong><code>HttpClient</code> returns <code>0</code>:</strong> no body bytes were captured before the connection ended or timed out.</li>
+<li><strong><code>HttpsClient</code> returns <code>-1</code>:</strong> the TCP or TLS connection failed. Check the host and port, update
+the board's connectivity firmware, and ensure its root CA bundle trusts the service certificate.</li>
+<li><strong><code>Json.type</code> returns <code>TYPE_INVALID</code>:</strong> pass the returned HTTP byte count—not <code>response.length</code>—and
+increase the response buffer if the body may have been truncated.</li>
+<li><strong>A getter returns zero or <code>false</code>:</strong> call <code>Json.type</code> to distinguish a legitimate value from a
+missing path, wrong type, or invalid document.</li>
+<li><strong>An API requires bearer headers, a custom per-program CA, a non-JSON request body, or runtime
+request data:</strong> it is outside the current client feature set.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

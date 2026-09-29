@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Juno: Java for Arduino</title>
+  <meta property="og:title" content="Juno: Java for Arduino" />
+  <meta name="twitter:title" content="Juno: Java for Arduino">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.">
+  <meta property="og:description" content="An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board." />
+  <meta name="twitter:description" content="An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="active" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+<!-- Theme documentation: https://iamroq.dev/theme/default/#qute-user-tags -->
+<div class="home-content">
+
+<section class="roq-hero">
+  <div class="roq-hero-main">
+    <h1>Java, compiled straight to the board</h1>
+    <p class="roq-hero-tagline">Juno is an ahead-of-time compiler for a checked subset of Java</p>
+    <div class="roq-hero-sep"></div>
+    <p class="roq-hero-subtitle">
+    `javac` stays the frontend. Juno closed-world-links your `main` method on the
+    development machine and emits GNU ARM Cortex-M4 assembly plus a small C++ runtime
+    shim directly&nbsp;&mdash; no JVM, no interpreter, no dynamic class loading on the
+    Arduino UNO R4 WiFi or UNO Q.
+</p>
+    <div class="roq-hero-actions">
+        
+  
+  
+  <a href="/getting-started" class="btn btn-primary">Get started <i class="fa-solid fa-arrow-right"></i></a>
+  <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" class="btn btn-secondary"><i class="fa-brands fa-github"></i> View on GitHub</a>
+
+    </div>
+  </div>
+</section>
+
+<div class="roq-features">
+<div class="card roq-feature">
+  <div class="roq-feature-icon"><i class="fa-solid fa-microchip"></i></div>
+  <h3>No JVM on the board</h3>
+  <p>    `javac` &rarr; `.class` &rarr; Juno's closed-world linker &rarr; Cortex-M4 (Thumb-2) assembly
+    plus an `extern "C"` runtime shim, assembled and linked by the board's own Arduino toolchain.
+</p>
+  <a href="/features" class="btn btn-link">See the feature inventory <i class="fa-solid fa-arrow-right"></i></a>
+</div><div class="card roq-feature">
+  <div class="roq-feature-icon"><i class="fa-solid fa-bolt"></i></div>
+  <h3>Real hardware intrinsics</h3>
+  <p>    GPIO, timing, Serial, the LED matrix, Wi-Fi/HTTP/JSON, SD card storage, email, USB mouse, and
+    LCD/TFT shields &mdash; plain Java `native` methods lowered to shim calls at link time.
+</p>
+  <a href="/apis" class="btn btn-link">Browse the hardware API <i class="fa-solid fa-arrow-right"></i></a>
+</div><div class="card roq-feature">
+  <div class="roq-feature-icon"><i class="fa-solid fa-gamepad"></i></div>
+  <h3>14 playable games</h3>
+  <p>    Pac-Man, Chess, Battleship, Blackjack, Texas Hold'em and more, running on an ELEGOO 2.8&Prime;
+    TFT touch shield &mdash; compiled ahead of time, not interpreted.
+</p>
+  <a href="/games" class="btn btn-link">See the games <i class="fa-solid fa-arrow-right"></i></a>
+</div><div class="card roq-feature">
+  <div class="roq-feature-icon"><i class="fa-solid fa-microchip"></i></div>
+  <h3>Two boards, one backend</h3>
+  <p>    The same Cortex-M4/Thumb-2 codegen targets the UNO R4 WiFi's Renesas RA4M1 and the UNO Q's
+    Zephyr-hosted STM32U585.
+</p>
+  <a href="/arduino-one-r4" class="btn btn-link">Compare the boards <i class="fa-solid fa-arrow-right"></i></a>
+</div></div>
+
+<section class="roq-section">
+  <h2>How it works</h2>
+  <pre><code>Java source -&gt; javac -&gt; .class -&gt; Juno linker/AOT -&gt; .S + Shim.cpp + .ino -&gt; Arduino toolchain -&gt; RA4M1 (UNO R4 WiFi)
+                                                                                         -&gt; STM32U585 (UNO Q)</code></pre>
+  <p>
+    Juno is deliberately closed-world and minimal: no interpreter, no dynamic class loading, no
+    general objects or arrays yet. See the <a href="/features">feature inventory</a> for exactly
+    what's supported today, or jump into <a href="/getting-started">Getting Started</a> to flash
+    Blink in a few commands.
+  </p>
+</section>
+
+</div>
+</main>
+
+</div>
+
+</body>
+</html>

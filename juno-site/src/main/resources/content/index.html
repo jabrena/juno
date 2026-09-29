@@ -1,0 +1,53 @@
+---
+title: "Juno: Java for Arduino"
+description: "An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board."
+name: "Juno"
+simple-name: "Juno"
+social-github: "jabrena/juno"
+theme-color: "#0f6e63"
+layout: home
+---
+
+{#roq/hero}
+  {#title}Java, compiled straight to the board{/title}
+  {#tagline}Juno is an ahead-of-time compiler for a checked subset of Java{/tagline}
+  {#subtitle}
+    `javac` stays the frontend. Juno closed-world-links your `main` method on the
+    development machine and emits GNU ARM Cortex-M4 assembly plus a small C++ runtime
+    shim directly&nbsp;&mdash; no JVM, no interpreter, no dynamic class loading on the
+    Arduino UNO R4 WiFi or UNO Q.
+  {/subtitle}
+  <a href="/getting-started" class="btn btn-primary">Get started <i class="fa-solid fa-arrow-right"></i></a>
+  <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" class="btn btn-secondary"><i class="fa-brands fa-github"></i> View on GitHub</a>
+{/}
+
+<div class="roq-features">
+  {#roq/featureCard icon="fa-microchip" title="No JVM on the board" link="/features" link-text="See the feature inventory"}
+    `javac` &rarr; `.class` &rarr; Juno's closed-world linker &rarr; Cortex-M4 (Thumb-2) assembly
+    plus an `extern "C"` runtime shim, assembled and linked by the board's own Arduino toolchain.
+  {/}
+  {#roq/featureCard icon="fa-bolt" title="Real hardware intrinsics" link="/apis" link-text="Browse the hardware API"}
+    GPIO, timing, Serial, the LED matrix, Wi-Fi/HTTP/JSON, SD card storage, email, USB mouse, and
+    LCD/TFT shields &mdash; plain Java `native` methods lowered to shim calls at link time.
+  {/}
+  {#roq/featureCard icon="fa-gamepad" title="14 playable games" link="/games" link-text="See the games"}
+    Pac-Man, Chess, Battleship, Blackjack, Texas Hold'em and more, running on an ELEGOO 2.8&Prime;
+    TFT touch shield &mdash; compiled ahead of time, not interpreted.
+  {/}
+  {#roq/featureCard icon="fa-microchip" title="Two boards, one backend" link="/arduino-one-r4" link-text="Compare the boards"}
+    The same Cortex-M4/Thumb-2 codegen targets the UNO R4 WiFi's Renesas RA4M1 and the UNO Q's
+    Zephyr-hosted STM32U585.
+  {/}
+</div>
+
+<section class="roq-section">
+  <h2>How it works</h2>
+  <pre><code>Java source -&gt; javac -&gt; .class -&gt; Juno linker/AOT -&gt; .S + Shim.cpp + .ino -&gt; Arduino toolchain -&gt; RA4M1 (UNO R4 WiFi)
+                                                                                         -&gt; STM32U585 (UNO Q)</code></pre>
+  <p>
+    Juno is deliberately closed-world and minimal: no interpreter, no dynamic class loading, no
+    general objects or arrays yet. See the <a href="/features">feature inventory</a> for exactly
+    what's supported today, or jump into <a href="/getting-started">Getting Started</a> to flash
+    Blink in a few commands.
+  </p>
+</section>

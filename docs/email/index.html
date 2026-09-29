@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Email (SMTP/POP3) - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Email (SMTP/POP3)" />
+  <meta name="twitter:title" content="Email (SMTP/POP3)">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Sending and reading email from a sketch with Smtp and Pop3Client.">
+  <meta property="og:description" content="Sending and reading email from a sketch with Smtp and Pop3Client." />
+  <meta name="twitter:description" content="Sending and reading email from a sketch with Smtp and Pop3Client.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/email/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/email/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/email/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/email/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="active" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Email (SMTP/POP3)</h1>
+  <p class="page-header-intro">
+    Sending and reading email from a sketch with Smtp and Pop3Client.
+  </p>
+</section>    <div class="content-prose">
+<p>Juno provides a small, allocation-free email stack for the Arduino UNO R4 WiFi. Programs can:</p>
+<ul>
+<li>send a plain-text message to one recipient with
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Smtp.java"><code>Smtp</code></a>; and</li>
+<li>report a mailbox's message count, read the newest message, and read any message's subject with
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Pop3Client.java"><code>Pop3Client</code></a>.</li>
+</ul>
+<p>Like <code>HttpClient</code>/<code>HttpsClient</code> (see <a href="/internet">the Internet access guide</a>), these are compiler
+intrinsics: Java declares them as <code>native</code> methods, and Juno emits their Arduino C++
+implementations only when the program uses them. Every buffer belongs to the caller; nothing here
+allocates a runtime <code>String</code> or a heap object.</p>
+<h2 id="scope-deliberately">Scope, deliberately</h2>
+<p>This is a basic client, not a full mail library:</p>
+<ul>
+<li>one recipient, plain text only;</li>
+<li>no attachments, HTML, multipart MIME, folders, or OAuth2;</li>
+<li><code>host</code>, <code>username</code>, <code>password</code>, and every message field must be compile-time strings (a
+literal, or <code>System.getenv(&quot;NAME&quot;)</code> of a literal name) — Juno has no heap to build a runtime
+<code>String</code> from;</li>
+<li>responses (subjects, headers, bodies) are bounded to caller-owned buffers and may be truncated.</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<p>Both APIs need an UNO R4 WiFi entry point and an active <code>Wifi</code> connection:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
+
+@Board(ArduinoUnoR4WiFi.class)
+public final class EmailExample {
+    // ...
+}
+</code></pre>
+<p><code>Pop3Client</code> reuses <code>HttpsClient</code>'s native <code>WiFiSSLClient</code> (implicit TLS, POP3S on port 995) and
+needs no extra library. <code>Smtp</code> needs the third-party <code>ESP_SSLClient</code> library — see
+<a href="#why-smtp-needs-an-extra-library">Why <code>Smtp</code> needs an extra library</a> below — installed once with:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps
+</code></pre>
+<p>(or on its own with <code>arduino-cli lib install ESP_SSLClient</code>; see
+<a href="/juno-maven-plugin">docs/JUNO-MAVEN-PLUGIN.md</a>).</p>
+<h2 id="supplying-mailbox-credentials">Supplying mailbox credentials</h2>
+<p>Do not put mailbox credentials directly in Java source. Read them the same way as any other
+compile-time credential — see
+<a href="/apis#supplying-compile-time-credentials-with-systemgetenv">docs/APIS.md</a> for the full
+mechanism (either exported in the shell running <code>juno compile</code>, or via a git-ignored <code>.env</code> file
+and <code>juno-maven-plugin</code>'s <code>env</code> goal):</p>
+<pre><code class="language-text">SMTP_HOST=mail.example.com
+SMPT_USERNAME=me@example.com
+SMTP_PASSWORD=your-mailbox-password
+</code></pre>
+<p><code>SMPT_USERNAME</code> (missing the <code>H</code>) is not a typo introduced here — it's whatever key name is
+already in this repository's own <code>.env</code>; rename it (and the <code>System.getenv(...)</code> calls that read
+it) if that was accidental. <code>Smtp</code>/<code>Pop3Client</code> take the port as a plain <code>int</code> literal, not a
+string, since Juno has no way to parse a compile-time string into a compile-time int — so a
+<code>POP3_PORT</code>/<code>SMTP_PORT</code> entry in <code>.env</code> is documentation at best, never something the compiler
+actually reads (see the port constants in the examples below).</p>
+<h2 id="sending-a-message">Sending a message</h2>
+<p><code>Smtp.send</code> connects, upgrades to TLS with <code>STARTTLS</code>, authenticates with <code>AUTH LOGIN</code>, and sends
+one plain-text message:</p>
+<pre><code class="language-java">int sent = Smtp.send(
+        System.getenv(&quot;SMTP_HOST&quot;), 587,
+        System.getenv(&quot;SMPT_USERNAME&quot;), System.getenv(&quot;SMTP_PASSWORD&quot;),
+        System.getenv(&quot;SMPT_USERNAME&quot;), System.getenv(&quot;SMPT_USERNAME&quot;),
+        &quot;Arduino alert&quot;, &quot;Alarm activated&quot;);
+</code></pre>
+<p>Port 587 (mail submission over <code>STARTTLS</code>) is the common case; see
+<a href="#why-smtp-needs-an-extra-library">Why <code>Smtp</code> needs an extra library</a> for why it isn't port 465's
+implicit TLS instead. <code>sent</code> is <code>0</code> on success, or a negative code identifying the failing step:</p>
+<table>
+<thead>
+<tr>
+<th align="right">Code</th>
+<th>Failing step</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>-1</code></td>
+<td>Connect</td>
+</tr>
+<tr>
+<td align="right"><code>-2</code></td>
+<td>Server greeting</td>
+</tr>
+<tr>
+<td align="right"><code>-3</code></td>
+<td><code>EHLO</code></td>
+</tr>
+<tr>
+<td align="right"><code>-4</code></td>
+<td><code>AUTH LOGIN</code></td>
+</tr>
+<tr>
+<td align="right"><code>-5</code></td>
+<td>Authentication</td>
+</tr>
+<tr>
+<td align="right"><code>-6</code></td>
+<td><code>MAIL FROM</code></td>
+</tr>
+<tr>
+<td align="right"><code>-7</code></td>
+<td><code>RCPT TO</code></td>
+</tr>
+<tr>
+<td align="right"><code>-8</code></td>
+<td><code>DATA</code></td>
+</tr>
+<tr>
+<td align="right"><code>-9</code></td>
+<td>The message body</td>
+</tr>
+<tr>
+<td align="right"><code>-10</code></td>
+<td>Base64-encoding the username/password overflowed its internal buffer</td>
+</tr>
+<tr>
+<td align="right"><code>-11</code></td>
+<td><code>STARTTLS</code> itself</td>
+</tr>
+<tr>
+<td align="right"><code>-12</code></td>
+<td>The TLS upgrade</td>
+</tr>
+</tbody>
+</table>
+<h3 id="why-smtp-needs-an-extra-library">Why <code>Smtp</code> needs an extra library</h3>
+<p>The UNO R4 WiFi's native <code>WiFiSSLClient</code> (the same class <code>HttpsClient</code>/<code>Pop3Client</code> use) can only
+negotiate TLS from the very first byte of a connection — it has no way to start a plaintext
+connection and upgrade it to TLS mid-stream, which is exactly what <code>STARTTLS</code> requires. The
+third-party <a href="https://github.com/mobizt/ESP_SSLClient"><code>ESP_SSLClient</code></a> library adds that upgrade
+path (<code>connect()</code> in plain-TCP mode, then <code>connectSSL()</code> once <code>STARTTLS</code> is negotiated), backed by
+its own vendored BearSSL. Measured on real hardware, it fits comfortably in the UNO R4 WiFi's 32 KB
+of RAM (well under 60% flash, well under 50% RAM for the full send-and-verify example below) — but
+it is one more thing to install, so it stays a manual/<code>juno:install-deps</code> dependency rather than
+being vendored into this repository (see the discussion in
+<a href="https://github.com/jabrena/juno/blob/main/juno-maven-plugin/src/main/java/io/github/jabrena/juno/maven/InstallDepsMojo.java"><code>InstallDepsMojo</code></a>).</p>
+<p>One consequence: <code>ESP_SSLClient</code>'s software TLS stack validates the server's host name but not its
+full certificate chain (there is no CA bundle available to it on this board), unlike
+<code>HttpsClient</code>/<code>Pop3Client</code>, which validate against the WiFi module's own firmware-backed CA bundle.
+This is a deliberate tradeoff to fit <code>STARTTLS</code> in the available RAM, not an oversight.</p>
+<h2 id="reading-a-mailbox">Reading a mailbox</h2>
+<h3 id="message-count">Message count</h3>
+<pre><code class="language-java">int count = Pop3Client.messageCount(
+        System.getenv(&quot;SMTP_HOST&quot;), 995,
+        System.getenv(&quot;SMPT_USERNAME&quot;), System.getenv(&quot;SMTP_PASSWORD&quot;));
+</code></pre>
+<p><code>count</code> is the mailbox's message count on success, or a negative code:</p>
+<table>
+<thead>
+<tr>
+<th align="right">Code</th>
+<th>Failing step</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>-1</code></td>
+<td>Connect</td>
+</tr>
+<tr>
+<td align="right"><code>-2</code></td>
+<td>Server greeting</td>
+</tr>
+<tr>
+<td align="right"><code>-3</code></td>
+<td><code>USER</code></td>
+</tr>
+<tr>
+<td align="right"><code>-4</code></td>
+<td><code>PASS</code></td>
+</tr>
+<tr>
+<td align="right"><code>-5</code></td>
+<td><code>STAT</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-newest-message">The newest message</h3>
+<p><code>readLatest</code> retrieves the highest-numbered message (<code>RETR</code> after <code>STAT</code>), extracting <code>From</code>/
+<code>Subject</code> into one buffer and a bounded, dot-unstuffed plain-text body into another:</p>
+<pre><code class="language-java">byte[] headers = new byte[Pop3Client.DEFAULT_HEADERS_BUFFER_SIZE];
+byte[] body = new byte[Pop3Client.DEFAULT_BODY_BUFFER_SIZE];
+int[] status = new int[1];
+
+int bodyLength = Pop3Client.readLatest(
+        System.getenv(&quot;SMTP_HOST&quot;), 995,
+        System.getenv(&quot;SMPT_USERNAME&quot;), System.getenv(&quot;SMTP_PASSWORD&quot;),
+        headers, headers.length, body, body.length, status);
+int headersLength = status[0];
+</code></pre>
+<p><code>bodyLength</code> is the number of bytes written to <code>body</code> on success, or a negative code:</p>
+<table>
+<thead>
+<tr>
+<th align="right">Code</th>
+<th>Failing step</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>-1</code></td>
+<td>Connect</td>
+</tr>
+<tr>
+<td align="right"><code>-2</code></td>
+<td>Server greeting</td>
+</tr>
+<tr>
+<td align="right"><code>-3</code></td>
+<td><code>USER</code></td>
+</tr>
+<tr>
+<td align="right"><code>-4</code></td>
+<td><code>PASS</code></td>
+</tr>
+<tr>
+<td align="right"><code>-5</code></td>
+<td><code>STAT</code></td>
+</tr>
+<tr>
+<td align="right"><code>-6</code></td>
+<td>Empty mailbox</td>
+</tr>
+<tr>
+<td align="right"><code>-7</code></td>
+<td><code>RETR</code></td>
+</tr>
+<tr>
+<td align="right"><code>-8</code></td>
+<td>Connection dropped while streaming the message</td>
+</tr>
+</tbody>
+</table>
+<h3 id="a-specific-messages-subject">A specific message's subject</h3>
+<p><code>readSubject</code> is the cheap alternative to <code>readLatest</code> for listing several messages: it sends
+<code>TOP messageNumber 0</code> (headers only, no body), so it costs far less bandwidth than downloading a
+whole message just to show its subject. <code>messageNumber</code> is 1-based POP3 numbering (<code>1</code> is the
+oldest message still in the mailbox):</p>
+<pre><code class="language-java">byte[] subject = new byte[32];
+int subjectLength = Pop3Client.readSubject(
+        System.getenv(&quot;SMTP_HOST&quot;), 995,
+        System.getenv(&quot;SMPT_USERNAME&quot;), System.getenv(&quot;SMTP_PASSWORD&quot;),
+        1, subject, subject.length);
+</code></pre>
+<p><code>subjectLength</code> is the number of bytes written on success (<code>0</code> for a message with no <code>Subject</code>
+header), or a negative code:</p>
+<table>
+<thead>
+<tr>
+<th align="right">Code</th>
+<th>Failing step</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>-1</code></td>
+<td>Connect</td>
+</tr>
+<tr>
+<td align="right"><code>-2</code></td>
+<td>Server greeting</td>
+</tr>
+<tr>
+<td align="right"><code>-3</code></td>
+<td><code>USER</code></td>
+</tr>
+<tr>
+<td align="right"><code>-4</code></td>
+<td><code>PASS</code></td>
+</tr>
+<tr>
+<td align="right"><code>-5</code></td>
+<td><code>TOP</code></td>
+</tr>
+<tr>
+<td align="right"><code>-6</code></td>
+<td>Connection dropped while streaming the headers</td>
+</tr>
+</tbody>
+</table>
+<p>Since Juno cannot build a runtime <code>String</code>, printing a subject means printing its raw bytes
+directly — see <code>LcdKeypadShield.print(byte[], int)</code>, added for exactly this, in the <code>EmailClient</code>
+example below.</p>
+<h2 id="a-note-on-transient-connection-failures">A note on transient connection failures</h2>
+<p>The UNO R4 WiFi's <code>Wifi.status()</code> can report <code>STATUS_CONNECTED</code> slightly before the module's
+underlying TCP/IP stack (DHCP lease, routing) is actually ready to accept an outbound connection,
+so the very first <code>Smtp</code>/<code>Pop3Client</code> call right after <code>Wifi.begin</code> succeeds can fail with <code>-1</code>
+even though every later call works. Retrying a few times, a couple of seconds apart, absorbs this
+one-off race instead of surfacing it — see <code>pollMessageCount</code> in the examples below.</p>
+<h2 id="complete-examples">Complete examples</h2>
+<p>Three examples in <code>juno-examples</code> build on each other, in
+<a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/</code></a>:</p>
+<ul>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/InboxCount.java"><code>InboxCount</code></a> —
+the simplest: polls <code>Pop3Client.messageCount</code> every 30 seconds and shows it on the LCD Keypad
+Shield. Confirmed working on a real UNO R4 WiFi.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorld.java"><code>EmailHelloWorld</code></a> —
+proves <code>Smtp.send</code> actually delivers, not just that the server accepted the message: reads the
+inbox count <em>before</em> sending a &quot;Hello World&quot; message to itself, then polls the count <em>after</em>
+sending until it goes up. Waits for a button press before sending.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java"><code>EmailClient</code></a> —
+a small menu-driven client: Inbox (a submenu of message Count and a paginated Subject List, up
+to the first 10 messages, 2 per screen), Send Email, and About.</li>
+</ul>
+<p>Build and upload any of them the same way as every other example:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.net.email.EmailClient
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong><code>Smtp.send</code> returns <code>-1</code> or <code>-2</code> only on the very first call after connecting:</strong> see
+<a href="#a-note-on-transient-connection-failures">A note on transient connection failures</a> above.</li>
+<li><strong><code>Smtp.send</code> returns <code>-11</code> or <code>-12</code>:</strong> the mail server didn't offer <code>STARTTLS</code> on port 587, or
+the TLS upgrade itself failed. Confirm the host/port with another mail client first.
+<code>ESP_SSLClient</code> validates the host name but not the full certificate chain (see
+<a href="#why-smtp-needs-an-extra-library">Why <code>Smtp</code> needs an extra library</a>), so this is not a
+certificate-trust failure in the usual sense.
+Confirm <code>arduino-cli lib install ESP_SSLClient</code> (or <code>juno:install-deps</code>) has actually run — a
+missing library fails the <code>arduino-cli compile</code> step, not the upload.</li>
+<li><strong><code>Pop3Client</code> calls return <code>-5</code> on <code>readSubject</code>/<code>readLatest</code>:</strong> the server may not support
+<code>TOP</code> (rare, but it's an optional POP3 command) — try <code>messageCount</code>/<code>readLatest</code> alone to
+confirm basic connectivity first.</li>
+<li><strong>A subject/body/header looks truncated:</strong> the caller-owned buffer was smaller than the actual
+content; every read here is bounded, never dynamically sized.</li>
+<li><strong>Compilation says <code>SMTP_HOST</code>/<code>SMPT_USERNAME</code>/<code>SMTP_PASSWORD</code> is not set:</strong> see
+<a href="/internet#troubleshooting">the Internet access guide's environment-variable troubleshooting</a> —
+the same rules apply (export it where <code>juno compile</code> runs, or use a <code>.env</code> file).</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

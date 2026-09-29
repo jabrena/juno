@@ -22,3 +22,5 @@ build/
 .env
 
 HANDOFF.md
+
+juno-site/node_modules/

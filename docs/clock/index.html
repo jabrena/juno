@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Clock &amp; Delay - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Clock &amp; Delay" />
+  <meta name="twitter:title" content="Clock &amp; Delay">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Timing intrinsics: Delay and Clock.">
+  <meta property="og:description" content="Timing intrinsics: Delay and Clock." />
+  <meta name="twitter:description" content="Timing intrinsics: Delay and Clock.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/clock/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/clock/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/clock/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/clock/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="active" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Clock &amp; Delay</h1>
+  <p class="page-header-intro">
+    Timing intrinsics: Delay and Clock.
+  </p>
+</section>    <div class="content-prose">
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Clock.java"><code>Clock</code></a>
+(<code>io.github.jabrena.juno.api</code>) is a compiler intrinsic that reads the board's monotonic uptime
+clock, backed directly by the Arduino core's <code>millis()</code>/<code>micros()</code>.</p>
+<pre><code class="language-java">import io.github.jabrena.juno.api.Clock;
+
+int uptimeMillis = Clock.millis();
+int uptimeMicros = Clock.micros();
+</code></pre>
+<p>Both readings start at (approximately) zero at boot and increase monotonically while the board
+runs, with no relation to wall-clock time — there is no real-time clock or NTP support. Both
+methods return an <code>int</code>; the underlying counters are unsigned 32-bit values on the Arduino core,
+so <code>millis()</code> wraps back through zero after about 49.7 days of continuous uptime, and <code>micros()</code>
+after about 71.6 minutes. A program that must run unattended across a wrap should compare elapsed
+time with subtraction (<code>Clock.millis() - start</code>), which stays correct across exactly one wrap
+because of unsigned/twos-complement overflow arithmetic, rather than comparing timestamps directly
+with <code>&lt;</code>/<code>&gt;</code>.</p>
+<h2 id="clock-vs-delay"><code>Clock</code> vs. <code>Delay</code></h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java"><code>Delay</code></a> (<code>millis</code>/<code>micros</code>) blocks
+the program for a fixed duration and does nothing else meanwhile. <code>Clock</code> instead reports elapsed
+time, so a program built around it can do other work — polling a button, updating a display,
+handling network I/O — while still acting on a schedule. Reach for <code>Clock</code> whenever a loop needs
+to do more than one timed thing at once; reach for <code>Delay</code> when blocking is genuinely fine, as in
+the classic single-LED blink.</p>
+<h2 id="example-non-blocking-periodic-action">Example: non-blocking periodic action</h2>
+<pre><code class="language-java">import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.Clock;
+import io.github.jabrena.juno.api.io.DigitalOutput;
+import io.github.jabrena.juno.api.io.Gpio;
+
+@Board(ArduinoUnoR4WiFi.class)
+public final class ClockBlink {
+    private static final int LED_PIN = 13;
+    private static final int BUTTON_PIN = 2;
+    private static final int BLINK_INTERVAL_MILLIS = 500;
+
+    public static void main(String[] args) {
+        DigitalOutput led = DigitalOutput.of(LED_PIN);
+        Gpio.pinMode(BUTTON_PIN, Gpio.INPUT_PULLUP);
+
+        int lastToggle = Clock.millis();
+        while (true) {
+            // Blink on a schedule...
+            if (Clock.millis() - lastToggle &gt;= BLINK_INTERVAL_MILLIS) {
+                led.toggle();
+                lastToggle = Clock.millis();
+            }
+            // ...while still reacting immediately to other input every iteration.
+            if (!Gpio.digitalRead(BUTTON_PIN)) {
+                led.high();
+            }
+        }
+    }
+}
+</code></pre>
+<p>Unlike a <code>Delay.millis(500)</code> blink, this loop never stops watching the button, because <code>Clock</code>
+only measures time — it never pauses execution.</p>
+<p>The repository's
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/pomodoro/RunPomodoro.java">Pomodoro timer</a>
+uses the same pattern for real: <code>Clock.millis()</code> is its sole time source for a countdown displayed
+on an <a href="/lcd-keypad-shield"><code>LcdKeypadShield</code></a>, so the displayed time stays accurate regardless of
+how long each tick's own display/print work takes.</p>
+<h2 id="measuring-how-long-something-took">Measuring how long something took</h2>
+<p><code>Clock.micros()</code> is precise enough to profile a routine's execution time directly on the board,
+which is useful when <a href="/serial"><code>Serial</code></a> is the only visibility into a running program:</p>
+<pre><code class="language-java">int start = Clock.micros();
+someExpensiveOperation();
+int elapsedMicros = Clock.micros() - start;
+Serial.print(&quot;elapsed us: &quot;);
+Serial.println(elapsedMicros);
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong>Elapsed time looks wrong after a very long uptime:</strong> this is the <code>millis()</code>/<code>micros()</code> 32-bit
+wraparound described above. Always compute elapsed time as <code>Clock.millis() - start</code> (subtraction),
+never <code>Clock.millis() &gt; deadline</code> (direct comparison), so a single wrap doesn't produce a
+spuriously huge or negative elapsed value.</li>
+<li><strong>A <code>Clock</code>-scheduled action seems to run late:</strong> <code>Clock.millis()</code>/<code>Clock.micros()</code> only report
+time — they don't preempt anything. A loop iteration that blocks on <code>Delay</code> or a slow HID/I/O
+call still delays the next <code>Clock</code> check by that same amount.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

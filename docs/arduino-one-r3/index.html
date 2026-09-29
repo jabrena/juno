@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino UNO R3 - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino UNO R3" />
+  <meta name="twitter:title" content="Arduino UNO R3">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the Arduino UNO R3.">
+  <meta property="og:description" content="Board notes for the Arduino UNO R3." />
+  <meta name="twitter:description" content="Board notes for the Arduino UNO R3.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/arduino-one-r3/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/arduino-one-r3/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/arduino-one-r3/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/arduino-one-r3/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="active" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Arduino UNO R3</h1>
+  <p class="page-header-intro">
+    Board notes for the Arduino UNO R3.
+  </p>
+</section>    <div class="content-prose">
+<blockquote>
+<p>The official product name is <strong>Arduino UNO R3</strong> (also documented as UNO Rev3). This file keeps
+<code>ONE</code> in its filename to match the repository's requested documentation naming convention.</p>
+</blockquote>
+<p>The UNO R3 is the classic 5 V UNO board based on the 8-bit Microchip ATmega328P. It shares the UNO
+shield form factor and most high-level Arduino APIs with the UNO R4, but its CPU architecture,
+memory capacity, USB implementation and available peripherals are substantially different.</p>
+<h2 id="core-specification">Core specification</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th align="right">UNO R3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main microcontroller</td>
+<td align="right">Microchip ATmega328P</td>
+</tr>
+<tr>
+<td>CPU architecture</td>
+<td align="right">8-bit AVR</td>
+</tr>
+<tr>
+<td>CPU clock</td>
+<td align="right">16 MHz</td>
+</tr>
+<tr>
+<td>Program flash</td>
+<td align="right">32 kB; 0.5 kB is used by the bootloader</td>
+</tr>
+<tr>
+<td>SRAM</td>
+<td align="right">2 kB</td>
+</tr>
+<tr>
+<td>EEPROM</td>
+<td align="right">1 kB</td>
+</tr>
+<tr>
+<td>Logic and operating voltage</td>
+<td align="right">5 V</td>
+</tr>
+<tr>
+<td>Digital I/O</td>
+<td align="right">14 pins, D0-D13</td>
+</tr>
+<tr>
+<td>PWM-capable pins</td>
+<td align="right">6: D3, D5, D6, D9, D10 and D11</td>
+</tr>
+<tr>
+<td>Analog inputs</td>
+<td align="right">6 pins, A0-A5, 10-bit ADC</td>
+</tr>
+<tr>
+<td>Analog output</td>
+<td align="right">No true DAC; <code>analogWrite</code> produces PWM</td>
+</tr>
+<tr>
+<td>USB connector</td>
+<td align="right">USB Type-B</td>
+</tr>
+<tr>
+<td>USB interface</td>
+<td align="right">ATmega16U2 USB-to-serial converter</td>
+</tr>
+<tr>
+<td>Built-in LED</td>
+<td align="right">D13</td>
+</tr>
+<tr>
+<td>Wireless connectivity</td>
+<td align="right">None</td>
+</tr>
+<tr>
+<td>Arduino CLI FQBN</td>
+<td align="right"><code>arduino:avr:uno</code></td>
+</tr>
+</tbody>
+</table>
+<p>The ATmega328P executes the sketch. The separate ATmega16U2 implements the board's normal USB
+serial connection; it is not a general-purpose coprocessor available to an ordinary UNO sketch.</p>
+<h2 id="power-and-electrical-characteristics">Power and electrical characteristics</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Specification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO logic level</td>
+<td>5 V</td>
+</tr>
+<tr>
+<td>Recommended external input</td>
+<td>7-12 V through VIN or the barrel jack</td>
+</tr>
+<tr>
+<td>External input limit</td>
+<td>6-20 V</td>
+</tr>
+<tr>
+<td>USB power</td>
+<td>5 V through USB Type-B</td>
+</tr>
+<tr>
+<td>DC current per I/O pin</td>
+<td>20 mA</td>
+</tr>
+<tr>
+<td>3.3 V pin maximum</td>
+<td>50 mA</td>
+</tr>
+</tbody>
+</table>
+<p>Supplying less than 7 V through VIN can leave the regulated 5 V rail below its intended voltage.
+Supplying more than 12 V can overheat the linear regulator under load even though the documented
+absolute input range extends to 20 V.</p>
+<p>Do not drive motors, relays or other high-current loads directly from an I/O pin. Use an
+appropriate transistor, MOSFET or driver circuit and observe both per-pin and aggregate
+microcontroller current limits.</p>
+<h2 id="io-and-buses">I/O and buses</h2>
+<ul>
+<li><strong>Digital:</strong> D0-D13; D13 also drives the built-in LED.</li>
+<li><strong>PWM:</strong> D3, D5, D6, D9, D10 and D11.</li>
+<li><strong>External interrupts:</strong> D2 and D3.</li>
+<li><strong>Analog:</strong> A0-A5 with 10-bit conversion, normally producing values from 0 through 1023.</li>
+<li><strong>UART:</strong> D0/RX and D1/TX. These signals are also connected to the ATmega16U2 USB-to-serial
+interface.</li>
+<li><strong>I2C/TWI:</strong> A4/SDA and A5/SCL, duplicated on the SDA/SCL header pins.</li>
+<li><strong>SPI:</strong> D10/SS, D11/COPI, D12/CIPO and D13/SCK; also exposed on the ICSP header.</li>
+<li><strong>USB:</strong> ordinary sketches use serial through the ATmega16U2. The ATmega328P does not provide
+native USB HID.</li>
+</ul>
+<p>The SPI pin names MOSI and MISO are still common in older UNO R3 material. COPI and CIPO are the
+controller/peripheral-neutral names for the same signals.</p>
+<p>Timers are scarce shared resources on the ATmega328P. PWM, timing functions, servo libraries and
+other libraries can compete for the same hardware timers even when their APIs compile correctly.</p>
+<h2 id="memory-and-performance-constraints">Memory and performance constraints</h2>
+<p>The R3's 2 kB SRAM is shared by global/static data, the heap and the call stack. Stack exhaustion
+can corrupt memory without a clean diagnostic. This is especially relevant to Juno because its
+generated methods use 32-bit storage for Java locals and intermediate values, while the native AVR
+register width is only 8 bits.</p>
+<p>The AVR compiler implements 32-bit Java-style arithmetic using multiple 8-bit instructions and,
+for some operations, runtime helper routines. Correct programs can therefore be larger and slower
+than equivalent code targeting the 32-bit UNO R4. Division and remainder are notably more
+expensive than addition, subtraction and bitwise operations.</p>
+<h2 id="physical-compatibility">Physical compatibility</h2>
+<p>The UNO R3 uses the standard UNO shield outline and header layout. Its nominal dimensions are
+approximately 68.6 mm by 53.4 mm and its nominal weight is 25 g. The unusual spacing between the
+digital header blocks is part of the established UNO shield layout.</p>
+<p>UNO-form-factor compatibility does not guarantee that an R4-specific shield or library works on
+the R3. Check required voltage levels, current, timers, memory, CPU-specific code and peripheral
+availability.</p>
+<h2 id="arduino-toolchain">Arduino toolchain</h2>
+<p>Install the AVR board core:</p>
+<pre><code class="language-bash">arduino-cli core update-index
+arduino-cli core install arduino:avr
+</code></pre>
+<p>Generate a Juno sketch, then compile it for the R3:</p>
+<pre><code class="language-bash">java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+  --main &lt;ExampleClassName&gt; \
+  --classpath juno-examples/target/classes:juno/target/classes
+
+arduino-cli compile \
+  --fqbn arduino:avr:uno \
+  build/juno/&lt;ExampleClassName&gt;
+</code></pre>
+<p>Uploading changes the firmware on a connected physical board. Find the port with
+<code>arduino-cli board list</code> before using <code>arduino-cli upload</code>.</p>
+<h2 id="juno-compatibility">Juno compatibility</h2>
+<p>UNO R3 support is currently experimental rather than a declared Juno target. The existing backend
+emits standard Arduino calls for the portable APIs, and both <code>Blink</code> and <code>SerialCounter</code> have been
+compiled successfully with the <code>arduino:avr:uno</code> core.</p>
+<table>
+<thead>
+<tr>
+<th>Juno API or feature</th>
+<th align="right">UNO R3</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio</code> and <code>DigitalOutput</code></td>
+<td align="right">Yes</td>
+<td>Uses standard Arduino GPIO calls</td>
+</tr>
+<tr>
+<td><code>Delay</code> and <code>Clock</code></td>
+<td align="right">Yes</td>
+<td>Uses Arduino delay and time functions</td>
+</tr>
+<tr>
+<td><code>Serial</code></td>
+<td align="right">Yes</td>
+<td>Uses the ATmega16U2 USB-to-serial path</td>
+</tr>
+<tr>
+<td><code>Mouse</code></td>
+<td align="right">No</td>
+<td>The sketch MCU has no native USB HID support</td>
+</tr>
+<tr>
+<td><code>LedMatrix</code></td>
+<td align="right">No</td>
+<td>The R3 has no onboard 12x8 LED matrix</td>
+</tr>
+<tr>
+<td>Wi-Fi and Bluetooth</td>
+<td align="right">Not applicable</td>
+<td>No onboard wireless hardware</td>
+</tr>
+<tr>
+<td>DAC, RTC and CAN</td>
+<td align="right">Not applicable</td>
+<td>These peripherals are not built into the R3 board</td>
+</tr>
+</tbody>
+</table>
+<p>The most important practical limit is SRAM. A sketch passing the Arduino compiler's global-memory
+report can still overflow at runtime because that report does not calculate the maximum Juno call
+stack. R3 support should therefore include representative AVR compile tests and stack-budget
+testing before it is considered production-ready.</p>
+<h2 id="official-references">Official references</h2>
+<ul>
+<li><a href="https://docs.arduino.cc/hardware/uno-rev3/">UNO R3 board page</a></li>
+<li><a href="https://docs.arduino.cc/resources/datasheets/A000066-datasheet.pdf">UNO R3 datasheet</a></li>
+<li><a href="https://docs.arduino.cc/resources/pinouts/A000066-full-pinout.pdf">UNO R3 pinout</a></li>
+<li><a href="https://www.microchip.com/en-us/product/ATmega328P">ATmega328P product page</a></li>
+<li><a href="https://github.com/arduino/ArduinoCore-avr">ArduinoCore-avr</a></li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

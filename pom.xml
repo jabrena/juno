@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>io.github.jabrena</groupId>
     <artifactId>java-for-arduino</artifactId>
     <version>0.1.0-SNAPSHOT</version>
@@ -15,6 +12,7 @@
         <module>juno</module>
         <module>juno-maven-plugin</module>
         <module>juno-examples</module>
+        <module>juno-site</module>
     </modules>
 
     <properties>
@@ -136,6 +134,48 @@
                     </plugin>
                 </plugins>
             </reporting>
+        </profile>
+
+        <!--
+          Paired with the "site" profile in juno-site/pom.xml: this half wipes docs/ once, at the
+          very start of the reactor build (root builds before juno-site), so it isn't affected by
+          javadoc:javadoc's internal lifecycle fork inside juno-site's own build later on. See
+          juno-site/pom.xml for the rest of the pipeline (site generation, copy, Javadoc). Usage:
+
+            ./mvnw clean verify -Psite
+
+          Nothing under docs/ is hand-maintained; regenerate rather than hand-edit it.
+        -->
+        <profile>
+            <id>site</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <!-- Profiles are inherited by every child POM; without this, each of the
+                             four reactor modules would run its own copy of this execution. -->
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>wipe-docs</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${project.basedir}/docs</directory>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

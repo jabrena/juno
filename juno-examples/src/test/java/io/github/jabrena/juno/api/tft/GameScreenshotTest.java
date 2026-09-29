@@ -18,9 +18,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Plays every TFT game for a few simulated seconds in the emulator and compares the screen with its
- * screenshot in {@code docs/images/games}, which {@code docs/GAMES.md} shows. A layout change, text
- * that no longer fits, or a drawing bug shows up as a mismatch; the actual screen and a diff are
- * then written to {@code target/screenshots}.
+ * screenshot in {@code src/test/resources/screenshots/games} (a test fixture, not published
+ * anywhere — the site's Games page shows the CPU-played {@code .gif}s instead, not these stills).
+ * A layout change, text that no longer fits, or a drawing bug shows up as a mismatch; the actual
+ * screen and a diff are then written to {@code target/screenshots}.
  *
  * <p>After an intended visual change, regenerate the screenshots with
  * {@code ./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true}.
@@ -29,7 +30,8 @@ class GameScreenshotTest {
     /** Tolerated share of differing pixels, for last-bit differences in floating-point math. */
     private static final double TOLERANCE = 0.001;
 
-    private static final Path GOLDEN = Path.of(System.getProperty("basedir", ".")).resolve("../docs/images/games")
+    private static final Path GOLDEN = Path.of(System.getProperty("basedir", "."))
+            .resolve("src/test/resources/screenshots/games")
             .normalize();
     private static final Path ACTUAL = Path.of(System.getProperty("basedir", ".")).resolve("target/screenshots");
 

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino UNO Q - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino UNO Q" />
+  <meta name="twitter:title" content="Arduino UNO Q">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the Arduino UNO Q (STM32U585, Zephyr core).">
+  <meta property="og:description" content="Board notes for the Arduino UNO Q (STM32U585, Zephyr core)." />
+  <meta name="twitter:description" content="Board notes for the Arduino UNO Q (STM32U585, Zephyr core).">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/arduino-one-q/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/arduino-one-q/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/arduino-one-q/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/arduino-one-q/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="active" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Arduino UNO Q</h1>
+  <p class="page-header-intro">
+    Board notes for the Arduino UNO Q (STM32U585, Zephyr core).
+  </p>
+</section>    <div class="content-prose">
+<blockquote>
+<p>The official product name is <strong>Arduino UNO Q</strong>. This file keeps <code>ONE</code> in its filename to match
+the repository's existing documentation naming convention.</p>
+</blockquote>
+<p>The UNO Q combines two processors on one UNO-form-factor board. A Qualcomm Dragonwing QRB2210
+runs Debian Linux for application-level and multimedia workloads, while an STM32U585 runs Arduino
+sketches under Zephyr for deterministic real-time I/O. Juno targets the STM32 microcontroller; it
+does not run generated Java programs on the Linux processor.</p>
+<h2 id="core-specification">Core specification</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th>Linux side</th>
+<th>Real-time side used by Juno</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Processor</td>
+<td>Qualcomm Dragonwing QRB2210</td>
+<td>STMicroelectronics STM32U585AIGT6</td>
+</tr>
+<tr>
+<td>CPU architecture</td>
+<td>Quad-core Arm Cortex-A53</td>
+<td>32-bit Arm Cortex-M33 with floating-point unit</td>
+</tr>
+<tr>
+<td>Maximum CPU clock</td>
+<td>2.0 GHz</td>
+<td>160 MHz</td>
+</tr>
+<tr>
+<td>Operating system</td>
+<td>Debian Linux</td>
+<td>Zephyr RTOS</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>2 GB or 4 GB LPDDR4</td>
+<td>786 kB SRAM</td>
+</tr>
+<tr>
+<td>Non-volatile storage</td>
+<td>16 GB or 32 GB eMMC</td>
+<td>2 MB flash</td>
+</tr>
+<tr>
+<td>Graphics</td>
+<td>Adreno GPU</td>
+<td>Not applicable</td>
+</tr>
+<tr>
+<td>Wireless</td>
+<td>Dual-band Wi-Fi 5 and Bluetooth 5.1</td>
+<td>Reached through the Linux side, not direct MCU radios</td>
+</tr>
+<tr>
+<td>Arduino CLI FQBN</td>
+<td>Not applicable</td>
+<td><code>arduino:zephyr:unoq</code></td>
+</tr>
+</tbody>
+</table>
+<p>The two processors communicate through Arduino's Bridge/RPC facilities. That architecture lets a
+Linux application handle networking, storage, vision or a user interface while an Arduino sketch
+handles timing-sensitive GPIO. Juno currently compiles only the MCU sketch portion of that model.</p>
+<h2 id="power-and-electrical-characteristics">Power and electrical characteristics</h2>
+<p>The traditional UNO-style headers expose the STM32U585's <strong>3.3 V</strong> I/O. Most MCU digital pins are
+5 V tolerant when configured as digital inputs, but outputs still drive 3.3 V. The analog inputs
+must remain within the selected analog-reference range; in particular, A0 and A1 are not 5 V
+tolerant. A4 and A5 used as I2C require pull-ups to 3.3 V.</p>
+<p>The separate JCTL and some bottom-connector signals belong to the QRB2210's <strong>1.8 V</strong> domain. Do
+not connect them to 3.3 V or 5 V logic. Check the official pinout before attaching a shield,
+carrier, debugger or USB-to-UART adapter because the board contains all three voltage domains.</p>
+<p>The board can be powered through USB-C or VIN. The official pinout marks VIN for 7-24 V DC input.
+Use an external driver and suitable supply for motors, relays and other high-current loads rather
+than powering them directly from a GPIO pin.</p>
+<h2 id="mcu-io-and-buses">MCU I/O and buses</h2>
+<ul>
+<li><strong>Digital:</strong> D0-D21 on the UNO-style headers; D0/D1 provide the user UART and D20/D21 provide
+the primary I2C bus.</li>
+<li><strong>Analog:</strong> A0-A5 support ADC input. A0 and A1 also provide DAC outputs.</li>
+<li><strong>SPI:</strong> D10-D13 provide the traditional UNO SPI mapping; the six-pin SPI header exposes a
+second mapping. Consult the pinout before trying to use both interfaces simultaneously.</li>
+<li><strong>I2C:</strong> SDA/SCL are exposed as D20/D21. The Qwiic connector provides another 3.3 V I2C bus.</li>
+<li><strong>CAN:</strong> D4 and D5 expose the STM32 FDCAN transmit and receive signals. An external transceiver
+is required for a physical CAN bus.</li>
+<li><strong>USB-C:</strong> supplies power and connects the Linux system to USB peripherals and displays through
+a suitable powered adapter.</li>
+<li><strong>Expansion:</strong> bottom connectors expose camera, display, audio and additional mixed MPU/MCU
+signals for compatible carriers.</li>
+</ul>
+<p>The classic UNO outline does not imply 5 V electrical compatibility. Confirm the voltage,
+current and library requirements of every shield before connecting it to the UNO Q.</p>
+<h2 id="arduino-toolchain">Arduino toolchain</h2>
+<p>Install Arduino CLI and the Zephyr core:</p>
+<pre><code class="language-bash">arduino-cli core update-index
+arduino-cli core install arduino:zephyr
+arduino-cli core list
+</code></pre>
+<p>Connect the board and confirm that its FQBN is detected:</p>
+<pre><code class="language-bash">arduino-cli board list
+</code></pre>
+<p>The expected FQBN is <code>arduino:zephyr:unoq</code>. The first upload may also install or update the
+Zephyr loader. Current ArduinoCore-zephyr releases automate this initial setup; if recovery is
+needed, follow the core's loader instructions rather than substituting an UNO R4 bootloader
+procedure.</p>
+<h2 id="juno-compatibility">Juno compatibility</h2>
+<p>Annotate the Java entry point to select the UNO Q:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.Board;
+
+@Board(ArduinoUnoQ.class)
+public final class Example {
+    public static void main(String[] args) {
+        // Program executed by the STM32U585.
+    }
+}
+</code></pre>
+<p>Juno lowers the reachable Java bytecode to GNU Arm Thumb-2 assembly and emits a small C++ runtime
+shim. Arduino's Zephyr core assembles, compiles and packages those files as a sketch dynamically
+loaded by the board's Zephyr firmware.</p>
+<table>
+<thead>
+<tr>
+<th>Juno API or feature</th>
+<th align="right">UNO Q</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio</code> and <code>DigitalOutput</code></td>
+<td align="right">Yes</td>
+<td>Uses the STM32's Arduino GPIO mapping</td>
+</tr>
+<tr>
+<td><code>Delay</code>, <code>Clock</code> and <code>Random</code></td>
+<td align="right">Yes</td>
+<td>Uses Arduino/Zephyr timing support</td>
+</tr>
+<tr>
+<td><code>Serial</code></td>
+<td align="right">Yes</td>
+<td>Uses the MCU sketch's serial path</td>
+</tr>
+<tr>
+<td>LCD keypad and TFT touch shields</td>
+<td align="right">Yes</td>
+<td>Built on GPIO, timing and analog input</td>
+</tr>
+<tr>
+<td>TFT games</td>
+<td align="right">Yes</td>
+<td>Battleship, Blackjack, Chess, Tempest and Texas Hold'em support both UNO Q and UNO R4 WiFi; Empire Strikes Back, Missile Command, Pac-Man, Red Baron, Space Paranoids, Star Trek and Star Wars target UNO Q only; Lunar Lander targets UNO R4 WiFi only</td>
+</tr>
+<tr>
+<td>Onboard LED matrix</td>
+<td align="right">No</td>
+<td>The UNO Q matrix belongs to the Linux side</td>
+</tr>
+<tr>
+<td>Juno Wi-Fi/HTTP APIs</td>
+<td align="right">No</td>
+<td>Current intrinsics target the UNO R4 WiFi libraries</td>
+</tr>
+<tr>
+<td><code>@Watchdog</code></td>
+<td align="right">No</td>
+<td>Currently implemented only for the UNO R4 WiFi</td>
+</tr>
+<tr>
+<td>USB mouse, SD card, servo and email APIs</td>
+<td align="right">Untested</td>
+<td>Do not assume UNO R4 library compatibility</td>
+</tr>
+<tr>
+<td>Linux applications and Bridge/RPC</td>
+<td align="right">Not yet</td>
+<td>Juno currently emits only the MCU sketch</td>
+</tr>
+</tbody>
+</table>
+<p>The Arduino linker report is authoritative for a generated sketch's usable memory. Its reported
+limits describe the Zephyr user-sketch partition and runtime budget, which are smaller than the
+STM32U585's complete physical flash and SRAM.</p>
+<h2 id="space-paranoids-example">Space Paranoids example</h2>
+<p><code>SpaceParanoids</code> is a complete UNO Q workload for the ELEGOO 2.8-inch TFT touch shield. Its entry
+point carries <code>@Board(ArduinoUnoQ.class)</code>, so no FQBN override is needed.</p>
+<p>Compile it through <code>javac</code>, Juno and the real Arduino toolchain without changing the board:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
+</code></pre>
+<p>Upload it after <code>arduino-cli board list</code> shows a connected UNO Q:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
+</code></pre>
+<p>When more than one matching board is connected, or auto-detection cannot select the desired port,
+append <code>-Djuno.port=&lt;PORT&gt;</code>. Uploading replaces the sketch currently running on the STM32U585.</p>
+<p>The cohesive-class refactor recorded in commit <code>5df18a3</code> preserved the screenshot and simulation
+tests while reducing the generated sketch's memory use:</p>
+<table>
+<thead>
+<tr>
+<th>UNO Q Arduino linker report</th>
+<th align="right">Before</th>
+<th align="right">After</th>
+<th align="right">Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Program storage</td>
+<td align="right">242,140 bytes</td>
+<td align="right">238,796 bytes</td>
+<td align="right">-3,344 bytes</td>
+</tr>
+<tr>
+<td>Dynamic memory</td>
+<td align="right">172,988 bytes</td>
+<td align="right">169,364 bytes</td>
+<td align="right">-3,624 bytes</td>
+</tr>
+</tbody>
+</table>
+<p>The post-refactor build uses 30% of the 786,432-byte program partition and 64% of the
+262,144-byte dynamic-memory budget reported by Arduino CLI. These figures are a reproducible
+reference for the current toolchain, not fixed hardware reservations; core, compiler and linker
+updates can change them.</p>
+<p>See <a href="/games#space-paranoids">GAMES.md</a> for gameplay and controls, and <a href="/arduino">ARDUINO.md</a>
+for the general Juno compile, upload and monitor workflow.</p>
+<h2 id="official-references">Official references</h2>
+<ul>
+<li><a href="https://docs.arduino.cc/hardware/uno-q/">UNO Q board page</a></li>
+<li><a href="https://docs.arduino.cc/tutorials/uno-q/user-manual/">UNO Q user manual</a></li>
+<li><a href="https://docs.arduino.cc/resources/datasheets/ABX00162-datasheet.pdf">UNO Q datasheet</a></li>
+<li><a href="https://docs.arduino.cc/resources/pinouts/ABX00162-full-pinout.pdf">UNO Q pinout</a></li>
+<li><a href="https://github.com/arduino/ArduinoCore-zephyr">ArduinoCore-zephyr</a></li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

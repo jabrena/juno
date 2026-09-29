@@ -9,10 +9,10 @@ import java.util.List;
 /**
  * Installs the Arduino core and every optional library any current Juno example needs, so a fresh
  * checkout can build every example without hunting down "arduino-cli lib install X" instructions
- * scattered across {@code docs/ARDUINO.md} one at a time. Run this once per machine (or again after
- * a new example starts needing a new optional library) — ordinary {@code compile}/{@code verify}/
- * {@code upload} builds never run this themselves, so they don't pay arduino-cli's library-index/
- * network cost on every single build.
+ * one at a time. Run this once per machine (or again after a new example starts needing a new
+ * optional library) — ordinary {@code compile}/{@code verify}/{@code upload} builds never run
+ * this themselves, so they don't pay arduino-cli's library-index/network cost on every single
+ * build.
  */
 @Mojo(name = "install-deps", defaultPhase = LifecyclePhase.NONE, threadSafe = true)
 public final class InstallDepsMojo extends AbstractArduinoMojo {
@@ -21,8 +21,7 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
      * current Juno example needs: {@code Mouse} for {@code RatonLoco}, {@code ESP_SSLClient} for
      * {@code Smtp}'s {@code STARTTLS} upgrade, {@code Servo} for {@code Servo}-driven examples,
      * and {@code SdFat} for long-file-name-capable removable-storage examples.
-     * Update this list — and the matching mention in {@code docs/ARDUINO.md} — together whenever a
-     * new example starts needing another one.
+     * Update this list whenever a new example starts needing another one.
      */
     private static final List<String> OPTIONAL_LIBRARIES = List.of("Mouse", "ESP_SSLClient", "Servo", "SdFat");
 

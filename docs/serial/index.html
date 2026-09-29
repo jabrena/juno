@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Serial - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Serial" />
+  <meta name="twitter:title" content="Serial">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Reading and writing over USB serial.">
+  <meta property="og:description" content="Reading and writing over USB serial." />
+  <meta name="twitter:description" content="Reading and writing over USB serial.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/serial/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/serial/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/serial/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/serial/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/static/bundle/app-JPIC5GYR.js"></script>
+      <link rel="stylesheet" href="/static/bundle/app-FX4DDW2Z.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="active" href="/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Serial</h1>
+  <p class="page-header-intro">
+    Reading and writing over USB serial.
+  </p>
+</section>    <div class="content-prose">
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/usb/Serial.java"><code>Serial</code></a> is a compiler
+intrinsic that wraps the Arduino core's USB serial port (<code>Serial.begin</code>/<code>print</code>/<code>println</code>). It is
+the primary way a Juno program talks back to the development machine while it runs on real
+hardware.</p>
+<h2 id="why-it-matters">Why it matters</h2>
+<p>Juno programs run on bare Cortex-M4 hardware with no attached debugger, no breakpoints, and no
+console. Without <code>Serial</code>, the only observable behavior of a running sketch is whatever it does
+with GPIO, the LED matrix, or an LCD — which is rarely enough to tell <em>why</em> something is wrong.
+<code>Serial</code> is how you:</p>
+<ul>
+<li>confirm a program actually reached a given line (<code>Serial.println</code> markers between steps, the
+same way <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java"><code>LcdKeypadDemo</code></a>
+prints <code>1</code>, <code>2</code>, <code>3</code> after each setup call);</li>
+<li>watch live sensor/state values (button reads, <code>Wifi.status()</code>, HTTP result codes — see
+<a href="/internet">docs/INTERNET.md</a>) instead of guessing from final behavior;</li>
+<li>see the conservative garbage collector's own diagnostics, when a program is compiled with
+<code>--gc-log</code> (one line per collection: arena bytes used before/after — see
+<a href="/features">docs/FEATURES.md</a>);</li>
+<li>tell a silent hang (arena exhaustion, an infinite loop, a bad button threshold) apart from a
+crash, since there is no stack trace to read afterward.</li>
+</ul>
+<p>Because of this, add <code>Serial.begin(...)</code> and a few <code>Serial.println(...)</code> checkpoints to a new
+program <em>before</em> debugging hardware behavior, not after. Flashing the board and reading its serial
+output is the normal way to confirm a change actually behaves correctly on real hardware.</p>
+<h2 id="api">API</h2>
+<pre><code class="language-java">import io.github.jabrena.juno.api.io.usb.BaudRate;
+import io.github.jabrena.juno.api.io.usb.Serial;
+
+Serial.begin(BaudRate.BAUD_115200);   // preferred: a named, valid rate
+Serial.begin(115200);                 // equivalent, for a custom/non-standard rate
+
+Serial.print(42);                     // &quot;42&quot;
+Serial.println(42);                   // &quot;42\n&quot;
+Serial.println(123456789012L);        // 64-bit integer
+Serial.println(3.14f);                // single-precision floating point
+Serial.println(3.141592653589793);    // double-precision floating point
+Serial.print(&quot;Distance: &quot;);           // compile-time string literal, no trailing newline
+Serial.println(&quot;Ready&quot;);              // string, with a trailing newline
+Serial.println(e.getMessage());       // runtime String (prints &quot;null&quot; for null)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Argument</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>begin(BaudRate)</code></td>
+<td>a <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/usb/BaudRate.java"><code>BaudRate</code></a> constant</td>
+<td>preferred; keeps the rate and the monitor's config in sync</td>
+</tr>
+<tr>
+<td><code>begin(int)</code></td>
+<td>a data rate in bits per second</td>
+<td>for a rate <code>BaudRate</code> doesn't name</td>
+</tr>
+<tr>
+<td><code>print(int)</code> / <code>println(int)</code></td>
+<td>any <code>int</code> expression</td>
+<td>prints in decimal</td>
+</tr>
+<tr>
+<td><code>print(long)</code> / <code>println(long)</code></td>
+<td>any <code>long</code> expression</td>
+<td>preserves the full Java 64-bit value</td>
+</tr>
+<tr>
+<td><code>print(float)</code> / <code>println(float)</code></td>
+<td>any <code>float</code> expression</td>
+<td>uses Arduino's floating-point formatting</td>
+</tr>
+<tr>
+<td><code>print(double)</code> / <code>println(double)</code></td>
+<td>any <code>double</code> expression</td>
+<td>uses Arduino's floating-point formatting</td>
+</tr>
+<tr>
+<td><code>print(String)</code> / <code>println(String)</code></td>
+<td>any <code>String</code> expression</td>
+<td>literals print straight from flash; a <code>null</code> prints <code>null</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>BaudRate</code> provides <code>BAUD_9600</code>, <code>BAUD_19200</code>, <code>BAUD_38400</code>, <code>BAUD_57600</code>, and <code>BAUD_115200</code>.
+<code>juno-examples</code> conventionally uses <code>BAUD_115200</code> everywhere, which is also <code>juno:monitor</code>'s
+default.</p>
+<h3 id="printing-runtime-strings">Printing runtime strings</h3>
+<p><code>Serial.print(String)</code>/<code>println(String)</code> also print runtime <code>String</code> values — <code>String.valueOf(...)</code>,
+a <code>StringBuilder</code> result, a JSON string, or an exception's <code>getMessage()</code>. String concatenation with
+<code>+</code> is still unsupported (<code>javac</code> compiles it to <code>invokedynamic</code>), so print computed data in parts:</p>
+<pre><code class="language-java">int temperature = /* ... */;
+Serial.print(&quot;Temperature C: &quot;);
+Serial.println(temperature);
+</code></pre>
+<h2 id="a-minimal-example">A minimal example</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java"><code>SerialCounter</code></a>
+opens the connection and prints an incrementing counter, one value per line, once a second:</p>
+<pre><code class="language-java">@Board(ArduinoUnoR4WiFi.class)
+public final class SerialCounter {
+    public static void main(String[] args) {
+        Serial.begin(BaudRate.BAUD_115200);
+
+        int counter = 0;
+        while (true) {
+            Serial.println(counter);
+            counter = counter + 1;
+            Delay.millis(1000);
+        }
+    }
+}
+</code></pre>
+<h2 id="watching-the-output">Watching the output</h2>
+<p>Build, upload, and open the serial monitor with <code>juno-maven-plugin</code> (see
+<a href="/juno-maven-plugin">docs/JUNO-MAVEN-PLUGIN.md</a>):</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+
+./mvnw -f juno-examples/pom.xml juno:monitor
+</code></pre>
+<p>Always use the <code>juno:monitor</code> goal rather than invoking <code>arduino-cli monitor</code> directly — it
+resolves the same board port <code>juno:upload</code> used and defaults to the <code>115200</code> baud rate every
+<code>juno-examples</code> program uses, so the two never mismatch.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong>Monitor shows nothing or garbage:</strong> the monitor's baud rate must match the value passed to
+<code>Serial.begin</code>. <code>juno:monitor</code>'s default (<code>115200</code>) matches <code>BaudRate.BAUD_115200</code>; override it
+with <code>-Djuno.baudRate=&lt;rate&gt;</code> if a program calls <code>Serial.begin</code> with a different value.</li>
+<li><strong>First lines are missing:</strong> some boards reset when the serial connection opens, and a few
+milliseconds of early output can be lost before the monitor attaches. Add a short
+<code>Delay.millis(...)</code> before the first <code>Serial.println</code> if early output matters, or simply rely on
+a loop that keeps printing.</li>
+<li><strong>Nothing prints inside a loop at all:</strong> confirm the loop is actually reached — add a
+<code>Serial.println</code> right at the top of <code>main</code> first, then move the checkpoint deeper until the
+silent section is found.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>
