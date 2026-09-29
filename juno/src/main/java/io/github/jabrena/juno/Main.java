@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public final class Main {
     private static final String VERSION = "0.1.0-SNAPSHOT";
@@ -58,6 +59,7 @@ public final class Main {
         String classPathValue = "target/classes";
         Path output = null;
         boolean gcLog = false;
+        String requestedBoardId = null;
         for (int index = 1; index < args.length; index++) {
             String option = args[index];
             if (option.equals("--main")) {
@@ -68,6 +70,8 @@ public final class Main {
                 output = Path.of(value(args, ++index, option));
             } else if (option.equals("--gc-log")) {
                 gcLog = true;
+            } else if (option.equals("--board")) {
+                requestedBoardId = value(args, ++index, option);
             } else {
                 throw new CompileException("Unknown option '" + option + "'");
             }
@@ -84,7 +88,8 @@ public final class Main {
         String baseName = baseName(output);
         Path shimOutput = output.resolveSibling(baseName + "Shim.cpp");
         Path wrapperOutput = output.resolveSibling(baseName + ".ino");
-        CompilationResult result = new JunoCompiler().compileTo(classPath, mainClass, output, shimOutput, gcLog);
+        CompilationResult result = new JunoCompiler().compileTo(classPath, mainClass, output, shimOutput, gcLog,
+                Optional.ofNullable(requestedBoardId));
         writeWrapper(wrapperOutput, result.entryPointSymbol());
         Board board = result.report().board();
         System.out.println("Generated " + output + ", " + shimOutput + ", and " + wrapperOutput
@@ -123,6 +128,7 @@ public final class Main {
         boolean showIr = false;
         boolean showCfg = false;
         boolean showRisks = false;
+        String board = null;
         for (int index = 1; index < args.length; index++) {
             String option = args[index];
             if (option.equals("--main")) {
@@ -135,6 +141,8 @@ public final class Main {
                 showCfg = true;
             } else if (option.equals("--risks")) {
                 showRisks = true;
+            } else if (option.equals("--board")) {
+                board = value(args, ++index, option);
             } else {
                 throw new CompileException("Unknown option '" + option + "'");
             }
@@ -145,7 +153,7 @@ public final class Main {
         List<Path> classPath = parseClassPath(classPathValue);
 
         CompilationPipeline pipeline = new CompilationPipeline();
-        Program program = pipeline.link(classPath, mainClass);
+        Program program = pipeline.link(classPath, mainClass, Optional.ofNullable(board));
         IrProgram optimized = pipeline.optimize(pipeline.lower(program));
         CompilationReport report = CompilationReport.from(program, optimized);
 
@@ -247,6 +255,8 @@ public final class Main {
                 compile options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
                   --output, -o <file>       Generated .S file (default: build/juno/<Main>/<Main>.S)
+                  --board <id>              Target board (arduino-uno-r4-wifi, arduino-uno-q); required only when
+                                            @Board declares more than one board
                   --gc-log                  Have the generated garbage collector print one Serial
                                             line per collection (arena bytes used before/after),
                                             visible via juno:monitor. Off by default: costs no
@@ -255,10 +265,14 @@ public final class Main {
 
                 The target board is read from the entry-point class's @Board annotation
                 (io.github.jabrena.juno.annotations.Board); a class with no @Board annotation targets the
-                UNO R4 WiFi by default.
+                UNO R4 WiFi by default. @Board may declare more than one board (e.g.
+                @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})), in which case --board picks which one
+                this build compiles for.
 
                 inspect options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
+                  --board <id>              Target board (arduino-uno-r4-wifi, arduino-uno-q); required only when
+                                            @Board declares more than one board
                   --ir                      Print the lowered/optimized Juno IR per reachable method
                   --cfg                     Print each reachable method's basic-block control flow graph
                   --risks                   Estimate runtime resource use and print structured risk findings

@@ -14,6 +14,7 @@ import io.github.jabrena.juno.optimize.DeadBlockElimination;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The compiler's stages, named and callable independently: classfiles -&gt; {@link #link} -&gt;
@@ -26,8 +27,12 @@ final class CompilationPipeline {
             new CopyPropagation(), new ConstantFolder(), new DeadBlockElimination());
 
     Program link(List<Path> classPath, String mainClass) {
+        return link(classPath, mainClass, Optional.empty());
+    }
+
+    Program link(List<Path> classPath, String mainClass, Optional<String> requestedBoard) {
         Map<String, JavaClass> classes = new ClassPath().load(classPath);
-        return new Linker().link(classes, mainClass);
+        return new Linker().link(classes, mainClass, requestedBoard);
     }
 
     IrProgram lower(Program program) {

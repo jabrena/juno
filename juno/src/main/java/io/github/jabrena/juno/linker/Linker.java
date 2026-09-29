@@ -19,6 +19,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,12 +42,24 @@ public final class Linker {
     private final ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilder();
 
     public Program link(Map<String, JavaClass> classes, String mainClassName) {
+        return link(classes, mainClassName, Optional.empty());
+    }
+
+    /**
+     * {@code requestedBoardId} (see {@link Board#fromId}) picks which of the entry point's declared
+     * {@code @Board} targets this build compiles for; it must name one of them. It may be omitted only
+     * when the entry point declares exactly one board (or none, defaulting to {@link Board#DEFAULT}) —
+     * declaring more than one and omitting it is a {@link CompileException}, since silently picking one
+     * would make the build depend on declaration order.
+     */
+    public Program link(Map<String, JavaClass> classes, String mainClassName, Optional<String> requestedBoardId) {
         String internalName = mainClassName.replace('.', '/');
         JavaClass mainClass = classes.get(internalName);
         if (mainClass == null) {
             throw new CompileException("Main class not found on the classpath: " + mainClassName);
         }
-        Board board = mainClass.boardApiClassName().map(Board::fromApiClassName).orElse(Board.DEFAULT);
+        List<Board> declaredBoards = declaredBoards(mainClass);
+        Board board = resolveBoard(declaredBoards, requestedBoardId);
         JavaMethod main = findMain(mainClass);
         MethodRef entryPoint = main.reference();
         Set<String> enumClassNames = classes.values().stream()
@@ -66,15 +79,51 @@ public final class Linker {
             if (!reachable.containsKey(reference)) {
                 LinkedMethod linked = linkMethod(classes, reference, reference.equals(entryPoint));
                 reachable.put(reference, linked);
-                enqueueDependencies(linked, board, classes, work);
+                enqueueDependencies(linked, declaredBoards, classes, work);
             }
         }
-        if (board.zephyrCore() && mainClass.watchdogTimeoutMillis().isPresent()) {
-            throw new CompileException("@Watchdog requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
-                    + "'s Zephyr core has no WDT library");
+        if (mainClass.watchdogTimeoutMillis().isPresent()) {
+            requireWatchdogSupport(declaredBoards);
         }
         return new Program(entryPoint, List.copyOf(reachable.values()), classes, board,
                 mainClass.watchdogTimeoutMillis());
+    }
+
+    /** Every board the entry point's {@code @Board} annotation names, or just {@link Board#DEFAULT} if absent. */
+    private List<Board> declaredBoards(JavaClass mainClass) {
+        List<String> boardApiClassNames = mainClass.boardApiClassNames();
+        return boardApiClassNames.isEmpty()
+                ? List.of(Board.DEFAULT)
+                : boardApiClassNames.stream().map(Board::fromApiClassName).distinct().toList();
+    }
+
+    /** Picks the single board this build targets out of {@code declaredBoards} (see {@link #link}). */
+    private Board resolveBoard(List<Board> declaredBoards, Optional<String> requestedBoardId) {
+        if (requestedBoardId.isPresent()) {
+            Board requested = Board.fromId(requestedBoardId.get());
+            if (!declaredBoards.contains(requested)) {
+                throw new CompileException("Requested board '" + requestedBoardId.get()
+                        + "' is not one of @Board's declared boards: " + displayNames(declaredBoards));
+            }
+            return requested;
+        }
+        if (declaredBoards.size() > 1) {
+            throw new CompileException("@Board declares multiple boards (" + displayNames(declaredBoards)
+                    + "); pass the target board explicitly: -Djuno.board=<id> for the Maven plugin, "
+                    + "--board=<id> for the standalone CLI");
+        }
+        return declaredBoards.get(0);
+    }
+
+    private void requireWatchdogSupport(List<Board> declaredBoards) {
+        declaredBoards.stream().filter(Board::zephyrCore).findFirst().ifPresent(board -> {
+            throw new CompileException("@Watchdog requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
+                    + "'s Zephyr core has no WDT library");
+        });
+    }
+
+    private static String displayNames(List<Board> boards) {
+        return boards.stream().map(Board::displayName).collect(Collectors.joining(", "));
     }
 
     private LinkedMethod linkMethod(Map<String, JavaClass> classes, MethodRef reference, boolean entryPoint) {
@@ -94,14 +143,15 @@ public final class Linker {
     }
 
     /** Queues every method and static initializer {@code linked}'s invoke/static-field instructions reach. */
-    private void enqueueDependencies(LinkedMethod linked, Board board, Map<String, JavaClass> classes,
+    private void enqueueDependencies(LinkedMethod linked, List<Board> declaredBoards, Map<String, JavaClass> classes,
             Deque<MethodRef> work) {
         JavaClass owner = linked.owner();
         MethodRef caller = linked.method().reference();
         for (Instruction instruction : linked.instructions()) {
             int opcode = instruction.opcode();
             if (opcode == 182 || opcode == 183 || opcode == 184) {
-                enqueueCall(owner.constantPool().methodRef(instruction.operandA()), caller, board, classes, work);
+                enqueueCall(owner.constantPool().methodRef(instruction.operandA()), caller, declaredBoards, classes,
+                        work);
             }
             if (opcode == 178 || opcode == 179) {
                 enqueueStaticInitializer(owner.constantPool().fieldRef(instruction.operandA()), classes, work);
@@ -109,11 +159,11 @@ public final class Linker {
         }
     }
 
-    private void enqueueCall(MethodRef called, MethodRef caller, Board board, Map<String, JavaClass> classes,
-            Deque<MethodRef> work) {
+    private void enqueueCall(MethodRef called, MethodRef caller, List<Board> declaredBoards,
+            Map<String, JavaClass> classes, Deque<MethodRef> work) {
         IntrinsicRegistry.resolve(called).ifPresent(intrinsic -> {
-            requireLedMatrixSupport(board, intrinsic, caller);
-            requireWifiSupport(board, intrinsic, caller);
+            requireLedMatrixSupport(declaredBoards, intrinsic, caller);
+            requireWifiSupport(declaredBoards, intrinsic, caller);
         });
         if (isDrawTextCall(called)) {
             work.addLast(DRAW_CHAR_METHOD);
@@ -143,18 +193,25 @@ public final class Linker {
         }
     }
 
-    private void requireLedMatrixSupport(Board board, Intrinsic intrinsic, MethodRef caller) {
-        if (!board.hasLedMatrix() && LED_MATRIX_INTRINSICS.contains(intrinsic)) {
+    /** Every declared board must support an intrinsic a portable program uses, not just the one it builds for. */
+    private void requireLedMatrixSupport(List<Board> declaredBoards, Intrinsic intrinsic, MethodRef caller) {
+        if (!LED_MATRIX_INTRINSICS.contains(intrinsic)) {
+            return;
+        }
+        declaredBoards.stream().filter(board -> !board.hasLedMatrix()).findFirst().ifPresent(board -> {
             throw new CompileException("LedMatrix requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
                     + " has no onboard LED matrix (used from " + caller.displayName() + ")");
-        }
+        });
     }
 
-    private void requireWifiSupport(Board board, Intrinsic intrinsic, MethodRef caller) {
-        if (!board.hasWifi() && WIFI_INTRINSICS.contains(intrinsic)) {
+    private void requireWifiSupport(List<Board> declaredBoards, Intrinsic intrinsic, MethodRef caller) {
+        if (!WIFI_INTRINSICS.contains(intrinsic)) {
+            return;
+        }
+        declaredBoards.stream().filter(board -> !board.hasWifi()).findFirst().ifPresent(board -> {
             throw new CompileException("Wifi requires @Board(ArduinoUnoR4WiFi.class): " + board.displayName()
                     + " has no onboard WiFi module (used from " + caller.displayName() + ")");
-        }
+        });
     }
 
     /**

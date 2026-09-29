@@ -32,8 +32,8 @@ public final class ClassFileReader {
     }
 
     /** One class's {@code @Board}/{@code @Watchdog} annotation values, as read from its class file. */
-    private record ClassAnnotations(Optional<String> boardApiClassName, Optional<Integer> watchdogTimeoutMillis) {
-        private static final ClassAnnotations NONE = new ClassAnnotations(Optional.empty(), Optional.empty());
+    private record ClassAnnotations(List<String> boardApiClassNames, Optional<Integer> watchdogTimeoutMillis) {
+        private static final ClassAnnotations NONE = new ClassAnnotations(List.of(), Optional.empty());
     }
 
     public JavaClass read(byte[] bytes) {
@@ -57,7 +57,7 @@ public final class ClassFileReader {
             List<JavaMethod> methods = readMethods(input, pool, className);
             ClassAnnotations annotations = readClassAttributes(input, pool);
             return new JavaClass(className, classAccessFlags, superClassName, pool, List.copyOf(methods), fields,
-                    annotations.boardApiClassName(), annotations.watchdogTimeoutMillis());
+                    annotations.boardApiClassNames(), annotations.watchdogTimeoutMillis());
         } catch (IOException exception) {
             throw new CompileException("Cannot read class file", exception);
         }
@@ -210,7 +210,7 @@ public final class ClassFileReader {
         boolean isBoard = typeDescriptor.equals(BOARD_ANNOTATION_DESCRIPTOR);
         boolean isWatchdog = typeDescriptor.equals(WATCHDOG_ANNOTATION_DESCRIPTOR);
         int numPairs = input.readUnsignedShort();
-        Optional<String> boardApiClassName = annotations.boardApiClassName();
+        List<String> boardApiClassNames = annotations.boardApiClassNames();
         Optional<Integer> watchdogTimeoutMillis = annotations.watchdogTimeoutMillis();
         if (isWatchdog) {
             // @Watchdog carries a default (see Watchdog#timeoutMillis) the class file omits entirely
@@ -221,26 +221,36 @@ public final class ClassFileReader {
         for (int i = 0; i < numPairs; i++) {
             String elementName = pool.utf8(input.readUnsignedShort());
             ElementValue value = readElementValue(input, pool);
-            if (isBoard && value.classInternalName() != null) {
-                boardApiClassName = Optional.of(value.classInternalName());
+            if (isBoard) {
+                // @Board's value() is Class<? extends ArduinoBoard>[]; javac always wraps even a bare
+                // `@Board(X.class)` shorthand as a one-element array in the class file, but a single
+                // 'c' tag is accepted too for class files compiled against an older, non-array Board.
+                if (value.classInternalName() != null) {
+                    boardApiClassNames = List.of(value.classInternalName());
+                } else if (!value.classInternalNames().isEmpty()) {
+                    boardApiClassNames = value.classInternalNames();
+                }
             }
             if (isWatchdog && elementName.equals("timeoutMillis") && value.intValue() != null) {
                 watchdogTimeoutMillis = Optional.of(value.intValue());
             }
         }
-        return new ClassAnnotations(boardApiClassName, watchdogTimeoutMillis);
+        if (isBoard && boardApiClassNames.isEmpty()) {
+            throw new CompileException("@Board requires at least one board, e.g. @Board(ArduinoUnoR4WiFi.class)");
+        }
+        return new ClassAnnotations(boardApiClassNames, watchdogTimeoutMillis);
     }
 
-    /** One {@code element_value}'s parsed payload — only the fields a supported tag can populate are non-null. */
-    private record ElementValue(String classInternalName, Integer intValue) {
-        private static final ElementValue EMPTY = new ElementValue(null, null);
+    /** One {@code element_value}'s parsed payload — only the fields a supported tag can populate are non-empty. */
+    private record ElementValue(String classInternalName, Integer intValue, List<String> classInternalNames) {
+        private static final ElementValue EMPTY = new ElementValue(null, null, List.of());
     }
 
     /** Reads one {@code element_value}. */
     private ElementValue readElementValue(DataInputStream input, ConstantPool pool) throws IOException {
         int tag = input.readUnsignedByte();
         return switch (tag) {
-            case 'I' -> new ElementValue(null, pool.integer(input.readUnsignedShort()));
+            case 'I' -> new ElementValue(null, pool.integer(input.readUnsignedShort()), List.of());
             case 'e' -> {
                 input.readUnsignedShort();
                 input.readUnsignedShort();
@@ -251,7 +261,7 @@ public final class ClassFileReader {
                 String internalName = descriptor.startsWith("L") && descriptor.endsWith(";")
                         ? descriptor.substring(1, descriptor.length() - 1)
                         : descriptor;
-                yield new ElementValue(internalName, null);
+                yield new ElementValue(internalName, null, List.of());
             }
             case '@' -> {
                 readAnnotation(input, pool, ClassAnnotations.NONE);
@@ -259,10 +269,14 @@ public final class ClassFileReader {
             }
             case '[' -> {
                 int numValues = input.readUnsignedShort();
+                List<String> classInternalNames = new ArrayList<>();
                 for (int i = 0; i < numValues; i++) {
-                    readElementValue(input, pool);
+                    ElementValue element = readElementValue(input, pool);
+                    if (element.classInternalName() != null) {
+                        classInternalNames.add(element.classInternalName());
+                    }
                 }
-                yield ElementValue.EMPTY;
+                yield new ElementValue(null, null, List.copyOf(classInternalNames));
             }
             default -> skipConstElementValue(input, tag);
         };

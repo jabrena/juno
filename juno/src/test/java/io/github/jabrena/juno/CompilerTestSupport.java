@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class CompilerTestSupport {
     private CompilerTestSupport() {
@@ -55,9 +56,13 @@ public final class CompilerTestSupport {
     }
 
     public static Program link(Path classes, String mainClass) {
+        return link(classes, mainClass, Optional.empty());
+    }
+
+    public static Program link(Path classes, String mainClass, Optional<String> requestedBoard) {
         List<Path> classpath = new ArrayList<>(List.of(classes));
         classpath.addAll(JUNO_CLASSPATH);
         Map<String, JavaClass> loaded = new ClassPath().load(classpath);
-        return new Linker().link(loaded, mainClass);
+        return new Linker().link(loaded, mainClass, requestedBoard);
     }
 }

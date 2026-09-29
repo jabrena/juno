@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.games.tempest;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
@@ -33,8 +34,13 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * points kept in one flat array so every call stays within four arguments; {@link SceneRenderer}
  * draws the web, claw, flippers and shots; {@link Hud} and {@link Interludes} own the header and the
  * non-gameplay screens. This class only orchestrates the game loop.
+ *
+ * <p>Tempest uses only {@link Clock}, {@link Delay}, {@link Random}, and the {@link TftTouchShield}
+ * (itself built from {@code Gpio}/{@code Delay}), none of which are board-specific, so it targets both
+ * boards the shield fits: pick which one to build for with {@code -Djuno.board=arduino-uno-q} or
+ * {@code -Djuno.board=arduino-uno-r4-wifi}.
  */
-@Board(ArduinoUnoQ.class)
+@Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
 public final class Tempest {
     private static final int FRAME_MILLIS = 25;
 

@@ -19,6 +19,11 @@ Then flash a game by its class name. Every game in this page lists its own comma
 
 `juno:upload` finds the board by itself, or takes `-Djuno.port=<PORT>`. To check that a game builds without touching any hardware, use `juno:verify` instead of `juno:upload`.
 
+Most games target one board, so that single command is all they need. A few, like Tempest, declare
+`@Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})` because they use nothing board-specific — for
+those, add `-Djuno.board=<id>` (`arduino-uno-q` or `arduino-uno-r4-wifi`) to say which one to build for; omitting it
+when more than one board is declared fails with the list of choices instead of guessing.
+
 The screenshots were rendered on a desktop by running each game's unmodified code, including the real `TftTouchShield` driver and its font, against an emulation of the shield's ILI9341 display controller (see [Testing without the board](#testing-without-the-board)). The real panel's colors vary slightly.
 
 ## Contents
@@ -57,11 +62,20 @@ The cover opens with two warheads streaking toward the cities, an interceptor cl
 
 <img src="videos/games/tempest-cpu.gif" alt="Tempest on the TFT shield, flown by the CPU" width="240">
 
-A vector-style tube seen end-on. It opens with cyan, magenta, and yellow rings racing through the tube, the claw launching from the vanishing point and orbiting the rim, and the multicolor title zooming into place. After the title, choose the pilot: **HUMAN** to play yourself, or **CPU** to watch an autopilot that lets flippers climb into view before sweeping onto whichever is closest to the rim, occasionally hesitating or misjudging its lane, and firing the Superzapper when swarmed; tap the header during the game to switch between the two. Touch near the rim to move your claw around it (it fires while you hold), and tap the center for the once-per-level Superzapper. Each level's tube grows out of its vanishing point under a title card naming its shape (circle, square, star, clover); clearing it shows a bonus card, then the claw rides down its lane as the rings rush in after it, like the arcade's warp. The Superzapper sweeps a white ring through the tube, a lost claw shows how many are left, and at game over the tube collapses before the final score; a tap then returns to the animated title. Tempest targets the **Arduino UNO Q** (`@Board(ArduinoUnoQ.class)`).
+A vector-style tube seen end-on. It opens with cyan, magenta, and yellow rings racing through the tube, the claw launching from the vanishing point and orbiting the rim, and the multicolor title zooming into place. After the title, choose the pilot: **HUMAN** to play yourself, or **CPU** to watch an autopilot that lets flippers climb into view before sweeping onto whichever is closest to the rim, occasionally hesitating or misjudging its lane, and firing the Superzapper when swarmed; tap the header during the game to switch between the two. Touch near the rim to move your claw around it (it fires while you hold), and tap the center for the once-per-level Superzapper. Each level's tube grows out of its vanishing point under a title card naming its shape (circle, square, star, clover); clearing it shows a bonus card, then the claw rides down its lane as the rings rush in after it, like the arcade's warp. The Superzapper sweeps a white ring through the tube, a lost claw shows how many are left, and at game over the tube collapses before the final score; a tap then returns to the animated title. Tempest uses nothing board-specific, so it declares both boards the shield fits (`@Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})`); pick one with `-Djuno.board`:
 
 ```bash
+# Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.tempest.Tempest
+  -Djuno.main=io.github.jabrena.juno.games.tempest.Tempest \
+  -Djuno.board=arduino-uno-q
+```
+
+```bash
+# Arduino UNO R4 WiFi
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.tempest.Tempest \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ### Star Wars

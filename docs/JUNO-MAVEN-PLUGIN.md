@@ -51,6 +51,7 @@ can be selected without editing the POM.
 | `juno.main` | `compile`, `verify`, `upload` | *(required)* | Fully qualified entry-point class. |
 | `juno.outputDirectory` | `compile`, `verify`, `upload` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
 | `juno.gcLog` | `compile`, `verify`, `upload` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](FEATURES.md)). |
+| `juno.board` | `compile`, `verify`, `upload` | *(required only if `@Board` declares more than one board)* | Which declared board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`). |
 | `juno.arduinoCli` | `verify`, `upload`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `upload`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `upload`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
@@ -110,6 +111,9 @@ the full explanation, including the `--add-opens` JVM flags this goal needs (alr
 - **Uploaded sketch targets the wrong board variant:** pass `-Djuno.fqbn=...` to override the FQBN
   Juno derived from the entry point's `@Board` annotation; the plugin logs a warning whenever an
   override changes the effective target.
+- **"@Board declares multiple boards ...; pass the target board explicitly":** the entry point's
+  `@Board` lists more than one board (e.g. `@Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})`);
+  add `-Djuno.board=<id>` naming one of them, as printed in the error.
 - **`.env` values aren't visible to `System.getenv` at compile time:** confirm the module's build
   actually runs `juno:env` (an `<execution>` with goal `env`) before `process-classes`, and that
   `.mvn/jvm.config`'s `--add-opens` flags are in effect (they are, by default, in this repository).

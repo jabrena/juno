@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     /** Fully qualified Java entry-point class. */
@@ -33,6 +34,14 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
      */
     @Parameter(property = "juno.gcLog", defaultValue = "false")
     private boolean gcLog;
+
+    /**
+     * Target board (e.g. {@code arduino-uno-r4-wifi}, {@code arduino-uno-q}), required only when the entry point's
+     * {@code @Board} annotation declares more than one board; the compiler fails rather than picking
+     * one silently. Ignored when the entry point declares a single board.
+     */
+    @Parameter(property = "juno.board")
+    private String board;
 
     final CompiledSketch compileSketch() {
         if (mainClass == null || mainClass.isBlank()) {
@@ -56,7 +65,9 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         Path shim = sketchDirectory.resolve(simpleName + "Shim.cpp");
         Path wrapper = sketchDirectory.resolve(sketchName + ".ino");
 
-        CompilationResult result = new JunoCompiler().compileTo(classpath, mainClass, assembly, shim, gcLog);
+        Optional<String> requestedBoard = board == null || board.isBlank() ? Optional.empty() : Optional.of(board.trim());
+        CompilationResult result = new JunoCompiler().compileTo(classpath, mainClass, assembly, shim, gcLog,
+                requestedBoard);
         writeAsmWrapper(wrapper, result.entryPointSymbol());
         String targetFqbn = targetFqbn(result.report().board().fqbn());
         warnForFqbnOverride(targetFqbn, result.report());

@@ -9,12 +9,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 public final class JunoCompiler {
     private final CompilationPipeline pipeline = new CompilationPipeline();
 
     public CompilationResult compile(CompilationRequest request) {
-        Program program = pipeline.link(request.classPath(), request.mainClass());
+        Program program = pipeline.link(request.classPath(), request.mainClass(), request.requestedBoard());
         IrProgram optimized = pipeline.optimize(pipeline.lower(program));
         CortexM4AsmBackend.Output output = new CortexM4AsmBackend(request.gcLoggingEnabled(), program.board()).generate(optimized);
         return new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(),
@@ -29,6 +30,11 @@ public final class JunoCompiler {
         return compile(new CompilationRequest(classPath, mainClass, gcLoggingEnabled));
     }
 
+    public CompilationResult compile(List<Path> classPath, String mainClass, boolean gcLoggingEnabled,
+                                     Optional<String> requestedBoard) {
+        return compile(new CompilationRequest(classPath, mainClass, gcLoggingEnabled, requestedBoard));
+    }
+
     public CompilationResult compileTo(List<Path> classPath, String mainClass, Path assemblyOutput,
                                        Path runtimeShimOutput) {
         return compileTo(classPath, mainClass, assemblyOutput, runtimeShimOutput, false);
@@ -36,7 +42,13 @@ public final class JunoCompiler {
 
     public CompilationResult compileTo(List<Path> classPath, String mainClass, Path assemblyOutput,
                                        Path runtimeShimOutput, boolean gcLoggingEnabled) {
-        CompilationResult result = compile(classPath, mainClass, gcLoggingEnabled);
+        return compileTo(classPath, mainClass, assemblyOutput, runtimeShimOutput, gcLoggingEnabled, Optional.empty());
+    }
+
+    public CompilationResult compileTo(List<Path> classPath, String mainClass, Path assemblyOutput,
+                                       Path runtimeShimOutput, boolean gcLoggingEnabled,
+                                       Optional<String> requestedBoard) {
+        CompilationResult result = compile(classPath, mainClass, gcLoggingEnabled, requestedBoard);
         write(assemblyOutput, result.assembly(), "assembly");
         write(runtimeShimOutput, result.runtimeShim(), "runtime shim");
         return result;

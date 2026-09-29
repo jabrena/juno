@@ -14,9 +14,11 @@ import java.util.Optional;
  * owner class may differ from the reachable method's own owner and is otherwise never visited (its
  * {@code <clinit>}/{@code <init>}/{@code values()}/etc. are deliberately never added to {@code methods}).
  *
- * <p>{@code board} is resolved from the entry point's {@code @Board} annotation ({@link Board#DEFAULT} when
- * absent). {@code watchdogTimeoutMillis} is the entry point's {@code @Watchdog} annotation's
- * {@code timeoutMillis} value, or empty when the entry point has no {@code @Watchdog} annotation.
+ * <p>{@code board} is the single board this build targets, resolved from the entry point's {@code @Board}
+ * annotation ({@link Board#DEFAULT} when absent) and, when it declares more than one board, the requested
+ * board passed to {@link Linker#link(java.util.Map, String, java.util.Optional)}. {@code watchdogTimeoutMillis}
+ * is the entry point's {@code @Watchdog} annotation's {@code timeoutMillis} value, or empty when the entry
+ * point has no {@code @Watchdog} annotation.
  */
 public record Program(MethodRef entryPoint, List<LinkedMethod> methods, Map<String, JavaClass> classes,
                        Board board, Optional<Integer> watchdogTimeoutMillis) {

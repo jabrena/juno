@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -99,5 +100,118 @@ class BoardTest {
         assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.WatchdogOnUnoQ"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("@Watchdog requires @Board(ArduinoUnoR4WiFi.class)");
+    }
+
+    @Test
+    void declaringMultipleBoardsWithoutARequestedBoardFails() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.Delay;
+                @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
+                public final class Portable {
+                    public static void main(String[] args) {
+                        Delay.millis(1);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Portable", source);
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.Portable"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("@Board declares multiple boards")
+                .hasMessageContaining("UNO Q")
+                .hasMessageContaining("UNO R4 WiFi");
+    }
+
+    @Test
+    void aRequestedBoardPicksOneOfTheDeclaredBoards() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.Delay;
+                @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
+                public final class Portable {
+                    public static void main(String[] args) {
+                        Delay.millis(1);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Portable", source);
+
+        Program onUnoQ = CompilerTestSupport.link(temporaryDirectory, "demo.Portable",
+                Optional.of("arduino-uno-q"));
+        assertThat(onUnoQ.board()).isEqualTo(Board.UNO_Q);
+
+        Program onUnoR4 = CompilerTestSupport.link(temporaryDirectory, "demo.Portable",
+                Optional.of("arduino-uno-r4-wifi"));
+        assertThat(onUnoR4.board()).isEqualTo(Board.UNO_R4_WIFI);
+    }
+
+    @Test
+    void aRequestedBoardNotDeclaredByBoardFails() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.Delay;
+                @Board(ArduinoUnoQ.class)
+                public final class OnlyUnoQ {
+                    public static void main(String[] args) {
+                        Delay.millis(1);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.OnlyUnoQ", source);
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.OnlyUnoQ",
+                Optional.of("arduino-uno-r4-wifi")))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("is not one of @Board's declared boards");
+    }
+
+    @Test
+    void anUnknownRequestedBoardIdFails() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class Unannotated2 {
+                    public static void main(String[] args) {
+                        Delay.millis(1);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Unannotated2", source);
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.Unannotated2",
+                Optional.of("arduino-mega")))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("Unknown board 'arduino-mega'");
+    }
+
+    @Test
+    void aPortableProgramMustSupportLedMatrixOnEveryDeclaredBoard() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
+                public final class PortableWithLedMatrix {
+                    public static void main(String[] args) {
+                        LedMatrix.begin();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortableWithLedMatrix", source);
+        // UNO R4 WiFi alone has an LED matrix; declaring UNO Q too must fail even though the build
+        // requested here (UNO R4 WiFi) does support it, since the same source also claims UNO Q support.
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.PortableWithLedMatrix",
+                Optional.of("arduino-uno-r4-wifi")))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("LedMatrix requires @Board(ArduinoUnoR4WiFi.class)")
+                .hasMessageContaining("UNO Q");
     }
 }
