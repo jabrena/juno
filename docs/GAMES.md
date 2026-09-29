@@ -48,11 +48,11 @@ The arcade's 28x31-tile maze with all 244 dots and four energizers. Touch and ho
 
 <img src="images/games/missile-command.png" alt="Missile Command on the TFT shield" width="240">
 
-Warheads rain down on six cities and three bases; tap the sky to launch an interceptor that detonates where you tapped. Fireballs chain-react, and from wave 2 some warheads split halfway down.
+The cover shows a strike already under way, then choose the pilot: **HUMAN** to play yourself, or **CPU** to watch an autopilot that intercepts whichever warhead is closest to the ground, leading its aim to meet it, hesitating and missing now and then, and never wasting a shot on a warhead another interceptor is already heading for; tap the header during a wave to switch between the two. Warheads rain down on six cities and three bases; tap the sky to launch an interceptor that detonates where you tapped. Fireballs chain-react, and from wave 2 some warheads split halfway down.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.MissileCommand
+  -Djuno.main=io.github.jabrena.juno.games.missilecommand.MissileCommand
 ```
 
 ### Tempest
