@@ -57,13 +57,13 @@ Warheads rain down on six cities and three bases; tap the sky to launch an inter
 
 ### Tempest
 
-<img src="images/games/tempest.png" alt="Tempest on the TFT shield" width="240">
+<img src="videos/games/tempest-cpu.gif" alt="Tempest on the TFT shield, flown by the CPU" width="240">
 
-A vector-style tube seen end-on. Touch near the rim to move your claw around it (it fires while you hold), and tap the center for the once-per-level Superzapper. The tube changes shape every level.
+A vector-style tube seen end-on. It opens with a ring pulsing out from the tube's vanishing point to its rim and the claw hopping around it before the title settles into place. After the title, choose the pilot: **HUMAN** to play yourself, or **CPU** to watch an autopilot that lets flippers climb into view before sweeping onto whichever is closest to the rim, occasionally hesitating or misjudging its lane, and firing the Superzapper when swarmed; tap the header during the game to switch between the two. Touch near the rim to move your claw around it (it fires while you hold), and tap the center for the once-per-level Superzapper. Each level's tube grows out of its vanishing point under a title card naming its shape (circle, square, star, clover); clearing it shows a bonus card, then the claw rides down its lane as the rings rush in after it, like the arcade's warp. The Superzapper sweeps a white ring through the tube, a lost claw shows how many are left, and at game over the tube collapses before the final score. Tempest targets the **Arduino UNO Q** (`@Board(ArduinoUnoQ.class)`).
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.Tempest
+  -Djuno.main=io.github.jabrena.juno.games.tempest.Tempest
 ```
 
 ### Star Wars

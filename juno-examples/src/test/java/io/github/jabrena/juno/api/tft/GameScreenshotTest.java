@@ -58,7 +58,7 @@ class GameScreenshotTest {
                 game("games.sundance.Sundance", "sundance", "500:160,130 1000:230,140 end:9000"),
                 game("games.spaceparanoids.SpaceParanoids", "space-paranoids", "5500:160,130 6000:85,140 end:14500"),
                 game("games.starwars.StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
-                game("games.Tempest", "tempest", "500:120,160 end:6000"),
+                game("games.tempest.Tempest", "tempest", "1500:120,160 1900:200,180 end:8900"),
                 game("games.TexasHoldem", "texas-holdem", "500:120,300 end:6000"),
                 game("api.tft.TftTouchPaint", "tft-touch-paint", paintStrokes()));
     }
