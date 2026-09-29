@@ -28,7 +28,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 
 ## Contents
 
-- [Arcade](#arcade): [Pac-Man](#pac-man), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Sundance](#sundance), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander)
+- [Arcade](#arcade): [Pac-Man](#pac-man), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Battleship](#battleship)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem)
 
@@ -120,17 +120,6 @@ After Sega's 1982 vector arcade game, in landscape. It opens with a starfield ru
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.startrek.StarTrek
-```
-
-### Sundance
-
-<img src="videos/games/sundance-cpu.gif" alt="Sundance on the TFT shield played by the CPU" width="320">
-
-After Cinematronics' 1979 vector arcade game, in landscape: two grids of three by three squares face each other in perspective, one above the other, and suns bounce between them, drifting to a neighboring square with every bounce. The initial cover leads to a **HUMAN** or **CPU** choice; the CPU anticipates landings but deliberately mistimes some hatches, and tapping the header switches pilot during play. Tap a square of either grid to open its hatch (the same one in both grids) for a moment, and a sun landing on it falls through and is trapped; only two hatches can be open at once, and a small cross in each sun's color marks where it will land. Trap all the round's suns before the time runs out, and never let two suns collide: a collision bursts them and costs a life, and so does running out of time. Each round brings more suns, more of them at once, bouncing faster; every third round cleared earns a life back.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.sundance.Sundance
 ```
 
 ### Space Paranoids
@@ -228,10 +217,10 @@ On top of these:
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
 - `CardGamesTest`, `PacManTest`, `MissileCommandTest`, `TempestTest`, `StarWarsTest`,
-  `EmpireStrikesBackTest`, `RedBaronTest`, `StarTrekTest`, `SundanceTest`, `SpaceParanoidsTest` and
+  `EmpireStrikesBackTest`, `RedBaronTest`, `StarTrekTest`, `SpaceParanoidsTest` and
   `LunarLanderTest` check rules and computer players: the poker hand ranking against a brute-force
   reference, no chip lost across all-ins and side pots, and that autopilots clear Missile Command
-  waves, Tempest levels, Space Paranoids and Star Trek sectors, Sundance rounds, whole Red Baron and
+  waves, Tempest levels, Space Paranoids and Star Trek sectors, whole Red Baron and
   Empire Strikes Back waves, and nearly every dot of a Pac-Man maze.
 
 This runs the games' Java on the JVM, not the code Juno generates for the board.
