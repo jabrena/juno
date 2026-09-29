@@ -46,7 +46,7 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * {@code [juno-watchdog] panic: board will reset via watchdog in 3000ms}, then (about 3 seconds
  * later) {@code tick 0} again as the board comes back up. Without {@code --gc-log}, only the
  * {@code tick N} lines and the two unconditional pre-panic diagnostics (OOM and watchdog — see
- * {@code CortexM4AsmBackend}'s {@code juno_alloc}/{@code juno_panic}) appear.
+ * {@code Thumb2AsmBackend}'s {@code juno_alloc}/{@code juno_panic}) appear.
  */
 @Board(ArduinoUnoR4WiFi.class)
 @Watchdog(timeoutMillis = 3000)

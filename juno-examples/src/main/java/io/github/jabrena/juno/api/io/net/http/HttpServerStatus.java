@@ -8,7 +8,7 @@ import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 
 /**
- * A minimal REST endpoint for the experimental {@code CortexM4AsmBackend}: connects to WiFi with
+ * A minimal REST endpoint for the experimental {@code Thumb2AsmBackend}: connects to WiFi with
  * build-time credentials from {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD} (see {@link
  * io.github.jabrena.juno.api.io.net.WifiStatus}), prints its {@link Wifi#localIP} once connected
  * so the endpoint can actually be found on the network, then serves {@code GET /status} as JSON

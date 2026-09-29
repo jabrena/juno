@@ -57,12 +57,15 @@ generator that builds the documentation site published to `docs/`.
   subset (`BytecodeDecoder`). Extending this expands what Java syntax compiles.
 - `juno/src/main/java/io/github/jabrena/juno/linker/` – WRITE here: closed-world reachability,
   `Intrinsics` registry, `Descriptor` type checks.
-- `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `CortexM4AsmBackend`, the
-  sole code-generation backend (GNU ARM Cortex-M4 assembly plus its `extern "C"` C++ runtime shim).
+- `juno/src/main/java/io/github/jabrena/juno/backend/` – WRITE here: `Thumb2AsmBackend`, the
+  sole code-generation backend (GNU ARM Thumb-2 assembly, shared by every board, plus its `extern "C"` C++ runtime shim).
   It drives codegen and delegates to package-private collaborators: `IntrinsicLowering` (intrinsic
   lowering as a table of shim-call specs), `RuntimeShim` (the shim, gated on the `ShimFeature`s the
-  lowerings record) with its `ShimLibraries`/`NetworkShimLibraries` helper sources, `ProgramLayout`,
-  `AsmEmitter`, and the `Int`/`Wide` arithmetic and `Array` lowerings.
+  lowerings record) with its `ShimLibraries`/`NetworkShimLibraries` helper sources, `CoreRuntime`
+  (sealed; one implementation per `board/ArduinoCore` — the delay/yield glue that differs between the
+  Renesas and Zephyr cores), `ProgramLayout`, `AsmEmitter`, and the `Int`/`Wide` arithmetic and
+  `Array` lowerings. Never branch on a specific board inside the backend: per-core differences go in
+  a `CoreRuntime`, optional peripherals are `board/Capability` values the `Linker` checks once.
 - `juno/src/test/java/io/github/jabrena/juno/` – WRITE here: compiler unit tests and offline
   toolchain verification for the generated assembly/shim (`GeneratedAsmToolchainTest`; assembles
   `.S` files with a bundled `arm-none-eabi-gcc` when one can be found and syntax-checks the shim

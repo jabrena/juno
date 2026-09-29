@@ -3,7 +3,9 @@ package io.github.jabrena.juno.board;
 import io.github.jabrena.juno.CompileException;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -16,9 +18,10 @@ import java.util.stream.Collectors;
  */
 public enum Board {
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi", "arduino-uno-r4-wifi", "UNO R4 WiFi",
-            "arduino:renesas_uno:unor4wifi", true, true, false),
-    UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq", false,
-            false, true);
+            "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO,
+            EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.WATCHDOG)),
+    UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
+            ArduinoCore.ZEPHYR, EnumSet.noneOf(Capability.class));
 
     public static final Board DEFAULT = UNO_R4_WIFI;
 
@@ -26,19 +29,17 @@ public enum Board {
     private final String id;
     private final String displayName;
     private final String fqbn;
-    private final boolean hasLedMatrix;
-    private final boolean hasWifi;
-    private final boolean zephyrCore;
+    private final ArduinoCore core;
+    private final Set<Capability> capabilities;
 
-    Board(String apiClassName, String id, String displayName, String fqbn, boolean hasLedMatrix, boolean hasWifi,
-          boolean zephyrCore) {
+    Board(String apiClassName, String id, String displayName, String fqbn, ArduinoCore core,
+          Set<Capability> capabilities) {
         this.apiClassName = apiClassName;
         this.id = id;
         this.displayName = displayName;
         this.fqbn = fqbn;
-        this.hasLedMatrix = hasLedMatrix;
-        this.hasWifi = hasWifi;
-        this.zephyrCore = zephyrCore;
+        this.core = core;
+        this.capabilities = Set.copyOf(capabilities);
     }
 
     /** {@code apiClassName} is a JVM-internal name, e.g. {@code io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi}. */
@@ -80,20 +81,17 @@ public enum Board {
         return fqbn;
     }
 
-    public boolean hasLedMatrix() {
-        return hasLedMatrix;
+    /** The Arduino core this board's sketches are built with, which decides how generated code calls into it. */
+    public ArduinoCore core() {
+        return core;
     }
 
-    public boolean hasWifi() {
-        return hasWifi;
+    public boolean supports(Capability capability) {
+        return capabilities.contains(capability);
     }
 
-    /**
-     * Whether the board's Arduino core is built on Zephyr (the UNO Q), which provides its own
-     * {@code yield()} and inlines {@code delay()}/{@code delayMicroseconds()}, so generated code
-     * must reach those through shim functions rather than branching to them directly.
-     */
-    public boolean zephyrCore() {
-        return zephyrCore;
+    /** The {@code @Board} annotation argument selecting this board, e.g. {@code ArduinoUnoR4WiFi.class}. */
+    public String annotationArgument() {
+        return apiClassName.substring(apiClassName.lastIndexOf('/') + 1) + ".class";
     }
 }

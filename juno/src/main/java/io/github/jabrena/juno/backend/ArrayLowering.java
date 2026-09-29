@@ -22,7 +22,7 @@ final class ArrayLowering {
     /** Allocates the outer (row-handle) array, then each leaf row. */
     void emitNewMultiArray(StringBuilder output, FrameLayout frame, IrInstruction.NewMultiArray array) {
         if (array.dimensions().size() != 2) {
-            throw CortexM4AsmBackend.unsupported("array nesting deeper than 2 dimensions: " + array.dimensions());
+            throw Thumb2AsmBackend.unsupported("array nesting deeper than 2 dimensions: " + array.dimensions());
         }
         int outerCount = array.dimensions().get(0);
         int innerCount = array.dimensions().get(1);
@@ -49,7 +49,7 @@ final class ArrayLowering {
             case CHAR -> "lsls r1, r1, #1\n    ldrh r2, [r0, r1]\n";
             case SHORT -> "lsls r1, r1, #1\n    ldrsh r2, [r0, r1]\n";
             case INT, REFERENCE -> "lsls r1, r1, #2\n    ldr r2, [r0, r1]\n";
-            case LONG, FLOAT, DOUBLE -> throw CortexM4AsmBackend.unsupported("array element type " + load.elementType());
+            case LONG, FLOAT, DOUBLE -> throw Thumb2AsmBackend.unsupported("array element type " + load.elementType());
         };
         output.append("    ").append(loadInstruction);
         asm.store(output, frame, "r2", load.target());
@@ -63,7 +63,7 @@ final class ArrayLowering {
             case BYTE -> "strb r2, [r0, r1]\n";
             case CHAR, SHORT -> "lsls r1, r1, #1\n    strh r2, [r0, r1]\n";
             case INT, REFERENCE -> "lsls r1, r1, #2\n    str r2, [r0, r1]\n";
-            case LONG, FLOAT, DOUBLE -> throw CortexM4AsmBackend.unsupported("array element type " + store.elementType());
+            case LONG, FLOAT, DOUBLE -> throw Thumb2AsmBackend.unsupported("array element type " + store.elementType());
         };
         output.append("    ").append(storeInstruction);
     }
@@ -88,7 +88,7 @@ final class ArrayLowering {
             case BYTE -> 1;
             case CHAR, SHORT -> 2;
             case INT, REFERENCE -> 4;
-            case LONG, FLOAT, DOUBLE -> throw CortexM4AsmBackend.unsupported("array element type " + type);
+            case LONG, FLOAT, DOUBLE -> throw Thumb2AsmBackend.unsupported("array element type " + type);
         };
     }
 }

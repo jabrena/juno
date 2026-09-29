@@ -3,7 +3,9 @@ package io.github.jabrena.juno.linker;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompilerTestSupport;
+import io.github.jabrena.juno.board.ArduinoCore;
 import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.board.Capability;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -213,5 +215,34 @@ class BoardTest {
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("LedMatrix requires @Board(ArduinoUnoR4WiFi.class)")
                 .hasMessageContaining("UNO Q");
+    }
+
+    @Test
+    void theUnoQHasNoWifi() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.net.Wifi;
+                @Board(ArduinoUnoQ.class)
+                public final class WifiOnUnoQ {
+                    public static void main(String[] args) {
+                        Wifi.status();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiOnUnoQ", source);
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.WifiOnUnoQ"))
+                .isInstanceOf(CompileException.class)
+                .hasMessage("Wifi requires @Board(ArduinoUnoR4WiFi.class): UNO Q has no onboard WiFi module"
+                        + " (used from demo.WifiOnUnoQ.main([Ljava/lang/String;)V)");
+    }
+
+    @Test
+    void everyBoardDeclaresItsCoreAndCapabilities() {
+        assertThat(Board.UNO_R4_WIFI.core()).isEqualTo(ArduinoCore.RENESAS_UNO);
+        assertThat(Capability.values()).allMatch(Board.UNO_R4_WIFI::supports);
+        assertThat(Board.UNO_Q.core()).isEqualTo(ArduinoCore.ZEPHYR);
+        assertThat(Capability.values()).noneMatch(Board.UNO_Q::supports);
     }
 }

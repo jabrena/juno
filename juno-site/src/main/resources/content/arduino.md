@@ -276,10 +276,12 @@ The same package also has
 [docs/EMAIL.md](../email) for the full `Smtp`/`Pop3Client` reference, and
 [docs/APIS.md](../apis) for how these compiler-intrinsic API classes work internally.
 
-## The Cortex-M4 assembly backend
+## The Thumb-2 assembly backend
 
-This is Juno's sole code-generation backend. It emits GNU ARM (Cortex-M4) assembly straight from
-Juno IR: every
+This is Juno's sole code-generation backend, shared by every board. It emits GNU ARM Thumb-2
+assembly (the subset common to the UNO R4's Cortex-M4 and the UNO Q's Cortex-M33) straight from
+Juno IR; what differs per Arduino core (how `delay()`/`yield()` are reached) lives in the
+backend's `CoreRuntime`, not in the code generator. Every
 reachable method becomes its own function (real calls between them, including AAPCS stack-passed
 arguments beyond the first four), with branches, `switch`, `int` arithmetic/comparisons, fixed-size
 arrays, arena-allocated objects with fields, mutable static fields, GPIO/delay, `LedMatrix`, and
@@ -314,7 +316,7 @@ treat this backend as experimental.
 **`long`/`float`/`double` and `Wifi`/`HttpClient`/`HttpsClient`/`Json` support added.** The RA4M1 has
 no hardware FPU, so every nontrivial `long`/`float`/`double` operation is a call to a small
 `extern "C"` runtime-shim helper (soft arithmetic, same idea as calling into `libgcc`, just
-hand-written) rather than hand-rolled assembly; see `CortexM4AsmBackend`'s class doc for the exact
+hand-written) rather than hand-rolled assembly; see `Thumb2AsmBackend`'s class doc for the exact
 storage model. HTTP/HTTPS/JSON are backed by an `extern "C"` HTTP/1.1 codec and allocation-free
 JSON scanner in the generated runtime shim. `MadridWeather` (WiFi connect, an HTTPS/TLS request, and JSON field extraction including a
 `Json.getDouble` result immediately narrowed to `int`, matching this backend's `(int)
