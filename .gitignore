@@ -4,7 +4,9 @@ target/
 .vscode/
 .cursor/
 .agents/
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
 skills-lock.json
 .flattened-pom.xml
 *.log
