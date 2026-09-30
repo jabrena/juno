@@ -1,4 +1,5 @@
-# arduino-cli with the UNO R4 core, for ArduinoCliCompileTest (./mvnw -f juno-examples/pom.xml -Parduino-cli test).
+# arduino-cli with the supported cores, for ArduinoCliCompileIT
+# (./mvnw -f juno-examples/pom.xml -Parduino-cli verify).
 # The test builds this image on first use and Docker caches it afterwards.
 FROM debian:bookworm-slim
 
@@ -15,9 +16,20 @@ RUN case "$(dpkg --print-architecture)" in \
     && curl -fsSL "https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_${asset}.tar.gz" \
         | tar -xz -C /usr/local/bin arduino-cli
 
-# The same platform juno:install-deps installs; pin it with --build-arg CORE=arduino:renesas_uno@<version>.
+# The same platforms juno:install-deps installs, covering both @Board targets (UNO R4 WiFi and UNO Q);
+# pin either with --build-arg CORE=arduino:renesas_uno@<version> / ZEPHYR_CORE=arduino:zephyr@<version>.
 ARG CORE=arduino:renesas_uno
-RUN arduino-cli core update-index && arduino-cli core install "${CORE}"
+ARG ZEPHYR_CORE=arduino:zephyr
+RUN arduino-cli core update-index && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}"
+
+# Optional library some TFT programs (e.g. RatonLocoTFT) need; not bundled with either core above,
+# see juno-site/src/main/resources/content/hid.md.
+RUN arduino-cli lib install Mouse
+
+# Required for every UNO Q sketch, not just ones using Wifi/Udp: the zephyr core's Arduino.h
+# #errors out at compile time without it ("install the Arduino_RouterBridge library ... for
+# proper Serial support on this board"). Not bundled with the arduino:zephyr core above.
+RUN arduino-cli lib install Arduino_RouterBridge
 
 WORKDIR /sketches
 CMD ["sleep", "infinity"]

@@ -18,9 +18,6 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <juno.main>io.github.jabrena.juno.api.Blink</juno.main>
         <juno.envFile>${maven.multiModuleProjectDirectory}/.env</juno.envFile>
-        <!-- ArduinoCliCompileTest needs Docker; it runs only with -Parduino-cli. -->
-        <juno.test.groups></juno.test.groups>
-        <juno.test.excludedGroups>arduino-cli</juno.test.excludedGroups>
     </properties>
 
     <dependencies>
@@ -58,14 +55,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <groups>${juno.test.groups}</groups>
-                    <excludedGroups>${juno.test.excludedGroups}</excludedGroups>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>io.github.jabrena</groupId>
                 <artifactId>juno-maven-plugin</artifactId>
                 <version>${project.version}</version>
@@ -85,13 +74,33 @@
     </build>
 
     <profiles>
-        <!-- Compile every TFT game with the real arduino-cli in Docker: ./mvnw -f juno-examples/pom.xml -Parduino-cli test -->
+        <!-- Compile every game with the real arduino-cli in Docker during integration testing. -->
         <profile>
             <id>arduino-cli</id>
-            <properties>
-                <juno.test.groups>arduino-cli</juno.test.groups>
-                <juno.test.excludedGroups></juno.test.excludedGroups>
-            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

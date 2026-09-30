@@ -96,7 +96,7 @@ generator that builds the documentation site published to `docs/`.
   that shadow the `juno` artifact's native classes on the test classpath (`Gpio` emulates the
   ILI9341 bus and touch panel); `api/tft/GameScreenshotTest` compares each game's screen with
   `docs/images/games/*.png` (regenerate with `-Djuno.updateScreenshots=true`), and the
-  `games/*GamesTest` classes check game rules and computer players. `api/tft/ArduinoCliCompileTest`
+  `games/*GamesTest` classes check game rules and computer players. `api/tft/ArduinoCliCompileIT`
   (tag `arduino-cli`, opt-in via `-Parduino-cli`) compiles every game with the real `arduino-cli`
   in a Testcontainers container built from `juno-examples/src/test/docker/arduino-cli/Dockerfile`.
   See the [Games guide](https://jabrena.github.io/juno/games)
@@ -153,7 +153,7 @@ generator that builds the documentation site published to `docs/`.
   -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
 
 # Compile every TFT game with the real arduino-cli inside Docker (Testcontainers; needs Docker)
-./mvnw -f juno-examples/pom.xml -Parduino-cli test
+./mvnw -f juno-examples/pom.xml -Parduino-cli verify
 
 # Flash the generated program; auto-detects one matching board, or accepts -Djuno.port=<PORT>
 ./mvnw -f juno-examples/pom.xml compile juno:upload
