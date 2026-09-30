@@ -71,13 +71,15 @@ always wins for a given run.
 # Once per machine: install the core and every optional library any example needs
 ./mvnw -f juno-examples/pom.xml juno:install-deps
 
-# Compile and check with arduino-cli, no board required
+# Compile and check with arduino-cli
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Flash it to a connected board
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.Blink
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Watch its Serial output
 ./mvnw -f juno-examples/pom.xml juno:monitor

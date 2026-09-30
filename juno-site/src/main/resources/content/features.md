@@ -101,9 +101,10 @@ Supported today:
 
 ## Runtime-risk inspection
 
-`juno inspect --main <class> --classpath <paths> --risks` analyzes the optimized, closed-world IR
-without running or uploading the program. The resulting `CompilationReport.runtimeRisks()` data is
-also available programmatically as immutable records with stable diagnostic codes.
+Every `compile` (standalone CLI or `juno-maven-plugin`'s `compile`/`verify`/`upload` goals)
+analyzes the optimized, closed-world IR and prints the findings automatically, before running or
+uploading the program. The resulting `CompilationReport.runtimeRisks()` data is also available
+programmatically as immutable records with stable diagnostic codes.
 
 The first analysis slice reports:
 

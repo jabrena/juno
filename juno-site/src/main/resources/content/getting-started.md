@@ -66,16 +66,19 @@ API), `juno-maven-plugin/target/juno-maven-plugin-0.1.0-SNAPSHOT.jar` (the Maven
 [docs/ARDUINO.md](../arduino). The UNO Q also needs Arduino's Zephyr core:
 `arduino-cli core install arduino:zephyr`.
 
-Use the following commands for the complete `Blink` workflow:
+Use the following commands for the complete `Blink` workflow. `Blink` targets both boards, so pick
+one with `-Djuno.board`:
 
 ```bash
 # Generate and verify with arduino-cli
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Upload
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.Blink
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Monitor
 ./mvnw -f juno-examples/pom.xml juno:monitor
@@ -155,13 +158,13 @@ subset. Diagnostics identify the method, bytecode offset, and unsupported opcode
 [docs/FEATURES.md](../features) for the full, up-to-date inventory of what's supported and
 what isn't.
 
-Before generating or uploading a sketch, inspect conservative runtime-risk and resource estimates:
+Every `compile` (standalone CLI or `juno-maven-plugin`'s `compile`/`verify`/`upload` goals) prints
+conservative runtime-risk and resource estimates automatically:
 
 ```bash
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar inspect \
+java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main ArenaFeaturesPulse \
-  --classpath juno-examples/target/classes:juno/target/classes \
-  --risks
+  --classpath juno-examples/target/classes:juno/target/classes
 ```
 
 The report includes the fixed-arena budget, estimated static RAM and generated local storage,
