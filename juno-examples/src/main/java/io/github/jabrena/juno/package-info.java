@@ -14,6 +14,9 @@
  *   <li>{@link io.github.jabrena.juno.Exceptions} — throwing and catching exceptions, {@code finally}, and custom exceptions.</li>
  * </ul>
  *
- * <p>Every class has a {@code main} method and writes its results to USB serial at 115200 baud.
+ * <p>Every class above has a {@code main} method and writes its results to USB serial at 115200
+ * baud. {@link io.github.jabrena.juno.UnsupportedFeature} is not part of that tour: it's a
+ * counter-example, deliberately outside Juno's supported subset, so {@code juno:compile} rejects
+ * it with a link-time diagnostic.
  */
 package io.github.jabrena.juno;
