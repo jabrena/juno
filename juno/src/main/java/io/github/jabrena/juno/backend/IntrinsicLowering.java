@@ -230,6 +230,8 @@ final class IntrinsicLowering {
                 ShimFeature.SD);
         shim(Intrinsic.SD_FILE_READ, "juno_sd_file_read", Result.WORD, List.of(RECEIVER), ShimFeature.SD);
         shim(Intrinsic.SD_FILE_CLOSE, "juno_sd_file_close", Result.NONE, List.of(RECEIVER), ShimFeature.SD);
+        shim(Intrinsic.SD_APPEND, "juno_sd_file_append", Result.WORD, List.of(literal(0), arg(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_REMOVE, "juno_sd_remove", Result.WORD, List.of(literal(0)), ShimFeature.SD);
         shim(Intrinsic.PROPERTIES_NEW, "juno_properties_new", Result.WORD, List.of(), ShimFeature.SD);
         shim(Intrinsic.PROPERTIES_LOAD, "juno_properties_load", Result.NONE, List.of(RECEIVER, arg(0)),
                 ShimFeature.SD);

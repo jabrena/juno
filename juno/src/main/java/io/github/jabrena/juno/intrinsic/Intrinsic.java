@@ -62,6 +62,8 @@ public enum Intrinsic {
     SD_FILE_AVAILABLE,
     SD_FILE_READ,
     SD_FILE_CLOSE,
+    SD_APPEND,
+    SD_REMOVE,
     PROPERTIES_NEW,
     PROPERTIES_LOAD,
     PROPERTIES_GET,

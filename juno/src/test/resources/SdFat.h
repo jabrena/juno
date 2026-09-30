@@ -5,6 +5,9 @@
 #include <utility>
 
 #define O_RDONLY 0
+#define O_WRITE 2
+#define O_CREAT 8
+#define O_APPEND 16
 
 class File32 {
 public:
@@ -16,6 +19,7 @@ public:
   int available() { return 0; }
   int read() { return -1; }
   size_t size() { return 0; }
+  void println(const char*) {}
   void close() {}
   operator bool() const { return true; }
 };
@@ -25,4 +29,5 @@ public:
   bool begin(int32_t) { return true; }
   bool exists(const char*) { return true; }
   File32 open(const char*, int) { return File32(); }
+  bool remove(const char*) { return true; }
 };

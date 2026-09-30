@@ -25,7 +25,8 @@ public final class IntrinsicRegistry {
             new IntrinsicParameter(Intrinsic.WIFI_BEGIN, 1),
             new IntrinsicParameter(Intrinsic.PROPERTIES_GET, 0),
             new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 0),
-            new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 1));
+            new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 1),
+            new IntrinsicParameter(Intrinsic.SD_APPEND, 1));
 
     /**
      * Parameters that accept a runtime {@code String} but still take the literal path (a {@code .asciz}
@@ -154,6 +155,10 @@ public final class IntrinsicRegistry {
                     "(Ljava/lang/String;)Z"), Intrinsic.SD_EXISTS),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/storage/SdCard", "open",
                     "(Ljava/lang/String;)Ljava/io/InputStream;"), Intrinsic.SD_OPEN),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/storage/SdCard", "append",
+                    "(Ljava/lang/String;Ljava/lang/String;)Z"), Intrinsic.SD_APPEND),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/storage/SdCard", "remove",
+                    "(Ljava/lang/String;)Z"), Intrinsic.SD_REMOVE),
             Map.entry(new MethodRef("java/io/InputStream", "available", "()I"),
                     Intrinsic.SD_FILE_AVAILABLE),
             Map.entry(new MethodRef("java/io/InputStream", "read", "()I"),

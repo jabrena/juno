@@ -98,7 +98,7 @@ final class ShimLibraries {
                 """;
     }
 
-    /** Read-only Arduino SD bindings plus a bounded, arena-backed {@code key=value} parser. */
+    /** Arduino SD read/append bindings plus a bounded, arena-backed {@code key=value} parser. */
     static String sdHelpers() {
         return """
 
@@ -157,6 +157,18 @@ final class ShimLibraries {
                   File32* file = juno_sd_file(handle);
                   file->close();
                   juno_sd_file_used[index] = false;
+                }
+
+                extern "C" int32_t juno_sd_file_append(const char* path, const char* line) {
+                  File32 file = juno_sd.open(path, O_WRITE | O_CREAT | O_APPEND);
+                  if (!file) return 0;
+                  file.println(line);
+                  file.close();
+                  return 1;
+                }
+
+                extern "C" int32_t juno_sd_remove(const char* path) {
+                  return juno_sd.remove(path) ? 1 : 0;
                 }
 
                 struct JunoPropertyEntry {

@@ -675,6 +675,90 @@ class JunoCompilerTest {
                 .isGreaterThanOrEqualTo(RuntimeLimits.PROPERTIES_STORAGE_BYTES);
     }
 
+    /**
+     * {@code SdCard.append}'s path must stay a compile-time literal like every other SD path, but its
+     * {@code line} argument must accept a runtime value built from {@code StringBuilder#toString()} —
+     * a fixed path with a computed line is exactly the shape a high-score log needs.
+     */
+    @Test
+    void lowersSdCardAppendWithARuntimeLine() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.storage.SdCard;
+                public final class HighScoreLog {
+                    public static void main(String[] args) {
+                        SdCard.begin();
+                        StringBuilder line = new StringBuilder(16);
+                        line.append("JAB-");
+                        String score = String.valueOf(Clock.millis());
+                        for (int i = 0; i < score.length(); i++) {
+                            line.append(score.charAt(i));
+                        }
+                        SdCard.append("tempest-high-scores.txt", line.toString());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HighScoreLog", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HighScoreLog");
+
+        assertThat(result.assembly()).contains(".asciz \"tempest-high-scores.txt\"");
+        // The runtime line from toString() must flow into append's 2nd argument register (r1) right
+        // after the toString() call computes it, while the path loads its literal address into r1 —
+        // never as a .asciz body literal of its own.
+        assertThat(result.assembly()).containsPattern(
+                "(?s)bl juno_string_builder_to_string\\n.*\\n\\s*ldr r0, =juno_str\\d+\\n"
+                        + "\\s*ldr r1, \\[sp, #\\d+]\\n\\s*bl juno_sd_file_append\\n");
+        assertThat(result.runtimeShim()).contains(
+                "extern \"C\" int32_t juno_sd_file_append(const char* path, const char* line)");
+    }
+
+    /**
+     * The exemption above is scoped to exactly {@code append}'s {@code line} parameter — its
+     * {@code path} parameter must still be rejected when it isn't a compile-time literal, proving
+     * {@code requiresLiteralStringArgument} didn't loosen the whole method.
+     */
+    @Test
+    void stillRejectsANonLiteralSdCardAppendPath() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.storage.SdCard;
+                public final class DynamicHighScorePath {
+                    public static void main(String[] args) {
+                        SdCard.begin();
+                        String path = Clock.millis() > 0 ? "a.txt" : "b.txt";
+                        SdCard.append(path, "JAB-5000");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.DynamicHighScorePath", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DynamicHighScorePath"))
+                .isInstanceOf(CompileException.class);
+    }
+
+    @Test
+    void lowersSdCardRemove() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.storage.SdCard;
+                public final class DeleteHighScoreLog {
+                    public static void main(String[] args) {
+                        SdCard.begin();
+                        SdCard.remove("tempest-high-scores.txt");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.DeleteHighScoreLog", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DeleteHighScoreLog");
+
+        assertThat(result.assembly()).contains("bl juno_sd_remove", ".asciz \"tempest-high-scores.txt\"");
+        assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_sd_remove(const char* path)");
+    }
+
     @Test
     void rejectsAnUnsetCompileTimeEnvironmentVariable() throws Exception {
         String source = """
