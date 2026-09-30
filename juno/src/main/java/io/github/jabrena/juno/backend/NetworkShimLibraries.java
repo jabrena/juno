@@ -11,12 +11,18 @@ final class NetworkShimLibraries {
     private NetworkShimLibraries() {
     }
 
-    /** One allocation-free {@code WiFiUDP} socket shared by the program's UDP intrinsics. */
-    static String udpHelpers() {
+    /** One bounded UDP transport shared by the program's UDP intrinsics. */
+    static String udpHelpers(String declaration) {
         return """
 
-                static WiFiUDP juno_udp;
+                ${JUNO_UDP_DECLARATION}
                 static bool juno_udp_listening = false;
+
+                static IPAddress juno_udp_discovery_group() {
+                  // 224.0.0.1 is the link-local all-hosts group. It works through UNO Q's Linux
+                  // BridgeUDP without requiring the SO_BROADCAST option and stays on the LAN.
+                  return IPAddress(224, 0, 0, 1);
+                }
 
                 static bool juno_udp_valid_port(int32_t port) {
                   return port > 0 && port <= 65535;
@@ -39,7 +45,8 @@ final class NetworkShimLibraries {
                 extern "C" int32_t juno_udp_listen(int32_t localPort) {
                   if (!juno_udp_valid_port(localPort)) return 0;
                   if (juno_udp_listening) juno_udp.stop();
-                  juno_udp_listening = juno_udp.begin(static_cast<uint16_t>(localPort)) == 1;
+                  juno_udp_listening = juno_udp.beginMulticast(
+                      juno_udp_discovery_group(), static_cast<uint16_t>(localPort)) == 1;
                   return juno_udp_listening ? 1 : 0;
                 }
 
@@ -56,8 +63,7 @@ final class NetworkShimLibraries {
 
                 extern "C" int32_t juno_udp_broadcast(int32_t remotePort, const uint8_t* payload,
                                                        int32_t length) {
-                  IPAddress broadcast(255, 255, 255, 255);
-                  return juno_udp_send_to(broadcast, remotePort, payload, length);
+                  return juno_udp_send_to(juno_udp_discovery_group(), remotePort, payload, length);
                 }
 
                 extern "C" int32_t juno_udp_receive(uint8_t* payload, int32_t capacity, int32_t* source) {
@@ -81,7 +87,7 @@ final class NetworkShimLibraries {
                   if (juno_udp_listening) juno_udp.stop();
                   juno_udp_listening = false;
                 }
-                """;
+                """.replace("${JUNO_UDP_DECLARATION}", declaration);
     }
 
     /**
@@ -589,7 +595,7 @@ final class NetworkShimLibraries {
     }
 
     /** Backs the HTTP/HTTPS APIs with a shared HTTP/1.1 codec over plain or TLS WiFi clients. */
-    static String httpHelpers(Set<ShimFeature> features) {
+    static String httpHelpers(Set<ShimFeature> features, String httpsClientDeclaration) {
         StringBuilder helpers = new StringBuilder("""
 
                 template <typename Client>
@@ -810,7 +816,7 @@ final class NetworkShimLibraries {
                                                        uint8_t* responseBuffer, int32_t responseBufferLength,
                                                        uint8_t* headersBuffer, int32_t headersBufferLength,
                                                        int32_t* statusAndHeadersLength) {
-                      WiFiSSLClient client;
+                      ${JUNO_HTTPS_CLIENT_DECLARATION}
                       return juno_http_request(client, "GET", host, port, path, nullptr,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
@@ -820,7 +826,7 @@ final class NetworkShimLibraries {
                                                         uint8_t* responseBuffer, int32_t responseBufferLength,
                                                         uint8_t* headersBuffer, int32_t headersBufferLength,
                                                         int32_t* statusAndHeadersLength) {
-                      WiFiSSLClient client;
+                      ${JUNO_HTTPS_CLIENT_DECLARATION}
                       return juno_http_request(client, "POST", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
@@ -830,7 +836,7 @@ final class NetworkShimLibraries {
                                                           uint8_t* responseBuffer, int32_t responseBufferLength,
                                                           uint8_t* headersBuffer, int32_t headersBufferLength,
                                                           int32_t* statusAndHeadersLength) {
-                      WiFiSSLClient client;
+                      ${JUNO_HTTPS_CLIENT_DECLARATION}
                       return juno_http_request(client, "DELETE", host, port, path, nullptr,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
@@ -840,7 +846,7 @@ final class NetworkShimLibraries {
                                                          uint8_t* responseBuffer, int32_t responseBufferLength,
                                                          uint8_t* headersBuffer, int32_t headersBufferLength,
                                                          int32_t* statusAndHeadersLength) {
-                      WiFiSSLClient client;
+                      ${JUNO_HTTPS_CLIENT_DECLARATION}
                       return juno_http_request(client, "PATCH", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
@@ -850,7 +856,7 @@ final class NetworkShimLibraries {
                                                          uint8_t* responseBuffer, int32_t responseBufferLength,
                                                          uint8_t* headersBuffer, int32_t headersBufferLength,
                                                          int32_t* statusAndHeadersLength) {
-                      WiFiSSLClient client;
+                      ${JUNO_HTTPS_CLIENT_DECLARATION}
                       return juno_http_request(client, "QUERY", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
@@ -882,7 +888,7 @@ final class NetworkShimLibraries {
 
                     """);
         }
-        return helpers.toString();
+        return helpers.toString().replace("${JUNO_HTTPS_CLIENT_DECLARATION}", httpsClientDeclaration);
     }
 
     /**
@@ -1043,13 +1049,13 @@ final class NetworkShimLibraries {
 
     /**
      * {@code Smtp}/{@code Pop3Client}'s shim. {@code juno_read_line} is shared and templated over
-     * the two unrelated client types involved: {@code ESP_SSLClient} ({@code Smtp}'s STARTTLS
-     * upgrade wrapper around a plain {@code WiFiClient}) and {@code WiFiSSLClient} ({@code
-     * Pop3Client}'s implicit-TLS connection) — the same template-over-client-type approach as
+     * the unrelated client types involved: {@code ESP_SSLClient} ({@code Smtp}'s STARTTLS
+     * upgrade wrapper around a plain {@code WiFiClient}) and the core-selected implicit-TLS
+     * client used by {@code Pop3Client} — the same template-over-client-type approach as
      * {@link #httpHelpers()}'s {@code juno_http_request}, reused here because there is no common
      * base class between the two client types worth naming.
      */
-    static String emailHelpers(Set<ShimFeature> features) {
+    static String emailHelpers(Set<ShimFeature> features, String tlsClientDeclaration) {
         StringBuilder helpers = new StringBuilder();
         helpers.append("""
 
@@ -1076,7 +1082,7 @@ final class NetworkShimLibraries {
                 }
 
                 """);
-        if (features.contains(ShimFeature.SMTP)) {
+        if (features.contains(ShimFeature.SMTP) || features.contains(ShimFeature.SMTP_TLS)) {
             helpers.append("""
                     static int32_t juno_base64_encode(const char* data, int32_t length, char* out, int32_t outCapacity) {
                       static const char table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -1097,7 +1103,8 @@ final class NetworkShimLibraries {
                       return o;
                     }
 
-                    static int32_t juno_smtp_read_reply(ESP_SSLClient& client, unsigned long deadline) {
+                    template <typename Client>
+                    static int32_t juno_smtp_read_reply(Client& client, unsigned long deadline) {
                       char line[128];
                       int32_t code = -1;
                       while (true) {
@@ -1108,6 +1115,11 @@ final class NetworkShimLibraries {
                       }
                       return code;
                     }
+
+                    """);
+        }
+        if (features.contains(ShimFeature.SMTP)) {
+            helpers.append("""
 
                     extern "C" int32_t juno_smtp_send(const char* host, int32_t port,
                                                        const char* username, const char* password,
@@ -1183,9 +1195,72 @@ final class NetworkShimLibraries {
 
                     """);
         }
+        if (features.contains(ShimFeature.SMTP_TLS)) {
+            helpers.append("""
+                    extern "C" int32_t juno_smtp_send_tls(const char* host, int32_t port,
+                                                           const char* username, const char* password,
+                                                           const char* from, const char* to,
+                                                           const char* subject, const char* body) {
+                      ${JUNO_TLS_CLIENT_DECLARATION}
+                      if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
+                      unsigned long deadline = millis() + 15000;
+
+                      if (juno_smtp_read_reply(client, deadline) != 220) { client.stop(); return -2; }
+
+                      client.print("EHLO juno\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 250) { client.stop(); return -3; }
+
+                      client.print("AUTH LOGIN\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 334) { client.stop(); return -4; }
+
+                      char encoded[196];
+                      if (juno_base64_encode(username, static_cast<int32_t>(strlen(username)), encoded, sizeof(encoded)) < 0) {
+                        client.stop();
+                        return -10;
+                      }
+                      client.print(encoded);
+                      client.print("\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 334) { client.stop(); return -4; }
+
+                      if (juno_base64_encode(password, static_cast<int32_t>(strlen(password)), encoded, sizeof(encoded)) < 0) {
+                        client.stop();
+                        return -10;
+                      }
+                      client.print(encoded);
+                      client.print("\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 235) { client.stop(); return -5; }
+
+                      client.print("MAIL FROM:<");
+                      client.print(from);
+                      client.print(">\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 250) { client.stop(); return -6; }
+
+                      client.print("RCPT TO:<");
+                      client.print(to);
+                      client.print(">\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 250) { client.stop(); return -7; }
+
+                      client.print("DATA\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 354) { client.stop(); return -8; }
+
+                      client.print("From: "); client.print(from); client.print("\\r\\n");
+                      client.print("To: "); client.print(to); client.print("\\r\\n");
+                      client.print("Subject: "); client.print(subject); client.print("\\r\\n\\r\\n");
+                      client.print(body);
+                      client.print("\\r\\n.\\r\\n");
+                      if (juno_smtp_read_reply(client, deadline) != 250) { client.stop(); return -9; }
+
+                      client.print("QUIT\\r\\n");
+                      client.stop();
+                      return 0;
+                    }
+
+                    """);
+        }
         if (features.contains(ShimFeature.POP3)) {
             helpers.append("""
-                    static int32_t juno_pop3_expect_ok(WiFiSSLClient& client, unsigned long deadline) {
+                    template <typename Client>
+                    static int32_t juno_pop3_expect_ok(Client& client, unsigned long deadline) {
                       char line[64];
                       int32_t lineLength = juno_read_line(client, line, sizeof(line), deadline);
                       return (lineLength >= 3 && line[0] == '+' && line[1] == 'O' && line[2] == 'K') ? 1 : 0;
@@ -1204,7 +1279,8 @@ final class NetworkShimLibraries {
                       return any ? count : -1;
                     }
 
-                    static int32_t juno_pop3_login(WiFiSSLClient& client, const char* username, const char* password,
+                    template <typename Client>
+                    static int32_t juno_pop3_login(Client& client, const char* username, const char* password,
                                                     unsigned long deadline) {
                       if (!juno_pop3_expect_ok(client, deadline)) return -2;
                       client.print("USER "); client.print(username); client.print("\\r\\n");
@@ -1216,7 +1292,7 @@ final class NetworkShimLibraries {
 
                     extern "C" int32_t juno_pop3_message_count(const char* host, int32_t port,
                                                                 const char* username, const char* password) {
-                      WiFiSSLClient client;
+                      ${JUNO_TLS_CLIENT_DECLARATION}
                       if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
                       unsigned long deadline = millis() + 10000;
                       int32_t loginResult = juno_pop3_login(client, username, password, deadline);
@@ -1275,7 +1351,7 @@ final class NetworkShimLibraries {
                                                               uint8_t* bodyBuffer, int32_t bodyBufferLength,
                                                               int32_t* status) {
                       status[0] = 0;
-                      WiFiSSLClient client;
+                      ${JUNO_TLS_CLIENT_DECLARATION}
                       if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
                       unsigned long deadline = millis() + 20000;
 
@@ -1347,7 +1423,7 @@ final class NetworkShimLibraries {
                                                                const char* username, const char* password,
                                                                int32_t messageNumber,
                                                                uint8_t* subjectBuffer, int32_t subjectBufferLength) {
-                      WiFiSSLClient client;
+                      ${JUNO_TLS_CLIENT_DECLARATION}
                       if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
                       unsigned long deadline = millis() + 15000;
 
@@ -1390,6 +1466,6 @@ final class NetworkShimLibraries {
 
                     """);
         }
-        return helpers.toString();
+        return helpers.toString().replace("${JUNO_TLS_CLIENT_DECLARATION}", tlsClientDeclaration);
     }
 }

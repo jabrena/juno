@@ -93,14 +93,14 @@ final class RuntimeShim {
             shim.append("#include <Servo.h>\n");
         }
         if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
-                ShimFeature.SMTP, ShimFeature.POP3)) {
+                ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
         }
         if (uses(ShimFeature.SD)) {
             shim.append("#include <SPI.h>\n#include <SdFat.h>\n");
         }
-        if (usesAny(ShimFeature.HTTPS, ShimFeature.POP3)) {
-            shim.append("#include <WiFiSSLClient.h>\n");
+        if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
+            shim.append(core.httpsInclude());
         }
         // ESP_SSLClient is a third-party library (arduino-cli lib install ESP_SSLClient), the same
         // manual-install pattern as Mouse above: the UNO R4 WiFi's native WiFiSSLClient can only
@@ -113,7 +113,8 @@ final class RuntimeShim {
             shim.append("#include <new>\n");
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER, ShimFeature.JSON,
-                ShimFeature.RUNTIME_STRINGS, ShimFeature.SMTP, ShimFeature.POP3, ShimFeature.SD)) {
+                ShimFeature.RUNTIME_STRINGS, ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3,
+                ShimFeature.SD)) {
             shim.append("#include <string.h>\n");
         }
         if (usesAny(ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.JSON, ShimFeature.RUNTIME_STRINGS,
@@ -513,10 +514,10 @@ final class RuntimeShim {
             shim.append(ShimLibraries.randomHelpers());
         }
         if (uses(ShimFeature.WIFI)) {
-            shim.append(ShimLibraries.wifiHelpers());
+            shim.append(core.wifiHelpers());
         }
         if (uses(ShimFeature.UDP)) {
-            shim.append(NetworkShimLibraries.udpHelpers());
+            shim.append(NetworkShimLibraries.udpHelpers(core.udpDeclaration()));
         }
         if (uses(ShimFeature.SD)) {
             shim.append(ShimLibraries.sdHelpers());
@@ -542,14 +543,17 @@ final class RuntimeShim {
         if (uses(ShimFeature.JSON_STRING_VALUE)) {
             shim.append(NetworkShimLibraries.jsonStringValueHelpers());
         }
+        if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
+            shim.append(core.httpsHelpers());
+        }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
-            shim.append(NetworkShimLibraries.httpHelpers(features));
+            shim.append(NetworkShimLibraries.httpHelpers(features, core.httpsClientDeclaration()));
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append(NetworkShimLibraries.httpServerHelpers());
         }
-        if (usesAny(ShimFeature.SMTP, ShimFeature.POP3)) {
-            shim.append(NetworkShimLibraries.emailHelpers(features));
+        if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
+            shim.append(NetworkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
         }
     }
 }

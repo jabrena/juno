@@ -1,11 +1,10 @@
 package io.github.jabrena.juno.api.io.net.email;
 
 /**
- * A minimal SMTP client recognized as a compiler intrinsic by Juno, backed by a plaintext {@code
- * WiFiClient} upgraded to TLS mid-connection with {@code STARTTLS} (the third-party {@code
- * ESP_SSLClient} library — see this package's Javadoc for why). Requires {@code
- * @Board(ArduinoUnoR4WiFi.class)} and an active {@link io.github.jabrena.juno.api.io.net.Wifi#begin}
- * connection.
+ * A minimal SMTP client recognized as a compiler intrinsic by Juno. {@link #send} uses STARTTLS
+ * and is available on UNO R4 WiFi; {@link #sendTls} uses implicit TLS and is portable across UNO
+ * R4 WiFi and UNO Q. Both require an active
+ * {@link io.github.jabrena.juno.api.io.net.Wifi#begin} connection.
  *
  * <p>{@code host}, {@code username}, {@code password}, {@code from}, {@code to}, {@code subject},
  * and {@code body} must all be compile-time strings (a literal, or {@code System.getenv("NAME")}
@@ -25,5 +24,13 @@ public final class Smtp {
      * {@code STARTTLS} itself ({@code -11}), or the TLS upgrade ({@code -12}).
      */
     public static native int send(String host, int port, String username, String password,
+            String from, String to, String subject, String body);
+
+    /**
+     * Sends a plain-text message over implicit TLS, normally on port {@code 465}. Returns the same
+     * status codes as {@link #send}, except the STARTTLS-specific {@code -11}/{@code -12} codes do
+     * not apply.
+     */
+    public static native int sendTls(String host, int port, String username, String password,
             String from, String to, String subject, String body);
 }

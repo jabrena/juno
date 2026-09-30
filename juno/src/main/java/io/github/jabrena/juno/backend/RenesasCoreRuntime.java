@@ -29,6 +29,31 @@ record RenesasCoreRuntime() implements CoreRuntime {
     }
 
     @Override
+    public String wifiHelpers() {
+        return ShimLibraries.wifiHelpers();
+    }
+
+    @Override
+    public String udpDeclaration() {
+        return "static WiFiUDP juno_udp;";
+    }
+
+    @Override
+    public String httpsInclude() {
+        return "#include <WiFiSSLClient.h>\n";
+    }
+
+    @Override
+    public String httpsHelpers() {
+        return "";
+    }
+
+    @Override
+    public String httpsClientDeclaration() {
+        return "WiFiSSLClient client;";
+    }
+
+    @Override
     public String yieldFunction() {
         return """
                 // Overrides the core's weak yield(): Serial's bool conversion is UNO R4's supported hook

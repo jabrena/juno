@@ -19,6 +19,7 @@ enum ShimFeature {
     HTTPS_PATH_BUFFER,
     HTTP_SERVER,
     SMTP,
+    SMTP_TLS,
     POP3,
     JSON,
     RUNTIME_STRINGS,

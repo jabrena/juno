@@ -2,8 +2,9 @@ package io.github.jabrena.juno.api.io.net.http;
 
 /**
  * A minimal HTTPS client recognized as compiler intrinsics by Juno, backed by Arduino's
- * {@code WiFiSSLClient} and the CA certificate bundle installed in the UNO R4 WiFi firmware.
- * Requires {@code @Board(ArduinoUnoR4WiFi.class)} and an active {@link io.github.jabrena.juno.api.io.net.Wifi#begin} connection.
+ * {@code WiFiSSLClient} and its firmware CA bundle on UNO R4 WiFi, or Linux TLS through
+ * {@code Arduino_RouterBridge} on UNO Q. Requires an active
+ * {@link io.github.jabrena.juno.api.io.net.Wifi#begin} connection/bridge.
  *
  * <p>{@code host}, {@code path}, and request bodies must be compile-time strings. Responses use
  * caller-owned buffers and have the same shape, five-second timeout, and

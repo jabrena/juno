@@ -12,6 +12,7 @@ public:
 class WiFiUDP {
 public:
   uint8_t begin(uint16_t) { return 1; }
+  uint8_t beginMulticast(IPAddress, uint16_t) { return 1; }
   void stop() {}
   int beginPacket(IPAddress, uint16_t) { return 1; }
   int endPacket() { return 1; }

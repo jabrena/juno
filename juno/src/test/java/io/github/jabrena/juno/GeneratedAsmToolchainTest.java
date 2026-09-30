@@ -227,6 +227,62 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    void compilesAnUnoQRouterBridgeHttpsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+                @Board(ArduinoUnoQ.class)
+                public final class AsmUnoQHttps {
+                    public static void main(String[] args) {
+                        Wifi.begin("ssid", "password");
+                        byte[] response = new byte[64];
+                        byte[] headers = new byte[64];
+                        int[] out = new int[2];
+                        HttpsClient.get("example.com", 443, "/", response, 64, headers, 64, out);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQHttps", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQHttps");
+        Path shim = temporaryDirectory.resolve("AsmUnoQHttpsShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
+    void compilesAnUnoQRouterBridgeEmailShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.io.net.email.Smtp;
+                @Board(ArduinoUnoQ.class)
+                public final class AsmUnoQEmail {
+                    public static void main(String[] args) {
+                        Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
+                                "me@example.com", "me@example.com", "Hello", "Hello");
+                        Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQEmail", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQEmail");
+        Path shim = temporaryDirectory.resolve("AsmUnoQEmailShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
     void compilesPortableUdpShimsForBothArduinoCores() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");

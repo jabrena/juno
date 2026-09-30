@@ -224,6 +224,9 @@ public final class IntrinsicRegistry {
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Smtp", "send",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;"
                             + "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I"), Intrinsic.SMTP_SEND),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Smtp", "sendTls",
+                    "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+                            + "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I"), Intrinsic.SMTP_SEND_TLS),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Pop3Client", "messageCount",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)I"), Intrinsic.POP3_MESSAGE_COUNT),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/email/Pop3Client", "readLatest",

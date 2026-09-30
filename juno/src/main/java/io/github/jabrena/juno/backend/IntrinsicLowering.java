@@ -286,6 +286,9 @@ final class IntrinsicLowering {
         shim(Intrinsic.SMTP_SEND, "juno_smtp_send", Result.WORD,
                 List.of(literal(0), arg(0), literal(1), literal(2), literal(3), literal(4), literal(5), literal(6)),
                 ShimFeature.SMTP);
+        shim(Intrinsic.SMTP_SEND_TLS, "juno_smtp_send_tls", Result.WORD,
+                List.of(literal(0), arg(0), literal(1), literal(2), literal(3), literal(4), literal(5), literal(6)),
+                ShimFeature.SMTP_TLS);
         shim(Intrinsic.POP3_MESSAGE_COUNT, "juno_pop3_message_count", Result.WORD,
                 List.of(literal(0), arg(0), literal(1), literal(2)), ShimFeature.POP3);
         shim(Intrinsic.POP3_READ_LATEST, "juno_pop3_read_latest", Result.WORD,

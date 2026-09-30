@@ -6,7 +6,7 @@ package io.github.jabrena.juno.api.io.net;
  * <p>One socket is available to a Juno program. Call {@link #listen(int)} once after Wi-Fi is
  * connected, then use {@link #broadcast} as the discovery primitive, {@link #send} to produce a
  * datagram for a known peer, and {@link #receive} to consume the next datagram without blocking.
- * The same API is lowered to {@code WiFiUDP} on the UNO R4 WiFi and UNO Q.
+ * The same API is lowered to {@code WiFiUDP} on UNO R4 WiFi and {@code BridgeUDP} on UNO Q.
  *
  * <p>An endpoint is a caller-owned {@code int[5]} containing the four IPv4 octets followed by the
  * UDP port. Payloads are caller-owned byte arrays; the runtime never allocates or retains them.
@@ -36,9 +36,9 @@ public final class Udp {
     public static native int send(int[] address, int remotePort, byte[] payload, int length);
 
     /**
-     * Broadcasts {@code length} bytes to {@code 255.255.255.255:remotePort}. This is the minimum
-     * building block for LAN discovery. Returns the payload length on success or {@code -1} on
-     * failure.
+     * Sends {@code length} bytes to the link-local IPv4 all-hosts group at {@code remotePort}.
+     * This portable group broadcast is the minimum building block for LAN discovery and remains
+     * within the local network. Returns the payload length on success or {@code -1} on failure.
      */
     public static native int broadcast(int remotePort, byte[] payload, int length);
 

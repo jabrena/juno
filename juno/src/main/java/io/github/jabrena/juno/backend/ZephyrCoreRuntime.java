@@ -29,7 +29,68 @@ record ZephyrCoreRuntime() implements CoreRuntime {
 
     @Override
     public String wifiIncludes(boolean udp) {
-        return udp ? "#include <WiFi.h>\n#include <WiFiUdp.h>\n" : "#include <WiFi.h>\n";
+        // UNO Q networking belongs to its Linux MPU. Arduino_RouterBridge carries UDP and other
+        // network operations between the Zephyr sketch on the MCU and arduino-router on Linux.
+        return "#include <Arduino_RouterBridge.h>\n";
+    }
+
+    @Override
+    public String wifiHelpers() {
+        return """
+
+                extern "C" void juno_wifi_begin(const char* ssid, const char* password) {
+                  // UNO Q Wi-Fi is configured by Linux (App Lab/nmcli), not by the MCU sketch.
+                  static_cast<void>(ssid);
+                  static_cast<void>(password);
+                  Bridge.begin();
+                }
+
+                extern "C" int32_t juno_wifi_status() {
+                  return Bridge ? 3 : 0;
+                }
+
+                extern "C" void juno_wifi_local_ip(int32_t* octets) {
+                  // arduino-router 0.4.x does not expose the Linux interface address over RPC.
+                  octets[0] = 0;
+                  octets[1] = 0;
+                  octets[2] = 0;
+                  octets[3] = 0;
+                }
+                """;
+    }
+
+    @Override
+    public String udpDeclaration() {
+        // Keep the bridge buffer bounded; Juno's UDP payloads are caller-sized and streamed over RPC.
+        return "static BridgeUDP<512> juno_udp(Bridge);";
+    }
+
+    @Override
+    public String httpsInclude() {
+        return "";
+    }
+
+    @Override
+    public String httpsHelpers() {
+        return """
+
+                class JunoBridgeSSLClient : public BridgeTCPClient<512> {
+                public:
+                  JunoBridgeSSLClient() : BridgeTCPClient<512>(Bridge) {
+                    begin();
+                  }
+
+                  int connect(const char* host, uint16_t port) {
+                    // BridgeTCPClient uses 0 for success; Arduino Client uses non-zero.
+                    return connectSSL(host, port, "") == 0 ? 1 : 0;
+                  }
+                };
+                """;
+    }
+
+    @Override
+    public String httpsClientDeclaration() {
+        return "JunoBridgeSSLClient client;";
     }
 
     @Override

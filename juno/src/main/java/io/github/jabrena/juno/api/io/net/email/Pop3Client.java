@@ -1,11 +1,10 @@
 package io.github.jabrena.juno.api.io.net.email;
 
 /**
- * A minimal POP3S client recognized as a compiler intrinsic by Juno, backed by Arduino's {@code
- * WiFiSSLClient} — the same implicit-TLS mechanism as {@link
- * io.github.jabrena.juno.api.io.net.http.HttpsClient}, needing no extra library. Requires {@code
- * @Board(ArduinoUnoR4WiFi.class)} and an active {@link io.github.jabrena.juno.api.io.net.Wifi#begin}
- * connection.
+ * A minimal POP3S client recognized as a compiler intrinsic by Juno, backed by the same
+ * board-specific implicit-TLS transport as
+ * {@link io.github.jabrena.juno.api.io.net.http.HttpsClient}. It supports UNO R4 WiFi and UNO Q
+ * and requires an active {@link io.github.jabrena.juno.api.io.net.Wifi#begin} connection.
  *
  * <p>{@code host}, {@code username}, and {@code password} must be compile-time strings (a
  * literal, or {@code System.getenv("NAME")} of a literal name). Responses use caller-owned

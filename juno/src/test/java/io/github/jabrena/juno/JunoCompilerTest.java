@@ -599,11 +599,12 @@ class JunoCompilerTest {
         assertThat(r4.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast",
                 "bl juno_udp_send", "bl juno_udp_receive", "bl juno_udp_stop");
         assertThat(r4.runtimeShim()).contains("#include <WiFiS3.h>", "static WiFiUDP juno_udp;",
-                "IPAddress broadcast(255, 255, 255, 255);");
+                "IPAddress(224, 0, 0, 1)", "juno_udp.beginMulticast(");
         assertThat(q.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast",
                 "bl juno_udp_send", "bl juno_udp_receive", "bl juno_udp_stop");
-        assertThat(q.runtimeShim()).contains("#include <WiFi.h>", "#include <WiFiUdp.h>",
-                "static WiFiUDP juno_udp;").doesNotContain("#include <WiFiS3.h>");
+        assertThat(q.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
+                "static BridgeUDP<512> juno_udp(Bridge);", "IPAddress(224, 0, 0, 1)")
+                .doesNotContain("#include <WiFiS3.h>", "static WiFiUDP juno_udp;");
     }
 
     @Test
@@ -800,6 +801,40 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersHttpsThroughRouterBridgeOnUnoQ() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+                @Board(ArduinoUnoQ.class)
+                public final class UnoQHttps {
+                    public static void main(String[] args) {
+                        Wifi.begin("ignored-on-q", "ignored-on-q");
+                        byte[] path = new byte[8];
+                        path[0] = '/';
+                        byte[] response = new byte[64];
+                        byte[] headers = new byte[64];
+                        int[] out = new int[2];
+                        HttpsClient.get("example.com", 443, path, 1,
+                                response, 64, headers, 64, out);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoQHttps", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoQHttps");
+
+        assertThat(result.assembly()).contains("bl juno_wifi_begin", "bl juno_https_get_path_buffer");
+        assertThat(result.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
+                "class JunoBridgeSSLClient : public BridgeTCPClient<512>",
+                "return connectSSL(host, port, \"\") == 0 ? 1 : 0;",
+                "JunoBridgeSSLClient client;")
+                .doesNotContain("#include <WiFiSSLClient.h>", "WiFiSSLClient client;");
+    }
+
+    @Test
     void lowersEmailIntrinsics() throws Exception {
         String source = """
                 package demo;
@@ -808,6 +843,8 @@ class JunoCompilerTest {
                 public final class EmailDemo {
                     public static void main(String[] args) {
                         int sent = Smtp.send("mail.example.com", 587, "alerts@example.com", "secret",
+                                "alerts@example.com", "me@example.com", "Arduino alert", "Alarm activated");
+                        int sentTls = Smtp.sendTls("mail.example.com", 465, "alerts@example.com", "secret",
                                 "alerts@example.com", "me@example.com", "Arduino alert", "Alarm activated");
 
                         int count = Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");
@@ -829,13 +866,46 @@ class JunoCompilerTest {
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.EmailDemo");
 
         assertThat(result.assembly()).contains(
-                "bl juno_smtp_send", "bl juno_pop3_message_count", "bl juno_pop3_read_latest",
+                "bl juno_smtp_send", "bl juno_smtp_send_tls", "bl juno_pop3_message_count", "bl juno_pop3_read_latest",
                 "bl juno_pop3_read_subject");
         assertThat(result.runtimeShim()).contains(
                 "#include <WiFiS3.h>", "#include <WiFiSSLClient.h>", "#include <ESP_SSLClient.h>",
-                "extern \"C\" int32_t juno_smtp_send", "extern \"C\" int32_t juno_pop3_message_count",
+                "extern \"C\" int32_t juno_smtp_send", "extern \"C\" int32_t juno_smtp_send_tls",
+                "extern \"C\" int32_t juno_pop3_message_count",
                 "extern \"C\" int32_t juno_pop3_read_latest", "extern \"C\" int32_t juno_pop3_read_subject",
                 "client.print(\"STARTTLS\\r\\n\")", "client.connectSSL()");
+    }
+
+    @Test
+    void lowersImplicitTlsEmailThroughRouterBridgeOnUnoQ() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.io.net.email.Smtp;
+                @Board(ArduinoUnoQ.class)
+                public final class UnoQEmail {
+                    public static void main(String[] args) {
+                        int sent = Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
+                                "me@example.com", "me@example.com", "Hello", "Hello");
+                        int count = Pop3Client.messageCount("mail.example.com", 995,
+                                "me@example.com", "secret");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoQEmail", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoQEmail");
+
+        assertThat(result.assembly()).contains("bl juno_smtp_send_tls", "bl juno_pop3_message_count");
+        assertThat(result.runtimeShim()).contains(
+                "#include <Arduino_RouterBridge.h>",
+                "class JunoBridgeSSLClient : public BridgeTCPClient<512>",
+                "extern \"C\" int32_t juno_smtp_send_tls",
+                "JunoBridgeSSLClient client;")
+                .doesNotContain("#include <ESP_SSLClient.h>", "#include <WiFiSSLClient.h>",
+                        "extern \"C\" int32_t juno_smtp_send(", "STARTTLS");
     }
 
     @Test

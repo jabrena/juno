@@ -27,11 +27,25 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime {
     int builtinLedPin();
 
     /**
-     * Core-provided headers for station-mode Wi-Fi and, when requested, UDP. The classes exposed by
-     * these headers share Arduino's {@code WiFi}/{@code WiFiUDP} API even though the library names
-     * differ between cores.
+     * Core-provided headers for network access and, when requested, UDP. UNO R4 uses WiFiS3
+     * directly; UNO Q delegates networking to Linux through Arduino_RouterBridge.
      */
     String wifiIncludes(boolean udp);
+
+    /** Core-specific implementation of the portable {@code Wifi} intrinsics. */
+    String wifiHelpers();
+
+    /** Declaration of the core's single UDP transport instance. */
+    String udpDeclaration();
+
+    /** Core-specific header required by the HTTPS client implementation. */
+    String httpsInclude();
+
+    /** Optional core-specific HTTPS adapter emitted before the HTTP codec. */
+    String httpsHelpers();
+
+    /** Local client declaration used by each generated HTTPS entry point. */
+    String httpsClientDeclaration();
 
     /**
      * The shim's {@code yield()} and delay glue, emitted ahead of {@code juno_panic}. It must provide

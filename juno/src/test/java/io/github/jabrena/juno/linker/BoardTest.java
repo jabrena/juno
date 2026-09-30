@@ -218,18 +218,28 @@ class BoardTest {
     }
 
     @Test
-    void theUnoQSupportsPortableWifiAndUdp() throws Exception {
+    void theUnoQSupportsPortableWifiUdpHttpsAndSecureEmail() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.io.net.Wifi;
                 import io.github.jabrena.juno.api.io.net.Udp;
+                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.io.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.io.net.email.Smtp;
                 @Board(ArduinoUnoQ.class)
                 public final class WifiOnUnoQ {
                     public static void main(String[] args) {
                         Wifi.status();
                         Udp.listen(5000);
+                        byte[] body = new byte[8];
+                        byte[] headers = new byte[8];
+                        int[] result = new int[2];
+                        HttpsClient.get("example.com", 443, "/", body, 8, headers, 8, result);
+                        Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
+                                "me@example.com", "me@example.com", "Hello", "Hello");
+                        Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");
                     }
                 }
                 """;
@@ -244,6 +254,7 @@ class BoardTest {
         assertThat(Capability.values()).allMatch(Board.UNO_R4_WIFI::supports);
         assertThat(Board.UNO_Q.core()).isEqualTo(ArduinoCore.ZEPHYR);
         assertThat(Board.UNO_Q.supports(Capability.WIFI)).isTrue();
+        assertThat(Board.UNO_Q.supports(Capability.HTTPS_CLIENT)).isTrue();
         assertThat(Board.UNO_Q.supports(Capability.LED_MATRIX)).isFalse();
         assertThat(Board.UNO_Q.supports(Capability.WIFI_S3_NETWORKING)).isFalse();
         assertThat(Board.UNO_Q.supports(Capability.WATCHDOG)).isFalse();

@@ -19,10 +19,10 @@ import java.util.stream.Collectors;
 public enum Board {
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi", "arduino-uno-r4-wifi", "UNO R4 WiFi",
             "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO,
-            EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.WIFI_S3_NETWORKING,
-                    Capability.WATCHDOG)),
+            EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTPS_CLIENT,
+                    Capability.WIFI_S3_NETWORKING, Capability.WATCHDOG)),
     UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
-            ArduinoCore.ZEPHYR, EnumSet.of(Capability.WIFI));
+            ArduinoCore.ZEPHYR, EnumSet.of(Capability.WIFI, Capability.HTTPS_CLIENT));
 
     public static final Board DEFAULT = UNO_R4_WIFI;
 
