@@ -175,6 +175,10 @@ final class IntrinsicLowering {
                 ShimFeature.RANDOM);
         shim(Intrinsic.DELAY_MILLIS, coreRuntime.delayMillisFunction(), Result.NONE, List.of(arg(0)));
         shim(Intrinsic.DELAY_MICROS, coreRuntime.delayMicrosFunction(), Result.NONE, List.of(arg(0)));
+        lowerings.put(Intrinsic.GPIO_BUILTIN_LED, (output, frame, call) -> {
+            asm.emitLoadImmediate(output, "r0", coreRuntime.builtinLedPin());
+            call.target().ifPresent(target -> asm.store(output, frame, "r0", target));
+        });
         shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of());
         shim(Intrinsic.LED_MATRIX_LOAD_FRAME, "juno_led_matrix_load_frame", Result.NONE,
                 List.of(arg(0), arg(1), arg(2)));

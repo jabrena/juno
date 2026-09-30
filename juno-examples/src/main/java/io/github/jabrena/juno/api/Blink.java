@@ -1,21 +1,22 @@
 package io.github.jabrena.juno.api;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.DigitalOutput;
+import io.github.jabrena.juno.api.io.Gpio;
 
 /**
- * Blinks the UNO R4 WiFi's built-in LED on digital pin 13 indefinitely. The LED remains on for
- * 500 milliseconds and off for 500 milliseconds, producing one complete blink cycle per second.
+ * Blinks the linked board's built-in LED indefinitely: on for 500 milliseconds, off for 500
+ * milliseconds, one complete blink cycle per second.
  *
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class Blink {
-    private static final int LED = 13;
 
     public static void main(String[] args) {
 
-        DigitalOutput led = DigitalOutput.of(LED);
+        DigitalOutput led = DigitalOutput.of(Gpio.builtinLed());
 
         while (true) {
             led.high();

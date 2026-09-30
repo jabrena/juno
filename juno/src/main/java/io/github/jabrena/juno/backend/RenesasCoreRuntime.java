@@ -18,6 +18,11 @@ record RenesasCoreRuntime() implements CoreRuntime {
     }
 
     @Override
+    public int builtinLedPin() {
+        return 13;
+    }
+
+    @Override
     public String wifiIncludes(boolean udp) {
         // WiFiS3.h exposes WiFi, WiFiClient, WiFiServer, WiFiSSLClient and WiFiUDP.
         return "#include <WiFiS3.h>\n";

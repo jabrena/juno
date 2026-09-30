@@ -20,4 +20,7 @@ public final class Gpio {
     public static native void analogWrite(int pin, int value);
 
     public static native void toggle(int pin);
+
+    /** The linked board's onboard LED pin: the UNO R4 WiFi's pin 13, the UNO Q's LED3 red channel. */
+    public static native int builtinLed();
 }

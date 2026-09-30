@@ -16,6 +16,17 @@ record ZephyrCoreRuntime() implements CoreRuntime {
         return "juno_delay_microseconds";
     }
 
+    /**
+     * PH10, {@code LED3}'s red channel — the first entry of the UNO Q board overlay's
+     * {@code builtin-led-gpios} and the pin {@code LED_BUILTIN} resolves to in the Zephyr core; D13
+     * on this board's header has no LED wired to it. Position within {@code digital-pin-gpios} in
+     * {@code arduino_uno_q_stm32u585xx.overlay}, hardware-confirmed 2026-09-30.
+     */
+    @Override
+    public int builtinLedPin() {
+        return 50;
+    }
+
     @Override
     public String wifiIncludes(boolean udp) {
         return udp ? "#include <WiFi.h>\n#include <WiFiUdp.h>\n" : "#include <WiFi.h>\n";

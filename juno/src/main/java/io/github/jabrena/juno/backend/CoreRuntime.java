@@ -23,6 +23,9 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime {
     /** The symbol {@code Delay.micros} branches to, taking the delay in r0. */
     String delayMicrosFunction();
 
+    /** The Arduino digital pin number {@code Gpio.builtinLed()} resolves to on this core's board. */
+    int builtinLedPin();
+
     /**
      * Core-provided headers for station-mode Wi-Fi and, when requested, UDP. The classes exposed by
      * these headers share Arduino's {@code WiFi}/{@code WiFiUDP} API even though the library names

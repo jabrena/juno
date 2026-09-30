@@ -8,6 +8,7 @@ public enum Intrinsic {
     GPIO_ANALOG_READ,
     GPIO_ANALOG_WRITE,
     GPIO_TOGGLE,
+    GPIO_BUILTIN_LED,
     DELAY_MILLIS,
     DELAY_MICROS,
     CLOCK_MILLIS,

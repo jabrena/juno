@@ -52,6 +52,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.GPIO_ANALOG_WRITE),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/Gpio", "toggle", "(I)V"),
                     Intrinsic.GPIO_TOGGLE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/io/Gpio", "builtinLed", "()I"),
+                    Intrinsic.GPIO_BUILTIN_LED),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/Delay", "millis", "(I)V"),
                     Intrinsic.DELAY_MILLIS),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/Delay", "micros", "(I)V"),
