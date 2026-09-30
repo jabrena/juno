@@ -12,10 +12,11 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 /**
  * Two-board Pokémon-style battle for an ELEGOO 2.8" TFT touch shield.
  *
- * <p>Both an UNO R4 WiFi and an UNO Q run this same program. Each board connects with build-time
- * {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD}, lets its player select a Pokémon, and waits
- * when DISCOVER is tapped. The next board to join finds it through a small UDP broadcast handshake;
- * once both peers have exchanged their selections, the battle starts automatically.
+ * <p>Both an UNO R4 WiFi and an UNO Q run this same program. UNO R4 connects with build-time
+ * {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD}; UNO Q uses the Wi-Fi connection configured on
+ * its Linux side. Each player selects a Pokémon and taps DISCOVER. The next board to join finds it
+ * through a small UDP group-broadcast handshake; once both peers exchange selections, the battle
+ * starts automatically.
  *
  * <p>The demo deliberately uses the raw, reusable {@link Udp} buffers: broadcast is discovery,
  * {@link Udp#send} is the producer, and {@link Udp#receive} is the consumer. Battle packets use an
@@ -41,14 +42,17 @@ public final class PokemonBattle {
     public static void main(String[] args) {
         byte[] incoming = new byte[PokemonProtocol.PACKET_SIZE];
         byte[] outgoing = new byte[PokemonProtocol.PACKET_SIZE];
-        int[] localAddress = new int[4];
         int[] source = new int[Udp.ENDPOINT_SIZE];
         int[] peer = new int[Udp.ENDPOINT_SIZE];
+        int[] opponent = new int[2];
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         connectWifi();
-        Wifi.localIP(localAddress);
+        int nodeId = Clock.micros();
+        if (nodeId == 0) {
+            nodeId = 1;
+        }
         while (!Udp.listen(PORT)) {
             showMessage("UDP ERROR - RETRY", TftTouchShield.RED);
             Delay.millis(1000);
@@ -56,8 +60,8 @@ public final class PokemonBattle {
 
         while (true) {
             int selected = choosePokemon();
-            int opponent = discover(selected, localAddress, peer, incoming, source, outgoing);
-            battle(selected, opponent, localAddress, peer, incoming, source, outgoing);
+            discover(selected, nodeId, peer, opponent, incoming, source, outgoing);
+            battle(selected, opponent[0], nodeId, opponent[1], peer, incoming, source, outgoing);
             Delay.millis(3500);
         }
     }
@@ -97,47 +101,52 @@ public final class PokemonBattle {
         }
     }
 
-    private static int discover(int selected, int[] localAddress, int[] peer, byte[] incoming,
-                                int[] source, byte[] outgoing) {
+    private static void discover(int selected, int nodeId, int[] peer, int[] opponent,
+                                 byte[] incoming, int[] source, byte[] outgoing) {
         drawWaiting(selected);
         int lastBroadcast = Clock.millis() - DISCOVERY_INTERVAL_MILLIS;
         while (true) {
             int now = Clock.millis();
             if (now - lastBroadcast >= DISCOVERY_INTERVAL_MILLIS) {
-                PokemonProtocol.write(outgoing, PokemonProtocol.DISCOVER, selected, 0, 0);
+                PokemonProtocol.write(outgoing, PokemonProtocol.DISCOVER, selected, 0, 0, nodeId);
                 Udp.broadcast(PORT, outgoing, PokemonProtocol.PACKET_SIZE);
                 lastBroadcast = now;
             }
 
             int length = Udp.receive(incoming, PokemonProtocol.PACKET_SIZE, source);
-            if (!PokemonProtocol.valid(incoming, length) || isLocal(source, localAddress)) {
+            if (!PokemonProtocol.valid(incoming, length) || PokemonProtocol.nodeId(incoming) == nodeId) {
                 Delay.millis(10);
                 continue;
             }
             int type = PokemonProtocol.unsigned(incoming[PokemonProtocol.TYPE]);
-            int opponent = PokemonProtocol.unsigned(incoming[PokemonProtocol.POKEMON]);
-            if (opponent < PokemonProtocol.PIKACHU || opponent > PokemonProtocol.SQUIRTLE) {
+            int remotePokemon = PokemonProtocol.unsigned(incoming[PokemonProtocol.POKEMON]);
+            int remoteNodeId = PokemonProtocol.nodeId(incoming);
+            if (remotePokemon < PokemonProtocol.PIKACHU || remotePokemon > PokemonProtocol.SQUIRTLE) {
                 continue;
             }
 
             if (type == PokemonProtocol.DISCOVER) {
                 copyEndpoint(source, peer);
-                PokemonProtocol.write(outgoing, PokemonProtocol.HERE, selected, 0, 0);
+                PokemonProtocol.write(outgoing, PokemonProtocol.HERE, selected, 0, 0, nodeId);
                 Udp.send(peer, peer[Udp.PORT], outgoing, PokemonProtocol.PACKET_SIZE);
             } else if (type == PokemonProtocol.HERE) {
                 copyEndpoint(source, peer);
-                PokemonProtocol.write(outgoing, PokemonProtocol.START, selected, 0, 0);
+                opponent[0] = remotePokemon;
+                opponent[1] = remoteNodeId;
+                PokemonProtocol.write(outgoing, PokemonProtocol.START, selected, 0, 0, nodeId);
                 sendRepeated(peer, outgoing);
-                return opponent;
+                return;
             } else if (type == PokemonProtocol.START) {
                 copyEndpoint(source, peer);
-                return opponent;
+                opponent[0] = remotePokemon;
+                opponent[1] = remoteNodeId;
+                return;
             }
         }
     }
 
-    private static void battle(int selected, int opponent, int[] localAddress, int[] peer,
-                               byte[] incoming, int[] source, byte[] outgoing) {
+    private static void battle(int selected, int opponent, int nodeId, int opponentNodeId,
+                               int[] peer, byte[] incoming, int[] source, byte[] outgoing) {
         int hitPoints = PokemonProtocol.hitPoints(selected);
         int opponentHitPoints = PokemonProtocol.hitPoints(opponent);
         int lastRemoteSequence = -1;
@@ -146,9 +155,9 @@ public final class PokemonBattle {
         int lastSent = 0;
         drawBattle(selected, opponent, hitPoints, opponentHitPoints);
 
-        if (compareAddress(localAddress, peer) < 0) {
+        if (nodeId < opponentNodeId) {
             PokemonProtocol.write(outgoing, PokemonProtocol.ATTACK, selected, sequence,
-                    PokemonProtocol.attack(selected));
+                    PokemonProtocol.attack(selected), nodeId);
             Udp.send(peer, peer[Udp.PORT], outgoing, PokemonProtocol.PACKET_SIZE);
             lastSent = Clock.millis();
             haveReply = true;
@@ -161,7 +170,8 @@ public final class PokemonBattle {
 
         while (true) {
             int length = Udp.receive(incoming, PokemonProtocol.PACKET_SIZE, source);
-            if (PokemonProtocol.valid(incoming, length) && samePeer(source, peer)) {
+            if (PokemonProtocol.valid(incoming, length) && samePeer(source, peer)
+                    && PokemonProtocol.nodeId(incoming) == opponentNodeId) {
                 int type = PokemonProtocol.unsigned(incoming[PokemonProtocol.TYPE]);
                 int remoteSequence = PokemonProtocol.unsigned(incoming[PokemonProtocol.SEQUENCE]);
                 if (type == PokemonProtocol.FAINTED) {
@@ -174,14 +184,15 @@ public final class PokemonBattle {
                         int power = PokemonProtocol.unsigned(incoming[PokemonProtocol.VALUE]);
                         hitPoints = hitPoints - PokemonProtocol.damage(power, PokemonProtocol.defense(selected));
                         if (hitPoints <= 0) {
-                            PokemonProtocol.write(outgoing, PokemonProtocol.FAINTED, selected, remoteSequence, 0);
+                            PokemonProtocol.write(outgoing, PokemonProtocol.FAINTED, selected,
+                                    remoteSequence, 0, nodeId);
                             sendRepeated(peer, outgoing);
                             drawHealth(0, opponentHitPoints, "YOU FAINTED");
                             return;
                         }
                         sequence = (remoteSequence + 1) & 0xff;
                         PokemonProtocol.write(outgoing, PokemonProtocol.ATTACK, selected, sequence,
-                                PokemonProtocol.attack(selected));
+                                PokemonProtocol.attack(selected), nodeId);
                         opponentHitPoints = opponentHitPoints - PokemonProtocol.damage(
                                 PokemonProtocol.attack(selected), PokemonProtocol.defense(opponent));
                         if (opponentHitPoints < 0) {
@@ -295,26 +306,9 @@ public final class PokemonBattle {
         }
     }
 
-    private static boolean isLocal(int[] endpoint, int[] localAddress) {
-        return endpoint[0] == localAddress[0] && endpoint[1] == localAddress[1]
-                && endpoint[2] == localAddress[2] && endpoint[3] == localAddress[3];
-    }
-
     private static boolean samePeer(int[] endpoint, int[] peer) {
         return endpoint[0] == peer[0] && endpoint[1] == peer[1] && endpoint[2] == peer[2]
                 && endpoint[3] == peer[3] && endpoint[Udp.PORT] == peer[Udp.PORT];
-    }
-
-    private static int compareAddress(int[] localAddress, int[] peer) {
-        for (int i = 0; i < 4; i++) {
-            if (localAddress[i] < peer[i]) {
-                return -1;
-            }
-            if (localAddress[i] > peer[i]) {
-                return 1;
-            }
-        }
-        return 0;
     }
 
     private static void copyEndpoint(int[] source, int[] target) {

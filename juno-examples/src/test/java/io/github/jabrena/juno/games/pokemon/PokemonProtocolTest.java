@@ -9,27 +9,29 @@ class PokemonProtocolTest {
     void writesAndRecognizesABattlePacket() {
         byte[] packet = new byte[PokemonProtocol.PACKET_SIZE];
 
-        PokemonProtocol.write(packet, PokemonProtocol.ATTACK, PokemonProtocol.PIKACHU, 257, 27);
+        PokemonProtocol.write(packet, PokemonProtocol.ATTACK, PokemonProtocol.PIKACHU, 257, 27,
+                0x12345678);
 
         assertThat(PokemonProtocol.valid(packet, packet.length)).isTrue();
         assertThat(PokemonProtocol.unsigned(packet[PokemonProtocol.TYPE])).isEqualTo(PokemonProtocol.ATTACK);
         assertThat(PokemonProtocol.unsigned(packet[PokemonProtocol.POKEMON])).isEqualTo(PokemonProtocol.PIKACHU);
         assertThat(PokemonProtocol.unsigned(packet[PokemonProtocol.SEQUENCE])).isEqualTo(1);
         assertThat(PokemonProtocol.unsigned(packet[PokemonProtocol.VALUE])).isEqualTo(27);
+        assertThat(PokemonProtocol.nodeId(packet)).isEqualTo(0x12345678);
     }
 
     @Test
     void rejectsWrongLengthMagicVersionAndService() {
         byte[] packet = new byte[PokemonProtocol.PACKET_SIZE];
-        PokemonProtocol.write(packet, PokemonProtocol.DISCOVER, PokemonProtocol.SQUIRTLE, 0, 0);
+        PokemonProtocol.write(packet, PokemonProtocol.DISCOVER, PokemonProtocol.SQUIRTLE, 0, 0, 42);
 
         assertThat(PokemonProtocol.valid(packet, packet.length - 1)).isFalse();
         packet[0] = 'X';
         assertThat(PokemonProtocol.valid(packet, packet.length)).isFalse();
-        PokemonProtocol.write(packet, PokemonProtocol.DISCOVER, PokemonProtocol.SQUIRTLE, 0, 0);
+        PokemonProtocol.write(packet, PokemonProtocol.DISCOVER, PokemonProtocol.SQUIRTLE, 0, 0, 42);
         packet[4] = 2;
         assertThat(PokemonProtocol.valid(packet, packet.length)).isFalse();
-        PokemonProtocol.write(packet, PokemonProtocol.DISCOVER, PokemonProtocol.SQUIRTLE, 0, 0);
+        PokemonProtocol.write(packet, PokemonProtocol.DISCOVER, PokemonProtocol.SQUIRTLE, 0, 0, 42);
         packet[5] = 2;
         assertThat(PokemonProtocol.valid(packet, packet.length)).isFalse();
     }
