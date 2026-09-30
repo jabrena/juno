@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.io.net.email;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
@@ -19,10 +20,10 @@ import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
  * #DELIVERY_POLL_ATTEMPTS} times — until it goes up. Every step is logged to Serial, including
  * whether delivery was actually confirmed or the poll gave up waiting.
  */
-@Board(ArduinoUnoR4WiFi.class)
-public final class EmailHelloWorld {
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+public final class EmailHelloWorldLCD {
     private static final int POP3_PORT = 995;
-    private static final int SMTP_PORT = 587;
+    private static final int SMTP_PORT = 465;
     // See InboxCount's identical constants: Wifi#status can report STATUS_CONNECTED slightly
     // before the module's TCP/IP stack is actually ready, so a connection attempt right after
     // connecting can fail with -1 even though every later one succeeds.
@@ -75,7 +76,7 @@ public final class EmailHelloWorld {
 
         LcdKeypadShield.setCursor(0, 1);
         LcdKeypadShield.print("Sending...");
-        int sent = Smtp.send(
+        int sent = Smtp.sendTls(
                 System.getenv("SMTP_HOST"), SMTP_PORT,
                 System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
                 System.getenv("SMPT_USERNAME"), System.getenv("SMPT_USERNAME"),

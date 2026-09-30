@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.io.net;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
@@ -26,7 +27,7 @@ import java.util.Properties;
  * <p>Unlike the LCD Keypad Shield, this shield shares no pins with its SD socket, so no rewiring
  * is needed.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class WifiStatusTFT {
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 

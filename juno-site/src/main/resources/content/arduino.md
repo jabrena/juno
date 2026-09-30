@@ -269,8 +269,10 @@ Keypad Shield's first row (`Pop3Client` only, so it does not need `ESP_SSLClient
 ```
 
 The same package also has
-[`EmailHelloWorld`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorld.java)
+[`EmailHelloWorldLCD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldLCD.java)
 (proves `Smtp.send` actually delivers by checking the inbox count before/after sending) and
+[`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldTFT.java)
+(the TFT touch-screen version), plus
 [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java)
 (a menu-driven client: Inbox count/subject-list, Send Email, About). See
 [docs/EMAIL.md](../email) for the full `Smtp`/`Pop3Client` reference, and
@@ -291,7 +293,8 @@ register, so this doesn't run out of registers regardless of how large or branch
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 
 The plugin creates the `.S`, `<Name>Shim.cpp`, and matching `.ino` wrapper together in the isolated

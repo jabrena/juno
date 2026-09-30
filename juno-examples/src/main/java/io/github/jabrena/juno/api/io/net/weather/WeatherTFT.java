@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.io.net.weather;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
@@ -32,8 +33,10 @@ import java.util.Properties;
  * <p>The clock is set from the HTTPS response's {@code Date} header plus Open-Meteo's
  * {@code utc_offset_seconds}, then kept running with {@link Clock#millis()}. Weather refreshes
  * every ten minutes, or immediately when the screen is tapped.
+ * On UNO Q, Linux must already be connected to Wi-Fi; the credentials loaded from the SD card
+ * are used only by the UNO R4 WiFi.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class WeatherTFT {
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int REFRESH_MILLIS = 10 * 60 * 1000;

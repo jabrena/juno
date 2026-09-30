@@ -214,16 +214,18 @@ one-off race instead of surfacing it — see `pollMessageCount` in the examples 
 
 ## Complete examples
 
-Three examples in `juno-examples` build on each other, in
+Four examples in `juno-examples` build on each other, in
 [`juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/):
 
 - [`InboxCount`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/InboxCount.java) —
   the simplest: polls `Pop3Client.messageCount` every 30 seconds and shows it on the LCD Keypad
   Shield. Confirmed working on a real UNO R4 WiFi.
-- [`EmailHelloWorld`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorld.java) —
+- [`EmailHelloWorldLCD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldLCD.java) —
   proves `Smtp.send` actually delivers, not just that the server accepted the message: reads the
   inbox count *before* sending a "Hello World" message to itself, then polls the count *after*
   sending until it goes up. Waits for a button press before sending.
+- [`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldTFT.java) —
+  the same send-and-verify flow on the ELEGOO TFT touch shield.
 - [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java) —
   a small menu-driven client: Inbox (a submenu of message Count and a paginated Subject List, up
   to the first 10 messages, 2 per screen), Send Email, and About.

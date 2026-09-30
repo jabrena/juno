@@ -73,6 +73,15 @@ arduino-cli core install arduino:zephyr
 arduino-cli core list
 ```
 
+Install the `Arduino_RouterBridge` library. It is required for every UNO Q sketch, not just ones
+using `Wifi`/`Udp`: without it, the zephyr core's `Arduino.h` fails to compile with `#error
+"Please install the Arduino_RouterBridge library from the Library Manager for proper Serial
+support on this board."`
+
+```bash
+arduino-cli lib install Arduino_RouterBridge
+```
+
 Connect the board and confirm that its FQBN is detected:
 
 ```bash
@@ -112,11 +121,12 @@ loaded by the board's Zephyr firmware.
 | LCD keypad and TFT touch shields | Yes | Built on GPIO, timing and analog input |
 | TFT games | Yes | Battleship, Blackjack, Chess, Tempest and Texas Hold'em support both UNO Q and UNO R4 WiFi; Empire Strikes Back, Missile Command, Pac-Man, Red Baron, Space Paranoids, Star Trek and Star Wars target UNO Q only; Lunar Lander targets UNO R4 WiFi only |
 | Onboard LED matrix | No | The UNO Q matrix belongs to the Linux side |
-| `Wifi` and `Udp` | Yes | Connects and exchanges datagrams over the board's Zephyr `<WiFi.h>`/`<WiFiUdp.h>` |
-| Juno HTTP/HTTPS/email APIs | No | Current intrinsics target the UNO R4 WiFi's `WiFiS3`/`WiFiSSLClient` libraries |
+| `Wifi` and `Udp` | Yes | Linux owns Wi-Fi; the MCU exchanges datagrams through `Arduino_RouterBridge` and `BridgeUDP` |
+| Juno HTTPS client API | Yes | TLS connections use `BridgeTCPClient` and the Linux system trust store |
+| Juno HTTP server and email APIs | No | Current intrinsics target the UNO R4 WiFi's `WiFiS3` libraries |
 | `@Watchdog` | No | Currently implemented only for the UNO R4 WiFi |
 | USB mouse, SD card, servo and email APIs | Untested | Do not assume UNO R4 library compatibility |
-| Linux applications and Bridge/RPC | Not yet | Juno currently emits only the MCU sketch |
+| Linux applications | Not yet | Juno emits the MCU sketch; networking uses the board's existing `arduino-router` service |
 
 The Arduino linker report is authoritative for a generated sketch's usable memory. Its reported
 limits describe the Zephyr user-sketch partition and runtime budget, which are smaller than the
