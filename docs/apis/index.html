@@ -275,7 +275,7 @@ parameter, add it to <code>IntrinsicRegistry.RUNTIME_STRING_PARAMETERS</code>. C
 each is a plain <code>const char*</code> to its shim whether it originated as a literal or a stable runtime
 string.</p>
 <h3 id="4-backend-codegen">4. Backend codegen</h3>
-<p><code>io.github.jabrena.juno.backend.CortexM4AsmBackend</code> has one big <code>switch (call.intrinsic())</code>. Each
+<p><code>io.github.jabrena.juno.backend.Thumb2AsmBackend</code> has one big <code>switch (call.intrinsic())</code>. Each
 case does two things:</p>
 <ul>
 <li>emits the ARM assembly to load the call's arguments and <code>bl</code> into a shim function, via
@@ -339,7 +339,7 @@ covering compile-time-string requirements and every result code.</li>
 shim helper.</li>
 <li>Write the C++ shim as a text block in a <code>usesXyz()</code>-gated helper method, reusing existing
 helpers (<code>emitShimCall</code>'s target functions, <code>juno_read_line</code>-style primitives) where they fit.</li>
-<li>Add a backend unit test (<code>CortexM4AsmBackendTest</code>) asserting the emitted <code>bl &lt;shim&gt;</code>, the
+<li>Add a backend unit test (<code>Thumb2AsmBackendTest</code>) asserting the emitted <code>bl &lt;shim&gt;</code>, the
 <code>#include</code>(s), and that an unrelated program does <em>not</em> pull the new shim in — see
 <code>lowersSmtpSendThroughAStarttlsShim</code> for the pattern.</li>
 <li>Add an end-to-end test (<code>JunoCompilerTest</code>) that compiles real Java source through the full

@@ -316,15 +316,19 @@ Keypad Shield's first row (<code>Pop3Client</code> only, so it does not need <co
   -Djuno.main=io.github.jabrena.juno.api.io.net.email.InboxCount
 </code></pre>
 <p>The same package also has
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorld.java"><code>EmailHelloWorld</code></a>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldLCD.java"><code>EmailHelloWorldLCD</code></a>
 (proves <code>Smtp.send</code> actually delivers by checking the inbox count before/after sending) and
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldTFT.java"><code>EmailHelloWorldTFT</code></a>
+(the TFT touch-screen version), plus
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java"><code>EmailClient</code></a>
 (a menu-driven client: Inbox count/subject-list, Send Email, About). See
 <a href="../email">docs/EMAIL.md</a> for the full <code>Smtp</code>/<code>Pop3Client</code> reference, and
 <a href="../apis">docs/APIS.md</a> for how these compiler-intrinsic API classes work internally.</p>
-<h2 id="the-cortex-m4-assembly-backend">The Cortex-M4 assembly backend</h2>
-<p>This is Juno's sole code-generation backend. It emits GNU ARM (Cortex-M4) assembly straight from
-Juno IR: every
+<h2 id="the-thumb-2-assembly-backend">The Thumb-2 assembly backend</h2>
+<p>This is Juno's sole code-generation backend, shared by every board. It emits GNU ARM Thumb-2
+assembly (the subset common to the UNO R4's Cortex-M4 and the UNO Q's Cortex-M33) straight from
+Juno IR; what differs per Arduino core (how <code>delay()</code>/<code>yield()</code> are reached) lives in the
+backend's <code>CoreRuntime</code>, not in the code generator. Every
 reachable method becomes its own function (real calls between them, including AAPCS stack-passed
 arguments beyond the first four), with branches, <code>switch</code>, <code>int</code> arithmetic/comparisons, fixed-size
 arrays, arena-allocated objects with fields, mutable static fields, GPIO/delay, <code>LedMatrix</code>, and
@@ -332,7 +336,8 @@ arrays, arena-allocated objects with fields, mutable static fields, GPIO/delay, 
 unchecked code. Every value and local variable lives in a fixed stack-frame slot rather than a
 register, so this doesn't run out of registers regardless of how large or branchy a method is.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 </code></pre>
 <p>The plugin creates the <code>.S</code>, <code>&lt;Name&gt;Shim.cpp</code>, and matching <code>.ino</code> wrapper together in the isolated
 <code>&lt;Name&gt;Asm</code> sketch directory. The shim provides <code>extern &quot;C&quot;</code> free functions for the things the
@@ -354,7 +359,7 @@ treat this backend as experimental.</p>
 <p><strong><code>long</code>/<code>float</code>/<code>double</code> and <code>Wifi</code>/<code>HttpClient</code>/<code>HttpsClient</code>/<code>Json</code> support added.</strong> The RA4M1 has
 no hardware FPU, so every nontrivial <code>long</code>/<code>float</code>/<code>double</code> operation is a call to a small
 <code>extern &quot;C&quot;</code> runtime-shim helper (soft arithmetic, same idea as calling into <code>libgcc</code>, just
-hand-written) rather than hand-rolled assembly; see <code>CortexM4AsmBackend</code>'s class doc for the exact
+hand-written) rather than hand-rolled assembly; see <code>Thumb2AsmBackend</code>'s class doc for the exact
 storage model. HTTP/HTTPS/JSON are backed by an <code>extern &quot;C&quot;</code> HTTP/1.1 codec and allocation-free
 JSON scanner in the generated runtime shim. <code>MadridWeather</code> (WiFi connect, an HTTPS/TLS request, and JSON field extraction including a
 <code>Json.getDouble</code> result immediately narrowed to <code>int</code>, matching this backend's <code>(int) Json.getDouble(...)</code> support) has been assembled and linked against the real toolchain and confirmed

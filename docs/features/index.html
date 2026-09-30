@@ -232,9 +232,10 @@ anywhere else it panics, as do Juno's other runtime failures (array bounds, aren
 <li><code>.class</code> inputs from directories, individual files, or JARs</li>
 </ul>
 <h2 id="runtime-risk-inspection">Runtime-risk inspection</h2>
-<p><code>juno inspect --main &lt;class&gt; --classpath &lt;paths&gt; --risks</code> analyzes the optimized, closed-world IR
-without running or uploading the program. The resulting <code>CompilationReport.runtimeRisks()</code> data is
-also available programmatically as immutable records with stable diagnostic codes.</p>
+<p>Every <code>compile</code> (standalone CLI or <code>juno-maven-plugin</code>'s <code>compile</code>/<code>verify</code>/<code>upload</code> goals)
+analyzes the optimized, closed-world IR and prints the findings automatically, before running or
+uploading the program. The resulting <code>CompilationReport.runtimeRisks()</code> data is also available
+programmatically as immutable records with stable diagnostic codes.</p>
 <p>The first analysis slice reports:</p>
 <table>
 <thead>

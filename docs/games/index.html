@@ -305,13 +305,13 @@ Empire Strikes Back waves, and nearly every dot of a Pac-Man maze.</li>
 </ul>
 <p>This runs the games' Java on the JVM, not the code Juno generates for the board.</p>
 <h2 id="compiling-with-the-real-arduino-toolchain-in-docker">Compiling with the real Arduino toolchain in Docker</h2>
-<p><code>ArduinoCliCompileTest</code> does what <code>juno:verify</code> does for every game — Juno generates the sketch,
+<p><code>ArduinoCliCompileIT</code> does what <code>juno:verify</code> does for every game — Juno generates the sketch,
 then <code>arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi</code> builds and links it with the real
 UNO R4 core — inside a Docker container started with <a href="https://testcontainers.com">Testcontainers</a>,
 so you need Docker but no local Arduino installation. It fails if a game stops compiling or no
 longer fits the board's flash or RAM, and prints each game's usage. It is opt-in:</p>
 <pre><code class="language-bash">./mvnw install -DskipTests
-./mvnw -f juno-examples/pom.xml -Parduino-cli test
+./mvnw -f juno-examples/pom.xml -Parduino-cli verify
 </code></pre>
 <p>The first run builds the image from
 <a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/test/docker/arduino-cli/Dockerfile"><code>juno-examples/src/test/docker/arduino-cli/Dockerfile</code></a>

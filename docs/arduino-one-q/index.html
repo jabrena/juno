@@ -239,6 +239,10 @@ current and library requirements of every shield before connecting it to the UNO
 arduino-cli core install arduino:zephyr
 arduino-cli core list
 </code></pre>
+<p>Install the <code>Arduino_RouterBridge</code> library. It is required for every UNO Q sketch, not just ones
+using <code>Wifi</code>/<code>Udp</code>: without it, the zephyr core's <code>Arduino.h</code> fails to compile with <code>#error &quot;Please install the Arduino_RouterBridge library from the Library Manager for proper Serial support on this board.&quot;</code></p>
+<pre><code class="language-bash">arduino-cli lib install Arduino_RouterBridge
+</code></pre>
 <p>Connect the board and confirm that its FQBN is detected:</p>
 <pre><code class="language-bash">arduino-cli board list
 </code></pre>
@@ -301,9 +305,19 @@ loaded by the board's Zephyr firmware.</p>
 <td>The UNO Q matrix belongs to the Linux side</td>
 </tr>
 <tr>
-<td>Juno Wi-Fi/HTTP APIs</td>
+<td><code>Wifi</code> and <code>Udp</code></td>
+<td align="right">Yes</td>
+<td>Linux owns Wi-Fi; the MCU exchanges datagrams through <code>Arduino_RouterBridge</code> and <code>BridgeUDP</code></td>
+</tr>
+<tr>
+<td>Juno HTTPS client API</td>
+<td align="right">Yes</td>
+<td>TLS connections use <code>BridgeTCPClient</code> and the Linux system trust store</td>
+</tr>
+<tr>
+<td>Juno HTTP server and email APIs</td>
 <td align="right">No</td>
-<td>Current intrinsics target the UNO R4 WiFi libraries</td>
+<td>Current intrinsics target the UNO R4 WiFi's <code>WiFiS3</code> libraries</td>
 </tr>
 <tr>
 <td><code>@Watchdog</code></td>
@@ -316,9 +330,9 @@ loaded by the board's Zephyr firmware.</p>
 <td>Do not assume UNO R4 library compatibility</td>
 </tr>
 <tr>
-<td>Linux applications and Bridge/RPC</td>
+<td>Linux applications</td>
 <td align="right">Not yet</td>
-<td>Juno currently emits only the MCU sketch</td>
+<td>Juno emits the MCU sketch; networking uses the board's existing <code>arduino-router</code> service</td>
 </tr>
 </tbody>
 </table>

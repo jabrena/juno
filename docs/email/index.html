@@ -426,16 +426,18 @@ so the very first <code>Smtp</code>/<code>Pop3Client</code> call right after <co
 even though every later call works. Retrying a few times, a couple of seconds apart, absorbs this
 one-off race instead of surfacing it — see <code>pollMessageCount</code> in the examples below.</p>
 <h2 id="complete-examples">Complete examples</h2>
-<p>Three examples in <code>juno-examples</code> build on each other, in
+<p>Four examples in <code>juno-examples</code> build on each other, in
 <a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/</code></a>:</p>
 <ul>
 <li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/InboxCount.java"><code>InboxCount</code></a> —
 the simplest: polls <code>Pop3Client.messageCount</code> every 30 seconds and shows it on the LCD Keypad
 Shield. Confirmed working on a real UNO R4 WiFi.</li>
-<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorld.java"><code>EmailHelloWorld</code></a> —
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldLCD.java"><code>EmailHelloWorldLCD</code></a> —
 proves <code>Smtp.send</code> actually delivers, not just that the server accepted the message: reads the
 inbox count <em>before</em> sending a &quot;Hello World&quot; message to itself, then polls the count <em>after</em>
 sending until it goes up. Waits for a button press before sending.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldTFT.java"><code>EmailHelloWorldTFT</code></a> —
+the same send-and-verify flow on the ELEGOO TFT touch shield.</li>
 <li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java"><code>EmailClient</code></a> —
 a small menu-driven client: Inbox (a submenu of message Count and a paginated Subject List, up
 to the first 10 messages, 2 per screen), Send Email, and About.</li>

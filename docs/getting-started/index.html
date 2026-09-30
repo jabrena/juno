@@ -185,14 +185,17 @@ API), <code>juno-maven-plugin/target/juno-maven-plugin-0.1.0-SNAPSHOT.jar</code>
 <code>.ino</code> sketch and run it on real UNO R4 WiFi or UNO Q hardware with <code>arduino-cli</code>, see
 <a href="../arduino">docs/ARDUINO.md</a>. The UNO Q also needs Arduino's Zephyr core:
 <code>arduino-cli core install arduino:zephyr</code>.</p>
-<p>Use the following commands for the complete <code>Blink</code> workflow:</p>
+<p>Use the following commands for the complete <code>Blink</code> workflow. <code>Blink</code> targets both boards, so pick
+one with <code>-Djuno.board</code>:</p>
 <pre><code class="language-bash"># Generate and verify with arduino-cli
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Upload
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.Blink
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Monitor
 ./mvnw -f juno-examples/pom.xml juno:monitor
@@ -252,11 +255,13 @@ Juno compiles for, and <code>juno:verify</code>/<code>juno:upload</code> build f
 </tr>
 </tbody>
 </table>
-<p>A class with no <code>@Board</code> annotation targets the UNO R4 WiFi. GPIO, time, Serial and the shields
-built on them (LCD keypad, TFT touch) compile and upload for both boards. The LED matrix, Wi-Fi with HTTP/HTTPS, and
-<code>@Watchdog</code> are UNO R4 WiFi only (on the UNO Q, its LED matrix and Wi-Fi belong to the board's
-Linux side), and Juno rejects them at compile time for the UNO Q. The other APIs built on UNO R4
-libraries (email, USB mouse, SD card, servo) have not been tried on the UNO Q yet. The TFT games
+<p>A class with no <code>@Board</code> annotation targets the UNO R4 WiFi. GPIO, time, Serial, <code>Wifi</code>/<code>Udp</code>,
+and the shields built on them (LCD keypad, TFT touch) compile and upload for both boards. The LED
+matrix, Wi-Fi with HTTP/HTTPS/email, and <code>@Watchdog</code> are UNO R4 WiFi only (on the UNO Q, the LED
+matrix belongs to the board's Linux side, and its Zephyr core has no HTTP/HTTPS/email libraries
+Juno can lower to — plain <code>Wifi</code>/<code>Udp</code> still work through the MCU's own Zephyr networking), and
+Juno rejects the R4-only APIs at compile time for the UNO Q. The other APIs built on UNO R4
+libraries (USB mouse, SD card, servo) have not been tried on the UNO Q yet. The TFT games
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/startrek/StarTrek.java">Star Trek</a>,
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/starwars/StarWars.java">Star Wars</a>,
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/empirestrikesback/EmpireStrikesBack.java">The Empire Strikes Back</a>,
@@ -271,11 +276,11 @@ public final class RedBaron {
 subset. Diagnostics identify the method, bytecode offset, and unsupported opcode. See
 <a href="../features">docs/FEATURES.md</a> for the full, up-to-date inventory of what's supported and
 what isn't.</p>
-<p>Before generating or uploading a sketch, inspect conservative runtime-risk and resource estimates:</p>
-<pre><code class="language-bash">java -jar juno/target/juno-0.1.0-SNAPSHOT.jar inspect \
+<p>Every <code>compile</code> (standalone CLI or <code>juno-maven-plugin</code>'s <code>compile</code>/<code>verify</code>/<code>upload</code> goals) prints
+conservative runtime-risk and resource estimates automatically:</p>
+<pre><code class="language-bash">java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
   --main ArenaFeaturesPulse \
-  --classpath juno-examples/target/classes:juno/target/classes \
-  --risks
+  --classpath juno-examples/target/classes:juno/target/classes
 </code></pre>
 <p>The report includes the fixed-arena budget, estimated static RAM and generated local storage,
 maximum call depth, emitted array bounds checks, and stable <code>JUNO-RISK-*</code> findings for allocation

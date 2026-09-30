@@ -196,10 +196,10 @@ representation — bytecode always computes with them as a 32-bit <code>int</cod
 narrowing on store (<code>i2b</code>, <code>i2s</code>) or when a <code>char</code> needs zero-extension.</p>
 <p>Juno represents every symbolic IR register as <code>Value(id, JunoType)</code>. <code>JunoType</code> defines <code>INT32</code>,
 <code>INT64</code>, <code>FLOAT32</code>, and <code>FLOAT64</code>, and the backend declares each value using its recorded type.</p>
-<p>The Cortex-M4 assembly backend gives every JVM local slot a full, fixed 8-byte region in the
+<p>The Thumb-2 assembly backend gives every JVM local slot a full, fixed 8-byte region in the
 method's stack frame, regardless of its actual type — so a <code>long</code>/<code>double</code> local can never overlap
 the next slot's storage, at the cost of wasting 4 bytes per plain <code>int</code> local (see
-<code>CortexM4AsmBackend</code>'s class doc for the exact frame-layout algorithm). Array references remain
+<code>Thumb2AsmBackend</code>'s class doc for the exact frame-layout algorithm). Array references remain
 32-bit handles on Cortex-M4, enums are ordinals (with associated integer values stored in
 compiler-generated lookup tables), and each half of Juno's split <code>long</code> representation is 32 bits.</p>
 <p>So a Java <code>byte</code>, <code>char</code>, <code>short</code>, <code>boolean</code>, or <code>int</code> intentionally share the <code>INT32</code> runtime
@@ -280,7 +280,7 @@ storage. <code>DigitalOutput led = DigitalOutput.of(13)</code> and the raw pin n
 identical code; the Java type exists purely to make call sites read like object method calls
 (<code>led.high()</code> instead of <code>Gpio.digitalWrite(13, true)</code>). <code>Gpio.analogRead</code> lowers to the core's real
 <code>analogRead</code> the same way <code>digitalWrite</code> does. <code>DigitalOutput.toggle()</code>/<code>isHigh()</code> and
-<code>Gpio.digitalRead</code>/<code>analogWrite</code> still exist in the Java API but the Cortex-M4 assembly backend
+<code>Gpio.digitalRead</code>/<code>analogWrite</code> still exist in the Java API but the Thumb-2 assembly backend
 doesn't lower them yet (<code>CompileException: ... does not support this yet: intrinsic ...</code> at compile
 time).</p>
 <h2 id="what-this-rules-out">What this rules out</h2>
