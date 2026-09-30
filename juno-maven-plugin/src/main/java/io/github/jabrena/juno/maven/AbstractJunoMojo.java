@@ -4,6 +4,7 @@ import io.github.jabrena.juno.CompilationReport;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.JunoCompiler;
+import io.github.jabrena.juno.analysis.RuntimeRiskReportFormatter;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
@@ -74,6 +75,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         getLog().info("Generated " + assembly + ", " + shim + ", and " + wrapper + " for "
                 + result.report().board().displayName() + " with the ASM backend (fqbn "
                 + targetFqbn + ")");
+        RuntimeRiskReportFormatter.format(result.report().runtimeRisks()).forEach(getLog()::info);
         return new CompiledSketch(sketchDirectory, targetFqbn);
     }
 

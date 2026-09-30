@@ -69,17 +69,19 @@ class MainTest {
     }
 
     @Test
-    void inspectWithRisksPrintsResourceEstimatesAndStructuredFindings() throws Exception {
+    void compilePrintsResourceEstimatesAndStructuredFindings() throws Exception {
         compileRiskFixture();
+        Path output = temporaryDirectory.resolve("out").resolve("Risky.S");
 
-        Main.run(new String[]{"inspect", "--main", "demo.Risky", "--classpath", classPath(), "--risks"});
+        Main.run(new String[]{"compile", "--main", "demo.Risky", "--classpath", classPath(),
+                "--output", output.toString()});
 
-        String output = captured.toString(StandardCharsets.UTF_8);
-        assertThat(output.contains("Runtime risk analysis:")).isTrue();
-        assertThat(output.contains("Arena:")).isTrue();
-        assertThat(output.contains("JUNO-RISK-001")).isTrue();
-        assertThat(output.contains("JUNO-RISK-005")).isTrue();
-        assertThat(output.contains("conservative source-level estimates")).isTrue();
+        String printed = captured.toString(StandardCharsets.UTF_8);
+        assertThat(printed.contains("Runtime risk analysis:")).isTrue();
+        assertThat(printed.contains("Arena:")).isTrue();
+        assertThat(printed.contains("JUNO-RISK-001")).isTrue();
+        assertThat(printed.contains("JUNO-RISK-005")).isTrue();
+        assertThat(printed.contains("conservative source-level estimates")).isTrue();
     }
 
     @Test

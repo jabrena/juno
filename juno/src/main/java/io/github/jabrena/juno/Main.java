@@ -1,8 +1,7 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.analysis.BasicBlock;
-import io.github.jabrena.juno.analysis.RuntimeRisk;
-import io.github.jabrena.juno.analysis.RuntimeRiskReport;
+import io.github.jabrena.juno.analysis.RuntimeRiskReportFormatter;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -94,6 +93,8 @@ public final class Main {
         Board board = result.report().board();
         System.out.println("Generated " + output + ", " + shimOutput + ", and " + wrapperOutput
                 + " for " + board.displayName() + " (fqbn " + board.fqbn() + ")");
+        System.out.println();
+        RuntimeRiskReportFormatter.format(result.report().runtimeRisks()).forEach(System.out::println);
     }
 
     private static String baseName(Path path) {
@@ -127,7 +128,6 @@ public final class Main {
         String classPathValue = "target/classes";
         boolean showIr = false;
         boolean showCfg = false;
-        boolean showRisks = false;
         String board = null;
         for (int index = 1; index < args.length; index++) {
             String option = args[index];
@@ -139,8 +139,6 @@ public final class Main {
                 showIr = true;
             } else if (option.equals("--cfg")) {
                 showCfg = true;
-            } else if (option.equals("--risks")) {
-                showRisks = true;
             } else if (option.equals("--board")) {
                 board = value(args, ++index, option);
             } else {
@@ -162,10 +160,6 @@ public final class Main {
         System.out.println("Reachable methods: " + report.reachableMethods());
         System.out.println("IR basic blocks: " + report.irBlocks());
         System.out.println("Intrinsics used: " + (report.intrinsics().isEmpty() ? "(none)" : report.intrinsics()));
-
-        if (showRisks) {
-            printRuntimeRisks(report.runtimeRisks());
-        }
 
         if (showCfg) {
             System.out.println();
@@ -191,37 +185,6 @@ public final class Main {
                 }
             }
         }
-    }
-
-    private static void printRuntimeRisks(RuntimeRiskReport report) {
-        System.out.println();
-        System.out.println("Runtime risk analysis:");
-        String arenaQualifier = report.unboundedArenaAllocation()
-                ? "repetition risk: allocation occurs in a loop or recursive path"
-                : "conservative startup estimate";
-        System.out.println("  Arena: " + report.estimatedArenaBytes() + " / " + report.arenaCapacityBytes()
-                + " bytes (" + arenaQualifier + ")");
-        System.out.println("  Estimated Juno static RAM: " + report.estimatedStaticRamBytes() + " bytes");
-        System.out.println("  Estimated generated locals on deepest call path: "
-                + formatBound(report.estimatedMaxStackBytes(), "bytes"));
-        System.out.println("  Maximum generated call depth: " + formatBound(report.maxCallDepth(), "frames"));
-        System.out.println("  Generated bounds checks: " + report.boundsChecks());
-        System.out.println("  Unchecked array accesses: " + report.uncheckedArrayAccesses());
-        if (report.findings().isEmpty()) {
-            System.out.println("  Findings: (none)");
-        } else {
-            System.out.println("  Findings:");
-            for (RuntimeRisk finding : report.findings()) {
-                System.out.println("    [" + finding.severity() + " " + finding.code() + "] "
-                        + finding.method().displayName() + ": " + finding.message());
-            }
-        }
-        System.out.println("  Note: resource figures are conservative source-level estimates; the Arduino linker"
-                + " remains authoritative for final RAM/flash use.");
-    }
-
-    private static String formatBound(int value, String unit) {
-        return value < 0 ? "unbounded (recursion)" : value + " " + unit;
     }
 
     private static List<Path> parseClassPath(String classPathValue) {
@@ -262,6 +225,8 @@ public final class Main {
                                             visible via juno:monitor. Off by default: costs no
                                             extra flash/RAM/time when omitted.
                   Also emits <Main>Shim.cpp and the matching <Main>.ino wrapper alongside it.
+                  Runtime-risk resource estimates and structured findings are printed automatically
+                  afterward (also true of juno-maven-plugin's compile/verify/upload goals).
 
                 The target board is read from the entry-point class's @Board annotation
                 (io.github.jabrena.juno.annotations.Board); a class with no @Board annotation targets the
@@ -275,7 +240,6 @@ public final class Main {
                                             @Board declares more than one board
                   --ir                      Print the lowered/optimized Juno IR per reachable method
                   --cfg                     Print each reachable method's basic-block control flow graph
-                  --risks                   Estimate runtime resource use and print structured risk findings
 
                 Global options:
                   --help, -h                Show this help
