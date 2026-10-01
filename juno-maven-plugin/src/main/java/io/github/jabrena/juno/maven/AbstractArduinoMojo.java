@@ -10,7 +10,7 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
     @Parameter(property = "juno.arduinoCli", defaultValue = "arduino-cli", required = true)
     private String arduinoCli;
 
-    /** Optional FQBN override. Compile goals derive it from {@code @Board}; monitor uses Juno's default board. */
+    /** Optional FQBN override. Compile goals derive it from {@code @Board}; monitor uses {@code juno.board} or Juno's default board. */
     @Parameter(property = "juno.fqbn")
     private String fqbn;
 
