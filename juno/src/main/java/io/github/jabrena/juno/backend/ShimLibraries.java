@@ -103,6 +103,8 @@ final class ShimLibraries {
         return """
 
                 static constexpr int32_t JUNO_SD_MAX_OPEN_FILES = 4;
+                static constexpr int32_t JUNO_SD_BEGIN_ATTEMPTS = 3;
+                static constexpr uint32_t JUNO_SD_BEGIN_RETRY_DELAY_MS = 250;
                 static constexpr int32_t JUNO_PROPERTIES_MAX_ENTRIES = 16;
                 static constexpr int32_t JUNO_PROPERTIES_KEY_CAPACITY = 32;
                 static constexpr int32_t JUNO_PROPERTIES_VALUE_CAPACITY = 64;
@@ -125,7 +127,12 @@ final class ShimLibraries {
                     if (juno_sd_file_used[i]) juno_sd_files[i].close();
                     juno_sd_file_used[i] = false;
                   }
-                  return juno_sd.begin(chipSelectPin) ? 1 : 0;
+                  // A card that survived a host reset without losing power can fail its first init.
+                  for (int32_t attempt = 0; attempt < JUNO_SD_BEGIN_ATTEMPTS; attempt++) {
+                    if (juno_sd.begin(chipSelectPin)) return 1;
+                    delay(JUNO_SD_BEGIN_RETRY_DELAY_MS);
+                  }
+                  return 0;
                 }
 
                 extern "C" int32_t juno_sd_exists(const char* path) {
