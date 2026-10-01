@@ -32,7 +32,7 @@ Supported today:
   parameter, or a reassigned local, still supports `arr[i]`/`arr[i] = v` but without a bounds check
   and without `.length`, since its size isn't known at compile time there. Fixed-size multidimensional
   primitive arrays are supported when every dimension is a compile-time constant.
-- `long` locals, method parameters/results, fields, and arrays, with arithmetic, shifts, bitwise
+- `long` locals, method parameters/results, fields, and arrays (see [Known Limitations](/limitations)), with arithmetic, shifts, bitwise
   operations, comparisons, numeric conversions, calls, returns, and loops. JVM locals/stack values are
   represented internally as paired 32-bit halves and packed to native `int64_t` at storage/call boundaries.
 - `float` locals and static method parameters/results, with constants, arithmetic (including remainder),
@@ -94,8 +94,11 @@ Supported today:
   `round`'s ties-toward-positive-infinity and saturation, `pow`'s NaN rules, `floorDiv` overflow). Where
   Java would throw (`floorDiv`/`floorMod` by zero, `clamp` with `min > max`), the program panics, like
   native integer division by zero.
-- local exception handling: `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
-  `finally`, and nested handlers, when the `throw` and the `catch` are in the same method. Exceptions are
+- exception handling: `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
+  `finally`, nested handlers, and `try`-with-resources, including exceptions that propagate out of the
+  method that throws them to a `catch`/`finally` in any caller (the exception is left pending and each
+  frame returns; callers poll only after calls that can throw, so programs that never throw across a call
+  are unchanged). `try`-with-resources calls `close()` on the normal and the exceptional path. Exceptions are
   8-byte arena objects (class id and message) created with the `()` or `(String)` constructor of
   `Throwable`, `Exception`, `Error`, `RuntimeException`, `IllegalArgumentException`,
   `NumberFormatException`, `IllegalStateException`, `ArithmeticException`, `IndexOutOfBoundsException`,
@@ -103,11 +106,10 @@ Supported today:
   `UnsupportedOperationException`, `ClassCastException`, `NegativeArraySizeException`,
   `InterruptedException`, `java.util.NoSuchElementException`, `java.util.concurrent.TimeoutException`,
   and `java.io.IOException`, or of a final program class extending one of them (which may add its own
-  fields). `getMessage()` is supported. An exception no handler in its method catches — including one
-  thrown in a called method — prints `Exception in thread "main" <class>: <message>` over `Serial` and
-  panics. An `int`/`long` division or remainder by zero inside a `try` whose handler catches
+  fields). `getMessage()` is supported. An exception no frame up to `main` catches prints
+  `Exception in thread "main" <class>: <message>` over `Serial` and panics. An `int`/`long` division or remainder by zero inside a `try` whose handler catches
   `ArithmeticException` (or a supertype, or `finally`) raises `ArithmeticException("/ by zero")` there;
-  anywhere else it panics, as do Juno's other runtime failures (array bounds, arena exhaustion).
+  anywhere else it unwinds to the callers' handlers if any `catch`/`finally` in the program can receive `ArithmeticException`, and panics if none can, as do Juno's other runtime failures (array bounds, arena exhaustion).
 - `.class` inputs from directories, individual files, or JARs
 
 ## Runtime-risk inspection
@@ -152,8 +154,8 @@ Not yet supported:
   arrays with polymorphism
 - general string construction/concatenation and other {@code String} methods, threads, reflection, or
   dynamic loading
-- exceptions propagating out of the method that throws them, exception causes, stack traces, suppressed
-  exceptions (`try`-with-resources), and exception types in method parameters or return values
+- exception causes, stack traces, suppressed exceptions (`addSuppressed` is accepted and dropped, so a
+  `close()` failure during unwinding is lost), and exception types in method parameters or return values
 - enum string methods (`.name()`, `.toString()`), `valueOf()`, and enum state beyond one directly
   assigned, compile-time integer value per constant (including mutable fields and per-constant class bodies)
 - record `equals()`/`hashCode()`/`toString()`, string concatenation, and other non-lambda

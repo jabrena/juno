@@ -139,6 +139,7 @@ jwebserver -d "$(pwd)/target/site" -p 8000
 ## References
 
 - https://dev.java/
+- https://docs.oracle.com/javase/specs/jls/se25/html/index.html
 - https://store.arduino.cc/products/uno-r4-wifi
 - https://store.arduino.cc/products/arduino-uno-rev3
 - https://store.arduino.cc/products/arduino-uno-wifi-rev2

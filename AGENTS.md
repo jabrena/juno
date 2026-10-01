@@ -99,6 +99,11 @@ generator that builds the documentation site published to `docs/`.
   `games/*GamesTest` classes check game rules and computer players. `api/tft/ArduinoCliCompileIT`
   (tag `arduino-cli`, opt-in via `-Parduino-cli`) compiles every game with the real `arduino-cli`
   in a Testcontainers container built from `juno-examples/src/test/docker/arduino-cli/Dockerfile`.
+  `api/tft/ArduinoCliCompileIT` only compiles. `qemu/QemuRunIT` (tag `qemu`, opt-in via `-Pqemu`) actually
+  *runs* generated code: programs in `juno-examples/src/test/qemu/programs` plus `ExceptionUnwinding` are built
+  against a bare-metal harness (`src/test/qemu`: stub `Arduino.h`, startup, `run.sh`, Dockerfile) and executed in
+  QEMU `mps2-an386`; output must equal the JVM's, with `src/test/qemu/oracle/.../Serial` shadowing the native
+  `Serial`. Known compiler bugs are listed in its `KNOWN_GAPS` instead of failing the suite.
   See the [Games guide](https://jabrena.github.io/juno/games)
   (`juno-site/src/main/resources/content/games.md`).
 - `juno-site/src/main/resources/content/` – WRITE here: the documentation site's prose, one
@@ -154,6 +159,10 @@ generator that builds the documentation site published to `docs/`.
 
 # Compile every TFT game with the real arduino-cli inside Docker (Testcontainers; needs Docker)
 ./mvnw -f juno-examples/pom.xml -Parduino-cli verify
+
+# Run core-feature programs and the exception example under QEMU (Cortex-M4) in Docker and compare their
+# serial output with a JVM run of the same source (Testcontainers; needs Docker; models no hardware)
+./mvnw -f juno-examples/pom.xml -Pqemu verify
 
 # Flash the generated program; auto-detects one matching board, or accepts -Djuno.port=<PORT>
 ./mvnw -f juno-examples/pom.xml compile juno:upload

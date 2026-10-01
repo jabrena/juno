@@ -54,8 +54,17 @@ rooted on the native call stack.
    switch on an object type id.
 2. **Lambdas and method references (`invokedynamic`).** Non-capturing: lower to a function reference.
    Capturing: generated closure object holding captured fields.
-3. **Exceptions across methods.** Exception state propagated up generated frames (not C++ exceptions). Must make
-   `finally` and try-with-resources `close()` correct.
+3. **Exceptions across methods.** **Done 2026-10-01 (uncommitted).** Verified on the UNO Q (serial output of
+   `ExceptionUnwinding` as expected) and under QEMU (`-Pqemu`, `QemuRunIT`, both boards); UNO R4 WiFi not flashed yet.
+   - Mechanism: a pending-exception global (`juno_pending_exception`) set by `athrow`; a throwing frame returns, and
+     callers poll it only after calls to methods that may unwind (`lowering/ThrowingMethods`, `CallGuard`). Handlers
+     clear it via `juno_throw_catch`; unmatched classes jump to a shared propagate block; the entry point calls
+     `juno_throw_check_escape`. Same shim and backend for both boards. `finally` and try-with-resources `close()` work.
+   - An integer division by zero unwinds to callers (catchable in a caller) when any `catch`/`finally` in the program
+     can receive `ArithmeticException`; otherwise it still panics, with no guard.
+   - Remaining gaps: the pending slot is a single global (the thread runtime needs per-thread state, step 4/5);
+     `addSuppressed` is dropped (a `close()` failure during unwinding is lost); no causes or stack traces.
+   - Still unsupported: compound assignment on array elements (`dup2`; widening the opcode subset needs approval).
 4. **Thread runtime.** `Thread.start/join/sleep/yield` as intrinsics onto a task runtime.
 5. **Multi-stack GC rooting.** Scan every live thread's stack (per-thread stack bounds, saved SP, state, entry point).
 6. **`synchronized` / `ReentrantLock`**, restricted subset.
