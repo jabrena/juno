@@ -78,6 +78,7 @@
     <li><a class="" href="/juno/" ><i class="fa-solid fa-house"></i>Home</a></li>
     <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
     <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
     <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
     <li class="menu-group"><span>Boards</span></li>
     <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
@@ -229,7 +230,8 @@ default.</p>
 <h3 id="printing-runtime-strings">Printing runtime strings</h3>
 <p><code>Serial.print(String)</code>/<code>println(String)</code> also print runtime <code>String</code> values — <code>String.valueOf(...)</code>,
 a <code>StringBuilder</code> result, a JSON string, or an exception's <code>getMessage()</code>. String concatenation with
-<code>+</code> is still unsupported (<code>javac</code> compiles it to <code>invokedynamic</code>), so print computed data in parts:</p>
+<code>+</code> is still unsupported (<code>javac</code> uses the <code>StringConcatFactory</code> <code>invokedynamic</code> bootstrap; Juno only
+accepts lambda/metafactory call sites), so print computed data in parts:</p>
 <pre><code class="language-java">int temperature = /* ... */;
 Serial.print(&quot;Temperature C: &quot;);
 Serial.println(temperature);

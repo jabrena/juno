@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Known Limitations - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Known Limitations" />
+  <meta name="twitter:title" content="Known Limitations">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Known compiler bugs and sharp edges in what Juno compiles today, with workarounds.">
+  <meta property="og:description" content="Known compiler bugs and sharp edges in what Juno compiles today, with workarounds." />
+  <meta name="twitter:description" content="Known compiler bugs and sharp edges in what Juno compiles today, with workarounds.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/limitations/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/limitations/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/limitations/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/juno/limitations/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/juno/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="active" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
+    <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/juno/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/juno/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/juno/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/juno/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/juno/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/juno/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/juno/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/juno/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Known Limitations</h1>
+  <p class="page-header-intro">
+    Known compiler bugs and sharp edges in what Juno compiles today, with workarounds.
+  </p>
+</section>    <div class="content-prose">
+<p>The <a href="/features">Feature Inventory</a> lists what Juno supports. This page lists where reality is narrower than that
+inventory or where the generated code behaves differently from the JVM, so you can design around it. Anything
+outside the supported subset fails at link time with a diagnostic; a <em>known bug</em> would be the exception,
+because it compiles without one.</p>
+<h2 id="known-bugs">Known bugs</h2>
+<p>None open. Bugs the QEMU suite has found are fixed and kept as regression programs; open ones are listed in
+<code>QemuRunIT.KNOWN_GAPS</code>. Fixed so far: <code>long</code> and <code>double</code> parameters, results and fields lost their high word on
+the Thumb-2 path (for example <code>factorial(20)</code> printed <code>2192834560</code>, the low 32 bits, with no diagnostic), and
+<code>long[]</code>, <code>double[]</code> and <code>float[]</code> arrays were rejected by the backend although the inventory listed them.</p>
+<h2 id="compile-time-limits-that-are-easy-to-hit">Compile-time limits that are easy to hit</h2>
+<p>These fail with a <code>CompileException</code>; they are listed because they come up when writing ordinary Java.</p>
+<ul>
+<li><strong>Compound assignment on an array element</strong> (<code>values[i] += x</code>, <code>values[i]++</code>). javac compiles it with <code>dup2</code>, which
+is outside the accepted opcode subset; write <code>values[i] = values[i] + x</code>.</li>
+<li><strong><code>length</code> of an array parameter.</strong> <code>arraylength</code> works only on a local array created once in the same method
+with a constant size. A method that receives an array must also receive its length, and an enhanced <code>for</code>
+over a parameter (which javac compiles to <code>arraylength</code>) is rejected. Use an indexed loop with a count.</li>
+<li><strong>Default and inherited interface methods.</strong> A reachable implementation must declare each interface method
+it is called through directly.</li>
+<li><strong>JDK functional interfaces</strong> such as <code>IntBinaryOperator</code> in signatures. Declare your own interface.</li>
+<li><strong><code>Object</code> in signatures</strong>, which rules out <code>equals(Object)</code> on records and classes when it is reachable.</li>
+<li><strong>String concatenation with <code>+</code></strong> on runtime values (it compiles to <code>invokedynamic</code>).</li>
+</ul>
+<h2 id="exceptions">Exceptions</h2>
+<p>See <a href="/features">Feature Inventory</a> for the supported subset. Beyond it:</p>
+<ul>
+<li>An integer division by zero raises a catchable <code>ArithmeticException</code>, from a callee too, but only when some
+<code>catch</code> or <code>finally</code> in the program can receive it; otherwise it still panics (and costs no guard).</li>
+<li><code>addSuppressed</code> is accepted and dropped, so a <code>close()</code> failure while another exception unwinds is lost.</li>
+<li>Exception causes and stack traces are not modelled.</li>
+</ul>
+<h2 id="how-these-are-found">How these are found</h2>
+<p><code>./mvnw -f juno-examples/pom.xml -Pqemu verify</code> builds each program in <code>juno-examples/src/test/qemu/programs</code>
+with the real generated assembly, runs it in QEMU (Cortex-M4) and requires output identical to the JVM. Known
+bugs are listed in <code>QemuRunIT.KNOWN_GAPS</code> and skipped, so the suite stays green while the bug stays visible.
+The harness models no hardware, so it covers language and runtime behavior only.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

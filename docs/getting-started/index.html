@@ -78,6 +78,7 @@
     <li><a class="" href="/juno/" ><i class="fa-solid fa-house"></i>Home</a></li>
     <li><a class="active" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
     <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
     <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
     <li class="menu-group"><span>Boards</span></li>
     <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
@@ -273,7 +274,7 @@ public final class RedBaron {
 </code></pre>
 <h2 id="supported-java-subset">Supported Java subset</h2>
 <p>Juno deliberately fails at link time when reachable code uses something outside the current
-subset. Diagnostics identify the method, bytecode offset, and unsupported opcode. See
+subset. Diagnostics identify the method, bytecode offset, and unsupported operation/bootstrap. See
 <a href="../features">docs/FEATURES.md</a> for the full, up-to-date inventory of what's supported and
 what isn't.</p>
 <p>Every <code>compile</code> (standalone CLI or <code>juno-maven-plugin</code>'s <code>compile</code>/<code>verify</code>/<code>upload</code> goals) prints
