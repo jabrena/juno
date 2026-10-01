@@ -1606,12 +1606,10 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatArrays", source);
 
-        // The ASM backend does not yet support arrays of float/long/double (see Thumb2AsmBackend's
-        // class doc and the sibling long/double array tests below) -- unlike the retired C++ backend,
-        // which handled every element type uniformly.
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatArrays"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("array element type FLOAT");
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FloatArrays").assembly();
+
+        // Four-byte elements: index scaled by 4, one word moved.
+        assertThat(assembly).contains("lsls r1, r1, #2", "ldr r2, [r0, r1]", "str r2, [r0, r1]");
     }
 
     @Test
@@ -1634,9 +1632,10 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.LongArray", source);
 
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongArray"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("array element type LONG");
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongArray").assembly();
+
+        // Eight-byte elements: index scaled by 8, both words moved.
+        assertThat(assembly).contains("lsls r1, r1, #3", "ldr r3, [r0, #4]", "str r3, [r0, #4]");
     }
 
     @Test
@@ -1932,11 +1931,7 @@ class JunoCompilerTest {
     }
 
     @Test
-    void supportsDoubleArraysAreNotYetSupportedByTheAsmBackend() throws Exception {
-        // Unlike double locals/fields/parameters (see the test above), the ASM backend does not yet
-        // support arrays of double -- same gap as float[] and long[] (see Thumb2AsmBackend's class
-        // doc). This mirrors the retired C++ backend's supportsDoubleLocalsCallsFieldsArraysAndConversions
-        // test, minus the array portion that no longer compiles.
+    void supportsDoubleArraysAcrossCallsAndForwardedReturns() throws Exception {
         String source = """
                 package demo;
                 public final class DoubleArray {
@@ -1952,9 +1947,9 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.DoubleArray", source);
 
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DoubleArray"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("array element type DOUBLE");
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DoubleArray").assembly();
+
+        assertThat(assembly).contains("lsls r1, r1, #3", "str r3, [r0, #4]");
     }
 
     @Test

@@ -34,7 +34,13 @@ final class TerminatorLowering {
                         .append("    b .L").append(label).append("block").append(branch.falseTarget()).append('\n');
             }
             case IrTerminator.Return returned -> {
-                returned.value().ifPresent(value -> asm.load(output, frame, "r0", value));
+                returned.value().ifPresent(value -> {
+                    if (FrameLayout.isWide(value.type())) {
+                        asm.load64(output, frame, "r0", "r1", value);
+                    } else {
+                        asm.load(output, frame, "r0", value);
+                    }
+                });
                 beforeReturn.run();
                 if (frame.frameSize() > 0) {
                     asm.emitLoadImmediate(output, "r12", frame.frameSize());

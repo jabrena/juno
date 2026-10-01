@@ -130,6 +130,8 @@ public final class Thumb2AsmBackend {
     private WideArithmeticLowering wides;
     private ArrayLowering arrays;
     private TerminatorLowering terminators;
+    private CallConvention convention;
+    private FieldAccessLowering fields;
     private IntrinsicLowering intrinsics;
 
     public Thumb2AsmBackend() {
@@ -172,6 +174,8 @@ public final class Thumb2AsmBackend {
         wides = new WideArithmeticLowering(asm, features);
         arrays = new ArrayLowering(asm);
         terminators = new TerminatorLowering(asm);
+        convention = new CallConvention(asm);
+        fields = new FieldAccessLowering(asm, layout);
         CoreRuntime coreRuntime = CoreRuntime.of(board.core());
         intrinsics = new IntrinsicLowering(asm, coreRuntime, features, usedMath);
 
@@ -201,8 +205,7 @@ public final class Thumb2AsmBackend {
         // descriptor's own parameter list never includes — the caller side (BytecodeToIr's lowering
         // of a Call) already prepends the receiver to `arguments()`, so it always arrives as the
         // first incoming word (r0), ahead of any declared parameter.
-        int parameterCount = Descriptor.parse(method.reference().descriptor()).parameters().size()
-                + (method.isStatic() ? 0 : 1);
+        List<String> parameterTypes = Descriptor.parse(method.reference().descriptor()).parameters();
 
         output.append('\n');
         if (isEntryPoint) {
@@ -243,7 +246,7 @@ public final class Thumb2AsmBackend {
             asm.emitLoadImmediate(output, "r12", frame.frameSize());
             output.append("    sub sp, sp, r12\n");
         }
-        emitParameterSpill(output, frame, parameterCount);
+        convention.emitParameterSpill(output, frame, parameterTypes, method.isStatic());
         // Enabled before anything else the program does (including <clinit>, below), so @Watchdog
         // protects the whole program lifetime, not just the user's own main() body.
         if (isEntryPoint && usesWatchdog) {
@@ -284,19 +287,6 @@ public final class Thumb2AsmBackend {
      * function's own prologue that address is {@code frame.frameSize() + AsmEmitter.PUSH_BYTES} higher than the
      * current {@code sp}.
      */
-    private void emitParameterSpill(StringBuilder output, FrameLayout frame, int parameterCount) {
-        for (int i = 0; i < parameterCount; i++) {
-            int localOffset = frame.localOffset(i);
-            if (i < 4) {
-                asm.emitStore(output, "r" + i, localOffset);
-            } else {
-                int callerOffset = frame.frameSize() + AsmEmitter.PUSH_BYTES + (i - 4) * AsmEmitter.WORD;
-                asm.emitLoad(output, "r0", callerOffset);
-                asm.emitStore(output, "r0", localOffset);
-            }
-        }
-    }
-
     private void emitInstruction(StringBuilder output, FrameLayout frame, IrInstruction instruction) {
         switch (instruction) {
             case IrInstruction.Const constant -> {
@@ -332,26 +322,10 @@ public final class Thumb2AsmBackend {
                         .append(nonNull).append(":\n");
             }
             case IrInstruction.NewObject object -> emitNewObject(output, frame, object);
-            case IrInstruction.LoadField load -> {
-                asm.load(output, frame, "r0", load.receiver());
-                output.append("    ldr r1, [r0, #").append(layout.fieldOffset(load.field())).append("]\n");
-                asm.store(output, frame, "r1", load.target());
-            }
-            case IrInstruction.StoreField storeField -> {
-                asm.load(output, frame, "r0", storeField.receiver());
-                asm.load(output, frame, "r1", storeField.value());
-                output.append("    str r1, [r0, #").append(layout.fieldOffset(storeField.field())).append("]\n");
-            }
-            case IrInstruction.LoadStatic load -> {
-                output.append("    ldr r0, =").append(layout.staticSymbol(load.field())).append('\n')
-                        .append("    ldr r0, [r0]\n");
-                asm.store(output, frame, "r0", load.target());
-            }
-            case IrInstruction.StoreStatic storeStatic -> {
-                asm.load(output, frame, "r0", storeStatic.value());
-                output.append("    ldr r1, =").append(layout.staticSymbol(storeStatic.field())).append('\n')
-                        .append("    str r0, [r1]\n");
-            }
+            case IrInstruction.LoadField load -> fields.emitLoadField(output, frame, load);
+            case IrInstruction.StoreField store -> fields.emitStoreField(output, frame, store);
+            case IrInstruction.LoadStatic load -> fields.emitLoadStatic(output, frame, load);
+            case IrInstruction.StoreStatic store -> fields.emitStoreStatic(output, frame, store);
             case IrInstruction.IntArrayConst array -> {
                 output.append("    ldr r0, =").append(layout.intArraySymbol(array)).append('\n');
                 asm.store(output, frame, "r0", array.target());
@@ -520,23 +494,30 @@ public final class Thumb2AsmBackend {
         if (label == null) {
             throw unsupported("call to unresolved method " + method.displayName());
         }
-        int extra = Math.max(0, arguments.size() - 4);
+        List<Integer> words = CallConvention.argumentWordOffsets(frame, arguments);
+        int extra = Math.max(0, words.size() - 4);
         int reserved = AsmEmitter.roundUp(extra * AsmEmitter.WORD, 8);
         if (reserved > 0) {
             output.append("    sub sp, sp, #").append(reserved).append('\n');
-            for (int i = 4; i < arguments.size(); i++) {
-                asm.emitLoad(output, "r0", frame.valueOffset(arguments.get(i)) + reserved);
+            for (int i = 4; i < words.size(); i++) {
+                asm.emitLoad(output, "r0", words.get(i) + reserved);
                 asm.emitStore(output, "r0", (i - 4) * AsmEmitter.WORD);
             }
         }
-        for (int i = 0; i < Math.min(4, arguments.size()); i++) {
-            asm.emitLoad(output, "r" + i, frame.valueOffset(arguments.get(i)) + reserved);
+        for (int i = 0; i < Math.min(4, words.size()); i++) {
+            asm.emitLoad(output, "r" + i, words.get(i) + reserved);
         }
         output.append("    bl ").append(label).append('\n');
         if (reserved > 0) {
             output.append("    add sp, sp, #").append(reserved).append('\n');
         }
-        target.ifPresent(value -> asm.store(output, frame, "r0", value));
+        target.ifPresent(value -> {
+            if (FrameLayout.isWide(value.type())) {
+                asm.store64(output, frame, "r0", "r1", value);
+            } else {
+                asm.store(output, frame, "r0", value);
+            }
+        });
     }
 
     /**

@@ -55,10 +55,15 @@ final class ProgramLayout {
             int offset = header;
             for (FieldRef field : layout.getValue().values()) {
                 fieldOffsets.put(field, offset);
-                offset += AsmEmitter.WORD;
+                offset += fieldWidth(field);
             }
             objectSizes.put(layout.getKey(), Math.max(offset, AsmEmitter.WORD));
         }
+    }
+
+    /** Bytes a field occupies: a {@code long}/{@code double} takes two words, everything else one. */
+    static int fieldWidth(FieldRef field) {
+        return field.descriptor().equals("J") || field.descriptor().equals("D") ? 2 * AsmEmitter.WORD : AsmEmitter.WORD;
     }
 
     private void collect(Map<String, TreeMap<String, FieldRef>> layouts, IrInstruction instruction) {
@@ -155,9 +160,9 @@ final class ProgramLayout {
         }
         output.append("    .bss\n")
                 .append("    .align 2\n");
-        for (String symbol : staticSymbols.values()) {
-            output.append(symbol).append(":\n")
-                    .append("    .space 4\n");
+        for (Map.Entry<FieldRef, String> entry : staticSymbols.entrySet()) {
+            output.append(entry.getValue()).append(":\n")
+                    .append("    .space ").append(fieldWidth(entry.getKey())).append('\n');
         }
     }
 
