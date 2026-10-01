@@ -14,6 +14,7 @@ import java.util.Set;
  * those (reset at the start of each block, since stack slots are reused as depth rises and falls).
  */
 final class ValueTracking {
+        private boolean divisionByZeroUnwinds;
         private final Map<Value, Integer> arrayLength = new HashMap<>();
         private final Set<Value> parameterForwarded = new HashSet<>();
         private final Map<Value, RecordInstance> recordOf = new HashMap<>();
@@ -23,6 +24,15 @@ final class ValueTracking {
         private Map<Integer, RecordInstance> currentStackSlotRecord = new HashMap<>();
         private Map<Integer, String> currentStackSlotString = new HashMap<>();
         private Map<Integer, JunoType> currentStackSlotType = new HashMap<>();
+
+        /** Whether an integer division by zero with no local handler raises an exception for callers to catch. */
+        void unwindDivisionByZero(boolean unwinds) {
+            divisionByZeroUnwinds = unwinds;
+        }
+
+        boolean divisionByZeroUnwinds() {
+            return divisionByZeroUnwinds;
+        }
 
         void startBlock() {
             currentStackSlotLength = new HashMap<>();

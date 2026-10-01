@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.analysis;
 
-import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
@@ -21,7 +20,7 @@ final class IrCyclicBlocks {
     static Set<Integer> cyclicBlocks(IrMethod method) {
         Map<Integer, List<Integer>> edges = new HashMap<>();
         for (IrBasicBlock block : method.blocks()) {
-            // A panic or uncaught throw never returns; the self-jump after it only terminates the block.
+            // A panic never returns; the self-jump after it only terminates the block.
             edges.put(block.start(), endsInNoReturnCall(block) ? List.of() : successors(block.terminator()));
         }
         Set<Integer> cyclic = new HashSet<>();
@@ -42,8 +41,7 @@ final class IrCyclicBlocks {
             return false;
         }
         IrInstruction last = instructions.get(instructions.size() - 1);
-        return last instanceof IrInstruction.Panic
-                || (last instanceof IrInstruction.IntrinsicCall call && call.intrinsic() == Intrinsic.THROW_UNCAUGHT);
+        return last instanceof IrInstruction.Panic;
     }
 
     private static List<Integer> successors(IrTerminator terminator) {

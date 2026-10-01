@@ -527,11 +527,36 @@ final class ShimLibraries {
                   juno_panic();
                 }
 
-                extern "C" int32_t juno_throw_dispatch(int32_t exception, int32_t caughtMask) {
+                // The exception unwinding through generated frames: set by athrow, left set while frames
+                // return, cleared when a handler takes it. Callers poll it after calls that can throw.
+                static int32_t juno_pending_exception = 0;
+
+                extern "C" void juno_throw_raise(int32_t exception) {
                   if (exception == 0) juno_throw_uncaught(exception);
-                  int32_t classId = reinterpret_cast<const int32_t*>(static_cast<intptr_t>(exception))[${JUNO_CLASS_ID_WORD}];
-                  if ((static_cast<uint32_t>(caughtMask) >> classId & 1u) == 0u) juno_throw_uncaught(exception);
+                  juno_pending_exception = exception;
+                }
+
+                extern "C" int32_t juno_throw_pending() {
+                  return juno_pending_exception;
+                }
+
+                // Class id of the pending exception if caughtMask has its bit (and clears it), else -1.
+                extern "C" int32_t juno_throw_catch(int32_t caughtMask) {
+                  int32_t classId = reinterpret_cast<const int32_t*>(
+                      static_cast<intptr_t>(juno_pending_exception))[${JUNO_CLASS_ID_WORD}];
+                  if ((static_cast<uint32_t>(caughtMask) >> classId & 1u) == 0u) return -1;
+                  juno_pending_exception = 0;
                   return classId;
+                }
+
+                extern "C" int32_t juno_throw_dispatch(int32_t exception, int32_t caughtMask) {
+                  juno_throw_raise(exception);
+                  return juno_throw_catch(caughtMask);
+                }
+
+                // Called where the entry point returns: an exception still pending has no handler left.
+                extern "C" void juno_throw_check_escape() {
+                  if (juno_pending_exception != 0) juno_throw_uncaught(juno_pending_exception);
                 }
                 """.replace("${JUNO_THROWABLE_NAMES}", names.toString())
                 .replace("${JUNO_CLASS_ID_WORD}", Integer.toString(ThrowableTypes.CLASS_ID_OFFSET / AsmEmitter.WORD))

@@ -62,9 +62,9 @@ class ExceptionsTest {
         // Both handlers survive dead-block elimination, so each is reachable from a throw.
         assertThat(count(check, Intrinsic.THROWABLE_GET_MESSAGE)).isEqualTo(2);
         assertThat(count(check, Intrinsic.THROW_DISPATCH)).isEqualTo(2);
-        assertThat(count(check, Intrinsic.THROW_UNCAUGHT)).isZero();
+        assertThat(count(check, Intrinsic.THROW_RAISE)).isZero();
         // Every throw is caught by a specific clause, so finally's catch-any rethrow path is dead.
-        assertThat(result.assembly()).contains("bl juno_throw_dispatch").doesNotContain("bl juno_throw_uncaught");
+        assertThat(result.assembly()).contains("bl juno_throw_dispatch").doesNotContain("bl juno_throw_raise");
         assertThat(result.runtimeShim()).contains(
                 "  \"java.lang.IllegalArgumentException\",\n  \"java.lang.IllegalStateException\",\n",
                 "extern \"C\" int32_t juno_throw_dispatch(int32_t exception, int32_t caughtMask)",
@@ -123,7 +123,7 @@ class ExceptionsTest {
 
         // The throw reaches finally's catch-any handler, whose rethrow nothing encloses.
         assertThat(count(main, Intrinsic.THROW_DISPATCH)).isEqualTo(1);
-        assertThat(count(main, Intrinsic.THROW_UNCAUGHT)).isEqualTo(1);
+        assertThat(count(main, Intrinsic.THROW_RAISE)).isEqualTo(1);
         assertThat(count(main, Intrinsic.SERIAL_PRINTLN_STRING)).isEqualTo(1);
     }
 
@@ -152,7 +152,7 @@ class ExceptionsTest {
 
         // throw -> inner finally handler; its rethrow -> outer catch. Nothing escapes.
         assertThat(count(main, Intrinsic.THROW_DISPATCH)).isEqualTo(2);
-        assertThat(count(main, Intrinsic.THROW_UNCAUGHT)).isZero();
+        assertThat(count(main, Intrinsic.THROW_RAISE)).isZero();
         assertThat(count(main, Intrinsic.THROWABLE_GET_MESSAGE)).isEqualTo(1);
     }
 
@@ -176,10 +176,10 @@ class ExceptionsTest {
         IrMethod main = method(optimized("demo.Uncaught"), "main");
         String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Uncaught").assembly();
 
-        assertThat(count(main, Intrinsic.THROW_UNCAUGHT)).isEqualTo(1);
+        assertThat(count(main, Intrinsic.THROW_RAISE)).isEqualTo(1);
         assertThat(count(main, Intrinsic.THROW_DISPATCH)).isZero();
         assertThat(count(main, Intrinsic.THROWABLE_GET_MESSAGE)).as("the handler is unreachable").isZero();
-        assertThat(assembly).contains("bl juno_throw_uncaught").doesNotContain("bl juno_throw_dispatch");
+        assertThat(assembly).contains("bl juno_throw_raise", "bl juno_throw_check_escape").doesNotContain("bl juno_throw_dispatch");
     }
 
     @Test
@@ -264,9 +264,11 @@ class ExceptionsTest {
         assertThat(newObjects(ratio, "java/lang/ArithmeticException")).isEqualTo(1);
         assertThat(count(ratio, Intrinsic.THROWABLE_GET_MESSAGE)).as("the handler is reachable").isEqualTo(1);
         assertThat(newObjects(method(program, "wideRemainder"), "java/lang/ArithmeticException")).isEqualTo(1);
-        // No handler catches ArithmeticException here (or in main): a zero divisor still panics.
-        assertThat(newObjects(method(program, "unguarded"), "java/lang/ArithmeticException")).isZero();
-        assertThat(newObjects(method(program, "main"), "java/lang/ArithmeticException")).isZero();
+        // Some handler in the program catches ArithmeticException, so a zero divisor elsewhere (no local handler
+        // here, or in main) raises it and unwinds to the caller instead of panicking.
+        assertThat(newObjects(method(program, "unguarded"), "java/lang/ArithmeticException")).isEqualTo(1);
+        assertThat(count(method(program, "unguarded"), Intrinsic.THROW_RAISE)).isEqualTo(1);
+        assertThat(newObjects(method(program, "main"), "java/lang/ArithmeticException")).isEqualTo(1);
         assertThat(result.assembly()).contains(".asciz \"/ by zero\"");
     }
 

@@ -36,7 +36,9 @@ final class InvokeLowering {
                 ? lowerEnumOrdinal(instructions, stackBase, depth, nextValueId, tracking)
                 : ThrowableTypes.isGetMessage(called, classes)
                         ? lowerGetMessage(instructions, stackBase, depth, nextValueId, tracking)
-                        : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
+                        : ThrowableTypes.isAddSuppressed(called, classes)
+                                ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId, tracking)
+                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
     }
 
     static Lowered lowerInvokeSpecial(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,

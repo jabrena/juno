@@ -33,7 +33,9 @@ final class ControlFlowLowering {
     private ControlFlowLowering() {
     }
     static final BitSet CONDITIONAL_BRANCH_OPCODES = bitSetOf(
-            153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 198, 199);    static final int SYNTHETIC_BLOCK_BASE = 0x10000;    static final String ARITHMETIC_EXCEPTION = "java/lang/ArithmeticException";    static ControlLowered lowerControlFlow(LinkedMethod linked, Instruction instruction, int opcode,
+            153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 198, 199);    static final int SYNTHETIC_BLOCK_BASE = 0x10000;    /** Continuation/dispatch blocks after a call that may throw (see {@link CallGuard}). */
+    static final int CALL_BLOCK_BASE = 0x40000;    /** The shared block that returns from a frame with the pending exception still set. */
+    static final int PROPAGATE_BLOCK = 0x7FFFFFF0;    static final String ARITHMETIC_EXCEPTION = "java/lang/ArithmeticException";    static ControlLowered lowerControlFlow(LinkedMethod linked, Instruction instruction, int opcode,
                                             BasicBlock block, List<IrInstruction> instructions, int stackBase,
                                             int depth, int nextValueId, ValueTracking tracking,
                                             Map<String, JavaClass> classes, List<String> throwableClasses) {
@@ -187,9 +189,10 @@ final class ControlFlowLowering {
         return opcode == 108 || opcode == 109 || opcode == 112 || opcode == 113;
     }    static DivisorGuard guardZeroDivisor(LinkedMethod linked, Instruction instruction, boolean wide, int blockStart,
                                           List<IrInstruction> instructions, List<IrBasicBlock> blocks, int stackBase,
-                                          int depth, int nextValueId, Map<String, JavaClass> classes) {
+                                          int depth, int nextValueId, Map<String, JavaClass> classes,
+                                          ValueTracking tracking) {
         Integer handler = arithmeticHandler(linked, instruction.offset(), classes);
-        if (handler == null) {
+        if (handler == null && !tracking.divisionByZeroUnwinds()) {
             return new DivisorGuard(nextValueId, blockStart);
         }
         Value divisor;
@@ -221,41 +224,66 @@ final class ControlFlowLowering {
                 new IrInstruction.StringConst(message, "/ by zero"),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.THROWABLE_SET_MESSAGE,
                         Optional.of(exception), List.of(message), List.of()),
-                new IrInstruction.StoreLocal(stackBase, exception)),
-                new IrTerminator.Jump(handler)));
+                handler == null
+                        ? new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.THROW_RAISE, Optional.empty(),
+                                List.of(exception), List.of())
+                        : new IrInstruction.StoreLocal(stackBase, exception)),
+                new IrTerminator.Jump(handler == null ? PROPAGATE_BLOCK : handler)));
         return new DivisorGuard(nextValueId, continuation);
-    }    static Thrown lowerThrow(LinkedMethod linked, Instruction instruction, BasicBlock block, Value thrown,
-                              List<IrInstruction> instructions, int stackBase, int nextValueId,
-                              ValueTracking tracking, Map<String, JavaClass> classes, List<String> throwableClasses) {
+    }    static Map<Integer, Integer> handlersByClassId(LinkedMethod linked, int offset,
+                                                    Map<String, JavaClass> classes, List<String> throwableClasses) {
         Map<Integer, Integer> handlerByClassId = new TreeMap<>();
         for (int classId = 0; classId < throwableClasses.size(); classId++) {
             for (ExceptionHandler handler : linked.method().exceptionHandlers()) {
-                if (handler.covers(instruction.offset()) && (handler.catchesAny()
+                if (handler.covers(offset) && (handler.catchesAny()
                         || ThrowableTypes.isSubtype(throwableClasses.get(classId), handler.catchType(), classes))) {
                     handlerByClassId.put(classId, handler.handlerPc());
                     break;
                 }
             }
         }
-        if (handlerByClassId.isEmpty()) {
-            instructions.add(new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.THROW_UNCAUGHT,
-                    Optional.empty(), List.of(thrown), List.of()));
-            return new Thrown(new IrTerminator.Jump(block.start()), nextValueId);
-        }
-        storeToStack(instructions, stackBase, 0, thrown, tracking);
+        return handlerByClassId;
+    }
+
+    /** Value of the exception-class mask passed to {@code THROW_DISPATCH}/{@code THROW_CATCH}. */
+    static int caughtMask(Map<Integer, Integer> handlerByClassId) {
         int caughtMask = 0;
         for (int classId : handlerByClassId.keySet()) {
             caughtMask |= 1 << classId;
         }
+        return caughtMask;
+    }
+
+    /**
+     * Routes a caught exception's class id to its handler. A class no handler matches keeps unwinding: the
+     * default edge goes to the shared {@link #PROPAGATE_BLOCK}, unless every thrown class is caught.
+     */
+    static IrTerminator dispatchTerminator(Map<Integer, Integer> handlerByClassId, int classCount, Value classId) {
+        List<Integer> keys = List.copyOf(handlerByClassId.keySet());
+        List<Integer> targets = keys.stream().map(handlerByClassId::get).toList();
+        if (handlerByClassId.size() == classCount) {
+            return Set.copyOf(targets).size() == 1
+                    ? new IrTerminator.Jump(targets.get(0))
+                    : new IrTerminator.Switch(classId, keys, targets, targets.get(0));
+        }
+        return new IrTerminator.Switch(classId, keys, targets, PROPAGATE_BLOCK);
+    }
+
+    static Thrown lowerThrow(LinkedMethod linked, Instruction instruction, BasicBlock block, Value thrown,
+                              List<IrInstruction> instructions, int stackBase, int nextValueId,
+                              ValueTracking tracking, Map<String, JavaClass> classes, List<String> throwableClasses) {
+        Map<Integer, Integer> handlerByClassId = handlersByClassId(linked, instruction.offset(), classes,
+                throwableClasses);
+        if (handlerByClassId.isEmpty()) {
+            instructions.add(new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.THROW_RAISE,
+                    Optional.empty(), List.of(thrown), List.of()));
+            return new Thrown(new IrTerminator.Return(Optional.empty()), nextValueId);
+        }
+        storeToStack(instructions, stackBase, 0, thrown, tracking);
         Value mask = Value.int32(nextValueId++);
-        instructions.add(new IrInstruction.Const(mask, caughtMask));
+        instructions.add(new IrInstruction.Const(mask, caughtMask(handlerByClassId)));
         Value classId = Value.int32(nextValueId++);
         instructions.add(new IrInstruction.IntrinsicCall(Optional.of(classId), Intrinsic.THROW_DISPATCH,
                 Optional.empty(), List.of(thrown, mask), List.of()));
-        List<Integer> keys = List.copyOf(handlerByClassId.keySet());
-        List<Integer> targets = keys.stream().map(handlerByClassId::get).toList();
-        if (Set.copyOf(targets).size() == 1) {
-            return new Thrown(new IrTerminator.Jump(targets.get(0)), nextValueId);
-        }
-        return new Thrown(new IrTerminator.Switch(classId, keys, targets, targets.get(0)), nextValueId);
+        return new Thrown(dispatchTerminator(handlerByClassId, throwableClasses.size(), classId), nextValueId);
     }}

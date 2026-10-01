@@ -99,4 +99,13 @@ public final class ThrowableTypes {
         }
         return true;
     }
+
+    /**
+     * {@code addSuppressed(Throwable)}, which javac emits in try-with-resources when {@code close()} also throws.
+     * Juno keeps no suppressed list, so the call is dropped and the primary exception propagates unchanged.
+     */
+    public static boolean isAddSuppressed(MethodRef called, Map<String, JavaClass> classes) {
+        return called.name().equals("addSuppressed") && called.descriptor().equals("(Ljava/lang/Throwable;)V")
+                && isThrowable(called.owner(), classes);
+    }
 }

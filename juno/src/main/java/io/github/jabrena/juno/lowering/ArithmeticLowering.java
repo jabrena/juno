@@ -120,7 +120,7 @@ final class ArithmeticLowering {
 
                     case 108 -> {
                         DivisorGuard guard = guardZeroDivisor(linked, instruction, false, irBlockStart,
-                                instructions, blocks, stackBase, depth, nextValueId, classes);
+                                instructions, blocks, stackBase, depth, nextValueId, classes, tracking);
                         nextValueId = guard.nextValueId();
                         irBlockStart = guard.blockStart();
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
@@ -129,7 +129,7 @@ final class ArithmeticLowering {
 
                     case 109 -> {
                         DivisorGuard guard = guardZeroDivisor(linked, instruction, true, irBlockStart,
-                                instructions, blocks, stackBase, depth, nextValueId, classes);
+                                instructions, blocks, stackBase, depth, nextValueId, classes, tracking);
                         nextValueId = guard.nextValueId();
                         irBlockStart = guard.blockStart();
                         nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.DIVIDE, tracking);
@@ -150,7 +150,7 @@ final class ArithmeticLowering {
 
                     case 112 -> {
                         DivisorGuard guard = guardZeroDivisor(linked, instruction, false, irBlockStart,
-                                instructions, blocks, stackBase, depth, nextValueId, classes);
+                                instructions, blocks, stackBase, depth, nextValueId, classes, tracking);
                         nextValueId = guard.nextValueId();
                         irBlockStart = guard.blockStart();
                         nextValueId = pushBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);
@@ -159,7 +159,7 @@ final class ArithmeticLowering {
 
                     case 113 -> {
                         DivisorGuard guard = guardZeroDivisor(linked, instruction, true, irBlockStart,
-                                instructions, blocks, stackBase, depth, nextValueId, classes);
+                                instructions, blocks, stackBase, depth, nextValueId, classes, tracking);
                         nextValueId = guard.nextValueId();
                         irBlockStart = guard.blockStart();
                         nextValueId = pushLongBinary(instructions, stackBase, depth, nextValueId, BinaryOp.REMAINDER, tracking);

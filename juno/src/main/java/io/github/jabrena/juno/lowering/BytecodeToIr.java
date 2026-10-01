@@ -97,6 +97,8 @@ import java.util.stream.Collectors;
 public final class BytecodeToIr {
     private final BytecodeDecoder decoder = new BytecodeDecoder();
     private final Map<String, List<FieldInfo>> validatedRecords = new HashMap<>();
+    /** Set by {@link #lower(Program)}: some handler in the program can catch an {@code ArithmeticException}. */
+    private boolean divisionByZeroUnwinds;
 
     // Opcodes grouped by which lower* helper handles them, so the per-instruction dispatch in lower()
     // is a handful of set-membership checks instead of one huge switch spanning every opcode.
@@ -132,15 +134,39 @@ public final class BytecodeToIr {
 
 
     public IrProgram lower(Program program) {
+        divisionByZeroUnwinds = anyHandlerCatchesArithmetic(program.methods(), program.classes());
         List<String> throwableClasses = throwableClasses(program.methods(), program.classes());
         Map<String, Integer> objectTypeIds = objectTypeIds(program.interfaceDispatches(), throwableClasses);
-        List<IrMethod> methods = new ArrayList<>();
-        for (LinkedMethod linked : program.methods()) {
-            methods.add(lower(linked, program.classes(), throwableClasses, program.interfaceDispatches(),
-                    objectTypeIds, program.lambdaSites()));
+        List<IrMethod> methods = lowerMethods(program, throwableClasses, objectTypeIds, Set.of());
+        // A first pass without call guards shows which methods can unwind with an exception; only calls to
+        // those get a pending-exception poll, so programs that never throw across a call lower unchanged.
+        Set<MethodRef> throwing = ThrowingMethods.of(methods);
+        if (!throwing.isEmpty()) {
+            methods = lowerMethods(program, throwableClasses, objectTypeIds, throwing);
         }
         return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis(),
                 throwableClasses, objectTypeIds);
+    }
+
+    /**
+     * Whether any {@code catch} or {@code finally} in the program can receive an {@code ArithmeticException}. Only
+     * then does a division by zero outside a local handler raise one for callers; otherwise it keeps panicking and
+     * costs no guard.
+     */
+    private static boolean anyHandlerCatchesArithmetic(List<LinkedMethod> methods, Map<String, JavaClass> classes) {
+        return methods.stream().anyMatch(linked -> linked.method().exceptionHandlers().stream()
+                .anyMatch(handler -> handler.catchesAny()
+                        || ThrowableTypes.isSubtype(ARITHMETIC_EXCEPTION, handler.catchType(), classes)));
+    }
+
+    private List<IrMethod> lowerMethods(Program program, List<String> throwableClasses,
+                                        Map<String, Integer> objectTypeIds, Set<MethodRef> throwing) {
+        List<IrMethod> methods = new ArrayList<>();
+        for (LinkedMethod linked : program.methods()) {
+            methods.add(lower(linked, program.classes(), throwableClasses, program.interfaceDispatches(),
+                    objectTypeIds, program.lambdaSites(), throwing));
+        }
+        return methods;
     }
 
     private Map<String, Integer> objectTypeIds(Map<InterfaceCallSite, InterfaceDispatch> dispatches,
@@ -180,7 +206,7 @@ public final class BytecodeToIr {
                     }
                 }
                 if (isIntegerDivision(instruction.opcode())
-                        && arithmeticHandler(linked, instruction.offset(), classes) != null) {
+                        && (divisionByZeroUnwinds || arithmeticHandler(linked, instruction.offset(), classes) != null)) {
                     names.add(ARITHMETIC_EXCEPTION);
                 }
             }
@@ -198,13 +224,13 @@ public final class BytecodeToIr {
     }
 
     public IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes) {
-        return lower(linked, classes, throwableClasses(List.of(linked), classes), Map.of(), Map.of(), Map.of());
+        return lower(linked, classes, throwableClasses(List.of(linked), classes), Map.of(), Map.of(), Map.of(), Set.of());
     }
 
     private IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes, List<String> throwableClasses,
                            Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
                            Map<String, Integer> objectTypeIds,
-                           Map<LambdaCallSite, LambdaSite> lambdaSites) {
+                           Map<LambdaCallSite, LambdaSite> lambdaSites, Set<MethodRef> throwing) {
         int stackBase = linked.method().maxLocals();
         Descriptor methodDescriptor = Descriptor.parse(linked.method().descriptor());
         Map<Integer, Integer> entryDepths = computeEntryDepths(linked);
@@ -214,6 +240,7 @@ public final class BytecodeToIr {
         Map<Integer, RecordInstance> slotRecordInstance = new HashMap<>();
         Map<Integer, String> slotStringInstance = new HashMap<>();
         ValueTracking tracking = new ValueTracking();
+        tracking.unwindDivisionByZero(divisionByZeroUnwinds);
         List<ArrayDeclaration> arrayDeclarations = new ArrayList<>();
         List<IrBasicBlock> blocks = new ArrayList<>();
         int nextValueId = 0;
@@ -229,7 +256,7 @@ public final class BytecodeToIr {
                 InstructionLowering lowered = lowerInstruction(linked, instruction, opcode, block, irBlockStart,
                         blocks, instructions, stackBase, depth, nextValueId, tracking, classes, throwableClasses,
                         slotArrayLength, arrayParameterSlots, slotRecordInstance, slotStringInstance,
-                        singleAssignmentLocals, arrayDeclarations, interfaceDispatches, objectTypeIds, lambdaSites);
+                        singleAssignmentLocals, arrayDeclarations, interfaceDispatches, objectTypeIds, lambdaSites, throwing);
                 nextValueId = lowered.nextValueId();
                 depth = lowered.depth();
                 irBlockStart = lowered.irBlockStart();
@@ -242,6 +269,7 @@ public final class BytecodeToIr {
             }
             blocks.add(new IrBasicBlock(irBlockStart, List.copyOf(instructions), terminator));
         }
+        CallGuard.propagateBlock(blocks).ifPresent(blocks::add);
         return IrMethod.withInferredValues(linked.method().reference(), linked.method().isStatic(),
                 stackBase + linked.method().maxStack(),
                 nextValueId, List.copyOf(arrayDeclarations), List.copyOf(blocks));
@@ -268,7 +296,8 @@ public final class BytecodeToIr {
                                                  List<ArrayDeclaration> arrayDeclarations,
                                                  Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
                                                  Map<String, Integer> objectTypeIds,
-                                                 Map<LambdaCallSite, LambdaSite> lambdaSites) {
+                                                 Map<LambdaCallSite, LambdaSite> lambdaSites,
+                                                 Set<MethodRef> throwing) {
         if (STACK_OP_OPCODES.get(opcode)) {
             return InstructionLowering.of(ConstAndLoadLowering.lowerStackOp(linked, instruction, opcode, instructions, stackBase, depth,
                     nextValueId, tracking, slotArrayLength, arrayParameterSlots, slotRecordInstance,
@@ -294,28 +323,12 @@ public final class BytecodeToIr {
             return InstructionLowering.of(FieldLowering.lowerFieldStore(linked, instruction, instructions, stackBase,
                     depth, nextValueId, tracking, classes), irBlockStart);
         }
-        if (opcode == 182) {
-            return InstructionLowering.of(lowerInvokeVirtual(linked, instruction, instructions, stackBase, depth,
-                    nextValueId, tracking, classes), irBlockStart);
-        }
-        if (opcode == 183) {
-            return InstructionLowering.of(lowerInvokeSpecial(linked, instruction, instructions, stackBase, depth,
-                    nextValueId, tracking, classes), irBlockStart);
-        }
-        if (opcode == 184) {
-            return InstructionLowering.of(lowerInvokeStatic(linked, instruction, instructions, stackBase, depth,
-                    nextValueId, tracking, classes), irBlockStart);
-        }
-        if (opcode == 185) {
-            InterfaceCallSite callSite = new InterfaceCallSite(linked.method().reference(), instruction.offset());
-            InterfaceDispatch dispatch = interfaceDispatches.get(callSite);
-            if (dispatch == null) {
-                throw new CompileException("Missing linked interface dispatch for "
-                        + linked.method().reference().displayName() + " at bytecode offset "
-                        + instruction.offset());
-            }
-            return InstructionLowering.of(lowerInvokeInterface(linked, instruction, instructions, stackBase, depth,
-                    nextValueId, tracking, dispatch, objectTypeIds), irBlockStart);
+        if (opcode >= 182 && opcode <= 185) {
+            int firstNew = instructions.size();
+            Lowered invoked = lowerInvoke(linked, instruction, opcode, instructions, stackBase, depth, nextValueId,
+                    tracking, classes, interfaceDispatches, objectTypeIds);
+            return CallGuard.guard(InstructionLowering.of(invoked, irBlockStart), firstNew, linked, instruction,
+                    blocks, instructions, stackBase, irBlockStart, throwing, classes, throwableClasses);
         }
         if (opcode == 186) {
             LambdaCallSite callSite = new LambdaCallSite(linked.method().reference(), instruction.offset());
@@ -342,6 +355,33 @@ public final class BytecodeToIr {
 
 
 
+
+    private Lowered lowerInvoke(LinkedMethod linked, Instruction instruction, int opcode,
+                                List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
+                                ValueTracking tracking, Map<String, JavaClass> classes,
+                                Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
+                                Map<String, Integer> objectTypeIds) {
+        return switch (opcode) {
+            case 182 -> lowerInvokeVirtual(linked, instruction, instructions, stackBase, depth, nextValueId,
+                    tracking, classes);
+            case 183 -> lowerInvokeSpecial(linked, instruction, instructions, stackBase, depth, nextValueId,
+                    tracking, classes);
+            case 184 -> lowerInvokeStatic(linked, instruction, instructions, stackBase, depth, nextValueId,
+                    tracking, classes);
+            default -> {
+                InterfaceCallSite callSite = new InterfaceCallSite(linked.method().reference(),
+                        instruction.offset());
+                InterfaceDispatch dispatch = interfaceDispatches.get(callSite);
+                if (dispatch == null) {
+                    throw new CompileException("Missing linked interface dispatch for "
+                            + linked.method().reference().displayName() + " at bytecode offset "
+                            + instruction.offset());
+                }
+                yield lowerInvokeInterface(linked, instruction, instructions, stackBase, depth, nextValueId,
+                        tracking, dispatch, objectTypeIds);
+            }
+        };
+    }
 
     /** Constant-push and local-load opcodes (0-45): {@code iconst_*}/{@code ldc}/{@code *load*}. */
 

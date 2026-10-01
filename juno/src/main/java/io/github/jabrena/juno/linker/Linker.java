@@ -199,6 +199,7 @@ public final class Linker {
                 && !isRuntimeBaseConstructor(called)
                 && !ThrowableTypes.isBuiltInConstructor(called)
                 && !ThrowableTypes.isGetMessage(called, classes)
+                && !ThrowableTypes.isAddSuppressed(called, classes)
                 && !isEnumOperation(classes, called)
                 && !isCompileTimeGetenv(called)
                 && !SupportedJdkMethods.isRequireNonNull(called);

@@ -153,8 +153,9 @@ final class IntrinsicLowering {
         });
         shim(Intrinsic.THROW_DISPATCH, "juno_throw_dispatch", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.EXCEPTIONS);
-        shim(Intrinsic.THROW_UNCAUGHT, "juno_throw_uncaught", Result.NONE, List.of(arg(0)),
-                ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.THROW_RAISE, "juno_throw_raise", Result.NONE, List.of(arg(0)), ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.THROW_PENDING, "juno_throw_pending", Result.WORD, List.of(), ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.THROW_CATCH, "juno_throw_catch", Result.WORD, List.of(arg(0)), ShimFeature.EXCEPTIONS);
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */
