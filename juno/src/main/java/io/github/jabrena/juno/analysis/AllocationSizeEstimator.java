@@ -33,6 +33,9 @@ final class AllocationSizeEstimator {
             int alignment = objectAlignment(classes.get(object.className()));
             return allocationUpperBound(size, alignment);
         }
+        if (instruction instanceof IrInstruction.LambdaCreate lambda && lambda.site().isCapturing()) {
+            return allocationUpperBound((1 + lambda.captures().size()) * Integer.BYTES, Integer.BYTES);
+        }
         if (instruction instanceof IrInstruction.NewMultiArray array) {
             return multiArrayBytes(array.leafType(), array.dimensions());
         }
@@ -73,6 +76,8 @@ final class AllocationSizeEstimator {
                                     + (call.receiver().isPresent() ? 1 : 0)) * 4;
                     case IrInstruction.InterfaceCall call -> call.arguments().stream()
                             .mapToInt(argument -> argument.type().jvmSlots()).sum() * 4;
+                    case IrInstruction.LambdaCall call -> (call.arguments().size()
+                            + call.site().captureTypes().size()) * 4;
                     case IrInstruction.LongBinary ignored -> 24;
                     case IrInstruction.LongShift ignored -> 16;
                     case IrInstruction.LongNegate ignored -> 8;

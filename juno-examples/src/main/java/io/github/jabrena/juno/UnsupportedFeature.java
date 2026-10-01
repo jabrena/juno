@@ -2,9 +2,10 @@ package io.github.jabrena.juno;
 
 /**
  * Deliberately outside Juno's supported subset: string concatenation with {@code +} compiles to
- * {@code invokedynamic} (opcode 0xba), which Juno does not lower. {@code javac} accepts this class
- * like any other; only {@code juno:compile} rejects it, with a diagnostic naming the method,
- * bytecode offset, and opcode. See the README's Supported Java subset section.
+ * {@code invokedynamic} using {@code StringConcatFactory}, which Juno does not lower. Juno accepts
+ * {@code invokedynamic} only for lambdas and method references bootstrapped by
+ * {@code LambdaMetafactory.metafactory}. {@code javac} accepts this class like any other; only
+ * {@code juno:compile} rejects it with a diagnostic naming the method and bytecode offset.
  */
 public final class UnsupportedFeature {
     private UnsupportedFeature() {

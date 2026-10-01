@@ -7,6 +7,7 @@ import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.classfile.InvokeDynamicRef;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
@@ -122,6 +123,12 @@ final class ConstantAndStackSupport {
                         + (opcode == 182 || opcode == 183 || opcode == 185 ? 1 : 0);
                 int produced = Descriptor.jvmSlots(descriptor.returnType());
                 yield produced - consumed;
+            }
+            case 186 -> {
+                InvokeDynamicRef dynamic = linked.owner().constantPool().invokeDynamic(instruction.operandA());
+                Descriptor descriptor = Descriptor.parse(dynamic.descriptor());
+                int consumed = descriptor.parameters().stream().mapToInt(Descriptor::jvmSlots).sum();
+                yield Descriptor.jvmSlots(descriptor.returnType()) - consumed;
             }
             default -> throw new CompileException("Juno IR lowering does not support opcode " + opcode);
         };

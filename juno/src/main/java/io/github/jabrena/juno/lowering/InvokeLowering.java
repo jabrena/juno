@@ -11,6 +11,7 @@ import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
+import io.github.jabrena.juno.linker.SupportedJdkMethods;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.InterfaceTarget;
@@ -62,7 +63,9 @@ final class InvokeLowering {
         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
         return isEnumValues(classes, called)
                 ? lowerEnumValues(called, instructions, stackBase, depth, nextValueId, tracking, classes)
-                : MiscIntrinsicLowering.isCompileTimeGetenv(called)
+                        : SupportedJdkMethods.isRequireNonNull(called)
+                        ? JdkInvokeLowering.lowerRequireNonNull(instructions, stackBase, depth, nextValueId, tracking)
+                        : MiscIntrinsicLowering.isCompileTimeGetenv(called)
                         ? MiscIntrinsicLowering.lowerCompileTimeGetenv(linked, instruction, instructions, stackBase,
                                 depth, nextValueId, tracking)
                         : MiscIntrinsicLowering.isDrawTextCall(called)
@@ -77,11 +80,16 @@ final class InvokeLowering {
                                         int nextValueId, ValueTracking tracking, InterfaceDispatch dispatch,
                                         Map<String, Integer> objectTypeIds) {
         if (dispatch.targets().size() == 1) {
-            return lowerResolvedCall(linked, instruction, dispatch.targets().getFirst().method(), true, List.of(),
-                    instructions, stackBase, depth, nextValueId, tracking);
+            InterfaceDispatch.Target target = dispatch.targets().getFirst();
+            return target.isLambda()
+                    ? LambdaLowering.lowerCall(linked, instruction, target.lambda(), instructions, stackBase, depth,
+                            nextValueId, tracking)
+                    : lowerResolvedCall(linked, instruction, target.method(), true, List.of(),
+                            instructions, stackBase, depth, nextValueId, tracking);
         }
         List<InterfaceTarget> targets = dispatch.targets().stream()
-                .map(target -> new InterfaceTarget(objectTypeIds.get(target.className()), target.method()))
+                .map(target -> new InterfaceTarget(objectTypeIds.get(target.className()), target.method(),
+                        target.lambda()))
                 .toList();
         return lowerResolvedCall(linked, instruction, dispatch.interfaceMethod(), true, targets, instructions,
                 stackBase, depth, nextValueId, tracking);

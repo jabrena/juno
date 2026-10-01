@@ -154,7 +154,7 @@ public final class RedBaron {
 ## Supported Java subset
 
 Juno deliberately fails at link time when reachable code uses something outside the current
-subset. Diagnostics identify the method, bytecode offset, and unsupported opcode. See
+subset. Diagnostics identify the method, bytecode offset, and unsupported operation/bootstrap. See
 [docs/FEATURES.md](../features) for the full, up-to-date inventory of what's supported and
 what isn't.
 

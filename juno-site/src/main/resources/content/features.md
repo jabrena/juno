@@ -5,7 +5,7 @@ layout: page
 ---
 
 Juno deliberately fails at link time when reachable code uses something outside the current
-subset. Diagnostics identify the method, bytecode offset, and unsupported opcode.
+subset. Diagnostics identify the method, bytecode offset, and unsupported operation/bootstrap.
 
 Supported today:
 
@@ -60,6 +60,13 @@ Supported today:
   reference (`invokeinterface`). Reachability is based on concrete classes allocated by reachable code:
   one reachable implementation becomes an ordinary direct call; two or more use a deterministic object
   type id and generated switch. Inherited and default interface implementations remain unsupported.
+- lambdas and method references emitted by `javac` through `LambdaMetafactory.metafactory`.
+  Non-capturing lambdas/static method references become immutable function references and do not
+  allocate. Capturing lambdas and bound instance references become arena closure objects with one
+  field per captured scalar/reference. Static, bound instance, unbound instance, and constructor
+  references are supported. `java.lang.Runnable` and compatible JDK functional interfaces can be
+  used without linking their JDK implementation classes. Lambda captures and parameters currently exclude `long`/`double`;
+  method references to Juno hardware/runtime intrinsics and `altMetafactory` call sites remain unsupported.
 - direct static calls with closed-world reachability; unused methods are omitted
 - runtime {@code String} references in locals, parameters, and return values, with string literals,
   {@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Integer conversions use eight
@@ -149,7 +156,8 @@ Not yet supported:
   exceptions (`try`-with-resources), and exception types in method parameters or return values
 - enum string methods (`.name()`, `.toString()`), `valueOf()`, and enum state beyond one directly
   assigned, compile-time integer value per constant (including mutable fields and per-constant class bodies)
-- record `equals()`/`hashCode()`/`toString()` and other `invokedynamic`-based behavior
+- record `equals()`/`hashCode()`/`toString()`, string concatenation, and other non-lambda
+  `invokedynamic` bootstrap protocols
 - the desktop JDK class library
 
 The `String[]` parameter of a conventional `main` is accepted as an entrypoint convention, but

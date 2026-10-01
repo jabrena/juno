@@ -5,6 +5,7 @@
  * <ul>
  *   <li>{@link io.github.jabrena.juno.HelloWorld} — serial output.</li>
  *   <li>{@link io.github.jabrena.juno.DataTypes} — primitive data types and ranges.</li>
+ *   <li>{@link io.github.jabrena.juno.Lambdas} — lambda expressions and method references.</li>
  *   <li>{@link io.github.jabrena.juno.Variables} — constants, fields, local variables, and scope.</li>
  *   <li>{@link io.github.jabrena.juno.Operators} — arithmetic, logical, bitwise, and other operators.</li>
  *   <li>{@link io.github.jabrena.juno.Methods} — parameters, return values, and method calls.</li>

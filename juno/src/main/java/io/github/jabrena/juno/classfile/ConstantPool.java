@@ -15,6 +15,15 @@ public final class ConstantPool {
     public record StringEntry(int utf8Index) {
     }
 
+    public record MethodHandleEntry(int referenceKind, int referenceIndex) {
+    }
+
+    public record MethodTypeEntry(int descriptorIndex) {
+    }
+
+    public record InvokeDynamicEntry(int bootstrapMethodIndex, int nameAndTypeIndex) {
+    }
+
     private final Object[] entries;
 
     ConstantPool(Object[] entries) {
@@ -49,6 +58,40 @@ public final class ConstantPool {
         return new MethodRef(
                 className(ref.classIndex()),
                 utf8(nameAndType.nameIndex()),
+                utf8(nameAndType.descriptorIndex()));
+    }
+
+    public MethodHandleRef methodHandle(int index) {
+        Object value = entry(index);
+        if (!(value instanceof MethodHandleEntry handle)) {
+            throw new CompileException("Constant pool entry " + index + " is not a method handle");
+        }
+        if (handle.referenceKind() < MethodHandleRef.REF_INVOKE_VIRTUAL
+                || handle.referenceKind() > MethodHandleRef.REF_INVOKE_INTERFACE) {
+            throw new CompileException("Method handle at constant pool entry " + index
+                    + " has unsupported reference kind " + handle.referenceKind());
+        }
+        return new MethodHandleRef(handle.referenceKind(), methodRef(handle.referenceIndex()));
+    }
+
+    public String methodType(int index) {
+        Object value = entry(index);
+        if (value instanceof MethodTypeEntry methodType) {
+            return utf8(methodType.descriptorIndex());
+        }
+        throw new CompileException("Constant pool entry " + index + " is not a method type");
+    }
+
+    public InvokeDynamicRef invokeDynamic(int index) {
+        Object value = entry(index);
+        if (!(value instanceof InvokeDynamicEntry dynamic)) {
+            throw new CompileException("Constant pool entry " + index + " is not an invokedynamic call site");
+        }
+        Object nameAndTypeValue = entry(dynamic.nameAndTypeIndex());
+        if (!(nameAndTypeValue instanceof NameAndTypeEntry nameAndType)) {
+            throw new CompileException("Malformed invokedynamic entry at constant pool entry " + index);
+        }
+        return new InvokeDynamicRef(dynamic.bootstrapMethodIndex(), utf8(nameAndType.nameIndex()),
                 utf8(nameAndType.descriptorIndex()));
     }
 

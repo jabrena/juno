@@ -19,15 +19,28 @@ final class IrValues {
             case IrInstruction.LoadStatic load -> List.of(load.target());
             case IrInstruction.StoreStatic store -> List.of(store.value());
             case IrInstruction.NewObject object -> List.of(object.target());
+            case IrInstruction.LambdaCreate lambda -> {
+                List<Value> values = new ArrayList<>();
+                values.add(lambda.target());
+                values.addAll(lambda.captures());
+                yield List.copyOf(values);
+            }
             case IrInstruction.LoadField load -> List.of(load.target(), load.receiver());
             case IrInstruction.StoreField store -> List.of(store.receiver(), store.value());
             case IrInstruction.IntArrayConst array -> List.of(array.target());
             case IrInstruction.NewMultiArray array -> List.of(array.target());
             case IrInstruction.Panic ignored -> List.of();
+            case IrInstruction.NullCheck check -> List.of(check.value());
             case IrInstruction.Binary binary -> List.of(binary.target(), binary.left(), binary.right());
             case IrInstruction.Unary unary -> List.of(unary.target(), unary.value());
             case IrInstruction.Compare compare -> List.of(compare.target(), compare.left(), compare.right());
             case IrInstruction.Call call -> {
+                List<Value> values = new ArrayList<>();
+                call.target().ifPresent(values::add);
+                values.addAll(call.arguments());
+                yield List.copyOf(values);
+            }
+            case IrInstruction.LambdaCall call -> {
                 List<Value> values = new ArrayList<>();
                 call.target().ifPresent(values::add);
                 values.addAll(call.arguments());

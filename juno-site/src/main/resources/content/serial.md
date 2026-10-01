@@ -68,7 +68,8 @@ default.
 
 `Serial.print(String)`/`println(String)` also print runtime `String` values — `String.valueOf(...)`,
 a `StringBuilder` result, a JSON string, or an exception's `getMessage()`. String concatenation with
-`+` is still unsupported (`javac` compiles it to `invokedynamic`), so print computed data in parts:
+`+` is still unsupported (`javac` uses the `StringConcatFactory` `invokedynamic` bootstrap; Juno only
+accepts lambda/metafactory call sites), so print computed data in parts:
 
 ```java
 int temperature = /* ... */;

@@ -6,6 +6,8 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.ThrowableTypes;
+import io.github.jabrena.juno.linker.LambdaSite;
+import io.github.jabrena.juno.classfile.MethodHandleRef;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +25,7 @@ final class ProgramLayout {
     private final Map<FieldRef, String> staticSymbols = new LinkedHashMap<>();
     private final Map<String, String> stringLiteralSymbols = new LinkedHashMap<>();
     private final Map<IrInstruction.IntArrayConst, String> intArraySymbols = new LinkedHashMap<>();
+    private final Map<LambdaSite, String> lambdaFunctionSymbols = new LinkedHashMap<>();
     private final List<String> throwableClasses;
     private final Map<String, Integer> objectTypeIds;
 
@@ -62,6 +65,20 @@ final class ProgramLayout {
         switch (instruction) {
             case IrInstruction.NewObject object ->
                     layouts.computeIfAbsent(object.className(), unused -> new TreeMap<>());
+            case IrInstruction.LambdaCreate lambda -> {
+                if (lambda.site().isCapturing()) {
+                    objectSizes.put(lambda.site().syntheticClassName(),
+                            (lambda.captures().size() + 1) * AsmEmitter.WORD);
+                } else {
+                    lambdaFunctionSymbols.computeIfAbsent(lambda.site(),
+                            unused -> "juno_lambda_" + lambdaFunctionSymbols.size());
+                }
+            }
+            case IrInstruction.LambdaCall call -> {
+                if (call.site().implementation().referenceKind() == MethodHandleRef.REF_NEW_INVOKE_SPECIAL) {
+                    layouts.computeIfAbsent(call.site().implementation().method().owner(), unused -> new TreeMap<>());
+                }
+            }
             case IrInstruction.LoadField load -> layouts
                     .computeIfAbsent(load.field().owner(), unused -> new TreeMap<>())
                     .put(load.field().displayName(), load.field());
@@ -119,12 +136,17 @@ final class ProgramLayout {
         return intArraySymbols.get(array);
     }
 
+    String lambdaFunctionSymbol(LambdaSite site) {
+        return lambdaFunctionSymbols.get(site);
+    }
+
     /** Emits every data section the program needs, ahead of its {@code .text}. */
     void emitDataSections(StringBuilder output) {
         emitStaticStorage(output);
         emitGcStackTopStorage(output);
         emitStringLiteralStorage(output);
         emitIntArrayStorage(output);
+        emitLambdaFunctionStorage(output);
     }
 
     private void emitStaticStorage(StringBuilder output) {
@@ -192,6 +214,21 @@ final class ProgramLayout {
                 output.append(values.get(index));
             }
             output.append('\n');
+        }
+    }
+
+    /** Non-capturing lambdas are immutable one-word function references, never arena allocations. */
+    private void emitLambdaFunctionStorage(StringBuilder output) {
+        if (lambdaFunctionSymbols.isEmpty()) {
+            return;
+        }
+        output.append("    .section .rodata\n")
+                .append("    .align 2\n");
+        for (Map.Entry<LambdaSite, String> entry : lambdaFunctionSymbols.entrySet()) {
+            output.append(entry.getValue()).append(":\n")
+                    .append("    .word ")
+                    .append(objectTypeIds.getOrDefault(entry.getKey().syntheticClassName(), 0))
+                    .append('\n');
         }
     }
 

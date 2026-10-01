@@ -15,25 +15,27 @@ public final class ClassFileReader {
     private static final String WATCHDOG_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Watchdog;";
     private static final int WATCHDOG_DEFAULT_TIMEOUT_MILLIS = 5000;
     /**
-     * Payload sizes, in bytes and indexed by tag, of the constant-pool entries Juno never resolves
-     * (MethodHandle, MethodType, Dynamic, InvokeDynamic, Module, Package); 0 marks every other tag.
+     * Payload sizes, in bytes and indexed by tag, of the constant-pool entries Juno still treats as
+     * opaque ({@code Dynamic}, {@code Module}, {@code Package}); 0 marks every other tag.
      */
     private static final int[] SKIPPED_CONSTANT_SIZES = new int[256];
     /** {@code element_value} tags whose payload is one ignored {@code const_value_index}. */
     private static final String SKIPPED_CONST_ELEMENT_TAGS = "BCDFJSZs";
 
     static {
-        SKIPPED_CONSTANT_SIZES[15] = 3;
-        SKIPPED_CONSTANT_SIZES[16] = 2;
         SKIPPED_CONSTANT_SIZES[17] = 4;
-        SKIPPED_CONSTANT_SIZES[18] = 4;
         SKIPPED_CONSTANT_SIZES[19] = 2;
         SKIPPED_CONSTANT_SIZES[20] = 2;
     }
 
-    /** One class's {@code @Board}/{@code @Watchdog} annotation values, as read from its class file. */
+    /** One class's {@code @Board}/{@code @Watchdog} annotation values. */
     private record ClassAnnotations(List<String> boardApiClassNames, Optional<Integer> watchdogTimeoutMillis) {
         private static final ClassAnnotations NONE = new ClassAnnotations(List.of(), Optional.empty());
+    }
+
+    /** One class's selected attributes, as read from its class file. */
+    private record ClassAttributes(List<String> boardApiClassNames, Optional<Integer> watchdogTimeoutMillis,
+                                   List<BootstrapMethod> bootstrapMethods) {
     }
 
     public JavaClass read(byte[] bytes) {
@@ -52,13 +54,13 @@ public final class ClassFileReader {
             String className = pool.className(input.readUnsignedShort());
             int superClassIndex = input.readUnsignedShort();
             String superClassName = superClassIndex == 0 ? null : pool.className(superClassIndex);
-            List<String> interfaces = readInterfaces(input, pool);
+            List<String> interfaces = ClassHeaderReader.readInterfaces(input, pool);
             List<FieldInfo> fields = readFields(input, pool);
             List<JavaMethod> methods = readMethods(input, pool, className);
-            ClassAnnotations annotations = readClassAttributes(input, pool);
+            ClassAttributes attributes = readClassAttributes(input, pool);
             return new JavaClass(className, classAccessFlags, superClassName, interfaces, pool,
-                    List.copyOf(methods), fields, annotations.boardApiClassNames(),
-                    annotations.watchdogTimeoutMillis());
+                    List.copyOf(methods), fields, attributes.boardApiClassNames(),
+                    attributes.watchdogTimeoutMillis(), attributes.bootstrapMethods());
         } catch (IOException exception) {
             throw new CompileException("Cannot read class file", exception);
         }
@@ -87,29 +89,20 @@ public final class ClassFileReader {
                 case 8 -> new ConstantPool.StringEntry(input.readUnsignedShort());
                 case 9, 10, 11 -> new ConstantPool.RefEntry(input.readUnsignedShort(), input.readUnsignedShort());
                 case 12 -> new ConstantPool.NameAndTypeEntry(input.readUnsignedShort(), input.readUnsignedShort());
-                default -> skipConstant(input, tag);
+                case 15 -> new ConstantPool.MethodHandleEntry(input.readUnsignedByte(), input.readUnsignedShort());
+                case 16 -> new ConstantPool.MethodTypeEntry(input.readUnsignedShort());
+                case 18 -> new ConstantPool.InvokeDynamicEntry(input.readUnsignedShort(), input.readUnsignedShort());
+                default -> {
+                    int size = SKIPPED_CONSTANT_SIZES[tag];
+                    if (size == 0) {
+                        throw new CompileException("Unsupported constant-pool tag " + tag);
+                    }
+                    input.skipNBytes(size);
+                    yield new Object();
+                }
             };
         }
         return new ConstantPool(entries);
-    }
-
-    /** Skips an entry listed in {@link #SKIPPED_CONSTANT_SIZES}, returning an opaque placeholder for its slot. */
-    private Object skipConstant(DataInputStream input, int tag) throws IOException {
-        int size = SKIPPED_CONSTANT_SIZES[tag];
-        if (size == 0) {
-            throw new CompileException("Unsupported constant-pool tag " + tag);
-        }
-        input.skipNBytes(size);
-        return new Object();
-    }
-
-    private List<String> readInterfaces(DataInputStream input, ConstantPool pool) throws IOException {
-        int count = input.readUnsignedShort();
-        List<String> interfaces = new ArrayList<>(count);
-        for (int index = 0; index < count; index++) {
-            interfaces.add(pool.className(input.readUnsignedShort()));
-        }
-        return List.copyOf(interfaces);
     }
 
     /** Returns every declared field, in class-file declaration order (see {@link JavaClass}). */
@@ -183,19 +176,23 @@ public final class ClassFileReader {
     }
 
     /** Reads the class's own attribute table, extracting {@code @Board}/{@code @Watchdog}'s values if present. */
-    private ClassAnnotations readClassAttributes(DataInputStream input, ConstantPool pool) throws IOException {
+    private ClassAttributes readClassAttributes(DataInputStream input, ConstantPool pool) throws IOException {
         int count = input.readUnsignedShort();
         ClassAnnotations annotations = ClassAnnotations.NONE;
+        List<BootstrapMethod> bootstrapMethods = List.of();
         for (int i = 0; i < count; i++) {
             String attributeName = pool.utf8(input.readUnsignedShort());
             int length = input.readInt();
             if (attributeName.equals("RuntimeVisibleAnnotations")) {
                 annotations = readAnnotations(input, pool, annotations);
+            } else if (attributeName.equals("BootstrapMethods")) {
+                bootstrapMethods = BootstrapMethodsReader.read(input);
             } else {
                 input.skipNBytes(Integer.toUnsignedLong(length));
             }
         }
-        return annotations;
+        return new ClassAttributes(annotations.boardApiClassNames(), annotations.watchdogTimeoutMillis(),
+                bootstrapMethods);
     }
 
     /** Reads a {@code RuntimeVisibleAnnotations}/{@code RuntimeInvisibleAnnotations} body. */

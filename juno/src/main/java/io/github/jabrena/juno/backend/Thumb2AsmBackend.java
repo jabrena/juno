@@ -3,6 +3,7 @@ package io.github.jabrena.juno.backend;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.classfile.MethodHandleRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -308,6 +309,8 @@ public final class Thumb2AsmBackend {
             case IrInstruction.Unary unary -> ints.emitUnary(output, frame, unary);
             case IrInstruction.Compare compare -> ints.emitCompare(output, frame, compare);
             case IrInstruction.Call call -> emitCall(output, frame, call);
+            case IrInstruction.LambdaCreate lambda -> emitLambdaCreate(output, frame, lambda);
+            case IrInstruction.LambdaCall call -> emitLambdaCall(output, frame, call);
             case IrInstruction.InterfaceCall call -> emitInterfaceCall(output, frame, call);
             case IrInstruction.IntrinsicCall call -> intrinsics.emit(output, frame, call);
             case IrInstruction.NewArray newArray -> arrays.emitNewArray(output, frame, newArray);
@@ -316,6 +319,14 @@ public final class Thumb2AsmBackend {
             case IrInstruction.ArrayStore store -> arrays.emitArrayStore(output, frame, store);
             case IrInstruction.BoundsCheck check -> arrays.emitBoundsCheck(output, frame, check);
             case IrInstruction.Panic ignored -> output.append("    bl juno_panic\n");
+            case IrInstruction.NullCheck check -> {
+                asm.load(output, frame, "r0", check.value());
+                String nonNull = asm.newLabel(".LnonNull");
+                output.append("    cmp r0, #0\n")
+                        .append("    bne ").append(nonNull).append('\n')
+                        .append("    bl juno_panic\n")
+                        .append(nonNull).append(":\n");
+            }
             case IrInstruction.NewObject object -> emitNewObject(output, frame, object);
             case IrInstruction.LoadField load -> {
                 asm.load(output, frame, "r0", load.receiver());
@@ -388,6 +399,95 @@ public final class Thumb2AsmBackend {
         emitResolvedCall(output, frame, call.method(), call.arguments(), call.target());
     }
 
+    private void emitLambdaCreate(StringBuilder output, FrameLayout frame, IrInstruction.LambdaCreate lambda) {
+        if (!lambda.site().isCapturing()) {
+            output.append("    ldr r0, =").append(layout.lambdaFunctionSymbol(lambda.site())).append('\n');
+            asm.store(output, frame, "r0", lambda.target());
+            return;
+        }
+        asm.emitLoadImmediate(output, "r0", layout.objectSize(lambda.site().syntheticClassName()));
+        asm.emitLoadImmediate(output, "r1", AsmEmitter.WORD);
+        output.append("    bl juno_alloc\n");
+        asm.emitLoadImmediate(output, "r1",
+                java.util.Objects.requireNonNullElse(layout.objectTypeId(lambda.site().syntheticClassName()), 0));
+        output.append("    str r1, [r0, #0]\n");
+        for (int index = 0; index < lambda.captures().size(); index++) {
+            asm.load(output, frame, "r1", lambda.captures().get(index));
+            output.append("    str r1, [r0, #").append((index + 1) * AsmEmitter.WORD).append("]\n");
+        }
+        asm.store(output, frame, "r0", lambda.target());
+    }
+
+    private void emitLambdaCall(StringBuilder output, FrameLayout frame, IrInstruction.LambdaCall call) {
+        MethodHandleRef implementation = call.site().implementation();
+        boolean constructor = implementation.referenceKind() == MethodHandleRef.REF_NEW_INVOKE_SPECIAL;
+        if (constructor) {
+            Value result = call.target().orElseThrow(() -> unsupported("constructor reference without a result"));
+            String className = implementation.method().owner();
+            asm.emitLoadImmediate(output, "r0", layout.objectSize(className));
+            asm.emitLoadImmediate(output, "r1", AsmEmitter.WORD);
+            output.append("    bl juno_alloc\n");
+            Integer typeId = layout.objectTypeId(className);
+            if (typeId != null) {
+                asm.emitLoadImmediate(output, "r1", typeId);
+                output.append("    str r1, [r0, #0]\n");
+            }
+            asm.store(output, frame, "r0", result);
+        }
+
+        int combinedCount = call.site().captureTypes().size() + call.arguments().size() - 1;
+        int argumentCount = combinedCount + (constructor ? 1 : 0);
+        int extra = Math.max(0, argumentCount - 4);
+        int reserved = AsmEmitter.roundUp(extra * AsmEmitter.WORD, 8);
+        if (reserved > 0) {
+            output.append("    sub sp, sp, #").append(reserved).append('\n');
+            for (int index = 4; index < argumentCount; index++) {
+                emitLambdaArgument(output, frame, call, constructor, index, "r0", reserved);
+                asm.emitStore(output, "r0", (index - 4) * AsmEmitter.WORD);
+            }
+        }
+        for (int index = 0; index < Math.min(4, argumentCount); index++) {
+            emitLambdaArgument(output, frame, call, constructor, index, "r" + index, reserved);
+        }
+        String label = functionLabels.get(implementation.method());
+        if (label == null) {
+            throw unsupported("lambda call to unresolved method " + implementation.method().displayName());
+        }
+        output.append("    bl ").append(label).append('\n');
+        if (reserved > 0) {
+            output.append("    add sp, sp, #").append(reserved).append('\n');
+        }
+        if (!constructor) {
+            call.target().ifPresent(target -> {
+                if (FrameLayout.isWide(target.type())) {
+                    asm.store64(output, frame, "r0", "r1", target);
+                } else {
+                    asm.store(output, frame, "r0", target);
+                }
+            });
+        }
+    }
+
+    private void emitLambdaArgument(StringBuilder output, FrameLayout frame, IrInstruction.LambdaCall call,
+                                    boolean constructor, int argumentIndex, String destination, int extraSpOffset) {
+        if (constructor && argumentIndex == 0) {
+            Value result = call.target().orElseThrow();
+            asm.emitLoad(output, destination, frame.valueOffset(result) + extraSpOffset);
+            return;
+        }
+        int combinedIndex = argumentIndex - (constructor ? 1 : 0);
+        int captureCount = call.site().captureTypes().size();
+        if (combinedIndex < captureCount) {
+            Value lambdaReference = call.arguments().getFirst();
+            asm.emitLoad(output, "r12", frame.valueOffset(lambdaReference) + extraSpOffset);
+            output.append("    ldr ").append(destination).append(", [r12, #")
+                    .append((combinedIndex + 1) * AsmEmitter.WORD).append("]\n");
+            return;
+        }
+        Value invocationArgument = call.arguments().get(1 + combinedIndex - captureCount);
+        asm.emitLoad(output, destination, frame.valueOffset(invocationArgument) + extraSpOffset);
+    }
+
     private void emitInterfaceCall(StringBuilder output, FrameLayout frame, IrInstruction.InterfaceCall call) {
         asm.load(output, frame, "r0", call.arguments().getFirst());
         output.append("    ldr r0, [r0, #0]\n");
@@ -397,7 +497,12 @@ public final class Thumb2AsmBackend {
             asm.emitLoadImmediate(output, "r1", target.typeId());
             output.append("    cmp r0, r1\n")
                     .append("    bne ").append(next).append('\n');
-            emitResolvedCall(output, frame, target.method(), call.arguments(), call.target());
+            if (target.isLambda()) {
+                emitLambdaCall(output, frame,
+                        new IrInstruction.LambdaCall(call.target(), target.lambda(), call.arguments()));
+            } else {
+                emitResolvedCall(output, frame, target.method(), call.arguments(), call.target());
+            }
             output.append("    b ").append(done).append('\n')
                     .append(next).append(":\n");
         }

@@ -38,6 +38,7 @@ public final class Linker {
     private final ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilder();
     private final InterfaceDispatchResolver interfaceDispatchResolver = new InterfaceDispatchResolver();
     private final ReachabilityClosure reachabilityClosure = new ReachabilityClosure();
+    private final LambdaResolver lambdaResolver = new LambdaResolver();
 
     public Program link(Map<String, JavaClass> classes, String mainClassName) {
         return link(classes, mainClassName, Optional.empty());
@@ -69,8 +70,8 @@ public final class Linker {
         ReachabilityClosure.Result reachability = reachabilityClosure.resolve(entryPoint,
                 mainInitializer == null ? null : mainInitializer.reference(), classes,
                 reference -> linkMethod(classes, reference, reference.equals(entryPoint)),
-                (linked, work, calls, instantiated) -> enqueueDependencies(linked, declaredBoards, classes, work,
-                        calls, instantiated), interfaceDispatchResolver,
+                (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, declaredBoards, classes,
+                        work, calls, instantiated, lambdas), interfaceDispatchResolver,
                 method -> hasReachableBody(method, classes),
                 (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
         for (Map.Entry<InterfaceCallSite, MethodRef> call : reachability.interfaceCalls().entrySet()) {
@@ -84,7 +85,7 @@ public final class Linker {
             requireCapability(declaredBoards, Capability.WATCHDOG, "");
         }
         return new Program(entryPoint, reachability.methods(), classes, board,
-                mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches());
+                mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches(), reachability.lambdaSites());
     }
 
     private void validateInterfaceTargetCapability(InterfaceDispatch dispatch, MethodRef method,
@@ -143,7 +144,7 @@ public final class Linker {
     /** Queues every method and static initializer {@code linked}'s invoke/static-field instructions reach. */
     private void enqueueDependencies(LinkedMethod linked, List<Board> declaredBoards, Map<String, JavaClass> classes,
             Deque<MethodRef> work, Map<InterfaceCallSite, MethodRef> interfaceCalls,
-            Set<String> instantiatedClasses) {
+            Set<String> instantiatedClasses, Map<LambdaCallSite, LambdaSite> lambdaSites) {
         JavaClass owner = linked.owner();
         MethodRef caller = linked.method().reference();
         for (Instruction instruction : linked.instructions()) {
@@ -154,8 +155,23 @@ public final class Linker {
             }
             if (opcode == 185) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                interfaceDispatchResolver.validateCall(linked, instruction, called, classes);
+                interfaceDispatchResolver.validateCall(linked, instruction, called, classes, lambdaSites.values());
                 interfaceCalls.put(new InterfaceCallSite(caller, instruction.offset()), called);
+            }
+            if (opcode == 186) {
+                LambdaSite lambda = lambdaResolver.resolve(linked, instruction, classes);
+                lambdaSites.put(lambda.callSite(), lambda);
+                MethodRef implementation = lambda.implementation().method();
+                if (lambda.implementation().referenceKind()
+                        == io.github.jabrena.juno.classfile.MethodHandleRef.REF_NEW_INVOKE_SPECIAL) {
+                    instantiatedClasses.add(implementation.owner());
+                }
+                if (IntrinsicRegistry.isIntrinsic(implementation)) {
+                    throw new CompileException(caller.displayName() + " at bytecode offset "
+                            + instruction.offset() + ": method references to Juno intrinsics are not supported yet: "
+                            + implementation.displayName());
+                }
+                enqueueCall(implementation, caller, declaredBoards, classes, work);
             }
             if (opcode == 187) {
                 instantiatedClasses.add(owner.constantPool().className(instruction.operandA()));
@@ -170,7 +186,7 @@ public final class Linker {
             Map<String, JavaClass> classes, Deque<MethodRef> work) {
         IntrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
                 requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
-        if (isDrawTextCall(called)) {
+        if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {
             work.addLast(called);
@@ -184,7 +200,8 @@ public final class Linker {
                 && !ThrowableTypes.isBuiltInConstructor(called)
                 && !ThrowableTypes.isGetMessage(called, classes)
                 && !isEnumOperation(classes, called)
-                && !isCompileTimeGetenv(called);
+                && !isCompileTimeGetenv(called)
+                && !SupportedJdkMethods.isRequireNonNull(called);
     }
 
     private void enqueueStaticInitializer(FieldRef field, Map<String, JavaClass> classes, Deque<MethodRef> work) {
@@ -205,13 +222,10 @@ public final class Linker {
     private void requireCapability(List<Board> declaredBoards, Capability capability, String context) {
         declaredBoards.stream().filter(board -> !board.supports(capability)).findFirst().ifPresent(board -> {
             throw new CompileException(capability.apiName() + " requires @Board("
-                    + supportingBoards(capability) + "): " + capability.unsupportedReason(board) + context);
+                    + Arrays.stream(Board.values()).filter(candidate -> candidate.supports(capability))
+                            .map(Board::annotationArgument).collect(Collectors.joining(" or "))
+                    + "): " + capability.unsupportedReason(board) + context);
         });
-    }
-
-    private static String supportingBoards(Capability capability) {
-        return Arrays.stream(Board.values()).filter(board -> board.supports(capability))
-                .map(Board::annotationArgument).collect(Collectors.joining(" or "));
     }
 
     private static Map<Intrinsic, Capability> requiredCapabilities() {
@@ -255,10 +269,6 @@ public final class Linker {
      * {@code LedCanvas.drawChar} call per character at compile time — {@code drawText} itself is
      * native (no body to walk into); {@link #DRAW_CHAR_METHOD} is what's actually reachable.
      */
-    private boolean isDrawTextCall(MethodRef called) {
-        return called.equals(DRAW_TEXT_METHOD);
-    }
-
     private JavaMethod findMain(JavaClass mainClass) {
         JavaMethod conventional = mainClass.findMethod("main", "([Ljava/lang/String;)V");
         JavaMethod embedded = mainClass.findMethod("main", "()V");

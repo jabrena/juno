@@ -87,12 +87,14 @@ It auto-detects the port when exactly one matching board is connected. Otherwise
 ## Supported Java subset
 
 Juno deliberately fails at link time when reachable code uses something outside the current
-subset. Diagnostics identify the method, bytecode offset, and unsupported opcode. See
+subset. Diagnostics identify the method, bytecode offset, and unsupported operation/bootstrap. See
 the [Feature Inventory](https://jabrena.github.io/juno/features) for the full, up-to-date
 inventory of what's supported and what isn't.
 [`UnsupportedFeature`](juno-examples/src/main/java/io/github/jabrena/juno/UnsupportedFeature.java)
 compiles fine with plain `javac` — string concatenation is ordinary Java — but fails `juno:compile`
-because `+` on a `String` lowers to `invokedynamic`, an opcode Juno doesn't accept:
+because `+` on a `String` uses the unsupported `StringConcatFactory` bootstrap. Juno's
+`invokedynamic` support is deliberately limited to lambdas and method references produced through
+`LambdaMetafactory.metafactory`:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.UnsupportedFeature

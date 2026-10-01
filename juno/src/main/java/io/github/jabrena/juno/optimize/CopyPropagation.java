@@ -82,6 +82,8 @@ public final class CopyPropagation implements CompilerPass {
             case IrInstruction.StoreStatic store ->
                     new IrInstruction.StoreStatic(store.field(), resolve(replacements, store.value()));
             case IrInstruction.NewObject object -> object;
+            case IrInstruction.LambdaCreate lambda -> new IrInstruction.LambdaCreate(lambda.target(), lambda.site(),
+                    rewriteValues(lambda.captures(), replacements));
             case IrInstruction.LoadField load -> new IrInstruction.LoadField(load.target(), load.field(),
                     resolve(replacements, load.receiver()));
             case IrInstruction.StoreField store -> new IrInstruction.StoreField(store.field(),
@@ -89,6 +91,8 @@ public final class CopyPropagation implements CompilerPass {
             case IrInstruction.IntArrayConst array -> array;
             case IrInstruction.NewMultiArray array -> array;
             case IrInstruction.Panic panic -> panic;
+            case IrInstruction.NullCheck check -> new IrInstruction.NullCheck(
+                    resolve(replacements, check.value()));
             case IrInstruction.Binary binary -> new IrInstruction.Binary(binary.target(), binary.operation(),
                     resolve(replacements, binary.left()), resolve(replacements, binary.right()));
             case IrInstruction.Unary unary -> new IrInstruction.Unary(unary.target(), unary.operation(),
@@ -96,6 +100,8 @@ public final class CopyPropagation implements CompilerPass {
             case IrInstruction.Compare compare -> new IrInstruction.Compare(compare.target(), compare.condition(),
                     resolve(replacements, compare.left()), resolve(replacements, compare.right()));
             case IrInstruction.Call call -> new IrInstruction.Call(call.target(), call.method(),
+                    rewriteValues(call.arguments(), replacements));
+            case IrInstruction.LambdaCall call -> new IrInstruction.LambdaCall(call.target(), call.site(),
                     rewriteValues(call.arguments(), replacements));
             case IrInstruction.InterfaceCall call -> new IrInstruction.InterfaceCall(call.target(),
                     rewriteValues(call.arguments(), replacements), call.targets());

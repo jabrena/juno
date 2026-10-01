@@ -39,6 +39,8 @@ import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.InterfaceCallSite;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
+import io.github.jabrena.juno.linker.LambdaCallSite;
+import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.linker.Program;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 
@@ -135,7 +137,7 @@ public final class BytecodeToIr {
         List<IrMethod> methods = new ArrayList<>();
         for (LinkedMethod linked : program.methods()) {
             methods.add(lower(linked, program.classes(), throwableClasses, program.interfaceDispatches(),
-                    objectTypeIds));
+                    objectTypeIds, program.lambdaSites()));
         }
         return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis(),
                 throwableClasses, objectTypeIds);
@@ -196,12 +198,13 @@ public final class BytecodeToIr {
     }
 
     public IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes) {
-        return lower(linked, classes, throwableClasses(List.of(linked), classes), Map.of(), Map.of());
+        return lower(linked, classes, throwableClasses(List.of(linked), classes), Map.of(), Map.of(), Map.of());
     }
 
     private IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes, List<String> throwableClasses,
                            Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
-                           Map<String, Integer> objectTypeIds) {
+                           Map<String, Integer> objectTypeIds,
+                           Map<LambdaCallSite, LambdaSite> lambdaSites) {
         int stackBase = linked.method().maxLocals();
         Descriptor methodDescriptor = Descriptor.parse(linked.method().descriptor());
         Map<Integer, Integer> entryDepths = computeEntryDepths(linked);
@@ -226,7 +229,7 @@ public final class BytecodeToIr {
                 InstructionLowering lowered = lowerInstruction(linked, instruction, opcode, block, irBlockStart,
                         blocks, instructions, stackBase, depth, nextValueId, tracking, classes, throwableClasses,
                         slotArrayLength, arrayParameterSlots, slotRecordInstance, slotStringInstance,
-                        singleAssignmentLocals, arrayDeclarations, interfaceDispatches, objectTypeIds);
+                        singleAssignmentLocals, arrayDeclarations, interfaceDispatches, objectTypeIds, lambdaSites);
                 nextValueId = lowered.nextValueId();
                 depth = lowered.depth();
                 irBlockStart = lowered.irBlockStart();
@@ -264,7 +267,8 @@ public final class BytecodeToIr {
                                                  Set<Integer> singleAssignmentLocals,
                                                  List<ArrayDeclaration> arrayDeclarations,
                                                  Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
-                                                 Map<String, Integer> objectTypeIds) {
+                                                 Map<String, Integer> objectTypeIds,
+                                                 Map<LambdaCallSite, LambdaSite> lambdaSites) {
         if (STACK_OP_OPCODES.get(opcode)) {
             return InstructionLowering.of(ConstAndLoadLowering.lowerStackOp(linked, instruction, opcode, instructions, stackBase, depth,
                     nextValueId, tracking, slotArrayLength, arrayParameterSlots, slotRecordInstance,
@@ -312,6 +316,17 @@ public final class BytecodeToIr {
             }
             return InstructionLowering.of(lowerInvokeInterface(linked, instruction, instructions, stackBase, depth,
                     nextValueId, tracking, dispatch, objectTypeIds), irBlockStart);
+        }
+        if (opcode == 186) {
+            LambdaCallSite callSite = new LambdaCallSite(linked.method().reference(), instruction.offset());
+            LambdaSite site = lambdaSites.get(callSite);
+            if (site == null) {
+                throw new CompileException("Missing linked lambda site for "
+                        + linked.method().reference().displayName() + " at bytecode offset "
+                        + instruction.offset());
+            }
+            return InstructionLowering.of(LambdaLowering.lowerFactory(site, instructions, stackBase,
+                    depth, nextValueId, tracking), irBlockStart);
         }
         if (ARRAY_ACCESS_OPCODES.get(opcode)) {
             return InstructionLowering.of(ArrayLowering.lowerArrayAccess(opcode, instructions, stackBase, depth,

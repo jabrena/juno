@@ -17,9 +17,12 @@ import java.util.TreeSet;
 final class InterfaceDispatchResolver {
 
     void validateCall(LinkedMethod linked, Instruction instruction, MethodRef called,
-                      Map<String, JavaClass> classes) {
+                      Map<String, JavaClass> classes, java.util.Collection<LambdaSite> lambdaSites) {
         JavaClass interfaceClass = classes.get(called.owner());
-        if (interfaceClass == null || !interfaceClass.isInterface()) {
+        boolean lambdaInterface = lambdaSites.stream()
+                .anyMatch(site -> site.interfaceMethod().equals(called));
+        if ((interfaceClass == null && !lambdaInterface)
+                || (interfaceClass != null && !interfaceClass.isInterface())) {
             throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
                     + instruction.offset() + ": invokeinterface owner is not an available interface: "
                     + called.owner().replace('/', '.'));
@@ -34,11 +37,13 @@ final class InterfaceDispatchResolver {
     }
 
     Map<InterfaceCallSite, InterfaceDispatch> resolve(Map<InterfaceCallSite, MethodRef> calls,
-            Set<String> instantiatedClasses, Map<String, JavaClass> classes) {
+            Set<String> instantiatedClasses, java.util.Collection<LambdaSite> lambdaSites,
+            Map<String, JavaClass> classes) {
         Map<InterfaceCallSite, InterfaceDispatch> result = new LinkedHashMap<>();
         for (Map.Entry<InterfaceCallSite, MethodRef> call : calls.entrySet()) {
             MethodRef interfaceMethod = call.getValue();
-            List<InterfaceDispatch.Target> targets = targets(interfaceMethod, instantiatedClasses, classes);
+            List<InterfaceDispatch.Target> targets = targets(interfaceMethod, instantiatedClasses, lambdaSites,
+                    classes);
             if (!targets.isEmpty()) {
                 result.put(call.getKey(), new InterfaceDispatch(interfaceMethod, targets));
             }
@@ -47,6 +52,7 @@ final class InterfaceDispatchResolver {
     }
 
     private List<InterfaceDispatch.Target> targets(MethodRef interfaceMethod, Set<String> instantiatedClasses,
+                                                    java.util.Collection<LambdaSite> lambdaSites,
                                                     Map<String, JavaClass> classes) {
         List<InterfaceDispatch.Target> targets = new ArrayList<>();
         for (String className : instantiatedClasses) {
@@ -64,6 +70,11 @@ final class InterfaceDispatchResolver {
             }
             targets.add(new InterfaceDispatch.Target(className, implementation.reference()));
         }
+        lambdaSites.stream()
+                .filter(site -> site.interfaceMethod().equals(interfaceMethod))
+                .sorted(java.util.Comparator.comparing(LambdaSite::syntheticClassName))
+                .map(InterfaceDispatch.Target::lambda)
+                .forEach(targets::add);
         return targets;
     }
 

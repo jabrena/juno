@@ -2157,6 +2157,134 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersANonCapturingLambdaToAFunctionReference() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class NonCapturingLambda {
+                    interface Operation { int apply(int value); }
+                    public static void main(String[] args) {
+                        Operation increment = value -> value + 1;
+                        Delay.millis(increment.apply(4));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NonCapturingLambda", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NonCapturingLambda");
+
+        assertThat(result.report().reachableMethods()).isEqualTo(2);
+        assertThat(result.assembly())
+                .contains("bl juno_fn1", "add r0, r0, r1")
+                .doesNotContain("bl juno_alloc");
+    }
+
+    @Test
+    void storesCapturedLambdaValuesInAClosureObject() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class CapturingLambda {
+                    interface Operation { int apply(int value); }
+                    public static void main(String[] args) {
+                        int amount = 3;
+                        Operation add = value -> value + amount;
+                        Delay.millis(add.apply(4));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.CapturingLambda", source);
+
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CapturingLambda").assembly();
+
+        assertThat(assembly).contains(
+                "movs r0, #8\n    movs r1, #4\n    bl juno_alloc",
+                "str r1, [r0, #4]",
+                "ldr r0, [r12, #4]",
+                "bl juno_fn1");
+    }
+
+    @Test
+    void lowersStaticBoundUnboundAndConstructorMethodReferences() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class MethodReferences {
+                    interface Unary { int apply(int value); }
+                    interface Binary { int apply(Adder adder, int value); }
+                    interface Factory { Adder create(int amount); }
+                    static final class Adder {
+                        private int amount;
+                        Adder(int amount) { this.amount = amount; }
+                        int add(int value) { return value + amount; }
+                    }
+                    static int twice(int value) { return value * 2; }
+                    static int run(Unary operation, int value) { return operation.apply(value); }
+                    public static void main(String[] args) {
+                        Unary twice = MethodReferences::twice;
+                        Adder three = new Adder(3);
+                        Unary addThree = three::add;
+                        Binary unbound = Adder::add;
+                        Factory factory = Adder::new;
+                        Adder four = factory.create(4);
+                        Delay.millis(run(twice, 2) + run(addThree, 2)
+                                + unbound.apply(four, 2));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MethodReferences", source);
+        Program linked = CompilerTestSupport.link(temporaryDirectory, "demo.MethodReferences");
+        IrProgram lowered = new CompilationPipeline().lower(linked);
+
+        assertThat(lowered.objectTypeIds().keySet())
+                .anyMatch(name -> name.contains("$$JunoLambda$"));
+
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MethodReferences").assembly();
+        assertThat(assembly)
+                .contains("juno_lambda_0:", ".LinterfaceDone", "ldr r0, [r12, #4]", "bl juno_alloc")
+                .doesNotContain("unresolved method");
+    }
+
+    @Test
+    void rejectsNonLambdaInvokeDynamicBootstrapMethodsExplicitly() throws Exception {
+        String source = """
+                package demo;
+                public final class StringConcatDynamic {
+                    public static void main(String[] args) {
+                        int value = 3;
+                        String text = "value=" + value;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.StringConcatDynamic", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.StringConcatDynamic"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("demo.StringConcatDynamic.main")
+                .hasMessageContaining("only LambdaMetafactory.metafactory");
+    }
+
+    @Test
+    void supportsAStandardRunnableLambdaWithoutLinkingTheJdkImplementation() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class RunnableLambda {
+                    public static void main(String[] args) {
+                        Runnable task = () -> Delay.millis(1);
+                        task.run();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.RunnableLambda", source);
+
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.RunnableLambda").assembly();
+
+        assertThat(assembly).contains("juno_lambda_0:", "bl juno_fn1", "bl delay")
+                .doesNotContain("bl juno_alloc");
+    }
+
+    @Test
     void dispatchesAnInterfaceCallByDeterministicObjectTypeIdWhenMultipleImplementationsAreReachable()
             throws Exception {
         String source = """

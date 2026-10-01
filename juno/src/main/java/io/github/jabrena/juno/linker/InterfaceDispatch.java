@@ -13,7 +13,18 @@ public record InterfaceDispatch(MethodRef interfaceMethod, List<Target> targets)
         }
     }
 
-    /** The allocated receiver class and the method body selected for it. */
-    public record Target(String className, MethodRef method) {
+    /** The receiver type and either its concrete method body or its compiler-generated lambda adapter. */
+    public record Target(String className, MethodRef method, LambdaSite lambda) {
+        public Target(String className, MethodRef method) {
+            this(className, method, null);
+        }
+
+        public static Target lambda(LambdaSite site) {
+            return new Target(site.syntheticClassName(), site.implementation().method(), site);
+        }
+
+        public boolean isLambda() {
+            return lambda != null;
+        }
     }
 }

@@ -24,7 +24,18 @@ import java.util.Optional;
 public record JavaClass(String name, int accessFlags, String superClassName, List<String> interfaces,
                          ConstantPool constantPool,
                          List<JavaMethod> methods, List<FieldInfo> fields, List<String> boardApiClassNames,
-                         Optional<Integer> watchdogTimeoutMillis) {
+                         Optional<Integer> watchdogTimeoutMillis, List<BootstrapMethod> bootstrapMethods) {
+    public JavaClass {
+        bootstrapMethods = List.copyOf(bootstrapMethods);
+    }
+
+    public BootstrapMethod bootstrapMethod(int index) {
+        if (index < 0 || index >= bootstrapMethods.size()) {
+            throw new io.github.jabrena.juno.CompileException("Invalid bootstrap method index " + index
+                    + " in " + name.replace('/', '.'));
+        }
+        return bootstrapMethods.get(index);
+    }
     private static final int ACC_ENUM = 0x4000;
     private static final int ACC_FINAL = 0x0010;
     private static final int ACC_INTERFACE = 0x0200;

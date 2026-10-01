@@ -3,6 +3,7 @@ package io.github.jabrena.juno.ir;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
+import io.github.jabrena.juno.linker.LambdaSite;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,13 @@ public sealed interface IrInstruction {
     record NewObject(Value target, String className) implements IrInstruction {
     }
 
+    /** Materializes a lambda function reference, allocating only when captured values need storage. */
+    record LambdaCreate(Value target, LambdaSite site, List<Value> captures) implements IrInstruction {
+        public LambdaCreate {
+            captures = List.copyOf(captures);
+        }
+    }
+
     record LoadField(Value target, FieldRef field, Value receiver) implements IrInstruction {
     }
 
@@ -55,6 +63,10 @@ public sealed interface IrInstruction {
     record Panic() implements IrInstruction {
     }
 
+    /** Runtime null guard used by javac for bound method references. */
+    record NullCheck(Value value) implements IrInstruction {
+    }
+
     record Binary(Value target, BinaryOp operation, Value left, Value right) implements IrInstruction {
     }
 
@@ -66,6 +78,13 @@ public sealed interface IrInstruction {
 
     /** A call to a reachable user-defined static method. */
     record Call(Optional<Value> target, MethodRef method, List<Value> arguments) implements IrInstruction {
+    }
+
+    /** Invokes a resolved lambda adapter; {@code arguments} starts with the lambda reference. */
+    record LambdaCall(Optional<Value> target, LambdaSite site, List<Value> arguments) implements IrInstruction {
+        public LambdaCall {
+            arguments = List.copyOf(arguments);
+        }
     }
 
     /** A polymorphic interface call; {@code arguments} starts with the receiver. */

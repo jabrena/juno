@@ -169,6 +169,35 @@ class GeneratedAsmToolchainTest {
         assembleAndCompile(armGcc, "demo.AsmInterfaces", source);
     }
 
+    @Test
+    void assemblesLambdasClosuresAndMethodReferences() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class AsmLambdas {
+                    interface Operation { int apply(int value); }
+                    static final class Adder {
+                        private int amount;
+                        Adder(int amount) { this.amount = amount; }
+                        int apply(int value) { return value + amount; }
+                    }
+                    static int twice(int value) { return value * 2; }
+                    static int run(Operation operation, int value) { return operation.apply(value); }
+                    public static void main(String[] args) {
+                        int amount = 3;
+                        Operation captured = value -> value + amount;
+                        Operation referenced = AsmLambdas::twice;
+                        Adder adder = new Adder(4);
+                        Operation bound = adder::apply;
+                        Delay.millis(run(captured, 1) + run(referenced, 2) + run(bound, 3));
+                    }
+                }
+                """;
+        assembleAndCompile(armGcc, "demo.AsmLambdas", source);
+    }
+
     /**
      * A regression test for exactly the bug this GC implementation shipped with once: every other
      * toolchain test here either assembles the {@code .S} alone (no link) or compiles/links the shim

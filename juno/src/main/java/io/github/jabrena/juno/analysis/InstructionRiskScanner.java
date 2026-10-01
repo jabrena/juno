@@ -78,14 +78,10 @@ final class InstructionRiskScanner {
     private static void classifyInstruction(IrInstruction instruction, Map<Value, Integer> integerConstants,
                                             Set<MethodRef> calls, List<MethodRef> callSites,
                                             Set<FieldRef> staticFields, Counters counters) {
-        if (instruction instanceof IrInstruction.Call call) {
-            calls.add(call.method());
-            callSites.add(call.method());
-            if (call.arguments().size() == Descriptor.parse(call.method().descriptor()).parameters().size() + 1
-                    && isDefinitelyNull(call.arguments().get(0), integerConstants)) {
-                counters.definiteNullDereferences++;
-            }
-        } else if (instruction instanceof IrInstruction.InterfaceCall call) {
+        if (classifyDirectCall(instruction, integerConstants, calls, callSites, counters)) {
+            return;
+        }
+        if (instruction instanceof IrInstruction.InterfaceCall call) {
             for (var target : call.targets()) {
                 calls.add(target.method());
                 callSites.add(target.method());
@@ -130,6 +126,28 @@ final class InstructionRiskScanner {
                     && integerConstants.get(pack.valueHigh()) == 0;
             integerConstants.put(pack.target(), zero ? 0 : 1);
         }
+    }
+
+    private static boolean classifyDirectCall(IrInstruction instruction, Map<Value, Integer> integerConstants,
+                                              Set<MethodRef> calls, List<MethodRef> callSites, Counters counters) {
+        MethodRef target;
+        boolean nullReceiver;
+        if (instruction instanceof IrInstruction.Call call) {
+            target = call.method();
+            nullReceiver = call.arguments().size() == Descriptor.parse(target.descriptor()).parameters().size() + 1
+                    && isDefinitelyNull(call.arguments().getFirst(), integerConstants);
+        } else if (instruction instanceof IrInstruction.LambdaCall call) {
+            target = call.site().implementation().method();
+            nullReceiver = isDefinitelyNull(call.arguments().getFirst(), integerConstants);
+        } else {
+            return false;
+        }
+        calls.add(target);
+        callSites.add(target);
+        if (nullReceiver) {
+            counters.definiteNullDereferences++;
+        }
+        return true;
     }
 
     /** Mutable per-method counters threaded through {@link #classifyInstruction}. */

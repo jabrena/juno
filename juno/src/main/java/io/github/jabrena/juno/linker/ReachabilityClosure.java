@@ -18,13 +18,14 @@ import java.util.function.Predicate;
 final class ReachabilityClosure {
 
     record Result(List<LinkedMethod> methods, Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
-                  Map<InterfaceCallSite, MethodRef> interfaceCalls) {
+                  Map<InterfaceCallSite, MethodRef> interfaceCalls,
+                  Map<LambdaCallSite, LambdaSite> lambdaSites) {
     }
 
     @FunctionalInterface
     interface DependencyEnqueuer {
         void enqueue(LinkedMethod method, Deque<MethodRef> work, Map<InterfaceCallSite, MethodRef> interfaceCalls,
-                     Set<String> instantiatedClasses);
+                     Set<String> instantiatedClasses, Map<LambdaCallSite, LambdaSite> lambdaSites);
     }
 
     Result resolve(MethodRef entryPoint, MethodRef mainInitializer, Map<String, JavaClass> classes,
@@ -33,6 +34,7 @@ final class ReachabilityClosure {
                    BiConsumer<InterfaceDispatch, MethodRef> interfaceTargetValidator) {
         Map<MethodRef, LinkedMethod> reachable = new LinkedHashMap<>();
         Map<InterfaceCallSite, MethodRef> interfaceCalls = new LinkedHashMap<>();
+        Map<LambdaCallSite, LambdaSite> lambdaSites = new LinkedHashMap<>();
         Set<String> instantiatedClasses = new TreeSet<>();
         Deque<MethodRef> work = new ArrayDeque<>();
         if (mainInitializer != null) {
@@ -42,11 +44,13 @@ final class ReachabilityClosure {
 
         Map<InterfaceCallSite, InterfaceDispatch> dispatches = Map.of();
         while (true) {
-            linkPending(work, reachable, methodLinker, dependencyEnqueuer, interfaceCalls, instantiatedClasses);
-            dispatches = interfaceResolver.resolve(interfaceCalls, instantiatedClasses, classes);
+            linkPending(work, reachable, methodLinker, dependencyEnqueuer, interfaceCalls, instantiatedClasses,
+                    lambdaSites);
+            dispatches = interfaceResolver.resolve(interfaceCalls, instantiatedClasses, lambdaSites.values(), classes);
             enqueueInterfaceTargets(dispatches, reachable, work, hasReachableBody, interfaceTargetValidator);
             if (work.isEmpty()) {
-                return new Result(List.copyOf(reachable.values()), dispatches, interfaceCalls);
+                return new Result(List.copyOf(reachable.values()), dispatches, interfaceCalls,
+                        Map.copyOf(lambdaSites));
             }
         }
     }
@@ -55,13 +59,14 @@ final class ReachabilityClosure {
                              Function<MethodRef, LinkedMethod> methodLinker,
                              DependencyEnqueuer dependencyEnqueuer,
                              Map<InterfaceCallSite, MethodRef> interfaceCalls,
-                             Set<String> instantiatedClasses) {
+                             Set<String> instantiatedClasses,
+                             Map<LambdaCallSite, LambdaSite> lambdaSites) {
         while (!work.isEmpty()) {
             MethodRef reference = work.removeFirst();
             if (!reachable.containsKey(reference)) {
                 LinkedMethod linked = methodLinker.apply(reference);
                 reachable.put(reference, linked);
-                dependencyEnqueuer.enqueue(linked, work, interfaceCalls, instantiatedClasses);
+                dependencyEnqueuer.enqueue(linked, work, interfaceCalls, instantiatedClasses, lambdaSites);
             }
         }
     }

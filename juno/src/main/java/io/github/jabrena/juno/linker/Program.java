@@ -22,8 +22,10 @@ import java.util.Optional;
  */
 public record Program(MethodRef entryPoint, List<LinkedMethod> methods, Map<String, JavaClass> classes,
                        Board board, Optional<Integer> watchdogTimeoutMillis,
-                       Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches) {
+                       Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
+                       Map<LambdaCallSite, LambdaSite> lambdaSites) {
     public Program {
         interfaceDispatches = Map.copyOf(interfaceDispatches);
+        lambdaSites = Map.copyOf(lambdaSites);
     }
 }
