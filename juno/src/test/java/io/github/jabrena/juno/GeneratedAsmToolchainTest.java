@@ -141,6 +141,34 @@ class GeneratedAsmToolchainTest {
         assembleAndCompile(armGcc, "demo.AsmArrays", source);
     }
 
+    @Test
+    void assemblesClosedWorldInterfaceDispatch() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.io.Gpio;
+                public final class AsmInterfaces {
+                    interface Operation { int apply(int value); }
+                    static final class Add implements Operation {
+                        public int apply(int value) { return value + 2; }
+                    }
+                    static final class Multiply implements Operation {
+                        public int apply(int value) { return value * 3; }
+                    }
+                    static Operation choose(boolean add) {
+                        return add ? new Add() : new Multiply();
+                    }
+                    public static void main(String[] args) {
+                        Operation operation = choose(Gpio.analogRead(0) > 0);
+                        Delay.millis(operation.apply(5));
+                    }
+                }
+                """;
+        assembleAndCompile(armGcc, "demo.AsmInterfaces", source);
+    }
+
     /**
      * A regression test for exactly the bug this GC implementation shipped with once: every other
      * toolchain test here either assembles the {@code .S} alone (no link) or compiles/links the shim

@@ -33,6 +33,12 @@ final class IrValues {
                 values.addAll(call.arguments());
                 yield List.copyOf(values);
             }
+            case IrInstruction.InterfaceCall call -> {
+                List<Value> values = new ArrayList<>();
+                call.target().ifPresent(values::add);
+                values.addAll(call.arguments());
+                yield List.copyOf(values);
+            }
             case IrInstruction.IntrinsicCall call -> {
                 List<Value> values = new ArrayList<>();
                 call.target().ifPresent(values::add);

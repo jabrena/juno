@@ -37,6 +37,8 @@ import io.github.jabrena.juno.ir.UnaryOp;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
+import io.github.jabrena.juno.linker.InterfaceCallSite;
+import io.github.jabrena.juno.linker.InterfaceDispatch;
 import io.github.jabrena.juno.linker.Program;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 
@@ -47,6 +49,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -128,12 +131,36 @@ public final class BytecodeToIr {
 
     public IrProgram lower(Program program) {
         List<String> throwableClasses = throwableClasses(program.methods(), program.classes());
+        Map<String, Integer> objectTypeIds = objectTypeIds(program.interfaceDispatches(), throwableClasses);
         List<IrMethod> methods = new ArrayList<>();
         for (LinkedMethod linked : program.methods()) {
-            methods.add(lower(linked, program.classes(), throwableClasses));
+            methods.add(lower(linked, program.classes(), throwableClasses, program.interfaceDispatches(),
+                    objectTypeIds));
         }
         return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis(),
-                throwableClasses);
+                throwableClasses, objectTypeIds);
+    }
+
+    private Map<String, Integer> objectTypeIds(Map<InterfaceCallSite, InterfaceDispatch> dispatches,
+                                               List<String> throwableClasses) {
+        Set<String> polymorphicClasses = new TreeSet<>();
+        dispatches.values().stream()
+                .filter(dispatch -> dispatch.targets().size() > 1)
+                .flatMap(dispatch -> dispatch.targets().stream())
+                .map(InterfaceDispatch.Target::className)
+                .forEach(polymorphicClasses::add);
+        for (String className : polymorphicClasses) {
+            if (throwableClasses.contains(className)) {
+                throw new CompileException("Throwable interface implementations cannot use polymorphic dispatch "
+                        + "yet: " + className.replace('/', '.'));
+            }
+        }
+        Map<String, Integer> result = new LinkedHashMap<>();
+        int nextTypeId = 1;
+        for (String className : polymorphicClasses) {
+            result.put(className, nextTypeId++);
+        }
+        return Map.copyOf(result);
     }
 
     /**
@@ -169,10 +196,12 @@ public final class BytecodeToIr {
     }
 
     public IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes) {
-        return lower(linked, classes, throwableClasses(List.of(linked), classes));
+        return lower(linked, classes, throwableClasses(List.of(linked), classes), Map.of(), Map.of());
     }
 
-    private IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes, List<String> throwableClasses) {
+    private IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes, List<String> throwableClasses,
+                           Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
+                           Map<String, Integer> objectTypeIds) {
         int stackBase = linked.method().maxLocals();
         Descriptor methodDescriptor = Descriptor.parse(linked.method().descriptor());
         Map<Integer, Integer> entryDepths = computeEntryDepths(linked);
@@ -197,7 +226,7 @@ public final class BytecodeToIr {
                 InstructionLowering lowered = lowerInstruction(linked, instruction, opcode, block, irBlockStart,
                         blocks, instructions, stackBase, depth, nextValueId, tracking, classes, throwableClasses,
                         slotArrayLength, arrayParameterSlots, slotRecordInstance, slotStringInstance,
-                        singleAssignmentLocals, arrayDeclarations);
+                        singleAssignmentLocals, arrayDeclarations, interfaceDispatches, objectTypeIds);
                 nextValueId = lowered.nextValueId();
                 depth = lowered.depth();
                 irBlockStart = lowered.irBlockStart();
@@ -233,7 +262,9 @@ public final class BytecodeToIr {
                                                  Map<Integer, RecordInstance> slotRecordInstance,
                                                  Map<Integer, String> slotStringInstance,
                                                  Set<Integer> singleAssignmentLocals,
-                                                 List<ArrayDeclaration> arrayDeclarations) {
+                                                 List<ArrayDeclaration> arrayDeclarations,
+                                                 Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
+                                                 Map<String, Integer> objectTypeIds) {
         if (STACK_OP_OPCODES.get(opcode)) {
             return InstructionLowering.of(ConstAndLoadLowering.lowerStackOp(linked, instruction, opcode, instructions, stackBase, depth,
                     nextValueId, tracking, slotArrayLength, arrayParameterSlots, slotRecordInstance,
@@ -270,6 +301,17 @@ public final class BytecodeToIr {
         if (opcode == 184) {
             return InstructionLowering.of(lowerInvokeStatic(linked, instruction, instructions, stackBase, depth,
                     nextValueId, tracking, classes), irBlockStart);
+        }
+        if (opcode == 185) {
+            InterfaceCallSite callSite = new InterfaceCallSite(linked.method().reference(), instruction.offset());
+            InterfaceDispatch dispatch = interfaceDispatches.get(callSite);
+            if (dispatch == null) {
+                throw new CompileException("Missing linked interface dispatch for "
+                        + linked.method().reference().displayName() + " at bytecode offset "
+                        + instruction.offset());
+            }
+            return InstructionLowering.of(lowerInvokeInterface(linked, instruction, instructions, stackBase, depth,
+                    nextValueId, tracking, dispatch, objectTypeIds), irBlockStart);
         }
         if (ARRAY_ACCESS_OPCODES.get(opcode)) {
             return InstructionLowering.of(ArrayLowering.lowerArrayAccess(opcode, instructions, stackBase, depth,

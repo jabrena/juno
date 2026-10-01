@@ -21,5 +21,9 @@ import java.util.Optional;
  * point has no {@code @Watchdog} annotation.
  */
 public record Program(MethodRef entryPoint, List<LinkedMethod> methods, Map<String, JavaClass> classes,
-                       Board board, Optional<Integer> watchdogTimeoutMillis) {
+                       Board board, Optional<Integer> watchdogTimeoutMillis,
+                       Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches) {
+    public Program {
+        interfaceDispatches = Map.copyOf(interfaceDispatches);
+    }
 }

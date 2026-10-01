@@ -52,12 +52,13 @@ public final class ClassFileReader {
             String className = pool.className(input.readUnsignedShort());
             int superClassIndex = input.readUnsignedShort();
             String superClassName = superClassIndex == 0 ? null : pool.className(superClassIndex);
-            skipInterfaces(input);
+            List<String> interfaces = readInterfaces(input, pool);
             List<FieldInfo> fields = readFields(input, pool);
             List<JavaMethod> methods = readMethods(input, pool, className);
             ClassAnnotations annotations = readClassAttributes(input, pool);
-            return new JavaClass(className, classAccessFlags, superClassName, pool, List.copyOf(methods), fields,
-                    annotations.boardApiClassNames(), annotations.watchdogTimeoutMillis());
+            return new JavaClass(className, classAccessFlags, superClassName, interfaces, pool,
+                    List.copyOf(methods), fields, annotations.boardApiClassNames(),
+                    annotations.watchdogTimeoutMillis());
         } catch (IOException exception) {
             throw new CompileException("Cannot read class file", exception);
         }
@@ -102,9 +103,13 @@ public final class ClassFileReader {
         return new Object();
     }
 
-    private void skipInterfaces(DataInputStream input) throws IOException {
+    private List<String> readInterfaces(DataInputStream input, ConstantPool pool) throws IOException {
         int count = input.readUnsignedShort();
-        input.skipNBytes((long) count * 2);
+        List<String> interfaces = new ArrayList<>(count);
+        for (int index = 0; index < count; index++) {
+            interfaces.add(pool.className(input.readUnsignedShort()));
+        }
+        return List.copyOf(interfaces);
     }
 
     /** Returns every declared field, in class-file declaration order (see {@link JavaClass}). */

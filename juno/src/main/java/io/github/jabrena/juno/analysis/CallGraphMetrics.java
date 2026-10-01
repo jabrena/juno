@@ -52,9 +52,12 @@ final class CallGraphMetrics {
                     continue;
                 }
                 boolean callsAllocator = block.instructions().stream()
-                        .filter(IrInstruction.Call.class::isInstance)
-                        .map(IrInstruction.Call.class::cast)
-                        .anyMatch(call -> transitiveAllocators.contains(call.method()));
+                        .anyMatch(instruction -> switch (instruction) {
+                            case IrInstruction.Call call -> transitiveAllocators.contains(call.method());
+                            case IrInstruction.InterfaceCall call -> call.targets().stream()
+                                    .anyMatch(target -> transitiveAllocators.contains(target.method()));
+                            default -> false;
+                        });
                 if (callsAllocator) {
                     loopAllocators.add(method.reference());
                 }

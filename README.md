@@ -1,4 +1,4 @@
-# Juno: Java for Arduino
+# Juno: Java for Arduino One
 
 Juno is an ahead-of-time compiler for running a practical subset of Java on the Arduino UNO R4 WiFi
 and the Arduino UNO Q. It keeps `javac` as the Java frontend, performs

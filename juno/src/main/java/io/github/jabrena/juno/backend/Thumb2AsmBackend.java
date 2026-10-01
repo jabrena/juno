@@ -19,6 +19,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -307,6 +308,7 @@ public final class Thumb2AsmBackend {
             case IrInstruction.Unary unary -> ints.emitUnary(output, frame, unary);
             case IrInstruction.Compare compare -> ints.emitCompare(output, frame, compare);
             case IrInstruction.Call call -> emitCall(output, frame, call);
+            case IrInstruction.InterfaceCall call -> emitInterfaceCall(output, frame, call);
             case IrInstruction.IntrinsicCall call -> intrinsics.emit(output, frame, call);
             case IrInstruction.NewArray newArray -> arrays.emitNewArray(output, frame, newArray);
             case IrInstruction.NewMultiArray array -> arrays.emitNewMultiArray(output, frame, array);
@@ -374,17 +376,41 @@ public final class Thumb2AsmBackend {
             // juno_alloc zero-fills, so the message word already starts out null.
             asm.emitLoadImmediate(output, "r1", classId);
             output.append("    str r1, [r0, #").append(ThrowableTypes.CLASS_ID_OFFSET).append("]\n");
+        } else if (layout.objectTypeId(object.className()) != null) {
+            asm.emitLoadImmediate(output, "r1", layout.objectTypeId(object.className()));
+            output.append("    str r1, [r0, #0]\n");
         }
         asm.store(output, frame, "r0", object.target());
     }
 
     /** Loads/stores each argument, staging any beyond the first four onto a transient stack area (AAPCS). */
     private void emitCall(StringBuilder output, FrameLayout frame, IrInstruction.Call call) {
-        String label = functionLabels.get(call.method());
-        if (label == null) {
-            throw unsupported("call to unresolved method " + call.method().displayName());
+        emitResolvedCall(output, frame, call.method(), call.arguments(), call.target());
+    }
+
+    private void emitInterfaceCall(StringBuilder output, FrameLayout frame, IrInstruction.InterfaceCall call) {
+        asm.load(output, frame, "r0", call.arguments().getFirst());
+        output.append("    ldr r0, [r0, #0]\n");
+        String done = asm.newLabel(".LinterfaceDone");
+        for (var target : call.targets()) {
+            String next = asm.newLabel(".LinterfaceNext");
+            asm.emitLoadImmediate(output, "r1", target.typeId());
+            output.append("    cmp r0, r1\n")
+                    .append("    bne ").append(next).append('\n');
+            emitResolvedCall(output, frame, target.method(), call.arguments(), call.target());
+            output.append("    b ").append(done).append('\n')
+                    .append(next).append(":\n");
         }
-        List<Value> arguments = call.arguments();
+        output.append("    bl juno_panic\n")
+                .append(done).append(":\n");
+    }
+
+    private void emitResolvedCall(StringBuilder output, FrameLayout frame, MethodRef method,
+                                  List<Value> arguments, Optional<Value> target) {
+        String label = functionLabels.get(method);
+        if (label == null) {
+            throw unsupported("call to unresolved method " + method.displayName());
+        }
         int extra = Math.max(0, arguments.size() - 4);
         int reserved = AsmEmitter.roundUp(extra * AsmEmitter.WORD, 8);
         if (reserved > 0) {
@@ -401,7 +427,7 @@ public final class Thumb2AsmBackend {
         if (reserved > 0) {
             output.append("    add sp, sp, #").append(reserved).append('\n');
         }
-        call.target().ifPresent(target -> asm.store(output, frame, "r0", target));
+        target.ifPresent(value -> asm.store(output, frame, "r0", value));
     }
 
     private void emitTerminator(StringBuilder output, FrameLayout frame, String label, IrBasicBlock block) {

@@ -115,11 +115,11 @@ final class ConstantAndStackSupport {
                 yield opcode == 180 ? slots - 1 : -slots - 1;
             }
             case 197 -> 1 - instruction.operandB();
-            case 182, 183, 184 -> {
+            case 182, 183, 184, 185 -> {
                 MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                 Descriptor descriptor = Descriptor.parse(called.descriptor());
                 int consumed = descriptor.parameters().stream().mapToInt(Descriptor::jvmSlots).sum()
-                        + (opcode == 182 || opcode == 183 ? 1 : 0);
+                        + (opcode == 182 || opcode == 183 || opcode == 185 ? 1 : 0);
                 int produced = Descriptor.jvmSlots(descriptor.returnType());
                 yield produced - consumed;
             }

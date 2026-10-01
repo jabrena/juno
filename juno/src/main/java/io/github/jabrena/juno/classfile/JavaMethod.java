@@ -23,6 +23,7 @@ public record JavaMethod(
 
     public static final int ACC_STATIC = 0x0008;
     public static final int ACC_NATIVE = 0x0100;
+    public static final int ACC_ABSTRACT = 0x0400;
 
     public boolean isStatic() {
         return (accessFlags & ACC_STATIC) != 0;
@@ -30,6 +31,10 @@ public record JavaMethod(
 
     public boolean isNative() {
         return (accessFlags & ACC_NATIVE) != 0;
+    }
+
+    public boolean isAbstract() {
+        return (accessFlags & ACC_ABSTRACT) != 0;
     }
 
     public MethodRef reference() {

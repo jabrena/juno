@@ -35,7 +35,7 @@ public final class RuntimeRiskAnalyzer {
             frames.put(method.reference(), AllocationSizeEstimator.estimatedFrameBytes(method));
 
             InstructionRiskScanner.MethodScan scan = InstructionRiskScanner.scan(method, linked.classes(),
-                    IrCyclicBlocks.cyclicBlocks(method), calls.get(method.reference()),
+                    program.objectTypeIds(), IrCyclicBlocks.cyclicBlocks(method), calls.get(method.reference()),
                     callSites.get(method.reference()), staticFields);
 
             directAllocation.put(method.reference(), scan.allocatedBytes());

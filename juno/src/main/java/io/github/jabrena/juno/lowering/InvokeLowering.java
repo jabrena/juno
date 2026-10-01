@@ -10,8 +10,10 @@ import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
+import io.github.jabrena.juno.linker.InterfaceDispatch;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.ir.InterfaceTarget;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 
@@ -70,6 +72,21 @@ final class InvokeLowering {
                                         tracking);
     }
 
+    static Lowered lowerInvokeInterface(LinkedMethod linked, Instruction instruction,
+                                        List<IrInstruction> instructions, int stackBase, int depth,
+                                        int nextValueId, ValueTracking tracking, InterfaceDispatch dispatch,
+                                        Map<String, Integer> objectTypeIds) {
+        if (dispatch.targets().size() == 1) {
+            return lowerResolvedCall(linked, instruction, dispatch.targets().getFirst().method(), true, List.of(),
+                    instructions, stackBase, depth, nextValueId, tracking);
+        }
+        List<InterfaceTarget> targets = dispatch.targets().stream()
+                .map(target -> new InterfaceTarget(objectTypeIds.get(target.className()), target.method()))
+                .toList();
+        return lowerResolvedCall(linked, instruction, dispatch.interfaceMethod(), true, targets, instructions,
+                stackBase, depth, nextValueId, tracking);
+    }
+
     static CallArguments popCallArguments(LinkedMethod linked, Instruction instruction, MethodRef called,
                                           Descriptor descriptor, Optional<Intrinsic> intrinsic,
                                           List<IrInstruction> instructions, int stackBase, int depth,
@@ -119,6 +136,15 @@ final class InvokeLowering {
     static Lowered lowerCall(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,
                              int stackBase, int depth, int nextValueId, ValueTracking tracking) {
         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
+        boolean hasReceiver = instruction.opcode() == 182 || instruction.opcode() == 183;
+        return lowerResolvedCall(linked, instruction, called, hasReceiver, List.of(), instructions, stackBase,
+                depth, nextValueId, tracking);
+    }
+
+    private static Lowered lowerResolvedCall(LinkedMethod linked, Instruction instruction, MethodRef called,
+                                             boolean hasReceiver, List<InterfaceTarget> interfaceTargets,
+                                             List<IrInstruction> instructions, int stackBase, int depth,
+                                             int nextValueId, ValueTracking tracking) {
         Descriptor descriptor = Descriptor.parse(called.descriptor());
         Optional<Intrinsic> intrinsic = IntrinsicRegistry.resolve(called);
         CallArguments popped = popCallArguments(linked, instruction, called, descriptor, intrinsic, instructions,
@@ -137,7 +163,7 @@ final class InvokeLowering {
             }
         }
         Optional<Value> receiver = Optional.empty();
-        if (instruction.opcode() == 182 || instruction.opcode() == 183) {
+        if (hasReceiver) {
             Popped poppedReceiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
             nextValueId = poppedReceiver.nextValueId();
             receiver = Optional.of(poppedReceiver.value());
@@ -154,7 +180,13 @@ final class InvokeLowering {
                             : Value.int32(nextValueId++);
         }
 
-        if (intrinsic.isPresent()) {
+        if (!interfaceTargets.isEmpty()) {
+            List<Value> callArguments = new ArrayList<>();
+            receiver.ifPresent(callArguments::add);
+            callArguments.addAll(numericArguments);
+            instructions.add(new IrInstruction.InterfaceCall(Optional.ofNullable(target),
+                    List.copyOf(callArguments), interfaceTargets));
+        } else if (intrinsic.isPresent()) {
             instructions.add(new IrInstruction.IntrinsicCall(
                     Optional.ofNullable(target), intrinsic.get(), receiver, numericArguments, literalArguments));
         } else {

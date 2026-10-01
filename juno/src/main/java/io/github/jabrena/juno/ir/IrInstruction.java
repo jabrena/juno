@@ -68,6 +68,18 @@ public sealed interface IrInstruction {
     record Call(Optional<Value> target, MethodRef method, List<Value> arguments) implements IrInstruction {
     }
 
+    /** A polymorphic interface call; {@code arguments} starts with the receiver. */
+    record InterfaceCall(Optional<Value> target, List<Value> arguments, List<InterfaceTarget> targets)
+            implements IrInstruction {
+        public InterfaceCall {
+            arguments = List.copyOf(arguments);
+            targets = List.copyOf(targets);
+            if (arguments.isEmpty() || targets.size() < 2) {
+                throw new IllegalArgumentException("Polymorphic interface calls need a receiver and two targets");
+            }
+        }
+    }
+
     /**
      * A call to a hardware operation; {@code receiver} is present only for instance-style intrinsics.
      * {@code literalArguments} holds this call's {@code String}-typed arguments, in their own left-to-right

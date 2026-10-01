@@ -20,14 +20,16 @@ final class AllocationSizeEstimator {
     private AllocationSizeEstimator() {
     }
 
-    static int allocationBytes(IrInstruction instruction, Map<String, JavaClass> classes) {
+    static int allocationBytes(IrInstruction instruction, Map<String, JavaClass> classes,
+                               Map<String, Integer> objectTypeIds) {
         if (instruction instanceof IrInstruction.NewArray array) {
             int alignment = elementSize(array.elementType());
             return allocationUpperBound(array.length() * alignment, alignment);
         }
         if (instruction instanceof IrInstruction.NewObject object) {
             int size = objectSize(classes.get(object.className()))
-                    + (ThrowableTypes.isThrowable(object.className(), classes) ? ThrowableTypes.HEADER_BYTES : 0);
+                    + (ThrowableTypes.isThrowable(object.className(), classes) ? ThrowableTypes.HEADER_BYTES
+                    : objectTypeIds.containsKey(object.className()) ? Integer.BYTES : 0);
             int alignment = objectAlignment(classes.get(object.className()));
             return allocationUpperBound(size, alignment);
         }
@@ -69,6 +71,8 @@ final class AllocationSizeEstimator {
                     case IrInstruction.IntrinsicCall call ->
                             (call.arguments().stream().mapToInt(argument -> argument.type().jvmSlots()).sum()
                                     + (call.receiver().isPresent() ? 1 : 0)) * 4;
+                    case IrInstruction.InterfaceCall call -> call.arguments().stream()
+                            .mapToInt(argument -> argument.type().jvmSlots()).sum() * 4;
                     case IrInstruction.LongBinary ignored -> 24;
                     case IrInstruction.LongShift ignored -> 16;
                     case IrInstruction.LongNegate ignored -> 8;

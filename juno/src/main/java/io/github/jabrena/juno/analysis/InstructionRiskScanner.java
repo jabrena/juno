@@ -35,8 +35,9 @@ final class InstructionRiskScanner {
                        int constantArrayBytes, boolean loopAllocation) {
     }
 
-    static MethodScan scan(IrMethod method, Map<String, JavaClass> classes, Set<Integer> cyclicBlocks,
-                            Set<MethodRef> calls, List<MethodRef> callSites, Set<FieldRef> staticFields) {
+    static MethodScan scan(IrMethod method, Map<String, JavaClass> classes, Map<String, Integer> objectTypeIds,
+                            Set<Integer> cyclicBlocks, Set<MethodRef> calls, List<MethodRef> callSites,
+                            Set<FieldRef> staticFields) {
         Map<Value, Integer> integerConstants = new HashMap<>();
         Counters counters = new Counters();
         int allocated = 0;
@@ -46,7 +47,7 @@ final class InstructionRiskScanner {
         for (IrBasicBlock block : method.blocks()) {
             int blockAllocation = 0;
             for (IrInstruction instruction : block.instructions()) {
-                int bytes = AllocationSizeEstimator.allocationBytes(instruction, classes);
+                int bytes = AllocationSizeEstimator.allocationBytes(instruction, classes, objectTypeIds);
                 allocated += bytes;
                 blockAllocation += bytes;
                 if (instruction instanceof IrInstruction.IntrinsicCall call
@@ -82,6 +83,14 @@ final class InstructionRiskScanner {
             callSites.add(call.method());
             if (call.arguments().size() == Descriptor.parse(call.method().descriptor()).parameters().size() + 1
                     && isDefinitelyNull(call.arguments().get(0), integerConstants)) {
+                counters.definiteNullDereferences++;
+            }
+        } else if (instruction instanceof IrInstruction.InterfaceCall call) {
+            for (var target : call.targets()) {
+                calls.add(target.method());
+                callSites.add(target.method());
+            }
+            if (isDefinitelyNull(call.arguments().getFirst(), integerConstants)) {
                 counters.definiteNullDereferences++;
             }
         } else if (instruction instanceof IrInstruction.LoadStatic load) {

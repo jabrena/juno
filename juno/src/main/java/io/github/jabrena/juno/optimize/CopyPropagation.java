@@ -97,6 +97,8 @@ public final class CopyPropagation implements CompilerPass {
                     resolve(replacements, compare.left()), resolve(replacements, compare.right()));
             case IrInstruction.Call call -> new IrInstruction.Call(call.target(), call.method(),
                     rewriteValues(call.arguments(), replacements));
+            case IrInstruction.InterfaceCall call -> new IrInstruction.InterfaceCall(call.target(),
+                    rewriteValues(call.arguments(), replacements), call.targets());
             case IrInstruction.IntrinsicCall call -> new IrInstruction.IntrinsicCall(call.target(), call.intrinsic(),
                     rewriteOptional(call.receiver(), replacements), rewriteValues(call.arguments(), replacements),
                     call.literalArguments());

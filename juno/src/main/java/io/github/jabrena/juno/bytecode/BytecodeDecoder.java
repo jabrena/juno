@@ -76,7 +76,8 @@ public final class BytecodeDecoder {
             Map.entry(172, "ireturn"), Map.entry(173, "lreturn"), Map.entry(174, "freturn"), Map.entry(175, "dreturn"),
             Map.entry(176, "areturn"), Map.entry(177, "return"), Map.entry(178, "getstatic"), Map.entry(179, "putstatic"),
             Map.entry(180, "getfield"), Map.entry(181, "putfield"), Map.entry(182, "invokevirtual"), Map.entry(183, "invokespecial"),
-            Map.entry(184, "invokestatic"), Map.entry(187, "new"), Map.entry(188, "newarray"), Map.entry(189, "anewarray"),
+            Map.entry(184, "invokestatic"), Map.entry(185, "invokeinterface"), Map.entry(187, "new"),
+            Map.entry(188, "newarray"), Map.entry(189, "anewarray"),
             Map.entry(190, "arraylength"), Map.entry(191, "athrow"), Map.entry(196, "wide"), Map.entry(197, "multianewarray"),
             Map.entry(198, "ifnull"), Map.entry(199, "ifnonnull"));
 
@@ -118,6 +119,17 @@ public final class BytecodeDecoder {
         if (opcode == 132) {
             require(code, offset, 3, method);
             return DecodedInstruction.of(opcode, 3, unsigned(code[offset + 1]), code[offset + 2]);
+        }
+        if (opcode == 185) {
+            require(code, offset, 5, method);
+            if (code[offset + 4] != 0) {
+                throw error(method, offset, "invokeinterface reserved byte must be zero");
+            }
+            int count = unsigned(code[offset + 3]);
+            if (count == 0) {
+                throw error(method, offset, "invokeinterface argument count must be non-zero");
+            }
+            return DecodedInstruction.of(opcode, 5, unsignedShort(code, offset + 1), count);
         }
         if (opcode == 170 || opcode == 171) {
             return SwitchInstructionDecoder.decode(code, offset, opcode, method, this);

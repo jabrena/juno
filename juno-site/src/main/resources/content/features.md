@@ -52,10 +52,14 @@ Supported today:
   mark/sweep garbage collector: a collection runs automatically when an allocation would otherwise
   exceed the arena, reclaiming any block no longer reachable from the native call stack (Juno has no
   reference-typed static fields, so the stack is the collector's only root set). This is Boehm-GC
-  style — no type tags and no compaction, since a collector that can't tell a real pointer from an int
+  style — no GC type metadata and no compaction, since a collector that can't tell a real pointer from an int
   that happens to match a heap address can't safely move objects — so a program whose *simultaneously
   live* objects exceed 8 KiB still exhausts the arena and panics exactly as before; only the total
   *lifetime* allocation count is no longer bounded by that capacity.
+- interfaces implemented directly by final closed-world classes, with calls through an interface
+  reference (`invokeinterface`). Reachability is based on concrete classes allocated by reachable code:
+  one reachable implementation becomes an ordinary direct call; two or more use a deterministic object
+  type id and generated switch. Inherited and default interface implementations remain unsupported.
 - direct static calls with closed-world reachability; unused methods are omitted
 - runtime {@code String} references in locals, parameters, and return values, with string literals,
   {@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Integer conversions use eight
@@ -137,7 +141,8 @@ Two board examples make the distinction observable:
 
 Not yet supported:
 
-- inheritance/polymorphic dispatch, interfaces, or object arrays with polymorphism
+- class inheritance/virtual polymorphic dispatch, inherited/default interface implementations, or object
+  arrays with polymorphism
 - general string construction/concatenation and other {@code String} methods, threads, reflection, or
   dynamic loading
 - exceptions propagating out of the method that throws them, exception causes, stack traces, suppressed

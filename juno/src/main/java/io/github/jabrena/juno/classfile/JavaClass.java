@@ -21,11 +21,13 @@ import java.util.Optional;
  * components (JLS 8.10), so every non-static field, in declaration order, is a record component; see
  * {@link #recordComponents()}.
  */
-public record JavaClass(String name, int accessFlags, String superClassName, ConstantPool constantPool,
+public record JavaClass(String name, int accessFlags, String superClassName, List<String> interfaces,
+                         ConstantPool constantPool,
                          List<JavaMethod> methods, List<FieldInfo> fields, List<String> boardApiClassNames,
                          Optional<Integer> watchdogTimeoutMillis) {
     private static final int ACC_ENUM = 0x4000;
     private static final int ACC_FINAL = 0x0010;
+    private static final int ACC_INTERFACE = 0x0200;
     private static final String RECORD_SUPERCLASS = "java/lang/Record";
 
     public boolean isEnum() {
@@ -38,6 +40,10 @@ public record JavaClass(String name, int accessFlags, String superClassName, Con
 
     public boolean isFinal() {
         return (accessFlags & ACC_FINAL) != 0;
+    }
+
+    public boolean isInterface() {
+        return (accessFlags & ACC_INTERFACE) != 0;
     }
 
     public List<String> enumConstantNames() {

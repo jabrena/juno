@@ -14,7 +14,6 @@ import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
@@ -37,6 +36,8 @@ public final class Linker {
 
     private final BytecodeDecoder decoder = new BytecodeDecoder();
     private final ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilder();
+    private final InterfaceDispatchResolver interfaceDispatchResolver = new InterfaceDispatchResolver();
+    private final ReachabilityClosure reachabilityClosure = new ReachabilityClosure();
 
     public Program link(Map<String, JavaClass> classes, String mainClassName) {
         return link(classes, mainClassName, Optional.empty());
@@ -64,26 +65,33 @@ public final class Linker {
                 .map(JavaClass::name)
                 .collect(Collectors.toUnmodifiableSet());
 
-        Map<MethodRef, LinkedMethod> reachable = new LinkedHashMap<>();
-        Deque<MethodRef> work = new ArrayDeque<>();
         JavaMethod mainInitializer = mainClass.findMethod("<clinit>", "()V");
-        if (mainInitializer != null) {
-            work.add(mainInitializer.reference());
-        }
-        work.add(entryPoint);
-        while (!work.isEmpty()) {
-            MethodRef reference = work.removeFirst();
-            if (!reachable.containsKey(reference)) {
-                LinkedMethod linked = linkMethod(classes, reference, reference.equals(entryPoint));
-                reachable.put(reference, linked);
-                enqueueDependencies(linked, declaredBoards, classes, work);
+        ReachabilityClosure.Result reachability = reachabilityClosure.resolve(entryPoint,
+                mainInitializer == null ? null : mainInitializer.reference(), classes,
+                reference -> linkMethod(classes, reference, reference.equals(entryPoint)),
+                (linked, work, calls, instantiated) -> enqueueDependencies(linked, declaredBoards, classes, work,
+                        calls, instantiated), interfaceDispatchResolver,
+                method -> hasReachableBody(method, classes),
+                (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
+        for (Map.Entry<InterfaceCallSite, MethodRef> call : reachability.interfaceCalls().entrySet()) {
+            if (!reachability.interfaceDispatches().containsKey(call.getKey())) {
+                throw new CompileException(call.getKey().caller().displayName() + " at bytecode offset "
+                        + call.getKey().bytecodeOffset() + ": no reachable implementation of "
+                        + call.getValue().displayName());
             }
         }
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
             requireCapability(declaredBoards, Capability.WATCHDOG, "");
         }
-        return new Program(entryPoint, List.copyOf(reachable.values()), classes, board,
-                mainClass.watchdogTimeoutMillis());
+        return new Program(entryPoint, reachability.methods(), classes, board,
+                mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches());
+    }
+
+    private void validateInterfaceTargetCapability(InterfaceDispatch dispatch, MethodRef method,
+                                                   List<Board> declaredBoards) {
+        IntrinsicRegistry.resolve(method).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
+                requireCapability(declaredBoards, capability,
+                        " (used through " + dispatch.interfaceMethod().displayName() + ")"));
     }
 
     /** Every board the entry point's {@code @Board} annotation names, or just {@link Board#DEFAULT} if absent. */
@@ -134,7 +142,8 @@ public final class Linker {
 
     /** Queues every method and static initializer {@code linked}'s invoke/static-field instructions reach. */
     private void enqueueDependencies(LinkedMethod linked, List<Board> declaredBoards, Map<String, JavaClass> classes,
-            Deque<MethodRef> work) {
+            Deque<MethodRef> work, Map<InterfaceCallSite, MethodRef> interfaceCalls,
+            Set<String> instantiatedClasses) {
         JavaClass owner = linked.owner();
         MethodRef caller = linked.method().reference();
         for (Instruction instruction : linked.instructions()) {
@@ -142,6 +151,14 @@ public final class Linker {
             if (opcode == 182 || opcode == 183 || opcode == 184) {
                 enqueueCall(owner.constantPool().methodRef(instruction.operandA()), caller, declaredBoards, classes,
                         work);
+            }
+            if (opcode == 185) {
+                MethodRef called = owner.constantPool().methodRef(instruction.operandA());
+                interfaceDispatchResolver.validateCall(linked, instruction, called, classes);
+                interfaceCalls.put(new InterfaceCallSite(caller, instruction.offset()), called);
+            }
+            if (opcode == 187) {
+                instantiatedClasses.add(owner.constantPool().className(instruction.operandA()));
             }
             if (opcode == 178 || opcode == 179) {
                 enqueueStaticInitializer(owner.constantPool().fieldRef(instruction.operandA()), classes, work);

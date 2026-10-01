@@ -24,6 +24,7 @@ final class ProgramLayout {
     private final Map<String, String> stringLiteralSymbols = new LinkedHashMap<>();
     private final Map<IrInstruction.IntArrayConst, String> intArraySymbols = new LinkedHashMap<>();
     private final List<String> throwableClasses;
+    private final Map<String, Integer> objectTypeIds;
 
     /**
      * An object's fields are exactly the ones some {@code LoadField}/{@code StoreField} in the whole
@@ -34,6 +35,7 @@ final class ProgramLayout {
      */
     ProgramLayout(IrProgram program) {
         throwableClasses = program.throwableClasses();
+        objectTypeIds = program.objectTypeIds();
         Map<String, TreeMap<String, FieldRef>> layouts = new TreeMap<>();
         for (IrMethod method : program.methods()) {
             for (IrBasicBlock block : method.blocks()) {
@@ -44,7 +46,9 @@ final class ProgramLayout {
         }
         for (Map.Entry<String, TreeMap<String, FieldRef>> layout : layouts.entrySet()) {
             // A throwable's own fields follow its class-id/message header (see ThrowableTypes).
-            int header = throwableClasses.contains(layout.getKey()) ? ThrowableTypes.HEADER_BYTES : 0;
+            int header = throwableClasses.contains(layout.getKey())
+                    ? ThrowableTypes.HEADER_BYTES
+                    : objectTypeIds.containsKey(layout.getKey()) ? AsmEmitter.WORD : 0;
             int offset = header;
             for (FieldRef field : layout.getValue().values()) {
                 fieldOffsets.put(field, offset);
@@ -89,6 +93,10 @@ final class ProgramLayout {
     /** Every throwable class, in class-id order (see {@link ThrowableTypes}). */
     List<String> throwableClasses() {
         return throwableClasses;
+    }
+
+    Integer objectTypeId(String className) {
+        return objectTypeIds.get(className);
     }
 
     Map<String, String> stringLiteralSymbols() {

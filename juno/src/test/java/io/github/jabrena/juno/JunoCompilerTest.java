@@ -3,6 +3,7 @@ package io.github.jabrena.juno;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
+import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.linker.Program;
 import org.junit.jupiter.api.Test;
@@ -2115,6 +2116,118 @@ class JunoCompilerTest {
         // (receiver in r0, amount in r1) via a real instance-method call, not an inlined field mutation.
         assertThat(generated).contains("movs r0, #4\n    movs r1, #4\n    bl juno_alloc",
                 "bl juno_fn1", "bl juno_fn2", "ldr r1, [r0, #0]", "str r1, [r0, #0]");
+    }
+
+    @Test
+    void resolvesAnInterfaceCallDirectlyWhenOnlyOneImplementationIsReachable() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class DirectInterface {
+                    interface Operation { int apply(int value); }
+                    static final class Increment implements Operation {
+                        private int amount;
+                        Increment(int amount) { this.amount = amount; }
+                        public int apply(int value) { return value + amount; }
+                    }
+                    static final class Unused implements Operation {
+                        public int apply(int value) { return value * 100; }
+                    }
+                    public static void main(String[] args) {
+                        Operation operation = new Increment(3);
+                        Delay.millis(operation.apply(4));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.DirectInterface", source);
+        Program linked = CompilerTestSupport.link(temporaryDirectory, "demo.DirectInterface");
+        IrProgram lowered = new CompilationPipeline().lower(linked);
+
+        assertThat(lowered.objectTypeIds()).isEmpty();
+        assertThat(lowered.methods()).flatExtracting(method -> method.blocks()).flatExtracting(block -> block.instructions())
+                .noneMatch(IrInstruction.InterfaceCall.class::isInstance)
+                .anyMatch(instruction -> instruction instanceof IrInstruction.Call call
+                        && call.method().owner().equals("demo/DirectInterface$Increment")
+                        && call.method().name().equals("apply"));
+
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DirectInterface").assembly();
+        assertThat(assembly).contains("movs r0, #4\n    movs r1, #4\n    bl juno_alloc",
+                "str r1, [r0, #0]", "ldr r1, [r0, #0]")
+                .doesNotContain(".LinterfaceNext", "ldr r0, [r0, #0]\n    movs r1, #1\n    cmp r0, r1");
+    }
+
+    @Test
+    void dispatchesAnInterfaceCallByDeterministicObjectTypeIdWhenMultipleImplementationsAreReachable()
+            throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.io.Gpio;
+                public final class PolymorphicInterface {
+                    interface Operation { int apply(int value); }
+                    static final class Adder implements Operation {
+                        private int operand;
+                        Adder(int operand) { this.operand = operand; }
+                        public int apply(int value) { return value + operand; }
+                    }
+                    static final class Multiplier implements Operation {
+                        private int operand;
+                        Multiplier(int operand) { this.operand = operand; }
+                        public int apply(int value) { return value * operand; }
+                    }
+                    static Operation choose(boolean add) {
+                        return add ? new Adder(2) : new Multiplier(3);
+                    }
+                    static int run(Operation operation, int value) {
+                        return operation.apply(value);
+                    }
+                    public static void main(String[] args) {
+                        Delay.millis(run(choose(Gpio.analogRead(0) > 0), 5));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PolymorphicInterface", source);
+        Program linked = CompilerTestSupport.link(temporaryDirectory, "demo.PolymorphicInterface");
+        IrProgram lowered = new CompilationPipeline().lower(linked);
+
+        assertThat(lowered.objectTypeIds())
+                .containsEntry("demo/PolymorphicInterface$Adder", 1)
+                .containsEntry("demo/PolymorphicInterface$Multiplier", 2);
+        IrInstruction.InterfaceCall dispatch = lowered.methods().stream()
+                .flatMap(method -> method.blocks().stream())
+                .flatMap(block -> block.instructions().stream())
+                .filter(IrInstruction.InterfaceCall.class::isInstance)
+                .map(IrInstruction.InterfaceCall.class::cast)
+                .findFirst().orElseThrow();
+        assertThat(dispatch.targets()).extracting(target -> target.method().owner())
+                .containsExactly("demo/PolymorphicInterface$Adder", "demo/PolymorphicInterface$Multiplier");
+
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PolymorphicInterface").assembly();
+        assertThat(assembly).contains(
+                // One header word plus one field word; concrete field access skips the type id.
+                "movs r0, #8\n    movs r1, #4\n    bl juno_alloc",
+                "str r1, [r0, #0]", "str r1, [r0, #4]", "ldr r1, [r0, #4]",
+                // The interface receiver's header is compared with the deterministic ids 1 and 2.
+                "ldr r0, [r0, #0]", "movs r1, #1\n    cmp r0, r1",
+                "movs r1, #2\n    cmp r0, r1", ".LinterfaceDone");
+    }
+
+    @Test
+    void rejectsAnInterfaceCallWithNoReachableImplementation() throws Exception {
+        String source = """
+                package demo;
+                public final class MissingInterfaceTarget {
+                    interface Operation { int apply(int value); }
+                    static int run(Operation operation) { return operation.apply(1); }
+                    public static void main(String[] args) { run(null); }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MissingInterfaceTarget", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MissingInterfaceTarget"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("no reachable implementation")
+                .hasMessageContaining("demo.MissingInterfaceTarget$Operation.apply(I)I");
     }
 
     @Test
