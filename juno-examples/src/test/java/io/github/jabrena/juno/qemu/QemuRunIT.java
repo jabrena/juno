@@ -50,6 +50,7 @@ class QemuRunIT {
     private static final Path QEMU = BASEDIR.resolve("src/test/qemu");
     private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/qemu/program-classes");
     private static final Path ORACLE_CLASSES = BASEDIR.resolve("target/qemu/oracle-classes");
+    private static final Path JAVA_BASE_PATCH_CLASSES = BASEDIR.resolve("target/qemu/java-base-patch-classes");
     /** Programs whose output differs from the JVM because of a known compiler bug, with the reason. */
     private static final Map<String, String> KNOWN_GAPS = Map.of();
     private static final String EXIT_MARKER = "[juno-exit]\n";
@@ -62,16 +63,21 @@ class QemuRunIT {
 
     @BeforeAll
     static void compilePrograms() throws IOException {
+        List<Path> patchSources;
+        try (Stream<Path> files = Files.walk(QEMU.resolve("patch"))) {
+            patchSources = files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
+        }
+        compilePatch(patchSources, JAVA_BASE_PATCH_CLASSES);
         List<Path> sources;
         try (Stream<Path> files = Files.list(QEMU.resolve("programs"))) {
             sources = files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
         }
-        compile(sources, PROGRAM_CLASSES, junoClasspath());
+        compile(sources, PROGRAM_CLASSES, junoClasspath(), JAVA_BASE_PATCH_CLASSES);
         List<Path> oracleSources;
         try (Stream<Path> files = Files.walk(QEMU.resolve("oracle"))) {
             oracleSources = files.filter(path -> path.toString().endsWith(".java")).toList();
         }
-        compile(oracleSources, ORACLE_CLASSES, junoClasspath());
+        compile(oracleSources, ORACLE_CLASSES, junoClasspath(), JAVA_BASE_PATCH_CLASSES);
     }
 
     /** Every program under src/test/qemu/programs, plus the exception example, once per board. */
@@ -139,6 +145,7 @@ class QemuRunIT {
         junoClasspathWith(PROGRAM_CLASSES).forEach(path -> classpath.add(path.toString()));
         Process process = new ProcessBuilder(
                 Path.of(System.getProperty("java.home"), "bin", "java").toString(),
+                "--patch-module", "java.base=" + JAVA_BASE_PATCH_CLASSES,
                 "-cp", String.join(File.pathSeparator, classpath), mainClass)
                 .redirectErrorStream(true).start();
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
@@ -147,18 +154,32 @@ class QemuRunIT {
         return output;
     }
 
-    private static void compile(List<Path> sources, Path destination, List<Path> classpath) throws IOException {
+    private static void compile(List<Path> sources, Path destination, List<Path> classpath, Path patchModule)
+            throws IOException {
         Files.createDirectories(destination);
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        List<String> arguments = new ArrayList<>(List.of("-d", destination.toString(), "-cp",
+        List<String> arguments = new ArrayList<>(List.of(
+                "--patch-module", "java.base=" + patchModule,
+                "-d", destination.toString(), "-cp",
                 String.join(File.pathSeparator, classpath.stream().map(Path::toString).toList())));
         sources.forEach(source -> arguments.add(source.toString()));
         assertThat(compiler.run(null, null, null, arguments.toArray(String[]::new)))
                 .as("javac %s", sources).isZero();
     }
 
+    private static void compilePatch(List<Path> sources, Path destination) throws IOException {
+        Files.createDirectories(destination);
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        List<String> arguments = new ArrayList<>(List.of(
+                "--patch-module", "java.base=" + QEMU.resolve("patch"),
+                "-d", destination.toString()));
+        sources.forEach(source -> arguments.add(source.toString()));
+        assertThat(compiler.run(null, null, null, arguments.toArray(String[]::new)))
+                .as("javac patch %s", sources).isZero();
+    }
+
     private static List<Path> junoClasspathWith(Path programClasses) {
-        List<Path> entries = new ArrayList<>(List.of(programClasses));
+        List<Path> entries = new ArrayList<>(List.of(programClasses, JAVA_BASE_PATCH_CLASSES));
         entries.addAll(junoClasspath());
         return entries;
     }
