@@ -255,7 +255,8 @@ It needs the `ArduinoBLE` library (not bundled with the `arduino:renesas_uno` co
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.lego.LegoTrain
+  -Djuno.main=io.github.jabrena.juno.api.lego.LegoTrain \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 
 ### Example: InboxCount (basic email support)

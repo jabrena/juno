@@ -1,6 +1,6 @@
 ---
 title: "LEGO Powered Up"
-description: "Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE."
+description: "Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, from the UNO R4 WiFi or the UNO Q."
 layout: page
 ---
 
@@ -13,10 +13,16 @@ It is a compiler intrinsic backed by the Arduino `ArduinoBLE` library.
 
 ## Requirements
 
-- `@Board(ArduinoUnoR4WiFi.class)`. On the UNO R4 WiFi, BLE is provided by the ESP32-S3 radio
-  module; Juno rejects `PoweredUpHub` at compile time on boards without a BLE radio it can reach
-  (the UNO Q's radio belongs to its Linux side).
-- The Arduino `ArduinoBLE` library installed (also done by `juno:install-deps`):
+- One of the two supported boards. The same Java program runs on both; only the way the
+  generated code reaches the radio differs:
+
+  | Board | Bluetooth LE path |
+  | --- | --- |
+  | UNO R4 WiFi | The on-board ESP32-S3 radio module. |
+  | UNO Q | The Linux side's Bluetooth adapter (`hci0`). `ArduinoBLE` tunnels raw HCI packets to it through `Arduino_RouterBridge`, so the board's `arduino-router` must be 0.7.0 or newer (update the board image through App Lab if needed). While the sketch holds the adapter, Linux's own Bluetooth stack can't use it. |
+
+- The Arduino `ArduinoBLE` library installed — 2.1.0 or newer, the first release with the UNO Q
+  transport (also done by `juno:install-deps`):
 
   ```bash
   arduino-cli lib install ArduinoBLE
@@ -26,7 +32,7 @@ It is a compiler intrinsic backed by the Arduino `ArduinoBLE` library.
   Train Hub. Close the LEGO apps first — a hub accepts a single connection at a time.
 
 The UNO R4 WiFi's radio module cannot run Bluetooth LE and Wi-Fi at the same time, so a program
-that uses `PoweredUpHub` should not also use `Wifi`, `Udp`, or the HTTP/email APIs.
+for that board that uses `PoweredUpHub` should not also use `Wifi`, `Udp`, or the HTTP/email APIs.
 
 ## API
 
@@ -61,7 +67,7 @@ ramps a train motor on port A up to cruising speed, brakes, and repeats in rever
 LED to show the direction:
 
 ```java
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LegoTrain {
     private static final int MOTOR = PoweredUpHub.PORT_A;
 
@@ -93,7 +99,8 @@ public final class LegoTrain {
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.lego.LegoTrain
+  -Djuno.main=io.github.jabrena.juno.api.lego.LegoTrain \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 
 Switch the hub on after the upload; the sketch connects to it and prints the hub type on the
