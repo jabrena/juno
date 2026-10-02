@@ -56,7 +56,9 @@ class QemuRunIT {
 
     @Container
     private static final GenericContainer<?> QEMU_RUNNER = new GenericContainer<>(
-            new ImageFromDockerfile("juno-qemu", false).withFileFromPath(".", QEMU));
+            // Delete the named image after this test JVM exits. Keeping it made every harness rebuild move the
+            // juno-qemu tag and leave the previous 3+ GiB image dangling as <none>; Docker still caches its layers.
+            new ImageFromDockerfile("juno-qemu", true).withFileFromPath(".", QEMU));
 
     @BeforeAll
     static void compilePrograms() throws IOException {
