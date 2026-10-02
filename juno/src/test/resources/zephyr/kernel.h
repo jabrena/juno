@@ -29,6 +29,7 @@ inline k_tid_t k_thread_create(struct k_thread*, char*, size_t, k_thread_entry_t
   return nullptr;
 }
 inline int k_thread_join(struct k_thread*, k_timeout_t) { return 0; }
+inline void k_thread_abort(struct k_thread*) {}
 inline int k_sem_init(struct k_sem*, unsigned int, unsigned int) { return 0; }
 inline void k_sem_give(struct k_sem*) {}
 inline int k_sem_take(struct k_sem*, k_timeout_t) { return 0; }

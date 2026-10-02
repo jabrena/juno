@@ -45,6 +45,51 @@ public final class CompilerTestSupport {
         return directory;
     }
 
+    /** Compiles a fixture against the Java 21 preview policy-scope surface removed from later JDKs. */
+    public static Path compileJavaWithStructuredTaskScope(Path directory, String className, String source)
+            throws IOException {
+        String scopeSource = """
+                package java.util.concurrent;
+                public class StructuredTaskScope<T> implements AutoCloseable {
+                    public interface Subtask<T> { T get(); }
+                    public <U extends T> Subtask<U> fork(Callable<? extends U> task) { return null; }
+                    public StructuredTaskScope<T> join() throws InterruptedException { return this; }
+                    public void shutdown() { }
+                    public void close() { }
+                    public static final class ShutdownOnFailure extends StructuredTaskScope<Object> {
+                        public ShutdownOnFailure() { }
+                        @Override public ShutdownOnFailure join() throws InterruptedException { return this; }
+                        public void throwIfFailed() throws ExecutionException { }
+                    }
+                    public static final class ShutdownOnSuccess<T> extends StructuredTaskScope<T> {
+                        public ShutdownOnSuccess() { }
+                        @Override public ShutdownOnSuccess<T> join() throws InterruptedException { return this; }
+                        public T result() throws ExecutionException { return null; }
+                    }
+                }
+                """;
+        compilePatchedJava(directory, "java.util.concurrent.StructuredTaskScope", scopeSource);
+        compilePatchedJava(directory, className, source);
+        return directory;
+    }
+
+    private static void compilePatchedJava(Path directory, String className, String source) throws IOException {
+        Path sourceFile = directory.resolve(className.replace('.', '/') + ".java");
+        Files.createDirectories(sourceFile.getParent());
+        Files.writeString(sourceFile, source, StandardCharsets.UTF_8);
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        String classPath = System.getProperty("java.class.path") + File.pathSeparator + directory;
+        int result = compiler.run(null, null, null,
+                "--patch-module", "java.base=" + directory,
+                "--add-reads", "java.base=ALL-UNNAMED",
+                "-classpath", classPath,
+                "-d", directory.toString(),
+                sourceFile.toString());
+        if (result != 0) {
+            throw new AssertionError("Fixture javac failed with exit code " + result);
+        }
+    }
+
     // `target/classes` holds both the compiler's own api/annotations packages and any cross-class
     // fixtures compiled by an earlier compileJava call.
     private static final List<Path> JUNO_CLASSPATH = List.of(Path.of("target/classes"));
