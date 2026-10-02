@@ -28,16 +28,14 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class PokemonBattle {
-    private static final int FIRST_PORT = 5077;
-    private static final int PORT_COUNT = 20;
     private static final int DISCOVERY_INTERVAL_MILLIS = 700;
     private static final int RESEND_MILLIS = 1000;
 
-    private static final int BACKGROUND = 0x0841;
-    private static final int PANEL = 0x18C3;
+    static final int BACKGROUND = 0x0841;
+    static final int PANEL = 0x18C3;
     private static final int SELECTED = 0x0320;
-    private static final int BUTTON_X = 20;
-    private static final int BUTTON_WIDTH = 200;
+    static final int BUTTON_X = 20;
+    static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 40;
 
     private PokemonBattle() {
@@ -58,9 +56,9 @@ public final class PokemonBattle {
             nodeId = 1;
         }
 
-        int port = FIRST_PORT;
+        int port = PortSelector.FIRST_PORT;
         while (true) {
-            port = choosePort(port);
+            port = PortSelector.choose(port);
             boolean connected = true;
             while (connected) {
                 int selected = choosePokemon();
@@ -71,35 +69,6 @@ public final class PokemonBattle {
                     battle(selected, opponent[0], nodeId, opponent[1], peer, incoming, source, outgoing);
                     Delay.millis(3500);
                 }
-            }
-        }
-    }
-
-    /** Lets the player pick the UDP port, then listens on it; a refused port returns to the selector. */
-    private static int choosePort(int port) {
-        int offset = port - FIRST_PORT;
-        drawPortSelection(FIRST_PORT + offset);
-        while (true) {
-            if (!TftTouchShield.readTouch()) {
-                Delay.millis(10);
-                continue;
-            }
-            int x = TftTouchShield.touchX();
-            int y = TftTouchShield.touchY();
-            waitForRelease();
-            if (y >= 100 && y < 170 && x < 120) {
-                offset = (offset + PORT_COUNT - 1) % PORT_COUNT;
-                drawPortSelection(FIRST_PORT + offset);
-            } else if (y >= 100 && y < 170) {
-                offset = (offset + 1) % PORT_COUNT;
-                drawPortSelection(FIRST_PORT + offset);
-            } else if (y >= 235 && y < 290) {
-                if (Udp.listen(FIRST_PORT + offset)) {
-                    return FIRST_PORT + offset;
-                }
-                showMessage("PORT IN USE", TftTouchShield.RED);
-                Delay.millis(1500);
-                drawPortSelection(FIRST_PORT + offset);
             }
         }
     }
@@ -282,32 +251,6 @@ public final class PokemonBattle {
         TftTouchShield.print(PokemonProtocol.name(pokemon));
     }
 
-    private static void drawPortSelection(int port) {
-        TftTouchShield.fillScreen(BACKGROUND);
-        title("CHOOSE PORT");
-        TftTouchShield.fillRect(BUTTON_X, 100, 60, 70, PANEL);
-        TftTouchShield.fillRect(160, 100, 60, 70, PANEL);
-        TftTouchShield.setTextSize(4);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, PANEL);
-        TftTouchShield.setCursor(37, 117);
-        TftTouchShield.print("-");
-        TftTouchShield.setCursor(177, 117);
-        TftTouchShield.print("+");
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, BACKGROUND);
-        TftTouchShield.setCursor(84, 123);
-        TftTouchShield.print(port);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, BACKGROUND);
-        TftTouchShield.setCursor(20, 190);
-        TftTouchShield.print("Both boards must use the same port");
-        TftTouchShield.fillRect(BUTTON_X, 235, BUTTON_WIDTH, 55, TftTouchShield.CYAN);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.BLACK, TftTouchShield.CYAN);
-        TftTouchShield.setCursor(62, 254);
-        TftTouchShield.print("CONNECT");
-    }
-
     private static void drawWaiting(int selected, int port) {
         TftTouchShield.fillScreen(BACKGROUND);
         title("DISCOVERING...");
@@ -360,7 +303,7 @@ public final class PokemonBattle {
         TftTouchShield.print(status);
     }
 
-    private static void showMessage(String message, int color) {
+    static void showMessage(String message, int color) {
         TftTouchShield.fillScreen(BACKGROUND);
         TftTouchShield.setTextSize(2);
         TftTouchShield.setTextColor(color, BACKGROUND);
@@ -368,7 +311,7 @@ public final class PokemonBattle {
         TftTouchShield.print(message);
     }
 
-    private static void title(String text) {
+    static void title(String text) {
         TftTouchShield.fillRect(0, 0, 240, 44, PANEL);
         TftTouchShield.setTextSize(2);
         TftTouchShield.setTextColor(TftTouchShield.WHITE, PANEL);
@@ -394,7 +337,7 @@ public final class PokemonBattle {
         }
     }
 
-    private static void waitForRelease() {
+    static void waitForRelease() {
         int misses = 0;
         while (misses < 3) {
             if (TftTouchShield.readTouch()) {
