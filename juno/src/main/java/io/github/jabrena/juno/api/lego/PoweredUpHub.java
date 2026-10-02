@@ -10,8 +10,10 @@ package io.github.jabrena.juno.api.lego;
  * Move Hub A to D. {@link #setMotorPower} works for every Powered Up motor (train motors, simple
  * and tacho motors), with the power given as a percentage, {@code -100..100}.
  *
- * <p>Requires {@code @Board(ArduinoUnoR4WiFi.class)}: on the UNO R4 WiFi BLE is provided by the
- * ESP32-S3 radio module, which cannot run BLE and {@code Wifi} at the same time.
+ * <p>Works on both boards. On the UNO R4 WiFi, BLE is provided by the ESP32-S3 radio module, which
+ * cannot run BLE and {@code Wifi} at the same time. On the UNO Q, the radio belongs to the Linux
+ * side: {@code ArduinoBLE} 2.1.0 or newer tunnels raw HCI to its {@code hci0} adapter through
+ * {@code Arduino_RouterBridge}, which needs {@code arduino-router} 0.7.0 or newer on the board.
  */
 public final class PoweredUpHub {
     private PoweredUpHub() {

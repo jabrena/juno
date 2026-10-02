@@ -33,7 +33,7 @@ public enum Capability {
     BLUETOOTH_LE("PoweredUpHub") {
         @Override
         public String unsupportedReason(Board board) {
-            return board.displayName() + " has no Bluetooth LE radio reachable through ArduinoBLE";
+            return board.displayName() + " has no Bluetooth LE adapter reachable through ArduinoBLE";
         }
     },
     WATCHDOG("@Watchdog") {

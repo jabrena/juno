@@ -498,6 +498,37 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    /** On the UNO Q the same ArduinoBLE-based shim sits next to the Zephyr core's own runtime glue. */
+    @Test
+    void compilesAnUnoQLegoPoweredUpProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                @Board(ArduinoUnoQ.class)
+                public final class AsmUnoQLegoTrain {
+                    public static void main(String[] args) {
+                        if (!PoweredUpHub.connect(0)) return;
+                        PoweredUpHub.setLedColor(PoweredUpHub.COLOR_GREEN);
+                        PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, -40);
+                        Delay.millis(1000);
+                        PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQLegoTrain", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQLegoTrain");
+        assertThat(result.runtimeShim()).contains("#include <ArduinoBLE.h>", "juno_delay(uint32_t ms)");
+        Path shim = temporaryDirectory.resolve("AsmUnoQLegoTrainShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
     @Test
     void compilesAnSdPropertiesProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
