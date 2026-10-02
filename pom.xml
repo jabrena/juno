@@ -24,7 +24,7 @@
         <testcontainers.version>2.0.5</testcontainers.version>
         <!-- Logback 1.2.x is the last line for the slf4j-api 1.7.x that Testcontainers brings in. -->
         <logback.version>1.2.13</logback.version>
-        <maven.version>3.9.16</maven.version>
+        <maven.version>3.10.0</maven.version>
         <maven-plugin-tools.version>3.16.0</maven-plugin-tools.version>
         <maven-plugin-pmd.version>3.28.0</maven-plugin-pmd.version>
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
