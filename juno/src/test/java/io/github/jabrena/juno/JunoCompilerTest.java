@@ -600,11 +600,11 @@ class JunoCompilerTest {
         assertThat(r4.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast",
                 "bl juno_udp_send", "bl juno_udp_receive", "bl juno_udp_stop");
         assertThat(r4.runtimeShim()).contains("#include <WiFiS3.h>", "static WiFiUDP juno_udp;",
-                "IPAddress(224, 0, 0, 1)", "juno_udp.beginMulticast(");
+                "IPAddress(255, 255, 255, 255)", "juno_udp.beginMulticast(");
         assertThat(q.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast",
                 "bl juno_udp_send", "bl juno_udp_receive", "bl juno_udp_stop");
         assertThat(q.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
-                "static BridgeUDP<512> juno_udp(Bridge);", "IPAddress(224, 0, 0, 1)")
+                "static BridgeUDP<512> juno_udp(Bridge);", "IPAddress(255, 255, 255, 255)")
                 .doesNotContain("#include <WiFiS3.h>", "static WiFiUDP juno_udp;");
     }
 
