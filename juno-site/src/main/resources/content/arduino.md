@@ -27,7 +27,7 @@ arduino-cli core list
 ```
 
 Some examples also need an optional Arduino library not bundled with that core (`Mouse` for
-`RatonLoco`, `ESP_SSLClient` for `Smtp`'s `STARTTLS` upgrade, `Servo` for `ServoSweep`, and `SdFat`
+`RatonLoco`, `ArduinoBLE` for `LegoTrain`, `ESP_SSLClient` for `Smtp`'s `STARTTLS` upgrade, `Servo` for `ServoSweep`, and `SdFat`
 for `WifiStatusSD`/`WifiStatusTFT` — see their sections below). Install the core and every one of those libraries in one go instead of hunting
 them down per example:
 
@@ -241,6 +241,21 @@ It needs the `Servo` library (not bundled with the `arduino:renesas_uno` core, i
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.motors.ServoSweep
+```
+
+### Example: LegoTrain (LEGO Powered Up over Bluetooth LE)
+
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java)
+connects to a LEGO Powered Up hub and shuttles a train motor on port A back and forth using
+[`PoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHub.java) —
+see [the LEGO Powered Up guide](../lego) for the full API.
+
+It needs the `ArduinoBLE` library (not bundled with the `arduino:renesas_uno` core, installed by
+`juno:install-deps` above, or on its own with `arduino-cli lib install ArduinoBLE`):
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lego.LegoTrain
 ```
 
 ### Example: InboxCount (basic email support)

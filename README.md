@@ -151,4 +151,6 @@ jwebserver -d "$(pwd)/target/site" -p 8000
 - https://sunspotdev.org/docs/index.html
 - https://github.com/dzindra/lcdkeypad
 - https://github.com/arduino-libraries/Mouse
+- https://github.com/arduino-libraries/ArduinoBLE
+- https://lego.github.io/lego-ble-wireless-protocol-docs/
 - https://github.com/mobizt/ESP_SSLClient
