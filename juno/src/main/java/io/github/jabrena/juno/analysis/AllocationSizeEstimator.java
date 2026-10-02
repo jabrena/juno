@@ -47,6 +47,10 @@ final class AllocationSizeEstimator {
                 && call.intrinsic() == Intrinsic.THREAD_NEW) {
             return allocationUpperBound(RuntimeLimits.THREAD_OBJECT_BYTES, 4);
         }
+        if (instruction instanceof IrInstruction.IntrinsicCall call
+                && call.intrinsic() == Intrinsic.REENTRANT_LOCK_NEW) {
+            return allocationUpperBound(Integer.BYTES, Integer.BYTES);
+        }
         return 0;
     }
 

@@ -21,6 +21,9 @@ public final class RuntimeLimits {
     /** Arena bytes of one {@code java.lang.Thread} handle (runnable, flags, id, spare). */
     public static final int THREAD_OBJECT_BYTES = 16;
 
+    /** Most distinct monitors that may be held or contended at once. */
+    public static final int MAX_MONITORS = 8;
+
     private RuntimeLimits() {
     }
 }

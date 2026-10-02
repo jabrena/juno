@@ -50,8 +50,8 @@ Supported today:
 - final closed-world classes with constructors, primitive/reference instance fields, and statically
   resolvable instance calls. Objects come from a fixed 8 KiB zero-filled arena backed by a conservative
   mark/sweep garbage collector: a collection runs automatically when an allocation would otherwise
-  exceed the arena, reclaiming any block no longer reachable from the native call stack (Juno has no
-  reference-typed static fields, so the stack is the collector's only root set). This is Boehm-GC
+  exceed the arena, reclaiming any block no longer reachable from reference-valued static fields or
+  any live thread stack. This is Boehm-GC
   style — no GC type metadata and no compaction, since a collector that can't tell a real pointer from an int
   that happens to match a heap address can't safely move objects — so a program whose *simultaneously
   live* objects exceed 8 KiB still exhausts the arena and panics exactly as before; only the total
@@ -122,8 +122,15 @@ Supported today:
   `run()` prints `Exception in thread "Thread-N" <class>: <message>`, ends that thread and leaves the others
   running. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each Juno thread is a Zephyr thread that waits
   for a baton, so only one runs at a time. Not supported: subclassing `Thread`, thread names/priorities/interrupts,
-  `synchronized` and `java.util.concurrent` (nothing needs them while threads switch only at the points above, but
-  data shared across a `Delay`/`sleep`/loop iteration is not protected), and `StructuredTaskScope`.
+  and `StructuredTaskScope`.
+- restricted synchronization for cooperative threads: `volatile` primitive/reference fields are always loaded from
+  and stored to memory, including across calls and loop backedges; `synchronized (lock)` blocks use a bounded table
+  of eight reentrant intrinsic monitors; and concrete `java.util.concurrent.locks.ReentrantLock` supports only
+  `new ReentrantLock()`, `lock()`, zero-argument `tryLock()`, and `unlock()`, backed by the same monitor runtime.
+  Contended `lock()`/monitor entry yields cooperatively until ownership is available. Synchronized methods, fair
+  locks, timed/interruptible locking, `Condition`, the `Lock` interface, and the rest of `java.util.concurrent`
+  remain unsupported. See the board-ready
+  [`Synchronization` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java).
 - `.class` inputs from directories, individual files, or JARs
 
 ## Runtime-risk inspection

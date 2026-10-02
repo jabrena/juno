@@ -116,6 +116,7 @@ public final class Threads {
         waiting.start();
         slowThread.start();
         waiting.join();
+        slowThread.join();
         Serial.println(waiter.seen());
         Serial.println(slow.total());
 

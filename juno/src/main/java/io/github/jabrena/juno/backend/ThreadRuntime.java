@@ -254,6 +254,14 @@ final class ThreadRuntime {
                 static uint32_t juno_threads_created = 0u;
                 static uint32_t juno_slice_start = 0u;
 
+                struct JunoMonitor {
+                  uintptr_t key;
+                  uint32_t owner;
+                  uint32_t depth;
+                };
+                static constexpr uint32_t JUNO_MAX_MONITORS = ${JUNO_MAX_MONITORS}u;
+                static JunoMonitor juno_monitors[JUNO_MAX_MONITORS];
+
                 extern "C" void juno_thread_entry(int32_t runnable);
 
                 static JunoThreadObject* juno_thread_of(int32_t handle) {
@@ -432,6 +440,61 @@ final class ThreadRuntime {
                   if (juno_live_threads != 0u) juno_sched_block();
                 }
 
+                static JunoMonitor* juno_monitor_find(uintptr_t key, bool create) {
+                  JunoMonitor* available = nullptr;
+                  for (uint32_t index = 0u; index < JUNO_MAX_MONITORS; index++) {
+                    if (juno_monitors[index].key == key) return &juno_monitors[index];
+                    if (available == nullptr && juno_monitors[index].key == 0u) available = &juno_monitors[index];
+                  }
+                  if (!create) return nullptr;
+                  if (available == nullptr) {
+                    Serial.print("[juno-monitor] too many monitors: at most ");
+                    Serial.println(JUNO_MAX_MONITORS);
+                    juno_panic();
+                  }
+                  available->key = key;
+                  return available;
+                }
+
+                static int32_t juno_monitor_try_enter_handle(int32_t handle) {
+                  if (handle == 0) juno_panic();
+                  JunoMonitor* monitor = juno_monitor_find(static_cast<uintptr_t>(static_cast<uint32_t>(handle)), true);
+                  uint32_t owner = juno_current_slot + 1u;
+                  if (monitor->owner != 0u && monitor->owner != owner) return 0;
+                  monitor->owner = owner;
+                  monitor->depth++;
+                  return 1;
+                }
+
+                extern "C" void juno_monitor_enter(int32_t handle) {
+                  while (juno_monitor_try_enter_handle(handle) == 0) juno_thread_yield();
+                }
+
+                extern "C" int32_t juno_monitor_try_enter(int32_t handle) {
+                  return juno_monitor_try_enter_handle(handle);
+                }
+
+                extern "C" int32_t juno_reentrant_lock_new() {
+                  void* lock = juno_alloc(sizeof(uint32_t), sizeof(uint32_t));
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(lock));
+                }
+
+                extern "C" void juno_monitor_exit(int32_t handle) {
+                  if (handle == 0) juno_panic();
+                  JunoMonitor* monitor = juno_monitor_find(
+                      static_cast<uintptr_t>(static_cast<uint32_t>(handle)), false);
+                  uint32_t owner = juno_current_slot + 1u;
+                  if (monitor == nullptr || monitor->owner != owner || monitor->depth == 0u) {
+                    Serial.println("[juno-monitor] unlock by non-owner");
+                    juno_panic();
+                  }
+                  monitor->depth--;
+                  if (monitor->depth == 0u) {
+                    monitor->owner = 0u;
+                    monitor->key = 0u;
+                  }
+                }
+
                 // Every loop backedge: keep the core serviced and, at most once per millisecond, give the other
                 // threads a turn so a thread that never sleeps cannot starve them.
                 extern "C" void juno_thread_backedge() {
@@ -451,6 +514,7 @@ final class ThreadRuntime {
                 }
                 """.replace("${JUNO_PENDING_SWAP}", pendingSave)
                 .replace("${JUNO_THREAD_REPORT}", report)
-                .replace("${JUNO_CORE_DELAY}", delayFunction);
+                .replace("${JUNO_CORE_DELAY}", delayFunction)
+                .replace("${JUNO_MAX_MONITORS}", Integer.toString(RuntimeLimits.MAX_MONITORS));
     }
 }

@@ -347,6 +347,10 @@ public final class BytecodeToIr {
             return InstructionLowering.of(LambdaLowering.lowerFactory(site, instructions, stackBase,
                     depth, nextValueId, tracking), irBlockStart);
         }
+        if (opcode == 194 || opcode == 195) {
+            return InstructionLowering.of(MonitorLowering.lower(opcode, instructions, stackBase, depth,
+                    nextValueId, tracking), irBlockStart);
+        }
         if (ARRAY_ACCESS_OPCODES.get(opcode)) {
             return InstructionLowering.of(ArrayLowering.lowerArrayAccess(opcode, instructions, stackBase, depth,
                     nextValueId, tracking), irBlockStart);

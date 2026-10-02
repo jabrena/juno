@@ -84,11 +84,12 @@ exist (steps 1-5 below). Still unsupported: inheritance/polymorphic dispatch (so
      reuse) is the riskier one and has only been compiled, never run.
 5. **Multi-stack GC rooting.** **Done as part of 4** (`juno_thread_gc_scan`: current stack from the collector's frame,
    others from the saved sp; thread handles and joined threads are roots).
-6. **`synchronized` / `volatile` / `ReentrantLock`**, restricted subset. `volatile` fields: accept the modifier and
-   make sure the compiler never caches the field across a loop backedge or call (the generated code already keeps
-   every value in memory, so reads/writes likely just need to stay un-optimized by `optimize/CopyPropagation`
-   and `ConstantFolder`); with cooperative switching, visibility is free, but a spin loop on a `volatile` flag must
-   still reach a backedge (it does, and that is a switch point).
+6. **`synchronized` / `volatile` / `ReentrantLock`**, restricted subset. **Done.** Volatile fields remain real memory
+   reads/writes across loop backedges and calls; `synchronized (lock)` lowers `monitorenter`/`monitorexit` to eight
+   bounded, reentrant cooperative monitors; concrete `ReentrantLock` supports construction, `lock()`, zero-argument
+   `tryLock()`, and `unlock()` through the same runtime. Contention yields to the scheduler. Synchronized methods and
+   all other `ReentrantLock`/`java.util.concurrent` APIs fail explicitly. Verified by `SynchronizationTest`,
+   `GeneratedAsmToolchainTest`, QEMU `demo.Synchronization`, and the board-ready `examples/Synchronization` program.
 7. **`StructuredTaskScope`** (`ShutdownOnFailure`, `ShutdownOnSuccess`): `fork`, `join`, `throwIfFailed`, `get`,
    lowered onto the task runtime.
 

@@ -13,6 +13,7 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.ThrowableTypes;
+import io.github.jabrena.juno.linker.LockSupport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,7 +157,8 @@ final class ArrayLowering {
                             depth++;
                             break;
                         }
-                        if (className.startsWith("java/lang/") || className.equals("java/util/Properties")) {
+                        if (className.startsWith("java/lang/") || className.equals("java/util/Properties")
+                                || LockSupport.isReentrantLockClass(className)) {
                             nextValueId = pushConst(instructions, stackBase, depth, nextValueId, 0, tracking);
                             depth++;
                             break;

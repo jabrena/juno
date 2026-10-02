@@ -14,6 +14,7 @@ import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.ThreadSupport;
+import io.github.jabrena.juno.linker.LockSupport;
 import io.github.jabrena.juno.linker.LinkedMethod;
 
 import java.util.List;
@@ -181,6 +182,7 @@ final class FieldLowering {
         }
         if (Descriptor.isString(field.descriptor())
                 || ThreadSupport.isThreadType(field.descriptor())
+                || LockSupport.isReentrantLockType(field.descriptor())
                 || Descriptor.isArrayType(field.descriptor())
                 || Descriptor.isReferenceType(field.descriptor(), classes.keySet())) {
             return JunoType.INT32;

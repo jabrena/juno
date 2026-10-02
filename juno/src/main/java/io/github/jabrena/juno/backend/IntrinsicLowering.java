@@ -120,6 +120,7 @@ final class IntrinsicLowering {
         registerExceptions();
         registerGpio(coreRuntime, usesThreads);
         registerThreads(usesThreads);
+        registerMonitors();
         registerSerial();
         registerStrings();
         registerStorage();
@@ -206,6 +207,20 @@ final class IntrinsicLowering {
         ShimFeature runtime = usesThreads ? ShimFeature.THREADS : ShimFeature.THREAD_BASICS;
         shim(Intrinsic.THREAD_SLEEP, "juno_thread_sleep", Result.NONE, wide(0), runtime);
         shim(Intrinsic.THREAD_YIELD, "juno_thread_yield", Result.NONE, List.of(), runtime);
+    }
+
+    /** Intrinsic monitors share the cooperative scheduler's reentrant monitor table. */
+    private void registerMonitors() {
+        shim(Intrinsic.MONITOR_ENTER, "juno_monitor_enter", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.MONITOR_EXIT, "juno_monitor_exit", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.REENTRANT_LOCK_NEW, "juno_reentrant_lock_new", Result.WORD, List.of(),
+                ShimFeature.THREADS);
+        shim(Intrinsic.REENTRANT_LOCK_LOCK, "juno_monitor_enter", Result.NONE, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.REENTRANT_LOCK_TRY_LOCK, "juno_monitor_try_enter", Result.WORD, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.REENTRANT_LOCK_UNLOCK, "juno_monitor_exit", Result.NONE, List.of(RECEIVER),
+                ShimFeature.THREADS);
     }
 
     private void registerSerial() {

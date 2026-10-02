@@ -67,7 +67,7 @@ final class ConstantAndStackSupport {
             Map.entry(166, -2), Map.entry(167, 0), Map.entry(170, -1), Map.entry(171, -1), Map.entry(172, -1),
             Map.entry(173, -2), Map.entry(174, -1), Map.entry(175, -2),
             Map.entry(176, -1), Map.entry(177, 0), Map.entry(187, 1), Map.entry(188, 0), Map.entry(189, 0),
-            Map.entry(190, 0), Map.entry(191, -1), Map.entry(198, -1),
+            Map.entry(190, 0), Map.entry(191, -1), Map.entry(194, -1), Map.entry(195, -1), Map.entry(198, -1),
             Map.entry(199, -1));
 
     static Integer constantPushValue(Instruction instruction, LinkedMethod linked) {

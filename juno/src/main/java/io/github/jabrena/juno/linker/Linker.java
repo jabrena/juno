@@ -185,6 +185,7 @@ public final class Linker {
             Map<String, JavaClass> classes, Deque<MethodRef> work) {
         IntrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
                 requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
+        LockSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {
@@ -283,6 +284,7 @@ public final class Linker {
         if (method.isNative() || method.code() == null) {
             throw new CompileException("Native method has no Juno intrinsic: " + method.reference().displayName());
         }
+        LockSupport.validateMethod(method);
         Descriptor descriptor = Descriptor.parse(method.descriptor());
         boolean conventionalMain = entryPoint
                 && descriptor.parameters().equals(List.of("[Ljava/lang/String;"))

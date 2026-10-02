@@ -182,8 +182,11 @@ final class RuntimeShim {
                 // payload size (always a multiple of 4, so every header stays 4-byte aligned and the
                 // block chain can be walked linearly). juno_gc_stack_top is written once, by the
                 // generated entry-point prologue, with the live sp at program start — see
-                // Thumb2AsmBackend.emitMethod; it bounds every future conservative stack scan.
+                // Thumb2AsmBackend.emitMethod; it bounds every future conservative stack scan. The
+                // generated static range is scanned too, so reference-valued static fields are roots.
                 extern "C" uintptr_t juno_gc_stack_top;
+                extern "C" uint8_t juno_gc_static_start;
+                extern "C" uint8_t juno_gc_static_end;
                 ${JUNO_GC_THREAD_DECLARATION}
                 static constexpr uint32_t JUNO_GC_MARK_BIT = 0x80000000u;
                 static constexpr uint32_t JUNO_GC_FREE_BIT = 0x40000000u;
@@ -317,6 +320,7 @@ final class RuntimeShim {
                   // this function's own frame, deeper than every live Java frame, so scanning from
                   // here up to juno_gc_stack_top is always a safe superset of the true live stack.
                   uint8_t stackMarker;
+                  juno_gc_scan_range(&juno_gc_static_start, &juno_gc_static_end);
                   ${JUNO_GC_STACK_SCAN}
                   uint32_t index = 0;
                   while (index < juno_gc_queue_count) {

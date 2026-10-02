@@ -12,6 +12,7 @@ import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
 import io.github.jabrena.juno.linker.SupportedJdkMethods;
+import io.github.jabrena.juno.linker.LockSupport;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.InterfaceTarget;
@@ -49,6 +50,8 @@ final class InvokeLowering {
                 ? lowerStringBuilderConstruction(instructions, stackBase, depth, nextValueId, tracking)
                 : isThreadConstruction(called)
                         ? lowerThreadConstruction(instructions, stackBase, depth, nextValueId, tracking)
+                : called.equals(LockSupport.CONSTRUCTOR)
+                        ? lowerReentrantLockConstruction(instructions, stackBase, depth, nextValueId, tracking)
                 : isPropertiesConstruction(called)
                         ? lowerPropertiesConstruction(instructions, stackBase, depth, nextValueId, tracking)
                         : ThrowableTypes.isBuiltInConstructor(called)
@@ -352,6 +355,18 @@ final class InvokeLowering {
         nextValueId = discardedReceiver.nextValueId();
         Value handle = Value.int32(nextValueId++);
         instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.PROPERTIES_NEW,
+                Optional.empty(), List.of(), List.of()));
+        storeToStack(instructions, stackBase, depth - 1, handle, tracking);
+        return new Lowered(nextValueId, depth);
+    }
+
+    /** {@code new ReentrantLock()}: replaces javac's uninitialized placeholder with an arena identity handle. */
+    static Lowered lowerReentrantLockConstruction(List<IrInstruction> instructions, int stackBase, int depth,
+                                                   int nextValueId, ValueTracking tracking) {
+        Popped discardedReceiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
+        nextValueId = discardedReceiver.nextValueId();
+        Value handle = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.REENTRANT_LOCK_NEW,
                 Optional.empty(), List.of(), List.of()));
         storeToStack(instructions, stackBase, depth - 1, handle, tracking);
         return new Lowered(nextValueId, depth);

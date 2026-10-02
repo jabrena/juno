@@ -556,7 +556,9 @@ public final class Thumb2AsmBackend {
                 .flatMap(block -> block.instructions().stream())
                 .anyMatch(instruction -> instruction instanceof IrInstruction.IntrinsicCall call
                         && switch (call.intrinsic()) {
-                            case THREAD_NEW, THREAD_START, THREAD_JOIN, THREAD_IS_ALIVE, THREAD_SET_DAEMON -> true;
+                            case THREAD_NEW, THREAD_START, THREAD_JOIN, THREAD_IS_ALIVE, THREAD_SET_DAEMON,
+                                    MONITOR_ENTER, MONITOR_EXIT, REENTRANT_LOCK_NEW, REENTRANT_LOCK_LOCK,
+                                    REENTRANT_LOCK_TRY_LOCK, REENTRANT_LOCK_UNLOCK -> true;
                             default -> false;
                         }));
     }
