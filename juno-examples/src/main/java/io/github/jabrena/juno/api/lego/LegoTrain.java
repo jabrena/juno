@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.lego;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
@@ -12,11 +13,11 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * forwards, blue backwards, red while stopped). If the hub switches off or goes out of range, the
  * program waits for it to come back.
  *
- * <p>Needs the {@code ArduinoBLE} library ({@code arduino-cli lib install ArduinoBLE}) and a hub
- * with a train or other Powered Up motor on port A, e.g. a City Hub (88009) with a train motor
- * (88011).
+ * <p>Needs the {@code ArduinoBLE} library ({@code arduino-cli lib install ArduinoBLE}; 2.1.0 or
+ * newer on the UNO Q) and a hub with a train or other Powered Up motor on port A, e.g. a City Hub
+ * (88009) with a train motor (88011). Pick the board with {@code -Djuno.board}.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LegoTrain {
     private static final int MOTOR = PoweredUpHub.PORT_A;
     private static final int CRUISE_POWER = 60;
