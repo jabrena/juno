@@ -51,7 +51,8 @@ final class ShimLibraries {
     /**
      * A BLE central for one LEGO Powered Up hub, speaking LEGO Wireless Protocol 3.0 through the
      * optional {@code ArduinoBLE} library: every command is one write to the hub's single
-     * characteristic, framed as {@code [length, hub id 0, message type, payload...]}.
+     * characteristic, framed as {@code [length, hub id 0, message type, payload...]}, and the hub's
+     * notifications on that characteristic carry the sensor values {@code enableSensor} asked for.
      */
     static String legoPoweredUpHelpers() {
         return """
@@ -64,6 +65,56 @@ final class ShimLibraries {
                 static bool juno_lego_ble_started = false;
                 static bool juno_lego_led_ready = false;
                 static int32_t juno_lego_hub_type = 0;
+
+                // Latest single-value Port Value (0x45) reading per enabled port; a port of 0xFF marks a free slot.
+                static const int JUNO_LEGO_SENSOR_SLOTS = 8;
+                static uint8_t juno_lego_sensor_ports[JUNO_LEGO_SENSOR_SLOTS];
+                static int32_t juno_lego_sensor_values[JUNO_LEGO_SENSOR_SLOTS];
+
+                static void juno_lego_clear_sensors() {
+                  for (int i = 0; i < JUNO_LEGO_SENSOR_SLOTS; i++) {
+                    juno_lego_sensor_ports[i] = 0xFF;
+                    juno_lego_sensor_values[i] = 0;
+                  }
+                }
+
+                static int juno_lego_sensor_slot(uint8_t port) {
+                  for (int i = 0; i < JUNO_LEGO_SENSOR_SLOTS; i++) {
+                    if (juno_lego_sensor_ports[i] == port) {
+                      return i;
+                    }
+                  }
+                  return -1;
+                }
+
+                // Decodes one upstream message: [length (1 or 2 bytes), hub id, type, port, value...].
+                // Only a single 8/16/32-bit little-endian value is decoded; other sizes keep the first byte.
+                static void juno_lego_receive(const uint8_t* message, int length) {
+                  int header = (length > 0 && (message[0] & 0x80) != 0) ? 2 : 1;
+                  if (length < header + 4 || message[header + 1] != 0x45) {
+                    return;
+                  }
+                  int slot = juno_lego_sensor_slot(message[header + 2]);
+                  if (slot < 0) {
+                    return;
+                  }
+                  const uint8_t* value = message + header + 3;
+                  int size = length - header - 3;
+                  if (size == 4) {
+                    juno_lego_sensor_values[slot] = static_cast<int32_t>(static_cast<uint32_t>(value[0])
+                        | (static_cast<uint32_t>(value[1]) << 8) | (static_cast<uint32_t>(value[2]) << 16)
+                        | (static_cast<uint32_t>(value[3]) << 24));
+                  } else if (size == 2) {
+                    juno_lego_sensor_values[slot] = static_cast<int16_t>(value[0] | (value[1] << 8));
+                  } else {
+                    juno_lego_sensor_values[slot] = static_cast<int8_t>(value[0]);
+                  }
+                }
+
+                static void juno_lego_on_notification(BLEDevice device, BLECharacteristic characteristic) {
+                  static_cast<void>(device);
+                  juno_lego_receive(characteristic.value(), characteristic.valueLength());
+                }
 
                 static bool juno_lego_connected() {
                   BLE.poll();
@@ -113,6 +164,8 @@ final class ShimLibraries {
                     }
                     juno_lego_ble_started = true;
                   }
+                  // A new connection starts with no ports reporting values.
+                  juno_lego_clear_sensors();
                   juno_lego_led_ready = false;
                   BLE.scanForUuid(juno_lego_service_uuid);
                   uint32_t started = millis();
@@ -130,11 +183,16 @@ final class ShimLibraries {
                       type = advertised[3];
                     }
                     if (candidate.connect()) {
-                      if (candidate.discoverService(juno_lego_service_uuid)
-                          && candidate.characteristic(juno_lego_characteristic_uuid)) {
-                        juno_lego_hub = candidate;
-                        juno_lego_hub_type = type;
-                        return 1;
+                      if (candidate.discoverService(juno_lego_service_uuid)) {
+                        // Copy-initialized, never assigned: see juno_lego_hub above.
+                        BLECharacteristic characteristic = candidate.characteristic(juno_lego_characteristic_uuid);
+                        if (characteristic) {
+                          characteristic.setEventHandler(BLEUpdated, juno_lego_on_notification);
+                          characteristic.subscribe();
+                          juno_lego_hub = candidate;
+                          juno_lego_hub_type = type;
+                          return 1;
+                        }
                       }
                       candidate.disconnect();
                     }
@@ -174,6 +232,28 @@ final class ShimLibraries {
                     juno_lego_led_ready = juno_lego_connected();
                   }
                   juno_lego_write_mode0(port, color);
+                }
+
+                extern "C" void juno_lego_hub_enable_sensor(int32_t port, int32_t mode) {
+                  uint8_t portId = static_cast<uint8_t>(port);
+                  int slot = juno_lego_sensor_slot(portId);
+                  if (slot < 0) {
+                    slot = juno_lego_sensor_slot(0xFF);
+                  }
+                  if (slot < 0 || !juno_lego_connected()) {
+                    return;
+                  }
+                  juno_lego_sensor_ports[slot] = portId;
+                  juno_lego_sensor_values[slot] = 0;
+                  // Port input format setup (0x41): report every change (delta 1) of this mode, notifications on.
+                  const uint8_t setup[] = {portId, static_cast<uint8_t>(mode), 0x01, 0x00, 0x00, 0x00, 0x01};
+                  juno_lego_send(0x41, setup, sizeof(setup));
+                }
+
+                extern "C" int32_t juno_lego_hub_read_sensor(int32_t port) {
+                  BLE.poll();
+                  int slot = juno_lego_sensor_slot(static_cast<uint8_t>(port));
+                  return slot < 0 ? 0 : juno_lego_sensor_values[slot];
                 }
 
                 extern "C" void juno_lego_hub_disconnect() {

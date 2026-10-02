@@ -1241,6 +1241,8 @@ class JunoCompilerTest {
                             PoweredUpHub.setLedColor(PoweredUpHub.COLOR_GREEN);
                             PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, -50);
                             PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+                            PoweredUpHub.enableSensor(PoweredUpHub.PORT_B, PoweredUpHub.MODE_MOTOR_POSITION);
+                            PoweredUpHub.setLedColor(PoweredUpHub.readSensor(PoweredUpHub.PORT_B));
                         }
                         if (PoweredUpHub.isConnected()) {
                             PoweredUpHub.disconnect();
@@ -1255,8 +1257,8 @@ class JunoCompilerTest {
 
         assertThat(result.assembly()).contains("bl juno_lego_hub_connect", "bl juno_lego_hub_type_id",
                 "bl juno_lego_hub_set_led_color", "bl juno_lego_hub_set_motor_power",
-                "bl juno_lego_hub_brake_motor", "bl juno_lego_hub_is_connected", "bl juno_lego_hub_disconnect",
-                "bl juno_lego_hub_switch_off");
+                "bl juno_lego_hub_brake_motor", "bl juno_lego_hub_enable_sensor", "bl juno_lego_hub_read_sensor",
+                "bl juno_lego_hub_is_connected", "bl juno_lego_hub_disconnect", "bl juno_lego_hub_switch_off");
         assertThat(result.runtimeShim()).contains("#include <ArduinoBLE.h>",
                 "\"00001623-1212-efde-1623-785feabcd123\"",
                 "extern \"C\" void juno_lego_hub_set_motor_power(int32_t port, int32_t powerPercent)");

@@ -248,7 +248,8 @@ public final class Linker {
                 Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER, Intrinsic.SMTP_SEND);
         require(required, Capability.BLUETOOTH_LE, Intrinsic.LEGO_HUB_CONNECT, Intrinsic.LEGO_HUB_IS_CONNECTED,
                 Intrinsic.LEGO_HUB_TYPE, Intrinsic.LEGO_HUB_SET_MOTOR_POWER, Intrinsic.LEGO_HUB_BRAKE_MOTOR,
-                Intrinsic.LEGO_HUB_SET_LED_COLOR, Intrinsic.LEGO_HUB_DISCONNECT, Intrinsic.LEGO_HUB_SWITCH_OFF);
+                Intrinsic.LEGO_HUB_SET_LED_COLOR, Intrinsic.LEGO_HUB_ENABLE_SENSOR, Intrinsic.LEGO_HUB_READ_SENSOR,
+                Intrinsic.LEGO_HUB_DISCONNECT, Intrinsic.LEGO_HUB_SWITCH_OFF);
         return Collections.unmodifiableMap(required);
     }
 

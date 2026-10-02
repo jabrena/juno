@@ -10,6 +10,10 @@ package io.github.jabrena.juno.api.lego;
  * Move Hub A to D. {@link #setMotorPower} works for every Powered Up motor (train motors, simple
  * and tacho motors), with the power given as a percentage, {@code -100..100}.
  *
+ * <p>Motors and sensors report values once {@link #enableSensor} has subscribed to one of their
+ * modes; {@link #readSensor} then returns the latest value the hub sent, e.g. a tacho motor's
+ * position in degrees or the button pressed on a Powered Up remote.
+ *
  * <p>Works on both boards. On the UNO R4 WiFi, BLE is provided by the ESP32-S3 radio module, which
  * cannot run BLE and {@code Wifi} at the same time. On the UNO Q, the radio belongs to the Linux
  * side: {@code ArduinoBLE} 2.1.0 or newer tunnels raw HCI to its {@code hci0} adapter through
@@ -46,6 +50,31 @@ public final class PoweredUpHub {
     public static final int COLOR_RED = 9;
     public static final int COLOR_WHITE = 10;
 
+    /** {@link #enableSensor} modes of a tacho motor (BOOST, Technic and SPIKE motors with a rotation sensor). */
+    public static final int MODE_MOTOR_SPEED = 1;
+    /** Cumulative motor position in degrees, relative to where the motor was when the hub started. */
+    public static final int MODE_MOTOR_POSITION = 2;
+
+    /**
+     * {@link #enableSensor} modes of the Color and Distance Sensor (88007): the detected color as the
+     * sensor's own color number, which mostly but not fully matches the {@code COLOR_*} LED values,
+     * or {@code -1} when it detects none.
+     */
+    public static final int MODE_COLOR = 0;
+    /** Proximity of the nearest object, {@code 0} (touching) to {@code 10} (nothing in range). */
+    public static final int MODE_PROXIMITY = 1;
+
+    /**
+     * {@link #enableSensor} mode of each button set ({@link #PORT_A} left, {@link #PORT_B} right) of
+     * the Powered Up remote (88010), connected as a hub of {@link #TYPE_REMOTE_CONTROL}; reads one of
+     * the {@code REMOTE_*} values.
+     */
+    public static final int MODE_REMOTE_BUTTONS = 0;
+    public static final int REMOTE_RELEASED = 0;
+    public static final int REMOTE_PLUS = 1;
+    public static final int REMOTE_MINUS = -1;
+    public static final int REMOTE_STOP = 127;
+
     /**
      * Scans for the first advertising Powered Up hub and connects to it, returning whether a hub is
      * connected afterwards. Waits at most {@code timeoutMillis}, or indefinitely when it is zero or
@@ -70,6 +99,23 @@ public final class PoweredUpHub {
 
     /** Sets the hub's status LED to one of the {@code COLOR_*} values. */
     public static native void setLedColor(int color);
+
+    /**
+     * Asks the hub to report every change of {@code mode} of the motor or sensor on {@code port},
+     * for {@link #readSensor} to return. Mode numbers are device specific; the {@code MODE_*}
+     * constants cover common devices. Up to eight ports report at a time, and a new
+     * {@link #connect} starts with none, so enable them again after reconnecting.
+     */
+    public static native void enableSensor(int port, int mode);
+
+    /**
+     * The latest value reported by the port {@link #enableSensor} subscribed to, or {@code 0}
+     * before the first report. Decodes modes reporting a single 8-, 16- or 32-bit value; for a mode
+     * reporting several values (e.g. a tilt sensor's axes) only its first byte is returned. Call it
+     * regularly: values are received while it (or another hub call) runs, not during
+     * {@code Delay.millis}.
+     */
+    public static native int readSensor(int port);
 
     /** Closes the BLE connection, leaving the hub on and advertising again. */
     public static native void disconnect();

@@ -313,6 +313,10 @@ final class IntrinsicLowering {
                 ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_SET_LED_COLOR, "juno_lego_hub_set_led_color", Result.NONE, List.of(arg(0)),
                 ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_ENABLE_SENSOR, "juno_lego_hub_enable_sensor", Result.NONE, List.of(arg(0), arg(1)),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_READ_SENSOR, "juno_lego_hub_read_sensor", Result.WORD, List.of(arg(0)),
+                ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_DISCONNECT, "juno_lego_hub_disconnect", Result.NONE, List.of(),
                 ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_SWITCH_OFF, "juno_lego_hub_switch_off", Result.NONE, List.of(),
