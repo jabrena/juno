@@ -19,9 +19,10 @@ final class NetworkShimLibraries {
                 static bool juno_udp_listening = false;
 
                 static IPAddress juno_udp_discovery_group() {
-                  // 224.0.0.1 is the link-local all-hosts group. It works through UNO Q's Linux
-                  // BridgeUDP without requiring the SO_BROADCAST option and stays on the LAN.
-                  return IPAddress(224, 0, 0, 1);
+                  // Limited broadcast. A multicast group would be tidier, but neither board really joins one:
+                  // the UNO Q's BridgeUDP::beginMulticast ignores the address and just binds the port, and
+                  // the UNO R4 WiFi's modem cannot join at all. A socket bound to the port receives broadcast.
+                  return IPAddress(255, 255, 255, 255);
                 }
 
                 static bool juno_udp_valid_port(int32_t port) {
@@ -47,6 +48,11 @@ final class NetworkShimLibraries {
                   if (juno_udp_listening) juno_udp.stop();
                   juno_udp_listening = juno_udp.beginMulticast(
                       juno_udp_discovery_group(), static_cast<uint16_t>(localPort)) == 1;
+                  // Not every WiFi stack accepts the multicast call (the UNO R4 WiFi's does not). A plain socket
+                  // receives the same broadcast and unicast packets, so fall back to it.
+                  if (!juno_udp_listening) {
+                    juno_udp_listening = juno_udp.begin(static_cast<uint16_t>(localPort)) == 1;
+                  }
                   return juno_udp_listening ? 1 : 0;
                 }
 

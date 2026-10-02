@@ -155,21 +155,21 @@ final class ProgramLayout {
     }
 
     private void emitStaticStorage(StringBuilder output) {
-        if (staticSymbols.isEmpty()) {
-            return;
-        }
         output.append("    .bss\n")
-                .append("    .align 2\n");
+                .append("    .align 2\n")
+                .append("    .global juno_gc_static_start\n")
+                .append("    .global juno_gc_static_end\n")
+                .append("juno_gc_static_start:\n");
         for (Map.Entry<FieldRef, String> entry : staticSymbols.entrySet()) {
             output.append(entry.getValue()).append(":\n")
                     .append("    .space ").append(fieldWidth(entry.getKey())).append('\n');
         }
+        output.append("juno_gc_static_end:\n");
     }
 
     /**
-     * Unconditional (unlike {@link #emitStaticStorage}, which is skipped entirely when the program
-     * has no static fields): the conservative GC's stack scan needs this bound regardless of
-     * whether the program happens to use static fields.
+     * The conservative GC's stack scan needs this bound regardless of whether the program happens
+     * to use static fields.
      */
     private void emitGcStackTopStorage(StringBuilder output) {
         output.append("    .bss\n")

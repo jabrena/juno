@@ -21,7 +21,8 @@ final class InterfaceDispatchResolver {
         JavaClass interfaceClass = classes.get(called.owner());
         boolean lambdaInterface = lambdaSites.stream()
                 .anyMatch(site -> site.interfaceMethod().equals(called));
-        if ((interfaceClass == null && !lambdaInterface)
+        if ((interfaceClass == null && !lambdaInterface && !called.equals(ThreadSupport.RUNNABLE_RUN)
+                && !StructuredTaskSupport.isCallableCall(called))
                 || (interfaceClass != null && !interfaceClass.isInterface())) {
             throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
                     + instruction.offset() + ": invokeinterface owner is not an available interface: "

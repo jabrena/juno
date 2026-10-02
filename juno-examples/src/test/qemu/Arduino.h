@@ -26,9 +26,12 @@ inline void digitalWrite(int32_t, int32_t) {}
 inline int32_t digitalRead(int32_t) { return LOW; }
 inline int32_t analogRead(int32_t) { return 0; }
 inline void analogWrite(int32_t, int32_t) {}
-inline void delay(unsigned long) {}
+// A virtual clock: delay() advances by its requested duration, and the Serial service hook below advances on
+// yield() so tight loop backedges model hardware time progressing without introducing a host-time dependency.
+inline unsigned long juno_harness_clock = 0;
+inline void delay(unsigned long ms) { juno_harness_clock += ms; }
 inline void delayMicroseconds(unsigned int) {}
-inline unsigned long millis() { return 0; }
+inline unsigned long millis() { return juno_harness_clock; }
 inline unsigned long micros() { return 0; }
 inline void randomSeed(unsigned long) {}
 inline long random(long bound) { return bound > 0 ? bound - 1 : 0; }
@@ -76,6 +79,9 @@ struct HarnessSerial {
     print(value);
     println();
   }
-  explicit operator bool() const { return true; }
+  explicit operator bool() const {
+    juno_harness_clock++;
+    return true;
+  }
 };
 inline HarnessSerial Serial;

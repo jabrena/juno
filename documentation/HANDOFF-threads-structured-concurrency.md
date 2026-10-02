@@ -1,6 +1,6 @@
 # HANDOFF: threads and structured concurrency in Juno
 
-Status: **idea / design only. No code written, nothing scoped or approved.**
+Status: **steps 1-7 done (uncommitted, see below).**
 Origin: design discussion (ChatGPT share "Threads support in Juno", 2026-10-01), reviewed in a Claude Code session.
 Claims about Juno's internals below come from that discussion plus `AGENTS.md` and
 `juno-site/src/main/resources/content/features.md`; verify against the code before relying on them.
@@ -44,9 +44,10 @@ intrinsic-lowering pattern (`IntrinsicRegistry` / `IntrinsicLowering`).
 
 ## Current state (per features.md)
 
-Unsupported today: interfaces, inheritance/polymorphic dispatch, threads, general lambdas / method references,
-cross-method exception propagation (only local try/catch works). Conservative mark/sweep GC over a fixed 8 KiB arena,
-rooted on the native call stack.
+Interfaces/`invokeinterface`, lambdas and method references, cross-method exceptions, cooperative threads,
+restricted synchronization, and policy-based structured task scopes now exist (steps 1-7 below). Still unsupported:
+inheritance/polymorphic dispatch (so `extends Thread`) and the rest of the general `java.util.concurrent` API.
+Conservative mark/sweep GC uses a fixed 8 KiB arena rooted on every live thread's stack and active task scope.
 
 ## Prerequisites, in dependency order
 
@@ -65,11 +66,50 @@ rooted on the native call stack.
    - Remaining gaps: the pending slot is a single global (the thread runtime needs per-thread state, step 4/5);
      `addSuppressed` is dropped (a `close()` failure during unwinding is lost); no causes or stack traces.
    - Still unsupported: compound assignment on array elements (`dup2`; widening the opcode subset needs approval).
-4. **Thread runtime.** `Thread.start/join/sleep/yield` as intrinsics onto a task runtime.
-5. **Multi-stack GC rooting.** Scan every live thread's stack (per-thread stack bounds, saved SP, state, entry point).
-6. **`synchronized` / `ReentrantLock`**, restricted subset.
-7. **`StructuredTaskScope`** (`ShutdownOnFailure`, `ShutdownOnSuccess`): `fork`, `join`, `throwIfFailed`, `get`,
-   lowered onto the task runtime.
+4. **Thread runtime.** **Done 2026-10-02 (uncommitted).** `new Thread(Runnable)`, `start`, `join`, `isAlive`,
+   `setDaemon`, `Thread.sleep(long)`, `Thread.yield()`; `Delay.millis` becomes a sleep once the program has threads.
+   Decisions (scoped with the maintainer): both boards; Runnable classes/lambdas first (no `extends Thread`);
+   compile-time limits (`RuntimeLimits.MAX_THREADS` = 4 including main; stack 2 KiB R4 / 4 KiB Q).
+   - Cooperative, board-independent scheduler in the shim (`backend/ThreadRuntime.scheduler`); switches only at loop
+     backedges (rate-limited to 1/ms, `juno_thread_backedge` replaces `bl yield`), `Delay`, `sleep`, `yield`, `join`,
+     so the arena, GC and pending-exception slot need no locks. The pending exception is saved/restored per switch.
+   - Per-core port in `CoreRuntime.threadPort()`: UNO R4 = own stacks + a `juno_context_switch` asm routine
+     (r4-r11, lr, s16-s31); UNO Q = one Zephyr thread per Juno thread passing a baton semaphore, so only one runs.
+   - Front end: `linker/ThreadSupport` registers one synthetic `Runnable.run()` interface-call site when a `Thread`
+     is created/started; `lowering/ThreadEntryLowering` turns its resolved dispatch into the exported function
+     `juno_thread_entry(Runnable)` the shim's bootstrap calls on the new stack. `new Thread(r)` lowers like
+     `Properties` (arena handle, `THREAD_NEW`). `Thread` and `Runnable` are accepted as parameter/field types.
+   - Verified: `ThreadsTest` (generated text, both shims), QEMU `demo.Threads` (R4 only: the harness has no Zephyr
+     kernel) equal to the JVM's output, real `arduino-cli compile` of `examples/Threads` for both boards.
+     **Not yet flashed**: neither board. The UNO Q port (Zephyr threads, 4 KiB stacks, `k_thread_join` on slot
+     reuse) is the riskier one and has only been compiled, never run.
+5. **Multi-stack GC rooting.** **Done as part of 4** (`juno_thread_gc_scan`: current stack from the collector's frame,
+   others from the saved sp; thread handles and joined threads are roots).
+6. **`synchronized` / `volatile` / `ReentrantLock`**, restricted subset. **Done.** Volatile fields remain real memory
+   reads/writes across loop backedges and calls; `synchronized (lock)` lowers `monitorenter`/`monitorexit` to eight
+   bounded, reentrant cooperative monitors; concrete `ReentrantLock` supports construction, `lock()`, zero-argument
+   `tryLock()`, and `unlock()` through the same runtime. Contention yields to the scheduler. Synchronized methods and
+   all other `ReentrantLock`/`java.util.concurrent` APIs fail explicitly. Verified by `SynchronizationTest`,
+   `GeneratedAsmToolchainTest`, QEMU `demo.Synchronization`, and the board-ready `examples/Synchronization` program.
+7. **`StructuredTaskScope`**. **Done.** The Java 21 preview policy classes `ShutdownOnFailure` and
+   `ShutdownOnSuccess` support construction, `fork(Callable)`, `join()`, `throwIfFailed()`, `result()`,
+   `Subtask.get()`, and `close()`, lowered onto the cooperative task runtime. The first failure/success shuts down
+   the scope and cancels sibling scheduler slots; owner-thread and call-order violations raise
+   `IllegalStateException`, while failed policy results raise `ExecutionException`. Because JDK 25 replaced this
+   API shape, input using it must be compiled as Java 21 preview bytecode before Juno consumes the class files.
+   Verified by `StructuredTaskScopeTest`, real ARM assembly and C++ shim compilation for both board ports,
+   QEMU `demo.StructuredTasks` against its JVM oracle, and real `arduino-cli compile` for the UNO R4 WiFi and the
+   UNO Q (`arduino:zephyr:unoq`, 2026-10-02 review).
+   **To improve later** (found in the 2026-10-02 review; none is fixed or tested yet):
+   - **Hardware:** flash `StructuredTasks` on both boards. QEMU covers the R4 only and the test `kernel.h` stubs
+     `k_thread_abort` as a no-op, so the UNO Q cancel path (`k_thread_abort`, slot reuse after a cancel) has never
+     run. Cover fail-fast cancellation and the `ShutdownOnSuccess` winner.
+   - **Non-recursive cancellation:** `juno_task_cancel` does not cancel a task's own inner scope. If an outer scope
+     cancels a task that owns a scope, the inner subtasks are orphaned and keep their slots until they finish
+     (`MAX_THREADS` = 4, so slots can run out; differs from JDK semantics). Affects both boards.
+   - **Monitors on cancel:** a task cancelled while holding a `synchronized` or `ReentrantLock` monitor does not
+     release it, so the lock can stay held forever. Release a cancelled slot's monitors in `juno_task_cancel`.
+   - **JDK 25 API:** `StructuredTaskScope.open(Joiner)` is not supported (Java 21 preview policy classes only).
 
 ## Design notes
 
@@ -104,5 +144,5 @@ rooted on the native call stack.
 
 - Is a Renesas (UNO R4) thread story required, or is UNO Q-only acceptable?
 - Maximum threads and stack size policy; compile-time budget vs. user-configurable?
-- Which `StructuredTaskScope` subset is worth supporting first?
+- Should Juno also support the redesigned JDK 25 `StructuredTaskScope.open(Joiner)` API?
 - Does reference-valued static field support (currently missing) need to land before threads?

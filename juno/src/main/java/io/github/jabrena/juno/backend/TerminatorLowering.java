@@ -6,9 +6,12 @@ import io.github.jabrena.juno.ir.IrTerminator;
 /** Emits the jump, branch, switch, or return that ends each IR block. */
 final class TerminatorLowering {
     private final AsmEmitter asm;
+    private final String backedgeFunction;
 
-    TerminatorLowering(AsmEmitter asm) {
+    /** {@code backedgeFunction} is called on every loop backedge: the core's {@code yield}, or the thread runtime's. */
+    TerminatorLowering(AsmEmitter asm, String backedgeFunction) {
         this.asm = asm;
+        this.backedgeFunction = backedgeFunction;
     }
 
     /** {@code beforeReturn} runs ahead of a {@code Return}'s epilogue (the entry point's escape check). */
@@ -76,7 +79,7 @@ final class TerminatorLowering {
     /** Keeps the core's USB service polled on every loop backedge. */
     private void emitYieldIfBackedge(StringBuilder output, int blockStart, int target) {
         if (target <= blockStart) {
-            output.append("    bl yield\n");
+            output.append("    bl ").append(backedgeFunction).append('\n');
         }
     }
 

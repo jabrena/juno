@@ -21,7 +21,8 @@ import java.util.Optional;
  * as local slots in Juno IR, and different predecessor blocks may store different values into the same slot
  * before a merge. Propagating through such a merge requires a separate CFG data-flow analysis; limiting this
  * pass to one block keeps it sound while still removing the store/load round trips around most lowered JVM
- * instructions.
+ * instructions. Field loads are never propagated: in particular, every {@code volatile} field read remains an
+ * actual memory read across calls and loop backedges.
  */
 public final class CopyPropagation implements CompilerPass {
     @Override

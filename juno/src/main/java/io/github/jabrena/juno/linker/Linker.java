@@ -76,9 +76,7 @@ public final class Linker {
                 (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
         for (Map.Entry<InterfaceCallSite, MethodRef> call : reachability.interfaceCalls().entrySet()) {
             if (!reachability.interfaceDispatches().containsKey(call.getKey())) {
-                throw new CompileException(call.getKey().caller().displayName() + " at bytecode offset "
-                        + call.getKey().bytecodeOffset() + ": no reachable implementation of "
-                        + call.getValue().displayName());
+                throw new CompileException(ThreadSupport.unresolvedMessage(call.getKey(), call.getValue()));
             }
         }
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
@@ -150,13 +148,15 @@ public final class Linker {
         for (Instruction instruction : linked.instructions()) {
             int opcode = instruction.opcode();
             if (opcode == 182 || opcode == 183 || opcode == 184) {
-                enqueueCall(owner.constantPool().methodRef(instruction.operandA()), caller, declaredBoards, classes,
-                        work);
+                MethodRef called = owner.constantPool().methodRef(instruction.operandA());
+                ThreadSupport.registerEntry(called, interfaceCalls);
+                StructuredTaskSupport.registerEntry(called, interfaceCalls);
+                enqueueCall(called, caller, declaredBoards, classes, work);
             }
             if (opcode == 185) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                interfaceDispatchResolver.validateCall(linked, instruction, called, classes, lambdaSites.values());
-                interfaceCalls.put(new InterfaceCallSite(caller, instruction.offset()), called);
+                InterfaceCallRegistration.register(linked, instruction, called, classes, lambdaSites.values(),
+                        interfaceCalls, interfaceDispatchResolver);
             }
             if (opcode == 186) {
                 LambdaSite lambda = lambdaResolver.resolve(linked, instruction, classes);
@@ -186,6 +186,8 @@ public final class Linker {
             Map<String, JavaClass> classes, Deque<MethodRef> work) {
         IntrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
                 requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
+        LockSupport.validateCall(called);
+        StructuredTaskSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {
@@ -284,6 +286,7 @@ public final class Linker {
         if (method.isNative() || method.code() == null) {
             throw new CompileException("Native method has no Juno intrinsic: " + method.reference().displayName());
         }
+        LockSupport.validateMethod(method);
         Descriptor descriptor = Descriptor.parse(method.descriptor());
         boolean conventionalMain = entryPoint
                 && descriptor.parameters().equals(List.of("[Ljava/lang/String;"))

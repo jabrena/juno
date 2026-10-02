@@ -42,6 +42,8 @@ import io.github.jabrena.juno.linker.InterfaceDispatch;
 import io.github.jabrena.juno.linker.LambdaCallSite;
 import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.linker.Program;
+import io.github.jabrena.juno.linker.ThreadSupport;
+import io.github.jabrena.juno.linker.StructuredTaskSupport;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 
 import java.util.ArrayDeque;
@@ -144,6 +146,13 @@ public final class BytecodeToIr {
         if (!throwing.isEmpty()) {
             methods = lowerMethods(program, throwableClasses, objectTypeIds, throwing);
         }
+        InterfaceDispatch threadEntry = program.interfaceDispatches().get(ThreadSupport.ENTRY_SITE);
+        InterfaceDispatch taskEntry = program.interfaceDispatches().get(StructuredTaskSupport.ENTRY_SITE);
+        if (threadEntry != null || taskEntry != null) {
+            methods = new ArrayList<>(methods);
+            if (threadEntry != null) methods.add(ThreadEntryLowering.lower(threadEntry, objectTypeIds));
+            if (taskEntry != null) methods.add(TaskEntryLowering.lower(taskEntry, objectTypeIds));
+        }
         return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis(),
                 throwableClasses, objectTypeIds);
     }
@@ -208,6 +217,13 @@ public final class BytecodeToIr {
                 if (isIntegerDivision(instruction.opcode())
                         && (divisionByZeroUnwinds || arithmeticHandler(linked, instruction.offset(), classes) != null)) {
                     names.add(ARITHMETIC_EXCEPTION);
+                }
+                if (instruction.opcode() == 182 || instruction.opcode() == 183 || instruction.opcode() == 185) {
+                    MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
+                    if (StructuredTaskSupport.isStructuredTaskOwner(called.owner())) {
+                        names.add("java/lang/IllegalStateException");
+                        names.add("java/util/concurrent/ExecutionException");
+                    }
                 }
             }
         }
@@ -341,6 +357,10 @@ public final class BytecodeToIr {
             return InstructionLowering.of(LambdaLowering.lowerFactory(site, instructions, stackBase,
                     depth, nextValueId, tracking), irBlockStart);
         }
+        if (opcode == 194 || opcode == 195) {
+            return InstructionLowering.of(MonitorLowering.lower(opcode, instructions, stackBase, depth,
+                    nextValueId, tracking), irBlockStart);
+        }
         if (ARRAY_ACCESS_OPCODES.get(opcode)) {
             return InstructionLowering.of(ArrayLowering.lowerArrayAccess(opcode, instructions, stackBase, depth,
                     nextValueId, tracking), irBlockStart);
@@ -361,6 +381,15 @@ public final class BytecodeToIr {
                                 ValueTracking tracking, Map<String, JavaClass> classes,
                                 Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
                                 Map<String, Integer> objectTypeIds) {
+        MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
+        if (opcode == 183 && StructuredTaskSupport.isScopeConstructor(called)) {
+            return StructuredTaskLowering.lowerConstruction(called, instructions, stackBase, depth, nextValueId,
+                    tracking);
+        }
+        if (opcode == 185 && IntrinsicRegistry.isIntrinsic(called)) {
+            return StructuredTaskLowering.lowerInterface(linked, instruction, called, instructions, stackBase,
+                    depth, nextValueId, tracking);
+        }
         return switch (opcode) {
             case 182 -> lowerInvokeVirtual(linked, instruction, instructions, stackBase, depth, nextValueId,
                     tracking, classes);

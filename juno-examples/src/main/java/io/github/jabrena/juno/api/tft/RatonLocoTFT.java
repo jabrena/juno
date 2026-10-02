@@ -12,8 +12,8 @@ import io.github.jabrena.juno.api.led.LedMatrix;
  * A remote-controlled version of {@link io.github.jabrena.juno.api.io.hid.RatonLoco}: the same
  * built-in-LED blink and USB mouse square-walking behavior, but gated by an On/Off switch drawn on
  * the ELEGOO 2.8" TFT touch screen shield instead of running unconditionally from power-up. The
- * program starts with the switch Off, so the pointer stays put until the user taps the switch's
- * "On" half; tapping "Off" again pauses the walk in place, and tapping "On" resumes it.
+ * whole display is the switch: it starts Off (a red screen), a tap anywhere turns it On (a green
+ * screen) and starts the walk, and another tap anywhere pauses the walk in place.
  *
  * <p>UNO Q only: the Arduino {@code Mouse} library needs {@code HID.h}, which the UNO Q's Zephyr
  * Arduino core does not provide, so this example cannot build for {@link
@@ -26,7 +26,7 @@ import io.github.jabrena.juno.api.led.LedMatrix;
  * the {@link TftTouchShield} wiring.
  *
  * <p><strong>Warning:</strong> while the switch is On, this program takes control of the pointer
- * on the computer connected to the board's USB port. Tap the switch's "Off" half, disconnect the
+ * on the computer connected to the board's USB port. Tap the screen to turn it Off, disconnect the
  * board, or replace the sketch to stop it.
  */
 @Board(ArduinoUnoR4WiFi.class)
@@ -37,20 +37,20 @@ public final class RatonLocoTFT {
     private static final int STEPS_PER_SIDE = 5;
     private static final int POLL_DELAY = 50;
 
-    private static final int SWITCH_X = 40;
-    private static final int SWITCH_Y = 40;
-    private static final int SWITCH_WIDTH = 160;
-    private static final int SWITCH_HEIGHT = 60;
-    private static final int SWITCH_HALF = SWITCH_WIDTH / 2;
-    private static final int LABEL_Y_OFFSET = 22;
-    private static final int OFF_LABEL_X_OFFSET = 22;
-    private static final int ON_LABEL_X_OFFSET = 28;
+    private static final int TITLE_SIZE = 6;
+    private static final int HINT_SIZE = 2;
+    private static final int OFF_TITLE_X = 106;
+    private static final int ON_TITLE_X = 124;
+    private static final int TITLE_Y = 80;
+    private static final int OFF_HINT_X = 76;
+    private static final int ON_HINT_X = 70;
+    private static final int HINT_Y = 170;
 
     private static boolean running;
 
     /**
-     * Initializes the USB mouse, LED matrix, and TFT touch shield, displays the mouse icon and an
-     * Off switch, then loops forever: polling the switch and, while it is On, blinking the LED and
+     * Initializes the USB mouse, LED matrix, and TFT touch shield, displays the mouse icon and a
+     * full-screen Off switch, then loops forever: polling the switch and, while it is On, blinking the LED and
      * walking the pointer around a square exactly as {@code RatonLoco} does.
      *
      * @param args ignored; Juno programs do not receive command-line arguments
@@ -134,46 +134,49 @@ public final class RatonLocoTFT {
         return true;
     }
 
-    /** Samples the touch panel once and, on a tap inside the switch, updates {@link #running} and redraws it. */
+    /**
+     * Samples the touch panel once and, on a tap anywhere on the screen, flips {@link #running}, redraws the
+     * switch and waits for the finger to lift so one press toggles exactly once.
+     */
     private static void pollTouch() {
         if (!TftTouchShield.readTouch()) {
             return;
         }
-        int x = TftTouchShield.touchX();
-        int y = TftTouchShield.touchY();
-        boolean insideSwitch = x >= SWITCH_X && x < SWITCH_X + SWITCH_WIDTH
-                && y >= SWITCH_Y && y < SWITCH_Y + SWITCH_HEIGHT;
-        if (!insideSwitch) {
-            return;
-        }
-        boolean requestedRunning = x >= SWITCH_X + SWITCH_HALF;
-        if (requestedRunning != running) {
-            running = requestedRunning;
-            drawSwitch();
+        running = !running;
+        drawSwitch();
+        int misses = 0;
+        while (misses < 3) {
+            if (TftTouchShield.readTouch()) {
+                misses = 0;
+            } else {
+                misses = misses + 1;
+            }
+            Delay.millis(10);
         }
     }
 
-    /** Draws the switch, highlighting whichever half ("Off" or "On") matches {@link #running}. */
+    /** Fills the whole display red ("OFF") or green ("ON") according to {@link #running}. */
     private static void drawSwitch() {
-        int offColor = TftTouchShield.GRAY;
-        int onColor = TftTouchShield.GRAY;
+        int background = TftTouchShield.RED;
+        String title = "OFF";
+        String hint = "Tap to turn on";
+        int titleX = OFF_TITLE_X;
+        int hintX = OFF_HINT_X;
         if (running) {
-            onColor = TftTouchShield.GREEN;
-        } else {
-            offColor = TftTouchShield.RED;
+            background = TftTouchShield.GREEN;
+            title = "ON";
+            hint = "Tap to turn off";
+            titleX = ON_TITLE_X;
+            hintX = ON_HINT_X;
         }
 
-        TftTouchShield.fillRect(SWITCH_X, SWITCH_Y, SWITCH_HALF, SWITCH_HEIGHT, offColor);
-        TftTouchShield.fillRect(SWITCH_X + SWITCH_HALF, SWITCH_Y, SWITCH_HALF, SWITCH_HEIGHT, onColor);
-        TftTouchShield.drawRect(SWITCH_X, SWITCH_Y, SWITCH_WIDTH, SWITCH_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.drawVerticalLine(SWITCH_X + SWITCH_HALF, SWITCH_Y, SWITCH_HEIGHT, TftTouchShield.WHITE);
-
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, offColor);
-        TftTouchShield.setCursor(SWITCH_X + OFF_LABEL_X_OFFSET, SWITCH_Y + LABEL_Y_OFFSET);
-        TftTouchShield.print("Off");
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, onColor);
-        TftTouchShield.setCursor(SWITCH_X + SWITCH_HALF + ON_LABEL_X_OFFSET, SWITCH_Y + LABEL_Y_OFFSET);
-        TftTouchShield.print("On");
+        TftTouchShield.fillScreen(background);
+        TftTouchShield.setTextSize(TITLE_SIZE);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, background);
+        TftTouchShield.setCursor(titleX, TITLE_Y);
+        TftTouchShield.print(title);
+        TftTouchShield.setTextSize(HINT_SIZE);
+        TftTouchShield.setCursor(hintX, HINT_Y);
+        TftTouchShield.print(hint);
     }
 }

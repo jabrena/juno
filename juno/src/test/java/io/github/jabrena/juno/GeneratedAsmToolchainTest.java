@@ -198,6 +198,88 @@ class GeneratedAsmToolchainTest {
         assembleAndCompile(armGcc, "demo.AsmLambdas", source);
     }
 
+    @Test
+    void assemblesThreadsWithAClassAndALambdaRunnable() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class AsmThreads {
+                    static final class Job implements Runnable {
+                        public void run() { Delay.millis(1); }
+                    }
+                    public static void main(String[] args) throws InterruptedException {
+                        int pause = 2;
+                        Thread first = new Thread(new Job());
+                        Thread second = new Thread(() -> Delay.millis(pause));
+                        first.start();
+                        second.start();
+                        first.join();
+                        second.join();
+                    }
+                }
+                """;
+        assembleAndCompile(armGcc, "demo.AsmThreads", source);
+    }
+
+    @Test
+    void assemblesVolatileSynchronizedAndReentrantLock() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                import java.util.concurrent.locks.ReentrantLock;
+                public final class AsmSynchronization {
+                    static final class Guard { }
+                    static final Guard GUARD = new Guard();
+                    static final ReentrantLock LOCK = new ReentrantLock();
+                    static volatile boolean ready;
+                    static int value;
+                    static void update() {
+                        synchronized (GUARD) {
+                            LOCK.lock();
+                            try {
+                                value++;
+                                ready = true;
+                            } finally {
+                                LOCK.unlock();
+                            }
+                        }
+                    }
+                    public static void main(String[] args) throws InterruptedException {
+                        Thread worker = new Thread(AsmSynchronization::update);
+                        worker.start();
+                        while (!ready) { }
+                        worker.join();
+                    }
+                }
+                """;
+        assembleAndCompile(armGcc, "demo.AsmSynchronization", source);
+    }
+
+    @Test
+    void assemblesStructuredTaskScopes() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                import java.util.concurrent.StructuredTaskScope;
+                public final class AsmStructuredTasks {
+                    public static void main() throws Exception {
+                        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+                            var task = scope.fork(() -> "done");
+                            scope.join().throwIfFailed();
+                            task.get();
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJavaWithStructuredTaskScope(
+                temporaryDirectory, "demo.AsmStructuredTasks", source);
+        assembleAndCompile(armGcc, "demo.AsmStructuredTasks");
+    }
+
     /**
      * A regression test for exactly the bug this GC implementation shipped with once: every other
      * toolchain test here either assembles the {@code .S} alone (no link) or compiles/links the shim
@@ -248,6 +330,9 @@ class GeneratedAsmToolchainTest {
         assertThat(symbols).as("juno_gc_stack_top must have GLOBAL linkage (uppercase nm type 'B'), "
                 + "not local ('b'), so the shim's extern \"C\" declaration can link against it: " + symbols)
                 .containsPattern("(?m)^\\S+ B juno_gc_stack_top$");
+        assertThat(symbols).as("the GC static-root bounds must have GLOBAL linkage: " + symbols)
+                .containsPattern("(?m)^\\S+ B juno_gc_static_start$")
+                .containsPattern("(?m)^\\S+ B juno_gc_static_end$");
     }
 
     @Test
@@ -533,7 +618,11 @@ class GeneratedAsmToolchainTest {
      */
     private static final String GC_STACK_TOP_PRELUDE = """
 
-            extern "C" { uintptr_t juno_gc_stack_top; }
+            extern "C" {
+              uintptr_t juno_gc_stack_top;
+              uint8_t juno_gc_static_start;
+              uint8_t juno_gc_static_end;
+            }
             """;
 
     /**
@@ -716,7 +805,11 @@ class GeneratedAsmToolchainTest {
                 // assembly normally defines and populates it — see Thumb2AsmBackend.emitMethod);
                 // this host-only harness never runs that assembly, so it must provide the storage
                 // itself and set it near the top of main(), the same way the generated prologue does.
-                extern "C" { uintptr_t juno_gc_stack_top; }
+                extern "C" {
+                  uintptr_t juno_gc_stack_top;
+                  uint8_t juno_gc_static_start;
+                  uint8_t juno_gc_static_end;
+                }
 
                 int main() {
                   uint8_t stackTopMarker;
@@ -921,7 +1014,11 @@ class GeneratedAsmToolchainTest {
 
                 #include <stdio.h>
                 #include <string.h>
-                extern "C" { uintptr_t juno_gc_stack_top; }
+                extern "C" {
+                  uintptr_t juno_gc_stack_top;
+                  uint8_t juno_gc_static_start;
+                  uint8_t juno_gc_static_end;
+                }
                 static float junoFloatBits(uint32_t bits) { float value; memcpy(&value, &bits, 4); return value; }
                 static double junoDoubleBits(uint64_t bits) { double value; memcpy(&value, &bits, 8); return value; }
                 static int junoFailures = 0;

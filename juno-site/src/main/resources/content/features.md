@@ -50,8 +50,8 @@ Supported today:
 - final closed-world classes with constructors, primitive/reference instance fields, and statically
   resolvable instance calls. Objects come from a fixed 8 KiB zero-filled arena backed by a conservative
   mark/sweep garbage collector: a collection runs automatically when an allocation would otherwise
-  exceed the arena, reclaiming any block no longer reachable from the native call stack (Juno has no
-  reference-typed static fields, so the stack is the collector's only root set). This is Boehm-GC
+  exceed the arena, reclaiming any block no longer reachable from reference-valued static fields or
+  any live thread stack. This is Boehm-GC
   style — no GC type metadata and no compaction, since a collector that can't tell a real pointer from an int
   that happens to match a heap address can't safely move objects — so a program whose *simultaneously
   live* objects exceed 8 KiB still exhausts the arena and panics exactly as before; only the total
@@ -110,6 +110,33 @@ Supported today:
   `Exception in thread "main" <class>: <message>` over `Serial` and panics. An `int`/`long` division or remainder by zero inside a `try` whose handler catches
   `ArithmeticException` (or a supertype, or `finally`) raises `ArithmeticException("/ by zero")` there;
   anywhere else it unwinds to the callers' handlers if any `catch`/`finally` in the program can receive `ArithmeticException`, and panics if none can, as do Juno's other runtime failures (array bounds, arena exhaustion).
+- `java.lang.Thread` with cooperative scheduling on both boards: `new Thread(Runnable)` (a class implementing
+  `Runnable` or a lambda), `start()`, `join()`, `isAlive()`, `setDaemon(boolean)`, `Thread.sleep(long)` and
+  `Thread.yield()`. Each thread runs on a stack of its own, and control moves between threads only where the
+  program already pauses — loop iterations (at most once per millisecond), `Delay.millis`, `Thread.sleep`,
+  `Thread.yield` and `join` — so a statement is never interrupted halfway and the arena, the garbage collector and
+  the pending-exception slot need no locking. At most four threads run at once, the main thread included, each extra
+  one with a 2 KiB stack on the UNO R4 WiFi and 4 KiB on the UNO Q (a stack overflow on the UNO R4 panics with
+  `[juno-thread] stack overflow` when the thread next switches away). The collector scans every live thread's stack.
+  When `main` returns, the program waits for every non-daemon thread, as the JVM does. An exception that escapes
+  `run()` prints `Exception in thread "Thread-N" <class>: <message>`, ends that thread and leaves the others
+  running. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each Juno thread is a Zephyr thread that waits
+  for a baton, so only one runs at a time. Not supported: subclassing `Thread`, thread names/priorities/interrupts,
+  and other `java.util.concurrent` APIs.
+- Java 21 preview `StructuredTaskScope.ShutdownOnFailure` and `ShutdownOnSuccess`, lowered onto the same cooperative
+  task runtime: construction, `fork(Callable)`, `join()`, `throwIfFailed()`, `result()`, `Subtask.get()`, and
+  try-with-resources `close()`. A first failure/success shuts the scope down and cancels sibling tasks. At most three
+  subtasks can be active because the four scheduler slots include the owner thread. JDK 25 replaced these policy
+  classes, so source using this subset must first be compiled as Java 21 preview bytecode. The newer
+  `StructuredTaskScope.open(Joiner)` API and all other scope operations remain unsupported.
+- restricted synchronization for cooperative threads: `volatile` primitive/reference fields are always loaded from
+  and stored to memory, including across calls and loop backedges; `synchronized (lock)` blocks use a bounded table
+  of eight reentrant intrinsic monitors; and concrete `java.util.concurrent.locks.ReentrantLock` supports only
+  `new ReentrantLock()`, `lock()`, zero-argument `tryLock()`, and `unlock()`, backed by the same monitor runtime.
+  Contended `lock()`/monitor entry yields cooperatively until ownership is available. Synchronized methods, fair
+  locks, timed/interruptible locking, `Condition`, the `Lock` interface, and the rest of `java.util.concurrent`
+  remain unsupported. See the board-ready
+  [`Synchronization` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java).
 - `.class` inputs from directories, individual files, or JARs
 
 ## Runtime-risk inspection
@@ -152,7 +179,7 @@ Not yet supported:
 
 - class inheritance/virtual polymorphic dispatch, inherited/default interface implementations, or object
   arrays with polymorphism
-- general string construction/concatenation and other {@code String} methods, threads, reflection, or
+- general string construction/concatenation and other {@code String} methods, reflection, or
   dynamic loading
 - exception causes, stack traces, suppressed exceptions (`addSuppressed` is accepted and dropped, so a
   `close()` failure during unwinding is lost), and exception types in method parameters or return values

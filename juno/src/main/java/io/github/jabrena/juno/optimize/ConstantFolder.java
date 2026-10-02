@@ -23,7 +23,8 @@ import java.util.Map;
  * <p>This tracks constants purely at the {@link Value} level: a value reloaded from a JVM local or a
  * synthetic operand-stack slot via {@code LoadLocal} is never treated as constant here, since its slot may
  * have been written by more than one predecessor block. Seeing through a {@code StoreLocal}/{@code LoadLocal}
- * round trip to the same slot is copy propagation, a separate, later pass.
+ * round trip to the same slot is copy propagation, a separate, later pass. Field loads, including
+ * {@code volatile} loads, are never entered in the constant map.
  */
 public final class ConstantFolder implements CompilerPass {
     @Override

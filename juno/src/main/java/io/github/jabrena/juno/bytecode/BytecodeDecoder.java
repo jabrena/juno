@@ -20,7 +20,8 @@ public final class BytecodeDecoder {
             75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 96, 97, 98, 99, 100,
             101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120,
             121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 133, 134, 135, 136, 137, 138, 139, 140, 141,
-            142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 172, 173, 174, 175, 176, 177, 190, 191);
+            142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 172, 173, 174, 175, 176, 177, 190, 191,
+            194, 195);
     private static final BitSet UNSIGNED_BYTE_OPERAND = bitSetOf(
             18, 21, 22, 23, 24, 25, 54, 55, 56, 57, 58, 188);
     private static final BitSet SHORT_OPERAND = bitSetOf(
@@ -79,7 +80,8 @@ public final class BytecodeDecoder {
             Map.entry(184, "invokestatic"), Map.entry(185, "invokeinterface"), Map.entry(186, "invokedynamic"),
             Map.entry(187, "new"),
             Map.entry(188, "newarray"), Map.entry(189, "anewarray"),
-            Map.entry(190, "arraylength"), Map.entry(191, "athrow"), Map.entry(196, "wide"), Map.entry(197, "multianewarray"),
+            Map.entry(190, "arraylength"), Map.entry(191, "athrow"), Map.entry(194, "monitorenter"),
+            Map.entry(195, "monitorexit"), Map.entry(196, "wide"), Map.entry(197, "multianewarray"),
             Map.entry(198, "ifnull"), Map.entry(199, "ifnonnull"));
 
     public List<Instruction> decode(JavaMethod method) {
