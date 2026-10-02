@@ -79,4 +79,14 @@ record RenesasCoreRuntime() implements CoreRuntime {
 
                 """;
     }
+
+    @Override
+    public String threadIncludes() {
+        return "";
+    }
+
+    @Override
+    public String threadPort() {
+        return ThreadRuntime.renesasPort();
+    }
 }

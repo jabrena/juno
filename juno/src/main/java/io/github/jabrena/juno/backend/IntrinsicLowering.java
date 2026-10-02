@@ -112,12 +112,14 @@ final class IntrinsicLowering {
      * @param features collects every optional shim feature a lowered intrinsic needs
      * @param usedMath collects every {@code java.lang.Math} intrinsic lowered, for {@link MathRuntime#helpers}
      */
-    IntrinsicLowering(AsmEmitter asm, CoreRuntime coreRuntime, Set<ShimFeature> features, Set<Intrinsic> usedMath) {
+    IntrinsicLowering(AsmEmitter asm, CoreRuntime coreRuntime, Set<ShimFeature> features, Set<Intrinsic> usedMath,
+                      boolean usesThreads) {
         this.asm = asm;
         this.features = features;
         this.usedMath = usedMath;
         registerExceptions();
-        registerGpio(coreRuntime);
+        registerGpio(coreRuntime, usesThreads);
+        registerThreads(usesThreads);
         registerSerial();
         registerStrings();
         registerStorage();
@@ -159,7 +161,7 @@ final class IntrinsicLowering {
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */
-    private void registerGpio(CoreRuntime coreRuntime) {
+    private void registerGpio(CoreRuntime coreRuntime, boolean usesThreads) {
         shim(Intrinsic.DIGITAL_OUTPUT_OF, "pinMode", Result.FIRST_ARGUMENT, List.of(arg(0), immediate(1))); // OUTPUT
         shim(Intrinsic.GPIO_PIN_MODE, "pinMode", Result.NONE, List.of(arg(0), arg(1)));
         shim(Intrinsic.DIGITAL_OUTPUT_HIGH, "digitalWrite", Result.NONE, List.of(RECEIVER, immediate(1)));
@@ -174,7 +176,12 @@ final class IntrinsicLowering {
                 ShimFeature.RANDOM);
         shim(Intrinsic.RANDOM_NEXT_RANGE, "juno_random_next_range", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.RANDOM);
-        shim(Intrinsic.DELAY_MILLIS, coreRuntime.delayMillisFunction(), Result.NONE, List.of(arg(0)));
+        // With threads a delay is a sleep: the other threads run while this one waits.
+        if (usesThreads) {
+            shim(Intrinsic.DELAY_MILLIS, "juno_thread_delay", Result.NONE, List.of(arg(0)), ShimFeature.THREADS);
+        } else {
+            shim(Intrinsic.DELAY_MILLIS, coreRuntime.delayMillisFunction(), Result.NONE, List.of(arg(0)));
+        }
         shim(Intrinsic.DELAY_MICROS, coreRuntime.delayMicrosFunction(), Result.NONE, List.of(arg(0)));
         lowerings.put(Intrinsic.GPIO_BUILTIN_LED, (output, frame, call) -> {
             asm.emitLoadImmediate(output, "r0", coreRuntime.builtinLedPin());
@@ -185,6 +192,20 @@ final class IntrinsicLowering {
                 List.of(arg(0), arg(1), arg(2)));
         shim(Intrinsic.LED_MATRIX_CLEAR, "juno_led_matrix_clear", Result.NONE, List.of());
         shim(Intrinsic.MEMORY_ARENA_USED, "juno_memory_arena_used", Result.WORD, List.of(), ShimFeature.MEMORY);
+    }
+
+    /** {@code java.lang.Thread}: one scheduler call each; sleep and yield alone need no scheduler. */
+    private void registerThreads(boolean usesThreads) {
+        shim(Intrinsic.THREAD_NEW, "juno_thread_new", Result.WORD, List.of(arg(0)), ShimFeature.THREADS);
+        shim(Intrinsic.THREAD_START, "juno_thread_start", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.THREAD_JOIN, "juno_thread_join", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.THREAD_IS_ALIVE, "juno_thread_is_alive", Result.WORD, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.THREAD_SET_DAEMON, "juno_thread_set_daemon", Result.NONE, List.of(RECEIVER, arg(0)),
+                ShimFeature.THREADS);
+        ShimFeature runtime = usesThreads ? ShimFeature.THREADS : ShimFeature.THREAD_BASICS;
+        shim(Intrinsic.THREAD_SLEEP, "juno_thread_sleep", Result.NONE, wide(0), runtime);
+        shim(Intrinsic.THREAD_YIELD, "juno_thread_yield", Result.NONE, List.of(), runtime);
     }
 
     private void registerSerial() {

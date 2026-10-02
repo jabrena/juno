@@ -115,6 +115,7 @@ public record Descriptor(List<String> parameters, String returnType) {
         return isIntegerLike(type) || isLong(type) || isFloat(type) || isDouble(type)
                 || isString(type)
                 || isStringBuilder(type)
+                || ThreadSupport.isThreadType(type)
                 || isSupportedArrayType(type, referenceClassNames)
                 || isReferenceType(type, referenceClassNames);
     }

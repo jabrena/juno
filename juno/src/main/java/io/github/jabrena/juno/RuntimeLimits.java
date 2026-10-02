@@ -15,6 +15,12 @@ public final class RuntimeLimits {
     /** Bounded native storage allocated for one {@code java.util.Properties} instance. */
     public static final int PROPERTIES_STORAGE_BYTES = 4 + 16 * (32 + 64);
 
+    /** Most threads that can run at once, the main thread included; each extra one owns a stack of its own. */
+    public static final int MAX_THREADS = 4;
+
+    /** Arena bytes of one {@code java.lang.Thread} handle (runnable, flags, id, spare). */
+    public static final int THREAD_OBJECT_BYTES = 16;
+
     private RuntimeLimits() {
     }
 }

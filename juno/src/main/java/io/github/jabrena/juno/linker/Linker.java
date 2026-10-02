@@ -76,9 +76,7 @@ public final class Linker {
                 (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
         for (Map.Entry<InterfaceCallSite, MethodRef> call : reachability.interfaceCalls().entrySet()) {
             if (!reachability.interfaceDispatches().containsKey(call.getKey())) {
-                throw new CompileException(call.getKey().caller().displayName() + " at bytecode offset "
-                        + call.getKey().bytecodeOffset() + ": no reachable implementation of "
-                        + call.getValue().displayName());
+                throw new CompileException(ThreadSupport.unresolvedMessage(call.getKey(), call.getValue()));
             }
         }
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
@@ -150,8 +148,9 @@ public final class Linker {
         for (Instruction instruction : linked.instructions()) {
             int opcode = instruction.opcode();
             if (opcode == 182 || opcode == 183 || opcode == 184) {
-                enqueueCall(owner.constantPool().methodRef(instruction.operandA()), caller, declaredBoards, classes,
-                        work);
+                MethodRef called = owner.constantPool().methodRef(instruction.operandA());
+                ThreadSupport.registerEntry(called, interfaceCalls);
+                enqueueCall(called, caller, declaredBoards, classes, work);
             }
             if (opcode == 185) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());

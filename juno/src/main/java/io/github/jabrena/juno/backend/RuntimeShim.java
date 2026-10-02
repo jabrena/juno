@@ -99,6 +99,9 @@ final class RuntimeShim {
         if (uses(ShimFeature.SD)) {
             shim.append("#include <SPI.h>\n#include <SdFat.h>\n");
         }
+        if (uses(ShimFeature.THREADS)) {
+            shim.append(core.threadIncludes());
+        }
         if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsInclude());
         }
@@ -146,6 +149,13 @@ final class RuntimeShim {
         String watchdogBeginFunction = usesWatchdog
                 ? "\nextern \"C\" void juno_watchdog_begin() {\n  WDT.begin(" + watchdogTimeoutMillis + "u);\n}\n"
                 : "";
+        // With threads every live thread's stack is a root, not just the one running (see ThreadRuntime).
+        String gcStackScan = uses(ShimFeature.THREADS)
+                ? "juno_thread_gc_scan(&stackMarker);"
+                : "juno_gc_scan_range(&stackMarker, reinterpret_cast<const uint8_t*>(juno_gc_stack_top));";
+        String gcThreadDeclaration = uses(ShimFeature.THREADS)
+                ? "static void juno_thread_gc_scan(const uint8_t* marker);\n"
+                : "";
         String ledMatrixFunctions = ledMatrixFunctions();
         String yieldFunction = core.yieldFunction();
         return """
@@ -174,7 +184,7 @@ final class RuntimeShim {
                 // generated entry-point prologue, with the live sp at program start — see
                 // Thumb2AsmBackend.emitMethod; it bounds every future conservative stack scan.
                 extern "C" uintptr_t juno_gc_stack_top;
-
+                ${JUNO_GC_THREAD_DECLARATION}
                 static constexpr uint32_t JUNO_GC_MARK_BIT = 0x80000000u;
                 static constexpr uint32_t JUNO_GC_FREE_BIT = 0x40000000u;
                 static constexpr uint32_t JUNO_GC_SIZE_MASK = 0x3FFFFFFFu;
@@ -307,7 +317,7 @@ final class RuntimeShim {
                   // this function's own frame, deeper than every live Java frame, so scanning from
                   // here up to juno_gc_stack_top is always a safe superset of the true live stack.
                   uint8_t stackMarker;
-                  juno_gc_scan_range(&stackMarker, reinterpret_cast<const uint8_t*>(juno_gc_stack_top));
+                  ${JUNO_GC_STACK_SCAN}
                   uint32_t index = 0;
                   while (index < juno_gc_queue_count) {
                     juno_gc_scan_block_payload(juno_gc_queue[index]);
@@ -460,6 +470,8 @@ final class RuntimeShim {
                 """.replace("${JUNO_YIELD_FUNCTION}", yieldFunction)
                 .replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions)
                 .replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES))
+                .replace("${JUNO_GC_STACK_SCAN}", gcStackScan)
+                .replace("${JUNO_GC_THREAD_DECLARATION}", gcThreadDeclaration)
                 .replace("${JUNO_GC_LOG_BEFORE}", gcLogBefore)
                 .replace("${JUNO_GC_LOG_AFTER}", gcLogAfter)
                 .replace("${JUNO_WATCHDOG_REFRESH}", watchdogRefresh)
@@ -554,6 +566,12 @@ final class RuntimeShim {
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(NetworkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
+        }
+        if (uses(ShimFeature.THREADS)) {
+            shim.append(core.threadPort());
+            shim.append(ThreadRuntime.scheduler(core.delayMillisFunction(), uses(ShimFeature.EXCEPTIONS)));
+        } else if (uses(ShimFeature.THREAD_BASICS)) {
+            shim.append(ThreadRuntime.basics(core.delayMillisFunction()));
         }
     }
 }

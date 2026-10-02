@@ -198,6 +198,31 @@ class GeneratedAsmToolchainTest {
         assembleAndCompile(armGcc, "demo.AsmLambdas", source);
     }
 
+    @Test
+    void assemblesThreadsWithAClassAndALambdaRunnable() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class AsmThreads {
+                    static final class Job implements Runnable {
+                        public void run() { Delay.millis(1); }
+                    }
+                    public static void main(String[] args) throws InterruptedException {
+                        int pause = 2;
+                        Thread first = new Thread(new Job());
+                        Thread second = new Thread(() -> Delay.millis(pause));
+                        first.start();
+                        second.start();
+                        first.join();
+                        second.join();
+                    }
+                }
+                """;
+        assembleAndCompile(armGcc, "demo.AsmThreads", source);
+    }
+
     /**
      * A regression test for exactly the bug this GC implementation shipped with once: every other
      * toolchain test here either assembles the {@code .S} alone (no link) or compiles/links the shim

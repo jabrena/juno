@@ -510,11 +510,19 @@ final class ShimLibraries {
                 static const char* const juno_throwable_names[] = {
                 ${JUNO_THROWABLE_NAMES}};
 
-                extern "C" [[noreturn]] void juno_throw_uncaught(int32_t exception) {
-                  Serial.print("Exception in thread \\"main\\" ");
+                // threadId is -1 for the main thread, else the number in "Thread-N".
+                static void juno_throw_report(int32_t exception, int32_t threadId) {
+                  Serial.print("Exception in thread \\"");
+                  if (threadId < 0) {
+                    Serial.print("main");
+                  } else {
+                    Serial.print("Thread-");
+                    Serial.print(threadId);
+                  }
+                  Serial.print("\\" ");
                   if (exception == 0) {
                     Serial.println("java.lang.NullPointerException");
-                    juno_panic();
+                    return;
                   }
                   const int32_t* header = reinterpret_cast<const int32_t*>(static_cast<intptr_t>(exception));
                   Serial.print(juno_throwable_names[header[${JUNO_CLASS_ID_WORD}]]);
@@ -524,6 +532,10 @@ final class ShimLibraries {
                     Serial.print(message);
                   }
                   Serial.println();
+                }
+
+                extern "C" [[noreturn]] void juno_throw_uncaught(int32_t exception) {
+                  juno_throw_report(exception, -1);
                   juno_panic();
                 }
 

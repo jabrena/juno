@@ -26,9 +26,11 @@ inline void digitalWrite(int32_t, int32_t) {}
 inline int32_t digitalRead(int32_t) { return LOW; }
 inline int32_t analogRead(int32_t) { return 0; }
 inline void analogWrite(int32_t, int32_t) {}
-inline void delay(unsigned long) {}
+// A virtual clock: delay() is the only thing that advances it, so sleeping threads wake deterministically.
+inline unsigned long juno_harness_clock = 0;
+inline void delay(unsigned long ms) { juno_harness_clock += ms; }
 inline void delayMicroseconds(unsigned int) {}
-inline unsigned long millis() { return 0; }
+inline unsigned long millis() { return juno_harness_clock; }
 inline unsigned long micros() { return 0; }
 inline void randomSeed(unsigned long) {}
 inline long random(long bound) { return bound > 0 ? bound - 1 : 0; }

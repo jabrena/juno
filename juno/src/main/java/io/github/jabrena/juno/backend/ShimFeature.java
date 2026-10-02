@@ -27,5 +27,9 @@ enum ShimFeature {
     STRING_BUILDER,
     MEMORY,
     RANDOM,
-    EXCEPTIONS
+    EXCEPTIONS,
+    /** Cooperative {@code java.lang.Thread} runtime: scheduler, per-thread stacks, collector roots. */
+    THREADS,
+    /** {@code Thread.sleep}/{@code Thread.yield} in a program that creates no thread. */
+    THREAD_BASICS
 }

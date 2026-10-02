@@ -55,4 +55,14 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime {
      * substitutes afterwards.
      */
     String yieldFunction();
+
+    /** Core-specific header the thread port needs ({@code ""} when the core brings none). */
+    String threadIncludes();
+
+    /**
+     * The core's half of the {@code java.lang.Thread} runtime (see {@link ThreadRuntime}): how a thread's stack
+     * is created and how control moves between two threads, plus the {@code JUNO_MAX_THREADS} and
+     * {@code JUNO_THREAD_STACK_BYTES} constants.
+     */
+    String threadPort();
 }

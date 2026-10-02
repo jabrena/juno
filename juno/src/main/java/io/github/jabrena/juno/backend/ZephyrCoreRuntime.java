@@ -109,4 +109,14 @@ record ZephyrCoreRuntime() implements CoreRuntime {
 
                 """;
     }
+
+    @Override
+    public String threadIncludes() {
+        return "#include <zephyr/kernel.h>\n";
+    }
+
+    @Override
+    public String threadPort() {
+        return ThreadRuntime.zephyrPort();
+    }
 }

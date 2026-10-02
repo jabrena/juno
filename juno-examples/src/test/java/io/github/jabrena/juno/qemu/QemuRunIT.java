@@ -81,7 +81,22 @@ class QemuRunIT {
         }
         mainClasses.add("io.github.jabrena.juno.exceptions.ExceptionUnwinding");
         return mainClasses.stream().flatMap(mainClass -> Stream.of(Board.values())
+                .filter(board -> targets(mainClass, board))
                 .map(board -> Arguments.of(mainClass, board)));
+    }
+
+    /**
+     * Whether a program declares {@code board} in its {@code @Board}. A program that needs a runtime the harness
+     * can only model for one core (threads: the UNO Q port runs on Zephyr's kernel, which the bare-metal harness
+     * does not have) declares just the other.
+     */
+    private static boolean targets(String mainClass, Board board) {
+        Path source = QEMU.resolve("programs").resolve(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java");
+        try {
+            return !Files.exists(source) || Files.readString(source).contains(board.annotationArgument());
+        } catch (IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
     }
 
     @ParameterizedTest(name = "{0} ({1})")

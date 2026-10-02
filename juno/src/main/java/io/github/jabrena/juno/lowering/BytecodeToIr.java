@@ -42,6 +42,7 @@ import io.github.jabrena.juno.linker.InterfaceDispatch;
 import io.github.jabrena.juno.linker.LambdaCallSite;
 import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.linker.Program;
+import io.github.jabrena.juno.linker.ThreadSupport;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 
 import java.util.ArrayDeque;
@@ -143,6 +144,11 @@ public final class BytecodeToIr {
         Set<MethodRef> throwing = ThrowingMethods.of(methods);
         if (!throwing.isEmpty()) {
             methods = lowerMethods(program, throwableClasses, objectTypeIds, throwing);
+        }
+        InterfaceDispatch threadEntry = program.interfaceDispatches().get(ThreadSupport.ENTRY_SITE);
+        if (threadEntry != null) {
+            methods = new ArrayList<>(methods);
+            methods.add(ThreadEntryLowering.lower(threadEntry, objectTypeIds));
         }
         return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis(),
                 throwableClasses, objectTypeIds);
