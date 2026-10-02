@@ -120,6 +120,7 @@ final class IntrinsicLowering {
         registerExceptions();
         registerGpio(coreRuntime, usesThreads);
         registerThreads(usesThreads);
+        registerStructuredTasks();
         registerMonitors();
         registerSerial();
         registerStrings();
@@ -197,8 +198,10 @@ final class IntrinsicLowering {
 
     /** {@code java.lang.Thread}: one scheduler call each; sleep and yield alone need no scheduler. */
     private void registerThreads(boolean usesThreads) {
-        shim(Intrinsic.THREAD_NEW, "juno_thread_new", Result.WORD, List.of(arg(0)), ShimFeature.THREADS);
-        shim(Intrinsic.THREAD_START, "juno_thread_start", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.THREAD_NEW, "juno_thread_new", Result.WORD, List.of(arg(0)),
+                ShimFeature.THREADS, ShimFeature.THREAD_ENTRY);
+        shim(Intrinsic.THREAD_START, "juno_thread_start", Result.NONE, List.of(RECEIVER),
+                ShimFeature.THREADS, ShimFeature.THREAD_ENTRY);
         shim(Intrinsic.THREAD_JOIN, "juno_thread_join", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
         shim(Intrinsic.THREAD_IS_ALIVE, "juno_thread_is_alive", Result.WORD, List.of(RECEIVER),
                 ShimFeature.THREADS);
@@ -207,6 +210,20 @@ final class IntrinsicLowering {
         ShimFeature runtime = usesThreads ? ShimFeature.THREADS : ShimFeature.THREAD_BASICS;
         shim(Intrinsic.THREAD_SLEEP, "juno_thread_sleep", Result.NONE, wide(0), runtime);
         shim(Intrinsic.THREAD_YIELD, "juno_thread_yield", Result.NONE, List.of(), runtime);
+    }
+
+    /** Java 21 {@code StructuredTaskScope} policy operations over the cooperative task scheduler. */
+    private void registerStructuredTasks() {
+        ShimFeature[] taskRuntime = {ShimFeature.THREADS, ShimFeature.STRUCTURED_TASKS, ShimFeature.EXCEPTIONS};
+        shim(Intrinsic.TASK_SCOPE_NEW_FAILURE, "juno_task_scope_new_failure", Result.WORD, List.of(), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_NEW_SUCCESS, "juno_task_scope_new_success", Result.WORD, List.of(), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_FORK, "juno_task_scope_fork", Result.WORD, List.of(RECEIVER, arg(0)), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_JOIN, "juno_task_scope_join", Result.WORD, List.of(RECEIVER), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_THROW_IF_FAILED, "juno_task_scope_throw_if_failed", Result.NONE,
+                List.of(RECEIVER), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_RESULT, "juno_task_scope_result", Result.WORD, List.of(RECEIVER), taskRuntime);
+        shim(Intrinsic.TASK_GET, "juno_task_get", Result.WORD, List.of(RECEIVER), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_CLOSE, "juno_task_scope_close", Result.NONE, List.of(RECEIVER), taskRuntime);
     }
 
     /** Intrinsic monitors share the cooperative scheduler's reentrant monitor table. */

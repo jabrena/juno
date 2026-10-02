@@ -45,7 +45,8 @@ final class CallGuard {
                                      List<String> throwableClasses) {
         int callIndex = -1;
         for (int index = firstNew; index < instructions.size(); index++) {
-            if (ThrowingMethods.callees(instructions.get(index)).stream().anyMatch(throwing::contains)) {
+            if (ThrowingMethods.raises(instructions.get(index))
+                    || ThrowingMethods.callees(instructions.get(index)).stream().anyMatch(throwing::contains)) {
                 callIndex = index;
             }
         }

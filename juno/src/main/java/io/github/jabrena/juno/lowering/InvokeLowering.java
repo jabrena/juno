@@ -156,7 +156,7 @@ final class InvokeLowering {
                 depth, nextValueId, tracking);
     }
 
-    private static Lowered lowerResolvedCall(LinkedMethod linked, Instruction instruction, MethodRef called,
+    static Lowered lowerResolvedCall(LinkedMethod linked, Instruction instruction, MethodRef called,
                                              boolean hasReceiver, List<InterfaceTarget> interfaceTargets,
                                              List<IrInstruction> instructions, int stackBase, int depth,
                                              int nextValueId, ValueTracking tracking) {

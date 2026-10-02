@@ -47,9 +47,13 @@ final class ThrowingMethods {
         return false;
     }
 
-    private static boolean raises(IrInstruction instruction) {
+    static boolean raises(IrInstruction instruction) {
         return instruction instanceof IrInstruction.IntrinsicCall call
-                && (call.intrinsic() == Intrinsic.THROW_RAISE || call.intrinsic() == Intrinsic.THROW_DISPATCH);
+                && switch (call.intrinsic()) {
+                    case THROW_RAISE, THROW_DISPATCH, TASK_SCOPE_FORK, TASK_SCOPE_JOIN,
+                            TASK_SCOPE_THROW_IF_FAILED, TASK_SCOPE_RESULT, TASK_GET, TASK_SCOPE_CLOSE -> true;
+                    default -> false;
+                };
     }
 
     /** The program methods {@code instruction} may invoke; empty for anything that is not a call. */

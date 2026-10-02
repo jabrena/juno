@@ -150,12 +150,13 @@ public final class Linker {
             if (opcode == 182 || opcode == 183 || opcode == 184) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
                 ThreadSupport.registerEntry(called, interfaceCalls);
+                StructuredTaskSupport.registerEntry(called, interfaceCalls);
                 enqueueCall(called, caller, declaredBoards, classes, work);
             }
             if (opcode == 185) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                interfaceDispatchResolver.validateCall(linked, instruction, called, classes, lambdaSites.values());
-                interfaceCalls.put(new InterfaceCallSite(caller, instruction.offset()), called);
+                InterfaceCallRegistration.register(linked, instruction, called, classes, lambdaSites.values(),
+                        interfaceCalls, interfaceDispatchResolver);
             }
             if (opcode == 186) {
                 LambdaSite lambda = lambdaResolver.resolve(linked, instruction, classes);
@@ -186,6 +187,7 @@ public final class Linker {
         IntrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
                 requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
         LockSupport.validateCall(called);
+        StructuredTaskSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {

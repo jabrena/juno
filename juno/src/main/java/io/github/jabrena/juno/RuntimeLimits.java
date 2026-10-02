@@ -18,8 +18,11 @@ public final class RuntimeLimits {
     /** Most threads that can run at once, the main thread included; each extra one owns a stack of its own. */
     public static final int MAX_THREADS = 4;
 
-    /** Arena bytes of one {@code java.lang.Thread} handle (runnable, flags, id, spare). */
-    public static final int THREAD_OBJECT_BYTES = 16;
+    /** Arena bytes of one thread/task handle, including structured-task result and failure state. */
+    public static final int THREAD_OBJECT_BYTES = 28;
+
+    /** Arena bytes of one bounded structured-task scope and its active-task table. */
+    public static final int STRUCTURED_TASK_SCOPE_BYTES = 36;
 
     /** Most distinct monitors that may be held or contended at once. */
     public static final int MAX_MONITORS = 8;

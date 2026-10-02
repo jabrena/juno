@@ -112,6 +112,7 @@ public final class Thumb2AsmBackend {
 
     /** Where the runtime shim's thread bootstrap enters a started thread's {@code Runnable}. */
     private static final String THREAD_ENTRY_SYMBOL = "juno_thread_entry";
+    private static final String TASK_ENTRY_SYMBOL = "juno_task_entry";
 
     /**
      * {@code runtimeShim} is a small {@code extern "C"} C++ source that must be compiled alongside
@@ -169,7 +170,9 @@ public final class Thumb2AsmBackend {
             IrMethod method = program.methods().get(index);
             String label = method.reference().equals(entryPoint)
                     ? asmFunctionName(method)
-                    : method.reference().equals(ThreadSupport.ENTRY_METHOD) ? THREAD_ENTRY_SYMBOL : "juno_fn" + index;
+                    : method.reference().equals(ThreadSupport.ENTRY_METHOD) ? THREAD_ENTRY_SYMBOL
+                    : method.reference().equals(io.github.jabrena.juno.linker.StructuredTaskSupport.ENTRY_METHOD)
+                            ? TASK_ENTRY_SYMBOL : "juno_fn" + index;
             functionLabels.put(method.reference(), label);
             if (method.reference().name().equals("<clinit>")) {
                 clinitLabels.add(label);
@@ -215,7 +218,7 @@ public final class Thumb2AsmBackend {
         List<String> parameterTypes = Descriptor.parse(method.reference().descriptor()).parameters();
 
         output.append('\n');
-        if (isEntryPoint || label.equals(THREAD_ENTRY_SYMBOL)) {
+        if (isEntryPoint || label.equals(THREAD_ENTRY_SYMBOL) || label.equals(TASK_ENTRY_SYMBOL)) {
             output.append("    .global ").append(label).append('\n');
         }
         output.append("    .type ").append(label).append(", %function\n")
@@ -557,6 +560,9 @@ public final class Thumb2AsmBackend {
                 .anyMatch(instruction -> instruction instanceof IrInstruction.IntrinsicCall call
                         && switch (call.intrinsic()) {
                             case THREAD_NEW, THREAD_START, THREAD_JOIN, THREAD_IS_ALIVE, THREAD_SET_DAEMON,
+                                    TASK_SCOPE_NEW_FAILURE, TASK_SCOPE_NEW_SUCCESS, TASK_SCOPE_FORK,
+                                    TASK_SCOPE_JOIN, TASK_SCOPE_THROW_IF_FAILED, TASK_SCOPE_RESULT, TASK_GET,
+                                    TASK_SCOPE_CLOSE,
                                     MONITOR_ENTER, MONITOR_EXIT, REENTRANT_LOCK_NEW, REENTRANT_LOCK_LOCK,
                                     REENTRANT_LOCK_TRY_LOCK, REENTRANT_LOCK_UNLOCK -> true;
                             default -> false;

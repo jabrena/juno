@@ -105,6 +105,11 @@ final class ThreadRuntime {
                   juno_saved_sp[slot] = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(frame));
                 }
 
+                // A cancelled cooperative task will never be scheduled again; its private stack can be reused.
+                static void juno_port_cancel(uint32_t slot) {
+                  static_cast<void>(slot);
+                }
+
                 static void juno_port_check_stack(uint32_t slot) {
                   if (slot == 0u) return;
                   const uint32_t* canary = reinterpret_cast<const uint32_t*>(&juno_stacks[slot - 1u][0]);
@@ -185,6 +190,13 @@ final class ThreadRuntime {
                   juno_zephyr_created[slot] = true;
                 }
 
+                static void juno_port_cancel(uint32_t slot) {
+                  if (juno_zephyr_created[slot]) {
+                    k_thread_abort(&juno_zephyr_threads[slot - 1u]);
+                    juno_zephyr_created[slot] = false;
+                  }
+                }
+
                 // __builtin_unwind_init() spills every callee-saved register into this frame, so the conservative
                 // stack scan from the recorded sp sees whatever references they held.
                 __attribute__((noinline)) static void juno_port_switch(uint32_t from, uint32_t to) {
@@ -209,7 +221,8 @@ final class ThreadRuntime {
     }
 
     /** The cooperative scheduler and the {@code Thread} intrinsics, over a core's port. */
-    static String scheduler(String delayFunction, boolean exceptions) {
+    static String scheduler(String delayFunction, boolean exceptions, boolean threadEntry, boolean structuredTasks,
+                            int executionExceptionClassId, int illegalStateExceptionClassId) {
         String pendingSave = exceptions ? "juno_slots[from].pending = juno_pending_exception;\n"
                 + "  juno_pending_exception = juno_slots[to].pending;" : "";
         String report = exceptions ? """
@@ -217,27 +230,63 @@ final class ThreadRuntime {
                     juno_throw_report(juno_pending_exception, static_cast<int32_t>(thread->id));
                     juno_pending_exception = 0;
                   }""" : "";
+        String taskEntry = structuredTasks
+                ? "extern \"C\" int32_t juno_task_entry(int32_t callable);\n"
+                        + "static void juno_task_complete(JunoThreadObject* task, int32_t result);"
+                : "";
+        String ordinaryEntry = threadEntry ? "extern \"C\" void juno_thread_entry(int32_t runnable);" : "";
+        String ordinaryBody = threadEntry
+                ? "juno_thread_entry(static_cast<int32_t>(thread->runnable));\n${JUNO_THREAD_REPORT}"
+                : "juno_panic();";
+        String taskBody = structuredTasks ? """
+                  if ((thread->flags & JUNO_THREAD_TASK) != 0u) {
+                    int32_t result = juno_task_entry(static_cast<int32_t>(thread->runnable));
+                    juno_task_complete(thread, result);
+                  } else {
+                ${JUNO_ORDINARY_BODY}
+                  }""" : """
+                ${JUNO_ORDINARY_BODY}""";
+        String taskRuntime = structuredTasks ? taskRuntime() : "";
         return """
 
                 // ---- Juno threads: cooperative scheduler (same for every board) ----
                 // Slot 0 is the main thread. A Thread handle is a small arena object, so the collector keeps it
                 // (and the Runnable it points at) alive for as long as something references it.
+                struct JunoTaskScope;
                 struct JunoThreadObject {
                   uint32_t runnable;
                   uint32_t flags;
                   uint32_t id;
                   uint32_t reserved;
+                  JunoTaskScope* scope;
+                  int32_t result;
+                  int32_t failure;
                 };
                 static constexpr uint32_t JUNO_THREAD_STARTED = 1u;
                 static constexpr uint32_t JUNO_THREAD_FINISHED = 2u;
                 static constexpr uint32_t JUNO_THREAD_DAEMON = 4u;
+                static constexpr uint32_t JUNO_THREAD_TASK = 8u;
+                static constexpr uint32_t JUNO_TASK_SUCCESS = 16u;
+                static constexpr uint32_t JUNO_TASK_FAILED = 32u;
+                static constexpr uint32_t JUNO_TASK_CANCELLED = 64u;
+
+                struct JunoTaskScope {
+                  uint32_t policy;
+                  uint32_t flags;
+                  uint32_t active;
+                  uint32_t owner;
+                  int32_t firstFailure;
+                  int32_t result;
+                  JunoThreadObject* tasks[JUNO_MAX_THREADS - 1u];
+                };
 
                 enum : uint32_t {
                   JUNO_SLOT_FREE,
                   JUNO_SLOT_READY,
                   JUNO_SLOT_SLEEPING,
                   JUNO_SLOT_JOINING,
-                  JUNO_SLOT_JOINING_ALL
+                  JUNO_SLOT_JOINING_ALL,
+                  JUNO_SLOT_JOINING_SCOPE
                 };
 
                 struct JunoSlot {
@@ -245,10 +294,12 @@ final class ThreadRuntime {
                   uint32_t wake;
                   JunoThreadObject* thread;
                   JunoThreadObject* joining;
+                  JunoTaskScope* scope;
                   int32_t pending;
                 };
 
-                static JunoSlot juno_slots[JUNO_MAX_THREADS] = {{JUNO_SLOT_READY, 0u, nullptr, nullptr, 0}};
+                static JunoSlot juno_slots[JUNO_MAX_THREADS] = {
+                    {JUNO_SLOT_READY, 0u, nullptr, nullptr, nullptr, 0}};
                 static uint32_t juno_current_slot = 0u;
                 static uint32_t juno_live_threads = 0u;
                 static uint32_t juno_threads_created = 0u;
@@ -262,7 +313,8 @@ final class ThreadRuntime {
                 static constexpr uint32_t JUNO_MAX_MONITORS = ${JUNO_MAX_MONITORS}u;
                 static JunoMonitor juno_monitors[JUNO_MAX_MONITORS];
 
-                extern "C" void juno_thread_entry(int32_t runnable);
+                ${JUNO_ORDINARY_ENTRY}
+                ${JUNO_TASK_ENTRY}
 
                 static JunoThreadObject* juno_thread_of(int32_t handle) {
                   if (handle == 0) juno_panic();
@@ -286,6 +338,8 @@ final class ThreadRuntime {
                         }
                       }
                       return true;
+                    case JUNO_SLOT_JOINING_SCOPE:
+                      return slot.scope->active == 0u || (slot.scope->flags & 8u) != 0u;
                     default:
                       return false;
                   }
@@ -331,12 +385,12 @@ final class ThreadRuntime {
                 static void juno_thread_body() {
                   uint32_t slot = juno_current_slot;
                   JunoThreadObject* thread = juno_slots[slot].thread;
-                  juno_thread_entry(static_cast<int32_t>(thread->runnable));
-                ${JUNO_THREAD_REPORT}
+                ${JUNO_TASK_BODY}
                   thread->flags |= JUNO_THREAD_FINISHED;
                   juno_slots[slot].state = JUNO_SLOT_FREE;
                   juno_slots[slot].thread = nullptr;
                   juno_slots[slot].joining = nullptr;
+                  juno_slots[slot].scope = nullptr;
                   juno_live_threads--;
                   for (;;) {
                     uint32_t next = juno_sched_pick(false);
@@ -356,6 +410,7 @@ final class ThreadRuntime {
                     if (slot.state == JUNO_SLOT_FREE) continue;
                     if (slot.thread != nullptr) juno_gc_mark_candidate(reinterpret_cast<uintptr_t>(slot.thread));
                     if (slot.joining != nullptr) juno_gc_mark_candidate(reinterpret_cast<uintptr_t>(slot.joining));
+                    if (slot.scope != nullptr) juno_gc_mark_candidate(reinterpret_cast<uintptr_t>(slot.scope));
                     uintptr_t top = index == 0u ? juno_gc_stack_top : juno_port_stack_top(index);
                     const uint8_t* from = index == juno_current_slot
                         ? marker : reinterpret_cast<const uint8_t*>(juno_port_saved_sp(index));
@@ -394,7 +449,7 @@ final class ThreadRuntime {
                     juno_panic();
                   }
                   thread->flags |= JUNO_THREAD_STARTED;
-                  juno_slots[slot] = {JUNO_SLOT_READY, 0u, thread, nullptr, 0};
+                  juno_slots[slot] = {JUNO_SLOT_READY, 0u, thread, nullptr, nullptr, 0};
                   juno_live_threads++;
                   juno_port_prepare(slot);
                 }
@@ -409,6 +464,8 @@ final class ThreadRuntime {
                   }
                   juno_slots[juno_current_slot].joining = nullptr;
                 }
+
+                ${JUNO_TASK_RUNTIME}
 
                 extern "C" int32_t juno_thread_is_alive(int32_t handle) {
                   JunoThreadObject* thread = juno_thread_of(handle);
@@ -514,7 +571,200 @@ final class ThreadRuntime {
                 }
                 """.replace("${JUNO_PENDING_SWAP}", pendingSave)
                 .replace("${JUNO_THREAD_REPORT}", report)
+                .replace("${JUNO_ORDINARY_ENTRY}", ordinaryEntry)
+                .replace("${JUNO_TASK_ENTRY}", taskEntry)
+                .replace("${JUNO_TASK_BODY}", taskBody.replace("${JUNO_ORDINARY_BODY}", ordinaryBody)
+                        .replace("${JUNO_THREAD_REPORT}", report))
+                .replace("${JUNO_TASK_RUNTIME}", taskRuntime)
                 .replace("${JUNO_CORE_DELAY}", delayFunction)
-                .replace("${JUNO_MAX_MONITORS}", Integer.toString(RuntimeLimits.MAX_MONITORS));
+                .replace("${JUNO_MAX_MONITORS}", Integer.toString(RuntimeLimits.MAX_MONITORS))
+                .replace("${JUNO_EXECUTION_EXCEPTION_CLASS_ID}", Integer.toString(executionExceptionClassId))
+                .replace("${JUNO_ILLEGAL_STATE_EXCEPTION_CLASS_ID}", Integer.toString(illegalStateExceptionClassId));
+    }
+
+    /** Policy scopes and callable-task operations inserted only when the program reaches that API. */
+    private static String taskRuntime() {
+        return """
+                static constexpr uint32_t JUNO_TASK_SCOPE_FAILURE = 1u;
+                static constexpr uint32_t JUNO_TASK_SCOPE_SUCCESS = 2u;
+                static constexpr uint32_t JUNO_SCOPE_JOINED = 1u;
+                static constexpr uint32_t JUNO_SCOPE_CLOSED = 2u;
+                static constexpr uint32_t JUNO_SCOPE_HAS_RESULT = 4u;
+                static constexpr uint32_t JUNO_SCOPE_SHUTDOWN = 8u;
+
+                static JunoTaskScope* juno_task_scope_of(int32_t handle) {
+                  if (handle == 0) juno_panic();
+                  return reinterpret_cast<JunoTaskScope*>(static_cast<intptr_t>(handle));
+                }
+
+                static int32_t juno_task_exception(uint32_t classId, const char* message) {
+                  auto* exception = static_cast<int32_t*>(juno_alloc(8u, 4u));
+                  exception[0] = static_cast<int32_t>(classId);
+                  exception[1] = static_cast<int32_t>(reinterpret_cast<intptr_t>(message));
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(exception));
+                }
+
+                static void juno_task_raise_illegal_state(const char* message) {
+                  juno_throw_raise(juno_task_exception(${JUNO_ILLEGAL_STATE_EXCEPTION_CLASS_ID}u, message));
+                }
+
+                static void juno_task_raise_execution(int32_t failure) {
+                  const char* message = "structured subtask failed";
+                  if (failure != 0) {
+                    const int32_t* header = reinterpret_cast<const int32_t*>(static_cast<intptr_t>(failure));
+                    const char* original = reinterpret_cast<const char*>(static_cast<intptr_t>(header[1]));
+                    if (original != nullptr) message = original;
+                  }
+                  juno_throw_raise(juno_task_exception(${JUNO_EXECUTION_EXCEPTION_CLASS_ID}u, message));
+                }
+
+                static void juno_task_remove(JunoTaskScope* scope, JunoThreadObject* task) {
+                  for (uint32_t index = 0u; index < JUNO_MAX_THREADS - 1u; index++) {
+                    if (scope->tasks[index] == task) scope->tasks[index] = nullptr;
+                  }
+                  if (scope->active != 0u) scope->active--;
+                }
+
+                static void juno_task_cancel(JunoThreadObject* task) {
+                  if (task == nullptr || (task->flags & JUNO_THREAD_FINISHED) != 0u) return;
+                  task->flags |= JUNO_THREAD_FINISHED | JUNO_TASK_CANCELLED;
+                  for (uint32_t slot = 1u; slot < JUNO_MAX_THREADS; slot++) {
+                    if (juno_slots[slot].thread != task) continue;
+                    juno_port_cancel(slot);
+                    juno_slots[slot] = {JUNO_SLOT_FREE, 0u, nullptr, nullptr, nullptr, 0};
+                    if (juno_live_threads != 0u) juno_live_threads--;
+                    return;
+                  }
+                }
+
+                static void juno_task_cancel_siblings(JunoTaskScope* scope, JunoThreadObject* completed) {
+                  for (uint32_t index = 0u; index < JUNO_MAX_THREADS - 1u; index++) {
+                    JunoThreadObject* task = scope->tasks[index];
+                    if (task == nullptr || task == completed) continue;
+                    juno_task_cancel(task);
+                    scope->tasks[index] = nullptr;
+                    if (scope->active != 0u) scope->active--;
+                  }
+                }
+
+                static void juno_task_complete(JunoThreadObject* task, int32_t result) {
+                  JunoTaskScope* scope = task->scope;
+                  int32_t failure = juno_pending_exception;
+                  juno_pending_exception = 0;
+                  juno_slots[juno_current_slot].pending = 0;
+                  if (failure == 0) {
+                    task->result = result;
+                    task->flags |= JUNO_TASK_SUCCESS;
+                    if (scope->policy == JUNO_TASK_SCOPE_SUCCESS
+                            && (scope->flags & JUNO_SCOPE_HAS_RESULT) == 0u) {
+                      scope->result = result;
+                      scope->flags |= JUNO_SCOPE_HAS_RESULT | JUNO_SCOPE_SHUTDOWN;
+                    }
+                  } else {
+                    task->failure = failure;
+                    task->flags |= JUNO_TASK_FAILED;
+                    if (scope->firstFailure == 0) scope->firstFailure = failure;
+                    if (scope->policy == JUNO_TASK_SCOPE_FAILURE) scope->flags |= JUNO_SCOPE_SHUTDOWN;
+                  }
+                  juno_task_remove(scope, task);
+                  if ((scope->flags & JUNO_SCOPE_SHUTDOWN) != 0u) juno_task_cancel_siblings(scope, task);
+                }
+
+                static int32_t juno_task_scope_new(uint32_t policy) {
+                  auto* scope = static_cast<JunoTaskScope*>(juno_alloc(sizeof(JunoTaskScope), 4u));
+                  scope->policy = policy;
+                  scope->owner = juno_current_slot + 1u;
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(scope));
+                }
+
+                extern "C" int32_t juno_task_scope_new_failure() {
+                  return juno_task_scope_new(JUNO_TASK_SCOPE_FAILURE);
+                }
+
+                extern "C" int32_t juno_task_scope_new_success() {
+                  return juno_task_scope_new(JUNO_TASK_SCOPE_SUCCESS);
+                }
+
+                static bool juno_task_scope_check_owner(JunoTaskScope* scope) {
+                  if (scope->owner == juno_current_slot + 1u) return true;
+                  juno_task_raise_illegal_state("StructuredTaskScope used by a non-owner thread");
+                  return false;
+                }
+
+                extern "C" int32_t juno_task_scope_fork(int32_t scopeHandle, int32_t callable) {
+                  JunoTaskScope* scope = juno_task_scope_of(scopeHandle);
+                  if (!juno_task_scope_check_owner(scope)) return 0;
+                  if ((scope->flags & (JUNO_SCOPE_CLOSED | JUNO_SCOPE_SHUTDOWN)) != 0u) {
+                    juno_task_raise_illegal_state("StructuredTaskScope is already shut down");
+                    return 0;
+                  }
+                  uint32_t taskIndex = 0u;
+                  while (taskIndex < JUNO_MAX_THREADS - 1u && scope->tasks[taskIndex] != nullptr) taskIndex++;
+                  if (taskIndex == JUNO_MAX_THREADS - 1u) {
+                    juno_task_raise_illegal_state("StructuredTaskScope has too many active subtasks");
+                    return 0;
+                  }
+                  auto* task = static_cast<JunoThreadObject*>(juno_alloc(sizeof(JunoThreadObject), 4u));
+                  task->runnable = static_cast<uint32_t>(callable);
+                  task->flags = JUNO_THREAD_TASK;
+                  task->id = juno_threads_created++;
+                  task->scope = scope;
+                  scope->tasks[taskIndex] = task;
+                  scope->active++;
+                  juno_thread_start(static_cast<int32_t>(reinterpret_cast<intptr_t>(task)));
+                  return static_cast<int32_t>(reinterpret_cast<intptr_t>(task));
+                }
+
+                extern "C" int32_t juno_task_scope_join(int32_t scopeHandle) {
+                  JunoTaskScope* scope = juno_task_scope_of(scopeHandle);
+                  if (!juno_task_scope_check_owner(scope)) return scopeHandle;
+                  while (scope->active != 0u && (scope->flags & JUNO_SCOPE_SHUTDOWN) == 0u) {
+                    juno_slots[juno_current_slot].state = JUNO_SLOT_JOINING_SCOPE;
+                    juno_slots[juno_current_slot].scope = scope;
+                    juno_sched_block();
+                  }
+                  juno_slots[juno_current_slot].scope = nullptr;
+                  scope->flags |= JUNO_SCOPE_JOINED;
+                  return scopeHandle;
+                }
+
+                extern "C" void juno_task_scope_throw_if_failed(int32_t scopeHandle) {
+                  JunoTaskScope* scope = juno_task_scope_of(scopeHandle);
+                  if ((scope->flags & JUNO_SCOPE_JOINED) == 0u) {
+                    juno_task_raise_illegal_state("join() must complete before throwIfFailed()");
+                  } else if (scope->firstFailure != 0) {
+                    juno_task_raise_execution(scope->firstFailure);
+                  }
+                }
+
+                extern "C" int32_t juno_task_scope_result(int32_t scopeHandle) {
+                  JunoTaskScope* scope = juno_task_scope_of(scopeHandle);
+                  if ((scope->flags & JUNO_SCOPE_JOINED) == 0u) {
+                    juno_task_raise_illegal_state("join() must complete before result()");
+                    return 0;
+                  }
+                  if ((scope->flags & JUNO_SCOPE_HAS_RESULT) == 0u) {
+                    juno_task_raise_execution(scope->firstFailure);
+                    return 0;
+                  }
+                  return scope->result;
+                }
+
+                extern "C" int32_t juno_task_get(int32_t taskHandle) {
+                  JunoThreadObject* task = juno_thread_of(taskHandle);
+                  if ((task->flags & JUNO_TASK_SUCCESS) == 0u) {
+                    juno_task_raise_illegal_state("Subtask did not complete successfully");
+                    return 0;
+                  }
+                  return task->result;
+                }
+
+                extern "C" void juno_task_scope_close(int32_t scopeHandle) {
+                  JunoTaskScope* scope = juno_task_scope_of(scopeHandle);
+                  if (!juno_task_scope_check_owner(scope)) return;
+                  scope->flags |= JUNO_SCOPE_CLOSED | JUNO_SCOPE_SHUTDOWN;
+                  juno_task_cancel_siblings(scope, nullptr);
+                }
+                """;
     }
 }

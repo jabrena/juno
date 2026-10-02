@@ -42,6 +42,10 @@ public final class ThreadSupport {
         if (site.equals(ENTRY_SITE)) {
             return "Thread needs a Runnable: no reachable class or lambda implements java.lang.Runnable";
         }
+        if (StructuredTaskSupport.isEntrySite(site)) {
+            return "StructuredTaskScope.fork needs a Callable: no reachable class or lambda implements "
+                    + "java.util.concurrent.Callable";
+        }
         return site.caller().displayName() + " at bytecode offset " + site.bytecodeOffset()
                 + ": no reachable implementation of " + interfaceMethod.displayName();
     }
