@@ -218,6 +218,28 @@ class BoardTest {
     }
 
     @Test
+    void poweredUpHubRequiresTheUnoR4WiFisBluetoothLe() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                @Board(ArduinoUnoQ.class)
+                public final class QTrain {
+                    public static void main(String[] args) {
+                        PoweredUpHub.connect(1000);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.QTrain", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.QTrain"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("PoweredUpHub requires @Board(ArduinoUnoR4WiFi.class)")
+                .hasMessageContaining("UNO Q has no Bluetooth LE radio");
+    }
+
+    @Test
     void theUnoQSupportsPortableWifiUdpHttpsAndSecureEmail() throws Exception {
         String source = """
                 package demo;

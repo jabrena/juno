@@ -92,6 +92,10 @@ final class RuntimeShim {
         if (uses(ShimFeature.SERVO)) {
             shim.append("#include <Servo.h>\n");
         }
+        // ArduinoBLE is another optional library (arduino-cli lib install ArduinoBLE), like Mouse above.
+        if (uses(ShimFeature.LEGO_POWERED_UP)) {
+            shim.append("#include <ArduinoBLE.h>\n");
+        }
         if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
@@ -522,6 +526,9 @@ final class RuntimeShim {
         }
         if (uses(ShimFeature.SERVO)) {
             shim.append(ShimLibraries.servoHelpers());
+        }
+        if (uses(ShimFeature.LEGO_POWERED_UP)) {
+            shim.append(ShimLibraries.legoPoweredUpHelpers());
         }
         if (uses(ShimFeature.MEMORY)) {
             shim.append(ShimLibraries.memoryHelpers());

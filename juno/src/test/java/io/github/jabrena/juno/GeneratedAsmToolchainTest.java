@@ -464,6 +464,40 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, qShim);
     }
 
+    /**
+     * The LEGO Powered Up shim drives {@code ArduinoBLE}'s central API directly, so compile it for real
+     * against the module's mock {@code ArduinoBLE.h}, which mirrors the library's signatures.
+     */
+    @Test
+    void compilesALegoPoweredUpProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                public final class AsmLegoTrain {
+                    public static void main(String[] args) {
+                        if (!PoweredUpHub.connect(0)) return;
+                        PoweredUpHub.setLedColor(PoweredUpHub.COLOR_BLUE);
+                        PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, 40);
+                        Delay.millis(1000);
+                        PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+                        if (PoweredUpHub.hubType() != PoweredUpHub.TYPE_UNKNOWN && PoweredUpHub.isConnected()) {
+                            PoweredUpHub.disconnect();
+                        }
+                        PoweredUpHub.switchOff();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLegoTrain", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLegoTrain");
+        Path shim = temporaryDirectory.resolve("AsmLegoTrainShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
     @Test
     void compilesAnSdPropertiesProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();

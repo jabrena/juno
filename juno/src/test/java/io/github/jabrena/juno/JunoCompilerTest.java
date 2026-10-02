@@ -1228,6 +1228,56 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersLegoPoweredUpIntrinsicsAndOmitsUnusedHeader() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                @Board(ArduinoUnoR4WiFi.class)
+                public final class Train {
+                    public static void main(String[] args) {
+                        if (PoweredUpHub.connect(10000) && PoweredUpHub.hubType() == PoweredUpHub.TYPE_CITY_HUB) {
+                            PoweredUpHub.setLedColor(PoweredUpHub.COLOR_GREEN);
+                            PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, -50);
+                            PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+                        }
+                        if (PoweredUpHub.isConnected()) {
+                            PoweredUpHub.disconnect();
+                        }
+                        PoweredUpHub.switchOff();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Train", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Train");
+
+        assertThat(result.assembly()).contains("bl juno_lego_hub_connect", "bl juno_lego_hub_type_id",
+                "bl juno_lego_hub_set_led_color", "bl juno_lego_hub_set_motor_power",
+                "bl juno_lego_hub_brake_motor", "bl juno_lego_hub_is_connected", "bl juno_lego_hub_disconnect",
+                "bl juno_lego_hub_switch_off");
+        assertThat(result.runtimeShim()).contains("#include <ArduinoBLE.h>",
+                "\"00001623-1212-efde-1623-785feabcd123\"",
+                "extern \"C\" void juno_lego_hub_set_motor_power(int32_t port, int32_t powerPercent)");
+
+        String plainSource = """
+                package demo;
+                import io.github.jabrena.juno.api.io.Gpio;
+                public final class PlainBle {
+                    public static void main(String[] args) {
+                        Gpio.pinMode(13, Gpio.OUTPUT);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PlainBle", plainSource);
+
+        CompilationResult plainResult = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PlainBle");
+
+        assertThat(plainResult.runtimeShim()).doesNotContain("ArduinoBLE.h", "juno_lego_");
+    }
+
+    @Test
     void lowersMouseIntrinsicsAndOmitsUnusedHeader() throws Exception {
         String source = """
                 package demo;
