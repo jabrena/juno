@@ -54,11 +54,64 @@ if (PoweredUpHub.connect(10_000)) {              // scan up to 10 s; 0 waits for
 | `setMotorPower(port, percent)` | Runs any Powered Up motor (train, simple, or tacho) on `PORT_A`..`PORT_D`. Negative values reverse, `0` coasts, values beyond ±100 are clamped. |
 | `brakeMotor(port)` | Actively brakes the motor, instead of letting it coast. |
 | `setLedColor(color)` | Sets the hub's LED to a LEGO color index: `COLOR_OFF`, `COLOR_PINK`, ..., `COLOR_RED`, `COLOR_WHITE`. |
+| `enableSensor(port, mode)` | Asks the hub to report every change of one mode of the motor or sensor on `port`. See [Reading motors and sensors](#reading-motors-and-sensors). |
+| `readSensor(port)` | The latest value that port reported, or `0` before its first report. |
 | `disconnect()` | Drops the connection; the hub stays on and starts advertising again. |
 | `switchOff()` | Switches the hub off. |
 
 A program talks to one hub at a time. Commands sent while no hub is connected are ignored, so
 check `isConnected()` in long-running loops and reconnect when it turns `false`.
+
+## Reading motors and sensors
+
+Motors with a rotation sensor, sensors, and the Powered Up remote report values once a program
+subscribes to one of their *modes*. `enableSensor(port, mode)` subscribes, and from then on the hub
+sends a message whenever the value changes; `readSensor(port)` returns the latest one.
+
+```java
+PoweredUpHub.enableSensor(PoweredUpHub.PORT_A, PoweredUpHub.MODE_MOTOR_POSITION);
+...
+int degrees = PoweredUpHub.readSensor(PoweredUpHub.PORT_A);
+```
+
+| Device | Mode | `readSensor` value |
+| --- | --- | --- |
+| Tacho motor (BOOST, Technic, SPIKE motors) | `MODE_MOTOR_POSITION` | Position in degrees, cumulative since the hub started. |
+| Tacho motor | `MODE_MOTOR_SPEED` | Speed, as a percentage of full speed. |
+| Color and Distance Sensor (88007) | `MODE_COLOR` | The sensor's color number (mostly, but not fully, matching the `COLOR_*` LED values), `-1` for none. |
+| Color and Distance Sensor (88007) | `MODE_PROXIMITY` | `0` (touching) to `10` (nothing in range). |
+| Powered Up remote (88010), on `PORT_A`/`PORT_B` | `MODE_REMOTE_BUTTONS` | `REMOTE_RELEASED`, `REMOTE_PLUS`, `REMOTE_MINUS` or `REMOTE_STOP`. |
+
+Mode numbers belong to each device, so other devices work too when given their mode number.
+Things to know:
+
+- `readSensor` decodes modes that report **one** 8-, 16- or 32-bit value. For modes reporting
+  several values at once (a hub's tilt axes, raw RGB), it returns only the first byte.
+- Up to **eight** ports report at a time; enabling a ninth is ignored.
+- Values arrive while a `PoweredUpHub` call runs, not during `Delay.millis`, so call `readSensor`
+  regularly in loops that wait for a value.
+- A new `connect()` starts with no ports reporting: enable them again after reconnecting.
+- The remote connects as a hub of its own (`TYPE_REMOTE_CONTROL`). Since a program talks to one
+  hub at a time, it can't yet drive a train hub from a remote.
+
+### Example: one revolution at a time
+
+[`LegoMotorPosition`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoMotorPosition.java)
+turns a tacho motor on port A exactly one revolution forwards, then one backwards, using its
+position reports:
+
+```java
+private static void turnTo(int target, int color) {
+    PoweredUpHub.setLedColor(color);
+    int position = PoweredUpHub.readSensor(MOTOR);
+    int direction = target > position ? 1 : -1;
+    PoweredUpHub.setMotorPower(MOTOR, direction * POWER);
+    while (PoweredUpHub.isConnected() && (target - position) * direction > 0) {
+        position = PoweredUpHub.readSensor(MOTOR);
+    }
+    PoweredUpHub.brakeMotor(MOTOR);
+}
+```
 
 ## Example: a shuttling train
 
