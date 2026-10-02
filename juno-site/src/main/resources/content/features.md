@@ -122,7 +122,13 @@ Supported today:
   `run()` prints `Exception in thread "Thread-N" <class>: <message>`, ends that thread and leaves the others
   running. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each Juno thread is a Zephyr thread that waits
   for a baton, so only one runs at a time. Not supported: subclassing `Thread`, thread names/priorities/interrupts,
-  and `StructuredTaskScope`.
+  and other `java.util.concurrent` APIs.
+- Java 21 preview `StructuredTaskScope.ShutdownOnFailure` and `ShutdownOnSuccess`, lowered onto the same cooperative
+  task runtime: construction, `fork(Callable)`, `join()`, `throwIfFailed()`, `result()`, `Subtask.get()`, and
+  try-with-resources `close()`. A first failure/success shuts the scope down and cancels sibling tasks. At most three
+  subtasks can be active because the four scheduler slots include the owner thread. JDK 25 replaced these policy
+  classes, so source using this subset must first be compiled as Java 21 preview bytecode. The newer
+  `StructuredTaskScope.open(Joiner)` API and all other scope operations remain unsupported.
 - restricted synchronization for cooperative threads: `volatile` primitive/reference fields are always loaded from
   and stored to memory, including across calls and loop backedges; `synchronized (lock)` blocks use a bounded table
   of eight reentrant intrinsic monitors; and concrete `java.util.concurrent.locks.ReentrantLock` supports only

@@ -1,6 +1,6 @@
 # HANDOFF: threads and structured concurrency in Juno
 
-Status: **steps 1-5 done (uncommitted, see below); 6 (`synchronized`, `volatile`) and 7 (`StructuredTaskScope`) not started.**
+Status: **steps 1-7 done (uncommitted, see below).**
 Origin: design discussion (ChatGPT share "Threads support in Juno", 2026-10-01), reviewed in a Claude Code session.
 Claims about Juno's internals below come from that discussion plus `AGENTS.md` and
 `juno-site/src/main/resources/content/features.md`; verify against the code before relying on them.
@@ -44,9 +44,10 @@ intrinsic-lowering pattern (`IntrinsicRegistry` / `IntrinsicLowering`).
 
 ## Current state (per features.md)
 
-Interfaces/`invokeinterface`, lambdas and method references, cross-method exceptions and cooperative threads now
-exist (steps 1-5 below). Still unsupported: inheritance/polymorphic dispatch (so `extends Thread`), `synchronized`, `volatile`,
-`StructuredTaskScope`. Conservative mark/sweep GC over a fixed 8 KiB arena, rooted on every live thread's stack.
+Interfaces/`invokeinterface`, lambdas and method references, cross-method exceptions, cooperative threads,
+restricted synchronization, and policy-based structured task scopes now exist (steps 1-7 below). Still unsupported:
+inheritance/polymorphic dispatch (so `extends Thread`) and the rest of the general `java.util.concurrent` API.
+Conservative mark/sweep GC uses a fixed 8 KiB arena rooted on every live thread's stack and active task scope.
 
 ## Prerequisites, in dependency order
 
@@ -90,8 +91,25 @@ exist (steps 1-5 below). Still unsupported: inheritance/polymorphic dispatch (so
    `tryLock()`, and `unlock()` through the same runtime. Contention yields to the scheduler. Synchronized methods and
    all other `ReentrantLock`/`java.util.concurrent` APIs fail explicitly. Verified by `SynchronizationTest`,
    `GeneratedAsmToolchainTest`, QEMU `demo.Synchronization`, and the board-ready `examples/Synchronization` program.
-7. **`StructuredTaskScope`** (`ShutdownOnFailure`, `ShutdownOnSuccess`): `fork`, `join`, `throwIfFailed`, `get`,
-   lowered onto the task runtime.
+7. **`StructuredTaskScope`**. **Done.** The Java 21 preview policy classes `ShutdownOnFailure` and
+   `ShutdownOnSuccess` support construction, `fork(Callable)`, `join()`, `throwIfFailed()`, `result()`,
+   `Subtask.get()`, and `close()`, lowered onto the cooperative task runtime. The first failure/success shuts down
+   the scope and cancels sibling scheduler slots; owner-thread and call-order violations raise
+   `IllegalStateException`, while failed policy results raise `ExecutionException`. Because JDK 25 replaced this
+   API shape, input using it must be compiled as Java 21 preview bytecode before Juno consumes the class files.
+   Verified by `StructuredTaskScopeTest`, real ARM assembly and C++ shim compilation for both board ports,
+   QEMU `demo.StructuredTasks` against its JVM oracle, and real `arduino-cli compile` for the UNO R4 WiFi and the
+   UNO Q (`arduino:zephyr:unoq`, 2026-10-02 review).
+   **To improve later** (found in the 2026-10-02 review; none is fixed or tested yet):
+   - **Hardware:** flash `StructuredTasks` on both boards. QEMU covers the R4 only and the test `kernel.h` stubs
+     `k_thread_abort` as a no-op, so the UNO Q cancel path (`k_thread_abort`, slot reuse after a cancel) has never
+     run. Cover fail-fast cancellation and the `ShutdownOnSuccess` winner.
+   - **Non-recursive cancellation:** `juno_task_cancel` does not cancel a task's own inner scope. If an outer scope
+     cancels a task that owns a scope, the inner subtasks are orphaned and keep their slots until they finish
+     (`MAX_THREADS` = 4, so slots can run out; differs from JDK semantics). Affects both boards.
+   - **Monitors on cancel:** a task cancelled while holding a `synchronized` or `ReentrantLock` monitor does not
+     release it, so the lock can stay held forever. Release a cancelled slot's monitors in `juno_task_cancel`.
+   - **JDK 25 API:** `StructuredTaskScope.open(Joiner)` is not supported (Java 21 preview policy classes only).
 
 ## Design notes
 
@@ -126,5 +144,5 @@ exist (steps 1-5 below). Still unsupported: inheritance/polymorphic dispatch (so
 
 - Is a Renesas (UNO R4) thread story required, or is UNO Q-only acceptable?
 - Maximum threads and stack size policy; compile-time budget vs. user-configurable?
-- Which `StructuredTaskScope` subset is worth supporting first?
+- Should Juno also support the redesigned JDK 25 `StructuredTaskScope.open(Joiner)` API?
 - Does reference-valued static field support (currently missing) need to land before threads?
