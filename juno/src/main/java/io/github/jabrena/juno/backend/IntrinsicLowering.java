@@ -296,12 +296,31 @@ final class IntrinsicLowering {
         shim(Intrinsic.PROPERTIES_SIZE, "juno_properties_size", Result.WORD, List.of(RECEIVER), ShimFeature.SD);
     }
 
-    /** USB mouse, servos, and the Wi-Fi radio. */
+    /** USB mouse, servos, LEGO Powered Up hubs, and the Wi-Fi radio. */
     private void registerPeripherals() {
         shim(Intrinsic.MOUSE_BEGIN, "juno_mouse_begin", Result.NONE, List.of(), ShimFeature.MOUSE);
         shim(Intrinsic.MOUSE_MOVE, "juno_mouse_move", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.MOUSE);
         shim(Intrinsic.SERVO_OF, "juno_servo_attach", Result.FIRST_ARGUMENT, List.of(arg(0)), ShimFeature.SERVO);
         shim(Intrinsic.SERVO_WRITE, "juno_servo_write", Result.NONE, List.of(RECEIVER, arg(0)), ShimFeature.SERVO);
+        shim(Intrinsic.LEGO_HUB_CONNECT, "juno_lego_hub_connect", Result.WORD, List.of(arg(0)),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_IS_CONNECTED, "juno_lego_hub_is_connected", Result.WORD, List.of(),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_TYPE, "juno_lego_hub_type_id", Result.WORD, List.of(), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_SET_MOTOR_POWER, "juno_lego_hub_set_motor_power", Result.NONE,
+                List.of(arg(0), arg(1)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_BRAKE_MOTOR, "juno_lego_hub_brake_motor", Result.NONE, List.of(arg(0)),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_SET_LED_COLOR, "juno_lego_hub_set_led_color", Result.NONE, List.of(arg(0)),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_ENABLE_SENSOR, "juno_lego_hub_enable_sensor", Result.NONE, List.of(arg(0), arg(1)),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_READ_SENSOR, "juno_lego_hub_read_sensor", Result.WORD, List.of(arg(0)),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_DISCONNECT, "juno_lego_hub_disconnect", Result.NONE, List.of(),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_SWITCH_OFF, "juno_lego_hub_switch_off", Result.NONE, List.of(),
+                ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_STATUS, "juno_wifi_status", Result.WORD, List.of(), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_LOCAL_IP, "juno_wifi_local_ip", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);

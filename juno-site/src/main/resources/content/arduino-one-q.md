@@ -82,6 +82,14 @@ support on this board."`
 arduino-cli lib install Arduino_RouterBridge
 ```
 
+Programs using [`PoweredUpHub`](../lego) also need `ArduinoBLE` 2.1.0 or newer, which reaches the
+Linux side's Bluetooth adapter through the same bridge (and `arduino-router` 0.7.0 or newer on the
+board):
+
+```bash
+arduino-cli lib install ArduinoBLE
+```
+
 Connect the board and confirm that its FQBN is detected:
 
 ```bash

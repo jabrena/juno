@@ -233,28 +233,30 @@ public final class Linker {
 
     private static Map<Intrinsic, Capability> requiredCapabilities() {
         Map<Intrinsic, Capability> required = new EnumMap<>(Intrinsic.class);
-        for (Intrinsic intrinsic : List.of(Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME,
-                Intrinsic.LED_MATRIX_CLEAR)) {
-            required.put(intrinsic, Capability.LED_MATRIX);
-        }
-        for (Intrinsic intrinsic : List.of(Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS, Intrinsic.WIFI_LOCAL_IP,
+        require(required, Capability.LED_MATRIX, Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME,
+                Intrinsic.LED_MATRIX_CLEAR);
+        require(required, Capability.WIFI, Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS, Intrinsic.WIFI_LOCAL_IP,
                 Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
-                Intrinsic.UDP_STOP)) {
-            required.put(intrinsic, Capability.WIFI);
-        }
-        for (Intrinsic intrinsic : List.of(Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
+                Intrinsic.UDP_STOP);
+        require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
                 Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY,
                 Intrinsic.SMTP_SEND_TLS, Intrinsic.POP3_MESSAGE_COUNT, Intrinsic.POP3_READ_LATEST,
-                Intrinsic.POP3_READ_SUBJECT)) {
-            required.put(intrinsic, Capability.HTTPS_CLIENT);
-        }
-        for (Intrinsic intrinsic : List.of(Intrinsic.HTTP_GET, Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE,
-                Intrinsic.HTTP_PATCH, Intrinsic.HTTP_QUERY, Intrinsic.HTTP_SERVER_BEGIN,
+                Intrinsic.POP3_READ_SUBJECT);
+        require(required, Capability.WIFI_S3_NETWORKING, Intrinsic.HTTP_GET, Intrinsic.HTTP_POST,
+                Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH, Intrinsic.HTTP_QUERY, Intrinsic.HTTP_SERVER_BEGIN,
                 Intrinsic.HTTP_SERVER_ACCEPT, Intrinsic.HTTP_SERVER_METHOD, Intrinsic.HTTP_SERVER_PATH,
-                Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER, Intrinsic.SMTP_SEND)) {
-            required.put(intrinsic, Capability.WIFI_S3_NETWORKING);
-        }
+                Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER, Intrinsic.SMTP_SEND);
+        require(required, Capability.BLUETOOTH_LE, Intrinsic.LEGO_HUB_CONNECT, Intrinsic.LEGO_HUB_IS_CONNECTED,
+                Intrinsic.LEGO_HUB_TYPE, Intrinsic.LEGO_HUB_SET_MOTOR_POWER, Intrinsic.LEGO_HUB_BRAKE_MOTOR,
+                Intrinsic.LEGO_HUB_SET_LED_COLOR, Intrinsic.LEGO_HUB_ENABLE_SENSOR, Intrinsic.LEGO_HUB_READ_SENSOR,
+                Intrinsic.LEGO_HUB_DISCONNECT, Intrinsic.LEGO_HUB_SWITCH_OFF);
         return Collections.unmodifiableMap(required);
+    }
+
+    private static void require(Map<Intrinsic, Capability> required, Capability capability, Intrinsic... intrinsics) {
+        for (Intrinsic intrinsic : intrinsics) {
+            required.put(intrinsic, capability);
+        }
     }
 
     /**

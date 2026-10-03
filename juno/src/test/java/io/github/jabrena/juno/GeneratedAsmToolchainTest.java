@@ -464,6 +464,71 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, qShim);
     }
 
+    /**
+     * The LEGO Powered Up shim drives {@code ArduinoBLE}'s central API directly, so compile it for real
+     * against the module's mock {@code ArduinoBLE.h}, which mirrors the library's signatures.
+     */
+    @Test
+    void compilesALegoPoweredUpProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                public final class AsmLegoTrain {
+                    public static void main(String[] args) {
+                        if (!PoweredUpHub.connect(0)) return;
+                        PoweredUpHub.setLedColor(PoweredUpHub.COLOR_BLUE);
+                        PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, 40);
+                        Delay.millis(1000);
+                        PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+                        if (PoweredUpHub.hubType() != PoweredUpHub.TYPE_UNKNOWN && PoweredUpHub.isConnected()) {
+                            PoweredUpHub.disconnect();
+                        }
+                        PoweredUpHub.switchOff();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLegoTrain", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLegoTrain");
+        Path shim = temporaryDirectory.resolve("AsmLegoTrainShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    /** On the UNO Q the same ArduinoBLE-based shim sits next to the Zephyr core's own runtime glue. */
+    @Test
+    void compilesAnUnoQLegoPoweredUpProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                @Board(ArduinoUnoQ.class)
+                public final class AsmUnoQLegoTrain {
+                    public static void main(String[] args) {
+                        if (!PoweredUpHub.connect(0)) return;
+                        PoweredUpHub.setLedColor(PoweredUpHub.COLOR_GREEN);
+                        PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, -40);
+                        Delay.millis(1000);
+                        PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQLegoTrain", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQLegoTrain");
+        assertThat(result.runtimeShim()).contains("#include <ArduinoBLE.h>", "juno_delay(uint32_t ms)");
+        Path shim = temporaryDirectory.resolve("AsmUnoQLegoTrainShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
     @Test
     void compilesAnSdPropertiesProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
@@ -870,6 +935,158 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(finished, "Generated JSON runtime test timed out");
         String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertThat(run.exitValue()).as("runtime exit code; output: " + output).isEqualTo(0);
+    }
+
+    /**
+     * Runs the generated LEGO Powered Up shim on the host against the module's fake {@code ArduinoBLE.h},
+     * which plays one City Hub: every command must reach the hub as the exact LEGO Wireless Protocol 3.0
+     * frame, and the hub's Port Value notifications must decode into {@code readSensor} values.
+     */
+    @Test
+    void generatedLegoPoweredUpShimSpeaksLegoWirelessProtocolAtRuntime() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                public final class LegoRuntime {
+                    public static void main(String[] args) {
+                        if (PoweredUpHub.connect(0) && PoweredUpHub.isConnected()) {
+                            PoweredUpHub.enableSensor(PoweredUpHub.PORT_A, PoweredUpHub.MODE_MOTOR_POSITION);
+                            PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, PoweredUpHub.readSensor(PoweredUpHub.PORT_A));
+                            PoweredUpHub.setLedColor(PoweredUpHub.hubType());
+                            PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+                            PoweredUpHub.switchOff();
+                            PoweredUpHub.disconnect();
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.LegoRuntime", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LegoRuntime");
+        Path sketch = temporaryDirectory.resolve("LegoRuntime.cpp");
+        String harness = """
+
+                // Provided by the generated entry-point assembly on a board; see the JSON runtime test.
+                extern "C" {
+                  uintptr_t juno_gc_stack_top;
+                  uint8_t juno_gc_static_start;
+                  uint8_t juno_gc_static_end;
+                }
+
+                static int junoCheckedWrites = 0;
+
+                static bool junoExpectWrite(const uint8_t* expected, int length) {
+                  if (junoCheckedWrites >= junofake::writes) return false;
+                  const junofake::Message& actual = junofake::written[junoCheckedWrites++];
+                  return actual.length == length && memcmp(actual.bytes, expected, length) == 0;
+                }
+
+                #define EXPECT_WRITE(code, ...) do { \\
+                    const uint8_t expected[] = {__VA_ARGS__}; \\
+                    if (!junoExpectWrite(expected, sizeof(expected))) return code; \\
+                  } while (0)
+                #define NOTIFY(...) do { \\
+                    const uint8_t message[] = {__VA_ARGS__}; \\
+                    junofake::notify(message, sizeof(message)); \\
+                  } while (0)
+
+                int main() {
+                  uint8_t stackTopMarker;
+                  juno_gc_stack_top = reinterpret_cast<uintptr_t>(&stackTopMarker);
+
+                  if (juno_lego_hub_type_id() != 0 || juno_lego_hub_is_connected() != 0) return 1;
+                  // Commands before connecting are dropped, not queued.
+                  juno_lego_hub_set_motor_power(0, 50);
+                  if (junofake::writes != 0) return 2;
+
+                  if (juno_lego_hub_connect(0) != 1 || juno_lego_hub_is_connected() != 1) return 3;
+                  if (!junofake::subscribed || juno_lego_hub_type_id() != 0x41) return 4;
+
+                  // Port output command 0x81, execute immediately with feedback 0x11, WriteDirectModeData 0x51, mode 0.
+                  juno_lego_hub_set_motor_power(0, 50);
+                  EXPECT_WRITE(10, 0x08, 0x00, 0x81, 0x00, 0x11, 0x51, 0x00, 0x32);
+                  juno_lego_hub_set_motor_power(1, -150);  // clamped to -100
+                  EXPECT_WRITE(11, 0x08, 0x00, 0x81, 0x01, 0x11, 0x51, 0x00, 0x9C);
+                  juno_lego_hub_set_motor_power(3, 101);  // clamped to 100
+                  EXPECT_WRITE(12, 0x08, 0x00, 0x81, 0x03, 0x11, 0x51, 0x00, 0x64);
+                  juno_lego_hub_brake_motor(0);
+                  EXPECT_WRITE(13, 0x08, 0x00, 0x81, 0x00, 0x11, 0x51, 0x00, 0x7F);
+
+                  // The City Hub's LED is port 0x32: one input format setup (notifications off), then the color.
+                  juno_lego_hub_set_led_color(9);
+                  EXPECT_WRITE(20, 0x0A, 0x00, 0x41, 0x32, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00);
+                  EXPECT_WRITE(21, 0x08, 0x00, 0x81, 0x32, 0x11, 0x51, 0x00, 0x09);
+                  juno_lego_hub_set_led_color(3);
+                  EXPECT_WRITE(22, 0x08, 0x00, 0x81, 0x32, 0x11, 0x51, 0x00, 0x03);
+
+                  // Port input format setup 0x41: port, mode, delta 1 (uint32 LE), notifications on.
+                  juno_lego_hub_enable_sensor(0, 2);
+                  EXPECT_WRITE(30, 0x0A, 0x00, 0x41, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x01);
+                  if (juno_lego_hub_read_sensor(0) != 0) return 31;
+                  NOTIFY(0x08, 0x00, 0x45, 0x00, 0x68, 0x01, 0x00, 0x00);  // Port Value 0x45: 360 degrees
+                  if (juno_lego_hub_read_sensor(0) != 360) return 32;
+                  NOTIFY(0x08, 0x00, 0x45, 0x00, 0xA6, 0xFF, 0xFF, 0xFF);  // -90 degrees
+                  if (juno_lego_hub_read_sensor(0) != -90) return 33;
+                  NOTIFY(0x0F, 0x00, 0x04, 0x00, 0x01, 0x2E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+                  if (juno_lego_hub_read_sensor(0) != -90) return 34;  // Hub Attached I/O 0x04 is not a value
+                  // A length of 128 or more takes two bytes (7 bits each); readers must skip both.
+                  NOTIFY(0x89, 0x00, 0x00, 0x45, 0x00, 0x10, 0x00, 0x00, 0x00);
+                  if (juno_lego_hub_read_sensor(0) != 16) return 35;
+
+                  juno_lego_hub_enable_sensor(1, 0);
+                  EXPECT_WRITE(40, 0x0A, 0x00, 0x41, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01);
+                  NOTIFY(0x05, 0x00, 0x45, 0x01, 0xFF);  // int8: a remote's minus button
+                  if (juno_lego_hub_read_sensor(1) != -1) return 41;
+                  NOTIFY(0x06, 0x00, 0x45, 0x02, 0x2C, 0x01);  // port 2 is not enabled yet
+                  if (juno_lego_hub_read_sensor(2) != 0) return 42;
+                  juno_lego_hub_enable_sensor(2, 0);
+                  EXPECT_WRITE(43, 0x0A, 0x00, 0x41, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01);
+                  NOTIFY(0x06, 0x00, 0x45, 0x02, 0x2C, 0x01);  // int16: 300
+                  if (juno_lego_hub_read_sensor(2) != 300) return 44;
+                  if (juno_lego_hub_read_sensor(0) != 16 || juno_lego_hub_read_sensor(1) != -1) return 45;
+
+                  // Eight ports report at once; a ninth is refused without a write, re-enabling reuses a slot.
+                  for (int port = 3; port < 8; port++) juno_lego_hub_enable_sensor(port, 0);
+                  junoCheckedWrites += 5;
+                  juno_lego_hub_enable_sensor(8, 0);
+                  if (junofake::writes != junoCheckedWrites) return 50;
+                  juno_lego_hub_enable_sensor(0, 1);
+                  EXPECT_WRITE(51, 0x0A, 0x00, 0x41, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01);
+                  if (juno_lego_hub_read_sensor(0) != 0) return 52;
+
+                  juno_lego_hub_switch_off();  // Hub action 0x02: switch off 0x01
+                  EXPECT_WRITE(60, 0x04, 0x00, 0x02, 0x01);
+                  juno_lego_hub_disconnect();
+                  if (juno_lego_hub_is_connected() != 0) return 61;
+                  juno_lego_hub_set_motor_power(0, 50);
+                  if (junofake::writes != junoCheckedWrites) return 62;
+
+                  // Reconnecting starts with no ports reporting.
+                  if (juno_lego_hub_connect(0) != 1) return 70;
+                  if (juno_lego_hub_read_sensor(2) != 0) return 71;
+                  NOTIFY(0x06, 0x00, 0x45, 0x02, 0x2C, 0x01);
+                  if (juno_lego_hub_read_sensor(2) != 0) return 72;
+                  return 0;
+                }
+                """;
+        Files.writeString(sketch, result.runtimeShim() + harness, StandardCharsets.UTF_8);
+        Path executable = temporaryDirectory.resolve("lego-runtime");
+
+        Process compile = new ProcessBuilder(compiler, "-std=c++17", "-x", "c++",
+                "-Isrc/test/resources", sketch.toString(), "-o", executable.toString())
+                .redirectErrorStream(true)
+                .start();
+        boolean compiled = compile.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(compiled, "C++ compiler timed out");
+        String diagnostics = new String(compile.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(compile.exitValue()).as(diagnostics).isEqualTo(0);
+
+        Process run = new ProcessBuilder(executable.toString()).redirectErrorStream(true).start();
+        boolean finished = run.waitFor(20, TimeUnit.SECONDS);
+        Assumptions.assumeTrue(finished, "Generated LEGO runtime test timed out");
+        String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as("runtime exit code (the failing check); output: " + output).isEqualTo(0);
     }
 
     /** Reaches every supported {@code java.lang.Math} overload, so the shim carries all of their helpers. */

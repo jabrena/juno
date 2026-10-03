@@ -1,0 +1,160 @@
+---
+title: "LEGO Powered Up"
+description: "Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, from the UNO R4 WiFi or the UNO Q."
+layout: page
+---
+
+[`PoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHub.java)
+(`io.github.jabrena.juno.api.lego`) lets a Juno program remote-control a LEGO Powered Up hub — run
+its motors and set its status LED — the same way the LEGO apps do. The board acts as a Bluetooth
+Low Energy central and speaks the
+[LEGO Wireless Protocol 3.0](https://lego.github.io/lego-ble-wireless-protocol-docs/) to the hub.
+It is a compiler intrinsic backed by the Arduino `ArduinoBLE` library.
+
+## Requirements
+
+- One of the two supported boards. The same Java program runs on both; only the way the
+  generated code reaches the radio differs:
+
+  | Board | Bluetooth LE path |
+  | --- | --- |
+  | UNO R4 WiFi | The on-board ESP32-S3 radio module. |
+  | UNO Q | The Linux side's Bluetooth adapter (`hci0`). `ArduinoBLE` tunnels raw HCI packets to it through `Arduino_RouterBridge`, so the board's `arduino-router` must be 0.7.0 or newer (update the board image through App Lab if needed). While the sketch holds the adapter, Linux's own Bluetooth stack can't use it. |
+
+- The Arduino `ArduinoBLE` library installed — 2.1.0 or newer, the first release with the UNO Q
+  transport (also done by `juno:install-deps`):
+
+  ```bash
+  arduino-cli lib install ArduinoBLE
+  ```
+
+- A Powered Up hub: City Hub (88009), Technic Hub (88012), BOOST Move Hub (88006) or the DUPLO
+  Train Hub. Close the LEGO apps first — a hub accepts a single connection at a time.
+
+The UNO R4 WiFi's radio module cannot run Bluetooth LE and Wi-Fi at the same time, so a program
+for that board that uses `PoweredUpHub` should not also use `Wifi`, `Udp`, or the HTTP/email APIs.
+
+## API
+
+```java
+import io.github.jabrena.juno.api.lego.PoweredUpHub;
+
+if (PoweredUpHub.connect(10_000)) {              // scan up to 10 s; 0 waits forever
+    PoweredUpHub.setLedColor(PoweredUpHub.COLOR_GREEN);
+    PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, 50);   // -100..100 percent
+    PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+}
+```
+
+| Method | Meaning |
+| --- | --- |
+| `connect(timeoutMillis)` | Scans for the first advertising hub (press its green button) and connects. Returns `true` once connected, or immediately if already connected. A timeout of `0` or less waits indefinitely. |
+| `isConnected()` | `false` once the hub switches off or goes out of range; call `connect` again to reconnect. |
+| `hubType()` | The hub's advertised system type: `TYPE_CITY_HUB`, `TYPE_TECHNIC_HUB`, `TYPE_MOVE_HUB`, `TYPE_DUPLO_TRAIN_HUB`, ... (`TYPE_UNKNOWN` before connecting). |
+| `setMotorPower(port, percent)` | Runs any Powered Up motor (train, simple, or tacho) on `PORT_A`..`PORT_D`. Negative values reverse, `0` coasts, values beyond ±100 are clamped. |
+| `brakeMotor(port)` | Actively brakes the motor, instead of letting it coast. |
+| `setLedColor(color)` | Sets the hub's LED to a LEGO color index: `COLOR_OFF`, `COLOR_PINK`, ..., `COLOR_RED`, `COLOR_WHITE`. |
+| `enableSensor(port, mode)` | Asks the hub to report every change of one mode of the motor or sensor on `port`. See [Reading motors and sensors](#reading-motors-and-sensors). |
+| `readSensor(port)` | The latest value that port reported, or `0` before its first report. |
+| `disconnect()` | Drops the connection; the hub stays on and starts advertising again. |
+| `switchOff()` | Switches the hub off. |
+
+A program talks to one hub at a time. Commands sent while no hub is connected are ignored, so
+check `isConnected()` in long-running loops and reconnect when it turns `false`.
+
+## Reading motors and sensors
+
+Motors with a rotation sensor, sensors, and the Powered Up remote report values once a program
+subscribes to one of their *modes*. `enableSensor(port, mode)` subscribes, and from then on the hub
+sends a message whenever the value changes; `readSensor(port)` returns the latest one.
+
+```java
+PoweredUpHub.enableSensor(PoweredUpHub.PORT_A, PoweredUpHub.MODE_MOTOR_POSITION);
+...
+int degrees = PoweredUpHub.readSensor(PoweredUpHub.PORT_A);
+```
+
+| Device | Mode | `readSensor` value |
+| --- | --- | --- |
+| Tacho motor (BOOST, Technic, SPIKE motors) | `MODE_MOTOR_POSITION` | Position in degrees, cumulative since the hub started. |
+| Tacho motor | `MODE_MOTOR_SPEED` | Speed, as a percentage of full speed. |
+| Color and Distance Sensor (88007) | `MODE_COLOR` | The sensor's color number (mostly, but not fully, matching the `COLOR_*` LED values), `-1` for none. |
+| Color and Distance Sensor (88007) | `MODE_PROXIMITY` | `0` (touching) to `10` (nothing in range). |
+| Powered Up remote (88010), on `PORT_A`/`PORT_B` | `MODE_REMOTE_BUTTONS` | `REMOTE_RELEASED`, `REMOTE_PLUS`, `REMOTE_MINUS` or `REMOTE_STOP`. |
+
+Mode numbers belong to each device, so other devices work too when given their mode number.
+Things to know:
+
+- `readSensor` decodes modes that report **one** 8-, 16- or 32-bit value. For modes reporting
+  several values at once (a hub's tilt axes, raw RGB), it returns only the first byte.
+- Up to **eight** ports report at a time; enabling a ninth is ignored.
+- Values arrive while a `PoweredUpHub` call runs, not during `Delay.millis`, so call `readSensor`
+  regularly in loops that wait for a value.
+- A new `connect()` starts with no ports reporting: enable them again after reconnecting.
+- The remote connects as a hub of its own (`TYPE_REMOTE_CONTROL`). Since a program talks to one
+  hub at a time, it can't yet drive a train hub from a remote.
+
+### Example: one revolution at a time
+
+[`LegoMotorPosition`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoMotorPosition.java)
+turns a tacho motor on port A exactly one revolution forwards, then one backwards, using its
+position reports:
+
+```java
+private static void turnTo(int target, int color) {
+    PoweredUpHub.setLedColor(color);
+    int position = PoweredUpHub.readSensor(MOTOR);
+    int direction = target > position ? 1 : -1;
+    PoweredUpHub.setMotorPower(MOTOR, direction * POWER);
+    while (PoweredUpHub.isConnected() && (target - position) * direction > 0) {
+        position = PoweredUpHub.readSensor(MOTOR);
+    }
+    PoweredUpHub.brakeMotor(MOTOR);
+}
+```
+
+## Example: a shuttling train
+
+[`LegoTrain`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java)
+ramps a train motor on port A up to cruising speed, brakes, and repeats in reverse, using the hub's
+LED to show the direction:
+
+```java
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+public final class LegoTrain {
+    private static final int MOTOR = PoweredUpHub.PORT_A;
+
+    public static void main(String[] args) {
+        Serial.begin(9600);
+        while (true) {
+            if (!PoweredUpHub.isConnected()) {
+                Serial.println("Waiting for a Powered Up hub...");
+                PoweredUpHub.connect(0);
+            }
+            run(1, PoweredUpHub.COLOR_GREEN);
+            run(-1, PoweredUpHub.COLOR_BLUE);
+        }
+    }
+
+    private static void run(int direction, int color) {
+        PoweredUpHub.setLedColor(color);
+        for (int power = 10; power <= 60; power += 10) {
+            PoweredUpHub.setMotorPower(MOTOR, direction * power);
+            Delay.millis(200);
+        }
+        Delay.millis(3000);
+        PoweredUpHub.brakeMotor(MOTOR);
+        PoweredUpHub.setLedColor(PoweredUpHub.COLOR_RED);
+        Delay.millis(2000);
+    }
+}
+```
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lego.LegoTrain \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+```
+
+Switch the hub on after the upload; the sketch connects to it and prints the hub type on the
+serial monitor (`juno:monitor`).

@@ -218,6 +218,33 @@ class BoardTest {
     }
 
     @Test
+    void poweredUpHubIsPortableAcrossBothBoards() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+                public final class PortableTrain {
+                    public static void main(String[] args) {
+                        if (PoweredUpHub.connect(1000)) {
+                            PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, 50);
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortableTrain", source);
+
+        // Both boards provide Bluetooth LE: the R4 WiFi through its ESP32-S3, the UNO Q through
+        // its Linux side's adapter, tunnelled over Arduino_RouterBridge.
+        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableTrain",
+                Optional.of("arduino-uno-q")).board()).isEqualTo(Board.UNO_Q);
+        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableTrain",
+                Optional.of("arduino-uno-r4-wifi")).board()).isEqualTo(Board.UNO_R4_WIFI);
+    }
+
+    @Test
     void theUnoQSupportsPortableWifiUdpHttpsAndSecureEmail() throws Exception {
         String source = """
                 package demo;
