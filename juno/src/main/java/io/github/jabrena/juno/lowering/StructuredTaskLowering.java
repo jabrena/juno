@@ -2,35 +2,31 @@ package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
-import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.StructuredTaskSupport;
 
 import java.util.List;
-import java.util.Optional;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.pop;
 import static io.github.jabrena.juno.lowering.StackValueOps.storeToStack;
 
-/** Bytecode-stack adaptations that are specific to structured-task policy objects. */
+/** Bytecode-stack adaptations specific to JDK 25 structured-task joiners and interface calls. */
 final class StructuredTaskLowering {
     private StructuredTaskLowering() {
     }
 
-    /** Replaces the uninitialized policy-scope placeholder with the task runtime's arena handle. */
-    static Lowered lowerConstruction(MethodRef called, List<IrInstruction> instructions, int stackBase,
-                                     int depth, int nextValueId, ValueTracking tracking) {
-        Popped discardedReceiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = discardedReceiver.nextValueId();
-        Value handle = Value.int32(nextValueId++);
-        Intrinsic intrinsic = called.owner().equals(StructuredTaskSupport.SHUTDOWN_ON_FAILURE)
-                ? Intrinsic.TASK_SCOPE_NEW_FAILURE : Intrinsic.TASK_SCOPE_NEW_SUCCESS;
-        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), intrinsic,
-                Optional.empty(), List.of(), List.of()));
-        storeToStack(instructions, stackBase, depth - 1, handle, tracking);
-        return new Lowered(nextValueId, depth);
+    /** Materializes a built-in {@code Joiner} as a small runtime policy token. */
+    static Lowered lowerJoinerFactory(MethodRef called, List<IrInstruction> instructions, int stackBase,
+                                      int depth, int nextValueId, ValueTracking tracking) {
+        Integer policy = StructuredTaskSupport.joinerPolicy(called);
+        if (policy == null) {
+            throw new IllegalArgumentException("Not a supported Joiner factory: " + called.displayName());
+        }
+        Value joiner = Value.int32(nextValueId++);
+        instructions.add(new IrInstruction.Const(joiner, policy));
+        storeToStack(instructions, stackBase, depth, joiner, tracking);
+        return new Lowered(nextValueId, depth + 1);
     }
 
     static Lowered lowerInterface(LinkedMethod linked, Instruction instruction, MethodRef called,

@@ -123,12 +123,15 @@ Supported today:
   running. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each Juno thread is a Zephyr thread that waits
   for a baton, so only one runs at a time. Not supported: subclassing `Thread`, thread names/priorities/interrupts,
   and other `java.util.concurrent` APIs.
-- Java 21 preview `StructuredTaskScope.ShutdownOnFailure` and `ShutdownOnSuccess`, lowered onto the same cooperative
-  task runtime: construction, `fork(Callable)`, `join()`, `throwIfFailed()`, `result()`, `Subtask.get()`, and
-  try-with-resources `close()`. A first failure/success shuts the scope down and cancels sibling tasks. At most three
-  subtasks can be active because the four scheduler slots include the owner thread. JDK 25 replaced these policy
-  classes, so source using this subset must first be compiled as Java 21 preview bytecode. The newer
-  `StructuredTaskScope.open(Joiner)` API and all other scope operations remain unsupported.
+- JDK 25 preview `StructuredTaskScope`, lowered onto the same cooperative task runtime: `open()`, `open(Joiner)`,
+  `fork(Callable)`, `fork(Runnable)`, `join()`, `isCancelled()`, try-with-resources `close()`, and
+  `Subtask.state()`/`get()`/`exception()`. The supported built-in joiners are `allSuccessfulOrThrow`,
+  `anySuccessfulResultOrThrow`, `awaitAllSuccessfulOrThrow`, and `awaitAll`; fail-fast policies cancel sibling
+  tasks and report failures as `StructuredTaskScope.FailedException`. At most three subtasks can be active because
+  the four scheduler slots include the owner thread. Compile source with JDK 25 and `--enable-preview` (the examples
+  module does this). Java 21's removed `ShutdownOnFailure`/`ShutdownOnSuccess` classes, custom joiners, `allUntil`,
+  and the `Configuration` overload are unsupported. `allSuccessfulOrThrow().join()` may be ignored or kept as an
+  opaque non-null result; Stream operations on it are not supported.
 - restricted synchronization for cooperative threads: `volatile` primitive/reference fields are always loaded from
   and stored to memory, including across calls and loop backedges; `synchronized (lock)` blocks use a bounded table
   of eight reentrant intrinsic monitors; and concrete `java.util.concurrent.locks.ReentrantLock` supports only

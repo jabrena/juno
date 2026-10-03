@@ -19,7 +19,7 @@ final class ReachabilityClosure {
 
     record Result(List<LinkedMethod> methods, Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
                   Map<InterfaceCallSite, MethodRef> interfaceCalls,
-                  Map<LambdaCallSite, LambdaSite> lambdaSites) {
+                  Map<LambdaCallSite, LambdaSite> lambdaSites, Set<String> instantiatedClasses) {
     }
 
     @FunctionalInterface
@@ -50,7 +50,7 @@ final class ReachabilityClosure {
             enqueueInterfaceTargets(dispatches, reachable, work, hasReachableBody, interfaceTargetValidator);
             if (work.isEmpty()) {
                 return new Result(List.copyOf(reachable.values()), dispatches, interfaceCalls,
-                        Map.copyOf(lambdaSites));
+                        Map.copyOf(lambdaSites), Set.copyOf(instantiatedClasses));
             }
         }
     }

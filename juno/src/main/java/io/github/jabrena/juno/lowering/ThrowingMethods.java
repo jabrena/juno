@@ -50,8 +50,9 @@ final class ThrowingMethods {
     static boolean raises(IrInstruction instruction) {
         return instruction instanceof IrInstruction.IntrinsicCall call
                 && switch (call.intrinsic()) {
-                    case THROW_RAISE, THROW_DISPATCH, TASK_SCOPE_FORK, TASK_SCOPE_JOIN,
-                            TASK_SCOPE_THROW_IF_FAILED, TASK_SCOPE_RESULT, TASK_GET, TASK_SCOPE_CLOSE -> true;
+                    case THROW_RAISE, THROW_DISPATCH, TASK_SCOPE_OPEN, TASK_SCOPE_FORK_CALLABLE,
+                            TASK_SCOPE_FORK_RUNNABLE,
+                            TASK_SCOPE_JOIN, TASK_GET, TASK_STATE, TASK_EXCEPTION, TASK_SCOPE_CLOSE -> true;
                     default -> false;
                 };
     }

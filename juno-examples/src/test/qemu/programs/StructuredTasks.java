@@ -4,45 +4,57 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.usb.Serial;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class StructuredTasks {
-    private static int cancelledRuns;
-
     private StructuredTasks() {
     }
 
     public static void main() throws Exception {
-        StructuredTaskScope.Subtask<?> completed = null;
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        StructuredTaskScope.Subtask<String> completed = null;
+        StructuredTaskScope.Subtask<String> failed = null;
+        try (var scope = StructuredTaskScope.<String>open()) {
             completed = scope.fork(() -> "completed");
             Callable<String> failing = () -> {
                 throw new IllegalStateException("boom");
             };
-            scope.fork(failing);
-            scope.fork(() -> {
-                cancelledRuns = cancelledRuns + 1;
-                return "too late";
-            });
-            scope.join().throwIfFailed();
-        } catch (ExecutionException failure) {
-            Serial.println(failure.getMessage());
+            failed = scope.fork(failing);
+            scope.fork(() -> "possibly cancelled");
+            try {
+                scope.join();
+            } catch (StructuredTaskScope.FailedException failure) {
+                Serial.println("failed");
+                Serial.println(scope.isCancelled() ? 1 : 0);
+            }
         }
+        Serial.println(completed.state() == StructuredTaskScope.Subtask.State.SUCCESS ? 1 : 0);
         Serial.println(completed.get() == "completed" ? 1 : 0);
-        Serial.println(cancelledRuns);
+        Serial.println(failed.state() == StructuredTaskScope.Subtask.State.FAILED ? 1 : 0);
+        Serial.println(failed.exception().getMessage());
 
-        cancelledRuns = 0;
-        try (var scope = new StructuredTaskScope.ShutdownOnSuccess<Object>()) {
+        try (var scope = StructuredTaskScope.open(
+                StructuredTaskScope.Joiner.<Object>anySuccessfulResultOrThrow())) {
             scope.fork(() -> "winner");
-            scope.fork(() -> {
-                cancelledRuns = cancelledRuns + 1;
-                return "too late";
-            });
-            scope.join();
-            Serial.println(scope.result() == "winner" ? 1 : 0);
+            scope.fork(() -> "possibly cancelled");
+            Object winner = scope.join();
+            Serial.println(winner == "winner" ? 1 : 0);
+            Serial.println(scope.isCancelled() ? 1 : 0);
         }
-        Serial.println(cancelledRuns);
+
+        try (var scope = StructuredTaskScope.open(StructuredTaskScope.Joiner.<String>awaitAll())) {
+            var ignoredFailure = scope.fork(() -> { throw new IllegalStateException("ignored"); });
+            scope.join();
+            Serial.println(ignoredFailure.state() == StructuredTaskScope.Subtask.State.FAILED ? 1 : 0);
+            Serial.println(ignoredFailure.exception().getMessage());
+        }
+
+        final int[] ran = {0};
+        try (var scope = StructuredTaskScope.open()) {
+            var runnable = scope.fork(() -> { ran[0] = 1; });
+            scope.join();
+            Serial.println(runnable.state() == StructuredTaskScope.Subtask.State.SUCCESS ? 1 : 0);
+        }
+        Serial.println(ran[0]);
     }
 }

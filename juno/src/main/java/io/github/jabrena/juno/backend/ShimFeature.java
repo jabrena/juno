@@ -34,7 +34,9 @@ enum ShimFeature {
     THREADS,
     /** A reachable ordinary {@code Runnable} entry point, as opposed to task-only scheduler use. */
     THREAD_ENTRY,
-    /** Java 21 policy scopes and callable subtasks layered on the cooperative thread runtime. */
+    /** A reachable structured {@code Callable} entry point. */
+    TASK_CALLABLE_ENTRY,
+    /** JDK 25 structured scopes layered on the cooperative thread runtime. */
     STRUCTURED_TASKS,
     /** {@code Thread.sleep}/{@code Thread.yield} in a program that creates no thread. */
     THREAD_BASICS

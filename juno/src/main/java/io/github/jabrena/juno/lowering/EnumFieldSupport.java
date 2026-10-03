@@ -19,6 +19,14 @@ final class EnumFieldSupport {
     }
 
     static Integer resolveEnumOrdinal(FieldRef field, Map<String, JavaClass> classes) {
+        if (field.owner().equals("java/util/concurrent/StructuredTaskScope$Subtask$State")) {
+            return switch (field.name()) {
+                case "UNAVAILABLE" -> 0;
+                case "SUCCESS" -> 1;
+                case "FAILED" -> 2;
+                default -> null;
+            };
+        }
         JavaClass owner = classes.get(field.owner());
         int ordinal = owner == null || !owner.isEnum() ? -1 : owner.enumConstantNames().indexOf(field.name());
         return ordinal < 0 ? null : ordinal;

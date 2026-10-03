@@ -74,6 +74,8 @@ public final class Linker {
                         work, calls, instantiated, lambdas), interfaceDispatchResolver,
                 method -> hasReachableBody(method, classes),
                 (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
+        StructuredTaskSupport.validateNoCustomJoiners(reachability.instantiatedClasses(),
+                reachability.lambdaSites().values(), classes);
         for (Map.Entry<InterfaceCallSite, MethodRef> call : reachability.interfaceCalls().entrySet()) {
             if (!reachability.interfaceDispatches().containsKey(call.getKey())) {
                 throw new CompileException(ThreadSupport.unresolvedMessage(call.getKey(), call.getValue()));
@@ -155,10 +157,16 @@ public final class Linker {
             }
             if (opcode == 185) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
+                StructuredTaskSupport.registerEntry(called, interfaceCalls);
                 InterfaceCallRegistration.register(linked, instruction, called, classes, lambdaSites.values(),
                         interfaceCalls, interfaceDispatchResolver);
             }
             if (opcode == 186) {
+                if (lambdaResolver.targetsInterface(linked, instruction, StructuredTaskSupport.JOINER)) {
+                    throw new CompileException(caller.displayName() + " at bytecode offset "
+                            + instruction.offset() + ": Juno's JDK 25 StructuredTaskScope subset does not support "
+                            + "custom Joiner implementations");
+                }
                 LambdaSite lambda = lambdaResolver.resolve(linked, instruction, classes);
                 lambdaSites.put(lambda.callSite(), lambda);
                 MethodRef implementation = lambda.implementation().method();

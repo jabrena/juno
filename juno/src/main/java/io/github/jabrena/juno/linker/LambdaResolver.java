@@ -70,6 +70,11 @@ final class LambdaResolver {
                 factory.parameters(), instantiatedDescriptor);
     }
 
+    boolean targetsInterface(LinkedMethod linked, Instruction instruction, String interfaceName) {
+        InvokeDynamicRef dynamic = linked.owner().constantPool().invokeDynamic(instruction.operandA());
+        return referenceName(Descriptor.parse(dynamic.descriptor()).returnType()).equals(interfaceName);
+    }
+
     private void validateTypes(LinkedMethod linked, Instruction instruction, Descriptor factory,
                                Descriptor instantiated, MethodHandleRef implementation,
                                java.util.Set<String> knownClasses) {

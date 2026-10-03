@@ -267,15 +267,15 @@ class GeneratedAsmToolchainTest {
                 import java.util.concurrent.StructuredTaskScope;
                 public final class AsmStructuredTasks {
                     public static void main() throws Exception {
-                        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+                        try (var scope = StructuredTaskScope.open()) {
                             var task = scope.fork(() -> "done");
-                            scope.join().throwIfFailed();
+                            scope.join();
                             task.get();
                         }
                     }
                 }
                 """;
-        CompilerTestSupport.compileJavaWithStructuredTaskScope(
+        CompilerTestSupport.compileJavaWithPreview(
                 temporaryDirectory, "demo.AsmStructuredTasks", source);
         assembleAndCompile(armGcc, "demo.AsmStructuredTasks");
     }

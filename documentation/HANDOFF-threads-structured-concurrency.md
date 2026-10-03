@@ -27,11 +27,11 @@ public class App {
         });
         blinker.start();
 
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try (var scope = StructuredTaskScope.open()) {
             var t = scope.fork(App::readTemperature);
             var p = scope.fork(App::readPressure);
 
-            scope.join().throwIfFailed();
+            scope.join();
             process(t.get(), p.get());
         }
     }
@@ -45,7 +45,7 @@ intrinsic-lowering pattern (`IntrinsicRegistry` / `IntrinsicLowering`).
 ## Current state (per features.md)
 
 Interfaces/`invokeinterface`, lambdas and method references, cross-method exceptions, cooperative threads,
-restricted synchronization, and policy-based structured task scopes now exist (steps 1-7 below). Still unsupported:
+restricted synchronization, and JDK 25 joiner-based structured task scopes now exist (steps 1-7 below). Still unsupported:
 inheritance/polymorphic dispatch (so `extends Thread`) and the rest of the general `java.util.concurrent` API.
 Conservative mark/sweep GC uses a fixed 8 KiB arena rooted on every live thread's stack and active task scope.
 
@@ -91,25 +91,30 @@ Conservative mark/sweep GC uses a fixed 8 KiB arena rooted on every live thread'
    `tryLock()`, and `unlock()` through the same runtime. Contention yields to the scheduler. Synchronized methods and
    all other `ReentrantLock`/`java.util.concurrent` APIs fail explicitly. Verified by `SynchronizationTest`,
    `GeneratedAsmToolchainTest`, QEMU `demo.Synchronization`, and the board-ready `examples/Synchronization` program.
-7. **`StructuredTaskScope`**. **Done.** The Java 21 preview policy classes `ShutdownOnFailure` and
-   `ShutdownOnSuccess` support construction, `fork(Callable)`, `join()`, `throwIfFailed()`, `result()`,
-   `Subtask.get()`, and `close()`, lowered onto the cooperative task runtime. The first failure/success shuts down
-   the scope and cancels sibling scheduler slots; owner-thread and call-order violations raise
-   `IllegalStateException`, while failed policy results raise `ExecutionException`. Because JDK 25 replaced this
-   API shape, input using it must be compiled as Java 21 preview bytecode before Juno consumes the class files.
+7. **`StructuredTaskScope`**. **Done; updated to the JDK 25 preview API on 2026-10-03.** Juno supports `open()`,
+   `open(Joiner)`, both `fork(Callable)` and `fork(Runnable)`, `join()`, `isCancelled()`, `close()`, the four
+   non-predicate built-in joiners (`allSuccessfulOrThrow`, `anySuccessfulResultOrThrow`,
+   `awaitAllSuccessfulOrThrow`, `awaitAll`), and `Subtask.state()`/`get()`/`exception()`. Fail-fast joiners cancel
+   sibling scheduler slots; owner-thread and call-order violations raise `IllegalStateException`, while a joiner
+   failure raises `StructuredTaskScope.FailedException`. The Java 21 `ShutdownOnFailure`/`ShutdownOnSuccess`
+   classes are no longer recognized. Source must be compiled on JDK 25 with `--enable-preview`; the examples
+   module supplies that compiler flag.
+   `allSuccessfulOrThrow().join()` returns a non-null scope-backed token, but using it as a `Stream` remains
+   unsupported because Juno does not implement the Stream API.
    Verified by `StructuredTaskScopeTest`, real ARM assembly and C++ shim compilation for both board ports,
    QEMU `demo.StructuredTasks` against its JVM oracle, and real `arduino-cli compile` for the UNO R4 WiFi and the
-   UNO Q (`arduino:zephyr:unoq`, 2026-10-02 review).
+   UNO Q (`arduino:zephyr:unoq`, 2026-10-03).
    **To improve later** (found in the 2026-10-02 review; none is fixed or tested yet):
    - **Hardware:** flash `StructuredTasks` on both boards. QEMU covers the R4 only and the test `kernel.h` stubs
      `k_thread_abort` as a no-op, so the UNO Q cancel path (`k_thread_abort`, slot reuse after a cancel) has never
-     run. Cover fail-fast cancellation and the `ShutdownOnSuccess` winner.
+     run. Cover fail-fast cancellation and the `anySuccessfulResultOrThrow` winner.
    - **Non-recursive cancellation:** `juno_task_cancel` does not cancel a task's own inner scope. If an outer scope
      cancels a task that owns a scope, the inner subtasks are orphaned and keep their slots until they finish
      (`MAX_THREADS` = 4, so slots can run out; differs from JDK semantics). Affects both boards.
    - **Monitors on cancel:** a task cancelled while holding a `synchronized` or `ReentrantLock` monitor does not
      release it, so the lock can stay held forever. Release a cancelled slot's monitors in `juno_task_cancel`.
-   - **JDK 25 API:** `StructuredTaskScope.open(Joiner)` is not supported (Java 21 preview policy classes only).
+   - **JDK 25 exclusions:** custom `Joiner` implementations, `allUntil`, and the `Configuration` overload remain
+     intentionally unsupported and produce `CompileException`; timeout configuration may be added later.
 
 ## Design notes
 
@@ -142,7 +147,20 @@ Conservative mark/sweep GC uses a fixed 8 KiB arena rooted on every live thread'
 
 ## Open questions
 
-- Is a Renesas (UNO R4) thread story required, or is UNO Q-only acceptable?
+- ~~Is a Renesas (UNO R4) thread story required, or is UNO Q-only acceptable?~~ **Answered 2026-10-03: both boards**
+  (already the case for steps 4-7; keep every thread/scope change working on both ports).
 - Maximum threads and stack size policy; compile-time budget vs. user-configurable?
-- Should Juno also support the redesigned JDK 25 `StructuredTaskScope.open(Joiner)` API?
+- ~~Should Juno also support the redesigned `StructuredTaskScope.open(Joiner)` API?~~ **Answered and implemented
+  2026-10-03: yes, target the JDK 25 API only (corrected from "27" by the maintainer).** JDK 25 surface (from
+  `javap` on 25.0.2, 2026-10-03):
+  `StructuredTaskScope<T,R>` is now an interface with `open()`, `open(Joiner)`, `open(Joiner, Function<Configuration,Configuration>)`,
+  `fork(Callable)`, `fork(Runnable)`, `join()` (returns `R`), `isCancelled()`, `close()`; `Joiner` has `allSuccessfulOrThrow`,
+  `anySuccessfulResultOrThrow`, `awaitAllSuccessfulOrThrow`, `awaitAll`, `allUntil(Predicate)` plus default `onFork`/`onComplete`
+  and `result()`; `Subtask` has `state()`, `get()`, `exception()`; `State` = `UNAVAILABLE|SUCCESS|FAILED`;
+  `Configuration` = `withThreadFactory|withName|withTimeout`; exceptions `FailedException`, `TimeoutException`.
+  Implemented v1 subset: `open()`, `open(Joiner)`, both `fork`s, `join()`, `close()`, `isCancelled()`, the four non-predicate
+  `Joiner` factories, `Subtask.state/get/exception`, `State`, `FailedException`. Out of v1 (explicit `CompileException`):
+  custom `Joiner` implementations, `allUntil`, `Configuration` (thread factory/name; timeout maybe later).
+  Maintainer chose to remove the Java 21 `ShutdownOnFailure`/`ShutdownOnSuccess` surface and require
+  `--enable-preview`; the build JDK remains 25.
 - Does reference-valued static field support (currently missing) need to land before threads?

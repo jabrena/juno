@@ -218,11 +218,11 @@ public final class BytecodeToIr {
                         && (divisionByZeroUnwinds || arithmeticHandler(linked, instruction.offset(), classes) != null)) {
                     names.add(ARITHMETIC_EXCEPTION);
                 }
-                if (instruction.opcode() == 182 || instruction.opcode() == 183 || instruction.opcode() == 185) {
+                if (instruction.opcode() >= 182 && instruction.opcode() <= 185) {
                     MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                     if (StructuredTaskSupport.isStructuredTaskOwner(called.owner())) {
                         names.add("java/lang/IllegalStateException");
-                        names.add("java/util/concurrent/ExecutionException");
+                        names.add("java/util/concurrent/StructuredTaskScope$FailedException");
                     }
                 }
             }
@@ -382,8 +382,8 @@ public final class BytecodeToIr {
                                 Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
                                 Map<String, Integer> objectTypeIds) {
         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-        if (opcode == 183 && StructuredTaskSupport.isScopeConstructor(called)) {
-            return StructuredTaskLowering.lowerConstruction(called, instructions, stackBase, depth, nextValueId,
+        if (opcode == 184 && StructuredTaskSupport.joinerPolicy(called) != null) {
+            return StructuredTaskLowering.lowerJoinerFactory(called, instructions, stackBase, depth, nextValueId,
                     tracking);
         }
         if (opcode == 185 && IntrinsicRegistry.isIntrinsic(called)) {

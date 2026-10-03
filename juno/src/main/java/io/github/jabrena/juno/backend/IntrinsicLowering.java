@@ -212,17 +212,23 @@ final class IntrinsicLowering {
         shim(Intrinsic.THREAD_YIELD, "juno_thread_yield", Result.NONE, List.of(), runtime);
     }
 
-    /** Java 21 {@code StructuredTaskScope} policy operations over the cooperative task scheduler. */
+    /** JDK 25 preview {@code StructuredTaskScope} operations over the cooperative task scheduler. */
     private void registerStructuredTasks() {
         ShimFeature[] taskRuntime = {ShimFeature.THREADS, ShimFeature.STRUCTURED_TASKS, ShimFeature.EXCEPTIONS};
-        shim(Intrinsic.TASK_SCOPE_NEW_FAILURE, "juno_task_scope_new_failure", Result.WORD, List.of(), taskRuntime);
-        shim(Intrinsic.TASK_SCOPE_NEW_SUCCESS, "juno_task_scope_new_success", Result.WORD, List.of(), taskRuntime);
-        shim(Intrinsic.TASK_SCOPE_FORK, "juno_task_scope_fork", Result.WORD, List.of(RECEIVER, arg(0)), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_OPEN_DEFAULT, "juno_task_scope_open_default", Result.WORD, List.of(), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_OPEN, "juno_task_scope_open", Result.WORD, List.of(arg(0)), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_FORK_CALLABLE, "juno_task_scope_fork_callable", Result.WORD,
+                List.of(RECEIVER, arg(0)), ShimFeature.THREADS, ShimFeature.STRUCTURED_TASKS,
+                ShimFeature.EXCEPTIONS, ShimFeature.TASK_CALLABLE_ENTRY);
+        shim(Intrinsic.TASK_SCOPE_FORK_RUNNABLE, "juno_task_scope_fork_runnable", Result.WORD,
+                List.of(RECEIVER, arg(0)), ShimFeature.THREADS, ShimFeature.STRUCTURED_TASKS,
+                ShimFeature.EXCEPTIONS, ShimFeature.THREAD_ENTRY);
         shim(Intrinsic.TASK_SCOPE_JOIN, "juno_task_scope_join", Result.WORD, List.of(RECEIVER), taskRuntime);
-        shim(Intrinsic.TASK_SCOPE_THROW_IF_FAILED, "juno_task_scope_throw_if_failed", Result.NONE,
+        shim(Intrinsic.TASK_SCOPE_IS_CANCELLED, "juno_task_scope_is_cancelled", Result.WORD,
                 List.of(RECEIVER), taskRuntime);
-        shim(Intrinsic.TASK_SCOPE_RESULT, "juno_task_scope_result", Result.WORD, List.of(RECEIVER), taskRuntime);
         shim(Intrinsic.TASK_GET, "juno_task_get", Result.WORD, List.of(RECEIVER), taskRuntime);
+        shim(Intrinsic.TASK_STATE, "juno_task_state", Result.WORD, List.of(RECEIVER), taskRuntime);
+        shim(Intrinsic.TASK_EXCEPTION, "juno_task_exception", Result.WORD, List.of(RECEIVER), taskRuntime);
         shim(Intrinsic.TASK_SCOPE_CLOSE, "juno_task_scope_close", Result.NONE, List.of(RECEIVER), taskRuntime);
     }
 
