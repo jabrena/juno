@@ -18,6 +18,9 @@ public final class RuntimeLimits {
     /** Most threads that can run at once, the main thread included; each extra one owns a stack of its own. */
     public static final int MAX_THREADS = 4;
 
+    /** Stack bytes of each extra thread on the smallest board (UNO R4 WiFi); the UNO Q gives 4096. */
+    public static final int MIN_THREAD_STACK_BYTES = 2048;
+
     /** Arena bytes of one thread/task handle, including structured-task result and failure state. */
     public static final int THREAD_OBJECT_BYTES = 28;
 

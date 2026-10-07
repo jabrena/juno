@@ -198,6 +198,73 @@ class RuntimeRiskAnalyzerTest {
                 .isFalse();
     }
 
+    @Test
+    void warnsWhenThreadsAreStartedInALoopOrBeyondTheSlotLimit() throws Exception {
+        RuntimeRiskReport report = compileReport("demo.Spawner", """
+                package demo;
+                public final class Spawner {
+                    public static void main() {
+                        for (int i = 0; i < 2; i++) {
+                            new Thread(() -> { }).start();
+                        }
+                        Thread a = new Thread(() -> { });
+                        Thread b = new Thread(() -> { });
+                        Thread c = new Thread(() -> { });
+                        Thread d = new Thread(() -> { });
+                        a.start();
+                        b.start();
+                        c.start();
+                        d.start();
+                    }
+                }
+                """);
+
+        assertThat(hasCode(report, "JUNO-RISK-008")).isTrue();
+        assertThat(hasCode(report, "JUNO-RISK-009")).isTrue();
+    }
+
+    @Test
+    void doesNotWarnForJoinedThreadsWithinTheSlotLimit() throws Exception {
+        RuntimeRiskReport report = compileReport("demo.Joined", """
+                package demo;
+                public final class Joined {
+                    public static void main() throws Exception {
+                        Thread a = new Thread(() -> { });
+                        Thread b = new Thread(() -> { });
+                        a.start();
+                        b.start();
+                        a.join();
+                        b.join();
+                        Thread c = new Thread(() -> { });
+                        c.start();
+                        c.join();
+                    }
+                }
+                """);
+
+        assertThat(hasCode(report, "JUNO-RISK-008")).isFalse();
+        assertThat(hasCode(report, "JUNO-RISK-009")).isFalse();
+        assertThat(hasCode(report, "JUNO-RISK-010")).isFalse();
+        assertThat(hasCode(report, "JUNO-RISK-011")).isFalse();
+    }
+
+    @Test
+    void warnsWhenAThreadBodyNestsThreadsOrRecurses() throws Exception {
+        RuntimeRiskReport report = compileReport("demo.Nested", """
+                package demo;
+                public final class Nested {
+                    static int fib(int n) { return n < 2 ? n : fib(n - 1) + fib(n - 2); }
+                    public static void main() {
+                        new Thread(() -> new Thread(() -> { }).start()).start();
+                        new Thread(() -> fib(10)).start();
+                    }
+                }
+                """);
+
+        assertThat(hasCode(report, "JUNO-RISK-010")).isTrue();
+        assertThat(hasCode(report, "JUNO-RISK-011")).isTrue();
+    }
+
     private RuntimeRiskReport compileReport(String className, String source) throws Exception {
         CompilerTestSupport.compileJava(temporaryDirectory, className, source);
         CompilationResult result = new JunoCompiler().compile(

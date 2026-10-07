@@ -89,6 +89,24 @@ final class CallGraphMetrics {
         return maximum;
     }
 
+    /** Every method reachable from {@code start} through direct calls, {@code start} included. */
+    static Set<MethodRef> reachableFrom(MethodRef start, Map<MethodRef, Set<MethodRef>> calls) {
+        Set<MethodRef> reached = new LinkedHashSet<>();
+        java.util.ArrayDeque<MethodRef> pending = new java.util.ArrayDeque<>(List.of(start));
+        while (!pending.isEmpty()) {
+            MethodRef method = pending.pop();
+            if (reached.add(method)) {
+                pending.addAll(calls.getOrDefault(method, Set.of()));
+            }
+        }
+        return reached;
+    }
+
+    /** Largest summed frame size along any call path from {@code start}; the graph must be acyclic from there. */
+    static int maximumStack(MethodRef start, Map<MethodRef, Set<MethodRef>> calls, Map<MethodRef, Integer> frames) {
+        return longestStackPath(start, calls, frames, new HashMap<>());
+    }
+
     static int startupAllocationEstimate(IrProgram program, Map<MethodRef, List<MethodRef>> callSites,
                                          Map<MethodRef, Integer> directAllocation) {
         int estimate = allocationPerInvocation(program.entryPoint(), callSites, directAllocation, new HashSet<>());

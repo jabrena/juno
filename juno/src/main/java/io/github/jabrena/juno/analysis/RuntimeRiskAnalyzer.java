@@ -24,6 +24,8 @@ public final class RuntimeRiskAnalyzer {
         Map<MethodRef, Integer> frames = new HashMap<>();
         Set<MethodRef> loopAllocators = new LinkedHashSet<>();
         Set<FieldRef> staticFields = new HashSet<>();
+        Set<MethodRef> threadEntries = new LinkedHashSet<>();
+        Set<MethodRef> launchers = new HashSet<>();
         List<RuntimeRisk> findings = new ArrayList<>();
         int boundsChecks = 0;
         int arrayAccesses = 0;
@@ -36,7 +38,7 @@ public final class RuntimeRiskAnalyzer {
 
             InstructionRiskScanner.MethodScan scan = InstructionRiskScanner.scan(method, linked.classes(),
                     program.objectTypeIds(), IrCyclicBlocks.cyclicBlocks(method), calls.get(method.reference()),
-                    callSites.get(method.reference()), staticFields);
+                    callSites.get(method.reference()), staticFields, threadEntries);
 
             directAllocation.put(method.reference(), scan.allocatedBytes());
             boundsChecks += scan.boundsChecks();
@@ -46,6 +48,9 @@ public final class RuntimeRiskAnalyzer {
                 loopAllocators.add(method.reference());
             }
             addScanFindings(findings, method.reference(), scan);
+            if (scan.launchesThreads()) {
+                launchers.add(method.reference());
+            }
         }
 
         Set<MethodRef> recursive = CallGraphMetrics.recursiveMethods(calls);
@@ -54,6 +59,8 @@ public final class RuntimeRiskAnalyzer {
             findings.add(new RuntimeRisk("JUNO-RISK-003", RiskSeverity.WARNING, method,
                     "recursive call cycle makes maximum call depth and stack usage unbounded"));
         }
+
+        addThreadBodyFindings(findings, threadEntries, launchers, recursive, calls, frames);
 
         Set<MethodRef> transitiveAllocators = CallGraphMetrics.transitiveAllocators(calls, directAllocation);
         loopAllocators.addAll(CallGraphMetrics.loopAllocatorsCallingAllocator(program, transitiveAllocators));
@@ -102,11 +109,49 @@ public final class RuntimeRiskAnalyzer {
             findings.add(new RuntimeRisk("JUNO-RISK-006", RiskSeverity.WARNING, method,
                     scan.definiteNullDereferences() + " reference dereference(s) use a compile-time null value"));
         }
+        if (scan.launchesInLoops() > 0) {
+            findings.add(new RuntimeRisk("JUNO-RISK-008", RiskSeverity.WARNING, method,
+                    scan.launchesInLoops() + " thread start/fork call(s) sit in a control-flow loop; at most "
+                            + (RuntimeLimits.MAX_THREADS - 1) + " threads can be active beside the caller"));
+        }
+        if (scan.peakUnjoinedLaunches() > RuntimeLimits.MAX_THREADS - 1) {
+            findings.add(new RuntimeRisk("JUNO-RISK-009", RiskSeverity.WARNING, method,
+                    scan.peakUnjoinedLaunches() + " threads/subtasks are started with no join in between; at most "
+                            + (RuntimeLimits.MAX_THREADS - 1) + " can be active beside the caller"));
+        }
         if (scan.oversizedStringBuilders() > 0) {
             findings.add(new RuntimeRisk("JUNO-RISK-007", RiskSeverity.WARNING, method,
                     scan.oversizedStringBuilders() + " StringBuilder(s) constructed with capacity >= "
                             + RuntimeLimits.STRING_SLOT_CAPACITY_BYTES + " (or not a compile-time constant); "
                             + "toString() panics instead of truncating once content reaches that length"));
+        }
+    }
+
+    /** {@code JUNO-RISK-010}/{@code 011}: what a thread body does with its own small stack and the shared slots. */
+    private static void addThreadBodyFindings(List<RuntimeRisk> findings, Set<MethodRef> threadEntries,
+                                              Set<MethodRef> launchers, Set<MethodRef> recursive,
+                                              Map<MethodRef, Set<MethodRef>> calls,
+                                              Map<MethodRef, Integer> frames) {
+        for (MethodRef entry : threadEntries.stream().filter(calls::containsKey)
+                .sorted((left, right) -> left.displayName().compareTo(right.displayName())).toList()) {
+            Set<MethodRef> reachable = CallGraphMetrics.reachableFrom(entry, calls);
+            if (reachable.stream().anyMatch(launchers::contains)) {
+                findings.add(new RuntimeRisk("JUNO-RISK-010", RiskSeverity.WARNING, entry,
+                        "thread body starts a thread or opens a task scope; nested threads share the "
+                                + RuntimeLimits.MAX_THREADS + " scheduler slots with their parent"));
+            }
+            if (reachable.stream().anyMatch(recursive::contains)) {
+                findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
+                        "thread body reaches a recursive call cycle; its " + RuntimeLimits.MIN_THREAD_STACK_BYTES
+                                + " byte stack cannot be proven sufficient"));
+                continue;
+            }
+            int stack = CallGraphMetrics.maximumStack(entry, calls, frames);
+            if (stack > RuntimeLimits.MIN_THREAD_STACK_BYTES) {
+                findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
+                        "estimated thread stack use of " + stack + " bytes exceeds the smallest thread stack ("
+                                + RuntimeLimits.MIN_THREAD_STACK_BYTES + " bytes, UNO R4 WiFi)"));
+            }
         }
     }
 

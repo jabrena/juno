@@ -136,7 +136,7 @@ final class ThreadRuntime {
                   return juno_saved_sp[slot];
                 }
                 """.replace("${JUNO_MAX_THREADS}", Integer.toString(RuntimeLimits.MAX_THREADS))
-                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(2048));
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(RuntimeLimits.MIN_THREAD_STACK_BYTES));
     }
 
     /**

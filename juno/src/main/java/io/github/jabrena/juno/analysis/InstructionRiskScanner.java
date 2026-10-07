@@ -32,13 +32,28 @@ final class InstructionRiskScanner {
 
     record MethodScan(int allocatedBytes, int possibleDivisionByZero, int definiteNullDereferences,
                        int oversizedStringBuilders, int boundsChecks, int arrayAccesses,
-                       int constantArrayBytes, boolean loopAllocation) {
+                       int constantArrayBytes, boolean loopAllocation, int launchesInLoops,
+                       int peakUnjoinedLaunches, boolean launchesThreads) {
     }
+
+    private static final Set<Intrinsic> LAUNCHES = Set.of(
+            Intrinsic.THREAD_START, Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
+    private static final Set<Intrinsic> SCOPE_OPENS = Set.of(
+            Intrinsic.TASK_SCOPE_OPEN_DEFAULT, Intrinsic.TASK_SCOPE_OPEN);
+    private static final Set<Intrinsic> THREAD_ENTRY_ARGUMENTS = Set.of(
+            Intrinsic.THREAD_NEW, Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
+    private static final Set<Intrinsic> JOINS = Set.of(
+            Intrinsic.THREAD_JOIN, Intrinsic.TASK_SCOPE_JOIN, Intrinsic.TASK_SCOPE_CLOSE);
 
     static MethodScan scan(IrMethod method, Map<String, JavaClass> classes, Map<String, Integer> objectTypeIds,
                             Set<Integer> cyclicBlocks, Set<MethodRef> calls, List<MethodRef> callSites,
-                            Set<FieldRef> staticFields) {
+                            Set<FieldRef> staticFields, Set<MethodRef> threadEntries) {
         Map<Value, Integer> integerConstants = new HashMap<>();
+        Map<Value, List<MethodRef>> entryCandidates = new HashMap<>();
+        int launchesInLoops = 0;
+        int unjoinedLaunches = 0;
+        int peakUnjoinedLaunches = 0;
+        boolean launchesThreads = false;
         Counters counters = new Counters();
         int allocated = 0;
         int constantArrayBytes = 0;
@@ -46,7 +61,26 @@ final class InstructionRiskScanner {
 
         for (IrBasicBlock block : method.blocks()) {
             int blockAllocation = 0;
+            boolean cyclic = cyclicBlocks.contains(block.start());
             for (IrInstruction instruction : block.instructions()) {
+                recordEntryCandidate(instruction, entryCandidates);
+                if (instruction instanceof IrInstruction.IntrinsicCall call) {
+                    if (THREAD_ENTRY_ARGUMENTS.contains(call.intrinsic()) && !call.arguments().isEmpty()) {
+                        threadEntries.addAll(entryCandidates.getOrDefault(call.arguments().get(0), List.of()));
+                    }
+                    if (LAUNCHES.contains(call.intrinsic())) {
+                        launchesThreads = true;
+                        unjoinedLaunches++;
+                        peakUnjoinedLaunches = Math.max(peakUnjoinedLaunches, unjoinedLaunches);
+                        if (cyclic) {
+                            launchesInLoops++;
+                        }
+                    } else if (SCOPE_OPENS.contains(call.intrinsic())) {
+                        launchesThreads = true;
+                    } else if (JOINS.contains(call.intrinsic())) {
+                        unjoinedLaunches = 0;
+                    }
+                }
                 int bytes = AllocationSizeEstimator.allocationBytes(instruction, classes, objectTypeIds);
                 allocated += bytes;
                 blockAllocation += bytes;
@@ -65,13 +99,28 @@ final class InstructionRiskScanner {
                     counters.possibleDivisionByZero++;
                 }
             }
-            if (blockAllocation > 0 && cyclicBlocks.contains(block.start())) {
+            if (blockAllocation > 0 && cyclic) {
                 loopAllocation = true;
             }
         }
         return new MethodScan(allocated, counters.possibleDivisionByZero, counters.definiteNullDereferences,
                 counters.oversizedStringBuilders, counters.boundsChecks, counters.arrayAccesses,
-                constantArrayBytes, loopAllocation);
+                constantArrayBytes, loopAllocation, launchesInLoops, peakUnjoinedLaunches, launchesThreads);
+    }
+
+    /**
+     * Remembers which program methods a value could run when handed to {@code Thread}/{@code fork}: a lambda's
+     * implementation, or the {@code run}/{@code call} of a freshly created object. A value passed in as a
+     * parameter stays unresolved, so thread-body checks only see launches written in the same method.
+     */
+    private static void recordEntryCandidate(IrInstruction instruction, Map<Value, List<MethodRef>> candidates) {
+        if (instruction instanceof IrInstruction.LambdaCreate lambda) {
+            candidates.put(lambda.target(), List.of(lambda.site().implementation().method()));
+        } else if (instruction instanceof IrInstruction.NewObject object) {
+            candidates.put(object.target(), List.of(
+                    new MethodRef(object.className(), "run", "()V"),
+                    new MethodRef(object.className(), "call", "()Ljava/lang/Object;")));
+        }
     }
 
     /** Handles the instruction kinds that record call edges, static-field touches or a definite null dereference. */
