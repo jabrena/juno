@@ -44,6 +44,8 @@ import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.linker.Program;
 import io.github.jabrena.juno.linker.ThreadSupport;
 import io.github.jabrena.juno.linker.StructuredTaskSupport;
+import io.github.jabrena.juno.linker.StringConcatResolver;
+import io.github.jabrena.juno.linker.StringConcatSite;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 
 import java.util.ArrayDeque;
@@ -98,6 +100,7 @@ import java.util.stream.Collectors;
  */
 public final class BytecodeToIr {
     private final BytecodeDecoder decoder = new BytecodeDecoder();
+    private final StringConcatResolver stringConcatResolver = new StringConcatResolver();
     private final Map<String, List<FieldInfo>> validatedRecords = new HashMap<>();
     /** Set by {@link #lower(Program)}: some handler in the program can catch an {@code ArithmeticException}. */
     private boolean divisionByZeroUnwinds;
@@ -349,13 +352,13 @@ public final class BytecodeToIr {
         if (opcode == 186) {
             LambdaCallSite callSite = new LambdaCallSite(linked.method().reference(), instruction.offset());
             LambdaSite site = lambdaSites.get(callSite);
-            if (site == null) {
-                throw new CompileException("Missing linked lambda site for "
-                        + linked.method().reference().displayName() + " at bytecode offset "
-                        + instruction.offset());
+            if (site != null) {
+                return InstructionLowering.of(LambdaLowering.lowerFactory(site, instructions, stackBase,
+                        depth, nextValueId, tracking), irBlockStart);
             }
-            return InstructionLowering.of(LambdaLowering.lowerFactory(site, instructions, stackBase,
-                    depth, nextValueId, tracking), irBlockStart);
+            StringConcatSite concat = stringConcatResolver.resolve(linked, instruction);
+            return InstructionLowering.of(StringConcatLowering.lower(linked, instruction, concat, instructions,
+                    stackBase, depth, nextValueId, tracking), irBlockStart);
         }
         if (opcode == 194 || opcode == 195) {
             return InstructionLowering.of(MonitorLowering.lower(opcode, instructions, stackBase, depth,

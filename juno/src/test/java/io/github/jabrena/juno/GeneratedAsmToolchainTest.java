@@ -674,6 +674,39 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    @Test
+    void assemblesAStringConcatProgramAndCompilesItsShim() throws Exception {
+        String armGcc = availableArmGcc();
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(armGcc != null || compiler != null, "No toolchain available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class AsmStringConcat {
+                    public static void main(String[] args) {
+                        String state = Clock.millis() > 0 ? "on" : null;
+                        boolean active = Clock.millis() > 0;
+                        int count = Clock.millis();
+                        long total = 7L;
+                        float ratio = 1.5f;
+                        double precise = 2.5;
+                        Serial.println(state + ":" + active + ":" + count + ":" + total + ":" + ratio + ":" + precise);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmStringConcat", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmStringConcat");
+        if (armGcc != null) {
+            assembleAndCompile(armGcc, "demo.AsmStringConcat");
+        }
+        if (compiler != null) {
+            Path shim = temporaryDirectory.resolve("AsmStringConcatShim.cpp");
+            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+            syntaxCheckCpp(compiler, shim);
+        }
+    }
+
     /**
      * Every generated program's entry-point prologue captures the live {@code sp} into
      * {@code juno_gc_stack_top} before its own {@code push} (see

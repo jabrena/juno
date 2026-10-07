@@ -279,6 +279,24 @@ final class IntrinsicLowering {
                 List.of(RECEIVER, literal(0)), ShimFeature.STRING_BUILDER);
         shim(Intrinsic.STRING_BUILDER_TO_STRING, "juno_string_builder_to_string", Result.WORD,
                 List.of(RECEIVER), ShimFeature.STRING_BUILDER);
+        shim(Intrinsic.STRING_CONCAT_NEW, "juno_string_concat_new", Result.WORD, List.of(),
+                ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_APPEND_STRING, "juno_string_concat_append_string", Result.NONE,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_APPEND_BOOLEAN, "juno_string_concat_append_boolean", Result.NONE,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_APPEND_CHAR, "juno_string_concat_append_char", Result.NONE,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_APPEND_INT, "juno_string_concat_append_int", Result.NONE,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_APPEND_LONG, "juno_string_concat_append_long", Result.NONE,
+                List.of(RECEIVER, immediate(0), new ArgumentLow(0), new ArgumentHigh(0)),
+                ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_APPEND_FLOAT, "juno_string_concat_append_float", Result.NONE,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_APPEND_DOUBLE, "juno_string_concat_append_double", Result.NONE,
+                List.of(RECEIVER, immediate(0), new ArgumentLow(0), new ArgumentHigh(0)),
+                ShimFeature.RUNTIME_STRINGS);
     }
 
     /** SD card files and {@code Properties} parsed from them. */

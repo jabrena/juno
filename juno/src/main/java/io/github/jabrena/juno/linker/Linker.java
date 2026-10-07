@@ -38,7 +38,7 @@ public final class Linker {
     private final ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilder();
     private final InterfaceDispatchResolver interfaceDispatchResolver = new InterfaceDispatchResolver();
     private final ReachabilityClosure reachabilityClosure = new ReachabilityClosure();
-    private final LambdaResolver lambdaResolver = new LambdaResolver();
+    private final InvokeDynamicSupport invokeDynamicSupport = new InvokeDynamicSupport();
 
     public Program link(Map<String, JavaClass> classes, String mainClassName) {
         return link(classes, mainClassName, Optional.empty());
@@ -162,24 +162,8 @@ public final class Linker {
                         interfaceCalls, interfaceDispatchResolver);
             }
             if (opcode == 186) {
-                if (lambdaResolver.targetsInterface(linked, instruction, StructuredTaskSupport.JOINER)) {
-                    throw new CompileException(caller.displayName() + " at bytecode offset "
-                            + instruction.offset() + ": Juno's JDK 25 StructuredTaskScope subset does not support "
-                            + "custom Joiner implementations");
-                }
-                LambdaSite lambda = lambdaResolver.resolve(linked, instruction, classes);
-                lambdaSites.put(lambda.callSite(), lambda);
-                MethodRef implementation = lambda.implementation().method();
-                if (lambda.implementation().referenceKind()
-                        == io.github.jabrena.juno.classfile.MethodHandleRef.REF_NEW_INVOKE_SPECIAL) {
-                    instantiatedClasses.add(implementation.owner());
-                }
-                if (IntrinsicRegistry.isIntrinsic(implementation)) {
-                    throw new CompileException(caller.displayName() + " at bytecode offset "
-                            + instruction.offset() + ": method references to Juno intrinsics are not supported yet: "
-                            + implementation.displayName());
-                }
-                enqueueCall(implementation, caller, declaredBoards, classes, work);
+                invokeDynamicSupport.register(linked, instruction, classes, instantiatedClasses, lambdaSites,
+                        implementation -> enqueueCall(implementation, caller, declaredBoards, classes, work));
             }
             if (opcode == 187) {
                 instantiatedClasses.add(owner.constantPool().className(instruction.operandA()));

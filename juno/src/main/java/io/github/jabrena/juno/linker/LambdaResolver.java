@@ -26,8 +26,8 @@ final class LambdaResolver {
         BootstrapMethod bootstrap = linked.owner().bootstrapMethod(dynamic.bootstrapMethodIndex());
         MethodHandleRef bootstrapHandle = pool.methodHandle(bootstrap.methodHandleIndex());
         if (!bootstrapHandle.method().equals(METAFACTORY)) {
-            throw error(linked, instruction, "only LambdaMetafactory.metafactory lambdas and method references "
-                    + "are supported");
+            throw error(linked, instruction, "only LambdaMetafactory.metafactory lambdas/method references and "
+                    + "StringConcatFactory.makeConcatWithConstants concatenation are supported");
         }
         if (bootstrap.argumentIndexes().size() != 3) {
             throw error(linked, instruction, "LambdaMetafactory.metafactory requires exactly three bootstrap "

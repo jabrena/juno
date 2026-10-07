@@ -1,18 +1,15 @@
 package io.github.jabrena.juno;
 
 /**
- * Deliberately outside Juno's supported subset: string concatenation with {@code +} compiles to
- * {@code invokedynamic} using {@code StringConcatFactory}, which Juno does not lower. Juno accepts
- * {@code invokedynamic} only for lambdas and method references bootstrapped by
- * {@code LambdaMetafactory.metafactory}. {@code javac} accepts this class like any other; only
- * {@code juno:compile} rejects it with a diagnostic naming the method and bytecode offset.
+ * Deliberately outside Juno's supported subset: a record's generated {@code toString()} uses the
+ * {@code ObjectMethods} invokedynamic bootstrap. Juno accepts {@code invokedynamic} for lambdas,
+ * method references, and bounded string concatenation, but does not lower generated record object
+ * methods. {@code javac} accepts this class; {@code juno:compile} rejects the reachable
+ * {@code toString()} with a diagnostic naming the method and bytecode offset.
  */
-public final class UnsupportedFeature {
-    private UnsupportedFeature() {
-    }
+public record UnsupportedFeature(int temperature) {
 
     public static void main(String[] args) {
-        int temperature = 5;
-        String message = "temperature=" + temperature;
+        String message = new UnsupportedFeature(5).toString();
     }
 }

@@ -542,6 +542,95 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersStringConcatFactoryForStringsBooleansAndIntegers() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class RuntimeConcat {
+                    public static void main(String[] args) {
+                        String state = Clock.millis() > 0 ? "running" : "stopped";
+                        boolean active = Clock.millis() > 0;
+                        int count = Clock.millis();
+                        String text = state + ":" + active + ":" + count;
+                        Serial.println(text);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.RuntimeConcat", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.RuntimeConcat");
+
+        assertThat(result.assembly()).contains(
+                "bl juno_string_concat_new",
+                "bl juno_string_concat_append_string",
+                "bl juno_string_concat_append_boolean",
+                "bl juno_string_concat_append_int",
+                "bl juno_serial_println_str");
+        assertThat(result.runtimeShim()).contains(
+                "extern \"C\" int32_t juno_string_concat_new()",
+                "extern \"C\" void juno_string_concat_append_boolean(int32_t handle, int32_t value)");
+    }
+
+    @Test
+    void lowersStringConcatFactoryForWideAndFloatingPointValues() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class NumericConcat {
+                    public static void main(String[] args) {
+                        String optional = Clock.millis() > 0 ? null : "ok";
+                        char marker = '!';
+                        long count = 7L;
+                        float ratio = 1.5f;
+                        double precise = 2.5;
+                        String text = optional + ":" + marker + ":" + count + ":" + ratio + ":" + precise;
+                        Serial.println(text);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NumericConcat", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NumericConcat");
+
+        assertThat(result.assembly()).contains(
+                "bl juno_string_concat_append_char",
+                "bl juno_string_concat_append_long",
+                "bl juno_string_concat_append_float",
+                "bl juno_string_concat_append_double");
+        assertThat(result.runtimeShim()).contains(
+                "value != nullptr ? value : \"null\"",
+                "extern \"C\" void juno_string_concat_append_long(int32_t handle, int64_t value)",
+                "extern \"C\" JUNO_ASM_ABI void juno_string_concat_append_float(int32_t handle, float value)",
+                "extern \"C\" JUNO_ASM_ABI void juno_string_concat_append_double(int32_t handle, double value)");
+    }
+
+    @Test
+    void decodesStringConcatFactoryConstantPlaceholders() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class ConcatRecipeConstant {
+                    public static void main(String[] args) {
+                        int value = Clock.millis();
+                        String text = "prefix\\1" + value;
+                        Serial.println(text);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ConcatRecipeConstant", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ConcatRecipeConstant");
+
+        assertThat(result.assembly()).contains(
+                "bl juno_string_concat_append_string",
+                "bl juno_string_concat_append_int",
+                "bl juno_serial_println_str");
+    }
+
+    @Test
     void printsARuntimeSerialStringArgumentAndKeepsLiteralsDirect() throws Exception {
         String source = """
                 package demo;
@@ -2316,13 +2405,13 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rejectsNonLambdaInvokeDynamicBootstrapMethodsExplicitly() throws Exception {
+    void rejectsUnsupportedInvokeDynamicBootstrapMethodsExplicitly() throws Exception {
         String source = """
                 package demo;
-                public final class StringConcatDynamic {
+                public record StringConcatDynamic(int value) {
                     public static void main(String[] args) {
-                        int value = 3;
-                        String text = "value=" + value;
+                        StringConcatDynamic value = new StringConcatDynamic(3);
+                        String text = value.toString();
                     }
                 }
                 """;
@@ -2330,8 +2419,8 @@ class JunoCompilerTest {
 
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.StringConcatDynamic"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("demo.StringConcatDynamic.main")
-                .hasMessageContaining("only LambdaMetafactory.metafactory");
+                .hasMessageContaining("demo.StringConcatDynamic.toString")
+                .hasMessageContaining("StringConcatFactory.makeConcatWithConstants");
     }
 
     @Test
