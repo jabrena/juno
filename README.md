@@ -118,6 +118,13 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative
   garbage collection. See
   [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/Objects.java).
+- **BigInteger and BigDecimal:** arbitrary-precision `java.math.BigInteger` and `BigDecimal`, with
+  `MathContext` and the `RoundingMode` constants. Arithmetic, `pow`, `sqrt`, division by scale,
+  `RoundingMode` or `MathContext`, `setScale`, `round`, comparisons, conversions and `toString` /
+  `toPlainString` follow the JDK's results, scales and rounding. Values are immutable blocks in the
+  8 KiB arena and are garbage-collected, so precision is limited by memory, not by a fixed width.
+  Print them with `Serial.println(value.toString())` rather than concatenating them. See
+  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
 - **Interfaces:** directly implemented interfaces with closed-world dispatch through an interface
   reference. See
   [`Interfaces`](juno-examples/src/main/java/io/github/jabrena/juno/Interfaces.java).
@@ -128,9 +135,6 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   pseudorandom numbers. See
   [`MathFunctions`](juno-examples/src/main/java/io/github/jabrena/juno/MathFunctions.java) and
   [`RandomNumbers`](juno-examples/src/main/java/io/github/jabrena/juno/RandomNumbers.java).
-- **Arbitrary precision:** `BigInteger`, `BigDecimal`, `MathContext` and the `RoundingMode` constants, with the
-  JDK's rounding and text rules. See
-  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
 - **Exceptions:** `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
   `finally`, nested handlers, propagation between methods, custom final exception classes, and
   try-with-resources. See
