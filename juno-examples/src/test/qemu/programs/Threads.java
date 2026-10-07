@@ -1,5 +1,6 @@
 package demo;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.usb.Serial;
@@ -9,7 +10,7 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * garbage collection while other threads are parked with live references on their own stacks. Every printed value
  * is fixed by joins, so the JVM and the board agree whatever the interleaving.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class Threads {
     static int flag;
     static int ticks;

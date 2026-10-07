@@ -1,6 +1,7 @@
 // Bare-metal harness: reset vector, FPU enable, semihosting output/exit. JUNO_ENTRY is the generated
 // program's entry symbol (the function the .ino wrapper calls from setup()).
 #include <stdint.h>
+#include "Arduino.h"
 
 extern "C" {
 extern uint32_t _sbss, _ebss, _estack;
@@ -25,8 +26,10 @@ void juno_harness_write(const char* text) { semihost(0x04, text); }  // SYS_WRIT
   for (;;) {}
 }
 
-// The real core's USB service hook; nothing to service here. Weak: the R4 shim defines its own.
-__attribute__((weak)) void yield(void) {}
+// The real core's service hook. Weak: the R4 shim defines its own. Like that one (through Serial's bool
+// conversion) it lets virtual time pass, so a thread spinning on a loop backedge eventually reaches the
+// scheduler's once-per-millisecond switch on the UNO Q too.
+__attribute__((weak)) void yield(void) { juno_harness_clock++; }
 
 [[noreturn]] static void fault(void) {
   juno_harness_write("[juno-fault]\n");

@@ -1,5 +1,6 @@
 package demo;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.usb.Serial;
@@ -14,7 +15,7 @@ import java.util.concurrent.StructuredTaskScope;
  * receiving the precision as a parameter. A nested binding can lower the precision for its own extent, but
  * {@code Math.min} against the outer value means it can never raise it above what its owner allows.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class ScopedValuesPrecision {
     private static final int MAX_DIGITS = 40;
     private static final int CONSTANTS = 3;

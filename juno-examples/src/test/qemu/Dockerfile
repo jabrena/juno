@@ -10,6 +10,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY Arduino.h Arduino_LED_Matrix.h startup.cpp link.ld run.sh /harness/
+COPY zephyr/kernel.h /harness/zephyr/kernel.h
 RUN chmod +x /harness/run.sh
 
 WORKDIR /work

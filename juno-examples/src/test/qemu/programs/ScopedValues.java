@@ -1,12 +1,13 @@
 package demo;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.usb.Serial;
 import java.util.NoSuchElementException;
 import java.util.concurrent.StructuredTaskScope;
 
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class ScopedValues {
     private static final ScopedValue<String> USER = ScopedValue.newInstance();
     private static final ScopedValue<String> ROLE = ScopedValue.newInstance();

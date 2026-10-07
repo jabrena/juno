@@ -93,9 +93,10 @@ class QemuRunIT {
     }
 
     /**
-     * Whether a program declares {@code board} in its {@code @Board}. A program that needs a runtime the harness
-     * can only model for one core (threads: the UNO Q port runs on Zephyr's kernel, which the bare-metal harness
-     * does not have) declares just the other.
+     * Whether a program declares {@code board} in its {@code @Board}, so a program can opt out of a board the
+     * harness cannot model. The UNO Q thread port runs on Zephyr's kernel, which the harness replaces with a small
+     * cooperative stand-in ({@code src/test/qemu/zephyr/kernel.h}), so it covers the port's logic but not Zephyr's
+     * real scheduler.
      */
     private static boolean targets(String mainClass, Board board) {
         Path source = QEMU.resolve("programs").resolve(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java");
