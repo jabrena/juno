@@ -315,18 +315,56 @@ selection types (`annotations/`), live under
 
 ## Development
 
+All commands use the Maven wrapper (`./mvnw`) from the repository root, with the JDK pinned in `.sdkmanrc`.
+
+### Build and test
+
 ```bash
-./mvnw clean test
-./mvnw clean verify
+./mvnw clean test      # unit tests, including the offline assembly/shim toolchain checks
+./mvnw clean verify    # what CI runs: tests, static analysis, and packaging
+```
+
+### Run generated code on a toolchain
+
+Both profiles need Docker and are opt-in, because they start containers. Run `./mvnw install -DskipTests`
+once first so the examples module can resolve the plugin and compiler.
+
+```bash
+# Compile every TFT game with the real arduino-cli (does not touch hardware)
 ./mvnw -f juno-examples/pom.xml -Parduino-cli verify
-./mvnw javadoc:aggregate
-./mvnw clean verify -Psite
-./mvnw -f juno-site/pom.xml quarkus:dev
+
+# Run the core-feature programs under QEMU (Cortex-M4) and compare their serial output with the JVM's
+./mvnw -f juno-examples/pom.xml -Pqemu verify
+```
+
+### Code quality
+
+The `cyclomatic-complexity` profile is active by default, so a plain `verify` already enforces it;
+naming it explicitly just makes that visible.
+
+```bash
+./mvnw clean verify -Pcyclomatic-complexity               # fail the build on over-complex methods (PMD)
+./mvnw -Pcyclomatic-complexity -DskipTests site           # generate the complexity report
+jwebserver -d "$(pwd)/target/site" -p 8000                # then open http://127.0.0.1:8000/
+```
+
+### Documentation
+
+The published site lives in `docs/` and is generated from `juno-site/src/main/resources/content/`;
+never edit `docs/` by hand.
+
+```bash
+./mvnw javadoc:aggregate                                  # API docs into docs/javadocs/<version>/
+./mvnw clean verify -Psite                                # wipe and regenerate docs/: site, then Javadoc
+./mvnw -f juno-site/pom.xml quarkus:dev                   # live preview while editing the Markdown
+```
+
+To preview the generated site locally at the web root (`docs/` itself has the GitHub Pages `/juno`
+prefix baked in):
+
+```bash
 ./mvnw -f juno-site/pom.xml clean package quarkus:run -Dquarkus.http.root-path=/
-jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000
-./mvnw clean verify -Pcyclomatic-complexity
-./mvnw -Pcyclomatic-complexity -DskipTests site
-jwebserver -d "$(pwd)/target/site" -p 8000
+jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000       # then open http://127.0.0.1:8000/
 ```
 
 ## References
