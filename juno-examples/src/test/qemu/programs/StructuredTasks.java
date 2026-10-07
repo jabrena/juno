@@ -39,7 +39,9 @@ public final class StructuredTasks {
             scope.fork(() -> "winner");
             scope.fork(() -> "possibly cancelled");
             Object winner = scope.join();
-            Serial.println(winner == "winner" ? 1 : 0);
+            // Either fork may finish first on a real JVM (threads race); the compiled runtime always runs
+            // "winner" first, so only check that the result is one of the two valid answers.
+            Serial.println(winner == "winner" || winner == "possibly cancelled" ? 1 : 0);
             Serial.println(scope.isCancelled() ? 1 : 0);
         }
 
