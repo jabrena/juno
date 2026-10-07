@@ -4,6 +4,8 @@ Juno is an ahead-of-time compiler for running a practical subset of Java on the 
 and the Arduino UNO Q. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly.
 
+[![CI Builds](https://github.com/jabrena/juno/actions/workflows/maven.yaml/badge.svg)](https://github.com/jabrena/juno/actions/workflows/maven.yaml)
+
 **Arduino UNO Q**
 
 ![](./documentation/boards/arduino-one-q.png)
