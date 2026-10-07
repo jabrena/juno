@@ -99,18 +99,21 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   calls, and removal of unreachable methods. See
   [`HelloWorld`](juno-examples/src/main/java/io/github/jabrena/juno/HelloWorld.java) and
   [`Methods`](juno-examples/src/main/java/io/github/jabrena/juno/Methods.java).
-- **Values and control flow:** primitive values (including `long`, `float`, and `double`), constants,
-  mutable static fields, local variables, arithmetic, bitwise and shift operations, comparisons,
-  conditionals, `switch`, and loops. See
+- **Primitive types:** `boolean`, `byte`, `short`, `char`, `int`, `long`, `float`, and `double`.
+  The example prints each type's size and range using `javac`-folded `BYTES`, `MIN_VALUE`, and
+  `MAX_VALUE` constants. See
+  [`PrimitiveTypes`](juno-examples/src/main/java/io/github/jabrena/juno/PrimitiveTypes.java).
+- **Values and control flow:** constants, mutable static fields, local variables, arithmetic,
+  bitwise and shift operations, comparisons, conditionals, `switch`, and loops. See
   [`Variables`](juno-examples/src/main/java/io/github/jabrena/juno/Variables.java),
-  [`DataTypes`](juno-examples/src/main/java/io/github/jabrena/juno/DataTypes.java),
   [`Operators`](juno-examples/src/main/java/io/github/jabrena/juno/Operators.java), and
   [`ControlFlow`](juno-examples/src/main/java/io/github/jabrena/juno/ControlFlow.java).
 - **Arrays:** fixed-size primitive arrays (`boolean` through `double`, including fixed-size
   multidimensional arrays) allocated from the fixed 8 KiB arena. See
   [`Arrays`](juno-examples/src/main/java/io/github/jabrena/juno/Arrays.java).
 - **Strings:** string literals, `String.valueOf(int)`, `length()`, and `charAt(int)` for runtime
-  string references, plus `+` concatenation of strings.
+  string references, `equals`, plus `+` concatenation of strings and a `StringBuilder`. See
+  [`Strings`](juno-examples/src/main/java/io/github/jabrena/juno/Strings.java).
 - **Objects:** simple enums, records, final closed-world classes, constructors, and instance fields.
   Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative
   garbage collection. See
@@ -176,7 +179,7 @@ from the `io.github.jabrena.juno` package. Examples whose `@Board` lists both bo
   -Djuno.main=io.github.jabrena.juno.Variables
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.DataTypes
+  -Djuno.main=io.github.jabrena.juno.PrimitiveTypes
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.Operators

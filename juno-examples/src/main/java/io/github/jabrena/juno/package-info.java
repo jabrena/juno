@@ -4,7 +4,8 @@
  * <p>The examples progress from basic output to core language features:
  * <ul>
  *   <li>{@link io.github.jabrena.juno.HelloWorld} — serial output.</li>
- *   <li>{@link io.github.jabrena.juno.DataTypes} — primitive data types and ranges.</li>
+ *   <li>{@link io.github.jabrena.juno.PrimitiveTypes} — all eight primitive types and their ranges.</li>
+ *   <li>{@link io.github.jabrena.juno.Strings} — literals, {@code length}, {@code charAt}, {@code equals}, concatenation, and {@code StringBuilder}.</li>
  *   <li>{@link io.github.jabrena.juno.Lambdas} — lambda expressions and method references.</li>
  *   <li>{@link io.github.jabrena.juno.Variables} — constants, fields, local variables, and scope.</li>
  *   <li>{@link io.github.jabrena.juno.Operators} — arithmetic, logical, bitwise, and other operators.</li>

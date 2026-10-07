@@ -3,13 +3,15 @@ package io.github.jabrena.juno;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 
-/** Prints the size and range of every primitive numeric type; javac folds each line into one string constant. */
-public class DataTypes {
+/** Prints the size and range of every primitive type; javac folds each line into one string constant. */
+public class PrimitiveTypes {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        Serial.println("Data types demo");
+        Serial.println("Primitive types demo");
+        Serial.println("boolean: values: " + true + " or " + false);
         Serial.println("byte: " + Byte.BYTES + " bytes, range: " + Byte.MIN_VALUE + " to " + Byte.MAX_VALUE);
         Serial.println("short: " + Short.BYTES + " bytes, range: " + Short.MIN_VALUE + " to " + Short.MAX_VALUE);
+        Serial.println("char: " + Character.BYTES + " bytes, range: " + (int) Character.MIN_VALUE + " to " + (int) Character.MAX_VALUE);
         Serial.println("int: " + Integer.BYTES + " bytes, range: " + Integer.MIN_VALUE + " to " + Integer.MAX_VALUE);
         Serial.println("long: " + Long.BYTES + " bytes, range: " + Long.MIN_VALUE + " to " + Long.MAX_VALUE);
         Serial.println("float: " + Float.BYTES + " bytes, range: " + Float.MIN_VALUE + " to " + Float.MAX_VALUE);
