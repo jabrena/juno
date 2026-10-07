@@ -10,7 +10,7 @@ import io.github.jabrena.juno.api.io.usb.Serial;
 
 /** Demonstrates closed-world interface dispatch with two reachable implementations. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
-public final class InterfaceDispatch {
+public class Interfaces {
 
     interface Scale {
         int apply(int value);

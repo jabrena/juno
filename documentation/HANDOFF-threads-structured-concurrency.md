@@ -105,7 +105,7 @@ Conservative mark/sweep GC uses a fixed 8 KiB arena rooted on every live thread'
    QEMU `demo.StructuredTasks` against its JVM oracle, and real `arduino-cli compile` for the UNO R4 WiFi and the
    UNO Q (`arduino:zephyr:unoq`, 2026-10-03).
    **To improve later** (found in the 2026-10-02 review; none is fixed or tested yet):
-   - **Hardware:** flash `StructuredTasks` on both boards. QEMU covers the R4 only and the test `kernel.h` stubs
+   - **Hardware:** flash `StructuredConcurrency` on both boards. QEMU covers the R4 only and the test `kernel.h` stubs
      `k_thread_abort` as a no-op, so the UNO Q cancel path (`k_thread_abort`, slot reuse after a cancel) has never
      run. Cover fail-fast cancellation and the `anySuccessfulResultOrThrow` winner.
    - **Non-recursive cancellation:** `juno_task_cancel` does not cancel a task's own inner scope. If an outer scope
