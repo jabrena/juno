@@ -134,10 +134,12 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/Exceptions.java).
 - **Concurrency:** up to four threads including `main`, `Runnable`, `start()`, `join()`,
   sleeping, yielding, daemon threads, restricted monitors and `ReentrantLock`, and the supported JDK
-  25 preview `StructuredTaskScope` subset. See
+  25 preview `StructuredTaskScope` subset, and `ScopedValue` bindings inherited by forked subtasks. See
   [`Threads`](juno-examples/src/main/java/io/github/jabrena/juno/Threads.java),
-  [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java), and
-  [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/StructuredConcurrency.java).
+  [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java),
+  [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/StructuredConcurrency.java), and
+  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java)
+  (a scoped precision limit shared by three parallel subtasks).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
   HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
   See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) (GPIO and delays),
@@ -240,6 +242,10 @@ from the `io.github.jabrena.juno` package. Examples whose `@Board` lists both bo
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.StructuredConcurrency \
+  -Djuno.board=arduino-uno-r4-wifi
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.ScopedValuesPrecision \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
