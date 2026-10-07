@@ -166,7 +166,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`LcdKeypadDemo`](juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java).
   The [ELEGOO 2.8" TFT touch shield](https://jabrena.github.io/juno/tft-touch-shield) (display,
   touch, microSD) is shown in
-  [`TftTouchPaint`](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TftTouchPaint.java) and
+  [`TouchPaintTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TouchPaintTFT.java) and
   [`WifiStatusTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/WifiStatusTFT.java).
   The [AZDelivery Data Logger Module Data Recorder Shield](https://jabrena.github.io/juno/storage)
   provides the SD card for

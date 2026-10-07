@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.api.tft;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
@@ -12,8 +10,7 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * also logged to Serial with both its screen coordinates and raw readings, which is what
  * {@link TftTouchShield#calibrateTouch} needs if a panel reports offset or mirrored positions.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
-public final class TftTouchPaint {
+public final class TouchPaintTFT {
     private static final int PALETTE_SIZE = 40;
     private static final int PALETTE_COLORS = 6;
     private static final int BRUSH = 4;
@@ -36,16 +33,10 @@ public final class TftTouchPaint {
             }
             int x = TftTouchShield.touchX();
             int y = TftTouchShield.touchY();
-            Serial.print("x=");
-            Serial.print(x);
-            Serial.print(" y=");
-            Serial.print(y);
-            Serial.print(" rawX=");
-            Serial.print(TftTouchShield.touchRawX());
-            Serial.print(" rawY=");
-            Serial.print(TftTouchShield.touchRawY());
-            Serial.print(" z=");
-            Serial.println(TftTouchShield.touchPressure());
+            Serial.println("x=" + x + " y=" + y
+                    + " rawX=" + TftTouchShield.touchRawX()
+                    + " rawY=" + TftTouchShield.touchRawY()
+                    + " z=" + TftTouchShield.touchPressure());
 
             if (y < PALETTE_SIZE) {
                 int selected = x / PALETTE_SIZE;

@@ -56,7 +56,7 @@ class ArduinoCliCompileIT {
 
     /**
      * Every TFT program's fully qualified class name paired with each board its {@code @Board}
-     * annotation declares (defaulting to {@link Board#DEFAULT} when absent): {@code TftTouchPaint}
+     * annotation declares (defaulting to {@link Board#DEFAULT} when absent): {@code TouchPaintTFT}
      * in api.tft, and every game in games or one of its subpackages. A game is its {@code @Board}
      * entry point; the other classes of a multi-class game's subpackage are its parts.
      */

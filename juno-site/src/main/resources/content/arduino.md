@@ -181,7 +181,7 @@ resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built 
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.TftTouchPaint
+  -Djuno.main=io.github.jabrena.juno.api.tft.TouchPaintTFT
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusTFT
 ```
@@ -193,9 +193,9 @@ against a small 3-ply engine, and `Blackjack`
 (`-Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack`) plays against the dealer with a bankroll. Further games in this catalogue:
 `battleship.Battleship`, `texasholdem.TexasHoldem` and the arcade games (`pacman.PacMan`, `lunarlander.LunarLander`, …) — see
 [TFT-TOUCH-SHIELD.md](../tft-touch-shield#examples) and the illustrated catalogue in [GAMES.md](../games).
-`TftTouchPaint` is a finger-paint demo that logs raw touch readings for calibration;
+`TouchPaintTFT` is a finger-paint demo that logs raw touch readings for calibration;
 `WifiStatusTFT` is the TFT version of `WifiStatusSD`, reading its credentials from the shield's own
-microSD socket. Both were uploaded to a real UNO R4 WiFi with this shield; `TftTouchPaint`'s drawing and touch
+microSD socket. Both were uploaded to a real UNO R4 WiFi with this shield; `TouchPaintTFT`'s drawing and touch
 mapping are confirmed working.
 
 ### Example: RatonLoco (USB mouse control)

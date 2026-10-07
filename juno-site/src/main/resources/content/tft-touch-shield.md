@@ -84,7 +84,7 @@ replaces it; pad shorter strings with spaces to erase leftovers.
 
 Touch positions are mapped with ELEGOO's published calibration range for this panel (raw X
 120-900, raw Y 70-920), with the axis directions confirmed on real hardware (raw Y runs opposite to
-the display's y). If a panel reports offset or mirrored positions, run `TftTouchPaint`, touch near
+the display's y). If a panel reports offset or mirrored positions, run `TouchPaintTFT`, touch near
 each edge, read the logged `rawX`/`rawY` values, and pass the raw readings for portrait x = 0,
 x = 239, y = 0, and y = 319 to:
 
@@ -101,10 +101,10 @@ For every game at a glance, sorted by category with screenshots, see [GAMES.md](
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.TftTouchPaint
+  -Djuno.main=io.github.jabrena.juno.api.tft.TouchPaintTFT
 ```
 
-[`TftTouchPaint`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TftTouchPaint.java)
+[`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TouchPaintTFT.java)
 is a minimal finger-paint program in `PORTRAIT_FLIPPED` rotation: pick a color from the palette
 along the top, then draw. Each touch is logged to Serial with screen and raw coordinates, for
 calibration. Confirmed working on a real UNO R4 WiFi with this shield.

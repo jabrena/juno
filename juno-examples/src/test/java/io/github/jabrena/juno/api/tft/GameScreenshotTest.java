@@ -56,7 +56,7 @@ class GameScreenshotTest {
                 game("games.starwars.StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
                 game("games.tempest.Tempest", "tempest", "2785:120,160 3185:200,180 end:10185"),
                 game("games.texasholdem.TexasHoldem", "texas-holdem", "35000:120,160 50000:180,170 end:70000"),
-                game("api.tft.TftTouchPaint", "tft-touch-paint", paintStrokes()));
+                game("api.tft.TouchPaintTFT", "tft-touch-paint", paintStrokes()));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -109,7 +109,7 @@ class GameScreenshotTest {
                         Integer.parseInt(xy[1])));
             }
         }
-        // Programs are relative to io.github.jabrena.juno, e.g. games.chess.Chess or api.tft.TftTouchPaint.
+        // Programs are relative to io.github.jabrena.juno, e.g. games.chess.Chess or api.tft.TouchPaintTFT.
         String mainClass = "io.github.jabrena.juno." + game;
         return TftEmulator.run(mainClass, end, taps);
     }
