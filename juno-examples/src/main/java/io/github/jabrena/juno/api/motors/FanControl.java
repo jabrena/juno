@@ -1,9 +1,8 @@
 package io.github.jabrena.juno.api.motors;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.DigitalOutput;
+import io.github.jabrena.juno.api.io.Gpio;
 
 /**
  * Drives a relay or MOSFET connected to digital pin 7 to switch a 3-wire DC brushless fan on for
@@ -32,17 +31,14 @@ import io.github.jabrena.juno.api.io.DigitalOutput;
  * for this style of fan). Powering the fan from the Arduino's 5V pin or USB under-volts it and
  * makes it spin weakly or not at all.
  */
-@Board(ArduinoUnoR4WiFi.class)
 public final class FanControl {
-    private static final int FAN_SWITCH_PIN = 7;
-    private static final int LED = 13;
     private static final int BLINK_HALF_PERIOD_MILLIS = 500;
     private static final int BLINKS_PER_PHASE = 10;
 
     public static void main(String[] args) {
 
-        DigitalOutput fanSwitch = DigitalOutput.of(FAN_SWITCH_PIN);
-        DigitalOutput led = DigitalOutput.of(LED);
+        DigitalOutput fanSwitch = DigitalOutput.of(Gpio.D7);
+        DigitalOutput led = DigitalOutput.of(Gpio.D13);
 
         while (true) {
             fanSwitch.high();

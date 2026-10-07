@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.api.lcd;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
@@ -10,15 +8,11 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * Prints a header on row 0 of the LCD Keypad Shield's screen, then shows which of its 5 buttons
  * (if any) is currently held on row 1, updating only when the pressed button changes.
  */
-@Board(ArduinoUnoR4WiFi.class)
 public final class LcdKeypadDemo {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        Serial.println(1);
         LcdKeypadShield.begin();
-        Serial.println(2);
         LcdKeypadShield.print("Press a button");
-        Serial.println(3);
 
         int lastButton = -1;
         while (true) {

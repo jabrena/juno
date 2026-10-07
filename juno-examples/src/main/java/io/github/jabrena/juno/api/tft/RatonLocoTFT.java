@@ -55,6 +55,7 @@ public final class RatonLocoTFT {
      *
      * @param args ignored; Juno programs do not receive command-line arguments
      */
+    @Board (ArduinoUnoR4WiFi.class)
     public static void main(String[] args) {
         DigitalOutput led = DigitalOutput.of(LED);
         Mouse.begin();

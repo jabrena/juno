@@ -20,7 +20,7 @@ public final class LegoMotorPosition {
     private static final int FIRST_REPORT_MILLIS = 500;
 
     public static void main(String[] args) {
-        Serial.begin(9600);
+        Serial.begin(Serial.BAUD_115200);
 
         while (true) {
             if (!PoweredUpHub.isConnected()) {
@@ -48,7 +48,6 @@ public final class LegoMotorPosition {
             position = PoweredUpHub.readSensor(MOTOR);
         }
         PoweredUpHub.brakeMotor(MOTOR);
-        Serial.print("Position: ");
-        Serial.println(position);
+        Serial.println("Position: " + position);
     }
 }
