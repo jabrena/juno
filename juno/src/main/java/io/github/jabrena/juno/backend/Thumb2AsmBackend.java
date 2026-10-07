@@ -559,8 +559,7 @@ public final class Thumb2AsmBackend {
                 .flatMap(block -> block.instructions().stream())
                 .anyMatch(instruction -> instruction instanceof IrInstruction.IntrinsicCall call
                         && switch (call.intrinsic()) {
-                            case THREAD_NEW, THREAD_START, THREAD_JOIN, THREAD_IS_ALIVE, THREAD_SET_DAEMON,
-                                    TASK_SCOPE_OPEN_DEFAULT, TASK_SCOPE_OPEN, TASK_SCOPE_FORK_CALLABLE,
+                            case TASK_SCOPE_OPEN_DEFAULT, TASK_SCOPE_OPEN, TASK_SCOPE_FORK_CALLABLE,
                                     TASK_SCOPE_FORK_RUNNABLE, TASK_SCOPE_JOIN, TASK_SCOPE_IS_CANCELLED, TASK_GET,
                                     TASK_STATE, TASK_EXCEPTION, TASK_SCOPE_CLOSE,
                                     MONITOR_ENTER, MONITOR_EXIT, REENTRANT_LOCK_NEW, REENTRANT_LOCK_LOCK,

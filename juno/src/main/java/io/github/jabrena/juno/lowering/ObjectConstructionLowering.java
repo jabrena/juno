@@ -21,7 +21,6 @@ final class ObjectConstructionLowering {
     static boolean handles(MethodRef called) {
         return BigNumberSupport.isConstruction(called)
                 || InvokeLowering.isStringBuilderConstruction(called)
-                || InvokeLowering.isThreadConstruction(called)
                 || called.equals(LockSupport.CONSTRUCTOR)
                 || InvokeLowering.isPropertiesConstruction(called);
     }
@@ -36,9 +35,6 @@ final class ObjectConstructionLowering {
         if (InvokeLowering.isStringBuilderConstruction(called)) {
             return InvokeLowering.lowerStringBuilderConstruction(instructions, stackBase, depth, nextValueId,
                     tracking);
-        }
-        if (InvokeLowering.isThreadConstruction(called)) {
-            return InvokeLowering.lowerThreadConstruction(instructions, stackBase, depth, nextValueId, tracking);
         }
         if (called.equals(LockSupport.CONSTRUCTOR)) {
             return InvokeLowering.lowerReentrantLockConstruction(instructions, stackBase, depth, nextValueId,

@@ -157,7 +157,6 @@ public final class Linker {
             int opcode = instruction.opcode();
             if (opcode == 182 || opcode == 183 || opcode == 184) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                ThreadSupport.registerEntry(called, interfaceCalls);
                 StructuredTaskSupport.registerEntry(called, interfaceCalls);
                 ScopedValueSupport.registerEntry(called, interfaceCalls);
                 enqueueCall(called, caller, declaredBoards, classes, work);
@@ -185,6 +184,7 @@ public final class Linker {
             Map<String, JavaClass> classes, Deque<MethodRef> work) {
         IntrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
                 requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
+        ThreadSupport.validateCall(called);
         LockSupport.validateCall(called);
         StructuredTaskSupport.validateCall(called);
         ScopedValueSupport.validateCall(called);

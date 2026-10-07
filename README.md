@@ -140,10 +140,10 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   `finally`, nested handlers, propagation between methods, custom final exception classes, and
   try-with-resources. See
   [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/Exceptions.java).
-- **Concurrency:** up to four threads including `main`, `Runnable`, `start()`, `join()`,
-  sleeping, yielding, daemon threads, restricted monitors and `ReentrantLock`, and the supported JDK
-  25 preview `StructuredTaskScope` subset, and `ScopedValue` bindings inherited by forked subtasks. See
-  [`Threads`](juno-examples/src/main/java/io/github/jabrena/juno/Threads.java),
+- **Concurrency:** the supported JDK 25 preview `StructuredTaskScope` subset (up to four threads
+  including `main`, with `Thread.sleep` and `Thread.yield` inside subtasks), restricted monitors and
+  `ReentrantLock`, and `ScopedValue` bindings inherited by forked subtasks. `java.lang.Thread` itself is
+  rejected at compile time. See
   [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java),
   [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/StructuredConcurrency.java), and
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java)
@@ -241,10 +241,6 @@ from the `io.github.jabrena.juno` package. Examples whose `@Board` lists both bo
 
 # Concurrency
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Threads \
-  -Djuno.board=arduino-uno-r4-wifi
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.Synchronization \
   -Djuno.board=arduino-uno-r4-wifi
 
@@ -297,7 +293,7 @@ single instruction. That is also why there is no dynamic class loading, reflecti
    the bytecode offset, and the operation, rather than emitting code with uncertain behavior.
 5. **Lower to IR.** `lowering` turns each reachable method into Juno's own block-structured intermediate
    representation (`ir`), making every operand-stack slot and local variable an explicit, typed value.
-   Lambdas, string concatenation, enums, records, exceptions, and threads are given their Juno-specific
+   Lambdas, string concatenation, enums, records, exceptions, and structured tasks are given their Juno-specific
    meaning here.
 6. **Optimize.** `optimize` runs small IR passes (copy propagation, constant folding, dead-block
    elimination). `analysis` then inspects the result and reports runtime risks at build time: arena budget
@@ -305,7 +301,7 @@ single instruction. That is also why there is no dynamic class loading, reflecti
    unchecked array access, and proven-null dereferences.
 7. **Generate code.** `backend` emits GNU ARM Cortex-M4 (Thumb-2) assembly directly from the IR, plus a small
    `extern "C"` C++ runtime shim (GPIO, Serial, LED matrix, Wi-Fi, HTTP, JSON, strings, the arena allocator and
-   its garbage collector, `long`/`float`/`double` support, exception and thread support) that the assembly calls
+   its garbage collector, `long`/`float`/`double` support, exception and structured-task support) that the assembly calls
    into. Most optional helpers and Arduino headers (Mouse, Wi-Fi, HTTP, JSON, strings, …) are included only when the
    program uses them, and the output is deterministic: the same classes always produce the same bytes. Per-core differences (UNO R4 WiFi's Renesas
    core versus UNO Q's Zephyr core) live in a `CoreRuntime`, never in a branch on a specific board.

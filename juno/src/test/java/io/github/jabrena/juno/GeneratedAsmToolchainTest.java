@@ -201,7 +201,7 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
-    void assemblesThreadsWithAClassAndALambdaRunnable() throws Exception {
+    void assemblesTaskScopesWithAClassAndALambdaRunnable() throws Exception {
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -211,18 +211,18 @@ class GeneratedAsmToolchainTest {
                     static final class Job implements Runnable {
                         public void run() { Delay.millis(1); }
                     }
-                    public static void main(String[] args) throws InterruptedException {
+                    public static void main(String[] args) throws Exception {
                         int pause = 2;
-                        Thread first = new Thread(new Job());
-                        Thread second = new Thread(() -> Delay.millis(pause));
-                        first.start();
-                        second.start();
-                        first.join();
-                        second.join();
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(new Job());
+                            scope.fork(() -> Delay.millis(pause));
+                            scope.join();
+                        }
                     }
                 }
                 """;
-        assembleAndCompile(armGcc, "demo.AsmThreads", source);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.AsmThreads", source);
+        assembleAndCompile(armGcc, "demo.AsmThreads");
     }
 
     @Test
@@ -249,15 +249,17 @@ class GeneratedAsmToolchainTest {
                             }
                         }
                     }
-                    public static void main(String[] args) throws InterruptedException {
-                        Thread worker = new Thread(AsmSynchronization::update);
-                        worker.start();
-                        while (!ready) { }
-                        worker.join();
+                    public static void main(String[] args) throws Exception {
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(AsmSynchronization::update);
+                            while (!ready) { }
+                            scope.join();
+                        }
                     }
                 }
                 """;
-        assembleAndCompile(armGcc, "demo.AsmSynchronization", source);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.AsmSynchronization", source);
+        assembleAndCompile(armGcc, "demo.AsmSynchronization");
     }
 
     @Test

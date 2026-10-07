@@ -325,25 +325,6 @@ final class InvokeLowering {
         return new Lowered(nextValueId, depth);
     }
 
-    static boolean isThreadConstruction(MethodRef called) {
-        return called.owner().equals("java/lang/Thread") && called.name().equals("<init>")
-                && called.descriptor().equals("(Ljava/lang/Runnable;)V");
-    }
-
-    /** {@code new Thread(runnable)}: overwrites the {@code new} placeholder with the arena-allocated thread handle. */
-    static Lowered lowerThreadConstruction(List<IrInstruction> instructions, int stackBase, int depth,
-                                           int nextValueId, ValueTracking tracking) {
-        Popped runnable = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = runnable.nextValueId();
-        Popped discardedReceiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = discardedReceiver.nextValueId();
-        Value handle = Value.int32(nextValueId++);
-        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.THREAD_NEW,
-                Optional.empty(), List.of(runnable.value()), List.of()));
-        storeToStack(instructions, stackBase, depth - 1, handle, tracking);
-        return new Lowered(nextValueId, depth);
-    }
-
     static Lowered lowerPropertiesConstruction(List<IrInstruction> instructions, int stackBase, int depth,
                                                int nextValueId, ValueTracking tracking) {
         Popped discardedReceiver = pop(instructions, stackBase, --depth, nextValueId, tracking);

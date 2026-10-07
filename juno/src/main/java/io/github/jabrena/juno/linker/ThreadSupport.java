@@ -1,6 +1,9 @@
 package io.github.jabrena.juno.linker;
 
+import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.classfile.MethodRef;
+
+import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 
 import java.util.Map;
 
@@ -18,29 +21,26 @@ public final class ThreadSupport {
     public static final InterfaceCallSite ENTRY_SITE = new InterfaceCallSite(ENTRY_METHOD, 0);
     public static final MethodRef RUNNABLE_RUN = new MethodRef("java/lang/Runnable", "run", "()V");
 
-    private static final MethodRef THREAD_CONSTRUCTOR =
-            new MethodRef("java/lang/Thread", "<init>", "(Ljava/lang/Runnable;)V");
-    private static final MethodRef THREAD_START = new MethodRef("java/lang/Thread", "start", "()V");
-
     private ThreadSupport() {
     }
 
-    /** Whether calling {@code called} means the program creates or runs a thread, so it needs the entry function. */
-    public static boolean needsEntry(MethodRef called) {
-        return called.equals(THREAD_CONSTRUCTOR) || called.equals(THREAD_START);
-    }
-
-    /** Records the synthetic {@code Runnable.run()} site when {@code called} creates or starts a thread. */
-    public static void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
-        if (needsEntry(called)) {
-            interfaceCalls.put(ENTRY_SITE, RUNNABLE_RUN);
+    /**
+     * Rejects a program that uses {@code java.lang.Thread} directly. The cooperative thread runtime stays, as
+     * {@code StructuredTaskScope} forks its subtasks onto it, but only {@code Thread.sleep} and
+     * {@code Thread.yield} (which a subtask calls) are part of the language subset.
+     */
+    public static void validateCall(MethodRef called) {
+        if (called.owner().equals("java/lang/Thread") && !IntrinsicRegistry.isIntrinsic(called)) {
+            throw new CompileException("Juno does not support java.lang.Thread (" + called.displayName()
+                    + "); fork the work with StructuredTaskScope instead. Only Thread.sleep and Thread.yield "
+                    + "are available, inside a forked subtask");
         }
     }
 
     /** The diagnostic for an interface call with no reachable implementation. */
     public static String unresolvedMessage(InterfaceCallSite site, MethodRef interfaceMethod) {
         if (site.equals(ENTRY_SITE)) {
-            return "Thread needs a Runnable: no reachable class or lambda implements java.lang.Runnable";
+            return "StructuredTaskScope.fork needs a Runnable: no reachable class or lambda implements java.lang.Runnable";
         }
         if (StructuredTaskSupport.isEntrySite(site)) {
             return "StructuredTaskScope.fork needs a Callable: no reachable class or lambda implements "

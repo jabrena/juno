@@ -5,6 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.usb.Serial;
 
+import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.locks.ReentrantLock;
 
 /** Deterministic synchronization behavior shared by the JVM oracle and Juno's cooperative runtime. */
@@ -51,28 +52,28 @@ public final class Synchronization {
         }
     }
 
-    public static void main() throws InterruptedException {
+    public static void main() throws Exception {
         for (int i = 0; i < 1200; i++) {
             new Cell(i);
         }
         Serial.println(GUARD.marker());
 
-        Thread publisher = new Thread(() -> {
-            value = 42;
-            ready = true;
-        });
-        publisher.start();
-        while (!ready) {
+        try (var scope = StructuredTaskScope.open()) {
+            scope.fork(() -> {
+                value = 42;
+                ready = true;
+            });
+            while (!ready) {
+            }
+            scope.join();
         }
-        publisher.join();
         Serial.println(value);
 
-        Thread first = new Thread(Synchronization::count);
-        Thread second = new Thread(Synchronization::count);
-        first.start();
-        second.start();
-        first.join();
-        second.join();
+        try (var scope = StructuredTaskScope.open()) {
+            scope.fork(Synchronization::count);
+            scope.fork(Synchronization::count);
+            scope.join();
+        }
         Serial.println(monitorCount);
         Serial.println(lockCount);
     }

@@ -204,15 +204,6 @@ final class IntrinsicLowering {
 
     /** {@code java.lang.Thread}: one scheduler call each; sleep and yield alone need no scheduler. */
     private void registerThreads(boolean usesThreads) {
-        shim(Intrinsic.THREAD_NEW, "juno_thread_new", Result.WORD, List.of(arg(0)),
-                ShimFeature.THREADS, ShimFeature.THREAD_ENTRY);
-        shim(Intrinsic.THREAD_START, "juno_thread_start", Result.NONE, List.of(RECEIVER),
-                ShimFeature.THREADS, ShimFeature.THREAD_ENTRY);
-        shim(Intrinsic.THREAD_JOIN, "juno_thread_join", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
-        shim(Intrinsic.THREAD_IS_ALIVE, "juno_thread_is_alive", Result.WORD, List.of(RECEIVER),
-                ShimFeature.THREADS);
-        shim(Intrinsic.THREAD_SET_DAEMON, "juno_thread_set_daemon", Result.NONE, List.of(RECEIVER, arg(0)),
-                ShimFeature.THREADS);
         ShimFeature runtime = usesThreads ? ShimFeature.THREADS : ShimFeature.THREAD_BASICS;
         shim(Intrinsic.THREAD_SLEEP, "juno_thread_sleep", Result.NONE, wide(0), runtime);
         shim(Intrinsic.THREAD_YIELD, "juno_thread_yield", Result.NONE, List.of(), runtime);

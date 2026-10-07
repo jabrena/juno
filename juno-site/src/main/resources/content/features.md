@@ -129,19 +129,17 @@ Supported today:
   `Exception in thread "main" <class>: <message>` over `Serial` and panics. An `int`/`long` division or remainder by zero inside a `try` whose handler catches
   `ArithmeticException` (or a supertype, or `finally`) raises `ArithmeticException("/ by zero")` there;
   anywhere else it unwinds to the callers' handlers if any `catch`/`finally` in the program can receive `ArithmeticException`, and panics if none can, as do Juno's other runtime failures (array bounds, arena exhaustion).
-- `java.lang.Thread` with cooperative scheduling on both boards: `new Thread(Runnable)` (a class implementing
-  `Runnable` or a lambda), `start()`, `join()`, `isAlive()`, `setDaemon(boolean)`, `Thread.sleep(long)` and
-  `Thread.yield()`. Each thread runs on a stack of its own, and control moves between threads only where the
-  program already pauses — loop iterations (at most once per millisecond), `Delay.millis`, `Thread.sleep`,
-  `Thread.yield` and `join` — so a statement is never interrupted halfway and the arena, the garbage collector and
-  the pending-exception slot need no locking. At most four threads run at once, the main thread included, each extra
-  one with a 2 KiB stack on the UNO R4 WiFi and 4 KiB on the UNO Q (a stack overflow on the UNO R4 panics with
-  `[juno-thread] stack overflow` when the thread next switches away). The collector scans every live thread's stack.
-  When `main` returns, the program waits for every non-daemon thread, as the JVM does. An exception that escapes
-  `run()` prints `Exception in thread "Thread-N" <class>: <message>`, ends that thread and leaves the others
-  running. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each Juno thread is a Zephyr thread that waits
-  for a baton, so only one runs at a time. Not supported: subclassing `Thread`, thread names/priorities/interrupts,
-  and other `java.util.concurrent` APIs.
+- Cooperative scheduling under `StructuredTaskScope`, on both boards: `Thread.sleep(long)` and `Thread.yield()` are
+  available inside a forked subtask (and in `main`). Each subtask runs on a stack of its own, and control moves
+  between them only where the program already pauses — loop iterations (at most once per millisecond),
+  `Delay.millis`, `Thread.sleep`, `Thread.yield` and `join` — so a statement is never interrupted halfway and the
+  arena, the garbage collector and the pending-exception slot need no locking. At most four threads run at once, the
+  owner included, each extra one with a 2 KiB stack on the UNO R4 WiFi and 4 KiB on the UNO Q (a stack overflow on
+  the UNO R4 panics with `[juno-thread] stack overflow` when the subtask next switches away). The collector scans
+  every live stack. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each subtask is a Zephyr thread that
+  waits for a baton, so only one runs at a time. `java.lang.Thread` itself is not part of the language subset:
+  `new Thread(...)`, `start()`, `join()`, `setDaemon(boolean)` and the rest fail with a `CompileException` that points
+  to `StructuredTaskScope`, and so do other `java.util.concurrent` APIs.
 - JDK 25 preview `StructuredTaskScope`, lowered onto the same cooperative task runtime: `open()`, `open(Joiner)`,
   `fork(Callable)`, `fork(Runnable)`, `join()`, `isCancelled()`, try-with-resources `close()`, and
   `Subtask.state()`/`get()`/`exception()`. The supported built-in joiners are `allSuccessfulOrThrow`,
@@ -156,11 +154,11 @@ Supported today:
   `orElse(value)`. A bound value is one reference word (a `String`, array or object; there is no boxing, so bind an
   `int[]` holder for numbers). A binding is entered on the calling thread's own stack, so an inner `where(...)`
   rebinds only for its extent and the outer binding returns afterwards, even if the body throws. Subtasks forked in
-  a `StructuredTaskScope` inherit the owner's bindings; a plain `Thread` does not, as on the JVM. `get()` on an unbound
+  a `StructuredTaskScope` inherit the owner's bindings; `get()` on an unbound
   value throws `NoSuchElementException`. Not supported: `runWhere`/`callWhere`/`getWhere`, `orElseThrow`, and
   `Carrier.get`. See the board-ready
   [`ScopedValuesPrecision` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
-- restricted synchronization for cooperative threads: `volatile` primitive/reference fields are always loaded from
+- restricted synchronization for cooperative subtasks: `volatile` primitive/reference fields are always loaded from
   and stored to memory, including across calls and loop backedges; `synchronized (lock)` blocks use a bounded table
   of eight reentrant intrinsic monitors; and concrete `java.util.concurrent.locks.ReentrantLock` supports only
   `new ReentrantLock()`, `lock()`, zero-argument `tryLock()`, and `unlock()`, backed by the same monitor runtime.
@@ -188,10 +186,10 @@ The first analysis slice reports:
 | `JUNO-RISK-005` | Integer/long division or remainder (including `Math.floorDiv`/`floorMod`) may receive a zero divisor and panic. |
 | `JUNO-RISK-006` | A dereference uses a value proven null at compile time. |
 | `JUNO-RISK-007` | A `StringBuilder` is created with a capacity of 32 or more (or a non-constant one); `toString()` panics once content reaches the slot size. |
-| `JUNO-RISK-008` | `Thread.start` or `StructuredTaskScope.fork` sits in a control-flow loop; only three threads can be active beside the caller. |
-| `JUNO-RISK-009` | More than three threads or subtasks are started with no `join` in between. |
-| `JUNO-RISK-010` | A thread body (found where a lambda or object is passed to `Thread`/`fork` in the same method) starts a thread or opens a task scope, competing for the same four slots. |
-| `JUNO-RISK-011` | A thread body reaches a recursive cycle, or its estimated stack exceeds the smallest thread stack (2 KiB on the UNO R4 WiFi). |
+| `JUNO-RISK-008` | `StructuredTaskScope.fork` sits in a control-flow loop; only three threads can be active beside the caller. |
+| `JUNO-RISK-009` | More than three subtasks are forked with no `join` in between. |
+| `JUNO-RISK-010` | A subtask body (found where a lambda or object is passed to `fork` in the same method) opens a task scope, competing for the same four slots. |
+| `JUNO-RISK-011` | A subtask body reaches a recursive cycle, or its estimated stack exceeds the smallest thread stack (2 KiB on the UNO R4 WiFi). |
 
 The 8 KiB arena capacity and the counts of emitted bounds checks are exact compiler facts. Arena,
 static-RAM, and stack figures are conservative source-level estimates: alignment is overestimated,

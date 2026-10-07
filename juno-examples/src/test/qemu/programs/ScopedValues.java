@@ -73,18 +73,5 @@ public final class ScopedValues {
             }
         });
         Serial.println(slots[0] + slots[1] + slots[2]);
-
-        // A plain Thread does not inherit bindings.
-        final int[] seen = new int[1];
-        ScopedValue.where(USER, "parent").run(() -> {
-            Thread thread = new Thread(() -> seen[0] = USER.isBound() ? 1 : 0);
-            thread.start();
-            try {
-                thread.join();
-            } catch (InterruptedException interrupted) {
-                Serial.println("interrupted");
-            }
-        });
-        Serial.println(seen[0]);
     }
 }

@@ -6,6 +6,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 
+import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.locks.ReentrantLock;
 
 /** Volatile publication, intrinsic monitor blocks, and Juno's restricted {@link ReentrantLock} subset. */
@@ -21,7 +22,7 @@ public final class Synchronization {
     private int synchronizedCounter;
     private int lockedCounter;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
         Serial.begin(BaudRate.BAUD_115200);
 
         Synchronization example = new Synchronization();
@@ -29,26 +30,26 @@ public final class Synchronization {
         example.monitorAndLock();
     }
 
-    /** A volatile flag publishes a value from one thread to another. */
-    private void volatilePublication() throws InterruptedException {
-        Thread publisher = new Thread(this::publish);
-        publisher.start();
-        while (!ready) {
-            // Volatile is reloaded and this backedge lets the publisher run.
+    /** A volatile flag publishes a value from one subtask to its parent. */
+    private void volatilePublication() throws Exception {
+        try (var scope = StructuredTaskScope.open()) {
+            scope.fork(this::publish);
+            while (!ready) {
+                // Volatile is reloaded and this backedge lets the publisher run.
+            }
+            scope.join();
         }
-        publisher.join();
         Serial.print("published ");
         Serial.println(publishedValue);
     }
 
-    /** Two threads increment shared counters under a monitor and under a lock. */
-    private void monitorAndLock() throws InterruptedException {
-        Thread first = new Thread(this::count);
-        Thread second = new Thread(this::count);
-        first.start();
-        second.start();
-        first.join();
-        second.join();
+    /** Two subtasks increment shared counters under a monitor and under a lock. */
+    private void monitorAndLock() throws Exception {
+        try (var scope = StructuredTaskScope.open()) {
+            scope.fork(this::count);
+            scope.fork(this::count);
+            scope.join();
+        }
         Serial.print("synchronized ");
         Serial.println(synchronizedCounter);
         Serial.print("locked ");

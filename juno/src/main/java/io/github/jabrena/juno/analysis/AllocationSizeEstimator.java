@@ -44,10 +44,6 @@ final class AllocationSizeEstimator {
             return allocationUpperBound(RuntimeLimits.PROPERTIES_STORAGE_BYTES, 4);
         }
         if (instruction instanceof IrInstruction.IntrinsicCall call
-                && call.intrinsic() == Intrinsic.THREAD_NEW) {
-            return allocationUpperBound(RuntimeLimits.THREAD_OBJECT_BYTES, 4);
-        }
-        if (instruction instanceof IrInstruction.IntrinsicCall call
                 && (call.intrinsic() == Intrinsic.TASK_SCOPE_OPEN_DEFAULT
                 || call.intrinsic() == Intrinsic.TASK_SCOPE_OPEN)) {
             return allocationUpperBound(RuntimeLimits.STRUCTURED_TASK_SCOPE_BYTES, 4);

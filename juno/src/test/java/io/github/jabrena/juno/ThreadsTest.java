@@ -14,9 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * {@code java.lang.Thread}: the closed-world {@code Runnable.run()} entry function, the cooperative runtime in the
- * shim, and what a program that never creates a thread does not pay for. Behavior of the compiled code is covered
- * under QEMU ({@code juno-examples}' {@code Threads} program); this checks the generated text.
+ * The cooperative thread runtime behind {@code StructuredTaskScope}: the closed-world {@code Runnable.run()} entry
+ * function, the runtime in the shim, what a program without subtasks does not pay for, and the rejection of
+ * {@code java.lang.Thread} itself. Behavior of the compiled code is covered under QEMU ({@code juno-examples}'
+ * {@code TaskScheduling} program); this checks the generated text.
  */
 class ThreadsTest {
     @TempDir
@@ -35,7 +36,7 @@ class ThreadsTest {
                             Serial.println(1);
                         }
                     }
-                    public static void main() throws InterruptedException {
+                    public static void main() throws Exception {
                 %2$s
                     }
                 }
@@ -43,16 +44,15 @@ class ThreadsTest {
     }
 
     private static final String START_AND_JOIN = """
-            Thread job = new Thread(new Job());
-            job.start();
-            job.join();
-            Thread other = new Thread(() -> Serial.println(2));
-            other.start();
-            other.join();
+            try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                scope.fork(new Job());
+                scope.fork(() -> Serial.println(2));
+                scope.join();
+            }
             """;
 
     private CompilationResult compile(String board, String body) throws Exception {
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Worker", program(board, body));
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Worker", program(board, body));
         return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Worker");
     }
 
@@ -62,10 +62,8 @@ class ThreadsTest {
 
         assertThat(result.assembly()).contains(".global juno_thread_entry", "juno_thread_entry:")
                 .as("loop backedges go through the thread runtime").doesNotContain("bl yield\n");
-        assertThat(result.assembly()).contains("bl juno_thread_start", "bl juno_thread_join",
-                "bl juno_thread_main_exit");
+        assertThat(result.assembly()).contains("bl juno_task_scope_fork_runnable", "bl juno_thread_main_exit");
         assertThat(result.runtimeShim()).contains("extern \"C\" void juno_thread_entry(int32_t runnable);",
-                "extern \"C\" void juno_thread_start(int32_t handle)",
                 "juno_thread_gc_scan(&stackMarker);");
     }
 
@@ -112,38 +110,47 @@ class ThreadsTest {
     }
 
     @Test
-    void aThreadWithNoRunnableAnywhereIsRejected() throws Exception {
+    void aForkWithNoRunnableAnywhereIsRejected() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.io.usb.Serial;
                 public final class Worker {
-                    static void spawn(Runnable work) {
-                        new Thread(work).start();
+                    static void spawn(Runnable work) throws Exception {
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(work);
+                            scope.join();
+                        }
                     }
-                    public static void main() {
+                    public static void main() throws Exception {
                         Serial.println(1);
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Worker", source);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Worker", source);
 
-        // spawn() is unreachable, so nothing asks for a thread
+        // spawn() is unreachable, so nothing asks for a subtask
         assertThat(CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Worker").runtimeShim())
                 .doesNotContain("juno_thread");
 
         String reachable = source.replace("Serial.println(1);", "spawn(null);");
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Worker", reachable);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Worker", reachable);
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Worker"))
                 .isInstanceOf(CompileException.class).hasMessageContaining("no reachable class or lambda");
     }
 
     @Test
-    void threadApiOutsideTheSupportedSubsetFailsAtLinkTime() throws Exception {
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Worker", program("ArduinoUnoR4WiFi",
-                "Thread job = new Thread(new Job());\njob.start();\njob.interrupt();\n"));
+    void userLevelThreadsAreRejectedAtLinkTime() throws Exception {
+        for (String body : new String[]{
+                "Thread job = new Thread(new Job());\njob.start();\njob.join();\n",
+                "Thread job = new Thread(new Job());\njob.setDaemon(true);\n",
+                "Thread job = Thread.currentThread();\njob.interrupt();\n"}) {
+            CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Worker", program("ArduinoUnoR4WiFi", body));
 
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Worker"))
-                .isInstanceOf(CompileException.class).hasMessageContaining("java.lang.Thread");
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Worker"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("does not support java.lang.Thread")
+                    .hasMessageContaining("StructuredTaskScope");
+        }
     }
 
     @Test

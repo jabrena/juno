@@ -28,20 +28,21 @@ class SynchronizationTest {
                 public final class VolatileFlag {
                     private static volatile boolean ready;
                     private static int result;
-                    public static void main() throws InterruptedException {
-                        Thread worker = new Thread(() -> {
-                            result = 42;
-                            ready = true;
-                        });
-                        worker.start();
-                        while (!ready) {
-                            // The loop backedge is a cooperative scheduler switch point.
+                    public static void main() throws Exception {
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(() -> {
+                                result = 42;
+                                ready = true;
+                            });
+                            while (!ready) {
+                                // The loop backedge is a cooperative scheduler switch point.
+                            }
+                            scope.join();
                         }
-                        worker.join();
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.VolatileFlag", source);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.VolatileFlag", source);
 
         Map<String, JavaClass> classes = new ClassPath().load(List.of(temporaryDirectory));
         assertThat(classes.get("demo/VolatileFlag").findField("ready", "Z").isVolatile()).isTrue();
@@ -93,17 +94,16 @@ class SynchronizationTest {
                             }
                         }
                     }
-                    public static void main() throws InterruptedException {
-                        Thread first = new Thread(SynchronizedBlock::increment);
-                        Thread second = new Thread(SynchronizedBlock::increment);
-                        first.start();
-                        second.start();
-                        first.join();
-                        second.join();
+                    public static void main() throws Exception {
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(SynchronizedBlock::increment);
+                            scope.fork(SynchronizedBlock::increment);
+                            scope.join();
+                        }
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.SynchronizedBlock", source);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.SynchronizedBlock", source);
 
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SynchronizedBlock");
 
@@ -137,17 +137,16 @@ class SynchronizationTest {
                             LOCK.unlock();
                         }
                     }
-                    public static void main() throws InterruptedException {
-                        Thread first = new Thread(ExplicitLock::increment);
-                        Thread second = new Thread(ExplicitLock::increment);
-                        first.start();
-                        second.start();
-                        first.join();
-                        second.join();
+                    public static void main() throws Exception {
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(ExplicitLock::increment);
+                            scope.fork(ExplicitLock::increment);
+                            scope.join();
+                        }
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ExplicitLock", source);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.ExplicitLock", source);
 
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ExplicitLock");
 
