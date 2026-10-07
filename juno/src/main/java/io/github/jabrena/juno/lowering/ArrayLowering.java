@@ -6,6 +6,7 @@ import static io.github.jabrena.juno.lowering.StackValueOps.*;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.ir.ArrayDeclaration;
 import io.github.jabrena.juno.ir.ArrayElementType;
@@ -146,7 +147,8 @@ final class ArrayLowering {
     /** Classes whose {@code new} only reserves a placeholder: the constructor call builds the runtime handle. */
     private static boolean isRuntimeHandleClass(String className) {
         return className.startsWith("java/lang/") || className.equals("java/util/Properties")
-                || LockSupport.isReentrantLockClass(className) || BigNumberSupport.isBigNumberOwner(className);
+                || LockSupport.isReentrantLockClass(className)
+                || AtomicSupport.isAtomicClass(className) || BigNumberSupport.isBigNumberOwner(className);
     }
 
     static Lowered lowerAllocation(LinkedMethod linked, Instruction instruction, int opcode,

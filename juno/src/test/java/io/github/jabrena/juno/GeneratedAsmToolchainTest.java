@@ -263,6 +263,30 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    void assemblesAtomicIntegerBooleanAndLong() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                import java.util.concurrent.atomic.AtomicBoolean;
+                import java.util.concurrent.atomic.AtomicInteger;
+                import java.util.concurrent.atomic.AtomicLong;
+                public final class AsmAtomics {
+                    static final AtomicInteger COUNT = new AtomicInteger(1);
+                    public static void main(String[] args) {
+                        AtomicLong total = new AtomicLong(1L << 33);
+                        AtomicBoolean flag = new AtomicBoolean();
+                        total.addAndGet(COUNT.incrementAndGet());
+                        if (total.compareAndSet(total.get(), 2L) && flag.compareAndSet(false, true)) {
+                            COUNT.getAndAdd((int) total.getAndDecrement());
+                        }
+                    }
+                }
+                """;
+        assembleAndCompile(armGcc, "demo.AsmAtomics", source);
+    }
+
+    @Test
     void assemblesStructuredTaskScopes() throws Exception {
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");

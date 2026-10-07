@@ -12,6 +12,7 @@ import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
+import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
@@ -203,6 +204,7 @@ final class FieldLowering {
                 || ScopedValueSupport.isScopedValueType(field.descriptor())
                 || BigNumberSupport.isBigNumberType(field.descriptor())
                 || LockSupport.isReentrantLockType(field.descriptor())
+                || AtomicSupport.isAtomicType(field.descriptor())
                 || Descriptor.isArrayType(field.descriptor())
                 || Descriptor.isReferenceType(field.descriptor(), classes.keySet())) {
             return JunoType.INT32;

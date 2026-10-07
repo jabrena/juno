@@ -119,6 +119,7 @@ public record Descriptor(List<String> parameters, String returnType) {
                 || ThreadSupport.isThreadType(type)
                 || ScopedValueSupport.isScopedValueType(type)
                 || BigNumberSupport.isBigNumberType(type)
+                || AtomicSupport.isAtomicType(type)
                 || isSupportedArrayType(type, referenceClassNames)
                 || isReferenceType(type, referenceClassNames);
     }

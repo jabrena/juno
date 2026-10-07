@@ -121,6 +121,7 @@ final class IntrinsicLowering {
         registerExceptions();
         registerGpio(coreRuntime, usesThreads);
         registerThreads(usesThreads);
+        registerAtomics();
         registerStructuredTasks();
         registerScopedValues();
         registerMonitors();
@@ -260,6 +261,50 @@ final class IntrinsicLowering {
                 ShimFeature.THREADS);
         shim(Intrinsic.REENTRANT_LOCK_UNLOCK, "juno_monitor_exit", Result.NONE, List.of(RECEIVER),
                 ShimFeature.THREADS);
+    }
+
+    /** Atomic cells: one shim call each; the scheduler never preempts one, so no monitor is needed. */
+    private void registerAtomics() {
+        shim(Intrinsic.ATOMIC_INT_NEW_DEFAULT, "juno_atomic_int_new_default", Result.WORD, List.of(), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_NEW, "juno_atomic_int_new", Result.WORD, List.of(arg(0)), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_GET, "juno_atomic_int_get", Result.WORD, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_SET, "juno_atomic_int_set", Result.NONE, List.of(RECEIVER, arg(0)), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_GET_AND_SET, "juno_atomic_int_get_and_set", Result.WORD, List.of(RECEIVER, arg(0)), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_COMPARE_AND_SET, "juno_atomic_int_compare_and_set", Result.WORD, List.of(RECEIVER, arg(0), arg(1)), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_INCREMENT_AND_GET, "juno_atomic_int_increment_and_get", Result.WORD, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_DECREMENT_AND_GET, "juno_atomic_int_decrement_and_get", Result.WORD, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_GET_AND_INCREMENT, "juno_atomic_int_get_and_increment", Result.WORD, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_GET_AND_DECREMENT, "juno_atomic_int_get_and_decrement", Result.WORD, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_ADD_AND_GET, "juno_atomic_int_add_and_get", Result.WORD, List.of(RECEIVER, arg(0)), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_INT_GET_AND_ADD, "juno_atomic_int_get_and_add", Result.WORD, List.of(RECEIVER, arg(0)), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_NEW_DEFAULT, "juno_atomic_long_new_default", Result.WORD, List.of(), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_NEW, "juno_atomic_long_new", Result.WORD, wide(0), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_GET, "juno_atomic_long_get", Result.WIDE, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_SET, "juno_atomic_long_set", Result.NONE, withReceiver(wide(0)),
+                ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_GET_AND_SET, "juno_atomic_long_get_and_set", Result.WIDE,
+                withReceiver(wide(0)), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_COMPARE_AND_SET, "juno_atomic_long_compare_and_set", Result.WORD,
+                withReceiver(wide(0), wide(1)), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_INCREMENT_AND_GET, "juno_atomic_long_increment_and_get", Result.WIDE, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_DECREMENT_AND_GET, "juno_atomic_long_decrement_and_get", Result.WIDE, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_GET_AND_INCREMENT, "juno_atomic_long_get_and_increment", Result.WIDE, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_GET_AND_DECREMENT, "juno_atomic_long_get_and_decrement", Result.WIDE, List.of(RECEIVER), ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_ADD_AND_GET, "juno_atomic_long_add_and_get", Result.WIDE, withReceiver(wide(0)),
+                ShimFeature.ATOMICS);
+        shim(Intrinsic.ATOMIC_LONG_GET_AND_ADD, "juno_atomic_long_get_and_add", Result.WIDE, withReceiver(wide(0)),
+                ShimFeature.ATOMICS);
+    }
+
+    /** {@code receiver} followed by every operand in {@code groups}, each a list of words. */
+    @SafeVarargs
+    private static List<Operand> withReceiver(List<Operand>... groups) {
+        List<Operand> operands = new ArrayList<>();
+        operands.add(RECEIVER);
+        for (List<Operand> group : groups) {
+            operands.addAll(group);
+        }
+        return operands;
     }
 
     private void registerSerial() {

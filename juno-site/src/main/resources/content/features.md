@@ -158,6 +158,11 @@ Supported today:
   value throws `NoSuchElementException`. Not supported: `runWhere`/`callWhere`/`getWhere`, `orElseThrow`, and
   `Carrier.get`. See the board-ready
   [`ScopedValuesPrecision` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
+- `java.util.concurrent.atomic` subset: `AtomicInteger`, `AtomicBoolean` and `AtomicLong` with `new`, `get`, `set`,
+  `getAndSet`, `compareAndSet` and, on the numeric ones, `incrementAndGet`, `decrementAndGet`, `getAndIncrement`,
+  `getAndDecrement`, `addAndGet` and `getAndAdd` (plus `intValue()`/`longValue()`). Each is a small arena cell, and the
+  cooperative scheduler never switches inside an operation, so none needs a monitor. `AtomicReference`, the array
+  and adder classes, `updateAndGet`/`accumulateAndGet` and `lazySet` are rejected with a `CompileException`.
 - restricted synchronization for cooperative subtasks: `volatile` primitive/reference fields are always loaded from
   and stored to memory, including across calls and loop backedges; `synchronized (lock)` blocks use a bounded table
   of eight reentrant intrinsic monitors; and concrete `java.util.concurrent.locks.ReentrantLock` supports only

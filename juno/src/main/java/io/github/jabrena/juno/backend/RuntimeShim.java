@@ -581,6 +581,9 @@ final class RuntimeShim {
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(NetworkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
         }
+        if (uses(ShimFeature.ATOMICS)) {
+            shim.append(AtomicRuntime.helpers());
+        }
         appendConcurrencyHelpers(shim);
     }
 

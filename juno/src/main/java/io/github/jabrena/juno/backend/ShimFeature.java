@@ -47,5 +47,7 @@ enum ShimFeature {
     /** {@code BigDecimal.valueOf(double)}, which formats the double with the runtime-string helpers. */
     BIG_DECIMAL_DOUBLE,
     /** {@code Thread.sleep}/{@code Thread.yield} in a program that creates no thread. */
-    THREAD_BASICS
+    THREAD_BASICS,
+    /** {@code AtomicInteger}/{@code AtomicBoolean}/{@code AtomicLong} cells in the arena. */
+    ATOMICS
 }

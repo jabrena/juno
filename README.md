@@ -143,7 +143,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
 - **Concurrency:** the supported JDK 25 preview `StructuredTaskScope` subset (up to four threads
   including `main`, with `Thread.sleep` and `Thread.yield` inside subtasks), restricted monitors and
   `ReentrantLock`, and `ScopedValue` bindings inherited by forked subtasks. `java.lang.Thread` itself is
-  rejected at compile time. See
+  rejected at compile time; `AtomicInteger`, `AtomicBoolean` and `AtomicLong` are available. See
   [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java),
   [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/StructuredConcurrency.java), and
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java)
@@ -157,7 +157,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`WifiStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/WifiStatus.java) (Wi-Fi),
   [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/WifiStatusSD.java) (Wi-Fi credentials loaded from an SD card),
   [`WifiStatusSDLcd`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/WifiStatusSDLcd.java) (the same, with an LCD Keypad Shield),
-  [`WifiProvisioning`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/http/WifiProvisioning.java) (access point and HTTP server),
+  [`WifiProvisioning`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/http/WifiProvisioning.java) (access point and HTTP server to provide Wi-Fi credentials),
   [`HttpsMethods`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpsMethods.java) (HTTP/HTTPS and JSON), and
   [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/storage/SdFileOperations.java) (SD card).
 - **Shields:** stacked shields are driven through the same intrinsic APIs.

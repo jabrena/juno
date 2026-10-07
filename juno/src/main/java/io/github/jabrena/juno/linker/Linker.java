@@ -186,6 +186,7 @@ public final class Linker {
                 requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
         ThreadSupport.validateCall(called);
         LockSupport.validateCall(called);
+        AtomicSupport.validateCall(called);
         StructuredTaskSupport.validateCall(called);
         ScopedValueSupport.validateCall(called);
         BigNumberSupport.validateCall(called);

@@ -57,6 +57,16 @@ final class AllocationSizeEstimator {
                 && call.intrinsic() == Intrinsic.REENTRANT_LOCK_NEW) {
             return allocationUpperBound(Integer.BYTES, Integer.BYTES);
         }
+        if (instruction instanceof IrInstruction.IntrinsicCall call
+                && (call.intrinsic() == Intrinsic.ATOMIC_INT_NEW_DEFAULT
+                || call.intrinsic() == Intrinsic.ATOMIC_INT_NEW)) {
+            return allocationUpperBound(Integer.BYTES, Integer.BYTES);
+        }
+        if (instruction instanceof IrInstruction.IntrinsicCall call
+                && (call.intrinsic() == Intrinsic.ATOMIC_LONG_NEW_DEFAULT
+                || call.intrinsic() == Intrinsic.ATOMIC_LONG_NEW)) {
+            return allocationUpperBound(2 * Integer.BYTES, Integer.BYTES);
+        }
         return 0;
     }
 

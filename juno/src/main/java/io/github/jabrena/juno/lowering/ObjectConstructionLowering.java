@@ -3,6 +3,7 @@ package io.github.jabrena.juno.lowering;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.LockSupport;
@@ -22,6 +23,7 @@ final class ObjectConstructionLowering {
         return BigNumberSupport.isConstruction(called)
                 || InvokeLowering.isStringBuilderConstruction(called)
                 || called.equals(LockSupport.CONSTRUCTOR)
+                || AtomicSupport.isConstruction(called)
                 || InvokeLowering.isPropertiesConstruction(called);
     }
 
@@ -35,6 +37,10 @@ final class ObjectConstructionLowering {
         if (InvokeLowering.isStringBuilderConstruction(called)) {
             return InvokeLowering.lowerStringBuilderConstruction(instructions, stackBase, depth, nextValueId,
                     tracking);
+        }
+        if (AtomicSupport.isConstruction(called)) {
+            return BigNumberLowering.lowerConstruction(linked, instruction, called, instructions, stackBase, depth,
+                    nextValueId, tracking);
         }
         if (called.equals(LockSupport.CONSTRUCTOR)) {
             return InvokeLowering.lowerReentrantLockConstruction(instructions, stackBase, depth, nextValueId,

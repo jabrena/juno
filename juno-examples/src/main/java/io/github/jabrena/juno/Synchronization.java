@@ -7,9 +7,10 @@ import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 
 import java.util.concurrent.StructuredTaskScope;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
-/** Volatile publication, intrinsic monitor blocks, and Juno's restricted {@link ReentrantLock} subset. */
+/** Volatile publication, intrinsic monitor blocks, atomic counters, and Juno's restricted {@link ReentrantLock} subset. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class Synchronization {
     static final class Guard {
@@ -21,6 +22,7 @@ public final class Synchronization {
     private int publishedValue;
     private int synchronizedCounter;
     private int lockedCounter;
+    private final AtomicInteger atomicCounter = new AtomicInteger();
 
     public static void main(String[] args) throws Exception {
         Serial.begin(BaudRate.BAUD_115200);
@@ -43,7 +45,7 @@ public final class Synchronization {
         Serial.println(publishedValue);
     }
 
-    /** Two subtasks increment shared counters under a monitor and under a lock. */
+    /** Two subtasks increment shared counters under a monitor, under a lock, and with an atomic. */
     private void monitorAndLock() throws Exception {
         try (var scope = StructuredTaskScope.open()) {
             scope.fork(this::count);
@@ -54,6 +56,8 @@ public final class Synchronization {
         Serial.println(synchronizedCounter);
         Serial.print("locked ");
         Serial.println(lockedCounter);
+        Serial.print("atomic ");
+        Serial.println(atomicCounter.get());
     }
 
     private void publish() {
@@ -63,6 +67,8 @@ public final class Synchronization {
 
     private void count() {
         for (int i = 0; i < 50; i++) {
+            atomicCounter.incrementAndGet();
+
             synchronized (guard) {
                 synchronizedCounter++;
             }
