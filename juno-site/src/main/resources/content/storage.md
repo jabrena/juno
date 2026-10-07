@@ -49,15 +49,6 @@ If a different reader or shield routes CS elsewhere, call `SdCard.begin(chipSele
 The ELEGOO 2.8" TFT touch screen shield's microSD socket also uses D10, and shares no pins with its
 display: see [`WifiStatusTFT`](../tft-touch-shield#examples) for the same flow shown on the TFT.
 
-### Using the LCD Keypad Shield at the same time
-
-The LCD Keypad Shield uses D10 for backlight control, while the data logger shield uses D10 for SD
-chip select. Do not stack both shields unchanged: electrically isolate or reroute the LCD
-backlight's D10 connection first. `WifiStatusSD` initializes the LCD before the SD card and never
-changes the backlight after SD initialization, but software ordering cannot remove the physical pin
-conflict. The LCD itself continues to use D4-D9 and can display the connection state once D10 has
-been isolated.
-
 ## Build
 
 Install the Arduino `SdFat` library once, then compile the example through the real toolchain:
