@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
@@ -46,6 +48,7 @@ import org.testcontainers.utility.MountableFile;
 @Tag("qemu")
 @Testcontainers(disabledWithoutDocker = true)
 class QemuRunIT {
+    private static final Logger LOG = LoggerFactory.getLogger(QemuRunIT.class);
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path QEMU = BASEDIR.resolve("src/test/qemu");
     private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/qemu/program-classes");
@@ -56,12 +59,13 @@ class QemuRunIT {
 
     @Container
     private static final GenericContainer<?> QEMU_RUNNER = new GenericContainer<>(
-            // Delete the named image after this test JVM exits. Keeping it made every harness rebuild move the
-            // juno-qemu tag and leave the previous 3+ GiB image dangling as <none>; Docker still caches its layers.
-            new ImageFromDockerfile("juno-qemu", true).withFileFromPath(".", QEMU));
+            // Keep the named toolchain image across Maven JVMs. The heavyweight apt layer is stable and reusable;
+            // a harness change only replaces the small COPY layer at the end of the Dockerfile.
+            new ImageFromDockerfile("juno-qemu:bookworm-v1", false).withFileFromPath(".", QEMU));
 
     @BeforeAll
     static void compilePrograms() throws IOException {
+        long start = System.nanoTime();
         List<Path> sources;
         try (Stream<Path> files = Files.list(QEMU.resolve("programs"))) {
             sources = files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
@@ -72,6 +76,8 @@ class QemuRunIT {
             oracleSources = files.filter(path -> path.toString().endsWith(".java")).toList();
         }
         compile(oracleSources, ORACLE_CLASSES, junoClasspath());
+        LOG.info("javac: {} programs + {} oracle sources in {} ms", sources.size(), oracleSources.size(),
+                millisSince(start));
     }
 
     /** Every program under src/test/qemu/programs, plus the exception example, once per board. */
@@ -105,9 +111,14 @@ class QemuRunIT {
     @MethodSource("programs")
     void matchesTheJvmUnderQemu(String mainClass, Board board) throws Exception {
         Assumptions.assumeFalse(KNOWN_GAPS.containsKey(mainClass), () -> "known gap: " + KNOWN_GAPS.get(mainClass));
+        LOG.info("[{} / {}] start", mainClass, board.id());
+        long start = System.nanoTime();
         String expected = runOnJvm(mainClass);
+        LOG.info("[{} / {}] JVM oracle done in {} ms ({} chars)", mainClass, board.id(), millisSince(start),
+                expected.length());
 
         String actual = runUnderQemu(mainClass, board);
+        LOG.info("[{} / {}] total {} ms", mainClass, board.id(), millisSince(start));
 
         assertThat(actual).as("%s on %s under QEMU", mainClass, board.displayName())
                 .isEqualTo(expected + EXIT_MARKER);
@@ -117,15 +128,22 @@ class QemuRunIT {
         String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
         Path directory = BASEDIR.resolve("target/qemu/generated").resolve(board.id()).resolve(simpleName);
         Files.createDirectories(directory);
+        long start = System.nanoTime();
         CompilationResult result = new JunoCompiler().compileTo(junoClasspathWith(PROGRAM_CLASSES), mainClass,
                 directory.resolve("program.S"), directory.resolve("shim.cpp"), false, Optional.of(board.id()));
+        LOG.info("[{} / {}] Juno compile done in {} ms", mainClass, board.id(), millisSince(start));
+        start = System.nanoTime();
         String work = "/work/" + board.id() + "/" + simpleName;
         QEMU_RUNNER.execInContainer("mkdir", "-p", work);
         QEMU_RUNNER.copyFileToContainer(MountableFile.forHostPath(directory.resolve("program.S")),
                 work + "/program.S");
         QEMU_RUNNER.copyFileToContainer(MountableFile.forHostPath(directory.resolve("shim.cpp")),
                 work + "/shim.cpp");
+        LOG.info("[{} / {}] copied to container in {} ms; running run.sh (gcc build + QEMU)", mainClass,
+                board.id(), millisSince(start));
+        start = System.nanoTime();
         var run = QEMU_RUNNER.execInContainer("/harness/run.sh", work, result.entryPointSymbol());
+        LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
         assertThat(run.getExitCode()).as("build and run %s on %s:%n%s%s", mainClass, board.displayName(),
                 run.getStdout(), run.getStderr()).isZero();
         return run.getStdout();
@@ -146,6 +164,10 @@ class QemuRunIT {
         assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
         assertThat(process.exitValue()).as("JVM run of %s:%n%s", mainClass, output).isZero();
         return output;
+    }
+
+    private static long millisSince(long startNanos) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
     }
 
     private static void compile(List<Path> sources, Path destination, List<Path> classpath)

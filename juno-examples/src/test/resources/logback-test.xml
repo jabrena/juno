@@ -13,6 +13,7 @@
 
     <!-- Container lifecycle (image build, start, stop) at INFO; raise to DEBUG for docker-java traffic. -->
     <logger name="org.testcontainers" level="INFO"/>
+    <logger name="io.github.jabrena.juno.qemu" level="INFO"/>
     <logger name="tc" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
 </configuration>
