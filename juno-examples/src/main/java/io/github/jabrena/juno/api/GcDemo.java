@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.api;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.Watchdog;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
@@ -48,7 +46,6 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * {@code tick N} lines and the two unconditional pre-panic diagnostics (OOM and watchdog — see
  * {@code Thumb2AsmBackend}'s {@code juno_alloc}/{@code juno_panic}) appear.
  */
-@Board(ArduinoUnoR4WiFi.class)
 @Watchdog(timeoutMillis = 3000)
 public final class GcDemo {
     private static final int INTS_PER_TICK = 100;
