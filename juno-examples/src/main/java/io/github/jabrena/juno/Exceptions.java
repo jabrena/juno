@@ -6,16 +6,15 @@ import io.github.jabrena.juno.api.io.usb.Serial;
 
 /**
  * Demonstrates throwing and catching exceptions: {@code try}/{@code catch}/{@code finally}, multi-catch,
- * catching by a supertype, dividing by zero, nested handlers, and a custom exception class with its own field.
+ * catching by a supertype, dividing by zero, nested handlers, a custom exception class with its own field,
+ * exceptions that propagate across method calls, and try-with-resources.
  *
- * <p>Juno handles exceptions locally: a {@code throw} is caught by a {@code catch} in the same method, and an
- * integer division by zero inside such a {@code try} raises {@code ArithmeticException("/ by zero")}. An
- * exception that leaves its method, or that no handler catches, prints
+ * <p>A {@code throw} is caught by the nearest matching handler, in the same method or in any caller, and
+ * {@code finally} blocks run while it unwinds. An integer division by zero inside a {@code try} raises
+ * {@code ArithmeticException("/ by zero")}. An exception that no handler catches prints
  * {@code Exception in thread "main" <class>: <message>} and halts the board.
  */
-public final class Exceptions {
-    private Exceptions() {
-    }
+public class Exceptions {
 
     static final class SensorException extends RuntimeException {
         private final int sensor;
@@ -27,6 +26,45 @@ public final class Exceptions {
 
         int sensor() {
             return sensor;
+        }
+    }
+
+    /** A resource whose {@code close()} is observable on the serial monitor. */
+    static final class Channel implements AutoCloseable {
+        private final int id;
+
+        Channel(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public void close() {
+            Serial.println("close " + id);
+        }
+    }
+
+    static int parse(int reading) {
+        if (reading < 0) {
+            throw new IllegalArgumentException("negative reading");
+        }
+        return reading;
+    }
+
+    static int sample(int reading) {
+        return parse(reading) + 1;
+    }
+
+    static void withFinally(int reading) {
+        try {
+            sample(reading);
+        } finally {
+            Serial.println("cleanup");
+        }
+    }
+
+    static void withResource(int id, int reading) {
+        try (Channel channel = new Channel(id)) {
+            sample(reading);
         }
     }
 
@@ -50,11 +88,9 @@ public final class Exceptions {
                 if (reading > 100) {
                     throw new IllegalStateException("sensor saturated");
                 }
-                Serial.print("accepted: ");
-                Serial.println(reading);
+                Serial.println("accepted: " + reading);
             } catch (IllegalArgumentException | IllegalStateException e) {
-                Serial.print("rejected: ");
-                Serial.println(e.getMessage());
+                Serial.println("rejected: " + e.getMessage());
             } finally {
                 Serial.println("checked one reading");
             }
@@ -64,17 +100,14 @@ public final class Exceptions {
         try {
             throw new SensorException("sensor offline", 2);
         } catch (SensorException e) {
-            Serial.print(e.getMessage());
-            Serial.print(" on sensor ");
-            Serial.println(e.sensor());
+            Serial.println(e.getMessage() + " on sensor " + e.sensor());
         }
 
         Serial.println("Catching by supertype");
         try {
             throw new NumberFormatException("not a number");
         } catch (IllegalArgumentException e) {
-            Serial.print("caught: ");
-            Serial.println(e.getMessage());
+            Serial.println("caught: " + e.getMessage());
         }
 
         Serial.println("Dividing by zero");
@@ -85,21 +118,41 @@ public final class Exceptions {
             int average = total / samples;
             Serial.println(average);
         } catch (ArithmeticException e) {
-            Serial.print("caught: ");
-            Serial.println(e.getMessage());
+            Serial.println("caught: " + e.getMessage());
         }
 
         Serial.println("Nested handlers");
         try {
             try {
-                throw new UnsupportedOperationException("not implemented yet");
+                throw new UnsupportedOperationException("not implemented");
             } finally {
                 Serial.println("inner finally runs first");
             }
         } catch (UnsupportedOperationException e) {
-            Serial.print("outer catch: ");
-            Serial.println(e.getMessage());
+            Serial.println("outer catch: " + e.getMessage());
         }
+
+        Serial.println("Across methods");
+        try {
+            // parse() throws two calls below this handler; the exception unwinds through sample().
+            Serial.println("parsed " + sample(41));
+            Serial.println("parsed " + sample(-1));
+        } catch (IllegalArgumentException e) {
+            Serial.println("caught " + e.getMessage());
+        }
+        try {
+            withFinally(-1);
+        } catch (IllegalArgumentException e) {
+            Serial.println("caught " + e.getMessage());
+        }
+
+        Serial.println("Try-with-resources");
+        try {
+            withResource(1, -1);
+        } catch (IllegalArgumentException e) {
+            Serial.println("caught " + e.getMessage());
+        }
+        withResource(2, 5);
 
         Serial.println("Done");
     }
