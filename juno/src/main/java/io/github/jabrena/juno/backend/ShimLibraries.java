@@ -308,6 +308,15 @@ final class ShimLibraries {
                   WiFi.begin(ssid, password);
                 }
 
+                extern "C" void juno_wifi_begin_ap(const char* ssid, const char* password) {
+                  // WiFiS3 only accepts a WPA2 passphrase of 8+ characters; an empty one opens the network.
+                  if (password != nullptr && password[0] != '\\0') {
+                    WiFi.beginAP(ssid, password);
+                  } else {
+                    WiFi.beginAP(ssid);
+                  }
+                }
+
                 extern "C" int32_t juno_wifi_status() {
                   return static_cast<int32_t>(WiFi.status());
                 }

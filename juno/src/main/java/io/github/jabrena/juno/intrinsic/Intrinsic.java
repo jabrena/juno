@@ -67,6 +67,7 @@ public enum Intrinsic {
     LEGO_HUB_DISCONNECT,
     LEGO_HUB_SWITCH_OFF,
     WIFI_BEGIN,
+    WIFI_BEGIN_AP,
     WIFI_STATUS,
     WIFI_LOCAL_IP,
     UDP_LISTEN,

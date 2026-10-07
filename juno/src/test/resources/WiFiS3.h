@@ -32,6 +32,8 @@ struct JunoIPAddress {
 
 struct JunoWiFi {
   void begin(const char*, const char*) {}
+  uint8_t beginAP(const char*) { return 7; }
+  uint8_t beginAP(const char*, const char*) { return 7; }
   int status() { return 3; }
   JunoIPAddress localIP() { return JunoIPAddress(); }
 };

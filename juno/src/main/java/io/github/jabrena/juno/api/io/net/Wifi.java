@@ -16,12 +16,28 @@ public final class Wifi {
     /** The {@link #status} value once connected, mirroring Arduino's {@code WL_CONNECTED}. */
     public static final int STATUS_CONNECTED = 3;
 
+    /** The {@link #status} value once {@link #beginAP} is serving, mirroring {@code WL_AP_LISTENING} (UNO R4 WiFi only). */
+    public static final int STATUS_AP_LISTENING = 7;
+
     /**
      * Starts station-mode Wi-Fi on UNO R4 WiFi. On UNO Q, Wi-Fi belongs to Linux and must already
      * be configured through App Lab or {@code nmcli}; this method initializes the MCU-to-Linux
      * bridge and ignores the credential arguments.
      */
     public static native void begin(String ssid, String password);
+
+    /**
+     * Starts the board as a Wi-Fi access point named {@code ssid}, so a phone or laptop can join it
+     * directly (typically to serve a provisioning page through {@link
+     * io.github.jabrena.juno.api.io.net.http.HttpServer}). On UNO R4 WiFi, {@code password} is a WPA2
+     * passphrase of at least 8 characters, or empty for an open network; the board is reachable at
+     * {@code 192.168.4.1} once {@link #status} reports {@link #STATUS_AP_LISTENING}. On UNO Q the
+     * MCU cannot create an access point: Linux owns Wi-Fi, so the hotspot must already be running
+     * ({@code nmcli device wifi hotspot ssid <ssid> password <password>}); this method only
+     * initializes the MCU-to-Linux bridge, ignores both arguments, and {@link #status} reports
+     * {@link #STATUS_CONNECTED} once the bridge is up.
+     */
+    public static native void beginAP(String ssid, String password);
 
     public static native int status();
 

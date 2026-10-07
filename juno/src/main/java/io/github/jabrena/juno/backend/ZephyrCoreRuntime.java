@@ -45,6 +45,14 @@ record ZephyrCoreRuntime() implements CoreRuntime {
                   Bridge.begin();
                 }
 
+                extern "C" void juno_wifi_begin_ap(const char* ssid, const char* password) {
+                  // The MCU cannot create an access point: the hotspot belongs to Linux
+                  // (nmcli device wifi hotspot ssid <ssid> password <password>). Only start the bridge.
+                  static_cast<void>(ssid);
+                  static_cast<void>(password);
+                  Bridge.begin();
+                }
+
                 extern "C" int32_t juno_wifi_status() {
                   return Bridge ? 3 : 0;
                 }
@@ -55,6 +63,38 @@ record ZephyrCoreRuntime() implements CoreRuntime {
                   octets[1] = 0;
                   octets[2] = 0;
                   octets[3] = 0;
+                }
+                """;
+    }
+
+    @Override
+    public String httpServerTransport() {
+        // The listener lives in arduino-router on Linux (tcp/listen, tcp/accept). BridgeTCPServer
+        // keeps returning the same connection from accept() until disconnect() is called, so
+        // release() must run once the response has been sent.
+        return """
+
+                using JunoHttpClient = BridgeTCPClient<512>;
+                alignas(BridgeTCPServer<512>) static unsigned char juno_http_server_storage[sizeof(BridgeTCPServer<512>)];
+                static BridgeTCPServer<512>* juno_http_server_instance = nullptr;
+                static JunoHttpClient juno_http_server_client(Bridge);
+
+                extern "C" void juno_http_server_begin(int32_t port) {
+                  juno_http_server_instance = new (juno_http_server_storage)
+                      BridgeTCPServer<512>(Bridge, IPAddress(0, 0, 0, 0), static_cast<uint16_t>(port));
+                  juno_http_server_instance->begin();
+                }
+
+                static bool juno_http_server_next_client() {
+                  if (juno_http_server_instance == nullptr) return false;
+                  JunoHttpClient client = juno_http_server_instance->accept();
+                  if (!client.connected()) return false;
+                  juno_http_server_client = client;
+                  return true;
+                }
+
+                static void juno_http_server_release() {
+                  juno_http_server_instance->disconnect();
                 }
                 """;
     }

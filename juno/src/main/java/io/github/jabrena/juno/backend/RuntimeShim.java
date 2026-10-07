@@ -573,7 +573,7 @@ final class RuntimeShim {
             shim.append(NetworkShimLibraries.httpHelpers(features, core.httpsClientDeclaration()));
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
-            shim.append(NetworkShimLibraries.httpServerHelpers());
+            shim.append(NetworkShimLibraries.httpServerHelpers(core.httpServerTransport()));
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(NetworkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));

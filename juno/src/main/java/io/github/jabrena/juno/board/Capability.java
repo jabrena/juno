@@ -24,7 +24,13 @@ public enum Capability {
             return board.displayName() + " does not provide a supported TLS client";
         }
     },
-    WIFI_S3_NETWORKING("HTTP server and email networking") {
+    HTTP_SERVER("HttpServer") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " does not provide a TCP server stack";
+        }
+    },
+    WIFI_S3_NETWORKING("HTTP client and email networking") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " does not provide the WiFiS3 networking stack";

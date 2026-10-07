@@ -907,25 +907,15 @@ final class NetworkShimLibraries {
      * {@code accept()} mirrors {@link #httpHelpers()}'s response-parsing state machine, reversed
      * to parse a request line and headers instead of a status line.
      */
-    static String httpServerHelpers() {
-        return """
+    static String httpServerHelpers(String transport) {
+        return transport + """
 
-                alignas(WiFiServer) static unsigned char juno_http_server_storage[sizeof(WiFiServer)];
-                static WiFiServer* juno_http_server_instance = nullptr;
-                static WiFiClient juno_http_server_client;
                 static char juno_http_server_method_buf[8];
                 static char juno_http_server_path_buf[96];
 
-                extern "C" void juno_http_server_begin(int32_t port) {
-                  juno_http_server_instance = new (juno_http_server_storage) WiFiServer(static_cast<uint16_t>(port));
-                  juno_http_server_instance->begin();
-                }
-
                 extern "C" int32_t juno_http_server_accept(uint8_t* bodyBuffer, int32_t bodyBufferLength) {
-                  if (juno_http_server_instance == nullptr) return -1;
-                  WiFiClient client = juno_http_server_instance->available();
-                  if (!client) return -1;
-                  juno_http_server_client = client;
+                  if (!juno_http_server_next_client()) return -1;
+                  JunoHttpClient& client = juno_http_server_client;
 
                   int32_t methodLength = 0;
                   int32_t pathLength = 0;
@@ -1026,7 +1016,7 @@ final class NetworkShimLibraries {
 
                 static void juno_http_server_respond_bytes(int32_t status, const char* contentType,
                                                              const char* body, int32_t bodyLength) {
-                  WiFiClient& client = juno_http_server_client;
+                  JunoHttpClient& client = juno_http_server_client;
                   client.print("HTTP/1.1 ");
                   client.print(status);
                   client.print(" \\r\\nContent-Type: ");
@@ -1036,6 +1026,7 @@ final class NetworkShimLibraries {
                   client.print("\\r\\nConnection: close\\r\\n\\r\\n");
                   client.write(reinterpret_cast<const uint8_t*>(body), static_cast<size_t>(bodyLength));
                   client.stop();
+                  juno_http_server_release();
                 }
 
                 extern "C" void juno_http_server_respond(int32_t status, const char* contentType, const char* body) {

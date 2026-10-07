@@ -2,8 +2,9 @@ package io.github.jabrena.juno.api.io.net.http;
 
 /**
  * A minimal, non-blocking HTTP/1.1 server recognized as compiler intrinsics by Juno, backed by
- * the Arduino {@code WiFiS3} library's {@code WiFiServer}. Requires
- * {@code @Board(ArduinoUnoR4WiFi.class)} (the default board) and an active {@link io.github.jabrena.juno.api.io.net.Wifi#begin}
+ * the Arduino {@code WiFiS3} library's {@code WiFiServer} on UNO R4 WiFi and by {@code
+ * BridgeTCPServer} (a listener in {@code arduino-router} on Linux) on UNO Q. Requires an active
+ * {@link io.github.jabrena.juno.api.io.net.Wifi#begin} or {@link io.github.jabrena.juno.api.io.net.Wifi#beginAP}
  * connection. Plain HTTP only — there is no TLS-server equivalent of {@link HttpsClient}.
  *
  * <p>{@link #begin(int)} starts listening once. From then on, call {@link #accept} once per

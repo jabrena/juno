@@ -24,3 +24,12 @@ public:
   bool begin() { return true; }
   int connectSSL(const char*, uint16_t, const char*) { return 0; }
 };
+
+template<size_t BufferSize>
+class BridgeTCPServer {
+public:
+  BridgeTCPServer(BridgeClass&, const IPAddress&, uint16_t) {}
+  void begin() {}
+  BridgeTCPClient<BufferSize> accept() { return BridgeTCPClient<BufferSize>(Bridge); }
+  void disconnect() {}
+};

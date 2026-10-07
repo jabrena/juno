@@ -346,6 +346,7 @@ final class IntrinsicLowering {
         shim(Intrinsic.LEGO_HUB_SWITCH_OFF, "juno_lego_hub_switch_off", Result.NONE, List.of(),
                 ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
+        shim(Intrinsic.WIFI_BEGIN_AP, "juno_wifi_begin_ap", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_STATUS, "juno_wifi_status", Result.WORD, List.of(), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_LOCAL_IP, "juno_wifi_local_ip", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
         shim(Intrinsic.UDP_LISTEN, "juno_udp_listen", Result.WORD, List.of(arg(0)), ShimFeature.UDP);

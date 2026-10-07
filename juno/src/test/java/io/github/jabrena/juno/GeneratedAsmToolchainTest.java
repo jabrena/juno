@@ -604,6 +604,69 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    /** AP mode plus the server on both boards: WiFiS3's WiFiServer on the R4, BridgeTCPServer on the UNO Q. */
+    @Test
+    void compilesAnAccessPointProvisioningShimForBothBoardsWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        for (String board : new String[] {"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
+            String name = "AsmAp" + board;
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.%1$s;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.api.io.net.Wifi;
+                    import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                    @Board(%1$s.class)
+                    public final class %2$s {
+                        public static void main(String[] args) {
+                            Wifi.beginAP("juno-setup", "junosetup");
+                            HttpServer.begin(80);
+                            byte[] body = new byte[64];
+                            if (HttpServer.accept(body, body.length) >= 0) {
+                                HttpServer.respond(200, "text/html", "<form></form>");
+                            }
+                        }
+                    }
+                    """.formatted(board, name);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+            assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap");
+            Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
+            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+            syntaxCheckCpp(compiler, shim);
+        }
+    }
+
+    /** The pure-Java provisioning helper links against both boards' intrinsics and produces a valid shim. */
+    @Test
+    void compilesTheWifiProvisionerForBothBoardsWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        for (String board : new String[] {"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
+            String name = "AsmProvisioner" + board;
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.%1$s;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.api.io.net.WifiProvisioner;
+                    @Board(%1$s.class)
+                    public final class %2$s {
+                        public static void main(String[] args) {
+                            WifiProvisioner.run("juno-setup", "junosetup");
+                        }
+                    }
+                    """.formatted(board, name);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+            Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
+            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+            syntaxCheckCpp(compiler, shim);
+        }
+    }
+
     private static final String EXCEPTIONS = """
             package demo;
             import io.github.jabrena.juno.api.Clock;
