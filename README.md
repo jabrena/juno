@@ -106,15 +106,21 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`DataTypes`](juno-examples/src/main/java/io/github/jabrena/juno/DataTypes.java),
   [`Operators`](juno-examples/src/main/java/io/github/jabrena/juno/Operators.java), and
   [`ControlFlow`](juno-examples/src/main/java/io/github/jabrena/juno/ControlFlow.java).
-- **Arrays and data models:** fixed-size primitive arrays, simple enums, records, final closed-world
-  classes, constructors, instance fields, and directly implemented interfaces. Objects, records,
-  arrays, and capturing closures use a fixed 8 KiB arena with conservative garbage collection. See
-  [`InterfaceDispatch`](juno-examples/src/main/java/io/github/jabrena/juno/InterfaceDispatch.java).
+- **Arrays:** fixed-size primitive arrays (`boolean` through `double`, including fixed-size
+  multidimensional arrays) allocated from the fixed 8 KiB arena. See
+  [`Arrays`](juno-examples/src/main/java/io/github/jabrena/juno/Arrays.java).
+- **Strings:** string literals, `String.valueOf(int)`, `length()`, and `charAt(int)` for runtime
+  string references, plus `+` concatenation of strings.
+- **Objects:** simple enums, records, final closed-world classes, constructors, and instance fields.
+  Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative
+  garbage collection. See
+  [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/Objects.java).
+- **Interfaces:** directly implemented interfaces with closed-world dispatch through an interface
+  reference. See
+  [`Interfaces`](juno-examples/src/main/java/io/github/jabrena/juno/Interfaces.java).
 - **Lambdas and method references:** non-capturing and capturing lambdas, plus static, bound,
   unbound, and constructor references emitted through `LambdaMetafactory.metafactory`. See
   [`Lambdas`](juno-examples/src/main/java/io/github/jabrena/juno/Lambdas.java).
-- **Strings:** string literals, `String.valueOf(int)`, `length()`, and `charAt(int)` for runtime
-  string references. General string construction and concatenation remain unsupported.
 - **Math and random numbers:** the documented `java.lang.Math` subset and Arduino-backed bounded
   pseudorandom numbers. See
   [`MathFunctions`](juno-examples/src/main/java/io/github/jabrena/juno/MathFunctions.java) and
@@ -123,22 +129,29 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   `finally`, nested handlers, propagation between methods, custom final exception classes, and
   try-with-resources. See
   [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/Exceptions.java).
-- **Cooperative concurrency:** up to four threads including `main`, `Runnable`, `start()`, `join()`,
+- **Concurrency:** up to four threads including `main`, `Runnable`, `start()`, `join()`,
   sleeping, yielding, daemon threads, restricted monitors and `ReentrantLock`, and the supported JDK
   25 preview `StructuredTaskScope` subset. See
   [`Threads`](juno-examples/src/main/java/io/github/jabrena/juno/Threads.java),
   [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java), and
-  [`StructuredTasks`](juno-examples/src/main/java/io/github/jabrena/juno/StructuredTasks.java).
+  [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/StructuredConcurrency.java).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
   HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
+  See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) (GPIO and delays),
+  [`SerialCounter`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java) (serial I/O),
+  [`HttpServerStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpServerStatus.java) (clocks),
+  [`LedMatrixHeart`](juno-examples/src/main/java/io/github/jabrena/juno/api/led/LedMatrixHeart.java) (LED matrix),
+  [`WifiStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/WifiStatus.java) (Wi-Fi),
+  [`HttpsMethods`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpsMethods.java) (HTTP/HTTPS and JSON), and
+  [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/storage/SdFileOperations.java) (SD card).
 - **Compile-time safety checks:** deterministic closed-world linking and runtime-risk warnings for
   loop allocations, arena pressure, recursion, unchecked array access, possible division by zero,
   and proven-null dereferences.
 
 For example,
 [`UnsupportedFeature`](juno-examples/src/main/java/io/github/jabrena/juno/UnsupportedFeature.java)
-compiles with plain `javac` because string concatenation is ordinary Java source, but it deliberately
-fails `juno:compile`: `+` on a `String` uses the unsupported `StringConcatFactory` bootstrap.
+compiles with plain `javac`, but it deliberately fails `juno:compile`: its generated record
+`toString()` uses the unsupported `ObjectMethods` bootstrap.
 
 ```bash
 # Expected to fail with an unsupported-bootstrap diagnostic
@@ -147,35 +160,70 @@ fails `juno:compile`: `+` on a `String` uses the unsupported `StringConcatFactor
 ```
 
 Compile any supported example by passing its fully qualified class name. These examples all come
-from the `io.github.jabrena.juno` package:
+from the `io.github.jabrena.juno` package. Examples whose `@Board` lists both boards need
+`-Djuno.board`:
 
 ```bash
-# Primitive values, operators, and control flow
+# Entrypoints and methods
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.HelloWorld
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Methods
+
+# Values and control flow
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.Variables
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.DataTypes
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Operators
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.ControlFlow
 
-# Math, lambdas, interfaces, and exceptions
+# Arrays
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Arrays
+
+# Objects and interfaces
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Objects
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Interfaces \
+  -Djuno.board=arduino-uno-r4-wifi
+
+# Lambdas and method references
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Lambdas \
+  -Djuno.board=arduino-uno-r4-wifi
+
+# Math and random numbers
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.MathFunctions
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Lambdas
+  -Djuno.main=io.github.jabrena.juno.RandomNumbers
 
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.InterfaceDispatch
-
+# Exceptions
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.Exceptions
 
-# Cooperative threads and synchronization
+# Concurrency
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Threads
+  -Djuno.main=io.github.jabrena.juno.Threads \
+  -Djuno.board=arduino-uno-r4-wifi
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Synchronization
+  -Djuno.main=io.github.jabrena.juno.Synchronization \
+  -Djuno.board=arduino-uno-r4-wifi
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.StructuredConcurrency \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 Examples in subpackages use the same command. A board-specific program can also select its target
