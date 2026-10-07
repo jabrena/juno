@@ -183,10 +183,10 @@ resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built 
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.TouchPaintTFT
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusTFT
+  -Djuno.main=io.github.jabrena.juno.api.net.WifiStatusTFT
 ```
 
-`WeatherTFT` (`-Djuno.main=io.github.jabrena.juno.api.io.net.weather.WeatherTFT`) is a desk
+`WeatherTFT` (`-Djuno.main=io.github.jabrena.juno.api.net.weather.WeatherTFT`) is a desk
 weather station: public IP → ipinfo.io location → Open-Meteo weather, with a seven-segment clock.
 `Chess` (`-Djuno.main=io.github.jabrena.juno.games.chess.Chess`) plays you
 against a small 3-ply engine, and `Blackjack`
@@ -262,9 +262,9 @@ It needs the `ArduinoBLE` library (not bundled with the `arduino:renesas_uno` co
 
 ### Example: InboxCount (basic email support)
 
-[`Smtp`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Smtp.java) sends a
+[`Smtp`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Smtp.java) sends a
 plain-text message to one recipient over `STARTTLS` (mail submission on port 587), and
-[`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Pop3Client.java)
+[`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Pop3Client.java)
 reports the mailbox message count and reads the newest message's `From`/`Subject`/body over
 POP3S (port 995) — see that package's Javadoc for the full scope and its deliberate limits (one
 recipient, plain text only, no attachments/HTML/MIME/folders/OAuth2).
@@ -275,22 +275,22 @@ negotiate TLS from the first byte, not upgrade an existing plaintext connection 
 `STARTTLS` requires) — installed by `juno:install-deps` above, or on its own with
 `arduino-cli lib install ESP_SSLClient`.
 
-[`InboxCount`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/InboxCount.java)
+[`InboxCount`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/InboxCount.java)
 connects to WiFi and the mailbox configured by `SMTP_HOST`/`SMPT_USERNAME`/`SMTP_PASSWORD` in
 `.env`, polls `Pop3Client.messageCount` every 30 seconds, and shows the current count on the LCD
 Keypad Shield's first row (`Pop3Client` only, so it does not need `ESP_SSLClient`):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.email.InboxCount
+  -Djuno.main=io.github.jabrena.juno.api.net.email.InboxCount
 ```
 
 The same package also has
-[`EmailHelloWorldLCD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldLCD.java)
+[`EmailHelloWorldLCD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/EmailHelloWorldLCD.java)
 (proves `Smtp.send` actually delivers by checking the inbox count before/after sending) and
-[`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldTFT.java)
+[`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/EmailHelloWorldTFT.java)
 (the TFT touch-screen version), plus
-[`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java)
+[`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/EmailClient.java)
 (a menu-driven client: Inbox count/subject-list, Send Email, About). See
 [docs/EMAIL.md](../email) for the full `Smtp`/`Pop3Client` reference, and
 [docs/APIS.md](../apis) for how these compiler-intrinsic API classes work internally.

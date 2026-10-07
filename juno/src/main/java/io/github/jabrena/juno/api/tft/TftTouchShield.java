@@ -307,7 +307,7 @@ public final class TftTouchShield {
     /**
      * Prints the first {@code length} bytes of {@code buffer} as ASCII characters at the cursor,
      * like {@link #print(String)} — for text that already lives in a caller-owned byte buffer (e.g.
-     * {@link io.github.jabrena.juno.api.io.net.http.Json#getString(byte[], int, String, byte[], int)}'s
+     * {@link io.github.jabrena.juno.api.net.http.Json#getString(byte[], int, String, byte[], int)}'s
      * output) and would otherwise need a runtime {@code String}.
      */
     public static void print(byte[] buffer, int length) {

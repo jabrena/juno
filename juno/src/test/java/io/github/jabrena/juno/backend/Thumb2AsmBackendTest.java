@@ -492,7 +492,7 @@ class Thumb2AsmBackendTest {
     /**
      * Mirrors {@code WeatherClient}'s exact {@code (int) Json.getDouble(...)} pattern: a JSON double
      * field read, immediately truncated to int (see
-     * {@code juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/WeatherClient.java}).
+     * {@code juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/WeatherClient.java}).
      */
     @Test
     void lowersJsonGetDoubleThroughDoubleToIntLikeMadridWeather() {

@@ -7,9 +7,9 @@ layout: page
 Juno provides a small, allocation-free email stack for the Arduino UNO R4 WiFi. Programs can:
 
 - send a plain-text message to one recipient with
-  [`Smtp`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Smtp.java); and
+  [`Smtp`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Smtp.java); and
 - report a mailbox's message count, read the newest message, and read any message's subject with
-  [`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Pop3Client.java).
+  [`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Pop3Client.java).
 
 Like `HttpClient`/`HttpsClient` (see [the Internet access guide](../internet)), these are compiler
 intrinsics: Java declares them as `native` methods, and Juno emits their Arduino C++
@@ -215,18 +215,18 @@ one-off race instead of surfacing it — see `pollMessageCount` in the examples 
 ## Complete examples
 
 Four examples in `juno-examples` build on each other, in
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/):
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/):
 
-- [`InboxCount`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/InboxCount.java) —
+- [`InboxCount`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/InboxCount.java) —
   the simplest: polls `Pop3Client.messageCount` every 30 seconds and shows it on the LCD Keypad
   Shield. Confirmed working on a real UNO R4 WiFi.
-- [`EmailHelloWorldLCD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldLCD.java) —
+- [`EmailHelloWorldLCD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/EmailHelloWorldLCD.java) —
   proves `Smtp.send` actually delivers, not just that the server accepted the message: reads the
   inbox count *before* sending a "Hello World" message to itself, then polls the count *after*
   sending until it goes up. Waits for a button press before sending.
-- [`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldTFT.java) —
+- [`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/EmailHelloWorldTFT.java) —
   the same send-and-verify flow on the ELEGOO TFT touch shield.
-- [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java) —
+- [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/EmailClient.java) —
   a small menu-driven client: Inbox (a submenu of message Count and a paginated Subject List, up
   to the first 10 messages, 2 per screen), Send Email, and About.
 
@@ -234,7 +234,7 @@ Build and upload any of them the same way as every other example:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.email.EmailClient
+  -Djuno.main=io.github.jabrena.juno.api.net.email.EmailClient
 ```
 
 ## Troubleshooting

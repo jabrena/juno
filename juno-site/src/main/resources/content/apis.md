@@ -17,7 +17,7 @@ There is no JVM on the board, so a method like `HttpClient.get(...)` never runs 
 Every operation Juno recognizes is declared as a `public static native` method:
 
 ```java
-// juno/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpClient.java
+// juno/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java
 public static native int get(String host, int port, String path,
         byte[] responseBuffer, int responseBufferLength,
         byte[] headersBuffer, int headersBufferLength,
@@ -156,7 +156,7 @@ below match `HttpClient.get`'s real wiring.
 
 ### 1. The Java-facing API class
 
-`io.github.jabrena.juno.api.io.net.http.HttpClient` — `final`, private constructor, one `public
+`io.github.jabrena.juno.api.net.http.HttpClient` — `final`, private constructor, one `public
 static native` method per operation. This is the only file `juno-examples` code ever imports;
 everything past this point is internal to `juno` itself.
 
@@ -174,7 +174,7 @@ that reaches it.
 `Intrinsic` constant:
 
 ```java
-Map.entry(new MethodRef("io/github/jabrena/juno/api/io/net/http/HttpClient", "get",
+Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/HttpClient", "get",
         "(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_GET),
 ```
 

@@ -1,0 +1,62 @@
+package io.github.jabrena.juno.api.net.http;
+
+/**
+ * A minimal HTTPS client recognized as compiler intrinsics by Juno, backed by Arduino's
+ * {@code WiFiSSLClient} and its firmware CA bundle on UNO R4 WiFi, or Linux TLS through
+ * {@code Arduino_RouterBridge} on UNO Q. Requires an active
+ * {@link io.github.jabrena.juno.api.net.Wifi#begin} connection/bridge.
+ *
+ * <p>{@code host}, {@code path}, and request bodies must be compile-time strings. Responses use
+ * caller-owned buffers and have the same shape, five-second timeout, and
+ * {@code statusAndHeadersLength} out-param as {@link HttpClient}. TLS setup or
+ * certificate-validation failures are reported as {@code -1} with {@code statusAndHeadersLength[0]}
+ * left at {@code 0}.
+ */
+public final class HttpsClient {
+    /** A reasonable default size for a caller's body/headers buffer, in bytes. */
+    public static final int DEFAULT_RESPONSE_BUFFER_SIZE = 1024;
+
+    private HttpsClient() {
+    }
+
+    public static native int get(String host, int port, String path,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    public static native int post(String host, int port, String path, String body,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /**
+     * Sends an HTTPS GET request whose path is the first {@code pathLength} ASCII bytes of
+     * {@code pathBuffer}, rather than a compile-time string — for paths that depend on runtime
+     * data, such as coordinates read from an earlier response (a runtime {@code String} is limited
+     * to 31 bytes, far too short for a typical query string). {@code pathLength} must be less than
+     * 256; a longer or negative length returns {@code -1} without connecting. Everything else
+     * behaves like {@link #get(String, int, String, byte[], int, byte[], int, int[])}.
+     */
+    public static native int get(String host, int port, byte[] pathBuffer, int pathLength,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /** Sends a bodyless HTTPS DELETE request. */
+    public static native int delete(String host, int port, String path,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /** Sends an HTTPS PATCH request with a compile-time JSON body. */
+    public static native int patch(String host, int port, String path, String body,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /** Sends an HTTPS QUERY request with a compile-time JSON body. */
+    public static native int query(String host, int port, String path, String body,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+}

@@ -395,9 +395,9 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
-                import io.github.jabrena.juno.api.io.net.http.Json;
-                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.Json;
+                import io.github.jabrena.juno.api.net.Wifi;
                 public final class AsmNetworking {
                     public static void main(String[] args) {
                         Wifi.begin("ssid", "password");
@@ -430,8 +430,8 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.net.Wifi;
-                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.Wifi;
+                import io.github.jabrena.juno.api.net.http.HttpsClient;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQHttps {
                     public static void main(String[] args) {
@@ -459,8 +459,8 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.net.email.Pop3Client;
-                import io.github.jabrena.juno.api.io.net.email.Smtp;
+                import io.github.jabrena.juno.api.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.net.email.Smtp;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQEmail {
                     public static void main(String[] args) {
@@ -487,7 +487,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.net.Udp;
+                import io.github.jabrena.juno.api.net.Udp;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class AsmUdp {
                     public static void main(String[] args) {
@@ -589,7 +589,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.net.Wifi;
                 import io.github.jabrena.juno.api.io.storage.SdCard;
                 import java.io.IOException;
                 import java.io.InputStream;
@@ -630,7 +630,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                import io.github.jabrena.juno.api.net.http.HttpServer;
                 public final class AsmHttpServer {
                     public static void main(String[] args) {
                         HttpServer.begin(80);
@@ -667,8 +667,8 @@ class GeneratedAsmToolchainTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.%1$s;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.api.io.net.Wifi;
-                    import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                    import io.github.jabrena.juno.api.net.Wifi;
+                    import io.github.jabrena.juno.api.net.http.HttpServer;
                     @Board(%1$s.class)
                     public final class %2$s {
                         public static void main(String[] args) {
@@ -702,7 +702,7 @@ class GeneratedAsmToolchainTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.%1$s;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.api.io.net.WifiProvisioner;
+                    import io.github.jabrena.juno.api.net.WifiProvisioner;
                     @Board(%1$s.class)
                     public final class %2$s {
                         public static void main(String[] args) {
@@ -996,7 +996,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.Json;
+                import io.github.jabrena.juno.api.net.http.Json;
                 public final class JsonRuntime {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[1];

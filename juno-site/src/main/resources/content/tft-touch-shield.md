@@ -113,10 +113,10 @@ calibration. Confirmed working on a real UNO R4 WiFi with this shield.
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:install-deps   # SdFat, once
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusTFT
+  -Djuno.main=io.github.jabrena.juno.api.net.WifiStatusTFT
 ```
 
-[`WifiStatusTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/WifiStatusTFT.java)
+[`WifiStatusTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatusTFT.java)
 is the TFT version of [`WifiStatusSD`](../storage): it loads `wifi.ssid`/`wifi.password` from
 `application.properties` on the shield's own microSD card, connects, and shows the connection
 state, SSID, and `Wifi.status()` value in landscape. If loading or connecting fails, tap the
@@ -124,10 +124,10 @@ screen to reload the card and retry.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.weather.WeatherTFT
+  -Djuno.main=io.github.jabrena.juno.api.net.weather.WeatherTFT
 ```
 
-[`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/WeatherTFT.java)
+[`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/WeatherTFT.java)
 is a desk weather station in the style of the small "weather clock" cubes. After connecting with
 the SD-card credentials, it geolocates the board's public IP with [ipinfo.io](https://ipinfo.io),
 passes the returned coordinates to [Open-Meteo](https://open-meteo.com), and shows the city, wind

@@ -6,12 +6,12 @@ layout: page
 
 Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiFi. Programs can:
 
-- connect to a Wi-Fi network with [`Wifi`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/Wifi.java);
+- connect to a Wi-Fi network with [`Wifi`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/Wifi.java);
 - send plain HTTP or TLS-protected HTTPS `GET`, `POST`, `DELETE`, `PATCH`, and `QUERY` requests with
-  [`HttpClient`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpClient.java) and
-  [`HttpsClient`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpsClient.java); and
+  [`HttpClient`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java) and
+  [`HttpsClient`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/http/HttpsClient.java); and
 - extract typed values directly from JSON response bytes with
-  [`Json`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/http/Json.java).
+  [`Json`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/http/Json.java).
 
 These APIs are compiler intrinsics, like every Juno API — see [docs/APIS.md](../apis) for what
 that means, how they're built, and the general rules (compile-time-only `String` arguments,
@@ -182,7 +182,7 @@ int responseBytes = HttpsClient.get("api.open-meteo.com", 443, path, pathLength,
 ```
 
 The host must still be a compile-time string. Only HTTPS `GET` has this overload today.
-[`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/WeatherTFT.java)
+[`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/WeatherTFT.java)
 uses it to pass the coordinates returned by ipinfo.io to Open-Meteo.
 
 ### Choosing an HTTP method
@@ -388,9 +388,9 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
-import io.github.jabrena.juno.api.io.net.http.HttpClient;
-import io.github.jabrena.juno.api.io.net.http.Json;
-import io.github.jabrena.juno.api.io.net.Wifi;
+import io.github.jabrena.juno.api.net.http.HttpClient;
+import io.github.jabrena.juno.api.net.http.Json;
+import io.github.jabrena.juno.api.net.Wifi;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class InternetExample {
@@ -466,11 +466,11 @@ arduino-cli monitor \
 Uploading replaces the board's current firmware. Find the correct port first with
 `arduino-cli board list`. For the broader build/upload workflow, see
 [`docs/ARDUINO.md`](../arduino). The repository includes
-[`HttpMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/HttpMethods.java), which verifies all supported
+[`HttpMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/HttpMethods.java), which verifies all supported
 methods over plain HTTP,
-[`HttpsMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/HttpsMethods.java), which repeats the checks with
+[`HttpsMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/HttpsMethods.java), which repeats the checks with
 certificate-validated TLS, and
-[`MadridWeather.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/MadridWeather.java), which extracts live API
+[`MadridWeather.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/MadridWeather.java), which extracts live API
 data for display on the LED matrix.
 
 ## Troubleshooting

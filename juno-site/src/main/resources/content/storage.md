@@ -56,7 +56,7 @@ Install the Arduino `SdFat` library once, then compile the example through the r
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:install-deps
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusSD
+  -Djuno.main=io.github.jabrena.juno.api.net.WifiStatusSD
 ```
 
 The essential Java flow is:

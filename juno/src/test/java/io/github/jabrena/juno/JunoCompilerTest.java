@@ -659,7 +659,7 @@ class JunoCompilerTest {
     void lowersWifiIntrinsicsWithLiteralCredentials() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.net.Wifi;
                 public final class WifiConnect {
                     public static void main(String[] args) {
                         Wifi.begin("TestNetwork-SSID", "test-password-123");
@@ -685,7 +685,7 @@ class JunoCompilerTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.net.Udp;
+                import io.github.jabrena.juno.api.net.Udp;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class PortableUdp {
                     public static void main(String[] args) {
@@ -726,7 +726,7 @@ class JunoCompilerTest {
         assertThat(pathValue != null && !pathValue.isEmpty()).as("test environment must define PATH").isTrue();
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.net.Wifi;
                 public final class WifiConnectFromEnv {
                     public static void main(String[] args) {
                         Wifi.begin(System.getenv("PATH"), "password");
@@ -744,7 +744,7 @@ class JunoCompilerTest {
     void lowersSdCardFilesPropertiesAndRuntimeWifiCredentials() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.net.Wifi;
                 import io.github.jabrena.juno.api.io.storage.SdCard;
                 import java.io.IOException;
                 import java.io.InputStream;
@@ -877,7 +877,7 @@ class JunoCompilerTest {
     void rejectsAnUnsetCompileTimeEnvironmentVariable() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.net.Wifi;
                 public final class WifiConnectFromMissingEnv {
                     public static void main(String[] args) {
                         Wifi.begin(System.getenv("JUNO_TEST_WIFI_SSID_NOT_SET"), "password");
@@ -895,7 +895,7 @@ class JunoCompilerTest {
     void lowersHttpMethodIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.HttpClient;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
                 public final class HttpDemo {
                     public static void main(String[] args) {
                         byte[] response = new byte[128];
@@ -935,7 +935,7 @@ class JunoCompilerTest {
     void lowersHttpsMethodIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpsClient;
                 public final class HttpsDemo {
                     public static void main(String[] args) {
                         byte[] response = new byte[128];
@@ -973,7 +973,7 @@ class JunoCompilerTest {
     void lowersHttpsGetWithARuntimePathBuffer() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpsClient;
                 public final class HttpsPathBufferDemo {
                     public static void main(String[] args) {
                         byte[] path = new byte[16];
@@ -1004,8 +1004,8 @@ class JunoCompilerTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.net.Wifi;
-                import io.github.jabrena.juno.api.io.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.Wifi;
+                import io.github.jabrena.juno.api.net.http.HttpsClient;
                 @Board(ArduinoUnoQ.class)
                 public final class UnoQHttps {
                     public static void main(String[] args) {
@@ -1036,8 +1036,8 @@ class JunoCompilerTest {
     void lowersEmailIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.email.Pop3Client;
-                import io.github.jabrena.juno.api.io.net.email.Smtp;
+                import io.github.jabrena.juno.api.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.net.email.Smtp;
                 public final class EmailDemo {
                     public static void main(String[] args) {
                         int sent = Smtp.send("mail.example.com", 587, "alerts@example.com", "secret",
@@ -1080,8 +1080,8 @@ class JunoCompilerTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.net.email.Pop3Client;
-                import io.github.jabrena.juno.api.io.net.email.Smtp;
+                import io.github.jabrena.juno.api.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.net.email.Smtp;
                 @Board(ArduinoUnoQ.class)
                 public final class UnoQEmail {
                     public static void main(String[] args) {
@@ -1110,7 +1110,7 @@ class JunoCompilerTest {
     void lowersHttpServerIntrinsicsAndStringEquals() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                import io.github.jabrena.juno.api.net.http.HttpServer;
                 public final class HttpServerDemo {
                     public static void main(String[] args) {
                         HttpServer.begin(80);
@@ -1161,7 +1161,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                import io.github.jabrena.juno.api.net.http.HttpServer;
                 public final class HttpServerRuntimeBody {
                     public static void main(String[] args) {
                         HttpServer.begin(80);
@@ -1196,7 +1196,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.net.http.HttpServer;
+                import io.github.jabrena.juno.api.net.http.HttpServer;
                 public final class HttpServerDynamicContentType {
                     public static void main(String[] args) {
                         HttpServer.begin(80);
@@ -1245,7 +1245,7 @@ class JunoCompilerTest {
     void lowersJsonFieldExtractionIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.Json;
+                import io.github.jabrena.juno.api.net.http.Json;
                 public final class JsonDemo {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];
@@ -1275,7 +1275,7 @@ class JunoCompilerTest {
     void lowersJsonGetStringValueAsARuntimeString() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.Json;
+                import io.github.jabrena.juno.api.net.http.Json;
                 public final class JsonStringValueDemo {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];
@@ -1303,7 +1303,7 @@ class JunoCompilerTest {
     void omitsJsonGetStringValueHelperWhenOnlyOtherJsonIntrinsicsAreUsed() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.http.Json;
+                import io.github.jabrena.juno.api.net.http.Json;
                 public final class JsonIntOnlyDemo {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[64];
@@ -2605,7 +2605,7 @@ class JunoCompilerTest {
     void supportsARecordWithStringComponents() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.net.Wifi;
+                import io.github.jabrena.juno.api.net.Wifi;
                 public final class UsesCredentials {
                     private record Credentials(String ssid, String password) {
                     }

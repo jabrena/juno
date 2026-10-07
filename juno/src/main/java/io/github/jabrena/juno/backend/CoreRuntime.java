@@ -36,7 +36,7 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime {
     String wifiHelpers();
 
     /**
-     * The core's half of {@link io.github.jabrena.juno.api.io.net.http.HttpServer}: defines
+     * The core's half of {@link io.github.jabrena.juno.api.net.http.HttpServer}: defines
      * {@code juno_http_server_begin}, {@code JunoHttpClient}, the {@code juno_http_server_client} the
      * shared request parser reads from, {@code juno_http_server_next_client()} (true once a client is
      * waiting and stored in {@code juno_http_server_client}) and {@code juno_http_server_release()}
