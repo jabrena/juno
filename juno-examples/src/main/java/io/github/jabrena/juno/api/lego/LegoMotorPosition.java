@@ -4,6 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
+import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 
 /**
@@ -20,7 +21,7 @@ public final class LegoMotorPosition {
     private static final int FIRST_REPORT_MILLIS = 500;
 
     public static void main(String[] args) {
-        Serial.begin(Serial.BAUD_115200);
+        Serial.begin(BaudRate.BAUD_115200);
 
         while (true) {
             if (!PoweredUpHub.isConnected()) {
