@@ -132,7 +132,8 @@ Juno compiles for, and `juno:verify`/`juno:upload` build for its Arduino CLI FQB
 | `@Board(ArduinoUnoR4WiFi.class)` | Arduino UNO R4 WiFi | `arduino:renesas_uno:unor4wifi` |
 | `@Board(ArduinoUnoQ.class)` | Arduino UNO Q (its STM32U585 microcontroller) | `arduino:zephyr:unoq` |
 
-A class with no `@Board` annotation targets the UNO R4 WiFi. GPIO, time, Serial, `Wifi`/`Udp`,
+A class with no `@Board` annotation is not restricted to one board: it builds for the board named by
+`-Djuno.board=<id>`, or the UNO R4 WiFi when the option is omitted. GPIO, time, Serial, `Wifi`/`Udp`,
 and the shields built on them (LCD keypad, TFT touch) compile and upload for both boards. The LED
 matrix, Wi-Fi with HTTP/HTTPS/email, and `@Watchdog` are UNO R4 WiFi only (on the UNO Q, the LED
 matrix belongs to the board's Linux side, and its Zephyr core has no HTTP/HTTPS/email libraries

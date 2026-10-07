@@ -230,9 +230,9 @@ public final class Main {
 
                 The target board is read from the entry-point class's @Board annotation
                 (io.github.jabrena.juno.annotations.Board); a class with no @Board annotation targets the
-                UNO R4 WiFi by default. @Board may declare more than one board (e.g.
-                @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})), in which case --board picks which one
-                this build compiles for.
+                board --board names, or the UNO R4 WiFi if --board is omitted. @Board may declare more
+                than one board (e.g. @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})), in which case
+                --board picks which one this build compiles for.
 
                 inspect options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)

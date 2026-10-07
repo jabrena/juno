@@ -175,6 +175,25 @@ class BoardTest {
     }
 
     @Test
+    void aClassWithoutBoardTakesTheRequestedBoard() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Delay;
+                public final class Unrestricted {
+                    public static void main(String[] args) {
+                        Delay.millis(1);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Unrestricted", source);
+
+        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.Unrestricted",
+                Optional.of("arduino-uno-q")).board()).isEqualTo(Board.UNO_Q);
+        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.Unrestricted",
+                Optional.empty()).board()).isEqualTo(Board.DEFAULT);
+    }
+
+    @Test
     void anUnknownRequestedBoardIdFails() throws Exception {
         String source = """
                 package demo;
