@@ -46,8 +46,8 @@ class GeneratedAsmToolchainTest {
                 public final class AsmSmoke {
                     static int mix(int value) { return (value << 2) ^ 7; }
                     public static void main(String[] args) {
-                        Gpio.pinMode(13, Gpio.OUTPUT);
-                        Gpio.digitalWrite(13, mix(4) != 0);
+                        Gpio.pinMode(Gpio.D13, Gpio.OUTPUT);
+                        Gpio.digitalWrite(Gpio.D13, mix(4) != 0);
                         Delay.millis(10);
                         Random.seed(42);
                         int randomValue = Random.nextInt(1, 7);
