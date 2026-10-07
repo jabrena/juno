@@ -56,6 +56,8 @@ class GeneratedAsmToolchainTest {
                         LedMatrix.loadFrame(0x3184a444, 0x44042081, 0x100a0040);
                         LedMatrix.clear();
                         Serial.begin(BaudRate.BAUD_9600);
+                        Serial.print(randomValue > 0);
+                        Serial.println(randomValue <= 0);
                         Serial.print(Long.MIN_VALUE);
                         Serial.print(Float.MIN_VALUE);
                         Serial.print(Double.MIN_VALUE);

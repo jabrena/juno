@@ -11,6 +11,12 @@ public final class Serial {
     public static void begin(int baudRate) {
     }
 
+    public static void print(boolean value) {
+    }
+
+    public static void println(boolean value) {
+    }
+
     public static void print(int value) {
     }
 

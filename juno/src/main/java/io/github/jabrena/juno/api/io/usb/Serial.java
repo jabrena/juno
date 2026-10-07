@@ -23,6 +23,32 @@ public final class Serial {
     public static native void begin(int baudRate);
 
     /**
+     * Prints a boolean as {@code true} or {@code false} without a trailing line ending.
+     *
+     * @param value the boolean to print
+     */
+    public static void print(boolean value) {
+        if (value) {
+            print("true");
+        } else {
+            print("false");
+        }
+    }
+
+    /**
+     * Prints a boolean as {@code true} or {@code false} followed by a line ending.
+     *
+     * @param value the boolean to print
+     */
+    public static void println(boolean value) {
+        if (value) {
+            println("true");
+        } else {
+            println("false");
+        }
+    }
+
+    /**
      * Prints an integer without a trailing line ending.
      *
      * @param value the integer to print

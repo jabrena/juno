@@ -42,6 +42,8 @@ Serial.begin(115200);                 // equivalent, for a custom/non-standard r
 
 Serial.print(42);                     // "42"
 Serial.println(42);                   // "42\n"
+Serial.print(true);                   // "true"
+Serial.println(false);                // "false\n"
 Serial.println(123456789012L);        // 64-bit integer
 Serial.println(3.14f);                // single-precision floating point
 Serial.println(3.141592653589793);    // double-precision floating point
@@ -54,6 +56,7 @@ Serial.println(e.getMessage());       // runtime String (prints "null" for null)
 |---|---|---|
 | `begin(BaudRate)` | a [`BaudRate`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/usb/BaudRate.java) constant | preferred; keeps the rate and the monitor's config in sync |
 | `begin(int)` | a data rate in bits per second | for a rate `BaudRate` doesn't name |
+| `print(boolean)` / `println(boolean)` | any `boolean` expression | prints `true` or `false` |
 | `print(int)` / `println(int)` | any `int` expression | prints in decimal |
 | `print(long)` / `println(long)` | any `long` expression | preserves the full Java 64-bit value |
 | `print(float)` / `println(float)` | any `float` expression | uses Arduino's floating-point formatting |

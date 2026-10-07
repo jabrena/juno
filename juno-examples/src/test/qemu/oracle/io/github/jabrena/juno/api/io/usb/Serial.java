@@ -14,6 +14,14 @@ public final class Serial {
     public static void begin(int baudRate) {
     }
 
+    public static void print(boolean value) {
+        System.out.print(value);
+    }
+
+    public static void println(boolean value) {
+        System.out.println(value);
+    }
+
     public static void print(int value) {
         System.out.print(value);
     }

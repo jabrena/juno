@@ -373,6 +373,29 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersBooleanSerialOutputAsText() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.usb.Serial;
+                public final class BooleanSerial {
+                    public static void main(String[] args) {
+                        boolean value = Clock.millis() > 0;
+                        Serial.print(value);
+                        Serial.println(!value);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.BooleanSerial", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BooleanSerial").assembly();
+
+        assertThat(generated).contains(
+                ".asciz \"true\"", ".asciz \"false\"",
+                "bl juno_serial_print_str", "bl juno_serial_println_str");
+    }
+
+    @Test
     void lowersWideAndFloatingPointSerialIntrinsics() throws Exception {
         String source = """
                 package demo;

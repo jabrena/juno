@@ -37,6 +37,8 @@ Requirements: JDK 25+ and Maven 3.9+.
 ./mvnw clean install
 ```
 
+### Blink
+
 [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) runs on either board
 unmodified: expect the UNO R4 WiFi's built-in LED, or the UNO Q's red status LED, to alternate on
 and off every 500 ms (one full cycle per second).
@@ -44,13 +46,9 @@ and off every 500 ms (one full cycle per second).
 ```java
 package io.github.jabrena.juno.api;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.DigitalOutput;
 import io.github.jabrena.juno.api.io.Gpio;
 
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class Blink {
 
     public static void main(String[] args) {
@@ -68,7 +66,7 @@ public final class Blink {
 }
 ```
 
-`juno:upload` generates the sketch, verifies it with `arduino-cli`, and flashes it in one step.
+The project provides a `Maven plugin` to help the user with the common operations. `juno:upload` generates the sketch, verifies it with `arduino-cli`, and flashes it in one step.
 `Blink` targets both boards, so pick one with `-Djuno.board`:
 
 ```bash
@@ -86,21 +84,104 @@ It auto-detects the port when exactly one matching board is connected. Otherwise
 
 ## Supported Java subset
 
-Juno deliberately fails at link time when reachable code uses something outside the current
-subset. Diagnostics identify the method, bytecode offset, and unsupported operation/bootstrap. See
-the [Feature Inventory](https://jabrena.github.io/juno/features) for the full, up-to-date
-inventory of what's supported and what isn't.
+Juno is an ahead-of-time compiler, not a JVM, so it intentionally supports a focused, predictable
+subset of Java that can be translated into native code for resource-constrained Arduino boards.
+Programs are first compiled normally with `javac`; Juno then performs closed-world linking from
+`main`, follows every reachable method, and validates the bytecode before generating the sketch.
+
+Valid Java is therefore not automatically valid Juno input. If reachable code needs an unsupported
+bytecode instruction, JDK feature, or `invokedynamic` bootstrap, compilation stops instead of
+emitting code with uncertain behavior. The diagnostic identifies the method, bytecode offset, and
+unsupported operation or bootstrap. The currently supported Java subset includes:
+
+- **Entrypoints and methods:** `static void main(String[])`, the embedded-friendly
+  `static void main()`, static methods with primitive arguments and results, direct closed-world
+  calls, and removal of unreachable methods. See
+  [`HelloWorld`](juno-examples/src/main/java/io/github/jabrena/juno/HelloWorld.java) and
+  [`Methods`](juno-examples/src/main/java/io/github/jabrena/juno/Methods.java).
+- **Values and control flow:** primitive values (including `long`, `float`, and `double`), constants,
+  mutable static fields, local variables, arithmetic, bitwise and shift operations, comparisons,
+  conditionals, `switch`, and loops. See
+  [`Variables`](juno-examples/src/main/java/io/github/jabrena/juno/Variables.java),
+  [`DataTypes`](juno-examples/src/main/java/io/github/jabrena/juno/DataTypes.java),
+  [`Operators`](juno-examples/src/main/java/io/github/jabrena/juno/Operators.java), and
+  [`ControlFlow`](juno-examples/src/main/java/io/github/jabrena/juno/ControlFlow.java).
+- **Arrays and data models:** fixed-size primitive arrays, simple enums, records, final closed-world
+  classes, constructors, instance fields, and directly implemented interfaces. Objects, records,
+  arrays, and capturing closures use a fixed 8 KiB arena with conservative garbage collection. See
+  [`InterfaceDispatch`](juno-examples/src/main/java/io/github/jabrena/juno/InterfaceDispatch.java).
+- **Lambdas and method references:** non-capturing and capturing lambdas, plus static, bound,
+  unbound, and constructor references emitted through `LambdaMetafactory.metafactory`. See
+  [`Lambdas`](juno-examples/src/main/java/io/github/jabrena/juno/Lambdas.java).
+- **Strings:** string literals, `String.valueOf(int)`, `length()`, and `charAt(int)` for runtime
+  string references. General string construction and concatenation remain unsupported.
+- **Math and random numbers:** the documented `java.lang.Math` subset and Arduino-backed bounded
+  pseudorandom numbers. See
+  [`MathFunctions`](juno-examples/src/main/java/io/github/jabrena/juno/MathFunctions.java) and
+  [`RandomNumbers`](juno-examples/src/main/java/io/github/jabrena/juno/RandomNumbers.java).
+- **Exceptions:** `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
+  `finally`, nested handlers, propagation between methods, custom final exception classes, and
+  try-with-resources. See
+  [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/Exceptions.java).
+- **Cooperative concurrency:** up to four threads including `main`, `Runnable`, `start()`, `join()`,
+  sleeping, yielding, daemon threads, restricted monitors and `ReentrantLock`, and the supported JDK
+  25 preview `StructuredTaskScope` subset. See
+  [`Threads`](juno-examples/src/main/java/io/github/jabrena/juno/Threads.java),
+  [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java), and
+  [`StructuredTasks`](juno-examples/src/main/java/io/github/jabrena/juno/StructuredTasks.java).
+- **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
+  HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
+- **Compile-time safety checks:** deterministic closed-world linking and runtime-risk warnings for
+  loop allocations, arena pressure, recursion, unchecked array access, possible division by zero,
+  and proven-null dereferences.
+
+For example,
 [`UnsupportedFeature`](juno-examples/src/main/java/io/github/jabrena/juno/UnsupportedFeature.java)
-compiles fine with plain `javac` — string concatenation is ordinary Java — but fails `juno:compile`
-because `+` on a `String` uses the unsupported `StringConcatFactory` bootstrap. Juno's
-`invokedynamic` support is deliberately limited to lambdas and method references produced through
-`LambdaMetafactory.metafactory`:
+compiles with plain `javac` because string concatenation is ordinary Java source, but it deliberately
+fails `juno:compile`: `+` on a `String` uses the unsupported `StringConcatFactory` bootstrap.
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.UnsupportedFeature
+# Expected to fail with an unsupported-bootstrap diagnostic
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.UnsupportedFeature
+```
 
-./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.MathFunctions
+Compile any supported example by passing its fully qualified class name. These examples all come
+from the `io.github.jabrena.juno` package:
 
+```bash
+# Primitive values, operators, and control flow
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Variables
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.ControlFlow
+
+# Math, lambdas, interfaces, and exceptions
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.MathFunctions
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Lambdas
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.InterfaceDispatch
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Exceptions
+
+# Cooperative threads and synchronization
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Threads
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.Synchronization
+```
+
+Examples in subpackages use the same command. A board-specific program can also select its target
+explicitly:
+
+```bash
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.games.chess.Chess \
   -Djuno.board=arduino-uno-r4-wifi
