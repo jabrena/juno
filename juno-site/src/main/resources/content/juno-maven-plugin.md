@@ -18,6 +18,7 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 | `juno:compile` | `process-classes` | Runs Juno's compiler for `<mainClass>` and writes the generated `.S` assembly, `Shim.cpp` runtime, and `.ino` wrapper. |
 | `juno:verify` | `verify` | Runs `juno:compile`, then compiles the generated sketch with `arduino-cli compile` — no board required. |
 | `juno:upload` | (none — run explicitly) | Runs `juno:compile` and `juno:verify`, resolves the board's serial port, and flashes it with `arduino-cli upload`. |
+| `juno:boards` | (none — run explicitly) | Lists the connected boards and serial ports (address, protocol, board name, FQBN). Read-only. |
 | `juno:monitor` | (none — run explicitly) | Resolves the board's serial port and opens an interactive `arduino-cli monitor` session. |
 
 `compile`, `verify`, and `upload` each (re)build the sketch first, so running any one of them
@@ -56,7 +57,7 @@ can be selected without editing the POM.
 | `juno.outputDirectory` | `compile`, `verify`, `upload` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
 | `juno.gcLog` | `compile`, `verify`, `upload` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../features)). |
 | `juno.board` | `compile`, `verify`, `upload` | *(required only if `@Board` declares more than one board)* | Which declared board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`). |
-| `juno.arduinoCli` | `verify`, `upload`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
+| `juno.arduinoCli` | `verify`, `upload`, `boards`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `upload`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `upload`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
 | `juno.baudRate` | `monitor` | `115200` | Must match the program's `Serial.begin(...)` rate (see [docs/SERIAL.md](../serial)). |
@@ -112,7 +113,7 @@ the full explanation, including the `--add-opens` JVM flags this goal needs (alr
 
 - **"Missing required Juno entry point":** set `<mainClass>` in the plugin configuration or pass
   `-Djuno.main=<fully-qualified-class-name>`.
-- **`upload`/`monitor` can't find a port:** run `arduino-cli board list` and pass the port
+- **`upload`/`monitor` can't find a port:** run `./mvnw juno:boards` and pass the port
   explicitly with `-Djuno.port=...` when more than one matching board is attached.
 - **Uploaded sketch targets the wrong board variant:** pass `-Djuno.fqbn=...` to override the FQBN
   Juno derived from the entry point's `@Board` annotation; the plugin logs a warning whenever an

@@ -33,7 +33,9 @@ final class BoardListJsonParser {
                 continue;
             }
             Set<String> fqbns = new LinkedHashSet<>(fields(object, "fqbn"));
-            ports.add(new DetectedPort(address, List.copyOf(fqbns)));
+            String protocol = firstField(object, "protocol");
+            ports.add(new DetectedPort(address, protocol == null ? "" : protocol,
+                    List.copyOf(new LinkedHashSet<>(fields(object, "name"))), List.copyOf(fqbns)));
         }
         return List.copyOf(ports);
     }
@@ -136,6 +138,6 @@ final class BoardListJsonParser {
         return result.toString();
     }
 
-    record DetectedPort(String address, List<String> fqbns) {
+    record DetectedPort(String address, String protocol, List<String> boardNames, List<String> fqbns) {
     }
 }

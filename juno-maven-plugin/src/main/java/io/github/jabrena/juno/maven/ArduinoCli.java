@@ -71,7 +71,7 @@ final class ArduinoCli {
         }
         if (matching.isEmpty()) {
             throw new ArduinoCliException("No connected board matching " + requiredFqbn
-                    + " was found. Connect the board or set -Djuno.port=<port> after checking arduino-cli board list.");
+                    + " was found. Connect the board or set -Djuno.port=<port> after checking juno:boards.");
         }
         if (matching.size() > 1) {
             throw new ArduinoCliException("Multiple boards matching " + requiredFqbn + " were found: "
@@ -80,7 +80,7 @@ final class ArduinoCli {
         return matching.getFirst();
     }
 
-    private List<BoardListJsonParser.DetectedPort> boardList() {
+    List<BoardListJsonParser.DetectedPort> boardList() {
         CommandResult result = executor.execute(List.of(executable, "board", "list", "--json"), false);
         checkExit(List.of(executable, "board", "list", "--json"), result);
         return BoardListJsonParser.parse(result.output());
