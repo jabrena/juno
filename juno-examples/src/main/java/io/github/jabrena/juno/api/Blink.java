@@ -12,7 +12,7 @@ import io.github.jabrena.juno.api.io.Gpio;
  *
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
-public final class Blink {
+public class Blink {
 
     public static void main(String[] args) {
 
