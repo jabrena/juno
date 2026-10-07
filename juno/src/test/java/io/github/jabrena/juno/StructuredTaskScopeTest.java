@@ -79,7 +79,39 @@ class StructuredTaskScopeTest {
                 "JUNO_JOINER_ALL_SUCCESSFUL", "JUNO_JOINER_ANY_SUCCESSFUL",
                 "JUNO_JOINER_AWAIT_ALL_SUCCESSFUL", "JUNO_JOINER_AWAIT_ALL",
                 "JUNO_SCOPE_HAS_RESULT",
-                "juno_task_cancel_siblings(scope, task)", "juno_port_cancel(slot)");
+                "juno_task_cancel_siblings(scope, task)", "juno_port_cancel(slot)",
+                "juno_task_cancel_owned(slot + 1u)", "juno_task_release_monitors(slot + 1u)");
+    }
+
+    @Test
+    void cancellingATaskCancelsItsInnerScopesAndReleasesItsMonitors() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
+            CompilationResult result = compile("""
+                    try (var outer = StructuredTaskScope.open(
+                            StructuredTaskScope.Joiner.<String>anySuccessfulResultOrThrow())) {
+                        outer.fork(() -> {
+                            synchronized (new Object()) {
+                                try (var inner = StructuredTaskScope.open()) {
+                                    inner.fork(() -> "slow");
+                                    inner.join();
+                                }
+                            }
+                            return "outer";
+                        });
+                        outer.fork(() -> "fast");
+                        outer.join();
+                    }
+                    """, board);
+            Path shim = temporaryDirectory.resolve("nested-" + board + ".cpp");
+            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+            Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                    "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
+            assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
+            String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            assertThat(process.exitValue()).as("%s shim:%n%s", board, diagnostics).isZero();
+        }
     }
 
     @Test

@@ -653,11 +653,37 @@ final class ThreadRuntime {
                   if (scope->active != 0u) scope->active--;
                 }
 
+                static void juno_task_cancel_siblings(JunoTaskScope* scope, JunoThreadObject* completed);
+
+                // A cancelled slot never reaches its monitorexit / unlock, so its monitors are released here.
+                static void juno_task_release_monitors(uint32_t owner) {
+                  for (uint32_t index = 0u; index < JUNO_MAX_MONITORS; index++) {
+                    if (juno_monitors[index].key != 0u && juno_monitors[index].owner == owner) {
+                      juno_monitors[index] = {0u, 0u, 0u};
+                    }
+                  }
+                }
+
+                // Cancelling a task also cancels the subtasks of every scope it owns, so they cannot be orphaned
+                // holding scheduler slots. Each child cancel recurses through this same path.
+                static void juno_task_cancel_owned(uint32_t owner) {
+                  for (uint32_t slot = 1u; slot < JUNO_MAX_THREADS; slot++) {
+                    JunoThreadObject* child = juno_slots[slot].thread;
+                    if (child == nullptr || (child->flags & JUNO_THREAD_TASK) == 0u
+                            || child->scope == nullptr || child->scope->owner != owner) continue;
+                    JunoTaskScope* scope = child->scope;
+                    scope->flags |= JUNO_SCOPE_SHUTDOWN | JUNO_SCOPE_CLOSED;
+                    juno_task_cancel_siblings(scope, nullptr);
+                  }
+                }
+
                 static void juno_task_cancel(JunoThreadObject* task) {
                   if (task == nullptr || (task->flags & JUNO_THREAD_FINISHED) != 0u) return;
                   task->flags |= JUNO_THREAD_FINISHED | JUNO_TASK_CANCELLED;
                   for (uint32_t slot = 1u; slot < JUNO_MAX_THREADS; slot++) {
                     if (juno_slots[slot].thread != task) continue;
+                    juno_task_cancel_owned(slot + 1u);
+                    juno_task_release_monitors(slot + 1u);
                     juno_port_cancel(slot);
                     juno_slots[slot] = {JUNO_SLOT_FREE, 0u, nullptr, nullptr, nullptr, 0};
                     if (juno_live_threads != 0u) juno_live_threads--;
