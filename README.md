@@ -237,15 +237,79 @@ explicitly:
 
 ## Architecture
 
+Juno is an ahead-of-time compiler, not a virtual machine. An Arduino board has no JVM, so nothing is
+interpreted at run time: the Java program is compiled with `javac` as usual, and Juno then translates the
+resulting JVM bytecode into native ARM assembly that the Arduino toolchain builds into the sketch's firmware.
+The compiler is *closed-world*: it only sees the classes reachable from `main`, so it can resolve every call
+at build time, drop everything unused, and reject anything outside the supported subset before generating a
+single instruction. That is also why there is no dynamic class loading, reflection, or general heap.
+
+### From Java to a running board
+
+```text
+ Hello.java ──javac──▶ Hello.class ──▶ Juno ──▶ Hello.S + HelloShim.cpp + HelloAsm.ino ──arduino-cli──▶ board
+                                       │
+                 classfile → bytecode → linker → lowering → optimize → backend
+```
+
+1. **Write the program** against the Java-facing hardware API (`Serial`, `Gpio`, `Delay`, …, in
+   `io.github.jabrena.juno.api`) and, if it should run on a specific board, annotate the entry point with
+   `@Board`. The entry point is a `static void main(String[])` (or `main()`).
+2. **Compile with `javac`.** Maven does this for you (`compile`). The result is ordinary `.class` files, which are
+   the only input Juno reads; the Java sources are never parsed.
+3. **Read the classes.** `classfile` parses the `.class` files and resolves their constant pools, and
+   `bytecode` decodes each method into the admitted instruction subset.
+4. **Link, closed-world.** `linker` starts at `main` and follows every statically resolvable call. Calls into
+   the hardware API become *intrinsics*, methods nothing reaches are discarded, and the board from `@Board`
+   is resolved. Anything reachable that falls outside the subset (an unsupported opcode, an unsupported
+   `invokedynamic` bootstrap, a type Juno does not model) stops the build with a diagnostic naming the method,
+   the bytecode offset, and the operation, rather than emitting code with uncertain behavior.
+5. **Lower to IR.** `lowering` turns each reachable method into Juno's own block-structured intermediate
+   representation (`ir`), making every operand-stack slot and local variable an explicit, typed value.
+   Lambdas, string concatenation, enums, records, exceptions, and threads are given their Juno-specific
+   meaning here.
+6. **Optimize.** `optimize` runs small IR passes (copy propagation, constant folding, dead-block
+   elimination). `analysis` then inspects the result and reports runtime risks at build time: arena budget
+   versus estimated use, static RAM, call depth, allocation inside loops, recursion, possible division by zero,
+   unchecked array access, and proven-null dereferences.
+7. **Generate code.** `backend` emits GNU ARM Cortex-M4 (Thumb-2) assembly directly from the IR, plus a small
+   `extern "C"` C++ runtime shim (GPIO, Serial, LED matrix, Wi-Fi, HTTP, JSON, strings, the arena allocator and
+   its garbage collector, `long`/`float`/`double` support, exception and thread support) that the assembly calls
+   into. Most optional helpers and Arduino headers (Mouse, Wi-Fi, HTTP, JSON, strings, …) are included only when the
+   program uses them, and the output is deterministic: the same classes always produce the same bytes. Per-core differences (UNO R4 WiFi's Renesas
+   core versus UNO Q's Zephyr core) live in a `CoreRuntime`, never in a branch on a specific board.
+8. **Wrap it as a sketch.** The Maven plugin writes the `.S`, the `Shim.cpp`, and a tiny `.ino` whose `setup()`
+   calls the generated entry point and whose `loop()` is empty, under `target/juno/<Main>Asm/`.
+9. **Build and flash with the Arduino toolchain.** `arduino-cli compile --fqbn <board>` assembles and links the
+   sketch against the board's core, and `arduino-cli upload` flashes it. The plugin drives both, so
+   `juno:verify` stops after the compile (no board needed), `juno:upload` also flashes it, and `juno:monitor`
+   opens the serial monitor.
+
+In practice, steps 2 to 9 are one command per goal (`juno-examples/pom.xml` supplies `Blink` as the default
+entry point; select another with `-Djuno.main=<class>`):
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:compile   # javac + Juno: generate the sketch only
+./mvnw -f juno-examples/pom.xml compile juno:verify    # ... and build it with arduino-cli (no board needed)
+./mvnw -f juno-examples/pom.xml compile juno:upload    # ... and flash the connected board
+./mvnw -f juno-examples/pom.xml juno:monitor           # attach the serial monitor
+```
+
+### Modules and packages
+
 - `classfile` parses standard JVM class files and resolves constant-pool references.
 - `bytecode` decodes and validates the v0.1 instruction set.
 - `linker` starts at `main`, follows reachable static calls, resolves hardware intrinsics, and
   eliminates unreachable methods.
+- `lowering`, `ir`, and `optimize` translate the reachable bytecode into Juno's IR and simplify it;
+  `analysis` builds the control-flow graph and produces the build-time runtime-risk report.
 - `backend` emits GNU ARM (Cortex-M4, Thumb-2) assembly directly from Juno's IR, plus a small
   `extern "C"` C++ runtime shim (GPIO/Serial/LED matrix/Wi-Fi/HTTP/JSON helpers, the arena
   allocator, `long`/`float`/`double` support) that the generated assembly calls into.
+- `juno-maven-plugin` wraps the compiler and the Arduino CLI as the `juno:compile`, `juno:verify`,
+  `juno:upload`, and `juno:monitor` goals.
 
-The above, along with the small Java-facing hardware abstraction (`api/`) and the `@Board`
+The compiler stages, along with the small Java-facing hardware abstraction (`api/`) and the `@Board`
 selection types (`annotations/`), live under
 [`juno/src/main/java/io/github/jabrena/juno/`](juno/src/main/java/io/github/jabrena/juno).
 
