@@ -69,9 +69,11 @@ Supported today:
   method references to Juno hardware/runtime intrinsics and `altMetafactory` call sites remain unsupported.
 - direct static calls with closed-world reachability; unused methods are omitted
 - runtime {@code String} references in locals, parameters, and return values, with string literals,
-  {@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Integer conversions use eight
-  rotating 12-byte UTF-8 slots instead of the arena, so conversion-heavy loops remain allocation-free;
-  a converted value must be consumed before eight newer conversions overwrite its slot. APIs documented
+  {@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Juno lowers javac's
+  {@code StringConcatFactory.makeConcatWithConstants} protocol for {@code String} and primitive operands;
+  concatenation maps a null string to {@code "null"} and panics if the UTF-8 result exceeds the 31-byte
+  payload. Runtime values use eight rotating 32-byte UTF-8 slots instead of the arena, so string-heavy
+  loops remain allocation-free; a value must be consumed before eight newer results overwrite its slot. APIs documented
   as compile-time-string-only (including networking paths/bodies and LED text unrolling) retain that rule.
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
 - UNO R4 WiFi networking through allocation-free `Wifi`, plain HTTP, and certificate-validated HTTPS
@@ -182,13 +184,13 @@ Not yet supported:
 
 - class inheritance/virtual polymorphic dispatch, inherited/default interface implementations, or object
   arrays with polymorphism
-- general string construction/concatenation and other {@code String} methods, reflection, or
-  dynamic loading
+- general string construction, arbitrary-object concatenation, other {@code String} methods,
+  reflection, or dynamic loading
 - exception causes, stack traces, suppressed exceptions (`addSuppressed` is accepted and dropped, so a
   `close()` failure during unwinding is lost), and exception types in method parameters or return values
 - enum string methods (`.name()`, `.toString()`), `valueOf()`, and enum state beyond one directly
   assigned, compile-time integer value per constant (including mutable fields and per-constant class bodies)
-- record `equals()`/`hashCode()`/`toString()`, string concatenation, and other non-lambda
+- record `equals()`/`hashCode()`/`toString()` and non-lambda/non-string-concat
   `invokedynamic` bootstrap protocols
 - the desktop JDK class library
 

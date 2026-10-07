@@ -110,9 +110,10 @@ Juno supports typed `INT64`, `FLOAT32`, and `FLOAT64` boundary values in additio
 `INT32` values. JVM `long` stack/local values remain paired 32-bit halves and are packed when crossing
 a call, field, or array boundary. Remaining exclusions include:
 
-- general `String` construction/concatenation and most `String`/`StringBuilder` methods — a bounded
-  set of runtime-`String` operations is supported instead (string literals, `String.valueOf(int)`/
-  `(double)`, `length()`, `charAt(int)`, and a fixed-capacity `StringBuilder`); see
+- general `String` construction and most `String`/`StringBuilder` methods — a bounded
+  set of runtime-`String` operations is supported instead (string literals, primitive/string `+`
+  concatenation, `String.valueOf(int)`/`(double)`, `length()`, `charAt(int)`, and a fixed-capacity
+  `StringBuilder`); see
   [FEATURES.md](../features) for the exact list. Multi-character LED matrix display (see
   [`LedCanvas`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java)) still works
   character-by-character with hand-encoded font tables rather than string data

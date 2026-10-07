@@ -70,15 +70,17 @@ default.
 ### Printing runtime strings
 
 `Serial.print(String)`/`println(String)` also print runtime `String` values — `String.valueOf(...)`,
-a `StringBuilder` result, a JSON string, or an exception's `getMessage()`. String concatenation with
-`+` is still unsupported (`javac` uses the `StringConcatFactory` `invokedynamic` bootstrap; Juno only
-accepts lambda/metafactory call sites), so print computed data in parts:
+a `StringBuilder` result, a JSON string, an exception's `getMessage()`, or a bounded concatenation.
+Juno lowers javac's `StringConcatFactory.makeConcatWithConstants` call sites for strings and primitive
+values; the resulting UTF-8 text must fit in the 31-byte runtime-string payload:
 
 ```java
 int temperature = /* ... */;
-Serial.print("Temperature C: ");
-Serial.println(temperature);
+Serial.println("Temperature C: " + temperature);
 ```
+
+Concatenating an arbitrary object remains unsupported because it requires broader
+`String.valueOf(Object)`/`toString()` behavior.
 
 ## A minimal example
 

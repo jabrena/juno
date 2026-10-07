@@ -29,7 +29,8 @@ These fail with a `CompileException`; they are listed because they come up when 
   it is called through directly.
 - **JDK functional interfaces** such as `IntBinaryOperator` in signatures. Declare your own interface.
 - **`Object` in signatures**, which rules out `equals(Object)` on records and classes when it is reachable.
-- **String concatenation with `+`** on runtime values (it compiles to `invokedynamic`).
+- **Concatenating arbitrary objects.** Juno lowers `StringConcatFactory` for strings and primitive
+  values, but not the general `String.valueOf(Object)`/`toString()` path.
 
 ## Exceptions
 
