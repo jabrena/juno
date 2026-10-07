@@ -4,12 +4,12 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.DigitalOutput;
-import io.github.jabrena.juno.api.io.hid.Mouse;
-import io.github.jabrena.juno.api.io.hid.MouseIcon;
+import io.github.jabrena.juno.api.hid.Mouse;
+import io.github.jabrena.juno.api.hid.MouseIcon;
 import io.github.jabrena.juno.api.led.LedMatrix;
 
 /**
- * A remote-controlled version of {@link io.github.jabrena.juno.api.io.hid.RatonLoco}: the same
+ * A remote-controlled version of {@link io.github.jabrena.juno.api.hid.RatonLoco}: the same
  * built-in-LED blink and USB mouse square-walking behavior, but gated by an On/Off switch drawn on
  * the ELEGOO 2.8" TFT touch screen shield instead of running unconditionally from power-up. The
  * whole display is the switch: it starts Off (a red screen), a tap anywhere turns it On (a green

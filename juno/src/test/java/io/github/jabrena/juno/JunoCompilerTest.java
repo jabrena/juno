@@ -1395,7 +1395,7 @@ class JunoCompilerTest {
     void lowersMouseIntrinsicsAndOmitsUnusedHeader() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.hid.Mouse;
+                import io.github.jabrena.juno.api.hid.Mouse;
                 public final class Wiggle {
                     public static void main(String[] args) {
                         Mouse.begin();

@@ -9,7 +9,7 @@
  * common mail-submission port), which the UNO R4 WiFi's native {@code WiFiSSLClient} cannot do —
  * it only ever negotiates TLS from the first byte. This needs the third-party {@code
  * ESP_SSLClient} library ({@code arduino-cli lib install ESP_SSLClient}), the same manual-install
- * pattern as {@link io.github.jabrena.juno.api.io.hid.Mouse}. {@code Pop3Client} instead uses
+ * pattern as {@link io.github.jabrena.juno.api.hid.Mouse}. {@code Pop3Client} instead uses
  * implicit TLS on port 995 (POP3S), so it reuses {@code WiFiSSLClient} exactly like {@link
  * io.github.jabrena.juno.api.net.http.HttpsClient} and needs no extra library.
  *

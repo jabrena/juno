@@ -200,7 +200,7 @@ mapping are confirmed working.
 
 ### Example: RatonLoco (USB mouse control)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java) is a
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java) is a
 port of [raton-loco.ino](https://github.com/jabrena/raton-loco/blob/main/arduino/raton-loco.ino):
 it blinks the built-in LED, then drags the host computer's mouse cursor in a square (right, down,
 left, up) over USB HID.
@@ -215,7 +215,7 @@ native USB (UNO R4 WiFi):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.hid.RatonLoco
+  -Djuno.main=io.github.jabrena.juno.api.hid.RatonLoco
 ```
 
 **Re-uploading over a running HID sketch:** `arduino-cli upload` normally resets the board into

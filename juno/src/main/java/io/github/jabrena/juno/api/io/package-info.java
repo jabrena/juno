@@ -7,7 +7,8 @@
  * object-shaped API over passing a pin number to every call.
  *
  * <p>This package's subpackages group I/O operations that need more than raw pins: {@code usb}
- * (Serial), {@code hid} (USB mouse control), and {@code storage} (SPI SD cards and properties
- * files). Networking lives in the sibling {@code io.github.jabrena.juno.api.net} package.
+ * (Serial) and {@code storage} (SPI SD cards and properties files). Networking and USB HID live in
+ * the sibling {@code io.github.jabrena.juno.api.net} and {@code io.github.jabrena.juno.api.hid}
+ * packages.
  */
 package io.github.jabrena.juno.api.io;

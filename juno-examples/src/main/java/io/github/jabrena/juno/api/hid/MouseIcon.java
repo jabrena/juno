@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.hid;
+package io.github.jabrena.juno.api.hid;
 
 import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;

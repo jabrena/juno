@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.hid;
+package io.github.jabrena.juno.api.hid;
 
 /**
  * USB HID mouse control recognized as compiler intrinsics by Juno, backed by the Arduino

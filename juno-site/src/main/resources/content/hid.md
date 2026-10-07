@@ -4,8 +4,8 @@ description: "Emulating a USB HID mouse from a sketch."
 layout: page
 ---
 
-[`Mouse`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/hid/Mouse.java)
-(`io.github.jabrena.juno.api.io.hid`) lets a Juno program act as a USB HID mouse, moving the
+[`Mouse`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/hid/Mouse.java)
+(`io.github.jabrena.juno.api.hid`) lets a Juno program act as a USB HID mouse, moving the
 pointer of whatever computer the board's USB port is plugged into. It is a compiler intrinsic
 backed by the Arduino `Mouse` library.
 
@@ -26,7 +26,7 @@ backed by the Arduino `Mouse` library.
 ## API
 
 ```java
-import io.github.jabrena.juno.api.io.hid.Mouse;
+import io.github.jabrena.juno.api.hid.Mouse;
 
 Mouse.begin();
 Mouse.move(10, -5);   // relative move: (x, y) pixels from the current pointer position
@@ -42,7 +42,7 @@ arguments within that range — a larger value wraps around instead of clamping.
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.hid.Mouse;
+import io.github.jabrena.juno.api.hid.Mouse;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class MouseSquare {
@@ -73,15 +73,15 @@ public final class MouseSquare {
 ```
 
 The repository ships a fuller version of this idea as
-[`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java),
+[`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java),
 which also blinks the built-in LED and draws a
-[mouse-face icon](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/MouseIcon.java)
+[mouse-face icon](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hid/MouseIcon.java)
 on the LED matrix first. Build, flash, and run it with `juno-maven-plugin` (see
 [docs/JUNO-MAVEN-PLUGIN.md](../juno-maven-plugin)):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.hid.RatonLoco
+  -Djuno.main=io.github.jabrena.juno.api.hid.RatonLoco
 ```
 
 ## Warning

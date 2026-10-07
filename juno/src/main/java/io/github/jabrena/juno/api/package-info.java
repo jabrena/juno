@@ -23,7 +23,8 @@
  * <ul>
  *   <li>{@code io} — general-purpose I/O
  *       ({@link io.github.jabrena.juno.api.io.Gpio}, {@link io.github.jabrena.juno.api.io.DigitalOutput}),
- *       USB serial ({@code io.usb}), USB HID mouse control ({@code io.hid}).</li>
+ *       USB serial ({@code io.usb}).</li>
+ *   <li>{@code hid} — USB HID mouse control.</li>
  *   <li>{@code net} — the Wi-Fi/UDP/HTTP/JSON/email networking stack ({@code net.http},
  *       {@code net.email}).</li>
  *   <li>{@code led} — the UNO R4 WiFi's built-in LED matrix, its frame/canvas helpers, and bitmap
