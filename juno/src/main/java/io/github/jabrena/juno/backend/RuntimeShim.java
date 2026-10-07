@@ -128,6 +128,9 @@ final class RuntimeShim {
                 ShimFeature.STRING_BUILDER) || !usedMath.isEmpty()) {
             shim.append("#include <math.h>\n");
         }
+        if (uses(ShimFeature.BIG_NUMBERS)) {
+            shim.append("#include <stdlib.h>\n");
+        }
         // WDT (like Arduino_LED_Matrix above) is bundled with the renesas_uno core, not a separate
         // library install — only pulled in for programs whose entry-point class carries @Watchdog.
         if (usesWatchdog) {
@@ -583,6 +586,14 @@ final class RuntimeShim {
 
     /** Scoped-value bindings, then the thread scheduler that swaps them (it refers to the binding stack). */
     private void appendConcurrencyHelpers(StringBuilder shim) {
+        if (uses(ShimFeature.BIG_NUMBERS)) {
+            shim.append(BigNumberRuntime.handleHelpers());
+            shim.append(BigNumberRuntime.helpers(
+                    throwableClasses.indexOf("java/lang/ArithmeticException"),
+                    throwableClasses.indexOf("java/lang/NumberFormatException"),
+                    throwableClasses.indexOf("java/lang/IllegalArgumentException"),
+                    uses(ShimFeature.BIG_DECIMAL_DOUBLE)));
+        }
         if (uses(ShimFeature.SCOPED_VALUES)) {
             shim.append(ScopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.SCOPED_CALL_ENTRY),

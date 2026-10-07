@@ -49,6 +49,7 @@ public record Descriptor(List<String> parameters, String returnType) {
                         || isDouble(returnType)
                         || isString(returnType)
                         || isStringBuilder(returnType)
+                        || BigNumberSupport.isBigNumberType(returnType)
                         || isSupportedArrayType(returnType, referenceClassNames)
                         || isReferenceType(returnType, referenceClassNames));
     }
@@ -117,6 +118,7 @@ public record Descriptor(List<String> parameters, String returnType) {
                 || isStringBuilder(type)
                 || ThreadSupport.isThreadType(type)
                 || ScopedValueSupport.isScopedValueType(type)
+                || BigNumberSupport.isBigNumberType(type)
                 || isSupportedArrayType(type, referenceClassNames)
                 || isReferenceType(type, referenceClassNames);
     }

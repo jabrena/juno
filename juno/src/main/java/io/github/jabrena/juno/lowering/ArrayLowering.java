@@ -13,6 +13,7 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.ThrowableTypes;
+import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.LockSupport;
 
 import java.util.ArrayList;
@@ -141,7 +142,14 @@ final class ArrayLowering {
             default -> throw new IllegalStateException("unreachable array-access opcode " + opcode);
         }
         return new Lowered(nextValueId, depth);
-    }    static Lowered lowerAllocation(LinkedMethod linked, Instruction instruction, int opcode,
+    }
+    /** Classes whose {@code new} only reserves a placeholder: the constructor call builds the runtime handle. */
+    private static boolean isRuntimeHandleClass(String className) {
+        return className.startsWith("java/lang/") || className.equals("java/util/Properties")
+                || LockSupport.isReentrantLockClass(className) || BigNumberSupport.isBigNumberOwner(className);
+    }
+
+    static Lowered lowerAllocation(LinkedMethod linked, Instruction instruction, int opcode,
                                     List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
                                     ValueTracking tracking, Map<String, JavaClass> classes,
                                     List<ArrayDeclaration> arrayDeclarations) {
@@ -157,8 +165,7 @@ final class ArrayLowering {
                             depth++;
                             break;
                         }
-                        if (className.startsWith("java/lang/") || className.equals("java/util/Properties")
-                                || LockSupport.isReentrantLockClass(className)) {
+                        if (isRuntimeHandleClass(className)) {
                             nextValueId = pushConst(instructions, stackBase, depth, nextValueId, 0, tracking);
                             depth++;
                             break;

@@ -42,6 +42,10 @@ enum ShimFeature {
     SCOPED_VALUES,
     /** A reachable {@code ScopedValue.CallableOp} entry point behind {@code Carrier.call}. */
     SCOPED_CALL_ENTRY,
+    /** {@code java.math.BigInteger}/{@code BigDecimal}/{@code MathContext}: immutable arena blocks. */
+    BIG_NUMBERS,
+    /** {@code BigDecimal.valueOf(double)}, which formats the double with the runtime-string helpers. */
+    BIG_DECIMAL_DOUBLE,
     /** {@code Thread.sleep}/{@code Thread.yield} in a program that creates no thread. */
     THREAD_BASICS
 }

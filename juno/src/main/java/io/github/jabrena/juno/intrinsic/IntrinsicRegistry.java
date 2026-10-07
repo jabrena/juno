@@ -2,6 +2,7 @@ package io.github.jabrena.juno.intrinsic;
 
 import io.github.jabrena.juno.classfile.MethodRef;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -28,7 +29,9 @@ public final class IntrinsicRegistry {
             new IntrinsicParameter(Intrinsic.PROPERTIES_GET, 0),
             new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 0),
             new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 1),
-            new IntrinsicParameter(Intrinsic.SD_APPEND, 1));
+            new IntrinsicParameter(Intrinsic.SD_APPEND, 1),
+            new IntrinsicParameter(Intrinsic.BIG_INTEGER_PARSE, 0),
+            new IntrinsicParameter(Intrinsic.BIG_DECIMAL_PARSE, 0));
 
     /**
      * Parameters that accept a runtime {@code String} but still take the literal path (a {@code .asciz}
@@ -42,7 +45,7 @@ public final class IntrinsicRegistry {
     private record IntrinsicParameter(Intrinsic intrinsic, int parameterIndex) {
     }
 
-    private static final Map<MethodRef, Intrinsic> METHODS = Map.ofEntries(
+    private static final Map<MethodRef, Intrinsic> CORE_METHODS = Map.ofEntries(
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/Gpio", "pinMode", "(II)V"),
                     Intrinsic.GPIO_PIN_MODE),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/io/Gpio", "digitalWrite", "(IZ)V"),
@@ -365,7 +368,15 @@ public final class IntrinsicRegistry {
             Map.entry(new MethodRef("java/lang/Math", "toRadians", "(D)D"), Intrinsic.MATH_TO_RADIANS),
             Map.entry(new MethodRef("java/lang/Math", "toDegrees", "(D)D"), Intrinsic.MATH_TO_DEGREES));
 
+    private static final Map<MethodRef, Intrinsic> METHODS = withBigNumbers();
+
     private IntrinsicRegistry() {
+    }
+
+    private static Map<MethodRef, Intrinsic> withBigNumbers() {
+        Map<MethodRef, Intrinsic> methods = new HashMap<>(CORE_METHODS);
+        methods.putAll(BigNumberMethods.METHODS);
+        return Map.copyOf(methods);
     }
 
     public static Optional<Intrinsic> resolve(MethodRef method) {

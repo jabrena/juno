@@ -43,6 +43,7 @@ import io.github.jabrena.juno.linker.LambdaCallSite;
 import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.linker.Program;
 import io.github.jabrena.juno.linker.ThreadSupport;
+import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.StructuredTaskSupport;
 import io.github.jabrena.juno.linker.StringConcatResolver;
@@ -236,6 +237,11 @@ public final class BytecodeToIr {
                     }
                     if (ScopedValueSupport.isScopedValueOwner(called.owner())) {
                         names.add("java/util/NoSuchElementException");
+                    }
+                    if (BigNumberSupport.isBigNumberOwner(called.owner())) {
+                        names.add(ARITHMETIC_EXCEPTION);
+                        names.add("java/lang/NumberFormatException");
+                        names.add("java/lang/IllegalArgumentException");
                     }
                 }
             }

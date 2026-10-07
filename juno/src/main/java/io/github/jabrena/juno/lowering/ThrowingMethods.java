@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.BigNumberMethods;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -54,7 +55,7 @@ final class ThrowingMethods {
                             TASK_SCOPE_FORK_RUNNABLE,
                             TASK_SCOPE_JOIN, TASK_GET, TASK_STATE, TASK_EXCEPTION, TASK_SCOPE_CLOSE,
                             SCOPED_VALUE_GET, SCOPED_CARRIER_RUN, SCOPED_CARRIER_CALL -> true;
-                    default -> false;
+                    default -> BigNumberMethods.mayThrow(call.intrinsic());
                 };
     }
 

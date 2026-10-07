@@ -13,6 +13,7 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
+import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.ThreadSupport;
 import io.github.jabrena.juno.linker.LockSupport;
@@ -20,6 +21,7 @@ import io.github.jabrena.juno.linker.LinkedMethod;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /** {@code getstatic}/{@code putstatic}/{@code getfield}/{@code putfield} opcode lowering, split out of {@link BytecodeToIr}. */
 final class FieldLowering {
@@ -34,7 +36,22 @@ final class FieldLowering {
                     case 178 -> {
                         FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
                         Integer ordinal = EnumFieldSupport.resolveEnumOrdinal(field, classes);
-                        if (ordinal != null) {
+                        Optional<BigNumberSupport.Constant> bigConstant = BigNumberSupport.constant(field);
+                        if (bigConstant.isPresent()) {
+                            BigNumberSupport.Constant constant = bigConstant.get();
+                            if (constant.intrinsic().isEmpty()) {
+                                nextValueId = pushConst(instructions, stackBase, depth, nextValueId,
+                                        constant.value(), tracking);
+                            } else {
+                                Value which = Value.int32(nextValueId++);
+                                instructions.add(new IrInstruction.Const(which, constant.value()));
+                                Value handle = Value.int32(nextValueId++);
+                                instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle),
+                                        constant.intrinsic().get(), Optional.empty(), List.of(which), List.of()));
+                                storeToStack(instructions, stackBase, depth, handle, tracking);
+                            }
+                            depth++;
+                        } else if (ordinal != null) {
                             nextValueId = pushConst(instructions, stackBase, depth, nextValueId, ordinal, tracking);
                             depth++;
                         } else if (field.name().startsWith("$SwitchMap$")) {
@@ -184,6 +201,7 @@ final class FieldLowering {
         if (Descriptor.isString(field.descriptor())
                 || ThreadSupport.isThreadType(field.descriptor())
                 || ScopedValueSupport.isScopedValueType(field.descriptor())
+                || BigNumberSupport.isBigNumberType(field.descriptor())
                 || LockSupport.isReentrantLockType(field.descriptor())
                 || Descriptor.isArrayType(field.descriptor())
                 || Descriptor.isReferenceType(field.descriptor(), classes.keySet())) {

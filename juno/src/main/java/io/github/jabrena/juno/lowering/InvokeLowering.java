@@ -46,22 +46,17 @@ final class InvokeLowering {
                                       int stackBase, int depth, int nextValueId, ValueTracking tracking,
                                       Map<String, JavaClass> classes) {
         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-        return isStringBuilderConstruction(called)
-                ? lowerStringBuilderConstruction(instructions, stackBase, depth, nextValueId, tracking)
-                : isThreadConstruction(called)
-                        ? lowerThreadConstruction(instructions, stackBase, depth, nextValueId, tracking)
-                : called.equals(LockSupport.CONSTRUCTOR)
-                        ? lowerReentrantLockConstruction(instructions, stackBase, depth, nextValueId, tracking)
-                : isPropertiesConstruction(called)
-                        ? lowerPropertiesConstruction(instructions, stackBase, depth, nextValueId, tracking)
-                        : ThrowableTypes.isBuiltInConstructor(called)
-                                ? lowerThrowableConstructor(linked, instruction, called, instructions, stackBase,
-                                        depth, nextValueId, tracking)
-                                : isRuntimeBaseConstructor(called)
-                                        ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId,
-                                                tracking)
-                                        : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId,
-                                                tracking);
+        return ObjectConstructionLowering.handles(called)
+                ? ObjectConstructionLowering.lower(linked, instruction, called, instructions, stackBase, depth,
+                        nextValueId, tracking)
+                : ThrowableTypes.isBuiltInConstructor(called)
+                        ? lowerThrowableConstructor(linked, instruction, called, instructions, stackBase,
+                                depth, nextValueId, tracking)
+                        : isRuntimeBaseConstructor(called)
+                                ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId,
+                                        tracking)
+                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId,
+                                        tracking);
     }
 
     static Lowered lowerInvokeStatic(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,

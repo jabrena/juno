@@ -96,6 +96,23 @@ Supported today:
   `round`'s ties-toward-positive-infinity and saturation, `pow`'s NaN rules, `floorDiv` overflow). Where
   Java would throw (`floorDiv`/`floorMod` by zero, `clamp` with `min > max`), the program panics, like
   native integer division by zero.
+- `java.math`: arbitrary-precision `BigInteger`, `BigDecimal` and `MathContext`, plus the `RoundingMode` constants.
+  `BigInteger`: `valueOf`, `new BigInteger(String)`, `ZERO`/`ONE`/`TWO`/`TEN`, `add`, `subtract`, `multiply`,
+  `divide`, `remainder`, `mod`, `pow`, `sqrt`, `gcd`, `negate`, `abs`, `min`, `max`, `shiftLeft`/`shiftRight`,
+  `signum`, `bitLength`, `compareTo`, `equals`, `intValue`/`longValue`/`doubleValue` and `toString`.
+  `BigDecimal`: `valueOf`, `new BigDecimal(String|int|long|BigInteger[, scale])`, the constants, `add`, `subtract`,
+  `multiply` (exact or with a `MathContext`), `divide` (exact, with a scale and `RoundingMode`, with a
+  `RoundingMode`, or with a `MathContext`), `sqrt`, `round`, `setScale`, `pow`, `negate`, `abs`, `min`, `max`,
+  `stripTrailingZeros`, `movePointLeft`/`movePointRight`, `signum`, `scale`, `precision`, `unscaledValue`,
+  `compareTo`, `equals`, `toBigInteger`, the numeric conversions, `toString` and `toPlainString`. `MathContext`:
+  `new MathContext(precision[, mode])`, `getPrecision` and `UNLIMITED`/`DECIMAL32`/`DECIMAL64`/`DECIMAL128`.
+  Results, scales, rounding and text follow the JDK exactly (checked against it on randomized operations).
+  Values are immutable blocks in the 8 KB arena and are garbage-collected, so precision is limited by memory, not
+  by a fixed width; `toString()` returns an arena string, so print it with `Serial.println(value.toString())`
+  rather than concatenating it (concatenation uses the 32-byte string slots). `ArithmeticException` and
+  `NumberFormatException` are raised as in Java. Not supported: `new BigDecimal(double)`, bit operations beyond
+  shifts, `modPow`/`isProbablePrime`, `divideAndRemainder` and the other methods; `BigDecimal.valueOf(double)`
+  goes through Juno's own `double` formatting. See the board-ready [`ScopedValuesPrecision` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
 - exception handling: `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
   `finally`, nested handlers, and `try`-with-resources, including exceptions that propagate out of the
   method that throws them to a `catch`/`finally` in any caller (the exception is left pending and each

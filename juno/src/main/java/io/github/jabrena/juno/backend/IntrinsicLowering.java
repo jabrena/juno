@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.intrinsic.BigNumberMethods;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
@@ -136,6 +137,10 @@ final class IntrinsicLowering {
     void emit(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call) {
         if (MathRuntime.isMath(call.intrinsic())) {
             emitMathCall(output, frame, call);
+            return;
+        }
+        if (BigNumberMethods.isBigNumber(call.intrinsic())) {
+            emitBigNumberCall(output, frame, call);
             return;
         }
         Lowering lowering = lowerings.get(call.intrinsic());
@@ -511,6 +516,41 @@ final class IntrinsicLowering {
             }
         }
         asm.emitShimCall(output, frame, MathRuntime.symbol(call.intrinsic()), words);
+        call.target().ifPresent(target -> {
+            if (FrameLayout.isWide(target.type())) {
+                asm.store64(output, frame, "r0", "r1", target);
+            } else {
+                asm.store(output, frame, "r0", target);
+            }
+        });
+    }
+
+    /**
+     * Every {@code java.math} intrinsic is a plain shim call named after the intrinsic: the receiver (if any) and
+     * each argument in order, a {@code long}/{@code double} as a low/high pair padded to an even word as AAPCS
+     * requires, and a one- or two-word result. Handles and {@code RoundingMode} ordinals are single words.
+     */
+    private void emitBigNumberCall(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call) {
+        features.add(ShimFeature.BIG_NUMBERS);
+        features.add(ShimFeature.EXCEPTIONS);
+        if (call.intrinsic() == Intrinsic.BIG_DECIMAL_VALUE_OF_DOUBLE) {
+            features.add(ShimFeature.BIG_DECIMAL_DOUBLE);
+            features.add(ShimFeature.RUNTIME_STRINGS);
+        }
+        List<WordSource> words = new ArrayList<>();
+        call.receiver().ifPresent(receiver -> words.add(new WordSource.FromValue(receiver)));
+        for (Value argument : call.arguments()) {
+            if (FrameLayout.isWide(argument.type())) {
+                if (words.size() % 2 != 0) {
+                    words.add(new WordSource.Immediate(0));
+                }
+                words.add(new WordSource.FromValueLow(argument));
+                words.add(new WordSource.FromValueHigh(argument));
+            } else {
+                words.add(new WordSource.FromValue(argument));
+            }
+        }
+        asm.emitShimCall(output, frame, BigNumberMethods.shimSymbol(call.intrinsic()), words);
         call.target().ifPresent(target -> {
             if (FrameLayout.isWide(target.type())) {
                 asm.store64(output, frame, "r0", "r1", target);

@@ -182,6 +182,7 @@ public final class Linker {
         LockSupport.validateCall(called);
         StructuredTaskSupport.validateCall(called);
         ScopedValueSupport.validateCall(called);
+        BigNumberSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {
