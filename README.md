@@ -128,6 +128,9 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   pseudorandom numbers. See
   [`MathFunctions`](juno-examples/src/main/java/io/github/jabrena/juno/MathFunctions.java) and
   [`RandomNumbers`](juno-examples/src/main/java/io/github/jabrena/juno/RandomNumbers.java).
+- **Arbitrary precision:** `BigInteger`, `BigDecimal`, `MathContext` and the `RoundingMode` constants, with the
+  JDK's rounding and text rules. See
+  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
 - **Exceptions:** `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
   `finally`, nested handlers, propagation between methods, custom final exception classes, and
   try-with-resources. See
@@ -139,7 +142,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java),
   [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/StructuredConcurrency.java), and
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java)
-  (a scoped precision limit shared by three parallel subtasks).
+  (a scoped `MathContext` shared by three parallel subtasks).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
   HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
   See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) (GPIO and delays),
