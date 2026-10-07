@@ -101,6 +101,11 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <groups>arduino-cli</groups>
+                            <!-- Juno resolves System.getenv(...) at compile time; any value lets Wi-Fi games compile. -->
+                            <environmentVariables>
+                                <JUNO_WIFI_SSID>ci-ssid</JUNO_WIFI_SSID>
+                                <JUNO_WIFI_PASSWORD>ci-password</JUNO_WIFI_PASSWORD>
+                            </environmentVariables>
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>
