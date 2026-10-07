@@ -4,7 +4,10 @@ import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 
-/** Demonstrates constructing an object and calling instance methods with parameters and return values. */
+/**
+ * Demonstrates constructing an object and calling instance methods with parameters and return values,
+ * reporting each result with string concatenation.
+ */
 public final class Methods {
 
     public static void main(String[] args) {
@@ -19,25 +22,18 @@ public final class Methods {
         int sum = methods.add(left, right);
         int squared = methods.square(sum);
 
-        Serial.print("12 + 5 = ");
-        Serial.println(sum);
-        Serial.print("17 squared = ");
-        Serial.println(squared);
-
-        Serial.print("17 is even: ");
-        Serial.println(methods.isEven(sum));
+        Serial.println(left + " + " + right + " = " + sum);
+        Serial.println(sum + " squared = " + squared);
+        Serial.println(sum + " is even: " + methods.isEven(sum));
 
         long product = methods.multiply(123456L, 1000L);
-        Serial.print("long product: ");
-        Serial.println(product);
+        Serial.println("long product: " + product);
 
         double mean = methods.average(12.5, 7.5);
-        Serial.print("average: ");
-        Serial.println(mean);
+        Serial.println("average: " + mean);
 
         int combined = methods.addThenDouble(left, right);
-        Serial.print("add then double: ");
-        Serial.println(combined);
+        Serial.println("add then double: " + combined);
     }
 
     private void printHeading() {

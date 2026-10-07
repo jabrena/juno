@@ -5,12 +5,9 @@ import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 
 /** Demonstrates constants, static variables, local variables, assignment, and block scope. */
-public final class Variables {
+public class Variables {
     private static final int STEP = 5;
     private static int counter = 10;
-
-    private Variables() {
-    }
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
@@ -24,32 +21,20 @@ public final class Variables {
         double voltage = 3.3;
 
         Serial.println("Variables demo");
-        Serial.print("board: ");
-        Serial.println(board);
-        Serial.print("active: ");
-        if (active) {
-            Serial.println("true");
-        } else {
-            Serial.println("false");
-        }
-        Serial.print("original counter: ");
-        Serial.println(originalCounter);
+        Serial.println("board: " + board);
+        Serial.println("active: " + active);
+        Serial.println("original counter: " + originalCounter);
 
         counter = counter + STEP;
-        Serial.print("updated counter: ");
-        Serial.println(counter);
+        Serial.println("updated counter: " + counter);
 
-        Serial.print("distance: ");
-        Serial.println(distance);
-        Serial.print("temperature: ");
-        Serial.println(temperature);
-        Serial.print("voltage: ");
-        Serial.println(voltage);
+        Serial.println("distance: " + distance);
+        Serial.println("temperature: " + temperature);
+        Serial.println("voltage: " + voltage);
 
         if (active) {
             int doubledCounter = counter * 2;
-            Serial.print("block-scoped value: ");
-            Serial.println(doubledCounter);
+            Serial.println("block-scoped value: " + doubledCounter);
         }
     }
 }
