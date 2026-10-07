@@ -26,7 +26,42 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * </pre>
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
-public class Threads {
+public final class Threads {
+
+    public static void main(String[] args) throws InterruptedException {
+        Serial.begin(BaudRate.BAUD_115200);
+
+        Threads example = new Threads();
+        example.startBlinker();
+        example.sumInWorker();
+        example.countSeconds();
+    }
+
+    /** A daemon thread blinks the built-in LED for as long as the program runs. */
+    private void startBlinker() {
+        DigitalOutput led = DigitalOutput.of(Gpio.builtinLed());
+        Thread blinker = new Thread(() -> {
+            while (true) {
+                led.high();
+                Delay.millis(250);
+                led.low();
+                Delay.millis(250);
+            }
+        });
+        blinker.setDaemon(true);
+        blinker.start();
+    }
+
+    /** Starts a worker thread and waits for its result with {@code join()}. */
+    private void sumInWorker() throws InterruptedException {
+        Summer summer = new Summer(100);
+        Thread worker = new Thread(summer);
+        worker.start();
+        worker.join();
+        Serial.print("sum ");
+        Serial.println(summer.sum());
+    }
+
     /** Adds 1..limit, yielding on every step so the blinker keeps running. */
     static final class Summer implements Runnable {
         private final int limit;
@@ -49,28 +84,7 @@ public class Threads {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        Serial.begin(BaudRate.BAUD_115200);
-
-        DigitalOutput led = DigitalOutput.of(Gpio.builtinLed());
-        Thread blinker = new Thread(() -> {
-            while (true) {
-                led.high();
-                Delay.millis(250);
-                led.low();
-                Delay.millis(250);
-            }
-        });
-        blinker.setDaemon(true);
-        blinker.start();
-
-        Summer summer = new Summer(100);
-        Thread worker = new Thread(summer);
-        worker.start();
-        worker.join();
-        Serial.print("sum ");
-        Serial.println(summer.sum());
-
+    private void countSeconds() throws InterruptedException {
         int seconds = 0;
         while (true) {
             Thread.sleep(1000);

@@ -114,17 +114,16 @@ unsupported operation or bootstrap. The currently supported Java subset includes
 - **Strings:** string literals, `String.valueOf(int)`, `length()`, and `charAt(int)` for runtime
   string references, `equals`, plus `+` concatenation of strings and a `StringBuilder`. See
   [`Strings`](juno-examples/src/main/java/io/github/jabrena/juno/Strings.java).
-- **Objects:** simple enums, records, final closed-world classes, constructors, and instance fields.
-  Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative
-  garbage collection. See
-  [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/Objects.java).
 - **BigInteger and BigDecimal:** arbitrary-precision `java.math.BigInteger` and `BigDecimal`, with
   `MathContext` and the `RoundingMode` constants. Arithmetic, `pow`, `sqrt`, division by scale,
   `RoundingMode` or `MathContext`, `setScale`, `round`, comparisons, conversions and `toString` /
   `toPlainString` follow the JDK's results, scales and rounding. Values are immutable blocks in the
-  8 KiB arena and are garbage-collected, so precision is limited by memory, not by a fixed width.
-  Print them with `Serial.println(value.toString())` rather than concatenating them. See
+  8 KiB arena and are garbage-collected, so precision is limited by memory, not by a fixed width. See
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
+- **Objects:** simple enums, records, final closed-world classes, constructors, and instance fields.
+  Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative
+  garbage collection. See
+  [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/Objects.java).
 - **Interfaces:** directly implemented interfaces with closed-world dispatch through an interface
   reference. See
   [`Interfaces`](juno-examples/src/main/java/io/github/jabrena/juno/Interfaces.java).

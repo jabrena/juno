@@ -8,6 +8,7 @@ import io.github.jabrena.juno.api.io.usb.Serial;
 public class Arrays {
 
     public static void main(String[] args) {
+        Arrays arrays = new Arrays();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
@@ -20,10 +21,10 @@ public class Arrays {
         Serial.println("length: " + numbers.length);
         Serial.println("first: " + numbers[0]);
         Serial.println("last: " + numbers[numbers.length - 1]);
-        Serial.println("sum: " + sum(numbers, numbers.length));
-        Serial.println("max: " + max(numbers, numbers.length));
+        Serial.println("sum: " + arrays.sum(numbers, numbers.length));
+        Serial.println("max: " + arrays.max(numbers, numbers.length));
 
-        reverse(numbers, numbers.length);
+        arrays.reverse(numbers, numbers.length);
         Serial.println("after reverse, first: " + numbers[0]);
 
         double[] voltages = new double[4];
@@ -52,7 +53,7 @@ public class Arrays {
     }
 
     // An array parameter has no known length, so callers pass the element count.
-    private static int sum(int[] values, int count) {
+    private int sum(int[] values, int count) {
         int total = 0;
         for (int index = 0; index < count; index++) {
             total += values[index];
@@ -60,7 +61,7 @@ public class Arrays {
         return total;
     }
 
-    private static int max(int[] values, int count) {
+    private int max(int[] values, int count) {
         int largest = values[0];
         for (int index = 1; index < count; index++) {
             if (values[index] > largest) {
@@ -70,7 +71,7 @@ public class Arrays {
         return largest;
     }
 
-    private static void reverse(int[] values, int count) {
+    private void reverse(int[] values, int count) {
         for (int left = 0, right = count - 1; left < right; left++, right--) {
             int swap = values[left];
             values[left] = values[right];

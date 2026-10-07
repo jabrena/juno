@@ -17,7 +17,7 @@ import java.util.concurrent.StructuredTaskScope;
  * {@code Math.min} against the outer value means it can never raise it above what its owner allows.
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
-public class ScopedValuesPrecision {
+public final class ScopedValuesPrecision {
     private static final int MAX_DIGITS = 40;
     private static final int CONSTANTS = 3;
 
@@ -28,17 +28,42 @@ public class ScopedValuesPrecision {
     public static void main(String[] args) throws Exception {
         Serial.begin(BaudRate.BAUD_115200);
 
+        ScopedValuesPrecision example = new ScopedValuesPrecision();
         final int[] steps = new int[CONSTANTS];
-        ScopedValue.where(PRECISION, new MathContext(MAX_DIGITS)).where(STEPS, steps).run(() -> {
-            report("owner binds " + digits() + " digits");
-            ScopedValue.where(PRECISION, new MathContext(Math.min(5, digits()))).run(() -> report("nested asks for 5"));
-            ScopedValue.where(PRECISION, new MathContext(Math.min(60, digits()))).run(() -> report("nested asks for 60, capped"));
-            report("back in the owner");
-        });
+        ScopedValue
+            .where(PRECISION, new MathContext(MAX_DIGITS))
+            .where(STEPS, steps)
+            .run(() -> example.scenarios());
+    }
+
+    private void scenarios() {
+        ownerBinding();
+        nestedLowerPrecision();
+        nestedCappedPrecision();
+        backInOwner();
+    }
+
+    private void ownerBinding() {
+        report("owner binds " + digits() + " digits");
+    }
+
+    /** A nested binding may lower the precision for its own extent. */
+    private void nestedLowerPrecision() {
+        ScopedValue.where(PRECISION, new MathContext(Math.min(5, digits()))).run(() -> report("nested asks for 5"));
+    }
+
+    /** Asking for more than the owner allows is capped by {@code Math.min}. */
+    private void nestedCappedPrecision() {
+        ScopedValue.where(PRECISION, new MathContext(Math.min(60, digits()))).run(() -> report("nested asks for 60, capped"));
+    }
+
+    /** The outer binding is back as soon as the nested ones return. */
+    private void backInOwner() {
+        report("back in the owner");
     }
 
     /** Forks one approximation per constant (a scope holds at most three subtasks), then prints and combines them. */
-    private static void report(String title) {
+    private void report(String title) {
         Serial.println("== " + title);
         BigDecimal sqrt2;
         BigDecimal pi;
@@ -72,7 +97,7 @@ public class ScopedValuesPrecision {
     }
 
     /** Newton's method on x^2 = 2. */
-    private static BigDecimal sqrtTwo() {
+    private BigDecimal sqrtTwo() {
         MathContext context = PRECISION.get();
         BigDecimal two = new BigDecimal(2);
         BigDecimal tolerance = tolerance();
@@ -90,7 +115,7 @@ public class ScopedValuesPrecision {
     }
 
     /** Machin's formula: pi = 16 arctan(1/5) - 4 arctan(1/239). */
-    private static BigDecimal pi() {
+    private BigDecimal pi() {
         MathContext context = PRECISION.get();
         BigDecimal first = arctanInverse(5).multiply(BigDecimal.valueOf(16), context);
         BigDecimal second = arctanInverse(239).multiply(BigDecimal.valueOf(4), context);
@@ -98,7 +123,7 @@ public class ScopedValuesPrecision {
     }
 
     /** arctan(1/n) = 1/n - 1/(3 n^3) + 1/(5 n^5) - ..., counting its terms in the shared step slot. */
-    private static BigDecimal arctanInverse(int n) {
+    private BigDecimal arctanInverse(int n) {
         MathContext context = PRECISION.get();
         BigDecimal tolerance = tolerance();
         BigDecimal square = BigDecimal.valueOf((long) n * n);
@@ -116,7 +141,7 @@ public class ScopedValuesPrecision {
     }
 
     /** The series 1 + 1/1! + 1/2! + ... */
-    private static BigDecimal euler() {
+    private BigDecimal euler() {
         MathContext context = PRECISION.get();
         BigDecimal tolerance = tolerance();
         BigDecimal sum = BigDecimal.ONE;
@@ -131,12 +156,12 @@ public class ScopedValuesPrecision {
         return sum;
     }
 
-    private static int digits() {
+    private int digits() {
         return PRECISION.get().getPrecision();
     }
 
     /** 10^-(digits + 2): two guard digits beyond the inherited precision. */
-    private static BigDecimal tolerance() {
+    private BigDecimal tolerance() {
         return BigDecimal.ONE.movePointLeft(digits() + 2);
     }
 }

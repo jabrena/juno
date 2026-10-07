@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.Exceptions.SensorException;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
@@ -16,64 +17,26 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  */
 public class Exceptions {
 
-    static final class SensorException extends RuntimeException {
-        private final int sensor;
-
-        SensorException(String message, int sensor) {
-            super(message);
-            this.sensor = sensor;
-        }
-
-        int sensor() {
-            return sensor;
-        }
-    }
-
-    /** A resource whose {@code close()} is observable on the serial monitor. */
-    static final class Channel implements AutoCloseable {
-        private final int id;
-
-        Channel(int id) {
-            this.id = id;
-        }
-
-        @Override
-        public void close() {
-            Serial.println("close " + id);
-        }
-    }
-
-    static int parse(int reading) {
-        if (reading < 0) {
-            throw new IllegalArgumentException("negative reading");
-        }
-        return reading;
-    }
-
-    static int sample(int reading) {
-        return parse(reading) + 1;
-    }
-
-    static void withFinally(int reading) {
-        try {
-            sample(reading);
-        } finally {
-            Serial.println("cleanup");
-        }
-    }
-
-    static void withResource(int id, int reading) {
-        try (Channel channel = new Channel(id)) {
-            sample(reading);
-        }
-    }
-
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        Delay.millis(2000);
+
+        Exceptions exceptions = new Exceptions();
 
         Serial.println("Exceptions demo");
 
+        exceptions.validatingReadings();
+        exceptions.customException();
+        exceptions.catchingBySupertype();
+        exceptions.dividingByZero();
+        exceptions.nestedHandlers();
+        exceptions.acrossMethods();
+        exceptions.tryWithResources();
+
+        Serial.println("Done");
+    }
+
+    /** Throw, catch several types with one handler, and a {@code finally} that runs for every reading. */
+    private void validatingReadings() {
         Serial.println("Validating readings");
         int[] readings = new int[3];
         readings[0] = 12;
@@ -95,21 +58,42 @@ public class Exceptions {
                 Serial.println("checked one reading");
             }
         }
+    }
 
+    /** A custom exception class that carries its own field. */
+    private void customException() {
         Serial.println("Custom exception");
         try {
             throw new SensorException("sensor offline", 2);
         } catch (SensorException e) {
             Serial.println(e.getMessage() + " on sensor " + e.sensor());
         }
+    }
 
+    static final class SensorException extends RuntimeException {
+        private final int sensor;
+
+        SensorException(String message, int sensor) {
+            super(message);
+            this.sensor = sensor;
+        }
+
+        int sensor() {
+            return sensor;
+        }
+    }
+
+    /** A handler for a supertype also catches its subclasses. */
+    private void catchingBySupertype() {
         Serial.println("Catching by supertype");
         try {
             throw new NumberFormatException("not a number");
         } catch (IllegalArgumentException e) {
             Serial.println("caught: " + e.getMessage());
         }
+    }
 
+    private void dividingByZero() {
         Serial.println("Dividing by zero");
         int total = 250;
         int samples = 0;
@@ -120,7 +104,9 @@ public class Exceptions {
         } catch (ArithmeticException e) {
             Serial.println("caught: " + e.getMessage());
         }
+    }
 
+    private void nestedHandlers() {
         Serial.println("Nested handlers");
         try {
             try {
@@ -131,7 +117,10 @@ public class Exceptions {
         } catch (UnsupportedOperationException e) {
             Serial.println("outer catch: " + e.getMessage());
         }
+    }
 
+    /** The exception unwinds through the calling methods until a handler matches. */
+    private void acrossMethods() {
         Serial.println("Across methods");
         try {
             // parse() throws two calls below this handler; the exception unwinds through sample().
@@ -145,7 +134,10 @@ public class Exceptions {
         } catch (IllegalArgumentException e) {
             Serial.println("caught " + e.getMessage());
         }
+    }
 
+    /** {@code close()} runs whether or not the body throws. */
+    private void tryWithResources() {
         Serial.println("Try-with-resources");
         try {
             withResource(1, -1);
@@ -153,7 +145,44 @@ public class Exceptions {
             Serial.println("caught " + e.getMessage());
         }
         withResource(2, 5);
+    }
 
-        Serial.println("Done");
+    private int parse(int reading) {
+        if (reading < 0) {
+            throw new IllegalArgumentException("negative reading");
+        }
+        return reading;
+    }
+
+    private int sample(int reading) {
+        return parse(reading) + 1;
+    }
+
+    private void withFinally(int reading) {
+        try {
+            sample(reading);
+        } finally {
+            Serial.println("cleanup");
+        }
+    }
+
+    /** A resource whose {@code close()} is observable on the serial monitor. */
+    static final class Channel implements AutoCloseable {
+        private final int id;
+
+        Channel(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public void close() {
+            Serial.println("close " + id);
+        }
+    }
+
+    private void withResource(int id, int reading) {
+        try (Channel channel = new Channel(id)) {
+            sample(reading);
+        }
     }
 }

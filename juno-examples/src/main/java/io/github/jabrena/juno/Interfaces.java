@@ -1,5 +1,7 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.Interfaces.Half;
+import io.github.jabrena.juno.Interfaces.Scale;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
@@ -10,7 +12,20 @@ import io.github.jabrena.juno.api.io.usb.Serial;
 
 /** Demonstrates closed-world interface dispatch with two reachable implementations. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
-public class Interfaces {
+public final class Interfaces {
+
+    public static void main(String[] args) {
+        Serial.begin(BaudRate.BAUD_115200);
+
+        Interfaces interfaces = new Interfaces();
+        Scale scale = interfaces.choose(Gpio.analogRead(0) > 512);
+        int result = scale.apply(100);
+        while (true) {
+            Serial.print("Interface dispatch result: ");
+            Serial.println(result);
+            Delay.millis(1000);
+        }
+    }
 
     interface Scale {
         int apply(int value);
@@ -30,18 +45,7 @@ public class Interfaces {
         }
     }
 
-    static Scale choose(boolean highInput) {
+    private Scale choose(boolean highInput) {
         return highInput ? new Half() : new Double();
-    }
-
-    public static void main(String[] args) {
-        Serial.begin(BaudRate.BAUD_115200);
-        Scale scale = choose(Gpio.analogRead(0) > 512);
-        int result = scale.apply(100);
-        while (true) {
-            Serial.print("Interface dispatch result: ");
-            Serial.println(result);
-            Delay.millis(1000);
-        }
     }
 }
