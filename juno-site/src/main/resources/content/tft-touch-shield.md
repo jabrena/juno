@@ -106,7 +106,8 @@ For every game at a glance, sorted by category with screenshots, see [GAMES.md](
 
 [`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TouchPaintTFT.java)
 is a minimal finger-paint program in `PORTRAIT_FLIPPED` rotation: pick a color from the palette
-along the top, then draw. Each touch is logged to Serial with screen and raw coordinates, for
+along the top, then draw; the white swatch with a black center at the end of the palette clears the
+canvas. Each touch is logged to Serial with screen and raw coordinates, for
 calibration. Confirmed working on a real UNO R4 WiFi with this shield.
 
 ```bash

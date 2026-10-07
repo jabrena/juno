@@ -56,7 +56,8 @@ class GameScreenshotTest {
                 game("games.starwars.StarWars", "star-wars", "9500:160,130 10000:85,140 16000:200,76 end:16180"),
                 game("games.tempest.Tempest", "tempest", "2785:120,160 3185:200,180 end:10185"),
                 game("games.texasholdem.TexasHoldem", "texas-holdem", "35000:120,160 50000:180,170 end:70000"),
-                game("api.tft.TouchPaintTFT", "tft-touch-paint", paintStrokes()));
+                game("api.tft.TouchPaintTFT", "tft-touch-paint", paintStrokes("end:12000")),
+                game("api.tft.TouchPaintTFT", "tft-touch-paint-cleared", paintStrokes("12500:210,20 end:13500")));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -124,7 +125,7 @@ class GameScreenshotTest {
     }
 
     /** A wave, a curve and a diagonal, drawn as a stream of short taps. */
-    private static String paintStrokes() {
+    private static String paintStrokes(String tail) {
         StringBuilder script = new StringBuilder();
         for (int i = 0; i < 40; i++) {
             script.append(600 + i * 90).append(':').append(20 + i * 5).append(',')
@@ -138,6 +139,6 @@ class GameScreenshotTest {
         for (int i = 0; i < 30; i++) {
             script.append(8700 + i * 90).append(':').append(60 + i * 4).append(',').append(100 + i * 4).append(' ');
         }
-        return script.append("end:12000").toString();
+        return script.append(tail).toString();
     }
 }
