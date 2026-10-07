@@ -4,7 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.storage.SdCard;
+import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 import io.github.jabrena.juno.api.tft.TftTouchShield;

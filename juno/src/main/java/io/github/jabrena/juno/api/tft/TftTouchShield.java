@@ -19,7 +19,7 @@ import io.github.jabrena.juno.api.led.LedMatrixFontAscii;
  * in colors whose two bytes are equal (e.g. {@link #BLACK}, {@link #WHITE}) are the fastest.
  *
  * <p>The SD socket is an ordinary SPI card reader with chip select on D10: use
- * {@link io.github.jabrena.juno.api.io.storage.SdCard#begin()} as-is. It shares no pins with the
+ * {@link io.github.jabrena.juno.api.io.SdCard#begin()} as-is. It shares no pins with the
  * display or touch panel.
  *
  * <p>The touch panel shares its pins with the display bus (X- = display RS, Y+ = display CS, X+/Y-

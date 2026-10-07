@@ -590,7 +590,7 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.net.Wifi;
-                import io.github.jabrena.juno.api.io.storage.SdCard;
+                import io.github.jabrena.juno.api.io.SdCard;
                 import java.io.IOException;
                 import java.io.InputStream;
                 import java.util.Properties;

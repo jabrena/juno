@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.storage;
+package io.github.jabrena.juno.api.io;
 
 import java.io.InputStream;
 

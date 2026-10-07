@@ -745,7 +745,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.net.Wifi;
-                import io.github.jabrena.juno.api.io.storage.SdCard;
+                import io.github.jabrena.juno.api.io.SdCard;
                 import java.io.IOException;
                 import java.io.InputStream;
                 import java.util.Properties;
@@ -799,7 +799,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.storage.SdCard;
+                import io.github.jabrena.juno.api.io.SdCard;
                 public final class HighScoreLog {
                     public static void main(String[] args) {
                         SdCard.begin();
@@ -838,7 +838,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.storage.SdCard;
+                import io.github.jabrena.juno.api.io.SdCard;
                 public final class DynamicHighScorePath {
                     public static void main(String[] args) {
                         SdCard.begin();
@@ -857,7 +857,7 @@ class JunoCompilerTest {
     void lowersSdCardRemove() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.storage.SdCard;
+                import io.github.jabrena.juno.api.io.SdCard;
                 public final class DeleteHighScoreLog {
                     public static void main(String[] args) {
                         SdCard.begin();

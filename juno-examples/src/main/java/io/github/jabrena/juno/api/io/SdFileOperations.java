@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.storage;
+package io.github.jabrena.juno.api.io;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
@@ -20,7 +20,7 @@ import java.io.InputStream;
  * {@link SdCard#begin()} pin), upload, then watch the result:
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:upload \
- *   -Djuno.main=io.github.jabrena.juno.api.io.storage.SdFileOperations
+ *   -Djuno.main=io.github.jabrena.juno.api.io.SdFileOperations
  * ./mvnw -f juno-examples/pom.xml juno:monitor
  * }</pre>
  */

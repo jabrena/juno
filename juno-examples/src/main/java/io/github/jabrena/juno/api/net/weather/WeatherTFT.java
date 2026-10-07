@@ -8,7 +8,7 @@ import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.net.http.HttpsClient;
 import io.github.jabrena.juno.api.net.http.Json;
-import io.github.jabrena.juno.api.io.storage.SdCard;
+import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.usb.BaudRate;
 import io.github.jabrena.juno.api.io.usb.Serial;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
