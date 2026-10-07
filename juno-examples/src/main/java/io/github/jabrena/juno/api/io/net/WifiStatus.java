@@ -14,15 +14,13 @@ import io.github.jabrena.juno.api.io.usb.Serial;
 public final class WifiStatus {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        Delay.millis(2000);
         Serial.println("Starting WiFi");
         Wifi.begin(
             System.getenv("JUNO_WIFI_SSID"), 
             System.getenv("JUNO_WIFI_PASSWORD"));
 
         while (true) {
-            Serial.print("WiFi status: ");
-            Serial.println(Wifi.status());
+            Serial.println("WiFi status: " + Wifi.status());
             Delay.millis(1000);
         }
     }
