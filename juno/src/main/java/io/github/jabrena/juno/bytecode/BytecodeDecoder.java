@@ -26,11 +26,11 @@ public final class BytecodeDecoder {
             18, 21, 22, 23, 24, 25, 54, 55, 56, 57, 58, 188);
     private static final BitSet SHORT_OPERAND = bitSetOf(
             17, 19, 20, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 178, 179,
-            180, 181, 182, 183, 184, 187, 189, 198, 199);
+            180, 181, 182, 183, 184, 187, 189, 192, 198, 199);
     // The SHORT_OPERAND subset whose operand is an unsigned constant-pool/branch index rather than a
     // signed value.
     private static final BitSet UNSIGNED_SHORT_OPERAND = bitSetOf(
-            19, 20, 178, 179, 180, 181, 182, 183, 184, 187, 189);
+            19, 20, 178, 179, 180, 181, 182, 183, 184, 187, 189, 192);
 
     private static final Map<Integer, String> OPCODE_NAMES = Map.ofEntries(
             Map.entry(0, "nop"), Map.entry(1, "aconst_null"), Map.entry(2, "iconst_m1"), Map.entry(3, "iconst_0"),
@@ -80,7 +80,7 @@ public final class BytecodeDecoder {
             Map.entry(184, "invokestatic"), Map.entry(185, "invokeinterface"), Map.entry(186, "invokedynamic"),
             Map.entry(187, "new"),
             Map.entry(188, "newarray"), Map.entry(189, "anewarray"),
-            Map.entry(190, "arraylength"), Map.entry(191, "athrow"), Map.entry(194, "monitorenter"),
+            Map.entry(190, "arraylength"), Map.entry(191, "athrow"), Map.entry(192, "checkcast"), Map.entry(194, "monitorenter"),
             Map.entry(195, "monitorexit"), Map.entry(196, "wide"), Map.entry(197, "multianewarray"),
             Map.entry(198, "ifnull"), Map.entry(199, "ifnonnull"));
 

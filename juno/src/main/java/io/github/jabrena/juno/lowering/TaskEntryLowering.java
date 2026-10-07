@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.lowering;
 
+import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.ir.InterfaceTarget;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -7,19 +8,21 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
-import io.github.jabrena.juno.linker.StructuredTaskSupport;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Builds {@code Object entry(Callable task) { return task.call(); }} for the runtime task bootstrap. */
+/**
+ * Builds {@code Object entry(Callable task) { return task.call(); }} for the runtime task bootstrap, and the same
+ * shape for {@code ScopedValue.CallableOp} behind {@code Carrier.call}.
+ */
 final class TaskEntryLowering {
     private TaskEntryLowering() {
     }
 
-    static IrMethod lower(InterfaceDispatch dispatch, Map<String, Integer> objectTypeIds) {
+    static IrMethod lower(InterfaceDispatch dispatch, MethodRef entryMethod, Map<String, Integer> objectTypeIds) {
         Value callable = Value.int32(0);
         Value result = Value.int32(1);
         List<IrInstruction> instructions = new ArrayList<>();
@@ -38,6 +41,6 @@ final class TaskEntryLowering {
         }
         IrBasicBlock block = new IrBasicBlock(0, List.copyOf(instructions),
                 new IrTerminator.Return(Optional.of(result)));
-        return IrMethod.withInferredValues(StructuredTaskSupport.ENTRY_METHOD, 1, 2, List.of(), List.of(block));
+        return IrMethod.withInferredValues(entryMethod, 1, 2, List.of(), List.of(block));
     }
 }

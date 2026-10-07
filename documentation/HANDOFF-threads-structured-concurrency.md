@@ -56,7 +56,7 @@ Conservative mark/sweep GC uses a fixed 8 KiB arena rooted on every live thread'
 2. **Lambdas and method references (`invokedynamic`).** Non-capturing: lower to a function reference.
    Capturing: generated closure object holding captured fields.
 3. **Exceptions across methods.** **Done 2026-10-01 (uncommitted).** Verified on the UNO Q (serial output of
-   `ExceptionUnwinding` as expected) and under QEMU (`-Pqemu`, `QemuRunIT`, both boards); UNO R4 WiFi not flashed yet.
+   the exception example as expected) and under QEMU (`-Pqemu`, `QemuRunIT`, both boards); UNO R4 WiFi not flashed yet.
    - Mechanism: a pending-exception global (`juno_pending_exception`) set by `athrow`; a throwing frame returns, and
      callers poll it only after calls to methods that may unwind (`lowering/ThrowingMethods`, `CallGuard`). Handlers
      clear it via `juno_throw_catch`; unmatched classes jump to a shared propagate block; the entry point calls
@@ -115,6 +115,17 @@ Conservative mark/sweep GC uses a fixed 8 KiB arena rooted on every live thread'
      release it, so the lock can stay held forever. Release a cancelled slot's monitors in `juno_task_cancel`.
    - **JDK 25 exclusions:** custom `Joiner` implementations, `allUntil`, and the `Configuration` overload remain
      intentionally unsupported and produce `CompileException`; timeout configuration may be added later.
+
+8. **`ScopedValue`**. **Done 2026-10-07 (uncommitted); not flashed on either board.** JDK 25 final API subset:
+   `newInstance()`, `where` (static and `Carrier`), `Carrier.run(Runnable)`/`call(CallableOp)`, `get()`, `isBound()`,
+   `orElse(v)`; reference values only (no boxing). A `Carrier` is a chain of arena records; `run`/`call` push a frame on
+   the caller's own stack and set `juno_scoped_top` (`backend/ScopedValueRuntime`); the scheduler swaps it per slot and
+   `juno_task_scope_fork` hands the owner's top frame to the subtask (plain `Thread`s start unbound). `call` needs a
+   second generated entry (`juno_scoped_call_entry`, `linker/ScopedValueSupport`). Needed a no-op `checkcast`
+   (opcode 0xc0) in `BytecodeDecoder`, approved by the maintainer. Verified by `ScopedValueTest`, `GeneratedAsmToolchainTest`,
+   QEMU `demo.ScopedValues` vs the JVM (R4), `juno:compile` of `ScopedValuesPrecision` for both boards (real `arduino-cli compile` not yet run for it).
+   Limits: a subtask outliving its owner's binding is impossible only because scopes are structured; a cancelled
+   subtask keeps nothing alive; `runWhere`/`callWhere`/`getWhere`/`orElseThrow`/`Carrier.get` raise `CompileException`.
 
 ## Design notes
 

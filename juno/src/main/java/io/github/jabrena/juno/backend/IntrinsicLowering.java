@@ -121,6 +121,7 @@ final class IntrinsicLowering {
         registerGpio(coreRuntime, usesThreads);
         registerThreads(usesThreads);
         registerStructuredTasks();
+        registerScopedValues();
         registerMonitors();
         registerSerial();
         registerStrings();
@@ -230,6 +231,25 @@ final class IntrinsicLowering {
         shim(Intrinsic.TASK_STATE, "juno_task_state", Result.WORD, List.of(RECEIVER), taskRuntime);
         shim(Intrinsic.TASK_EXCEPTION, "juno_task_exception", Result.WORD, List.of(RECEIVER), taskRuntime);
         shim(Intrinsic.TASK_SCOPE_CLOSE, "juno_task_scope_close", Result.NONE, List.of(RECEIVER), taskRuntime);
+    }
+
+    /** {@code java.lang.ScopedValue}: bindings are a chain of arena records entered on the calling thread's stack. */
+    private void registerScopedValues() {
+        shim(Intrinsic.SCOPED_VALUE_NEW, "juno_scoped_new", Result.WORD, List.of(), ShimFeature.SCOPED_VALUES);
+        shim(Intrinsic.SCOPED_VALUE_WHERE, "juno_scoped_where", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.SCOPED_VALUES);
+        shim(Intrinsic.SCOPED_CARRIER_WHERE, "juno_scoped_carrier_where", Result.WORD,
+                List.of(RECEIVER, arg(0), arg(1)), ShimFeature.SCOPED_VALUES);
+        shim(Intrinsic.SCOPED_VALUE_GET, "juno_scoped_get", Result.WORD, List.of(RECEIVER),
+                ShimFeature.SCOPED_VALUES, ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.SCOPED_VALUE_IS_BOUND, "juno_scoped_is_bound", Result.WORD, List.of(RECEIVER),
+                ShimFeature.SCOPED_VALUES);
+        shim(Intrinsic.SCOPED_VALUE_OR_ELSE, "juno_scoped_or_else", Result.WORD, List.of(RECEIVER, arg(0)),
+                ShimFeature.SCOPED_VALUES);
+        shim(Intrinsic.SCOPED_CARRIER_RUN, "juno_scoped_run", Result.NONE, List.of(RECEIVER, arg(0)),
+                ShimFeature.SCOPED_VALUES, ShimFeature.EXCEPTIONS, ShimFeature.THREAD_ENTRY);
+        shim(Intrinsic.SCOPED_CARRIER_CALL, "juno_scoped_call", Result.WORD, List.of(RECEIVER, arg(0)),
+                ShimFeature.SCOPED_VALUES, ShimFeature.EXCEPTIONS, ShimFeature.SCOPED_CALL_ENTRY);
     }
 
     /** Intrinsic monitors share the cooperative scheduler's reentrant monitor table. */

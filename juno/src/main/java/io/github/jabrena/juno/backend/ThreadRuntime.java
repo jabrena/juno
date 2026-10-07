@@ -222,10 +222,13 @@ final class ThreadRuntime {
 
     /** The cooperative scheduler and the {@code Thread} intrinsics, over a core's port. */
     static String scheduler(String delayFunction, boolean exceptions, boolean threadEntry, boolean taskCallableEntry,
-                            boolean structuredTasks, int failedExceptionClassId,
+                            boolean structuredTasks, boolean scopedValues, int failedExceptionClassId,
                             int illegalStateExceptionClassId) {
         String pendingSave = exceptions ? "juno_slots[from].pending = juno_pending_exception;\n"
                 + "  juno_pending_exception = juno_slots[to].pending;" : "";
+        // Each thread runs under its own scoped-value bindings, so the switch swaps the binding stack too.
+        String bindingsSwap = scopedValues ? "juno_slots[from].bindings = juno_scoped_top;\n"
+                + "  juno_scoped_top = juno_slots[to].bindings;" : "";
         String report = exceptions ? """
                   if (juno_pending_exception != 0) {
                     juno_throw_report(juno_pending_exception, static_cast<int32_t>(thread->id));
@@ -273,6 +276,7 @@ final class ThreadRuntime {
                   JunoTaskScope* scope;
                   int32_t result;
                   int32_t failure;
+                  ${JUNO_THREAD_BINDINGS}
                 };
                 static constexpr uint32_t JUNO_THREAD_STARTED = 1u;
                 static constexpr uint32_t JUNO_THREAD_FINISHED = 2u;
@@ -309,6 +313,7 @@ final class ThreadRuntime {
                   JunoThreadObject* joining;
                   JunoTaskScope* scope;
                   int32_t pending;
+                  ${JUNO_SLOT_BINDINGS}
                 };
 
                 static JunoSlot juno_slots[JUNO_MAX_THREADS] = {
@@ -373,6 +378,7 @@ final class ThreadRuntime {
                 static void juno_sched_handoff(uint32_t to, bool finished) {
                   uint32_t from = juno_current_slot;
                   ${JUNO_PENDING_SWAP}
+                  ${JUNO_BINDINGS_SWAP}
                   juno_current_slot = to;
                   if (finished) {
                     juno_port_exit(from, to);
@@ -465,6 +471,7 @@ final class ThreadRuntime {
                   juno_slots[slot] = {JUNO_SLOT_READY, 0u, thread, nullptr, nullptr, 0};
                   juno_live_threads++;
                   juno_port_prepare(slot);
+                  ${JUNO_START_BINDINGS}
                 }
 
                 extern "C" void juno_thread_join(int32_t handle) {
@@ -583,12 +590,18 @@ final class ThreadRuntime {
                   juno_sched_block();
                 }
                 """.replace("${JUNO_PENDING_SWAP}", pendingSave)
+                .replace("${JUNO_BINDINGS_SWAP}", bindingsSwap)
+                .replace("${JUNO_THREAD_BINDINGS}", scopedValues ? "JunoBindingFrame* bindings;" : "")
+                .replace("${JUNO_SLOT_BINDINGS}", scopedValues ? "JunoBindingFrame* bindings;" : "")
+                .replace("${JUNO_START_BINDINGS}",
+                        scopedValues ? "juno_slots[slot].bindings = thread->bindings;" : "")
                 .replace("${JUNO_THREAD_REPORT}", report)
                 .replace("${JUNO_ORDINARY_ENTRY}", ordinaryEntry)
                 .replace("${JUNO_TASK_ENTRY}", taskEntry)
                 .replace("${JUNO_TASK_BODY}", taskBody.replace("${JUNO_ORDINARY_BODY}", ordinaryBody)
                         .replace("${JUNO_THREAD_REPORT}", report))
                 .replace("${JUNO_TASK_RUNTIME}", taskRuntime)
+                .replace("${JUNO_FORK_BINDINGS}", scopedValues ? "task->bindings = juno_scoped_top;" : "")
                 .replace("${JUNO_CORE_DELAY}", delayFunction)
                 .replace("${JUNO_MAX_MONITORS}", Integer.toString(RuntimeLimits.MAX_MONITORS))
                 .replace("${JUNO_FAILED_EXCEPTION_CLASS_ID}", Integer.toString(failedExceptionClassId))
@@ -728,6 +741,7 @@ final class ThreadRuntime {
                   task->flags = JUNO_THREAD_TASK | (runnable ? JUNO_TASK_RUNNABLE : 0u);
                   task->id = juno_threads_created++;
                   task->scope = scope;
+                  ${JUNO_FORK_BINDINGS}
                   scope->tasks[taskIndex] = task;
                   scope->active++;
                   juno_thread_start(static_cast<int32_t>(reinterpret_cast<intptr_t>(task)));

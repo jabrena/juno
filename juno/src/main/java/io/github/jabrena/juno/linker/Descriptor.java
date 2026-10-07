@@ -116,6 +116,7 @@ public record Descriptor(List<String> parameters, String returnType) {
                 || isString(type)
                 || isStringBuilder(type)
                 || ThreadSupport.isThreadType(type)
+                || ScopedValueSupport.isScopedValueType(type)
                 || isSupportedArrayType(type, referenceClassNames)
                 || isReferenceType(type, referenceClassNames);
     }

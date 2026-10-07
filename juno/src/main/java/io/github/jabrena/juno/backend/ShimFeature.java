@@ -38,6 +38,10 @@ enum ShimFeature {
     TASK_CALLABLE_ENTRY,
     /** JDK 25 structured scopes layered on the cooperative thread runtime. */
     STRUCTURED_TASKS,
+    /** {@code java.lang.ScopedValue} bindings: a per-thread binding stack, inherited by forked subtasks. */
+    SCOPED_VALUES,
+    /** A reachable {@code ScopedValue.CallableOp} entry point behind {@code Carrier.call}. */
+    SCOPED_CALL_ENTRY,
     /** {@code Thread.sleep}/{@code Thread.yield} in a program that creates no thread. */
     THREAD_BASICS
 }

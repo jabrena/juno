@@ -153,6 +153,7 @@ public final class Linker {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
                 ThreadSupport.registerEntry(called, interfaceCalls);
                 StructuredTaskSupport.registerEntry(called, interfaceCalls);
+                ScopedValueSupport.registerEntry(called, interfaceCalls);
                 enqueueCall(called, caller, declaredBoards, classes, work);
             }
             if (opcode == 185) {
@@ -180,6 +181,7 @@ public final class Linker {
                 requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
         LockSupport.validateCall(called);
         StructuredTaskSupport.validateCall(called);
+        ScopedValueSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {

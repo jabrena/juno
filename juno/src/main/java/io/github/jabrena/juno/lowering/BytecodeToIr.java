@@ -43,6 +43,7 @@ import io.github.jabrena.juno.linker.LambdaCallSite;
 import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.linker.Program;
 import io.github.jabrena.juno.linker.ThreadSupport;
+import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.StructuredTaskSupport;
 import io.github.jabrena.juno.linker.StringConcatResolver;
 import io.github.jabrena.juno.linker.StringConcatSite;
@@ -151,10 +152,16 @@ public final class BytecodeToIr {
         }
         InterfaceDispatch threadEntry = program.interfaceDispatches().get(ThreadSupport.ENTRY_SITE);
         InterfaceDispatch taskEntry = program.interfaceDispatches().get(StructuredTaskSupport.ENTRY_SITE);
-        if (threadEntry != null || taskEntry != null) {
+        InterfaceDispatch scopedEntry = program.interfaceDispatches().get(ScopedValueSupport.ENTRY_SITE);
+        if (threadEntry != null || taskEntry != null || scopedEntry != null) {
             methods = new ArrayList<>(methods);
             if (threadEntry != null) methods.add(ThreadEntryLowering.lower(threadEntry, objectTypeIds));
-            if (taskEntry != null) methods.add(TaskEntryLowering.lower(taskEntry, objectTypeIds));
+            if (taskEntry != null) {
+                methods.add(TaskEntryLowering.lower(taskEntry, StructuredTaskSupport.ENTRY_METHOD, objectTypeIds));
+            }
+            if (scopedEntry != null) {
+                methods.add(TaskEntryLowering.lower(scopedEntry, ScopedValueSupport.ENTRY_METHOD, objectTypeIds));
+            }
         }
         return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis(),
                 throwableClasses, objectTypeIds);
@@ -226,6 +233,9 @@ public final class BytecodeToIr {
                     if (StructuredTaskSupport.isStructuredTaskOwner(called.owner())) {
                         names.add("java/lang/IllegalStateException");
                         names.add("java/util/concurrent/StructuredTaskScope$FailedException");
+                    }
+                    if (ScopedValueSupport.isScopedValueOwner(called.owner())) {
+                        names.add("java/util/NoSuchElementException");
                     }
                 }
             }
@@ -359,6 +369,10 @@ public final class BytecodeToIr {
             StringConcatSite concat = stringConcatResolver.resolve(linked, instruction);
             return InstructionLowering.of(StringConcatLowering.lower(linked, instruction, concat, instructions,
                     stackBase, depth, nextValueId, tracking), irBlockStart);
+        }
+        if (opcode == 192) {
+            // References are untyped words and javac has already proved the cast, so checkcast generates no code.
+            return InstructionLowering.of(new Lowered(nextValueId, depth), irBlockStart);
         }
         if (opcode == 194 || opcode == 195) {
             return InstructionLowering.of(MonitorLowering.lower(opcode, instructions, stackBase, depth,

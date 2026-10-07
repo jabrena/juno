@@ -115,6 +115,7 @@ final class ConstantAndStackSupport {
                 int slots = Descriptor.jvmSlots(field.descriptor());
                 yield opcode == 180 ? slots - 1 : -slots - 1;
             }
+            case 192 -> 0;
             case 197 -> 1 - instruction.operandB();
             case 182, 183, 184, 185 -> {
                 MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());

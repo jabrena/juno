@@ -46,6 +46,10 @@ public final class ThreadSupport {
             return "StructuredTaskScope.fork needs a Callable: no reachable class or lambda implements "
                     + "java.util.concurrent.Callable";
         }
+        if (ScopedValueSupport.isEntrySite(site)) {
+            return "ScopedValue.Carrier.call needs a CallableOp: no reachable lambda or class implements "
+                    + "java.lang.ScopedValue.CallableOp";
+        }
         return site.caller().displayName() + " at bytecode offset " + site.bytecodeOffset()
                 + ": no reachable implementation of " + interfaceMethod.displayName();
     }

@@ -282,6 +282,32 @@ class GeneratedAsmToolchainTest {
         assembleAndCompile(armGcc, "demo.AsmStructuredTasks");
     }
 
+    @Test
+    void assemblesScopedValuesInheritedBySubtasks() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                import java.util.concurrent.StructuredTaskScope;
+                public final class AsmScopedValues {
+                    private static final ScopedValue<String> USER = ScopedValue.newInstance();
+                    public static void main() throws Exception {
+                        String result = ScopedValue.where(USER, "alice").call(() -> {
+                            try (var scope = StructuredTaskScope.open()) {
+                                var task = scope.fork(() -> USER.get());
+                                scope.join();
+                                return task.get();
+                            }
+                        });
+                        ScopedValue.where(USER, result).run(() -> USER.orElse("none"));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJavaWithPreview(
+                temporaryDirectory, "demo.AsmScopedValues", source);
+        assembleAndCompile(armGcc, "demo.AsmScopedValues");
+    }
+
     /**
      * A regression test for exactly the bug this GC implementation shipped with once: every other
      * toolchain test here either assembles the {@code .S} alone (no link) or compiles/links the shim

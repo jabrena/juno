@@ -578,11 +578,21 @@ final class RuntimeShim {
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(NetworkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
         }
+        appendConcurrencyHelpers(shim);
+    }
+
+    /** Scoped-value bindings, then the thread scheduler that swaps them (it refers to the binding stack). */
+    private void appendConcurrencyHelpers(StringBuilder shim) {
+        if (uses(ShimFeature.SCOPED_VALUES)) {
+            shim.append(ScopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
+                    uses(ShimFeature.SCOPED_CALL_ENTRY),
+                    throwableClasses.indexOf("java/util/NoSuchElementException")));
+        }
         if (uses(ShimFeature.THREADS)) {
             shim.append(core.threadPort());
             shim.append(ThreadRuntime.scheduler(core.delayMillisFunction(), uses(ShimFeature.EXCEPTIONS),
                     uses(ShimFeature.THREAD_ENTRY), uses(ShimFeature.TASK_CALLABLE_ENTRY),
-                    uses(ShimFeature.STRUCTURED_TASKS),
+                    uses(ShimFeature.STRUCTURED_TASKS), uses(ShimFeature.SCOPED_VALUES),
                     throwableClasses.indexOf("java/util/concurrent/StructuredTaskScope$FailedException"),
                     throwableClasses.indexOf("java/lang/IllegalStateException")));
         } else if (uses(ShimFeature.THREAD_BASICS)) {

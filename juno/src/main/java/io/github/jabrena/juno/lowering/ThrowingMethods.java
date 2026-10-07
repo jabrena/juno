@@ -52,7 +52,8 @@ final class ThrowingMethods {
                 && switch (call.intrinsic()) {
                     case THROW_RAISE, THROW_DISPATCH, TASK_SCOPE_OPEN, TASK_SCOPE_FORK_CALLABLE,
                             TASK_SCOPE_FORK_RUNNABLE,
-                            TASK_SCOPE_JOIN, TASK_GET, TASK_STATE, TASK_EXCEPTION, TASK_SCOPE_CLOSE -> true;
+                            TASK_SCOPE_JOIN, TASK_GET, TASK_STATE, TASK_EXCEPTION, TASK_SCOPE_CLOSE,
+                            SCOPED_VALUE_GET, SCOPED_CARRIER_RUN, SCOPED_CARRIER_CALL -> true;
                     default -> false;
                 };
     }

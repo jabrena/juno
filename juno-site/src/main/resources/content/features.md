@@ -134,6 +134,15 @@ Supported today:
   module does this). Java 21's removed `ShutdownOnFailure`/`ShutdownOnSuccess` classes, custom joiners, `allUntil`,
   and the `Configuration` overload are unsupported. `allSuccessfulOrThrow().join()` may be ignored or kept as an
   opaque non-null result; Stream operations on it are not supported.
+- `java.lang.ScopedValue` (final in JDK 25, no preview flag): `ScopedValue.newInstance()`, `ScopedValue.where(key, value)`,
+  `Carrier.where(key, value)`, `Carrier.run(Runnable)`, `Carrier.call(CallableOp)`, `get()`, `isBound()` and
+  `orElse(value)`. A bound value is one reference word (a `String`, array or object; there is no boxing, so bind an
+  `int[]` holder for numbers). A binding is entered on the calling thread's own stack, so an inner `where(...)`
+  rebinds only for its extent and the outer binding returns afterwards, even if the body throws. Subtasks forked in
+  a `StructuredTaskScope` inherit the owner's bindings; a plain `Thread` does not, as on the JVM. `get()` on an unbound
+  value throws `NoSuchElementException`. Not supported: `runWhere`/`callWhere`/`getWhere`, `orElseThrow`, and
+  `Carrier.get`. See the board-ready
+  [`ScopedValuesPrecision` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
 - restricted synchronization for cooperative threads: `volatile` primitive/reference fields are always loaded from
   and stored to memory, including across calls and loop backedges; `synchronized (lock)` blocks use a bounded table
   of eight reentrant intrinsic monitors; and concrete `java.util.concurrent.locks.ReentrantLock` supports only

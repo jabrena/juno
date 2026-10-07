@@ -111,8 +111,10 @@ public final class Thumb2AsmBackend {
     private static final int STACK_ZERO_BYTES = 4096;
 
     /** Where the runtime shim's thread bootstrap enters a started thread's {@code Runnable}. */
-    private static final String THREAD_ENTRY_SYMBOL = "juno_thread_entry";
-    private static final String TASK_ENTRY_SYMBOL = "juno_task_entry";
+    private static final Map<MethodRef, String> RUNTIME_ENTRY_SYMBOLS = Map.of(
+            ThreadSupport.ENTRY_METHOD, "juno_thread_entry",
+            io.github.jabrena.juno.linker.StructuredTaskSupport.ENTRY_METHOD, "juno_task_entry",
+            io.github.jabrena.juno.linker.ScopedValueSupport.ENTRY_METHOD, "juno_scoped_call_entry");
 
     /**
      * {@code runtimeShim} is a small {@code extern "C"} C++ source that must be compiled alongside
@@ -170,9 +172,7 @@ public final class Thumb2AsmBackend {
             IrMethod method = program.methods().get(index);
             String label = method.reference().equals(entryPoint)
                     ? asmFunctionName(method)
-                    : method.reference().equals(ThreadSupport.ENTRY_METHOD) ? THREAD_ENTRY_SYMBOL
-                    : method.reference().equals(io.github.jabrena.juno.linker.StructuredTaskSupport.ENTRY_METHOD)
-                            ? TASK_ENTRY_SYMBOL : "juno_fn" + index;
+                    : RUNTIME_ENTRY_SYMBOLS.getOrDefault(method.reference(), "juno_fn" + index);
             functionLabels.put(method.reference(), label);
             if (method.reference().name().equals("<clinit>")) {
                 clinitLabels.add(label);
@@ -218,7 +218,7 @@ public final class Thumb2AsmBackend {
         List<String> parameterTypes = Descriptor.parse(method.reference().descriptor()).parameters();
 
         output.append('\n');
-        if (isEntryPoint || label.equals(THREAD_ENTRY_SYMBOL) || label.equals(TASK_ENTRY_SYMBOL)) {
+        if (isEntryPoint || RUNTIME_ENTRY_SYMBOLS.containsValue(label)) {
             output.append("    .global ").append(label).append('\n');
         }
         output.append("    .type ").append(label).append(", %function\n")
