@@ -594,7 +594,7 @@ final class ShimLibraries {
                   uint32_t index = 0;
                   if (value < 0) buffer[index++] = '-';
                   while (count > 0u) buffer[index++] = reversed[--count];
-                  buffer[index] = '\0';
+                  buffer[index] = '\\0';
                   return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
                 }
 
@@ -635,8 +635,12 @@ final class ShimLibraries {
                     while (fractionLength > 1u && fractionText[fractionLength - 1u] == '0') fractionLength--;
                     buffer[index++] = '.';
                     for (uint32_t i = 0; i < fractionLength; ++i) buffer[index++] = fractionText[i];
+                  } else {
+                    // Java's Double.toString never prints a bare integer: 3.0, not 3.
+                    buffer[index++] = '.';
+                    buffer[index++] = '0';
                   }
-                  buffer[index] = '\0';
+                  buffer[index] = '\\0';
                   return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
                 }
 
