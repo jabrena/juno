@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.usb;
+package io.github.jabrena.juno.api.io.serial;
 
 import org.junit.jupiter.api.Test;
 

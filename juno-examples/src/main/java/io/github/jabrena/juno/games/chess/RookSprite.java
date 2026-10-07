@@ -3,7 +3,7 @@ package io.github.jabrena.juno.games.chess;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 import static io.github.jabrena.juno.games.chess.Chess.*;
 import static io.github.jabrena.juno.games.chess.ChessEngine.*;

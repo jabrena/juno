@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.net;
 
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
  * Minimal WiFi connectivity probe for the experimental {@code Thumb2AsmBackend}. Connects using

@@ -151,7 +151,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
   HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
   See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) (GPIO and delays),
-  [`SerialCounter`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java) (serial I/O),
+  [`SerialCounter`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/serial/SerialCounter.java) (serial I/O),
   [`HttpServerStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/HttpServerStatus.java) (clocks),
   [`LedMatrixHeart`](juno-examples/src/main/java/io/github/jabrena/juno/api/led/LedMatrixHeart.java) (LED matrix),
   [`WifiStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatus.java) (Wi-Fi),

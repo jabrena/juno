@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.lcd.pomodoro;
 
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
 
 /**

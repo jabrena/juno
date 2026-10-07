@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.usb;
+package io.github.jabrena.juno.api.io.serial;
 
 /**
  * Common baud rates exposed as named values by Juno's USB serial API. Use one of them with

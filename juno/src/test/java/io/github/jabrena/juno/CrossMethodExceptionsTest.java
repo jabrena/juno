@@ -27,7 +27,7 @@ class CrossMethodExceptionsTest {
 
     private static final String CALLEE_THROWS = """
             package demo;
-            import io.github.jabrena.juno.api.io.usb.Serial;
+            import io.github.jabrena.juno.api.io.serial.Serial;
             public final class Crossing {
                 static int parse(int value) {
                     if (value < 0) {
@@ -79,7 +79,7 @@ class CrossMethodExceptionsTest {
     void programsThatNeverThrowAcrossACallAreNotPolled() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Quiet {
                     static int twice(int value) { return value * 2; }
                     public static void main(String[] args) {
@@ -102,7 +102,7 @@ class CrossMethodExceptionsTest {
     void anUnmatchedExceptionKeepsUnwindingPastTheCatchingFrame() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Partial {
                     static void fail(int kind) {
                         if (kind == 0) {
@@ -142,7 +142,7 @@ class CrossMethodExceptionsTest {
     void aFinallyBlockRunsWhenACalleeThrowsAndThenRethrows() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Cleanup {
                     static void fail() { throw new IllegalStateException("boom"); }
                     static void work() {
@@ -178,7 +178,7 @@ class CrossMethodExceptionsTest {
             import io.github.jabrena.juno.annotations.ArduinoUnoQ;
             import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.api.io.usb.Serial;
+            import io.github.jabrena.juno.api.io.serial.Serial;
             @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
             public final class Resources {
                 static final class Pin implements AutoCloseable {
@@ -246,7 +246,7 @@ class CrossMethodExceptionsTest {
     void aDivisionByZeroInACalleeIsCatchableByItsCaller() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Divide {
                     static int ratio(int total, int count) {
                         return total / count;
@@ -274,7 +274,7 @@ class CrossMethodExceptionsTest {
     void aProgramWithNoArithmeticHandlerStillPanicsOnDivisionByZero() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Panics {
                     static int ratio(int total, int count) {
                         return total / count;

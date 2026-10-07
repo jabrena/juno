@@ -2,8 +2,8 @@ package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.Exceptions.SensorException;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
  * Demonstrates throwing and catching exceptions: {@code try}/{@code catch}/{@code finally}, multi-catch,

@@ -47,7 +47,7 @@ public final class Wifi {
      * 1, 45}. Only meaningful once {@link #status} reports {@link #STATUS_CONNECTED}; UNO Q's
      * current router API does not expose this address and writes four zeroes. Juno has no
      * heap, so there is no {@code String}-returning form here — print each octet with {@link
-     * io.github.jabrena.juno.api.io.usb.Serial#print(int)} and a literal {@code "."} between them.
+     * io.github.jabrena.juno.api.io.serial.Serial#print(int)} and a literal {@code "."} between them.
      */
     public static native void localIP(int[] octets);
 }

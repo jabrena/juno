@@ -38,7 +38,7 @@ This is a multi-module Maven build:
 - [`juno/`](https://github.com/jabrena/juno/tree/main/juno) — the Juno compiler itself (`classfile`, `bytecode`, `linker`, `backend`, …),
   plus the small Java-facing hardware API Juno recognizes as compiler intrinsics
   (`io.github.jabrena.juno.api`: `Delay`, `Clock`, `Random`, `LedMatrix`, `api.io.Gpio`,
-  `api.io.DigitalOutput`, `api.lcd.LcdKeypadShield`, `api.tft.TftTouchShield`, `api.hid.Mouse`, `api.io.usb.Serial`, …) and the
+  `api.io.DigitalOutput`, `api.lcd.LcdKeypadShield`, `api.tft.TftTouchShield`, `api.hid.Mouse`, `api.io.serial.Serial`, …) and the
   `io.github.jabrena.juno.annotations` package
   (`Board`, `ArduinoBoard`, `ArduinoUnoR4WiFi`, `ArduinoUnoQ`) that entry-point classes use to select a
   compilation target. Builds `juno/target/juno-<version>.jar`, an executable jar whose main class

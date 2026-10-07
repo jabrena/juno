@@ -1,8 +1,8 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
  * Demonstrates constructing an object and calling instance methods with parameters and return values,

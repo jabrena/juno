@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.usb;
+package io.github.jabrena.juno.api.io.serial;
 
 /** USB serial output recognized as compiler intrinsics by Juno. */
 public final class Serial {

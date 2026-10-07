@@ -4,8 +4,8 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
  * Reads a LEGO tacho motor's rotation sensor to turn it exactly one revolution forwards, then one

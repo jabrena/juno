@@ -50,7 +50,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 
 # Select another example by fully qualified class name
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+  -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
 
 # Compile every TFT game with the real arduino-cli inside Docker (Testcontainers; needs Docker)
 ./mvnw -f juno-examples/pom.xml -Parduino-cli verify

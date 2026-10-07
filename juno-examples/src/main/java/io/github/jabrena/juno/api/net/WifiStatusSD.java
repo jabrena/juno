@@ -2,8 +2,8 @@ package io.github.jabrena.juno.api.net;
 
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.SdCard;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 import java.io.IOException;
 import java.io.InputStream;

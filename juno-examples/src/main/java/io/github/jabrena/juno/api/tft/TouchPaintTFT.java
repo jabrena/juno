@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.tft;
 
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
  * A minimal finger-paint program for the ELEGOO 2.8" TFT touch screen shield: pick a color from

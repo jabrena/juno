@@ -5,7 +5,7 @@ import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.net.http.HttpMethod;
 import io.github.jabrena.juno.api.net.http.HttpServer;
 import io.github.jabrena.juno.api.net.http.HttpStatus;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
  * Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of

@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.lcd;
 
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
  * Prints a header on row 0 of the LCD Keypad Shield's screen, then shows which of its 5 buttons

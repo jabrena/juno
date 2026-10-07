@@ -25,7 +25,7 @@ class ExceptionsTest {
 
     private static final String VALIDATION = """
             package demo;
-            import io.github.jabrena.juno.api.io.usb.Serial;
+            import io.github.jabrena.juno.api.io.serial.Serial;
             public final class Validation {
                 static int check(int value) {
                     try {
@@ -76,7 +76,7 @@ class ExceptionsTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Selector {
                     public static void main(String[] args) {
                         RuntimeException picked = Clock.millis() == 0
@@ -106,7 +106,7 @@ class ExceptionsTest {
     void finallyRunsBeforeAnUncaughtExceptionLeavesTheMethod() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Cleanup {
                     public static void main(String[] args) {
                         try {
@@ -131,7 +131,7 @@ class ExceptionsTest {
     void anInnerFinallyRethrowReachesTheEnclosingCatch() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Nested {
                     public static void main(String[] args) {
                         try {
@@ -160,7 +160,7 @@ class ExceptionsTest {
     void aThrowNoLocalHandlerCatchesIsReportedAndPanics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Uncaught {
                     public static void main(String[] args) {
                         try {
@@ -186,7 +186,7 @@ class ExceptionsTest {
     void programExceptionClassesKeepTheirFieldsAfterTheHeader() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Sensors {
                     static final class SensorException extends RuntimeException {
                         final int code;
@@ -224,7 +224,7 @@ class ExceptionsTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Division {
                     static int ratio(int total, int count) {
                         try {

@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api;
 
 import io.github.jabrena.juno.annotations.Watchdog;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
  * A minimal, dedicated example for watching Juno's conservative mark/sweep garbage collector, both

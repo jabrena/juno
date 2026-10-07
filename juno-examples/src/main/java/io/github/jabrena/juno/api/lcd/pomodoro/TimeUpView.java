@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.lcd.pomodoro;
 
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
 
 /** The alarm screen: both rows announce the session is over and the backlight blinks until any button is pressed. */

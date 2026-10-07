@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.usb;
+package io.github.jabrena.juno.api.io.serial;
 
 /** Test double shadowing the {@code juno} artifact's native {@code Serial}: output is discarded. */
 public final class Serial {

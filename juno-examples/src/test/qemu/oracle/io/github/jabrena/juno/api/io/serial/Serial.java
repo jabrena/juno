@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.usb;
+package io.github.jabrena.juno.api.io.serial;
 
 /**
  * JVM oracle for QemuRunIT: shadows the juno artifact's native {@code Serial} and writes to standard output, so

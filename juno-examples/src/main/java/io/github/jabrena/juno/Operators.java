@@ -1,8 +1,8 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /** Demonstrates arithmetic, assignment, comparison, logical, bitwise, shift, and unary operators. */
 public final class Operators {

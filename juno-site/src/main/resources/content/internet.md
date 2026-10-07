@@ -386,8 +386,8 @@ the JSON type, and prints an integer temperature over USB serial once a minute:
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.http.HttpClient;
 import io.github.jabrena.juno.api.net.http.Json;
 import io.github.jabrena.juno.api.net.Wifi;

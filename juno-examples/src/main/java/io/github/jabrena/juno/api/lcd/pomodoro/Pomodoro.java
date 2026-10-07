@@ -2,8 +2,8 @@ package io.github.jabrena.juno.api.lcd.pomodoro;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
 
 /**

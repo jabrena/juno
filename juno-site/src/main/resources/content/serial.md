@@ -4,7 +4,7 @@ description: "Reading and writing over USB serial."
 layout: page
 ---
 
-[`Serial`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/usb/Serial.java) is a compiler
+[`Serial`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/serial/Serial.java) is a compiler
 intrinsic that wraps the Arduino core's USB serial port (`Serial.begin`/`print`/`println`). It is
 the primary way a Juno program talks back to the development machine while it runs on real
 hardware.
@@ -34,8 +34,8 @@ output is the normal way to confirm a change actually behaves correctly on real 
 ## API
 
 ```java
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 Serial.begin(BaudRate.BAUD_115200);   // preferred: a named, valid rate
 Serial.begin(115200);                 // equivalent, for a custom/non-standard rate
@@ -54,7 +54,7 @@ Serial.println(e.getMessage());       // runtime String (prints "null" for null)
 
 | Method | Argument | Notes |
 |---|---|---|
-| `begin(BaudRate)` | a [`BaudRate`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/usb/BaudRate.java) constant | preferred; keeps the rate and the monitor's config in sync |
+| `begin(BaudRate)` | a [`BaudRate`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/serial/BaudRate.java) constant | preferred; keeps the rate and the monitor's config in sync |
 | `begin(int)` | a data rate in bits per second | for a rate `BaudRate` doesn't name |
 | `print(boolean)` / `println(boolean)` | any `boolean` expression | prints `true` or `false` |
 | `print(int)` / `println(int)` | any `int` expression | prints in decimal |
@@ -84,7 +84,7 @@ Concatenating an arbitrary object remains unsupported because it requires broade
 
 ## A minimal example
 
-[`SerialCounter`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java)
+[`SerialCounter`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/serial/SerialCounter.java)
 opens the connection and prints an incrementing counter, one value per line, once a second:
 
 ```java
@@ -110,7 +110,7 @@ Build, upload, and open the serial monitor with `juno-maven-plugin` (see
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+  -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
 
 ./mvnw -f juno-examples/pom.xml juno:monitor
 ```

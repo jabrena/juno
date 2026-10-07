@@ -27,7 +27,7 @@ class AtomicsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 import java.util.concurrent.atomic.*;
                 @Board(%1$s.class)
                 public final class Counter {
@@ -77,7 +77,7 @@ class AtomicsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 @Board(ArduinoUnoR4WiFi.class)
                 public final class Plain {
                     public static void main() {

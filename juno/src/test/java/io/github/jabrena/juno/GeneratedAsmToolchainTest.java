@@ -40,8 +40,8 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.Delay;
                 import io.github.jabrena.juno.api.Random;
                 import io.github.jabrena.juno.api.io.Gpio;
-                import io.github.jabrena.juno.api.io.usb.BaudRate;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.BaudRate;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 import io.github.jabrena.juno.api.led.LedMatrix;
                 public final class AsmSmoke {
                     static int mix(int value) { return (value << 2) ^ 7; }
@@ -722,7 +722,7 @@ class GeneratedAsmToolchainTest {
     private static final String EXCEPTIONS = """
             package demo;
             import io.github.jabrena.juno.api.Clock;
-            import io.github.jabrena.juno.api.io.usb.Serial;
+            import io.github.jabrena.juno.api.io.serial.Serial;
             public final class AsmExceptions {
                 static final class SensorException extends RuntimeException {
                     final int code;
@@ -771,7 +771,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class AsmStringBuilder {
                     public static void main(String[] args) {
                         StringBuilder builder = new StringBuilder(8);
@@ -797,7 +797,7 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class AsmStringConcat {
                     public static void main(String[] args) {
                         String state = Clock.millis() > 0 ? "on" : null;
@@ -1243,7 +1243,7 @@ class GeneratedAsmToolchainTest {
     private static final String MATH_EVERYTHING = """
             package demo;
             import io.github.jabrena.juno.api.Clock;
-            import io.github.jabrena.juno.api.io.usb.Serial;
+            import io.github.jabrena.juno.api.io.serial.Serial;
             public final class MathEverything {
                 public static void main(String[] args) {
                     int i = Clock.millis() % 2 == 0 ? 3 : -7;

@@ -10,9 +10,7 @@
  * {@link java.io.InputStream} accepted by Juno's bounded intrinsic implementation of {@link
  * java.util.Properties#load(java.io.InputStream)}.
  *
- * <p>This package's subpackages group I/O operations that need more than raw pins: {@code usb}
- * (Serial). Networking and USB HID live in
- * the sibling {@code io.github.jabrena.juno.api.net} and {@code io.github.jabrena.juno.api.hid}
- * packages.
+ * <p>The {@code serial} subpackage holds Serial. Networking and USB HID live in the sibling {@code
+ * io.github.jabrena.juno.api.net} and {@code io.github.jabrena.juno.api.hid} packages.
  */
 package io.github.jabrena.juno.api.io;

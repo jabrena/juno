@@ -7,8 +7,8 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.Gpio;
-import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /** Demonstrates closed-world interface dispatch with two reachable implementations. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})

@@ -3,7 +3,7 @@ package demo;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /** long arithmetic held in register pairs, on locals only (see WideCalls for long parameters and results). */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})

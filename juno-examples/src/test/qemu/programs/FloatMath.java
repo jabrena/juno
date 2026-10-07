@@ -3,7 +3,7 @@ package demo;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.io.usb.Serial;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 /** float and double arithmetic and conversions on locals (hard-float shim, soft-float generated code). */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})

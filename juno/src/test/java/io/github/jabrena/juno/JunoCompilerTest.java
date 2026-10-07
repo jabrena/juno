@@ -355,8 +355,8 @@ class JunoCompilerTest {
     void lowersSerialIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.BaudRate;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.BaudRate;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Counter {
                     public static void main(String[] args) {
                         Serial.begin(BaudRate.BAUD_9600);
@@ -377,7 +377,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class BooleanSerial {
                     public static void main(String[] args) {
                         boolean value = Clock.millis() > 0;
@@ -399,7 +399,7 @@ class JunoCompilerTest {
     void lowersWideAndFloatingPointSerialIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class NumericSerial {
                     public static void main(String[] args) {
                         Serial.print(Long.MIN_VALUE);
@@ -429,7 +429,7 @@ class JunoCompilerTest {
     void lowersACustomSerialBaudRate() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class CustomBaudRate {
                     public static void main(String[] args) {
                         Serial.begin(74880);
@@ -474,8 +474,8 @@ class JunoCompilerTest {
     void lowersSerialStringLiteralIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.BaudRate;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.BaudRate;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Greeting {
                     public static void main(String[] args) {
                         Serial.begin(BaudRate.BAUD_9600);
@@ -546,7 +546,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class RuntimeConcat {
                     public static void main(String[] args) {
                         String state = Clock.millis() > 0 ? "running" : "stopped";
@@ -577,7 +577,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class NumericConcat {
                     public static void main(String[] args) {
                         String optional = Clock.millis() > 0 ? null : "ok";
@@ -611,7 +611,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class ConcatRecipeConstant {
                     public static void main(String[] args) {
                         int value = Clock.millis();
@@ -635,8 +635,8 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.BaudRate;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.BaudRate;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class DynamicGreeting {
                     public static void main(String[] args) {
                         Serial.begin(BaudRate.BAUD_9600);
@@ -1215,7 +1215,7 @@ class JunoCompilerTest {
     void lowersStringBuilderConstructionAppendAndToString() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class StringBuilderDemo {
                     public static void main(String[] args) {
                         StringBuilder builder = new StringBuilder(8);
@@ -1985,7 +1985,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Geometry {
                     public static void main(String[] args) {
                         int x = Clock.millis();
@@ -2017,7 +2017,7 @@ class JunoCompilerTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class WideClamp {
                     public static void main(String[] args) {
                         long value = Clock.millis();

@@ -28,7 +28,7 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 @Board(%1$s.class)
                 public final class Worker {
                     static final class Job implements Runnable {
@@ -113,7 +113,7 @@ class ThreadsTest {
     void aForkWithNoRunnableAnywhereIsRejected() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.usb.Serial;
+                import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Worker {
                     static void spawn(Runnable work) throws Exception {
                         try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
