@@ -26,7 +26,7 @@ import io.github.jabrena.juno.api.io.usb.Serial;
  * </pre>
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
-public final class Threads {
+public class Threads {
     /** Adds 1..limit, yielding on every step so the blinker keeps running. */
     static final class Summer implements Runnable {
         private final int limit;
@@ -47,9 +47,6 @@ public final class Threads {
         int sum() {
             return sum;
         }
-    }
-
-    private Threads() {
     }
 
     public static void main(String[] args) throws InterruptedException {
