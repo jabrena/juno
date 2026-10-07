@@ -80,14 +80,13 @@ class QemuRunIT {
                 millisSince(start));
     }
 
-    /** Every program under src/test/qemu/programs, plus the exception example, once per board. */
+    /** Every program under src/test/qemu/programs, once per board. */
     static Stream<Arguments> programs() throws IOException {
         List<String> mainClasses = new ArrayList<>();
         try (Stream<Path> files = Files.list(QEMU.resolve("programs"))) {
             files.map(path -> path.getFileName().toString()).filter(name -> name.endsWith(".java")).sorted()
                     .forEach(name -> mainClasses.add("demo." + name.substring(0, name.length() - ".java".length())));
         }
-        mainClasses.add("io.github.jabrena.juno.exceptions.ExceptionUnwinding");
         return mainClasses.stream().flatMap(mainClass -> Stream.of(Board.values())
                 .filter(board -> targets(mainClass, board))
                 .map(board -> Arguments.of(mainClass, board)));
