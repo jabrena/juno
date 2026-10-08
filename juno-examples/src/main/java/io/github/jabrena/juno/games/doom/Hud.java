@@ -2,7 +2,7 @@ package io.github.jabrena.juno.games.doom;
 
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
-/** The header above the view: map name, who is walking, and the marine's position. */
+/** The header above the view: map name, the pilot (CPU or HUMAN), and the marine's position. */
 final class Hud {
     private static int shownX = Integer.MIN_VALUE;
     private static int shownY = Integer.MIN_VALUE;
@@ -22,7 +22,7 @@ final class Hud {
         TftTouchShield.setTextColor(Controls.autopilot ? TftTouchShield.MAGENTA : TftTouchShield.CYAN,
                 DisplayList.BACKGROUND);
         TftTouchShield.setCursor(4, 11);
-        TftTouchShield.print(Controls.autopilot ? "AUTOPILOT" : "MANUAL   ");
+        TftTouchShield.print(Controls.autopilot ? "CPU  " : "HUMAN");
         shownX = Integer.MIN_VALUE;
         drawStatus();
     }

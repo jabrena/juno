@@ -34,6 +34,14 @@ class DoomTest {
     }
 
     @Test
+    void thePilotBoxesChooseHumanOrCpu() {
+        assertThat(Controls.choiceAt(85, 140)).as("HUMAN").isZero();
+        assertThat(Controls.choiceAt(235, 140)).as("CPU").isEqualTo(1);
+        assertThat(Controls.choiceAt(160, 140)).as("the gap between them").isEqualTo(-1);
+        assertThat(Controls.choiceAt(85, 40)).as("above the boxes").isEqualTo(-1);
+    }
+
+    @Test
     void theBspTreeFindsTheSectorUnderAnyPoint() {
         assertThat(Player.sectorAt(100, 100)).isZero();
         assertThat(Player.sectorAt(511, 500)).isZero();

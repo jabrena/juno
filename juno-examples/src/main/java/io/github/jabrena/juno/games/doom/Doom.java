@@ -16,9 +16,10 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * other 3D vector games it targets the UNO Q, whose Cortex-M33 has the speed its per-column
  * floating-point projection needs.
  *
- * <p>{@link Autopilot} walks the map's demo route; touching the view takes over ({@link Controls}),
- * {@link Player} walks and opens doors, {@link Renderer} builds each frame and {@link DisplayList}
- * draws only what changed.
+ * <p>After the title, choose the pilot ({@link Controls}): HUMAN walks with the touch screen, CPU lets
+ * {@link Autopilot} walk the map's demo route, and tapping the header switches between them.
+ * {@link Player} walks and opens doors, {@link Renderer} builds each frame and {@link DisplayList} draws
+ * only what changed.
  */
 @Board(ArduinoUnoQ.class)
 public final class Doom {
@@ -36,6 +37,7 @@ public final class Doom {
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
         title();
+        Controls.choosePilot();
         Player.spawn(ceilings);
         Autopilot.restart();
         Hud.drawHeader();
@@ -73,7 +75,7 @@ public final class Doom {
         Hud.showCentered("WIREFRAME  " + Level.NAME, 128, 2, TftTouchShield.YELLOW);
         Hud.showCentered("JAVA ON ARDUINO UNO Q WITH JUNO", 168, 1, Renderer.WALL);
         Hud.showCentered("AFTER EBEN UPTON'S BBC MICRO PORT", 184, 1, Renderer.WALL_FAR);
-        Delay.millis(2500);
-        TftTouchShield.fillScreen(DisplayList.BACKGROUND);
+        Hud.showCentered("TAP TO START", 214, 1, TftTouchShield.WHITE);
+        Controls.waitForTap();
     }
 }
