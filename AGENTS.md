@@ -6,8 +6,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 
 ## Tech stack
 
-- **Language:** Java, `maven.compiler.release=25`. Build/dev JDK is pinned
-  to 25 via `.sdkmanrc` and CI (`.github/workflows/maven.yaml`).
+- **Language:** Java, `maven.compiler.release=27`. Build/dev JDK is pinned
+  to 27 via `.sdkmanrc` and CI (`.github/workflows/maven.yaml`).
 - **Build:** Maven via the `./mvnw` wrapper (`.mvn/wrapper/maven-wrapper.properties`).
 - **Test framework:** JUnit (Jupiter). `juno-examples` also uses Testcontainers (test scope) for the opt-in `arduino-cli` compile test.
 - **External toolchain:** Arduino CLI with the `arduino:renesas_uno` (UNO R4 WiFi) and `arduino:zephyr`
