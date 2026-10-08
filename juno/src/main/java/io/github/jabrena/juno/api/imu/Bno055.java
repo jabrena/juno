@@ -27,7 +27,9 @@ public final class Bno055 {
     public static final int ADDRESS_ALTERNATE = 0x29;
 
     private static final int CHIP_ID = 0x00;
+    private static final int GYRO_X = 0x14;
     private static final int EULER_HEADING = 0x1A;
+    private static final int EULER_PITCH = 0x1E;
     private static final int CALIBRATION_STATUS = 0x35;
     private static final int OPERATION_MODE = 0x3D;
     private static final int POWER_MODE = 0x3E;
@@ -40,6 +42,8 @@ public final class Bno055 {
     private static final int MODE_SWITCH_MILLIS = 30;
     /** Heading is reported in sixteenths of a degree. */
     private static final int UNITS_PER_DEGREE = 16;
+    private static final int SIGN_BIT = 0x8000;
+    private static final int WORD = 0x10000;
 
     private static int address = ADDRESS_DEFAULT;
 
@@ -78,6 +82,33 @@ public final class Bno055 {
     public static int headingDegrees() {
         int raw = headingRaw();
         return raw < 0 ? -1 : raw / UNITS_PER_DEGREE;
+    }
+
+    /**
+     * The pitch in sixteenths of a degree, signed, {@code 0} when the sensor's board is level; the
+     * sign follows the BNO055's own convention (see its datasheet) and flips with the board's
+     * mounting. {@link Short#MIN_VALUE} if the read failed. This is the tilt a self-balancing robot
+     * rocks about when the shield is mounted with its X axis along the wheel axle.
+     */
+    public static int pitchRaw() {
+        return signed(I2c.readRegister16(address, EULER_PITCH));
+    }
+
+    /**
+     * The angular rate about the X axis in sixteenths of a degree per second, signed, taken from the
+     * gyroscope; the derivative of {@link #pitchRaw} without the delay of differencing it.
+     * {@link Short#MIN_VALUE} if the read failed.
+     */
+    public static int gyroXRaw() {
+        return signed(I2c.readRegister16(address, GYRO_X));
+    }
+
+    /** Turns a register word {@code 0..65535} into a signed value, keeping the {@code -1} failure as {@link Short#MIN_VALUE}. */
+    private static int signed(int word) {
+        if (word < 0) {
+            return Short.MIN_VALUE;
+        }
+        return word >= SIGN_BIT ? word - WORD : word;
     }
 
     /**

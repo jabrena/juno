@@ -736,6 +736,31 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    /** Pitch and gyroscope rate are signed words read through the same library-free {@code I2c} shim. */
+    @Test
+    void compilesABno055PitchAndGyroProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.imu.Bno055;
+                public final class AsmBalance {
+                    public static void main(String[] args) {
+                        if (!Bno055.begin()) return;
+                        while (Math.abs(Bno055.pitchRaw()) < 480 && Bno055.gyroXRaw() > -16000) {
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmBalance", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmBalance");
+        assertThat(result.runtimeShim()).contains("juno_i2c_read_register16").doesNotContain("ArduinoBLE.h");
+        Path shim = temporaryDirectory.resolve("AsmBalanceShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
     @Test
     void compilesAPoweredUpHubImuProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
