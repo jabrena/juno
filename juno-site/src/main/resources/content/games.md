@@ -32,7 +32,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 
 ## Contents
 
-- [Arcade](#arcade): [Pac-Man](#pac-man), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Space Paranoids](#space-paranoids), [Lunar Lander](#lunar-lander)
+- [Arcade](#arcade): [Pac-Man](#pac-man), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Space Paranoids](#space-paranoids), [DOOM](#doom), [Lunar Lander](#lunar-lander)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Battleship](#battleship)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem)
 
@@ -135,6 +135,19 @@ After the arcade game from TRON, in landscape. It opens like the film: a laser s
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
+```
+
+### DOOM
+
+A wireframe walk through a DOOM map, after [Eben Upton's BBC Micro E1M1 renderer](https://github.com/ebenupton/doom), in landscape. It is DOOM's own renderer drawing edges instead of textured columns: the BSP tree is walked front to back, every wall is projected in perspective, and each screen column keeps the open window between what is already drawn above and below it, so walls, steps (yellow), lintels (blue) and doors (red) hide whatever is behind them. Doors open as the marine walks up to them. An autopilot walks the map's demo route on a loop; touch the left or right third of the view to turn, the middle to walk forward (upper half) or back (lower half), and tap the header to hand the walk back to the autopilot, which also takes over after ten seconds without touches. DOOM targets the **Arduino UNO Q** (`@Board(ArduinoUnoQ.class)`).
+
+The map lives in flash as `static final` lookup tables (see [Feature Inventory](/features)), so it costs no RAM. The repository ships a small original two-room test map; DOOM's levels are id Software's data and are never committed. To walk E1M1, generate its tables from a `DOOM1.WAD` you have, build or upload the game, then restore the test map:
+
+```bash
+./mvnw -f juno-examples/pom.xml test -Dtest=LevelGeneratorTest -Djuno.doom.wad=/path/to/DOOM1.WAD
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.doom.Doom
+git checkout -- juno-examples/src/main/java/io/github/jabrena/juno/games/doom/Level.java
 ```
 
 ### Lunar Lander
@@ -257,7 +270,7 @@ On top of these:
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
 - `CardGamesTest`, `PacManTest`, `MissileCommandTest`, `TempestTest`, `StarWarsTest`,
-  `EmpireStrikesBackTest`, `RedBaronTest`, `StarTrekTest`, `SpaceParanoidsTest` and
+  `EmpireStrikesBackTest`, `RedBaronTest`, `StarTrekTest`, `SpaceParanoidsTest`, `DoomTest` and
   `LunarLanderTest` check rules and computer players: the poker hand ranking against a brute-force
   reference, no chip lost across all-ins and side pots, and that autopilots clear Missile Command
   waves, Tempest levels, Space Paranoids and Star Trek sectors, whole Red Baron and
