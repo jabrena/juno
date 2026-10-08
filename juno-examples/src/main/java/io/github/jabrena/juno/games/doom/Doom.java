@@ -4,11 +4,13 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
- * A wireframe walk through a DOOM map on the ELEGOO 2.8" TFT touch screen shield, after Eben Upton's
- * BBC Micro E1M1 renderer: full BSP traversal, perspective projection, occlusion and working doors.
+ * DOOM in wireframe on the ELEGOO 2.8" TFT touch screen shield, after Eben Upton's BBC Micro E1M1
+ * renderer: full BSP traversal, perspective projection, occlusion and working doors, plus the map's
+ * monsters ({@link Monsters}) to fight with the pistol ({@link Weapon}).
  *
  * <p>The map lives in flash as {@code static final} tables ({@link Level}, {@link LevelVertices},
  * {@link LevelLines}, {@link LevelSegs}, {@link LevelNodes}); the committed ones describe a small original
@@ -33,15 +35,17 @@ public final class Doom {
         byte[] clips = new byte[2 * DisplayList.WIDTH];
         short[] stack = new short[64];
         short[] ceilings = new short[Level.SECTOR_CEILING.length];
+        short[] depths = new short[DisplayList.WIDTH];
+        short[] monsters = new short[Level.MONSTERS * Monsters.STRIDE];
+        short[] shots = new short[Monsters.SHOTS * Monsters.SHOT_STRIDE];
+        byte[] taken = new byte[Level.ITEMS];
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
         title();
         Controls.choosePilot();
-        Player.spawn(ceilings);
-        Autopilot.restart();
-        Hud.drawHeader();
-        DisplayList.clearView();
+        Random.seed(Clock.micros());
+        enterLevel(ceilings, monsters, shots, taken);
 
         int next = Clock.millis();
         int frame = 0;
@@ -54,19 +58,43 @@ public final class Doom {
                 next = Clock.millis();
             }
             frame = frame + 1;
-            if (Controls.handle(ceilings)) {
+            Weapon.tick();
+            if (Player.hurt > 0) {
+                Player.hurt = Player.hurt - 1;
+            }
+            if (Controls.handle(ceilings, monsters)) {
                 Hud.drawHeader();
             }
             if (Controls.autopilot) {
-                Autopilot.step(ceilings);
+                Autopilot.step(ceilings, monsters, taken);
             }
             Player.operateDoors(ceilings);
             Player.settle();
-            Renderer.render(lines, clips, stack, ceilings);
+            Items.pickUp(taken);
+            Monsters.think(monsters, shots, ceilings, frame);
+            Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken);
             if ((frame & 3) == 0) {
                 Hud.drawStatus();
             }
+            if (Player.health == 0) {
+                Hud.drawStatus();
+                Hud.showCentered("YOU DIED", 110, 4, TftTouchShield.RED);
+                Delay.millis(2500);
+                enterLevel(ceilings, monsters, shots, taken);
+                next = Clock.millis();
+            }
         }
+    }
+
+    /** Starts the map afresh: the marine at the start, every monster back at its post, every item in place. */
+    private static void enterLevel(short[] ceilings, short[] monsters, short[] shots, byte[] taken) {
+        Player.spawn(ceilings);
+        Monsters.reset(monsters, shots);
+        Items.reset(taken);
+        Weapon.reset();
+        Autopilot.restart();
+        Hud.drawHeader();
+        DisplayList.clearView();
     }
 
     private static void title() {

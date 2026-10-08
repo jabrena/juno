@@ -13,11 +13,19 @@ final class Player {
     private static final int DOOR_FORGET = 520;
     private static final int DOOR_SPEED = 6;
 
+    static final int FULL_HEALTH = 100;
+
     static float x;
     static float y;
     static float angle;
     static float eye;
     static int sector;
+    static int health;
+    static int armor;
+    /** 1 for green armor (absorbs a third of each hit), 2 for blue (absorbs half), 0 for none. */
+    static int armorClass;
+    /** Frames left of the red flash that shows the marine was just hit. */
+    static int hurt;
 
     private Player() {
     }
@@ -32,6 +40,26 @@ final class Player {
         }
         sector = sectorAt(x, y);
         eye = Level.SECTOR_FLOOR[sector] + EYE_HEIGHT;
+        health = FULL_HEALTH;
+        armor = 0;
+        armorClass = 0;
+        hurt = 0;
+    }
+
+    /**
+     * Takes a hit at "I'm too young to die" strength (DOOM halves every hit on its easiest skill), with
+     * the share the armor absorbs taken from the armor instead.
+     */
+    static void damage(int amount) {
+        int taken = (amount + 1) / 2;
+        int absorbed = armorClass == 2 ? taken / 2 : armorClass == 1 ? taken / 3 : 0;
+        absorbed = Math.min(absorbed, armor);
+        armor = armor - absorbed;
+        if (armor == 0) {
+            armorClass = 0;
+        }
+        health = Math.max(0, health - taken + absorbed);
+        hurt = 6;
     }
 
     static void turn(float radians) {
@@ -100,7 +128,8 @@ final class Player {
         return dy * LevelNodes.DX[node] >= dx * LevelNodes.DY[node];
     }
 
-    private static boolean blocked(float fromX, float fromY, float toX, float toY, short[] ceilings) {
+    /** Whether walking from one point to another crosses a wall, a step over 24 units or a too-low opening. */
+    static boolean blocked(float fromX, float fromY, float toX, float toY, short[] ceilings) {
         for (int line = 0; line < LevelLines.V1.length; line++) {
             int v1 = LevelLines.V1[line];
             int v2 = LevelLines.V2[line];
@@ -132,6 +161,43 @@ final class Player {
             }
         }
         return false;
+    }
+
+    /**
+     * DOOM-style line of sight between two eyes: blocked by one-sided walls, closed doors and any
+     * opening the sight line passes above or below.
+     */
+    static boolean canSee(float ax, float ay, float az, float bx, float by, float bz, short[] ceilings) {
+        for (int line = 0; line < LevelLines.V1.length; line++) {
+            int back = LevelLines.BACK[line];
+            int v1 = LevelLines.V1[line];
+            int v2 = LevelLines.V2[line];
+            float lx = LevelVertices.X[v1];
+            float ly = LevelVertices.Y[v1];
+            float mx = LevelVertices.X[v2];
+            float my = LevelVertices.Y[v2];
+            float from = side(lx, ly, mx, my, ax, ay);
+            float to = side(lx, ly, mx, my, bx, by);
+            if (from * to >= 0) {
+                continue;
+            }
+            float start = side(ax, ay, bx, by, lx, ly);
+            float end = side(ax, ay, bx, by, mx, my);
+            if (start * end >= 0) {
+                continue;
+            }
+            if (back < 0) {
+                return false;
+            }
+            int front = LevelLines.FRONT[line];
+            float z = az + (bz - az) * (from / (from - to));
+            int floor = Math.max(Level.SECTOR_FLOOR[front], Level.SECTOR_FLOOR[back]);
+            int ceiling = Math.min(ceilings[front], ceilings[back]);
+            if (z <= floor || z >= ceiling) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Cross product sign: negative when ({@code px}, {@code py}) is right of the line a&#8594;b. */

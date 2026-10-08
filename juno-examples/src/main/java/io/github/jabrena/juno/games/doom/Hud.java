@@ -2,10 +2,11 @@ package io.github.jabrena.juno.games.doom;
 
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
-/** The header above the view: map name, the pilot (CPU or HUMAN), and the marine's position. */
+/** The header above the view: map name, the pilot (CPU or HUMAN), health, armor and kills. */
 final class Hud {
-    private static int shownX = Integer.MIN_VALUE;
-    private static int shownY = Integer.MIN_VALUE;
+    private static int shownHealth = Integer.MIN_VALUE;
+    private static int shownKills = Integer.MIN_VALUE;
+    private static int shownArmor = Integer.MIN_VALUE;
 
     private Hud() {
     }
@@ -23,28 +24,35 @@ final class Hud {
                 DisplayList.BACKGROUND);
         TftTouchShield.setCursor(4, 11);
         TftTouchShield.print(Controls.autopilot ? "CPU  " : "HUMAN");
-        shownX = Integer.MIN_VALUE;
+        shownHealth = Integer.MIN_VALUE;
         drawStatus();
     }
 
     static void drawStatus() {
-        int x = Math.round(Player.x);
-        int y = Math.round(Player.y);
-        if (x == shownX && y == shownY) {
+        if (Player.health == shownHealth && Monsters.kills == shownKills && Player.armor == shownArmor) {
             return;
         }
-        shownX = x;
-        shownY = y;
+        shownHealth = Player.health;
+        shownKills = Monsters.kills;
+        shownArmor = Player.armor;
         TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, DisplayList.BACKGROUND);
+        TftTouchShield.setTextColor(Player.health > 25 ? TftTouchShield.GREEN : TftTouchShield.RED,
+                DisplayList.BACKGROUND);
         TftTouchShield.setCursor(196, 2);
-        TftTouchShield.print("X ");
-        TftTouchShield.print(x);
-        TftTouchShield.print("    ");
+        TftTouchShield.print("HEALTH ");
+        TftTouchShield.print(Player.health);
+        TftTouchShield.print("%  ");
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, DisplayList.BACKGROUND);
         TftTouchShield.setCursor(196, 11);
-        TftTouchShield.print("Y ");
-        TftTouchShield.print(y);
-        TftTouchShield.print("    ");
+        TftTouchShield.print("KILLS ");
+        TftTouchShield.print(Monsters.kills);
+        TftTouchShield.print("  ");
+        TftTouchShield.setTextColor(Player.armorClass == 2 ? Sprites.BLUE_ARMOR_COLOR : Sprites.GREEN_ARMOR_COLOR,
+                DisplayList.BACKGROUND);
+        TftTouchShield.setCursor(100, 11);
+        TftTouchShield.print("ARMOR ");
+        TftTouchShield.print(Player.armor);
+        TftTouchShield.print("%  ");
     }
 
     static void showCentered(String text, int y, int size, int color) {

@@ -8,13 +8,14 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * plane and projected. Every column keeps an open window between what has already been drawn above
  * and below it (DOOM's ceiling and floor clip arrays), so an edge is drawn only where it is not
  * hidden by something nearer: one-sided walls close their columns, and steps and lintels narrow
- * them. The walk stops as soon as every column is closed.
+ * them. The walk stops as soon as every column is closed, and the depth at which each column closed is
+ * left for {@link ThingRenderer} to hide the monsters and items standing behind its wall.
  */
 final class Renderer {
     private static final float NEAR = 4f;
-    private static final float FOCAL = 160f;
-    private static final int CX = DisplayList.WIDTH / 2;
-    private static final int CY = (DisplayList.HEADER + DisplayList.HEIGHT) / 2;
+    static final float FOCAL = 160f;
+    static final int CX = DisplayList.WIDTH / 2;
+    static final int CY = (DisplayList.HEADER + DisplayList.HEIGHT) / 2;
     private static final int TOP = DisplayList.HEADER - 1;
     private static final int BOTTOM = DisplayList.HEIGHT;
     private static final int STACK = 64;
@@ -32,6 +33,8 @@ final class Renderer {
     private static float cos;
     private static float sin;
     private static int closed;
+    private static short[] depths;
+    private static final int FAR = Short.MAX_VALUE;
 
     // The seg being drawn, in screen space.
     private static float leftX;
@@ -45,7 +48,9 @@ final class Renderer {
     }
 
     /** Builds the frame seen from the marine's eye into the display list. */
-    static void render(short[] lines, byte[] clips, short[] stack, short[] ceilings) {
+    static void render(short[] lines, byte[] clips, short[] columnDepths, short[] stack, short[] ceilings,
+                       short[] monsters, short[] shots, byte[] taken) {
+        depths = columnDepths;
         viewX = Player.x;
         viewY = Player.y;
         viewZ = Player.eye;
@@ -54,6 +59,7 @@ final class Renderer {
         for (int x = 0; x < DisplayList.WIDTH; x++) {
             clips[x] = (byte) TOP;
             clips[DisplayList.WIDTH + x] = (byte) BOTTOM;
+            depths[x] = (short) FAR;
         }
         closed = 0;
         DisplayList.begin();
@@ -76,6 +82,7 @@ final class Renderer {
                 depth = depth + 2;
             }
         }
+        ThingRenderer.draw(lines, depths, monsters, shots, taken);
         DisplayList.present(lines);
     }
 
@@ -215,11 +222,17 @@ final class Renderer {
     private static void closeColumns(byte[] clips) {
         for (int x = firstColumn; x <= lastColumn; x++) {
             if ((clips[x] & 0xFF) + 1 < (clips[DisplayList.WIDTH + x] & 0xFF)) {
-                clips[x] = (byte) BOTTOM;
-                clips[DisplayList.WIDTH + x] = (byte) TOP;
-                closed = closed + 1;
+                close(clips, x);
             }
         }
+    }
+
+    private static void close(byte[] clips, int x) {
+        clips[x] = (byte) BOTTOM;
+        clips[DisplayList.WIDTH + x] = (byte) TOP;
+        closed = closed + 1;
+        float inverseDepth = leftDepth + slope * (x + 0.5f - leftX);
+        depths[x] = (short) Math.min(FAR, Math.round(1f / Math.max(inverseDepth, 1f / FAR)));
     }
 
     /** What stays visible through a portal: below the lower of the two ceilings, above the higher floor. */
@@ -233,9 +246,7 @@ final class Renderer {
             top = Math.max(top, Math.min(BOTTOM, row(ceiling, x)));
             bottom = Math.min(bottom, Math.max(TOP, row(floor, x)));
             if (top + 1 >= bottom) {
-                clips[x] = (byte) BOTTOM;
-                clips[DisplayList.WIDTH + x] = (byte) TOP;
-                closed = closed + 1;
+                close(clips, x);
             } else {
                 clips[x] = (byte) top;
                 clips[DisplayList.WIDTH + x] = (byte) bottom;

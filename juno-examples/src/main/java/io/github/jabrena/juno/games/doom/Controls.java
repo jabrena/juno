@@ -5,8 +5,9 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * Pilot selection and touch controls. A HUMAN marine turns with the left and right thirds of the
- * view and walks forward (upper half of the middle) or back (lower half); the CPU marine follows the
- * map's demo route. Tapping the header switches between the two at any time.
+ * view, walks forward with the upper half of the middle and fires the pistol with its lower half; the
+ * CPU marine walks the map's demo route and shoots what it meets. Tapping the header switches between
+ * the two at any time.
  */
 final class Controls {
     private static final float TURN = 0.09f;
@@ -31,8 +32,8 @@ final class Controls {
         TftTouchShield.fillScreen(DisplayList.BACKGROUND);
         Hud.showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.RED);
         Hud.showCentered("Who walks " + Level.NAME + "?", 74, 1, TftTouchShield.WHITE);
-        drawChoice(0, "HUMAN", "You turn and walk", false);
-        drawChoice(1, "CPU", "Autopilot walks", false);
+        drawChoice(0, "HUMAN", "You walk and shoot", false);
+        drawChoice(1, "CPU", "Autopilot plays", false);
         Hud.showCentered("Tap the header in game to switch", 206, 1, Renderer.WALL_FAR);
         int choice = -1;
         while (choice < 0) {
@@ -42,7 +43,7 @@ final class Controls {
             Delay.millis(10);
         }
         autopilot = choice == 1;
-        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You turn and walk" : "Autopilot walks", true);
+        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You walk and shoot" : "Autopilot plays", true);
         waitForRelease();
         headerPressed = false;
     }
@@ -62,7 +63,7 @@ final class Controls {
     }
 
     /** Applies this frame's touch; returns whether the header needs redrawing. */
-    static boolean handle(short[] ceilings) {
+    static boolean handle(short[] ceilings, short[] monsters) {
         if (!TftTouchShield.readTouch()) {
             headerPressed = false;
             return false;
@@ -75,7 +76,7 @@ final class Controls {
             if (toggle) {
                 autopilot = !autopilot;
                 if (autopilot) {
-                    Autopilot.resume();
+                    Autopilot.resume(ceilings);
                 }
             }
             return toggle;
@@ -88,8 +89,10 @@ final class Controls {
             Player.turn(TURN);
         } else if (x >= 2 * DisplayList.WIDTH / 3) {
             Player.turn(-TURN);
+        } else if (y < (DisplayList.HEADER + DisplayList.HEIGHT) / 2) {
+            Player.walk(STRIDE, ceilings);
         } else {
-            Player.walk(y < (DisplayList.HEADER + DisplayList.HEIGHT) / 2 ? STRIDE : -STRIDE, ceilings);
+            Weapon.fire(monsters, ceilings);
         }
         return false;
     }
