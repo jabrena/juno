@@ -62,10 +62,8 @@ final class Interludes {
     private static final int HELMET_LIGHT = TftTouchShield.color(170, 152, 135);
     private static final int VISOR = TftTouchShield.color(22, 24, 30);
     private static final int VISOR_GLINT = TftTouchShield.color(110, 125, 150);
-    private static final int[] LAVA_FLOW = {
-        TftTouchShield.color(110, 10, 5), TftTouchShield.color(190, 25, 5), TftTouchShield.color(245, 90, 10),
-        TftTouchShield.color(255, 160, 20), TftTouchShield.color(255, 215, 70), TftTouchShield.color(255, 160, 20),
-        TftTouchShield.color(245, 90, 10), TftTouchShield.color(190, 25, 5)};
+    /** The lava's heat ramp as RGB565 constants (dark red up to yellow and back), so it is a flash table. */
+    private static final int[] LAVA_FLOW = {0x6840, 0xB8C0, 0xF2C1, 0xFD02, 0xFEA8, 0xFD02, 0xF2C1, 0xB8C0};
     private static final int ROCK = TftTouchShield.color(130, 28, 12);
     private static final int ROCK_DARK = TftTouchShield.color(80, 14, 8);
     private static final int[] LEFT_PEAK = {64, 46, 36, 48, 72, 100, 128, 156, 184};
