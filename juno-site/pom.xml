@@ -16,7 +16,7 @@
         <quarkus.platform.version>3.40.1</quarkus.platform.version>
         <roq.version>2.1.9</roq.version>
         <skipITs>true</skipITs>
-        <maven-plugin-resources.version>3.3.1</maven-plugin-resources.version>
+        <maven-plugin-resources.version>3.5.0</maven-plugin-resources.version>
     </properties>
 
     <dependencyManagement>
