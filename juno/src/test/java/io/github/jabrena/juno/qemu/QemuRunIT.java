@@ -42,8 +42,7 @@ import org.testcontainers.utility.MountableFile;
  * <p>Programs live in {@code src/test/qemu/programs}; the JVM side shadows {@code Serial} with
  * {@code src/test/qemu/oracle}. The harness (stub {@code Arduino.h}, startup code, {@code run.sh}) is baked into
  * the image built from {@code src/test/qemu/Dockerfile}. It models no hardware, so it covers language and
- * runtime behavior only. Opt-in: {@code ./mvnw install -DskipTests} once, then
- * {@code ./mvnw -f juno-examples/pom.xml -Pqemu verify}. Skipped when Docker is not available.
+ * runtime behavior only. Opt-in: {@code ./mvnw -f juno/pom.xml -Pqemu verify}. Skipped when Docker is not available.
  */
 @Tag("qemu")
 @Testcontainers(disabledWithoutDocker = true)
@@ -93,15 +92,16 @@ class QemuRunIT {
     }
 
     /**
-     * Whether a program declares {@code board} in its {@code @Board}, so a program can opt out of a board the
-     * harness cannot model. The UNO Q thread port runs on Zephyr's kernel, which the harness replaces with a small
+     * Whether a program runs on {@code board}: every board unless it declares some in its {@code @Board}, so a
+     * program can opt out of a board the harness cannot model. The UNO Q thread port runs on Zephyr's kernel, which the harness replaces with a small
      * cooperative stand-in ({@code src/test/qemu/zephyr/kernel.h}), so it covers the port's logic but not Zephyr's
      * real scheduler.
      */
     private static boolean targets(String mainClass, Board board) {
         Path source = QEMU.resolve("programs").resolve(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java");
         try {
-            return !Files.exists(source) || Files.readString(source).contains(board.annotationArgument());
+            String text = Files.readString(source);
+            return !text.contains("@Board(") || text.contains(board.annotationArgument());
         } catch (IOException e) {
             throw new java.io.UncheckedIOException(e);
         }
@@ -189,24 +189,8 @@ class QemuRunIT {
         return entries;
     }
 
-    /**
-     * Juno's closed world, as {@code juno:compile} builds it: the examples plus the {@code juno} artifact.
-     * Test classes (whose doubles would replace the native API) are left out.
-     */
+    /** Juno's closed world: its own classes (the API the programs call) and nothing from the test classpath. */
     private static List<Path> junoClasspath() {
-        List<Path> entries = new ArrayList<>();
-        entries.add(BASEDIR.resolve("target/classes"));
-        String classpath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
-        for (String entry : classpath.split(File.pathSeparator)) {
-            Path path = Path.of(entry).toAbsolutePath().normalize();
-            String name = path.getFileName() == null ? "" : path.getFileName().toString();
-            boolean reactorJuno = path.endsWith(Path.of("juno", "target", "classes"));
-            boolean installedJuno = name.startsWith("juno-") && name.endsWith(".jar")
-                    && !name.startsWith("juno-maven-plugin") && !name.startsWith("juno-examples");
-            if (reactorJuno || installedJuno) {
-                entries.add(path);
-            }
-        }
-        return entries;
+        return List.of(BASEDIR.resolve("target/classes"));
     }
 }

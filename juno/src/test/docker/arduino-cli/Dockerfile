@@ -1,5 +1,5 @@
-# arduino-cli with the supported cores, for ArduinoCliCompileIT
-# (./mvnw -f juno-examples/pom.xml -Parduino-cli verify).
+# arduino-cli with the supported cores, for ArduinoCliCompileIT (API and shield fixtures)
+# (./mvnw -f juno/pom.xml -Parduino-cli verify).
 # The test builds this image on first use and Docker caches it afterwards.
 FROM debian:bookworm-slim
 
@@ -30,6 +30,9 @@ RUN arduino-cli lib install Mouse
 # #errors out at compile time without it ("install the Arduino_RouterBridge library ... for
 # proper Serial support on this board"). Not bundled with the arduino:zephyr core above.
 RUN arduino-cli lib install Arduino_RouterBridge
+
+# Libraries the generated shims include for the Servo and SdCard APIs.
+RUN arduino-cli lib install Servo SdFat
 
 WORKDIR /sketches
 CMD ["sleep", "infinity"]

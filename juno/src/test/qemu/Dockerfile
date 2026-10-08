@@ -1,5 +1,5 @@
 # Runs Juno-generated Thumb-2 under QEMU (Cortex-M4, mps2-an386), for QemuRunIT
-# (./mvnw -f juno-examples/pom.xml -Pqemu verify). The image carries a tiny bare-metal harness instead of
+# (./mvnw -f juno/pom.xml -Pqemu verify). The image carries a tiny bare-metal harness instead of
 # the Arduino core: see run.sh, startup.cpp and Arduino.h. QemuRunIT retains the named image so Docker can
 # reuse this toolchain layer across Maven JVMs; harness-only changes rebuild only the small COPY layer below.
 FROM debian:bookworm-slim

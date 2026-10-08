@@ -19,11 +19,9 @@ jobs:
           cache: 'maven'
       - name: Maven build
         run: ./mvnw --batch-mode --no-transfer-progress verify --file pom.xml
-      # The Testcontainers profiles are opt-in locally (see AGENTS.md). They resolve the juno artifacts from the
-      # local repository, so install the reactor once without re-running tests; Docker is preinstalled on the runner.
-      - name: Install reactor artifacts
-        run: ./mvnw --batch-mode --no-transfer-progress install -DskipTests --file pom.xml
-      - name: Compile games with arduino-cli (Testcontainers)
-        run: ./mvnw --batch-mode --no-transfer-progress -Parduino-cli verify --file juno-examples/pom.xml
+      # The Testcontainers profiles live in the juno module and are opt-in locally (see AGENTS.md);
+      # Docker is preinstalled on the runner.
+      - name: Compile API and shield fixtures with arduino-cli (Testcontainers)
+        run: ./mvnw --batch-mode --no-transfer-progress -Parduino-cli verify --file juno/pom.xml
       - name: Run programs under QEMU (Testcontainers)
-        run: ./mvnw --batch-mode --no-transfer-progress -Pqemu verify --file juno-examples/pom.xml
+        run: ./mvnw --batch-mode --no-transfer-progress -Pqemu verify --file juno/pom.xml

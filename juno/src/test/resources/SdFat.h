@@ -20,6 +20,7 @@ public:
   int read() { return -1; }
   size_t size() { return 0; }
   void println(const char*) {}
+  void print(const char*) {}
   void close() {}
   operator bool() const { return true; }
 };
