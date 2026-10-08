@@ -1,19 +1,19 @@
 package io.github.jabrena.juno.api.led;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 
 /**
- * A self-playing Snake on the UNO R4 WiFi's 12x8 LED matrix. The body is a fixed-size
+ * A self-playing Snake on the built-in LED matrix. The body is a fixed-size
  * {@code int[]} shift register, always shifted by one cell per tick; {@code length} controls how
  * many of those leading cells are actually lit, which is what makes the snake grow each time it eats
- * food. Each cell is a single packed {@code y * WIDTH + x} position (matching the LED matrix's own
+ * food. Each cell is a single packed {@code y * width + x} position (matching the LED matrix's own
  * bit index) instead of an (x, y) pair.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LedMatrixSnake {
-    private static final int WIDTH = 12;
     private static final int HEIGHT = 8;
     private static final int MAX_LENGTH = 16;
     private static final int NO_DIR = -1;
@@ -35,7 +35,7 @@ public final class LedMatrixSnake {
         int rngState = 12345;
 
         LedMatrix.begin();
-        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {
             int chosenDir = chooseDir(dir, headPos, foodPos, length, body);
@@ -63,7 +63,7 @@ public final class LedMatrixSnake {
                 int attempt = 0;
                 while (attempt < 4) {
                     rngState = rngState * 1103515245 + 12345;
-                    int candidateX = rawMod(rngState, WIDTH);
+                    int candidateX = rawMod(rngState, LedCanvas.width());
                     rngState = rngState * 1103515245 + 12345;
                     int candidateY = rawMod(rngState, HEIGHT);
                     int candidatePos = packPos(candidateX, candidateY);
@@ -145,15 +145,15 @@ public final class LedMatrixSnake {
     }
 
     private static int packPos(int x, int y) {
-        return y * WIDTH + x;
+        return y * LedCanvas.width() + x;
     }
 
     private static int posX(int pos) {
-        return pos % WIDTH;
+        return pos % LedCanvas.width();
     }
 
     private static int posY(int pos) {
-        return pos / WIDTH;
+        return pos / LedCanvas.width();
     }
 
     private static int dirDx(int dir) {
@@ -177,7 +177,7 @@ public final class LedMatrixSnake {
     }
 
     private static boolean inBounds(int x, int y) {
-        return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT;
+        return x >= 0 && x < LedCanvas.width() && y >= 0 && y < HEIGHT;
     }
 
     private static boolean collidesWithBody(int pos, int length, int[] body) {

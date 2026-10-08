@@ -1,21 +1,22 @@
 package io.github.jabrena.juno.api.led;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 
 /**
- * Counts a one-decimal-digit reading from 0.0 up to 9.9 on the UNO R4 WiFi's 12x8 LED matrix,
+ * Counts a one-decimal-digit reading from 0.0 up to 9.9 on the built-in LED matrix,
  * using the compact 3x5 font in {@code LedCanvas}/{@code LedMatrixFontSmall}. Unlike the
  * 5x7 font used by {@code LedMatrixCountUp}, the 3x5 digits leave room for a decimal point, so
  * "wholeDigit.fractionDigit" fits as a single 9-column group, centered with 1 column to spare on
  * each side.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LedMatrixDecimalCountUp {
     public static void main(String[] args) {
         LedMatrix.begin();
-        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {
             int wholeDigit = 0;

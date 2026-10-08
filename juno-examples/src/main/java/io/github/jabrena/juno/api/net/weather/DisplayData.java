@@ -14,7 +14,7 @@ public final class DisplayData {
 
     /** Creates the fixed display buffers once for reuse throughout the application. */
     public DisplayData() {
-        frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+        frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
         message = new int[MAX_MESSAGE_CHARS];
     }
 
@@ -73,7 +73,7 @@ public final class DisplayData {
 
     private void scrollMessage(int messageLength) {
         int messageWidth = messageLength * CHAR_SPACING;
-        int startOffset = LedCanvas.WIDTH;
+        int startOffset = LedCanvas.width();
         int endOffset = -messageWidth;
         int offset = startOffset;
         while (offset >= endOffset) {

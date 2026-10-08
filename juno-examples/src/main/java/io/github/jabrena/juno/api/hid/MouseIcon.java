@@ -27,7 +27,7 @@ public final class MouseIcon {
      * <p>The LED matrix must already have been initialized with {@link LedMatrix#begin()}.
      */
     public static void draw() {
-        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
         LedCanvas.fillRect(frame, 1, 0, 2, 2); // left ear
         LedCanvas.fillRect(frame, 9, 0, 2, 2); // right ear
         LedCanvas.fillRect(frame, 2, 2, 8, 1); // head top edge

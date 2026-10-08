@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.lego;
 
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.imu.Bno055;
+import io.github.jabrena.juno.api.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
@@ -61,7 +61,7 @@ public class PoweredUpGyroBoy {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         PoweredUpGyroBoy app = new PoweredUpGyroBoy();
-        if (!Bno055.begin()) {
+        if (!NineAxisMotionShield.begin()) {
             Serial.println("No BNO055 found on the I2C bus");
             return;
         }
@@ -94,10 +94,10 @@ public class PoweredUpGyroBoy {
         drive(0);
         Serial.println("Hold the robot upright...");
         int steadySince = Clock.millis();
-        int reference = Bno055.pitchRaw();
+        int reference = NineAxisMotionShield.pitchRaw();
         while (Clock.millis() - steadySince < CALIBRATE_MILLIS) {
             Delay.millis(LOOP_MILLIS);
-            int pitch = Bno055.pitchRaw();
+            int pitch = NineAxisMotionShield.pitchRaw();
             if (Math.abs(pitch - reference) > UPRIGHT_DEGREES * UNITS_PER_DEGREE) {
                 reference = pitch;
                 steadySince = Clock.millis();
@@ -105,7 +105,7 @@ public class PoweredUpGyroBoy {
         }
         int sum = 0;
         for (int i = 0; i < CALIBRATE_SAMPLES; i++) {
-            sum += Bno055.pitchRaw();
+            sum += NineAxisMotionShield.pitchRaw();
             Delay.millis(LOOP_MILLIS);
         }
         balancePoint = sum / CALIBRATE_SAMPLES;
@@ -121,8 +121,8 @@ public class PoweredUpGyroBoy {
             if (!PoweredUpHubRemote.isConnected()) {
                 return;
             }
-            int angle = ANGLE_SIGN * (Bno055.pitchRaw() - balancePoint);
-            int rate = ANGLE_SIGN * Bno055.gyroXRaw();
+            int angle = ANGLE_SIGN * (NineAxisMotionShield.pitchRaw() - balancePoint);
+            int rate = ANGLE_SIGN * NineAxisMotionShield.gyroXRaw();
             if (Math.abs(angle) > FALL_DEGREES * UNITS_PER_DEGREE) {
                 upright = false;
             } else {

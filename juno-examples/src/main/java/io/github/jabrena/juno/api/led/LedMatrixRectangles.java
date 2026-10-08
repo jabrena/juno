@@ -1,18 +1,19 @@
 package io.github.jabrena.juno.api.led;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 
 /**
  * Cycles a filled square, an outlined square, a filled rectangle, and an outlined rectangle on the
- * UNO R4 WiFi's 12x8 LED matrix using {@code LedCanvas}.
+ * built-in LED matrix using {@code LedCanvas}.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LedMatrixRectangles {
     public static void main(String[] args) {
         LedMatrix.begin();
-        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {
             LedCanvas.clear(frame);

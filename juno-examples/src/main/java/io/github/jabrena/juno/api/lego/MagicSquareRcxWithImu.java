@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.lego;
 
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.imu.Bno055;
+import io.github.jabrena.juno.api.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
@@ -25,7 +25,7 @@ public class MagicSquareRcxWithImu {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         MagicSquareRcxWithImu app = new MagicSquareRcxWithImu();
-        if (!Bno055.begin()) {
+        if (!NineAxisMotionShield.begin()) {
             Serial.println("No BNO055 found: is the 9 Axis Motion Shield attached?");
             return;
         }
@@ -52,9 +52,9 @@ public class MagicSquareRcxWithImu {
 
     /** Spins left, sending commands until the sensor reports TURN_DEGREES anticlockwise, or the safety timeout. */
     private void turnLeft() {
-        int startHeading = Bno055.headingDegrees();
+        int startHeading = NineAxisMotionShield.headingDegrees();
         int started = Clock.millis();
-        while (Bno055.turnedSince(startHeading) > -TURN_DEGREES && Clock.millis() - started < TURN_TIMEOUT_MILLIS) {
+        while (NineAxisMotionShield.turnedSince(startHeading) > -TURN_DEGREES && Clock.millis() - started < TURN_TIMEOUT_MILLIS) {
             RcxRemote.sendButtons(RcxRemote.A_BACKWARD | RcxRemote.B_FORWARD);
         }
     }

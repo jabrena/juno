@@ -41,8 +41,8 @@ public final class SdFileOperations {
         SdCard.remove(PATH); // start from a clean slate on every run
         report("exists before create", SdCard.exists(PATH));
 
-        report("create (append line 1)", SdCard.append(PATH, "line 1"));
-        report("append line 2", SdCard.append(PATH, "line 2"));
+        report("create (append line 1)", SdCard.appendLine(PATH, "line 1"));
+        report("append line 2", SdCard.appendLine(PATH, "line 2"));
         report("exists after append", SdCard.exists(PATH));
 
         Serial.println("reading back:");

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.net.weather;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
@@ -11,7 +12,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
 /**
  * Connects to WiFi, then periodically requests Madrid's current temperature and local time from
  * the free, no-API-key Open-Meteo forecast API over certificate-validated HTTPS, and scrolls
- * "Madrid Weather: &lt;temp&gt;C" followed by "Madrid Time: HH:MM" across the UNO R4 WiFi's 12x8 LED
+ * "Madrid Weather: &lt;temp&gt;C" followed by "Madrid Time: HH:MM" across the built-in LED
  * matrix. It uses the same right-to-left one-pixel-per-tick idea as {@code LedMatrixScrollingText},
  * adapted for messages built at runtime
  * instead of a compile-time literal. Credentials come from {@code JUNO_WIFI_SSID}/
@@ -31,7 +32,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
  * to a {@code double} and reformatting, so the displayed value matches Open-Meteo's own text
  * exactly rather than being subject to binary-floating-point rounding.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class MadridWeather {
     private static final int TIME_TEXT_BUFFER_SIZE = 32;
 
