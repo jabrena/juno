@@ -452,6 +452,32 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    void compilesAnUnoQLedMatrixShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.led.LedCanvas;
+                @Board(ArduinoUnoQ.class)
+                public final class AsmUnoQLedMatrix {
+                    public static void main(String[] args) {
+                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+                        LedCanvas.fillRect(frame, 1, 1, 3, 3);
+                        LedCanvas.show(frame);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQLedMatrix", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQLedMatrix");
+        Path shim = temporaryDirectory.resolve("AsmUnoQLedMatrixShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
     void compilesAnUnoQRouterBridgeEmailShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
@@ -710,18 +736,18 @@ class GeneratedAsmToolchainTest {
 
     /** The BNO055 driver is Java over the library-free {@code I2c} shim, which wraps the core's {@code Wire}. */
     @Test
-    void compilesABno055ProgramsShimWithACppCompiler() throws Exception {
+    void compilesANineAxisMotionShieldProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.imu.Bno055;
+                import io.github.jabrena.juno.api.imu.NineAxisMotionShield;
                 public final class AsmHeading {
                     public static void main(String[] args) {
-                        if (!Bno055.begin()) return;
-                        int start = Bno055.headingDegrees();
-                        while (Bno055.turnedSince(start) > -90) {
-                            if (Bno055.calibration() < 0) return;
+                        if (!NineAxisMotionShield.begin()) return;
+                        int start = NineAxisMotionShield.headingDegrees();
+                        while (NineAxisMotionShield.turnedSince(start) > -90) {
+                            if (NineAxisMotionShield.calibration() < 0) return;
                         }
                     }
                 }
@@ -738,16 +764,16 @@ class GeneratedAsmToolchainTest {
 
     /** Pitch and gyroscope rate are signed words read through the same library-free {@code I2c} shim. */
     @Test
-    void compilesABno055PitchAndGyroProgramsShimWithACppCompiler() throws Exception {
+    void compilesANineAxisMotionShieldPitchAndGyroProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.imu.Bno055;
+                import io.github.jabrena.juno.api.imu.NineAxisMotionShield;
                 public final class AsmBalance {
                     public static void main(String[] args) {
-                        if (!Bno055.begin()) return;
-                        while (Math.abs(Bno055.pitchRaw()) < 480 && Bno055.gyroXRaw() > -16000) {
+                        if (!NineAxisMotionShield.begin()) return;
+                        while (Math.abs(NineAxisMotionShield.pitchRaw()) < 480 && NineAxisMotionShield.gyroXRaw() > -16000) {
                         }
                     }
                 }

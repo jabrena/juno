@@ -22,6 +22,17 @@ record RenesasCoreRuntime() implements CoreRuntime {
         return 13;
     }
 
+    /** {@code Arduino_LED_Matrix.h} of the renesas_uno core declares {@code ArduinoLEDMatrix}, 12x8. */
+    @Override
+    public String ledMatrixType() {
+        return "ArduinoLEDMatrix";
+    }
+
+    @Override
+    public int ledMatrixColumns() {
+        return 12;
+    }
+
     @Override
     public String wifiIncludes(boolean udp) {
         // WiFiS3.h exposes WiFi, WiFiClient, WiFiServer, WiFiSSLClient and WiFiUDP.

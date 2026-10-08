@@ -65,13 +65,42 @@ class BoardTest {
     }
 
     @Test
+    void theUnoQDrivesItsThirteenColumnLedMatrixThroughTheZephyrLibrary() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                @Board(ArduinoUnoQ.class)
+                public final class MatrixOnUnoQ {
+                    public static void main(String[] args) {
+                        LedMatrix.begin();
+                        LedMatrix.loadFrame(1, 2, 3, 4);
+                        int columns = LedMatrix.columns();
+                        LedMatrix.clear();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MatrixOnUnoQ", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MatrixOnUnoQ");
+        // Zephyr's library is Arduino_LED_Matrix and a 13x8 frame (104 pixels) needs four words.
+        assertThat(result.runtimeShim()).contains("#include \"Arduino_LED_Matrix.h\"",
+                "static Arduino_LED_Matrix juno_led_matrix;", "const uint32_t frame[4] = {")
+                .doesNotContain("ArduinoLEDMatrix", "static_cast<void>(word3)");
+        assertThat(result.assembly()).contains("#13");
+    }
+
+    @Test
     void theUnoR4KeepsItsOwnYieldAndLedMatrix() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.led.LedMatrix;
                 public final class OnUnoR4 {
                     public static void main(String[] args) {
                         Delay.millis(1);
+                        LedMatrix.begin();
+                        int columns = LedMatrix.columns();
                     }
                 }
                 """;
@@ -79,7 +108,9 @@ class BoardTest {
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OnUnoR4");
         assertThat(result.assembly()).contains("bl delay\n").doesNotContain("juno_delay");
         assertThat(result.runtimeShim()).contains("extern \"C\" void yield()", "#include \"Arduino_LED_Matrix.h\"",
-                "static ArduinoLEDMatrix juno_led_matrix;");
+                "static ArduinoLEDMatrix juno_led_matrix;", "const uint32_t frame[3] = {",
+                "static_cast<void>(word3)");
+        assertThat(result.assembly()).contains("#12");
     }
 
     @Test
@@ -212,7 +243,7 @@ class BoardTest {
     }
 
     @Test
-    void aPortableProgramMustSupportLedMatrixOnEveryDeclaredBoard() throws Exception {
+    void aPortableProgramCanUseLedMatrixOnEveryDeclaredBoard() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
@@ -227,13 +258,11 @@ class BoardTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortableWithLedMatrix", source);
-        // UNO R4 WiFi alone has an LED matrix; declaring UNO Q too must fail even though the build
-        // requested here (UNO R4 WiFi) does support it, since the same source also claims UNO Q support.
-        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.PortableWithLedMatrix",
-                Optional.of("arduino-uno-r4-wifi")))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("LedMatrix requires @Board(ArduinoUnoR4WiFi.class)")
-                .hasMessageContaining("UNO Q");
+        // Both boards have an LED matrix (12x8 and 13x8), so each declared board builds the same source.
+        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableWithLedMatrix",
+                Optional.of("arduino-uno-r4-wifi")).board()).isEqualTo(Board.UNO_R4_WIFI);
+        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableWithLedMatrix",
+                Optional.of("arduino-uno-q")).board()).isEqualTo(Board.UNO_Q);
     }
 
     @Test
@@ -301,7 +330,7 @@ class BoardTest {
         assertThat(Board.UNO_Q.core()).isEqualTo(ArduinoCore.ZEPHYR);
         assertThat(Board.UNO_Q.supports(Capability.WIFI)).isTrue();
         assertThat(Board.UNO_Q.supports(Capability.HTTPS_CLIENT)).isTrue();
-        assertThat(Board.UNO_Q.supports(Capability.LED_MATRIX)).isFalse();
+        assertThat(Board.UNO_Q.supports(Capability.LED_MATRIX)).isTrue();
         assertThat(Board.UNO_Q.supports(Capability.HTTP_SERVER)).isTrue();
         assertThat(Board.UNO_Q.supports(Capability.WIFI_S3_NETWORKING)).isFalse();
         assertThat(Board.UNO_Q.supports(Capability.WATCHDOG)).isFalse();

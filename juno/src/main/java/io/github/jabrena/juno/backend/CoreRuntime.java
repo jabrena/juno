@@ -26,6 +26,20 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime {
     /** The Arduino digital pin number {@code Gpio.builtinLed()} resolves to on this core's board. */
     int builtinLedPin();
 
+    /** The core's LED matrix class ({@code Arduino_LED_Matrix.h} names it differently on each core). */
+    String ledMatrixType();
+
+    /** How many columns the board's LED matrix has; it always has {@link #LED_MATRIX_ROWS} rows. */
+    int ledMatrixColumns();
+
+    /** Rows of every supported board's LED matrix. */
+    int LED_MATRIX_ROWS = 8;
+
+    /** The 32-bit words one frame of the board's LED matrix occupies (96 pixels on UNO R4, 104 on UNO Q). */
+    default int ledMatrixWords() {
+        return (ledMatrixColumns() * LED_MATRIX_ROWS + 31) / 32;
+    }
+
     /**
      * Core-provided headers for network access and, when requested, UDP. UNO R4 uses WiFiS3
      * directly; UNO Q delegates networking to Linux through Arduino_RouterBridge.

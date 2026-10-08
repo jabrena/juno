@@ -1,7 +1,7 @@
 /**
  * The UNO R4 WiFi's built-in 12x8 LED matrix: {@link io.github.jabrena.juno.api.led.LedMatrix},
  * the raw compiler-intrinsic {@code begin}/{@code loadFrame}/{@code clear} operations, and
- * {@link io.github.jabrena.juno.api.led.LedCanvas}, a {@code boolean[HEIGHT][WIDTH]} pixel buffer
+ * {@link io.github.jabrena.juno.api.led.LedCanvas}, a {@code boolean[HEIGHT][MAX_WIDTH]} pixel buffer
  * with shape and text drawing helpers that render into it and send it to the hardware with
  * {@code show}.
  *

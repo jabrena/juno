@@ -338,7 +338,8 @@ class JunoCompilerTest {
 
         assertThat(result.assembly()).contains(
                 "bl juno_led_matrix_begin", "bl juno_led_matrix_load_frame", "bl juno_led_matrix_clear");
-        assertThat(result.runtimeShim()).contains("ArduinoLEDMatrix juno_led_matrix;");
+        assertThat(result.runtimeShim()).contains("ArduinoLEDMatrix juno_led_matrix;",
+                "const uint32_t frame[3] = {", "int32_t word3");
 
         String plainSource = """
                 package demo;
@@ -353,10 +354,11 @@ class JunoCompilerTest {
 
         String plainGenerated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Plain").assembly();
 
-        // Unlike the retired C++ backend, the ASM backend's shim always links in the LED matrix driver
-        // (see Thumb2AsmBackend's class doc); only the call sites themselves are conditional.
+        // The shim only includes and defines the LED matrix driver when a program calls into it.
         assertThat(plainGenerated).doesNotContain("bl juno_led_matrix_begin", "bl juno_led_matrix_load_frame",
                 "bl juno_led_matrix_clear");
+        assertThat(CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Plain").runtimeShim())
+                .doesNotContain("Arduino_LED_Matrix", "juno_led_matrix");
     }
 
     @Test
@@ -367,7 +369,7 @@ class JunoCompilerTest {
                 import io.github.jabrena.juno.api.led.LedMatrix;
                 public final class Digits {
                     public static void main(String[] args) {
-                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH];
+                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                         LedCanvas.drawDigit(frame, 7, 4, 0);
                         LedMatrix.loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
                     }
@@ -379,9 +381,10 @@ class JunoCompilerTest {
 
         assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame");
         // A digit-only program reaches drawDigit/packWord/setPixel and nothing from the unused
-        // letter-glyph tables: locked at 20 (main + 19 helpers, including the LedMatrixDigits0to4/
-        // LedMatrixDigits5to9 shard dispatchers), far fewer than every glyph would pull in.
-        assertThat(result.report().reachableMethods()).isEqualTo(20);
+        // letter-glyph tables: locked at 22 (main + 21 helpers, including the LedMatrixDigits0to4/
+        // LedMatrixDigits5to9 shard dispatchers, LedCanvas.width() and the 3-word LedMatrix.loadFrame
+        // wrapper), far fewer than every glyph would pull in.
+        assertThat(result.report().reachableMethods()).isEqualTo(22);
     }
 
     @Test
@@ -857,12 +860,12 @@ class JunoCompilerTest {
     }
 
     /**
-     * {@code SdCard.append}'s path must stay a compile-time literal like every other SD path, but its
+     * {@code SdCard.appendLine}'s path must stay a compile-time literal like every other SD path, but its
      * {@code line} argument must accept a runtime value built from {@code StringBuilder#toString()} —
      * a fixed path with a computed line is exactly the shape a high-score log needs.
      */
     @Test
-    void lowersSdCardAppendWithARuntimeLine() throws Exception {
+    void lowersSdCardAppendLineWithARuntimeLine() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
@@ -876,7 +879,7 @@ class JunoCompilerTest {
                         for (int i = 0; i < score.length(); i++) {
                             line.append(score.charAt(i));
                         }
-                        SdCard.append("tempest-high-scores.txt", line.toString());
+                        SdCard.appendLine("tempest-high-scores.txt", line.toString());
                     }
                 }
                 """;
@@ -890,18 +893,18 @@ class JunoCompilerTest {
         // never as a .asciz body literal of its own.
         assertThat(result.assembly()).containsPattern(
                 "(?s)bl juno_string_builder_to_string\\n.*\\n\\s*ldr r0, =juno_str\\d+\\n"
-                        + "\\s*ldr r1, \\[sp, #\\d+]\\n\\s*bl juno_sd_file_append\\n");
+                        + "\\s*ldr r1, \\[sp, #\\d+]\\n\\s*bl juno_sd_file_append_line\\n");
         assertThat(result.runtimeShim()).contains(
-                "extern \"C\" int32_t juno_sd_file_append(const char* path, const char* line)");
+                "extern \"C\" int32_t juno_sd_file_append_line(const char* path, const char* line)");
     }
 
     /**
-     * The exemption above is scoped to exactly {@code append}'s {@code line} parameter — its
+     * The exemption above is scoped to exactly {@code appendLine}'s {@code line} parameter — its
      * {@code path} parameter must still be rejected when it isn't a compile-time literal, proving
      * {@code requiresLiteralStringArgument} didn't loosen the whole method.
      */
     @Test
-    void stillRejectsANonLiteralSdCardAppendPath() throws Exception {
+    void stillRejectsANonLiteralSdCardAppendLinePath() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Clock;
@@ -910,7 +913,7 @@ class JunoCompilerTest {
                     public static void main(String[] args) {
                         SdCard.begin();
                         String path = Clock.millis() > 0 ? "a.txt" : "b.txt";
-                        SdCard.append(path, "JAB-5000");
+                        SdCard.appendLine(path, "JAB-5000");
                     }
                 }
                 """;
@@ -918,6 +921,82 @@ class JunoCompilerTest {
 
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DynamicHighScorePath"))
                 .isInstanceOf(CompileException.class);
+    }
+
+    @Test
+    void lowersSdCardAppendTextWithoutANewline() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.SdCard;
+                public final class SaveState {
+                    public static void main(String[] args) {
+                        SdCard.begin();
+                        SdCard.remove("state.txt");
+                        SdCard.appendText("state.txt", "score=");
+                        SdCard.appendText("state.txt", String.valueOf(42));
+                        SdCard.appendText("state.txt", "\\n");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.SaveState", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SaveState");
+
+        assertThat(result.assembly()).contains("bl juno_sd_remove", "bl juno_sd_file_append_text",
+                ".asciz \"state.txt\"");
+        assertThat(result.runtimeShim()).contains(
+                "extern \"C\" int32_t juno_sd_file_append_text(const char* path, const char* text)")
+                .doesNotContain("O_TRUNC");
+        // appendText writes with print(), appendLine with println(): only the latter adds a newline.
+        assertThat(result.runtimeShim()).containsPattern(
+                "(?s)juno_sd_file_append_text\\(.*?file\\.print\\(text\\);.*?juno_sd_remove");
+        assertThat(result.runtimeShim()).containsPattern(
+                "(?s)juno_sd_file_append_line\\(.*?file\\.println\\(line\\);");
+    }
+
+    @Test
+    void stillRejectsANonLiteralSdCardAppendTextPath() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.io.SdCard;
+                public final class DynamicStatePath {
+                    public static void main(String[] args) {
+                        SdCard.begin();
+                        String path = Clock.millis() > 0 ? "a.txt" : "b.txt";
+                        SdCard.appendText(path, "x");
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.DynamicStatePath", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DynamicStatePath"))
+                .isInstanceOf(CompileException.class);
+    }
+
+    @Test
+    void lowersSdCardSize() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.SdCard;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                public final class LogSize {
+                    public static void main(String[] args) {
+                        SdCard.begin();
+                        if (SdCard.size("log.txt") > 1024) {
+                            SdCard.remove("log.txt");
+                        }
+                        Serial.println(SdCard.size("log.txt"));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.LogSize", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LogSize");
+
+        assertThat(result.assembly()).contains("bl juno_sd_size", ".asciz \"log.txt\"");
+        assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_sd_size(const char* path)",
+                "if (!file) return -1;", "file.size()");
     }
 
     @Test

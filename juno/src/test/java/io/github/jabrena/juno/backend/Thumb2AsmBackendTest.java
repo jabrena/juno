@@ -149,7 +149,7 @@ class Thumb2AsmBackendTest {
                 new IrInstruction.Const(Value.int32(2), 0x100A0040),
                 new IrInstruction.StoreLocal(3, Value.int32(2)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.LED_MATRIX_LOAD_FRAME,
-                        Optional.empty(), List.of(Value.int32(0), Value.int32(1), Value.int32(2)), List.of()),
+                        Optional.empty(), List.of(Value.int32(0), Value.int32(1), Value.int32(2), Value.int32(2)), List.of()),
                 new IrInstruction.Const(Value.int32(6), 500),
                 new IrInstruction.StoreLocal(1, Value.int32(6)),
                 new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.DELAY_MILLIS,
@@ -174,7 +174,7 @@ class Thumb2AsmBackendTest {
 
         String shim = result.runtimeShim();
         assertThat(shim.contains("extern \"C\" void juno_led_matrix_begin()")).isTrue();
-        assertThat(shim.contains("extern \"C\" void juno_led_matrix_load_frame(int32_t word0, int32_t word1, int32_t word2)")).isTrue();
+        assertThat(shim.contains("extern \"C\" void juno_led_matrix_load_frame(int32_t word0, int32_t word1, int32_t word2, int32_t word3)")).isTrue();
         assertThat(shim.contains("extern \"C\" void juno_led_matrix_clear()")).isTrue();
         assertThat(shim.contains("ArduinoLEDMatrix")).isTrue();
     }

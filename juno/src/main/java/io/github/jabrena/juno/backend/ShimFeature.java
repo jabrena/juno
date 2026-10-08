@@ -6,6 +6,8 @@ package io.github.jabrena.juno.backend;
  * generated code actually calls into it.
  */
 enum ShimFeature {
+    /** {@code LedMatrix}: the board's {@code Arduino_LED_Matrix} library, with the core-bundled header. */
+    LED_MATRIX,
     MOUSE,
     SERVO,
     /** {@code PoweredUpHubRemote}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */

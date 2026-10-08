@@ -1,32 +1,41 @@
 package io.github.jabrena.juno.api.led;
 
 /**
- * A 12x8 pixel buffer for the UNO R4 WiFi's built-in LED matrix, plus the shape and text drawing
- * operations that paint into it. Callers create one {@code boolean[HEIGHT][WIDTH]} frame with
- * {@code new boolean[LedCanvas.HEIGHT][LedCanvas.WIDTH]}, draw into it with the methods below, and
- * send it to the hardware with {@link #show(boolean[][])}.
+ * A pixel buffer for the board's built-in LED matrix (12x8 on the UNO R4 WiFi, 13x8 on the UNO Q), plus
+ * the shape and text drawing operations that paint into it. Callers create one frame with
+ * {@code new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH]}, draw into it with the methods below, and send it to
+ * the hardware with {@link #show(boolean[][])}. Array lengths must be compile-time constants in Juno, so the
+ * frame is always {@link #MAX_WIDTH} wide; drawing, clipping and packing use {@link #width()}, the width of the
+ * matrix on the board the program is compiled for, so the same program fills whichever matrix it runs on and
+ * the UNO R4's spare column is never touched.
  */
 public final class LedCanvas {
-    public static final int WIDTH = 12;
     public static final int HEIGHT = 8;
+    /** The widest supported matrix (UNO Q, 13 columns): the width every frame is allocated with. */
+    public static final int MAX_WIDTH = 13;
 
     private LedCanvas() {
     }
 
+    /** The matrix width of the board this program is compiled for: 12 on the UNO R4 WiFi, 13 on the UNO Q. */
+    public static int width() {
+        return LedMatrix.columns();
+    }
+
     public static boolean inBounds(int x, int y) {
-        return x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT;
+        return x >= 0 && x < width() && y >= 0 && y < HEIGHT;
     }
 
     /** Turns every pixel in {@code frame} off. */
     public static void clear(boolean[][] frame) {
         for (int y = 0; y < HEIGHT; y++) {
-            for (int x = 0; x < WIDTH; x++) {
+            for (int x = 0; x < width(); x++) {
                 frame[y][x] = false;
             }
         }
     }
 
-    /** Lights pixel (x, y), silently ignoring coordinates outside the 12x8 frame. */
+    /** Lights pixel (x, y), silently ignoring coordinates outside the frame. */
     public static void setPixel(boolean[][] frame, int x, int y) {
         if (inBounds(x, y)) {
             frame[y][x] = true;
@@ -34,26 +43,27 @@ public final class LedCanvas {
     }
 
     /**
-     * Packs frame word {@code wordIndex} (0-2) out of {@code frame}'s 96 pixels, MSB-first
-     * left-to-right/top-to-bottom, exactly as {@link LedMatrix#loadFrame(int, int, int)} expects.
+     * Packs frame word {@code wordIndex} (0-3) out of {@code frame}'s pixels, MSB-first
+     * left-to-right/top-to-bottom, exactly as {@link LedMatrix#loadFrame(int, int, int, int)} expects. Bits
+     * past the last pixel (the whole fourth word on a 12x8 matrix) are zero.
      */
     public static int packWord(boolean[][] frame, int wordIndex) {
         int result = 0;
         int base = wordIndex * 32;
         for (int bit = 0; bit < 32; bit++) {
             int index = base + bit;
-            int y = index / WIDTH;
-            int x = index - y * WIDTH;
-            if (frame[y][x]) {
+            int y = index / width();
+            int x = index - y * width();
+            if (y < HEIGHT && frame[y][x]) {
                 result = result | (1 << (31 - bit));
             }
         }
         return result;
     }
 
-    /** Packs {@code frame} and loads it onto the hardware via {@link LedMatrix#loadFrame(int, int, int)}. */
+    /** Packs {@code frame} and loads it onto the hardware via {@link LedMatrix#loadFrame(int, int, int, int)}. */
     public static void show(boolean[][] frame) {
-        LedMatrix.loadFrame(packWord(frame, 0), packWord(frame, 1), packWord(frame, 2));
+        LedMatrix.loadFrame(packWord(frame, 0), packWord(frame, 1), packWord(frame, 2), packWord(frame, 3));
     }
 
     /**

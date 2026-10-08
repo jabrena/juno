@@ -197,10 +197,14 @@ final class IntrinsicLowering {
             asm.emitLoadImmediate(output, "r0", coreRuntime.builtinLedPin());
             call.target().ifPresent(target -> asm.store(output, frame, "r0", target));
         });
-        shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of());
+        lowerings.put(Intrinsic.LED_MATRIX_COLUMNS, (output, frame, call) -> {
+            asm.emitLoadImmediate(output, "r0", coreRuntime.ledMatrixColumns());
+            call.target().ifPresent(target -> asm.store(output, frame, "r0", target));
+        });
+        shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of(), ShimFeature.LED_MATRIX);
         shim(Intrinsic.LED_MATRIX_LOAD_FRAME, "juno_led_matrix_load_frame", Result.NONE,
-                List.of(arg(0), arg(1), arg(2)));
-        shim(Intrinsic.LED_MATRIX_CLEAR, "juno_led_matrix_clear", Result.NONE, List.of());
+                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LED_MATRIX);
+        shim(Intrinsic.LED_MATRIX_CLEAR, "juno_led_matrix_clear", Result.NONE, List.of(), ShimFeature.LED_MATRIX);
         shim(Intrinsic.MEMORY_ARENA_USED, "juno_memory_arena_used", Result.WORD, List.of(), ShimFeature.MEMORY);
     }
 
@@ -365,12 +369,15 @@ final class IntrinsicLowering {
     private void registerStorage() {
         shim(Intrinsic.SD_BEGIN, "juno_sd_begin", Result.WORD, List.of(arg(0)), ShimFeature.SD);
         shim(Intrinsic.SD_EXISTS, "juno_sd_exists", Result.WORD, List.of(literal(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_SIZE, "juno_sd_size", Result.WORD, List.of(literal(0)), ShimFeature.SD);
         shim(Intrinsic.SD_OPEN, "juno_sd_open", Result.WORD, List.of(literal(0)), ShimFeature.SD);
         shim(Intrinsic.SD_FILE_AVAILABLE, "juno_sd_file_available", Result.WORD, List.of(RECEIVER),
                 ShimFeature.SD);
         shim(Intrinsic.SD_FILE_READ, "juno_sd_file_read", Result.WORD, List.of(RECEIVER), ShimFeature.SD);
         shim(Intrinsic.SD_FILE_CLOSE, "juno_sd_file_close", Result.NONE, List.of(RECEIVER), ShimFeature.SD);
-        shim(Intrinsic.SD_APPEND, "juno_sd_file_append", Result.WORD, List.of(literal(0), arg(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_APPEND_LINE, "juno_sd_file_append_line", Result.WORD, List.of(literal(0), arg(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_APPEND_TEXT, "juno_sd_file_append_text", Result.WORD, List.of(literal(0), arg(0)),
+                ShimFeature.SD);
         shim(Intrinsic.SD_REMOVE, "juno_sd_remove", Result.WORD, List.of(literal(0)), ShimFeature.SD);
         shim(Intrinsic.PROPERTIES_NEW, "juno_properties_new", Result.WORD, List.of(), ShimFeature.SD);
         shim(Intrinsic.PROPERTIES_LOAD, "juno_properties_load", Result.NONE, List.of(RECEIVER, arg(0)),

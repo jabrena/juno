@@ -27,6 +27,17 @@ record ZephyrCoreRuntime() implements CoreRuntime {
         return 50;
     }
 
+    /** {@code Arduino_LED_Matrix.h} of the zephyr core declares {@code Arduino_LED_Matrix}, 13x8. */
+    @Override
+    public String ledMatrixType() {
+        return "Arduino_LED_Matrix";
+    }
+
+    @Override
+    public int ledMatrixColumns() {
+        return 13;
+    }
+
     @Override
     public String wifiIncludes(boolean udp) {
         // UNO Q networking belongs to its Linux MPU. Arduino_RouterBridge carries UDP and other

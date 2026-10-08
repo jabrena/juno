@@ -2,12 +2,13 @@ package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.board.Board;
-import io.github.jabrena.juno.board.Capability;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Generates the {@code extern "C"} C++ runtime shim compiled alongside the generated assembly:
@@ -62,7 +63,7 @@ final class RuntimeShim {
                 #define JUNO_ASM_ABI
                 #endif
                 """.replace("${JUNO_LED_MATRIX_INCLUDE}",
-                board.supports(Capability.LED_MATRIX) ? "#include \"Arduino_LED_Matrix.h\"\n" : ""));
+                uses(ShimFeature.LED_MATRIX) ? "#include \"Arduino_LED_Matrix.h\"\n" : ""));
         appendIncludes(shim);
         shim.append(coreRuntime());
         appendHelpers(shim);
@@ -494,30 +495,44 @@ final class RuntimeShim {
     }
 
     private String ledMatrixFunctions() {
-        // The LED matrix helpers need the UNO R4's Arduino_LED_Matrix library; the linker already
-        // rejects LedMatrix calls on boards without one, so they are left out there.
-        return !board.supports(Capability.LED_MATRIX) ? "" : """
-                static ArduinoLEDMatrix juno_led_matrix;
+        // The LED matrix helpers need the board's Arduino_LED_Matrix library; the linker already
+        // rejects LedMatrix calls on boards without one, and programs that never call it skip them.
+        if (!uses(ShimFeature.LED_MATRIX)) {
+            return "";
+        }
+        int words = core.ledMatrixWords();
+        String parameters = "int32_t word0, int32_t word1, int32_t word2, int32_t word3";
+        String values = IntStream.range(0, words)
+                .mapToObj(index -> "    static_cast<uint32_t>(word" + index + ")")
+                .collect(Collectors.joining(",\n"));
+        // A frame has fewer words than the intrinsic passes on boards whose matrix fits in three.
+        String unused = IntStream.range(words, 4)
+                .mapToObj(index -> "  static_cast<void>(word" + index + ");\n")
+                .collect(Collectors.joining());
+        return """
+                static ${JUNO_LED_MATRIX_TYPE} juno_led_matrix;
 
                 extern "C" void juno_led_matrix_begin() {
                   juno_led_matrix.begin();
                 }
 
-                extern "C" void juno_led_matrix_load_frame(int32_t word0, int32_t word1, int32_t word2) {
-                  const uint32_t frame[3] = {
-                    static_cast<uint32_t>(word0),
-                    static_cast<uint32_t>(word1),
-                    static_cast<uint32_t>(word2)
+                extern "C" void juno_led_matrix_load_frame(${JUNO_LED_MATRIX_PARAMETERS}) {
+                ${JUNO_LED_MATRIX_UNUSED}  const uint32_t frame[${JUNO_LED_MATRIX_WORDS}] = {
+                ${JUNO_LED_MATRIX_VALUES}
                   };
                   juno_led_matrix.loadFrame(frame);
                 }
 
                 extern "C" void juno_led_matrix_clear() {
-                  const uint32_t frame[3] = {0, 0, 0};
+                  const uint32_t frame[${JUNO_LED_MATRIX_WORDS}] = {};
                   juno_led_matrix.loadFrame(frame);
                 }
 
-                """;
+                """.replace("${JUNO_LED_MATRIX_TYPE}", core.ledMatrixType())
+                .replace("${JUNO_LED_MATRIX_PARAMETERS}", parameters)
+                .replace("${JUNO_LED_MATRIX_UNUSED}", unused)
+                .replace("${JUNO_LED_MATRIX_VALUES}", values)
+                .replace("${JUNO_LED_MATRIX_WORDS}", Integer.toString(words));
     }
 
     private void appendPeripheralHelpers(StringBuilder shim) {

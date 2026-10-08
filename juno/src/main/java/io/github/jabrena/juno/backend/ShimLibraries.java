@@ -874,6 +874,14 @@ final class ShimLibraries {
                   return juno_sd.exists(path) ? 1 : 0;
                 }
 
+                extern "C" int32_t juno_sd_size(const char* path) {
+                  File32 file = juno_sd.open(path, O_RDONLY);
+                  if (!file) return -1;
+                  uint32_t size = file.size();
+                  file.close();
+                  return size > 0x7fffffffu ? 0x7fffffff : static_cast<int32_t>(size);
+                }
+
                 extern "C" int32_t juno_sd_open(const char* path) {
                   for (int32_t i = 0; i < JUNO_SD_MAX_OPEN_FILES; i++) {
                     if (!juno_sd_file_used[i]) {
@@ -901,10 +909,18 @@ final class ShimLibraries {
                   juno_sd_file_used[index] = false;
                 }
 
-                extern "C" int32_t juno_sd_file_append(const char* path, const char* line) {
+                extern "C" int32_t juno_sd_file_append_line(const char* path, const char* line) {
                   File32 file = juno_sd.open(path, O_WRITE | O_CREAT | O_APPEND);
                   if (!file) return 0;
                   file.println(line);
+                  file.close();
+                  return 1;
+                }
+
+                extern "C" int32_t juno_sd_file_append_text(const char* path, const char* text) {
+                  File32 file = juno_sd.open(path, O_WRITE | O_CREAT | O_APPEND);
+                  if (!file) return 0;
+                  file.print(text);
                   file.close();
                   return 1;
                 }

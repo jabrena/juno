@@ -12,15 +12,17 @@ import io.github.jabrena.juno.api.io.i2c.I2c;
  * measuring how far a vehicle has turned:
  *
  * <pre>{@code
- * int start = Bno055.headingDegrees();
- * // ... turn left until Bno055.turnedSince(start) <= -90 (heading grows clockwise)
+ * int start = NineAxisMotionShield.headingDegrees();
+ * // ... turn left until NineAxisMotionShield.turnedSince(start) <= -90 (heading grows clockwise)
  * }</pre>
  *
  * <p>The shield's BNO055 answers at address {@code 0x28}; the {@code 0x29} variant is selected with
  * {@link #begin(int)}. Works on both boards, wherever {@code Wire} reaches the shield's SDA/SCL.
+ *
+ * @see <a href="https://docs.arduino.cc/hardware/9-axis-motion-shield/">Arduino 9 Axis Motion Shield</a>
  */
-public final class Bno055 {
-    private Bno055() {
+public final class NineAxisMotionShield {
+    private NineAxisMotionShield() {
     }
 
     public static final int ADDRESS_DEFAULT = 0x28;

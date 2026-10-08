@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.io.i2c;
 /**
  * Register access to an I2C peripheral on the board's primary I2C bus ({@code Wire}, the SDA/SCL
  * pins), recognized as compiler intrinsics by Juno and backed by the core-bundled {@code Wire}
- * library. It is the transport under sensors such as {@link io.github.jabrena.juno.api.imu.Bno055}.
+ * library. It is the transport under sensors such as {@link io.github.jabrena.juno.api.imu.NineAxisMotionShield}.
  * Addresses are the 7-bit device addresses.
  */
 public final class I2c {

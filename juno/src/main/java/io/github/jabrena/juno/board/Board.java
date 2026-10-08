@@ -22,8 +22,8 @@ public enum Board {
             EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTPS_CLIENT,
                     Capability.HTTP_SERVER, Capability.WIFI_S3_NETWORKING, Capability.BLUETOOTH_LE, Capability.WATCHDOG)),
     UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
-            ArduinoCore.ZEPHYR, EnumSet.of(Capability.WIFI, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER,
-                    Capability.BLUETOOTH_LE));
+            ArduinoCore.ZEPHYR, EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTPS_CLIENT,
+                    Capability.HTTP_SERVER, Capability.BLUETOOTH_LE));
 
     public static final Board DEFAULT = UNO_R4_WIFI;
 
