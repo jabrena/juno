@@ -176,6 +176,7 @@ final class IntrinsicLowering {
         shim(Intrinsic.DIGITAL_OUTPUT_HIGH, "digitalWrite", Result.NONE, List.of(RECEIVER, immediate(1)));
         shim(Intrinsic.DIGITAL_OUTPUT_LOW, "digitalWrite", Result.NONE, List.of(RECEIVER, immediate(0)));
         shim(Intrinsic.GPIO_DIGITAL_WRITE, "digitalWrite", Result.NONE, List.of(arg(0), arg(1)));
+        shim(Intrinsic.GPIO_DIGITAL_READ, "digitalRead", Result.WORD, List.of(arg(0)));
         shim(Intrinsic.GPIO_ANALOG_READ, "analogRead", Result.WORD, List.of(arg(0)));
         shim(Intrinsic.GPIO_ANALOG_WRITE, "analogWrite", Result.NONE, List.of(arg(0), arg(1)));
         shim(Intrinsic.CLOCK_MILLIS, "millis", Result.WORD, List.of());
@@ -406,6 +407,47 @@ final class IntrinsicLowering {
                 ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_SWITCH_OFF, "juno_lego_hub_switch_off", Result.NONE, List.of(),
                 ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_BATTERY_PERCENT, "juno_lego_hub_battery_percent", Result.WORD, List.of(),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_BUTTON_PRESSED, "juno_lego_hub_button_pressed", Result.WORD, List.of(),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_RSSI, "juno_lego_hub_rssi", Result.WORD, List.of(), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_FIRMWARE_VERSION, "juno_lego_hub_firmware_version", Result.WORD, List.of(),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_HARDWARE_VERSION, "juno_lego_hub_hardware_version", Result.WORD, List.of(),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_NAME, "juno_lego_hub_name", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_READ_SENSOR_VALUE, "juno_lego_hub_read_sensor_value", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_SENSOR_REPORT_SIZE, "juno_lego_hub_sensor_report_size", Result.WORD,
+                List.of(arg(0)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_SENSOR_REPORT_COUNT, "juno_lego_hub_sensor_report_count", Result.WORD,
+                List.of(arg(0)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_SET_LED_RGB, "juno_lego_hub_set_led_rgb", Result.NONE,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_LINK_MOTORS, "juno_lego_hub_link_motors", Result.WORD,
+                List.of(arg(0), arg(1)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_UNLINK_MOTORS, "juno_lego_hub_unlink_motors", Result.NONE,
+                List.of(arg(0)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_SET_LINKED_MOTOR_POWER, "juno_lego_hub_set_linked_motor_power", Result.NONE,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_BRAKE_LINKED_MOTORS, "juno_lego_hub_brake_linked_motors", Result.NONE,
+                List.of(arg(0)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.IR_BEGIN, "juno_ir_begin", Result.NONE, List.of(arg(0), arg(1), arg(2)), ShimFeature.INFRARED);
+        shim(Intrinsic.IR_RECEIVING, "juno_ir_receiving", Result.WORD, List.of(), ShimFeature.INFRARED);
+        shim(Intrinsic.IR_READ_BYTE, "juno_ir_read_byte", Result.WORD, List.of(arg(0)), ShimFeature.INFRARED);
+        shim(Intrinsic.IR_WRITE_BYTE, "juno_ir_write_byte", Result.NONE, List.of(arg(0)), ShimFeature.INFRARED);
+        shim(Intrinsic.IR_ECHO_BYTE, "juno_ir_echo_byte", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.INFRARED);
+        shim(Intrinsic.IR_MARK, "juno_ir_mark", Result.NONE, List.of(arg(0)), ShimFeature.INFRARED);
+        shim(Intrinsic.IR_SPACE, "juno_ir_space", Result.NONE, List.of(arg(0)), ShimFeature.INFRARED);
+        shim(Intrinsic.I2C_BEGIN, "juno_i2c_begin", Result.NONE, List.of(), ShimFeature.I2C);
+        shim(Intrinsic.I2C_WRITE_REGISTER, "juno_i2c_write_register", Result.NONE,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.I2C);
+        shim(Intrinsic.I2C_READ_REGISTER, "juno_i2c_read_register", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.I2C);
+        shim(Intrinsic.I2C_READ_REGISTER16, "juno_i2c_read_register16", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.I2C);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_BEGIN_AP, "juno_wifi_begin_ap", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_STATUS, "juno_wifi_status", Result.WORD, List.of(), ShimFeature.WIFI);

@@ -48,6 +48,220 @@ final class ShimLibraries {
                 """;
     }
 
+    /** Register reads and writes on the primary {@code Wire} bus, with the core-bundled {@code Wire} library. */
+    static String i2cHelpers() {
+        return """
+
+                extern "C" void juno_i2c_begin() {
+                  Wire.begin();
+                }
+
+                extern "C" void juno_i2c_write_register(int32_t address, int32_t reg, int32_t value) {
+                  Wire.beginTransmission(static_cast<uint8_t>(address));
+                  Wire.write(static_cast<uint8_t>(reg));
+                  Wire.write(static_cast<uint8_t>(value));
+                  Wire.endTransmission();
+                }
+
+                // Reads count (1 or 2) bytes from reg, little endian; -1 if the device did not answer.
+                static int32_t juno_i2c_read(int32_t address, int32_t reg, uint8_t count) {
+                  Wire.beginTransmission(static_cast<uint8_t>(address));
+                  Wire.write(static_cast<uint8_t>(reg));
+                  if (Wire.endTransmission(false) != 0) {
+                    return -1;
+                  }
+                  if (Wire.requestFrom(static_cast<uint8_t>(address), count) != count) {
+                    return -1;
+                  }
+                  int32_t value = 0;
+                  for (uint8_t i = 0; i < count; i++) {
+                    value |= static_cast<int32_t>(Wire.read() & 0xFF) << (8 * i);
+                  }
+                  return value;
+                }
+
+                extern "C" int32_t juno_i2c_read_register(int32_t address, int32_t reg) {
+                  return juno_i2c_read(address, reg, 1);
+                }
+
+                extern "C" int32_t juno_i2c_read_register16(int32_t address, int32_t reg) {
+                  return juno_i2c_read(address, reg, 2);
+                }
+                """;
+    }
+
+    /**
+     * Framed bytes over 38 kHz infrared, bit-banged on two plain pins: 8 data bits LSB first, odd parity
+     * and one stop bit at the configured baud rate, with a software carrier for a 0 bit when transmitting.
+     * The receive pin is an IR demodulator module's output, which idles high and goes low in a burst.
+     */
+    static String infraredHelpers() {
+        return """
+
+                static int32_t juno_ir_rx_pin = -1;
+                static int32_t juno_ir_tx_pin = -1;
+                static uint32_t juno_ir_bit_us = 417;
+
+                extern "C" void juno_ir_begin(int32_t receivePin, int32_t transmitPin, int32_t baud) {
+                  juno_ir_rx_pin = receivePin;
+                  juno_ir_tx_pin = transmitPin;
+                  juno_ir_bit_us = baud > 0 ? static_cast<uint32_t>(1000000 / baud) : 417;
+                  if (receivePin >= 0) {
+                    pinMode(receivePin, INPUT);
+                  }
+                  if (transmitPin >= 0) {
+                    pinMode(transmitPin, OUTPUT);
+                    digitalWrite(transmitPin, LOW);
+                  }
+                }
+
+                extern "C" int32_t juno_ir_receiving() {
+                  return juno_ir_rx_pin >= 0 && digitalRead(juno_ir_rx_pin) == LOW ? 1 : 0;
+                }
+
+                static void juno_ir_wait_until(uint32_t at) {
+                  while (static_cast<int32_t>(micros() - at) < 0) {
+                  }
+                }
+
+                extern "C" int32_t juno_ir_read_byte(int32_t timeoutMicros) {
+                  if (juno_ir_rx_pin < 0) {
+                    return -1;
+                  }
+                  uint32_t waitStart = micros();
+                  while (digitalRead(juno_ir_rx_pin) != LOW) {
+                    if (micros() - waitStart > static_cast<uint32_t>(timeoutMicros)) {
+                      return -1;
+                    }
+                  }
+                  uint32_t start = micros();
+                  int32_t value = 0;
+                  int ones = 0;
+                  // Sample in the middle of each bit; bit 0 is the start bit, 1..8 data, 9 parity.
+                  for (int bit = 1; bit <= 9; bit++) {
+                    juno_ir_wait_until(start + juno_ir_bit_us * bit + juno_ir_bit_us / 2);
+                    int level = digitalRead(juno_ir_rx_pin) == HIGH ? 1 : 0;
+                    if (bit <= 8) {
+                      value |= level << (bit - 1);
+                    }
+                    ones += level;
+                  }
+                  juno_ir_wait_until(start + juno_ir_bit_us * 10 + juno_ir_bit_us / 2);
+                  // Odd parity: data and parity bits hold an odd number of ones; the stop bit is high.
+                  if ((ones & 1) != 1 || digitalRead(juno_ir_rx_pin) != HIGH) {
+                    return -2;
+                  }
+                  return value;
+                }
+
+                // Holds the IR LED dark (bit 1) or modulated at about 38 kHz (bit 0) for one bit time.
+                static void juno_ir_send_bit(int bit) {
+                  uint32_t start = micros();
+                  while (micros() - start < juno_ir_bit_us) {
+                    if (bit == 0) {
+                      digitalWrite(juno_ir_tx_pin, HIGH);
+                      delayMicroseconds(8);
+                    }
+                    digitalWrite(juno_ir_tx_pin, LOW);
+                    if (bit == 0) {
+                      delayMicroseconds(8);
+                    }
+                  }
+                }
+
+                // Transmits a framed byte while sampling the receive pin, which hears the own LED through the
+                // demodulator, delayed by its response time: each bit is sampled in its middle plus latencyMicros.
+                extern "C" int32_t juno_ir_echo_byte(int32_t value, int32_t latencyMicros) {
+                  if (juno_ir_tx_pin < 0 || juno_ir_rx_pin < 0) {
+                    return -1;
+                  }
+                  int sent[11];
+                  int ones = 0;
+                  sent[0] = 0;
+                  for (int bit = 0; bit < 8; bit++) {
+                    sent[bit + 1] = (value >> bit) & 1;
+                    ones += sent[bit + 1];
+                  }
+                  sent[9] = (ones & 1) == 0 ? 1 : 0;
+                  sent[10] = 1;
+                  int heard[11];
+                  int sampled = 0;
+                  uint32_t start = micros();
+                  uint32_t total = juno_ir_bit_us * 11 + juno_ir_bit_us / 2 + static_cast<uint32_t>(latencyMicros);
+                  uint32_t elapsed = 0;
+                  while (elapsed < total) {
+                    elapsed = micros() - start;
+                    uint32_t index = elapsed / juno_ir_bit_us;
+                    if (index < 11 && sent[index] == 0) {
+                      digitalWrite(juno_ir_tx_pin, HIGH);
+                      delayMicroseconds(8);
+                      digitalWrite(juno_ir_tx_pin, LOW);
+                      delayMicroseconds(8);
+                    } else {
+                      digitalWrite(juno_ir_tx_pin, LOW);
+                    }
+                    while (sampled < 11 && elapsed >= juno_ir_bit_us * sampled + juno_ir_bit_us / 2
+                        + static_cast<uint32_t>(latencyMicros)) {
+                      heard[sampled] = digitalRead(juno_ir_rx_pin) == HIGH ? 1 : 0;
+                      sampled++;
+                    }
+                  }
+                  digitalWrite(juno_ir_tx_pin, LOW);
+                  if (heard[0] != 0) {
+                    return -1;
+                  }
+                  int32_t received = 0;
+                  int receivedOnes = 0;
+                  for (int bit = 0; bit < 8; bit++) {
+                    received |= heard[bit + 1] << bit;
+                    receivedOnes += heard[bit + 1];
+                  }
+                  receivedOnes += heard[9];
+                  if ((receivedOnes & 1) != 1 || heard[10] != 1) {
+                    return -2;
+                  }
+                  return received;
+                }
+
+                // A raw burst of the 38 kHz carrier, or silence, for protocols that encode bits in pulse lengths.
+                extern "C" void juno_ir_mark(int32_t durationMicros) {
+                  if (juno_ir_tx_pin < 0) {
+                    return;
+                  }
+                  uint32_t start = micros();
+                  while (micros() - start < static_cast<uint32_t>(durationMicros)) {
+                    digitalWrite(juno_ir_tx_pin, HIGH);
+                    delayMicroseconds(8);
+                    digitalWrite(juno_ir_tx_pin, LOW);
+                    delayMicroseconds(8);
+                  }
+                }
+
+                extern "C" void juno_ir_space(int32_t durationMicros) {
+                  if (juno_ir_tx_pin < 0) {
+                    return;
+                  }
+                  digitalWrite(juno_ir_tx_pin, LOW);
+                  juno_ir_wait_until(micros() + static_cast<uint32_t>(durationMicros));
+                }
+
+                extern "C" void juno_ir_write_byte(int32_t value) {
+                  if (juno_ir_tx_pin < 0) {
+                    return;
+                  }
+                  int ones = 0;
+                  juno_ir_send_bit(0);
+                  for (int bit = 0; bit < 8; bit++) {
+                    int level = (value >> bit) & 1;
+                    ones += level;
+                    juno_ir_send_bit(level);
+                  }
+                  juno_ir_send_bit((ones & 1) == 0 ? 1 : 0);
+                  juno_ir_send_bit(1);
+                }
+                """;
+    }
+
     /**
      * A BLE central for one LEGO Powered Up hub, speaking LEGO Wireless Protocol 3.0 through the
      * optional {@code ArduinoBLE} library: every command is one write to the hub's single
@@ -63,18 +277,98 @@ final class ShimLibraries {
                 // static: each write looks it up again on the connected hub, which is a plain-copy BLEDevice.
                 static BLEDevice juno_lego_hub;
                 static bool juno_lego_ble_started = false;
-                static bool juno_lego_led_ready = false;
+                // The status LED's current input mode: -1 not set up, 0 color index, 1 RGB.
+                static int juno_lego_led_mode = -1;
                 static int32_t juno_lego_hub_type = 0;
 
                 // Latest single-value Port Value (0x45) reading per enabled port; a port of 0xFF marks a free slot.
                 static const int JUNO_LEGO_SENSOR_SLOTS = 8;
                 static uint8_t juno_lego_sensor_ports[JUNO_LEGO_SENSOR_SLOTS];
                 static int32_t juno_lego_sensor_values[JUNO_LEGO_SENSOR_SLOTS];
+                // The value bytes of the latest report, for modes that report several values.
+                static const int JUNO_LEGO_RAW_BYTES = 16;
+                static uint8_t juno_lego_sensor_raw[JUNO_LEGO_SENSOR_SLOTS][JUNO_LEGO_RAW_BYTES];
+                static int32_t juno_lego_sensor_raw_size[JUNO_LEGO_SENSOR_SLOTS];
+                // How many reports each port has delivered since it was enabled.
+                static int32_t juno_lego_sensor_reports[JUNO_LEGO_SENSOR_SLOTS];
+
+                // Hub Properties (0x01) the hub reported; -1 or 0 until the hub sends them. They are requested on
+                // the first property call after connecting, so programs that never ask add no BLE traffic.
+                static int32_t juno_lego_battery = -1;
+                static int32_t juno_lego_button = 0;
+                static int32_t juno_lego_rssi = 0;
+                static int32_t juno_lego_firmware = -1;
+                static int32_t juno_lego_hardware = -1;
+                static uint8_t juno_lego_name[20];
+                static int32_t juno_lego_name_length = 0;
+                static bool juno_lego_properties_requested = false;
+
+                // Virtual ports the hub created by pairing two motors (Hub Attached I/O event 0x02); an id of 0xFF is free.
+                static const int JUNO_LEGO_LINK_SLOTS = 4;
+                static uint8_t juno_lego_link_ids[JUNO_LEGO_LINK_SLOTS] = {0xFF, 0xFF, 0xFF, 0xFF};
+                static uint8_t juno_lego_link_a[JUNO_LEGO_LINK_SLOTS];
+                static uint8_t juno_lego_link_b[JUNO_LEGO_LINK_SLOTS];
+
+                static void juno_lego_clear_links() {
+                  for (int i = 0; i < JUNO_LEGO_LINK_SLOTS; i++) {
+                    juno_lego_link_ids[i] = 0xFF;
+                  }
+                }
+
+                static int32_t juno_lego_find_link(uint8_t a, uint8_t b) {
+                  for (int i = 0; i < JUNO_LEGO_LINK_SLOTS; i++) {
+                    if (juno_lego_link_ids[i] != 0xFF && ((juno_lego_link_a[i] == a && juno_lego_link_b[i] == b)
+                        || (juno_lego_link_a[i] == b && juno_lego_link_b[i] == a))) {
+                      return juno_lego_link_ids[i];
+                    }
+                  }
+                  return -1;
+                }
+
+                static void juno_lego_forget_link(uint8_t id) {
+                  for (int i = 0; i < JUNO_LEGO_LINK_SLOTS; i++) {
+                    if (juno_lego_link_ids[i] == id) {
+                      juno_lego_link_ids[i] = 0xFF;
+                    }
+                  }
+                }
+
+                // Hub Attached I/O (0x04): [length, hub id, 0x04, port, event, ...]. Event 0x02 announces a virtual
+                // port: device type (2 bytes), then the two ports it pairs; event 0x00 removes a port.
+                static void juno_lego_receive_attached(const uint8_t* message, int length, int header) {
+                  uint8_t port = message[header + 2];
+                  uint8_t event = message[header + 3];
+                  if (event == 0x00) {
+                    juno_lego_forget_link(port);
+                  } else if (event == 0x02 && length >= header + 8) {
+                    juno_lego_forget_link(port);
+                    for (int i = 0; i < JUNO_LEGO_LINK_SLOTS; i++) {
+                      if (juno_lego_link_ids[i] == 0xFF) {
+                        juno_lego_link_ids[i] = port;
+                        juno_lego_link_a[i] = message[header + 6];
+                        juno_lego_link_b[i] = message[header + 7];
+                        break;
+                      }
+                    }
+                  }
+                }
+
+                static void juno_lego_clear_properties() {
+                  juno_lego_battery = -1;
+                  juno_lego_button = 0;
+                  juno_lego_rssi = 0;
+                  juno_lego_firmware = -1;
+                  juno_lego_hardware = -1;
+                  juno_lego_name_length = 0;
+                  juno_lego_properties_requested = false;
+                }
 
                 static void juno_lego_clear_sensors() {
                   for (int i = 0; i < JUNO_LEGO_SENSOR_SLOTS; i++) {
                     juno_lego_sensor_ports[i] = 0xFF;
                     juno_lego_sensor_values[i] = 0;
+                    juno_lego_sensor_raw_size[i] = 0;
+                    juno_lego_sensor_reports[i] = 0;
                   }
                 }
 
@@ -89,8 +383,40 @@ final class ShimLibraries {
 
                 // Decodes one upstream message: [length (1 or 2 bytes), hub id, type, port, value...].
                 // Only a single 8/16/32-bit little-endian value is decoded; other sizes keep the first byte.
+                static int32_t juno_lego_le32(const uint8_t* data) {
+                  return static_cast<int32_t>(static_cast<uint32_t>(data[0]) | (static_cast<uint32_t>(data[1]) << 8)
+                      | (static_cast<uint32_t>(data[2]) << 16) | (static_cast<uint32_t>(data[3]) << 24));
+                }
+
+                // Hub Properties update (0x01, operation 0x06): [length, hub id, 0x01, property, 0x06, value...].
+                static void juno_lego_receive_property(const uint8_t* data, int size, uint8_t property) {
+                  switch (property) {
+                    case 0x01:
+                      juno_lego_name_length = size < static_cast<int>(sizeof(juno_lego_name)) ? size
+                          : static_cast<int>(sizeof(juno_lego_name));
+                      for (int i = 0; i < juno_lego_name_length; i++) {
+                        juno_lego_name[i] = data[i];
+                      }
+                      break;
+                    case 0x02: if (size >= 1) juno_lego_button = data[0] != 0 ? 1 : 0; break;
+                    case 0x03: if (size >= 4) juno_lego_firmware = juno_lego_le32(data); break;
+                    case 0x04: if (size >= 4) juno_lego_hardware = juno_lego_le32(data); break;
+                    case 0x05: if (size >= 1) juno_lego_rssi = static_cast<int8_t>(data[0]); break;
+                    case 0x06: if (size >= 1) juno_lego_battery = data[0]; break;
+                    default: break;
+                  }
+                }
+
                 static void juno_lego_receive(const uint8_t* message, int length) {
                   int header = (length > 0 && (message[0] & 0x80) != 0) ? 2 : 1;
+                  if (length >= header + 4 && message[header + 1] == 0x04) {
+                    juno_lego_receive_attached(message, length, header);
+                    return;
+                  }
+                  if (length >= header + 4 && message[header + 1] == 0x01 && message[header + 3] == 0x06) {
+                    juno_lego_receive_property(message + header + 4, length - header - 4, message[header + 2]);
+                    return;
+                  }
                   if (length < header + 4 || message[header + 1] != 0x45) {
                     return;
                   }
@@ -100,6 +426,12 @@ final class ShimLibraries {
                   }
                   const uint8_t* value = message + header + 3;
                   int size = length - header - 3;
+                  int kept = size < JUNO_LEGO_RAW_BYTES ? size : JUNO_LEGO_RAW_BYTES;
+                  for (int i = 0; i < kept; i++) {
+                    juno_lego_sensor_raw[slot][i] = value[i];
+                  }
+                  juno_lego_sensor_raw_size[slot] = kept;
+                  juno_lego_sensor_reports[slot]++;
                   if (size == 4) {
                     juno_lego_sensor_values[slot] = static_cast<int32_t>(static_cast<uint32_t>(value[0])
                         | (static_cast<uint32_t>(value[1]) << 8) | (static_cast<uint32_t>(value[2]) << 16)
@@ -166,7 +498,9 @@ final class ShimLibraries {
                   }
                   // A new connection starts with no ports reporting values.
                   juno_lego_clear_sensors();
-                  juno_lego_led_ready = false;
+                  juno_lego_clear_properties();
+                  juno_lego_clear_links();
+                  juno_lego_led_mode = -1;
                   BLE.scanForUuid(juno_lego_service_uuid);
                   uint32_t started = millis();
                   while (timeoutMillis <= 0 || millis() - started < static_cast<uint32_t>(timeoutMillis)) {
@@ -223,15 +557,29 @@ final class ShimLibraries {
                   juno_lego_write_mode0(port, 127);
                 }
 
+                // Port input format setup (0x41): puts the LED in the given mode (0 color index, 1 RGB), delta 1,
+                // notifications off.
+                static void juno_lego_led_use_mode(uint8_t port, int mode) {
+                  if (juno_lego_led_mode != mode) {
+                    const uint8_t setup[] = {port, static_cast<uint8_t>(mode), 0x01, 0x00, 0x00, 0x00, 0x00};
+                    juno_lego_send(0x41, setup, sizeof(setup));
+                    juno_lego_led_mode = juno_lego_connected() ? mode : -1;
+                  }
+                }
+
                 extern "C" void juno_lego_hub_set_led_color(int32_t color) {
                   uint8_t port = juno_lego_led_port();
-                  if (!juno_lego_led_ready) {
-                    // Port input format setup (0x41): LED in mode 0 (color index), delta 1, notifications off.
-                    const uint8_t setup[] = {port, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00};
-                    juno_lego_send(0x41, setup, sizeof(setup));
-                    juno_lego_led_ready = juno_lego_connected();
-                  }
+                  juno_lego_led_use_mode(port, 0);
                   juno_lego_write_mode0(port, color);
+                }
+
+                extern "C" void juno_lego_hub_set_led_rgb(int32_t red, int32_t green, int32_t blue) {
+                  uint8_t port = juno_lego_led_port();
+                  juno_lego_led_use_mode(port, 1);
+                  // WriteDirectModeData (0x51) of three bytes in mode 1: red, green, blue.
+                  const uint8_t payload[] = {port, 0x11, 0x51, 0x01, static_cast<uint8_t>(red & 0xFF),
+                      static_cast<uint8_t>(green & 0xFF), static_cast<uint8_t>(blue & 0xFF)};
+                  juno_lego_send(0x81, payload, sizeof(payload));
                 }
 
                 extern "C" void juno_lego_hub_enable_sensor(int32_t port, int32_t mode) {
@@ -245,6 +593,8 @@ final class ShimLibraries {
                   }
                   juno_lego_sensor_ports[slot] = portId;
                   juno_lego_sensor_values[slot] = 0;
+                  juno_lego_sensor_raw_size[slot] = 0;
+                  juno_lego_sensor_reports[slot] = 0;
                   // Port input format setup (0x41): report every change (delta 1) of this mode, notifications on.
                   const uint8_t setup[] = {portId, static_cast<uint8_t>(mode), 0x01, 0x00, 0x00, 0x00, 0x01};
                   juno_lego_send(0x41, setup, sizeof(setup));
@@ -256,18 +606,170 @@ final class ShimLibraries {
                   return slot < 0 ? 0 : juno_lego_sensor_values[slot];
                 }
 
+                // Hub Properties message (0x01): [property, operation]. Operation 0x02 subscribes to updates,
+                // 0x05 asks for one update.
+                static void juno_lego_property_request(uint8_t property, uint8_t operation) {
+                  const uint8_t payload[] = {property, operation};
+                  juno_lego_send(0x01, payload, sizeof(payload));
+                }
+
+                // Asks the hub for its properties the first time one is needed, then gives the answers up to
+                // 300 ms to arrive; later calls just return what the notifications have updated.
+                static void juno_lego_ensure_properties() {
+                  if (juno_lego_properties_requested || !juno_lego_connected()) {
+                    return;
+                  }
+                  juno_lego_properties_requested = true;
+                  juno_lego_property_request(0x02, 0x02);
+                  juno_lego_property_request(0x05, 0x02);
+                  juno_lego_property_request(0x06, 0x02);
+                  juno_lego_property_request(0x01, 0x05);
+                  juno_lego_property_request(0x03, 0x05);
+                  juno_lego_property_request(0x04, 0x05);
+                  uint32_t started = millis();
+                  while (millis() - started < 300 && (juno_lego_battery < 0 || juno_lego_firmware < 0
+                      || juno_lego_hardware < 0 || juno_lego_name_length == 0)) {
+                    BLE.poll();
+                  }
+                }
+
+                extern "C" int32_t juno_lego_hub_battery_percent() {
+                  juno_lego_ensure_properties();
+                  BLE.poll();
+                  return juno_lego_battery;
+                }
+
+                extern "C" int32_t juno_lego_hub_button_pressed() {
+                  juno_lego_ensure_properties();
+                  BLE.poll();
+                  return juno_lego_button;
+                }
+
+                extern "C" int32_t juno_lego_hub_rssi() {
+                  juno_lego_ensure_properties();
+                  BLE.poll();
+                  return juno_lego_rssi;
+                }
+
+                extern "C" int32_t juno_lego_hub_firmware_version() {
+                  juno_lego_ensure_properties();
+                  BLE.poll();
+                  return juno_lego_firmware;
+                }
+
+                extern "C" int32_t juno_lego_hub_hardware_version() {
+                  juno_lego_ensure_properties();
+                  BLE.poll();
+                  return juno_lego_hardware;
+                }
+
+                extern "C" int32_t juno_lego_hub_name(uint8_t* buffer, int32_t capacity) {
+                  juno_lego_ensure_properties();
+                  BLE.poll();
+                  if (buffer == nullptr || capacity <= 0) {
+                    return 0;
+                  }
+                  int32_t count = juno_lego_name_length < capacity ? juno_lego_name_length : capacity;
+                  for (int32_t i = 0; i < count; i++) {
+                    buffer[i] = juno_lego_name[i];
+                  }
+                  return count;
+                }
+
+                // The index-th value of the latest report as a signed little-endian integer of width 1, 2 or 4 bytes;
+                // 0 when the report has none that wide.
+                extern "C" int32_t juno_lego_hub_read_sensor_value(int32_t port, int32_t index, int32_t width) {
+                  BLE.poll();
+                  int slot = juno_lego_sensor_slot(static_cast<uint8_t>(port));
+                  if (slot < 0 || index < 0 || (width != 1 && width != 2 && width != 4)
+                      || juno_lego_sensor_raw_size[slot] < (index + 1) * width) {
+                    return 0;
+                  }
+                  const uint8_t* value = juno_lego_sensor_raw[slot] + index * width;
+                  if (width == 4) {
+                    return juno_lego_le32(value);
+                  }
+                  if (width == 2) {
+                    return static_cast<int16_t>(value[0] | (value[1] << 8));
+                  }
+                  return static_cast<int8_t>(value[0]);
+                }
+
+                extern "C" int32_t juno_lego_hub_sensor_report_count(int32_t port) {
+                  BLE.poll();
+                  int slot = juno_lego_sensor_slot(static_cast<uint8_t>(port));
+                  return slot < 0 ? 0 : juno_lego_sensor_reports[slot];
+                }
+
+                extern "C" int32_t juno_lego_hub_sensor_report_size(int32_t port) {
+                  BLE.poll();
+                  int slot = juno_lego_sensor_slot(static_cast<uint8_t>(port));
+                  return slot < 0 ? 0 : juno_lego_sensor_raw_size[slot];
+                }
+
+                // Virtual Port Setup (0x61): connect (0x01) two motor ports into one virtual port, whose id the hub
+                // announces in a Hub Attached I/O event; waits up to 500 ms for it. Returns the id or -1.
+                extern "C" int32_t juno_lego_hub_link_motors(int32_t portA, int32_t portB) {
+                  int32_t existing = juno_lego_find_link(static_cast<uint8_t>(portA), static_cast<uint8_t>(portB));
+                  if (existing >= 0) {
+                    return existing;
+                  }
+                  if (!juno_lego_connected()) {
+                    return -1;
+                  }
+                  const uint8_t payload[] = {0x01, static_cast<uint8_t>(portA), static_cast<uint8_t>(portB)};
+                  juno_lego_send(0x61, payload, sizeof(payload));
+                  uint32_t started = millis();
+                  while (true) {
+                    BLE.poll();
+                    int32_t id = juno_lego_find_link(static_cast<uint8_t>(portA), static_cast<uint8_t>(portB));
+                    if (id >= 0) {
+                      return id;
+                    }
+                    if (millis() - started >= 500) {
+                      return -1;
+                    }
+                  }
+                }
+
+                extern "C" void juno_lego_hub_unlink_motors(int32_t virtualPort) {
+                  const uint8_t payload[] = {0x00, static_cast<uint8_t>(virtualPort)};
+                  juno_lego_send(0x61, payload, sizeof(payload));
+                  juno_lego_forget_link(static_cast<uint8_t>(virtualPort));
+                }
+
+                // Port output command (0x81) StartPower with two powers (subcommand 0x02), executed immediately
+                // with feedback (0x11): one message drives both motors of a virtual port.
+                static void juno_lego_write_linked_power(int32_t virtualPort, int32_t first, int32_t second) {
+                  const uint8_t payload[] = {static_cast<uint8_t>(virtualPort), 0x11, 0x02, static_cast<uint8_t>(first),
+                      static_cast<uint8_t>(second)};
+                  juno_lego_send(0x81, payload, sizeof(payload));
+                }
+
+                static int32_t juno_lego_clamp_power(int32_t power) {
+                  return power > 100 ? 100 : (power < -100 ? -100 : power);
+                }
+
+                extern "C" void juno_lego_hub_set_linked_motor_power(int32_t virtualPort, int32_t first, int32_t second) {
+                  juno_lego_write_linked_power(virtualPort, juno_lego_clamp_power(first), juno_lego_clamp_power(second));
+                }
+
+                extern "C" void juno_lego_hub_brake_linked_motors(int32_t virtualPort) {
+                  juno_lego_write_linked_power(virtualPort, 127, 127);
+                }
+
                 extern "C" void juno_lego_hub_disconnect() {
                   if (juno_lego_hub) {
                     juno_lego_hub.disconnect();
                   }
-                  juno_lego_led_ready = false;
+                  juno_lego_led_mode = -1;
                 }
 
                 extern "C" void juno_lego_hub_switch_off() {
                   // Hub action (0x02): switch off hub (0x01).
                   const uint8_t payload[] = {0x01};
                   juno_lego_send(0x02, payload, sizeof(payload));
-                  juno_lego_led_ready = false;
+                  juno_lego_led_mode = -1;
                 }
                 """;
     }

@@ -96,6 +96,9 @@ final class RuntimeShim {
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
             shim.append("#include <ArduinoBLE.h>\n");
         }
+        if (uses(ShimFeature.I2C)) {
+            shim.append("#include <Wire.h>\n");
+        }
         if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
@@ -517,13 +520,7 @@ final class RuntimeShim {
                 """;
     }
 
-    private void appendHelpers(StringBuilder shim) {
-        if (usesAny(ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER)) {
-            shim.append(ShimLibraries.runtimeStringHelpers());
-        }
-        if (uses(ShimFeature.STRING_BUILDER)) {
-            shim.append(ShimLibraries.stringBuilderHelpers());
-        }
+    private void appendPeripheralHelpers(StringBuilder shim) {
         if (uses(ShimFeature.MOUSE)) {
             shim.append(ShimLibraries.mouseHelpers());
         }
@@ -533,6 +530,22 @@ final class RuntimeShim {
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
             shim.append(ShimLibraries.legoPoweredUpHelpers());
         }
+        if (uses(ShimFeature.INFRARED)) {
+            shim.append(ShimLibraries.infraredHelpers());
+        }
+        if (uses(ShimFeature.I2C)) {
+            shim.append(ShimLibraries.i2cHelpers());
+        }
+    }
+
+    private void appendHelpers(StringBuilder shim) {
+        if (usesAny(ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER)) {
+            shim.append(ShimLibraries.runtimeStringHelpers());
+        }
+        if (uses(ShimFeature.STRING_BUILDER)) {
+            shim.append(ShimLibraries.stringBuilderHelpers());
+        }
+        appendPeripheralHelpers(shim);
         if (uses(ShimFeature.MEMORY)) {
             shim.append(ShimLibraries.memoryHelpers());
         }

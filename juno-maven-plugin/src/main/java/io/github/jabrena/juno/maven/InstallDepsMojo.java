@@ -19,7 +19,7 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
     /**
      * Every optional Arduino library (not bundled with the {@code arduino:renesas_uno} core) any
      * current Juno example needs: {@code Mouse} for {@code RatonLoco}, {@code ArduinoBLE} for
-     * {@code PoweredUpHub} (e.g. {@code LegoTrain}), {@code ESP_SSLClient} for
+     * {@code PoweredUpHubRemote} (e.g. {@code LegoTrain}), {@code ESP_SSLClient} for
      * {@code Smtp}'s {@code STARTTLS} upgrade, {@code Servo} for {@code Servo}-driven examples,
      * and {@code SdFat} for long-file-name-capable removable-storage examples.
      * Update this list whenever a new example starts needing another one.

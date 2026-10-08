@@ -57,6 +57,73 @@ class JunoCompilerTest {
     }
 
     @Test
+    void allocatesANonFinalClassNothingExtends() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.Gpio;
+                public class NonFinalApp {
+                    public static void main(String[] args) {
+                        NonFinalApp app = new NonFinalApp();
+                        app.run();
+                    }
+                    private void run() {
+                        Gpio.pinMode(13, Gpio.OUTPUT);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NonFinalApp", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NonFinalApp");
+
+        assertThat(result.assembly()).contains("bl pinMode");
+    }
+
+    @Test
+    void rejectsAllocatingANonFinalClassWithASubclass() throws Exception {
+        String source = """
+                package demo;
+                public class Extended {
+                    public static void main(String[] args) {
+                        new Extended().run();
+                    }
+                    void run() {
+                    }
+                }
+                class Sub extends Extended {
+                    @Override
+                    void run() {
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Extended", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Extended"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("final or have no subclass");
+    }
+
+    @Test
+    void lowersGpioDigitalReadToTheCoreFunction() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.Gpio;
+                public final class Bumper {
+                    public static void main(String[] args) {
+                        Gpio.pinMode(4, Gpio.INPUT_PULLUP);
+                        if (!Gpio.digitalRead(4)) {
+                            Gpio.pinMode(13, Gpio.OUTPUT);
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Bumper", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Bumper");
+
+        assertThat(result.assembly()).contains("bl digitalRead");
+    }
+
+    @Test
     void ignoresPackageInfoSharedWithJunosOwnPackage() throws Exception {
         // juno's own target/classes already holds io/github/jabrena/juno/package-info.class.
         CompilerTestSupport.compileJava(temporaryDirectory, "io.github.jabrena.juno.package-info",
@@ -1345,21 +1412,21 @@ class JunoCompilerTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
                 @Board(ArduinoUnoR4WiFi.class)
                 public final class Train {
                     public static void main(String[] args) {
-                        if (PoweredUpHub.connect(10000) && PoweredUpHub.hubType() == PoweredUpHub.TYPE_CITY_HUB) {
-                            PoweredUpHub.setLedColor(PoweredUpHub.COLOR_GREEN);
-                            PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, -50);
-                            PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
-                            PoweredUpHub.enableSensor(PoweredUpHub.PORT_B, PoweredUpHub.MODE_MOTOR_POSITION);
-                            PoweredUpHub.setLedColor(PoweredUpHub.readSensor(PoweredUpHub.PORT_B));
+                        if (PoweredUpHubRemote.connect(10000) && PoweredUpHubRemote.hubType() == PoweredUpHubRemote.TYPE_CITY_HUB) {
+                            PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+                            PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, -50);
+                            PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
+                            PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_B, PoweredUpHubRemote.MODE_MOTOR_POSITION);
+                            PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.readSensor(PoweredUpHubRemote.PORT_B));
                         }
-                        if (PoweredUpHub.isConnected()) {
-                            PoweredUpHub.disconnect();
+                        if (PoweredUpHubRemote.isConnected()) {
+                            PoweredUpHubRemote.disconnect();
                         }
-                        PoweredUpHub.switchOff();
+                        PoweredUpHubRemote.switchOff();
                     }
                 }
                 """;

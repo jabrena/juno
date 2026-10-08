@@ -243,12 +243,12 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
-                        if (PoweredUpHub.connect(1000)) {
-                            PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, 50);
+                        if (PoweredUpHubRemote.connect(1000)) {
+                            PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, 50);
                         }
                     }
                 }

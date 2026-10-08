@@ -529,24 +529,274 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
                 public final class AsmLegoTrain {
                     public static void main(String[] args) {
-                        if (!PoweredUpHub.connect(0)) return;
-                        PoweredUpHub.setLedColor(PoweredUpHub.COLOR_BLUE);
-                        PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, 40);
+                        if (!PoweredUpHubRemote.connect(0)) return;
+                        PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
+                        PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, 40);
                         Delay.millis(1000);
-                        PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
-                        if (PoweredUpHub.hubType() != PoweredUpHub.TYPE_UNKNOWN && PoweredUpHub.isConnected()) {
-                            PoweredUpHub.disconnect();
+                        PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
+                        if (PoweredUpHubRemote.hubType() != PoweredUpHubRemote.TYPE_UNKNOWN && PoweredUpHubRemote.isConnected()) {
+                            PoweredUpHubRemote.disconnect();
                         }
-                        PoweredUpHub.switchOff();
+                        PoweredUpHubRemote.switchOff();
                     }
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLegoTrain", source);
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLegoTrain");
         Path shim = temporaryDirectory.resolve("AsmLegoTrainShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    /** The RCX remote is Java framing over the library-free {@code Infrared} shim, so it compiles with plain Arduino calls. */
+    @Test
+    void compilesAnRcxRemoteProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.lego.RcxRemote;
+                public final class AsmRcxRemote {
+                    public static void main(String[] args) {
+                        RcxRemote.begin(2, 3);
+                        while (true) {
+                            int buttons = RcxRemote.buttons();
+                            if ((buttons & RcxRemote.A_FORWARD) != 0) {
+                                RcxRemote.sendButtons(RcxRemote.B_FORWARD);
+                            }
+                            if (RcxRemote.message() >= 0) {
+                                RcxRemote.sendMessage(7);
+                            }
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmRcxRemote", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmRcxRemote");
+        assertThat(result.runtimeShim()).contains("juno_ir_write_byte");
+        assertThat(result.runtimeShim()).doesNotContain("ArduinoBLE.h");
+        Path shim = temporaryDirectory.resolve("AsmRcxRemoteShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
+    void compilesAScoutRemoteProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.lego.RcxRemote;
+                import io.github.jabrena.juno.api.lego.ScoutRemote;
+                public final class AsmScoutRemote {
+                    public static void main(String[] args) {
+                        ScoutRemote.begin(-1, 3);
+                        ScoutRemote.ping();
+                        ScoutRemote.setMode(ScoutRemote.MODE_POWER);
+                        ScoutRemote.playSound(2);
+                        ScoutRemote.selectProgram(3);
+                        ScoutRemote.sendButtons(RcxRemote.A_FORWARD);
+                        ScoutRemote.stopAll();
+                        ScoutRemote.powerOff();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmScoutRemote", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmScoutRemote");
+        assertThat(result.runtimeShim()).contains("juno_ir_write_byte").doesNotContain("ArduinoBLE.h");
+        Path shim = temporaryDirectory.resolve("AsmScoutRemoteShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
+    void compilesAnInfraredLoopbackProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.ir.Infrared;
+                public final class AsmLoopback {
+                    public static void main(String[] args) {
+                        Infrared.begin(2, 3, 2400);
+                        int ok = 0;
+                        for (int value = 0; value < 256; value++) {
+                            if (Infrared.echoByte(value, 200) == value) ok++;
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLoopback", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLoopback");
+        assertThat(result.runtimeShim()).contains("juno_ir_echo_byte");
+        Path shim = temporaryDirectory.resolve("AsmLoopbackShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    /** Reading the RCX's sensors is a request and reply over the same library-free {@code Infrared} shim. */
+    @Test
+    void compilesAnRcxBrickSensorProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.lego.RcxBrick;
+                import io.github.jabrena.juno.api.lego.RcxRemote;
+                public final class AsmRcxSensor {
+                    public static void main(String[] args) {
+                        RcxRemote.begin(2, 3);
+                        if (!RcxBrick.setTouchSensor(RcxBrick.INPUT_1)) return;
+                        if (RcxBrick.batteryMillivolts() < 6000) return;
+                        RcxBrick.playSound(RcxBrick.SOUND_BEEP);
+                        RcxBrick.playTone(440, 50);
+                        RcxBrick.setLightSensor(RcxBrick.INPUT_2);
+                        RcxBrick.setRotationSensor(RcxBrick.INPUT_3);
+                        RcxBrick.setTemperatureSensor(RcxBrick.INPUT_1);
+                        if (RcxBrick.rotationDegrees(RcxBrick.INPUT_3) > 90 || RcxBrick.temperatureTenths(RcxBrick.INPUT_1) > 300) {
+                            RcxBrick.clearSensor(RcxBrick.INPUT_3);
+                        }
+                        RcxBrick.drive(RcxBrick.OUTPUT_A | RcxBrick.OUTPUT_B, 4);
+                        RcxBrick.setMotorDirection(RcxBrick.OUTPUT_C, false);
+                        RcxBrick.setMotorPower(RcxBrick.OUTPUT_C, 3);
+                        RcxBrick.motorFloat(RcxBrick.OUTPUT_C);
+                        while (!RcxBrick.isPressed(RcxBrick.INPUT_1)) {
+                            RcxRemote.sendButtons(RcxRemote.A_FORWARD);
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmRcxSensor", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmRcxSensor");
+        Path shim = temporaryDirectory.resolve("AsmRcxSensorShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    /** Power Functions is Java over the raw {@code Infrared} mark/space pulses, with no library. */
+    @Test
+    void compilesAPowerFunctionsProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.lego.PowerFunctionsRemote;
+                public final class AsmPowerFunctions {
+                    public static void main(String[] args) {
+                        PowerFunctionsRemote.begin(3);
+                        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 5);
+                        PowerFunctionsRemote.setSpeeds(PowerFunctionsRemote.CHANNEL_2, -7, 7);
+                        PowerFunctionsRemote.brake(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_BLUE);
+                        PowerFunctionsRemote.stop(PowerFunctionsRemote.CHANNEL_2);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmPowerFunctions", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmPowerFunctions");
+        assertThat(result.runtimeShim()).contains("juno_ir_mark", "juno_ir_space").doesNotContain("ArduinoBLE.h");
+        Path shim = temporaryDirectory.resolve("AsmPowerFunctionsShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    /** The BNO055 driver is Java over the library-free {@code I2c} shim, which wraps the core's {@code Wire}. */
+    @Test
+    void compilesABno055ProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.imu.Bno055;
+                public final class AsmHeading {
+                    public static void main(String[] args) {
+                        if (!Bno055.begin()) return;
+                        int start = Bno055.headingDegrees();
+                        while (Bno055.turnedSince(start) > -90) {
+                            if (Bno055.calibration() < 0) return;
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHeading", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHeading");
+        assertThat(result.runtimeShim()).contains("#include <Wire.h>", "juno_i2c_read_register16")
+                .doesNotContain("ArduinoBLE.h");
+        Path shim = temporaryDirectory.resolve("AsmHeadingShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
+    void compilesAPoweredUpHubImuProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
+                public final class AsmHubImu {
+                    public static void main(String[] args) {
+                        if (!PoweredUpHubRemote.connect(0)) return;
+                        PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_GYRO, PoweredUpHubRemote.MODE_IMU_VALUES);
+                        PoweredUpHubRemote.setLedRgb(255, 128, 0);
+                        int pair = PoweredUpHubRemote.linkMotors(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.PORT_B);
+                        if (pair >= 0 && PoweredUpHubRemote.batteryMillivolts() > 6000
+                                && PoweredUpHubRemote.currentMilliamps() < 2000) {
+                            PoweredUpHubRemote.setLinkedMotorPower(pair, 40, 40);
+                            PoweredUpHubRemote.brakeLinkedMotors(pair);
+                            PoweredUpHubRemote.unlinkMotors(pair);
+                        }
+                        while (PoweredUpHubRemote.isConnected()) {
+                            if (PoweredUpHubRemote.sensorReportSize(PoweredUpHubRemote.PORT_TECHNIC_GYRO) >= 6
+                                    && PoweredUpHubRemote.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_GYRO, 2, 2) > 100) {
+                                PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
+                            }
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHubImu", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHubImu");
+        Path shim = temporaryDirectory.resolve("AsmHubImuShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
+    void compilesAPoweredUpHubPropertiesProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
+                public final class AsmHubProperties {
+                    public static void main(String[] args) {
+                        if (!PoweredUpHubRemote.connect(0)) return;
+                        byte[] name = new byte[20];
+                        int length = PoweredUpHubRemote.hubName(name, name.length);
+                        int firmware = PoweredUpHubRemote.firmwareVersion();
+                        if (length > 0 && PoweredUpHubRemote.batteryPercent() < 10 && !PoweredUpHubRemote.buttonPressed()
+                                && PoweredUpHubRemote.rssi() < -80 && PoweredUpHubRemote.versionMajor(firmware) == 1
+                                && PoweredUpHubRemote.versionMinor(firmware) + PoweredUpHubRemote.versionBugfix(
+                                        PoweredUpHubRemote.hardwareVersion()) + PoweredUpHubRemote.versionBuild(firmware) > 0) {
+                            PoweredUpHubRemote.switchOff();
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHubProperties", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHubProperties");
+        Path shim = temporaryDirectory.resolve("AsmHubPropertiesShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
         syntaxCheckCpp(compiler, shim);
@@ -562,15 +812,15 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQLegoTrain {
                     public static void main(String[] args) {
-                        if (!PoweredUpHub.connect(0)) return;
-                        PoweredUpHub.setLedColor(PoweredUpHub.COLOR_GREEN);
-                        PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, -40);
+                        if (!PoweredUpHubRemote.connect(0)) return;
+                        PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+                        PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, -40);
                         Delay.millis(1000);
-                        PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+                        PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
                     }
                 }
                 """;
@@ -1098,16 +1348,16 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.lego.PoweredUpHub;
+                import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
                 public final class LegoRuntime {
                     public static void main(String[] args) {
-                        if (PoweredUpHub.connect(0) && PoweredUpHub.isConnected()) {
-                            PoweredUpHub.enableSensor(PoweredUpHub.PORT_A, PoweredUpHub.MODE_MOTOR_POSITION);
-                            PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, PoweredUpHub.readSensor(PoweredUpHub.PORT_A));
-                            PoweredUpHub.setLedColor(PoweredUpHub.hubType());
-                            PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
-                            PoweredUpHub.switchOff();
-                            PoweredUpHub.disconnect();
+                        if (PoweredUpHubRemote.connect(0) && PoweredUpHubRemote.isConnected()) {
+                            PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.MODE_MOTOR_POSITION);
+                            PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.readSensor(PoweredUpHubRemote.PORT_A));
+                            PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.hubType());
+                            PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
+                            PoweredUpHubRemote.switchOff();
+                            PoweredUpHubRemote.disconnect();
                         }
                     }
                 }
@@ -1116,6 +1366,8 @@ class GeneratedAsmToolchainTest {
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LegoRuntime");
         Path sketch = temporaryDirectory.resolve("LegoRuntime.cpp");
         String harness = """
+
+                #include <stdio.h>
 
                 // Provided by the generated entry-point assembly on a board; see the JSON runtime test.
                 extern "C" {
@@ -1129,7 +1381,15 @@ class GeneratedAsmToolchainTest {
                 static bool junoExpectWrite(const uint8_t* expected, int length) {
                   if (junoCheckedWrites >= junofake::writes) return false;
                   const junofake::Message& actual = junofake::written[junoCheckedWrites++];
-                  return actual.length == length && memcmp(actual.bytes, expected, length) == 0;
+                  bool same = actual.length == length && memcmp(actual.bytes, expected, length) == 0;
+                  if (!same) {
+                    printf("write %d expected:", junoCheckedWrites - 1);
+                    for (int i = 0; i < length; i++) printf(" %02X", expected[i]);
+                    printf(" actual:");
+                    for (int i = 0; i < actual.length; i++) printf(" %02X", actual.bytes[i]);
+                    printf("\\n");
+                  }
+                  return same;
                 }
 
                 #define EXPECT_WRITE(code, ...) do { \\
@@ -1169,6 +1429,15 @@ class GeneratedAsmToolchainTest {
                   EXPECT_WRITE(21, 0x08, 0x00, 0x81, 0x32, 0x11, 0x51, 0x00, 0x09);
                   juno_lego_hub_set_led_color(3);
                   EXPECT_WRITE(22, 0x08, 0x00, 0x81, 0x32, 0x11, 0x51, 0x00, 0x03);
+                  // RGB mode (1) needs its own input format setup; going back to color indexes sets mode 0 up again.
+                  juno_lego_hub_set_led_rgb(10, 20, 300);  // channels keep their low 8 bits
+                  EXPECT_WRITE(23, 0x0A, 0x00, 0x41, 0x32, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00);
+                  EXPECT_WRITE(24, 0x0A, 0x00, 0x81, 0x32, 0x11, 0x51, 0x01, 0x0A, 0x14, 0x2C);
+                  juno_lego_hub_set_led_rgb(1, 2, 3);
+                  EXPECT_WRITE(25, 0x0A, 0x00, 0x81, 0x32, 0x11, 0x51, 0x01, 0x01, 0x02, 0x03);
+                  juno_lego_hub_set_led_color(6);
+                  EXPECT_WRITE(26, 0x0A, 0x00, 0x41, 0x32, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00);
+                  EXPECT_WRITE(27, 0x08, 0x00, 0x81, 0x32, 0x11, 0x51, 0x00, 0x06);
 
                   // Port input format setup 0x41: port, mode, delta 1 (uint32 LE), notifications on.
                   juno_lego_hub_enable_sensor(0, 2);
@@ -1205,6 +1474,30 @@ class GeneratedAsmToolchainTest {
                   EXPECT_WRITE(51, 0x0A, 0x00, 0x41, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01);
                   if (juno_lego_hub_read_sensor(0) != 0) return 52;
 
+                  // Hub Properties 0x01: the first property call subscribes (0x02) to button, RSSI and battery and
+                  // requests (0x05) name, firmware and hardware; the answers are updates (0x06). The test clock
+                  // never advances, so the answers are queued first to end the wait for them.
+                  NOTIFY(0x06, 0x00, 0x01, 0x06, 0x06, 0x55);  // battery 85 %
+                  NOTIFY(0x09, 0x00, 0x01, 0x03, 0x06, 0x40, 0x00, 0x23, 0x10);  // firmware 1.0.23 build 64
+                  NOTIFY(0x09, 0x00, 0x01, 0x04, 0x06, 0x01, 0x00, 0x00, 0x10);  // hardware 1.0.0 build 1
+                  NOTIFY(0x08, 0x00, 0x01, 0x01, 0x06, 'H', 'u', 'b');  // name
+                  NOTIFY(0x06, 0x00, 0x01, 0x02, 0x06, 0x01);  // button down
+                  NOTIFY(0x06, 0x00, 0x01, 0x05, 0x06, 0xC4);  // RSSI -60 dBm
+                  if (juno_lego_hub_battery_percent() != 85) return 80;
+                  EXPECT_WRITE(81, 0x05, 0x00, 0x01, 0x02, 0x02);
+                  EXPECT_WRITE(82, 0x05, 0x00, 0x01, 0x05, 0x02);
+                  EXPECT_WRITE(83, 0x05, 0x00, 0x01, 0x06, 0x02);
+                  EXPECT_WRITE(84, 0x05, 0x00, 0x01, 0x01, 0x05);
+                  EXPECT_WRITE(85, 0x05, 0x00, 0x01, 0x03, 0x05);
+                  EXPECT_WRITE(86, 0x05, 0x00, 0x01, 0x04, 0x05);
+                  if (juno_lego_hub_firmware_version() != 0x10230040) return 87;
+                  if (juno_lego_hub_hardware_version() != 0x10000001) return 88;
+                  if (juno_lego_hub_button_pressed() != 1 || juno_lego_hub_rssi() != -60) return 89;
+                  uint8_t hubName[8];
+                  if (juno_lego_hub_name(hubName, 8) != 3 || memcmp(hubName, "Hub", 3) != 0) return 90;
+                  if (juno_lego_hub_name(hubName, 2) != 2) return 91;
+                  if (junofake::writes != junoCheckedWrites) return 92;  // requested once, not on every call
+
                   juno_lego_hub_switch_off();  // Hub action 0x02: switch off 0x01
                   EXPECT_WRITE(60, 0x04, 0x00, 0x02, 0x01);
                   juno_lego_hub_disconnect();
@@ -1217,6 +1510,41 @@ class GeneratedAsmToolchainTest {
                   if (juno_lego_hub_read_sensor(2) != 0) return 71;
                   NOTIFY(0x06, 0x00, 0x45, 0x02, 0x2C, 0x01);
                   if (juno_lego_hub_read_sensor(2) != 0) return 72;
+
+                  // Multi-value reports, e.g. the Technic Hub's gyroscope (port 0x62): three int16 values.
+                  juno_lego_hub_enable_sensor(0x62, 0);
+                  EXPECT_WRITE(100, 0x0A, 0x00, 0x41, 0x62, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01);
+                  if (juno_lego_hub_sensor_report_size(0x62) != 0 || juno_lego_hub_read_sensor_value(0x62, 0, 2) != 0) return 101;
+                  NOTIFY(0x0A, 0x00, 0x45, 0x62, 0x34, 0x12, 0xFE, 0xFF, 0x0A, 0x00);
+                  if (juno_lego_hub_sensor_report_size(0x62) != 6) return 102;
+                  if (juno_lego_hub_read_sensor_value(0x62, 0, 2) != 0x1234) return 103;
+                  if (juno_lego_hub_read_sensor_value(0x62, 1, 2) != -2) return 104;
+                  if (juno_lego_hub_read_sensor_value(0x62, 2, 2) != 10) return 105;
+                  if (juno_lego_hub_sensor_report_count(0x62) != 1) return 111;
+                  NOTIFY(0x0A, 0x00, 0x45, 0x62, 0x34, 0x12, 0xFE, 0xFF, 0x0A, 0x00);  // an unchanged report still counts
+                  if (juno_lego_hub_sensor_report_count(0x62) != 2 || juno_lego_hub_sensor_report_count(0x05) != 0) return 112;
+                  if (juno_lego_hub_read_sensor_value(0x62, 3, 2) != 0) return 106;  // beyond the report
+                  if (juno_lego_hub_read_sensor_value(0x62, 0, 4) != static_cast<int32_t>(0xFFFE1234)) return 107;
+                  if (juno_lego_hub_read_sensor_value(0x62, 5, 1) != 0) return 108;  // a high byte of the third value
+                  if (juno_lego_hub_read_sensor_value(0x62, 0, 3) != 0) return 109;  // widths are 1, 2 or 4
+                  if (juno_lego_hub_read_sensor_value(0x05, 0, 2) != 0) return 110;  // a port nobody enabled
+
+                  // Virtual port: Virtual Port Setup 0x61 connect (0x01); the hub answers with Hub Attached I/O 0x04,
+                  // event 0x02, announcing the new port 0x10 that pairs ports 0 and 1.
+                  NOTIFY(0x09, 0x00, 0x04, 0x10, 0x02, 0x46, 0x00, 0x00, 0x01);
+                  if (juno_lego_hub_link_motors(0, 1) != 0x10) return 120;
+                  EXPECT_WRITE(121, 0x06, 0x00, 0x61, 0x01, 0x00, 0x01);
+                  if (juno_lego_hub_link_motors(1, 0) != 0x10 || junofake::writes != junoCheckedWrites) return 122;
+                  // StartPower with two powers (subcommand 0x02), clamped; 127 is brake.
+                  juno_lego_hub_set_linked_motor_power(0x10, 50, -150);
+                  EXPECT_WRITE(123, 0x08, 0x00, 0x81, 0x10, 0x11, 0x02, 0x32, 0x9C);
+                  juno_lego_hub_brake_linked_motors(0x10);
+                  EXPECT_WRITE(124, 0x08, 0x00, 0x81, 0x10, 0x11, 0x02, 0x7F, 0x7F);
+                  juno_lego_hub_unlink_motors(0x10);  // disconnect (0x00)
+                  EXPECT_WRITE(125, 0x05, 0x00, 0x61, 0x00, 0x10);
+                  NOTIFY(0x09, 0x00, 0x04, 0x11, 0x02, 0x46, 0x00, 0x02, 0x03);
+                  if (juno_lego_hub_link_motors(3, 2) != 0x11) return 126;  // pairs are matched in either order
+                  EXPECT_WRITE(127, 0x06, 0x00, 0x61, 0x01, 0x03, 0x02);
                   return 0;
                 }
                 """;

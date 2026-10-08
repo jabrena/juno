@@ -36,7 +36,7 @@ public enum Capability {
             return board.displayName() + " does not provide the WiFiS3 networking stack";
         }
     },
-    BLUETOOTH_LE("PoweredUpHub") {
+    BLUETOOTH_LE("PoweredUpHubRemote") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no Bluetooth LE adapter reachable through ArduinoBLE";

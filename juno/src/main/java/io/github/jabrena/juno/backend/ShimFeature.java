@@ -8,8 +8,12 @@ package io.github.jabrena.juno.backend;
 enum ShimFeature {
     MOUSE,
     SERVO,
-    /** {@code PoweredUpHub}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */
+    /** {@code PoweredUpHubRemote}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */
     LEGO_POWERED_UP,
+    /** {@code Infrared}: bit-banged framed bytes over a 38 kHz IR receiver and LED, no library. */
+    INFRARED,
+    /** {@code I2c}: register access on the primary {@code Wire} bus, with the core-bundled library. */
+    I2C,
     WIFI,
     UDP,
     SD,
