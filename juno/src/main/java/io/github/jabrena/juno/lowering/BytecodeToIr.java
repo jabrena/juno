@@ -85,7 +85,7 @@ import java.util.stream.Collectors;
  * <ul>
  *   <li>A JVM local slot is treated as a known-length array only when it is assigned via {@code astore}
  *       exactly once in the whole method (i.e. "effectively final"), immediately after {@code newarray} with
- *       a compile-time-constant count ({@link #computeSingleAssignmentArrayLocals}). Since that slot can then
+ *       a compile-time-constant count ({@code LocalSlotAnalysis.computeSingleAssignmentArrayLocals}). Since that slot can then
  *       only ever hold that one array for its entire reachable lifetime, every load of it is safely
  *       known-length too, without needing a merge-aware, cross-block dataflow pass. Anything else holding an
  *       array reference (a parameter, a reassigned local) falls back to raw-pointer semantics: array

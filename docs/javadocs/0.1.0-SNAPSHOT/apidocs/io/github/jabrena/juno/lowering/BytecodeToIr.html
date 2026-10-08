@@ -116,12 +116,7 @@ narrow, always-sound way, tracked by <code>ValueTracking</code>:
 <ul>
   <li>A JVM local slot is treated as a known-length array only when it is assigned via <code>astore</code>
       exactly once in the whole method (i.e. "effectively final"), immediately after <code>newarray</code> with
-      a compile-time-constant count (
-<details class="invalid-tag">
-<summary>invalid reference</summary>
-<pre><code>#computeSingleAssignmentArrayLocals</code></pre>
-</details>
-). Since that slot can then
+      a compile-time-constant count (<code>LocalSlotAnalysis.computeSingleAssignmentArrayLocals</code>). Since that slot can then
       only ever hold that one array for its entire reachable lifetime, every load of it is safely
       known-length too, without needing a merge-aware, cross-block dataflow pass. Anything else holding an
       array reference (a parameter, a reassigned local) falls back to raw-pointer semantics: array
