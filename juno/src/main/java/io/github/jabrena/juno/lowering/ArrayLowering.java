@@ -145,6 +145,14 @@ final class ArrayLowering {
         return new Lowered(nextValueId, depth);
     }
     /** Classes whose {@code new} only reserves a placeholder: the constructor call builds the runtime handle. */
+    /**
+     * Whether another class of the closed world extends {@code className}; a class nothing extends
+     * dispatches statically even when it is not declared {@code final}.
+     */
+    private static boolean hasSubclass(Map<String, JavaClass> classes, String className) {
+        return classes.values().stream().anyMatch(candidate -> className.equals(candidate.superClassName()));
+    }
+
     private static boolean isRuntimeHandleClass(String className) {
         return className.startsWith("java/lang/") || className.equals("java/util/Properties")
                 || LockSupport.isReentrantLockClass(className)
@@ -177,10 +185,11 @@ final class ArrayLowering {
                                     + " at bytecode offset " + instruction.offset()
                                     + ": object class is not available for closed-world allocation: " + className);
                         }
-                        if (!allocatedClass.isFinal()) {
+                        if (!allocatedClass.isFinal() && hasSubclass(classes, className)) {
                             throw new CompileException(linked.method().reference().displayName()
                                     + " at bytecode offset " + instruction.offset()
-                                    + ": allocated classes must be final for statically resolved dispatch: "
+                                    + ": allocated classes must be final or have no subclass for statically resolved"
+                                    + " dispatch: "
                                     + className.replace('/', '.'));
                         }
                         Value object = Value.int32(nextValueId++);
