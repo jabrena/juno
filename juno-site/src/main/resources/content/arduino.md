@@ -247,9 +247,9 @@ It needs the `Servo` library (not bundled with the `arduino:renesas_uno` core, i
 
 [`juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java)
 connects to a LEGO Powered Up hub and shuttles a train motor on port A back and forth using
-[`PoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHub.java) —
-see [the LEGO Powered Up guide](../lego) for the full API. `LegoMotorPosition` in the same package
-reads a tacho motor's rotation sensor to turn it one revolution at a time.
+[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubRemote.java) —
+see [the LEGO Powered Up guide](../lego) for the full API. `MagicSquarePoweredUpHub` in the same package
+drives a two-motor vehicle around a square.
 
 It needs the `ArduinoBLE` library (not bundled with the `arduino:renesas_uno` core, installed by
 `juno:install-deps` above, or on its own with `arduino-cli lib install ArduinoBLE`):

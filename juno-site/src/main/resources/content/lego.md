@@ -4,7 +4,7 @@ description: "Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, fro
 layout: page
 ---
 
-[`PoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHub.java)
+[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubRemote.java)
 (`io.github.jabrena.juno.api.lego`) lets a Juno program remote-control a LEGO Powered Up hub — run
 its motors and set its status LED — the same way the LEGO apps do. The board acts as a Bluetooth
 Low Energy central and speaks the
@@ -32,17 +32,17 @@ It is a compiler intrinsic backed by the Arduino `ArduinoBLE` library.
   Train Hub. Close the LEGO apps first — a hub accepts a single connection at a time.
 
 The UNO R4 WiFi's radio module cannot run Bluetooth LE and Wi-Fi at the same time, so a program
-for that board that uses `PoweredUpHub` should not also use `Wifi`, `Udp`, or the HTTP/email APIs.
+for that board that uses `PoweredUpHubRemote` should not also use `Wifi`, `Udp`, or the HTTP/email APIs.
 
 ## API
 
 ```java
-import io.github.jabrena.juno.api.lego.PoweredUpHub;
+import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
 
-if (PoweredUpHub.connect(10_000)) {              // scan up to 10 s; 0 waits forever
-    PoweredUpHub.setLedColor(PoweredUpHub.COLOR_GREEN);
-    PoweredUpHub.setMotorPower(PoweredUpHub.PORT_A, 50);   // -100..100 percent
-    PoweredUpHub.brakeMotor(PoweredUpHub.PORT_A);
+if (PoweredUpHubRemote.connect(10_000)) {              // scan up to 10 s; 0 waits forever
+    PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+    PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, 50);   // -100..100 percent
+    PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
 }
 ```
 
@@ -69,9 +69,9 @@ subscribes to one of their *modes*. `enableSensor(port, mode)` subscribes, and f
 sends a message whenever the value changes; `readSensor(port)` returns the latest one.
 
 ```java
-PoweredUpHub.enableSensor(PoweredUpHub.PORT_A, PoweredUpHub.MODE_MOTOR_POSITION);
+PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.MODE_MOTOR_POSITION);
 ...
-int degrees = PoweredUpHub.readSensor(PoweredUpHub.PORT_A);
+int degrees = PoweredUpHubRemote.readSensor(PoweredUpHubRemote.PORT_A);
 ```
 
 | Device | Mode | `readSensor` value |
@@ -88,30 +88,30 @@ Things to know:
 - `readSensor` decodes modes that report **one** 8-, 16- or 32-bit value. For modes reporting
   several values at once (a hub's tilt axes, raw RGB), it returns only the first byte.
 - Up to **eight** ports report at a time; enabling a ninth is ignored.
-- Values arrive while a `PoweredUpHub` call runs, not during `Delay.millis`, so call `readSensor`
+- Values arrive while a `PoweredUpHubRemote` call runs, not during `Delay.millis`, so call `readSensor`
   regularly in loops that wait for a value.
 - A new `connect()` starts with no ports reporting: enable them again after reconnecting.
 - The remote connects as a hub of its own (`TYPE_REMOTE_CONTROL`). Since a program talks to one
   hub at a time, it can't yet drive a train hub from a remote.
 
-### Example: one revolution at a time
+### Example: driving a square
 
-[`LegoMotorPosition`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoMotorPosition.java)
-turns a tacho motor on port A exactly one revolution forwards, then one backwards, using its
-position reports:
+[`MagicSquarePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/MagicSquarePoweredUpHub.java)
+drives a two-motor vehicle (left motor on port A, right on port B) around a square, forever: straight
+for 3 seconds, stop, turn left 90 degrees, straight for 3 seconds, stop, turn left 90 degrees:
 
 ```java
-private static void turnTo(int target, int color) {
-    PoweredUpHub.setLedColor(color);
-    int position = PoweredUpHub.readSensor(MOTOR);
-    int direction = target > position ? 1 : -1;
-    PoweredUpHub.setMotorPower(MOTOR, direction * POWER);
-    while (PoweredUpHub.isConnected() && (target - position) * direction > 0) {
-        position = PoweredUpHub.readSensor(MOTOR);
-    }
-    PoweredUpHub.brakeMotor(MOTOR);
-}
+Serial.println("Straight");
+drive(POWER, POWER, STRAIGHT_MILLIS);
+stop();
+Serial.println("Turn left");
+drive(-POWER, POWER, TURN_MILLIS);
+stop();
 ```
+
+`TURN_MILLIS` is the time a spin on the spot takes for 90 degrees; tune it for your vehicle.
+`MagicSquareRcx` and `MagicSquareScout` in the same package do the same over infrared with an RCX or
+Scout brick, using `RcxRemote` and `ScoutRemote`.
 
 ## Example: a shuttling train
 
@@ -122,29 +122,29 @@ LED to show the direction:
 ```java
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LegoTrain {
-    private static final int MOTOR = PoweredUpHub.PORT_A;
+    private static final int MOTOR = PoweredUpHubRemote.PORT_A;
 
     public static void main(String[] args) {
         Serial.begin(9600);
         while (true) {
-            if (!PoweredUpHub.isConnected()) {
+            if (!PoweredUpHubRemote.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                PoweredUpHub.connect(0);
+                PoweredUpHubRemote.connect(0);
             }
-            run(1, PoweredUpHub.COLOR_GREEN);
-            run(-1, PoweredUpHub.COLOR_BLUE);
+            run(1, PoweredUpHubRemote.COLOR_GREEN);
+            run(-1, PoweredUpHubRemote.COLOR_BLUE);
         }
     }
 
     private static void run(int direction, int color) {
-        PoweredUpHub.setLedColor(color);
+        PoweredUpHubRemote.setLedColor(color);
         for (int power = 10; power <= 60; power += 10) {
-            PoweredUpHub.setMotorPower(MOTOR, direction * power);
+            PoweredUpHubRemote.setMotorPower(MOTOR, direction * power);
             Delay.millis(200);
         }
         Delay.millis(3000);
-        PoweredUpHub.brakeMotor(MOTOR);
-        PoweredUpHub.setLedColor(PoweredUpHub.COLOR_RED);
+        PoweredUpHubRemote.brakeMotor(MOTOR);
+        PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_RED);
         Delay.millis(2000);
     }
 }
