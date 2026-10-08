@@ -1223,7 +1223,7 @@ final class BigNumberRuntime {
                   if (juno_big_sign_of(unscaled) < 0) return juno_big_arithmetic("Attempted square root of negative BigDecimal");
                   int32_t precision = juno_big_words(context)[0];
                   int32_t mode = juno_big_words(context)[1];
-                  int32_t preferred = juno_bd_scale(a) / 2;
+                  int32_t preferred = (juno_bd_scale(a) + 1) >> 1; // JDK 27: ceil(scale / 2)
                   if (juno_big_sign_of(unscaled) == 0) {
                     juno_big_prepare(64u);
                     return juno_bd_make(unscaled, preferred);
