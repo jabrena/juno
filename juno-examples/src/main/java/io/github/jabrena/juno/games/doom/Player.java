@@ -84,6 +84,19 @@ final class Player {
         return true;
     }
 
+    /** Sidesteps {@code distance} units to the right of the view (left when negative), unless blocked. */
+    static boolean strafe(float distance, short[] ceilings) {
+        float toX = x + distance * (float) Math.sin(angle);
+        float toY = y - distance * (float) Math.cos(angle);
+        if (blocked(x, y, toX, toY, ceilings)) {
+            return false;
+        }
+        x = toX;
+        y = toY;
+        sector = sectorAt(x, y);
+        return true;
+    }
+
     /** Eases the eye toward the floor below: quick up a step, a little slower falling off a ledge. */
     static void settle() {
         float target = Level.SECTOR_FLOOR[sector] + EYE_HEIGHT;

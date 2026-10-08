@@ -254,6 +254,50 @@ class DoomTest {
         assertThat(Player.health).isEqualTo(65);
     }
 
+    @Test
+    void theCpuFightsLikeAPersonReactingLateAndMissingSometimes() {
+        int shots = 0;
+        int hits = 0;
+        int kills = 0;
+        for (int seed = 1; seed <= 6; seed++) {
+            Random.seed(seed);
+            Player.spawn(ceilings);
+            Monsters.reset(monsters, shots());
+            Weapon.reset();
+            Autopilot.restart();
+            Player.x = 600;
+            Player.y = 256;
+            Player.angle = (float) Math.PI / 2;
+            Player.sector = Player.sectorAt(Player.x, Player.y);
+            Player.eye = Level.SECTOR_FLOOR[Player.sector] + Player.EYE_HEIGHT;
+            for (int other = 1; other < Level.MONSTERS; other++) {
+                monsters[other * Monsters.STRIDE + Monsters.STATE] = Monsters.DEAD;
+            }
+            monsters[Monsters.STATE] = Monsters.CHASE;
+            for (int frame = 0; frame < 600 && monsters[Monsters.STATE] != Monsters.DEAD; frame++) {
+                Weapon.tick();
+                int health = monsters[Monsters.HEALTH];
+                Autopilot.step(ceilings, monsters, taken);
+                if (Weapon.flash == 3) {
+                    assertThat(frame).as("no shot before the marine has reacted").isGreaterThanOrEqualTo(5);
+                    shots = shots + 1;
+                    if (monsters[Monsters.HEALTH] < health) {
+                        hits = hits + 1;
+                    }
+                }
+            }
+            if (monsters[Monsters.STATE] == Monsters.DEAD) {
+                kills = kills + 1;
+            }
+        }
+        assertThat(kills).as("it still wins its fights").isEqualTo(6);
+        assertThat(hits).as("but not every shot lands").isLessThan(shots);
+    }
+
+    private short[] shots() {
+        return shots;
+    }
+
     /** Colors of the line fragments the last render built: after present() that half is the front one. */
     private Set<Integer> colors() {
         Set<Integer> colors = new HashSet<>();
