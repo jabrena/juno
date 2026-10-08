@@ -340,6 +340,10 @@ public final class Thumb2AsmBackend {
                 output.append("    ldr r0, =").append(layout.intArraySymbol(array)).append('\n');
                 asm.store(output, frame, "r0", array.target());
             }
+            case IrInstruction.ConstantTableRef table -> {
+                output.append("    ldr r0, =").append(layout.constantTableSymbol(table.table().field())).append('\n');
+                asm.store(output, frame, "r0", table.target());
+            }
             default -> wides.emit(output, frame, instruction);
         }
     }

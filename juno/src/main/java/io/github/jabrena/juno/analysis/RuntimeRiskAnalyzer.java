@@ -5,6 +5,7 @@ import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
+import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.Program;
 
 import java.util.ArrayList;
@@ -80,6 +81,12 @@ public final class RuntimeRiskAnalyzer {
                     "conservative startup arena estimate (assuming no intermediate garbage collection "
                             + "reclaims space) is " + arenaBytes + " bytes, exceeding the "
                             + RuntimeLimits.ARENA_CAPACITY_BYTES + " byte capacity"));
+        }
+
+        for (ConstantTables.RamFallback fallback : ConstantTables.of(linked).ramFallbacks()) {
+            findings.add(new RuntimeRisk("JUNO-RISK-012", RiskSeverity.INFO, fallback.method(),
+                    "constant table " + fallback.field().displayName() + " stays in the arena instead of flash: it "
+                            + fallback.reason()));
         }
 
         int uncheckedArrayAccesses = Math.max(0, arrayAccesses - boundsChecks);

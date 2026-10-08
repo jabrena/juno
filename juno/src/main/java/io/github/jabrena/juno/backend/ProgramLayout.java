@@ -5,10 +5,12 @@ import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
+import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.classfile.MethodHandleRef;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,11 +22,14 @@ import java.util.TreeMap;
  * literals and compiler-generated constant {@code int} arrays — plus the data sections holding them.
  */
 final class ProgramLayout {
+    private static final int TABLE_VALUES_PER_LINE = 16;
     private final Map<String, Integer> objectSizes = new LinkedHashMap<>();
     private final Map<FieldRef, Integer> fieldOffsets = new LinkedHashMap<>();
     private final Map<FieldRef, String> staticSymbols = new LinkedHashMap<>();
     private final Map<String, String> stringLiteralSymbols = new LinkedHashMap<>();
     private final Map<IrInstruction.IntArrayConst, String> intArraySymbols = new LinkedHashMap<>();
+    private final Map<FieldRef, ConstantTables.Table> constantTables = new TreeMap<>(
+            Comparator.comparing(FieldRef::displayName));
     private final Map<LambdaSite, String> lambdaFunctionSymbols = new LinkedHashMap<>();
     private final List<String> throwableClasses;
     private final Map<String, Integer> objectTypeIds;
@@ -96,6 +101,7 @@ final class ProgramLayout {
                     store.field(), field -> "juno_static_" + sanitize(field.displayName()));
             case IrInstruction.IntArrayConst array -> intArraySymbols.computeIfAbsent(
                     array, unused -> "juno_int_array" + intArraySymbols.size());
+            case IrInstruction.ConstantTableRef table -> constantTables.put(table.table().field(), table.table());
             case IrInstruction.StringConst constant -> stringLiteralSymbols.computeIfAbsent(
                     constant.value(), unused -> "juno_str" + stringLiteralSymbols.size());
             case IrInstruction.IntrinsicCall call -> {
@@ -141,6 +147,10 @@ final class ProgramLayout {
         return intArraySymbols.get(array);
     }
 
+    String constantTableSymbol(FieldRef field) {
+        return "juno_table_" + sanitize(field.displayName());
+    }
+
     String lambdaFunctionSymbol(LambdaSite site) {
         return lambdaFunctionSymbols.get(site);
     }
@@ -151,6 +161,7 @@ final class ProgramLayout {
         emitGcStackTopStorage(output);
         emitStringLiteralStorage(output);
         emitIntArrayStorage(output);
+        emitConstantTableStorage(output);
         emitLambdaFunctionStorage(output);
     }
 
@@ -219,6 +230,44 @@ final class ProgramLayout {
                 output.append(values.get(index));
             }
             output.append('\n');
+        }
+    }
+
+    /**
+     * Read-only {@code static final} lookup tables, in flash rather than the arena, each element at the width
+     * the backend's array loads expect (wide elements as two little-endian words), in field-name order.
+     */
+    private void emitConstantTableStorage(StringBuilder output) {
+        if (constantTables.isEmpty()) {
+            return;
+        }
+        output.append("    .section .rodata\n")
+                .append("    .align 2\n");
+        for (ConstantTables.Table table : constantTables.values()) {
+            output.append(constantTableSymbol(table.field())).append(":\n");
+            String directive = switch (table.elementDescriptor()) {
+                case 'Z', 'B' -> "    .byte ";
+                case 'C', 'S' -> "    .short ";
+                default -> "    .word ";
+            };
+            boolean wide = table.elementDescriptor() == 'J' || table.elementDescriptor() == 'D';
+            List<Long> values = table.values();
+            for (int line = 0; line < values.size(); line += TABLE_VALUES_PER_LINE) {
+                output.append(directive);
+                for (int index = line; index < Math.min(values.size(), line + TABLE_VALUES_PER_LINE); index++) {
+                    if (index > line) {
+                        output.append(", ");
+                    }
+                    long value = values.get(index);
+                    if (wide) {
+                        output.append((int) value).append(", ").append((int) (value >>> 32));
+                    } else {
+                        output.append((int) value);
+                    }
+                }
+                output.append('\n');
+            }
+            output.append("    .align 2\n");
         }
     }
 

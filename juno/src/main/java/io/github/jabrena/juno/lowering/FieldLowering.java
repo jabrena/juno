@@ -15,6 +15,7 @@ import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.BigNumberSupport;
+import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.ThreadSupport;
 import io.github.jabrena.juno.linker.LockSupport;
@@ -31,14 +32,22 @@ final class FieldLowering {
 
     static Lowered lowerStaticField(LinkedMethod linked, Instruction instruction, int opcode,
                                      List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
-                                     ValueTracking tracking, Map<String, JavaClass> classes, BytecodeDecoder decoder) {
+                                     ValueTracking tracking, Map<String, JavaClass> classes, BytecodeDecoder decoder,
+                                     ConstantTables constantTables) {
         switch (opcode) {
 
                     case 178 -> {
                         FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
                         Integer ordinal = EnumFieldSupport.resolveEnumOrdinal(field, classes);
                         Optional<BigNumberSupport.Constant> bigConstant = BigNumberSupport.constant(field);
-                        if (bigConstant.isPresent()) {
+                        ConstantTables.Table table = constantTables.table(field);
+                        if (table != null) {
+                            Value target = Value.int32(nextValueId++);
+                            instructions.add(new IrInstruction.ConstantTableRef(target, table));
+                            tracking.markKnownArray(target, table.length());
+                            storeToStack(instructions, stackBase, depth, target, tracking);
+                            depth++;
+                        } else if (bigConstant.isPresent()) {
                             BigNumberSupport.Constant constant = bigConstant.get();
                             if (constant.intrinsic().isEmpty()) {
                                 nextValueId = pushConst(instructions, stackBase, depth, nextValueId,

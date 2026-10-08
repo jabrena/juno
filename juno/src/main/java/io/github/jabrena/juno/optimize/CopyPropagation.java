@@ -90,6 +90,7 @@ public final class CopyPropagation implements CompilerPass {
             case IrInstruction.StoreField store -> new IrInstruction.StoreField(store.field(),
                     resolve(replacements, store.receiver()), resolve(replacements, store.value()));
             case IrInstruction.IntArrayConst array -> array;
+            case IrInstruction.ConstantTableRef table -> table;
             case IrInstruction.NewMultiArray array -> array;
             case IrInstruction.Panic panic -> panic;
             case IrInstruction.NullCheck check -> new IrInstruction.NullCheck(

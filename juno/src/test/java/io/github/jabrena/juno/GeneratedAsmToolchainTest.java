@@ -144,6 +144,30 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    void assemblesFlashResidentConstantTablesOfEveryElementType() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String source = """
+                package demo;
+                public final class AsmTables {
+                    static final boolean[] FLAGS = {true, false, true};
+                    static final byte[] BYTES = {-128, 127, 3};
+                    static final char[] CHARS = {'a', '\\uffff'};
+                    static final short[] SHORTS = {-32768, 32767, 5};
+                    static final int[] INTS = {Integer.MIN_VALUE, 42};
+                    static final long[] LONGS = {Long.MIN_VALUE, 1L << 40};
+                    static final float[] FLOATS = {-1.5f, 3.0e9f};
+                    static final double[] DOUBLES = {0.125, -1.0e15};
+                    public static void main(String[] args) {
+                        int total = (FLAGS[2] ? 1 : 0) + BYTES[1] + CHARS[1] + SHORTS[SHORTS.length - 1] + INTS[1];
+                        long wide = LONGS[1] + (long) DOUBLES[1] + (long) FLOATS[1];
+                    }
+                }
+                """;
+        assembleAndCompile(armGcc, "demo.AsmTables", source);
+    }
+
+    @Test
     void assemblesClosedWorldInterfaceDispatch() throws Exception {
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
