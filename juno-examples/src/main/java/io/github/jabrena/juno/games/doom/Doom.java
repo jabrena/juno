@@ -83,6 +83,8 @@ public final class Doom {
                 next = Clock.millis();
             } else if (Player.health == 0) {
                 Interludes.died();
+                Interludes.title();
+                Controls.choosePilot();
                 enterLevel(ceilings, monsters, shots, taken);
                 next = Clock.millis();
             }

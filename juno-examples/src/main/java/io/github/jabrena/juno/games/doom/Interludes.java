@@ -42,11 +42,7 @@ final class Interludes {
             mountains();
         }
         Delay.millis(500);
-        for (int top = DisplayList.HEIGHT - Lava.CELL; top > -Lava.CELL; top -= FLOOD_RISE) {
-            Lava.flood(Math.max(top, 0));
-            Lava.tick = Lava.tick + 1;
-            Delay.millis(FRAME_MILLIS);
-        }
+        rise();
         pause(150);
         for (int letter = 0; letter < 4; letter++) {
             Logo.draw(letter);
@@ -72,6 +68,20 @@ final class Interludes {
             Delay.millis(FRAME_MILLIS);
         }
         Controls.waitForRelease();
+    }
+
+    /** Floods whatever is on the screen with lava, rising from the bottom edge to the top. */
+    static void flood() {
+        Lava.reset();
+        rise();
+    }
+
+    private static void rise() {
+        for (int top = DisplayList.HEIGHT - Lava.CELL; top > -Lava.CELL; top -= FLOOD_RISE) {
+            Lava.flood(Math.max(top, 0));
+            Lava.tick = Lava.tick + 1;
+            Delay.millis(FRAME_MILLIS);
+        }
     }
 
     /** One animated frame: the lava, and the cast when it is switched on. */
@@ -112,11 +122,12 @@ final class Interludes {
         Delay.millis(4000);
     }
 
-    /** The card shown when the marine dies. */
+    /** The card shown when the marine dies, which lava then floods before the game returns to its title. */
     static void died() {
         Hud.drawStatus();
         Hud.showCentered("YOU DIED", 110, 4, TftTouchShield.RED);
         Delay.millis(2500);
+        flood();
     }
 
     /** The sky, painted at once: dark red at the top, burning red mid-way, lava orange at the horizon. */

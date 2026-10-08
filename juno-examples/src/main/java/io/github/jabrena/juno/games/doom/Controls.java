@@ -45,6 +45,7 @@ final class Controls {
         autopilot = choice == 1;
         drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You walk and shoot" : "Autopilot plays", true);
         waitForRelease();
+        Interludes.flood();
         barPressed = false;
     }
 
