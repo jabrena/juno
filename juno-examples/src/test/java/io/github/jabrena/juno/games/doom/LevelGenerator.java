@@ -30,6 +30,9 @@ public final class LevelGenerator {
     /** Line specials that open the sector behind them as a door (manual doors, DOOM's types 1/26-28/31-34/117/118). */
     private static final Set<Integer> DOOR_SPECIALS = Set.of(1, 26, 27, 28, 31, 32, 33, 34, 117, 118);
     private static final int VALUES_PER_LINE = 16;
+    /** The switch line special that ends the level (DOOM's S1 exit). */
+    private static final int EXIT_SPECIAL = 11;
+
     /** Thing types the engine animates, by its monster kind: zombieman, shotgun sergeant, imp, demon. */
     private static final Map<Integer, Integer> MONSTER_KINDS = Map.of(3004, 0, 9, 1, 3001, 2, 3002, 3);
     /** Pickups by item kind: health bonus, stimpack, medikit, armor bonus, green armor, blue armor. */
@@ -44,15 +47,12 @@ public final class LevelGenerator {
 
     /**
      * Demo walks, checked against each map's geometry: no solid line crossed, no step up higher than
-     * 24 units, enough headroom everywhere except at doors, which the engine opens.
+     * 24 units, enough headroom everywhere except at doors, which the engine opens. E1M1's ends at its exit switch.
      */
     static final Map<String, Route> ROUTES = Map.of("E1M1", new Route(new int[] {
         1056, -3616, 1056, -3000, 1280, -2930, 1300, -2660, 1440, -2500, 1600, -2500, 1720, -2500,
         2000, -2690, 2400, -2690, 2600, -2620, 2840, -2680, 2960, -2800, 2980, -3000, 3000, -3300,
-        3000, -3600, 3000, -3860, 2850, -3860, 2640, -3870, 2540, -3940, 2400, -4030, 2220, -4020,
-        2100, -3940, 2100, -3680, 2250, -3560, 2550, -3400, 2550, -3200, 2300, -3150, 1824, -3280, 1500, -3000,
-        1450, -3500, 2000, -3560, 2100, -3680, 2100, -3940, 2220, -4020, 2400, -4030, 2540, -3940,
-        2640, -3870, 2850, -3860, 3000, -3860, 3000, -3600, 3000, -3300, 2980, -3000}, 13));
+        3000, -3600, 3000, -3860, 2971, -4061, 2947, -4541, 2923, -4565, 2851, -4733, 2870, -4768}, 13));
 
     private LevelGenerator() {
     }
@@ -119,6 +119,18 @@ public final class LevelGenerator {
                 doorSectors.add(lineBack[line]);
             }
         }
+        int exitX = -30000;
+        int exitY = -30000;
+        for (int line = 0; line < lineCount; line++) {
+            int special = linedefs.getShort(line * 14 + 6);
+            if (special == EXIT_SPECIAL) {
+                int v1 = linedefs.getShort(line * 14) & 0xFFFF;
+                int v2 = linedefs.getShort(line * 14 + 2) & 0xFFFF;
+                exitX = (vertexes.getShort(v1 * 4) + vertexes.getShort(v2 * 4)) / 2;
+                exitY = (vertexes.getShort(v1 * 4 + 2) + vertexes.getShort(v2 * 4 + 2)) / 2;
+                break;
+            }
+        }
         int doors = doorSectors.size();
         int[] doorTop = new int[doors];
         int[] doorX = new int[doors];
@@ -181,10 +193,12 @@ public final class LevelGenerator {
                     static final int START_Y = %d;
                     static final int START_ANGLE = %d;
                     static final int LOOP_START = %d;
+                    static final int EXIT_X = %d;
+                    static final int EXIT_Y = %d;
                     static final int MONSTERS = %d;
                     static final int ITEMS = %d;
 
-                """.formatted(map, map, map, startX, startY, startAngle, route.loopStart(), monsters.size(), items.size()));
+                """.formatted(map, map, map, startX, startY, startAngle, route.loopStart(), exitX, exitY, monsters.size(), items.size()));
         int[] routeX = new int[route.points().length / 2];
         int[] routeY = new int[routeX.length];
         for (int i = 0; i < routeX.length; i++) {

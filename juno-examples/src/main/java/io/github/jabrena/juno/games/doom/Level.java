@@ -11,6 +11,8 @@ final class Level {
     static final int START_Y = 256;
     static final int START_ANGLE = 0;
     static final int LOOP_START = 0;
+    static final int EXIT_X = -30000;
+    static final int EXIT_Y = -30000;
     static final int MONSTERS = 3;
     static final int ITEMS = 2;
 

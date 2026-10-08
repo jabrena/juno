@@ -9,6 +9,7 @@ final class Player {
     static final float EYE_HEIGHT = 41f;
     private static final int MAX_STEP = 24;
     private static final int HEADROOM = 56;
+    private static final int EXIT_REACH = 56;
     private static final int DOOR_REACH = 200;
     private static final int DOOR_FORGET = 520;
     private static final int DOOR_SPEED = 6;
@@ -106,6 +107,13 @@ final class Player {
         } else {
             eye = eye + Math.max(delta, -12f);
         }
+    }
+
+    /** Whether the marine stands at the map's exit switch (a map without one parks it far away). */
+    static boolean atExit() {
+        float dx = Level.EXIT_X - x;
+        float dy = Level.EXIT_Y - y;
+        return dx * dx + dy * dy < EXIT_REACH * EXIT_REACH;
     }
 
     /** Opens the doors the marine walks up to and closes the ones left far behind. */

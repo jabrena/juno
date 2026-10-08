@@ -147,7 +147,7 @@ final class ThingRenderer {
         for (int edge = 0; edge < 4; edge++) {
             float p = edge == 0 ? -dx : edge == 1 ? dx : edge == 2 ? -dy : dy;
             float q = edge == 0 ? x0 : edge == 1 ? DisplayList.WIDTH - 1 - x0
-                    : edge == 2 ? y0 - DisplayList.HEADER : DisplayList.HEIGHT - 1 - y0;
+                    : edge == 2 ? y0 - DisplayList.VIEW_TOP : DisplayList.VIEW_BOTTOM - 1 - y0;
             if (p == 0) {
                 if (q < 0) {
                     return false;
@@ -165,9 +165,9 @@ final class ThingRenderer {
             return false;
         }
         clipX0 = Math.max(0f, Math.min(DisplayList.WIDTH - 1, x0 + dx * enter));
-        clipY0 = Math.max(DisplayList.HEADER, Math.min(DisplayList.HEIGHT - 1, y0 + dy * enter));
+        clipY0 = Math.max(DisplayList.VIEW_TOP, Math.min(DisplayList.VIEW_BOTTOM - 1, y0 + dy * enter));
         clipX1 = Math.max(0f, Math.min(DisplayList.WIDTH - 1, x0 + dx * leave));
-        clipY1 = Math.max(DisplayList.HEADER, Math.min(DisplayList.HEIGHT - 1, y0 + dy * leave));
+        clipY1 = Math.max(DisplayList.VIEW_TOP, Math.min(DisplayList.VIEW_BOTTOM - 1, y0 + dy * leave));
         return true;
     }
 
@@ -175,24 +175,24 @@ final class ThingRenderer {
     private static void drawOverlay(short[] lines) {
         DisplayList.add(lines, CX - 3, CY, CX + 3, CY, CROSSHAIR);
         DisplayList.add(lines, CX, CY - 3, CX, CY + 3, CROSSHAIR);
-        DisplayList.add(lines, 146, 239, 149, 213, GUN);
-        DisplayList.add(lines, 149, 213, 155, 205, GUN);
-        DisplayList.add(lines, 155, 205, 165, 205, GUN);
-        DisplayList.add(lines, 165, 205, 171, 213, GUN);
-        DisplayList.add(lines, 171, 213, 174, 239, GUN);
-        DisplayList.add(lines, 156, 205, 156, 196, GUN);
-        DisplayList.add(lines, 156, 196, 164, 196, GUN);
-        DisplayList.add(lines, 164, 196, 164, 205, GUN);
+        DisplayList.add(lines, 146, 199, 149, 173, GUN);
+        DisplayList.add(lines, 149, 173, 155, 165, GUN);
+        DisplayList.add(lines, 155, 165, 165, 165, GUN);
+        DisplayList.add(lines, 165, 165, 171, 173, GUN);
+        DisplayList.add(lines, 171, 173, 174, 199, GUN);
+        DisplayList.add(lines, 156, 165, 156, 156, GUN);
+        DisplayList.add(lines, 156, 156, 164, 156, GUN);
+        DisplayList.add(lines, 164, 156, 164, 165, GUN);
         if (Weapon.flash > 0) {
-            DisplayList.add(lines, 150, 186, 170, 186, Sprites.FLASH_COLOR);
-            DisplayList.add(lines, 160, 178, 160, 193, Sprites.FLASH_COLOR);
-            DisplayList.add(lines, 153, 180, 167, 192, Sprites.FLASH_COLOR);
-            DisplayList.add(lines, 153, 192, 167, 180, Sprites.FLASH_COLOR);
+            DisplayList.add(lines, 150, 146, 170, 146, Sprites.FLASH_COLOR);
+            DisplayList.add(lines, 160, 138, 160, 153, Sprites.FLASH_COLOR);
+            DisplayList.add(lines, 153, 140, 167, 152, Sprites.FLASH_COLOR);
+            DisplayList.add(lines, 153, 152, 167, 140, Sprites.FLASH_COLOR);
         }
         if (Player.hurt > 0) {
-            int top = DisplayList.HEADER + 1;
+            int top = DisplayList.VIEW_TOP + 1;
             int right = DisplayList.WIDTH - 1;
-            int bottom = DisplayList.HEIGHT - 1;
+            int bottom = DisplayList.VIEW_BOTTOM - 1;
             DisplayList.add(lines, 0, top, right, top, TftTouchShield.RED);
             DisplayList.add(lines, right, top, right, bottom, TftTouchShield.RED);
             DisplayList.add(lines, right, bottom, 0, bottom, TftTouchShield.RED);

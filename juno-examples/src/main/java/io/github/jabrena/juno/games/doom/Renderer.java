@@ -15,9 +15,9 @@ final class Renderer {
     private static final float NEAR = 4f;
     static final float FOCAL = 160f;
     static final int CX = DisplayList.WIDTH / 2;
-    static final int CY = (DisplayList.HEADER + DisplayList.HEIGHT) / 2;
-    private static final int TOP = DisplayList.HEADER - 1;
-    private static final int BOTTOM = DisplayList.HEIGHT;
+    static final int CY = (DisplayList.VIEW_TOP + DisplayList.VIEW_BOTTOM) / 2;
+    private static final int TOP = DisplayList.VIEW_TOP - 1;
+    private static final int BOTTOM = DisplayList.VIEW_BOTTOM;
     private static final int STACK = 64;
 
     static final int WALL = TftTouchShield.color(40, 255, 90);

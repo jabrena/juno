@@ -16,7 +16,7 @@ final class Autopilot {
     private static final float TURN = 0.11f;
     private static final float STRIDE = 9f;
     private static final float ARRIVED = 28f;
-    private static final float ENGAGE = 1000f;
+    private static final float ENGAGE = 1600f;
     private static final float FIELD_OF_VIEW = 1.2f;
     private static final float GRAB = 450f;
 

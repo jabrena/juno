@@ -8,7 +8,8 @@ import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
- * DOOM in wireframe on the ELEGOO 2.8" TFT touch screen shield, after Eben Upton's BBC Micro E1M1
+ * DOOM in wireframe on the ELEGOO 2.8" TFT touch screen shield, after the original 1993 game by id Software. 
+ * The player is a space marine
  * renderer: full BSP traversal, perspective projection, occlusion and working doors, plus the map's
  * monsters ({@link Monsters}) to fight with the pistol ({@link Weapon}).
  *
@@ -19,7 +20,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * floating-point projection needs.
  *
  * <p>After the title, choose the pilot ({@link Controls}): HUMAN walks with the touch screen, CPU lets
- * {@link Autopilot} walk the map's demo route, and tapping the header switches between them.
+ * {@link Autopilot} walk the map's demo route, and tapping the status bar switches between them.
  * {@link Player} walks and opens doors, {@link Renderer} builds each frame and {@link DisplayList} draws
  * only what changed.
  */
@@ -42,7 +43,7 @@ public final class Doom {
 
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        title();
+        Interludes.title();
         Controls.choosePilot();
         Random.seed(Clock.micros());
         enterLevel(ceilings, monsters, shots, taken);
@@ -63,7 +64,7 @@ public final class Doom {
                 Player.hurt = Player.hurt - 1;
             }
             if (Controls.handle(ceilings, monsters)) {
-                Hud.drawHeader();
+                Hud.drawBar();
             }
             if (Controls.autopilot) {
                 Autopilot.step(ceilings, monsters, taken);
@@ -76,10 +77,12 @@ public final class Doom {
             if ((frame & 3) == 0) {
                 Hud.drawStatus();
             }
-            if (Player.health == 0) {
-                Hud.drawStatus();
-                Hud.showCentered("YOU DIED", 110, 4, TftTouchShield.RED);
-                Delay.millis(2500);
+            if (Player.atExit()) {
+                Interludes.complete();
+                enterLevel(ceilings, monsters, shots, taken);
+                next = Clock.millis();
+            } else if (Player.health == 0) {
+                Interludes.died();
                 enterLevel(ceilings, monsters, shots, taken);
                 next = Clock.millis();
             }
@@ -93,17 +96,7 @@ public final class Doom {
         Items.reset(taken);
         Weapon.reset();
         Autopilot.restart();
-        Hud.drawHeader();
+        Hud.drawBar();
         DisplayList.clearView();
-    }
-
-    private static void title() {
-        TftTouchShield.fillScreen(DisplayList.BACKGROUND);
-        Hud.showCentered("DOOM", 60, 6, TftTouchShield.RED);
-        Hud.showCentered("WIREFRAME  " + Level.NAME, 128, 2, TftTouchShield.YELLOW);
-        Hud.showCentered("JAVA ON ARDUINO UNO Q WITH JUNO", 168, 1, Renderer.WALL);
-        Hud.showCentered("AFTER EBEN UPTON'S BBC MICRO PORT", 184, 1, Renderer.WALL_FAR);
-        Hud.showCentered("TAP TO START", 214, 1, TftTouchShield.WHITE);
-        Controls.waitForTap();
     }
 }

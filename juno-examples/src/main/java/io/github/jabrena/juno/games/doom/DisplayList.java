@@ -10,7 +10,10 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 final class DisplayList {
     static final int WIDTH = 320;
     static final int HEIGHT = 240;
-    static final int HEADER = 20;
+    /** The view runs from this row (row 0 stays free as the renderer's clip sentinel) down to {@link #VIEW_BOTTOM}. */
+    static final int VIEW_TOP = 1;
+    /** The first row of the status bar under the view. */
+    static final int VIEW_BOTTOM = 200;
     static final int BACKGROUND = TftTouchShield.BLACK;
 
     private static final int MAX_LINES = 240;
@@ -67,7 +70,7 @@ final class DisplayList {
     }
 
     static void clearView() {
-        TftTouchShield.fillRect(0, HEADER, WIDTH, HEIGHT - HEADER, BACKGROUND);
+        TftTouchShield.fillRect(0, VIEW_TOP, WIDTH, VIEW_BOTTOM - VIEW_TOP, BACKGROUND);
         shown = 0;
     }
 
@@ -97,7 +100,7 @@ final class DisplayList {
     }
 
     /** Bresenham, drawn as horizontal runs so a shallow line costs one window per row. */
-    private static void drawLine(int x0, int y0, int x1, int y1, int color) {
+    static void drawLine(int x0, int y0, int x1, int y1, int color) {
         int dx = Math.abs(x1 - x0);
         int dy = -Math.abs(y1 - y0);
         int stepX = x0 > x1 ? -1 : 1;

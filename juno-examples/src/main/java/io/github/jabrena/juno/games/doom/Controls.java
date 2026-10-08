@@ -6,7 +6,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 /**
  * Pilot selection and touch controls. A HUMAN marine turns with the left and right thirds of the
  * view, walks forward with the upper half of the middle and fires the pistol with its lower half; the
- * CPU marine walks the map's demo route and shoots what it meets. Tapping the header switches between
+ * CPU marine walks the map's demo route and shoots what it meets. Tapping the status bar switches between
  * the two at any time.
  */
 final class Controls {
@@ -22,7 +22,7 @@ final class Controls {
     private static final int CHOICE_CHOSEN = 0x7800;
 
     static boolean autopilot = true;
-    private static boolean headerPressed;
+    private static boolean barPressed;
 
     private Controls() {
     }
@@ -34,7 +34,7 @@ final class Controls {
         Hud.showCentered("Who walks " + Level.NAME + "?", 74, 1, TftTouchShield.WHITE);
         drawChoice(0, "HUMAN", "You walk and shoot", false);
         drawChoice(1, "CPU", "Autopilot plays", false);
-        Hud.showCentered("Tap the header in game to switch", 206, 1, Renderer.WALL_FAR);
+        Hud.showCentered("Tap the status bar in game to switch", 206, 1, Renderer.WALL_FAR);
         int choice = -1;
         while (choice < 0) {
             if (TftTouchShield.readTouch()) {
@@ -45,7 +45,7 @@ final class Controls {
         autopilot = choice == 1;
         drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You walk and shoot" : "Autopilot plays", true);
         waitForRelease();
-        headerPressed = false;
+        barPressed = false;
     }
 
     /** The pilot box at ({@code x}, {@code y}): 0 for HUMAN, 1 for CPU, -1 for neither. */
@@ -62,17 +62,17 @@ final class Controls {
         return -1;
     }
 
-    /** Applies this frame's touch; returns whether the header needs redrawing. */
+    /** Applies this frame's touch; returns whether the status bar needs redrawing. */
     static boolean handle(short[] ceilings, short[] monsters) {
         if (!TftTouchShield.readTouch()) {
-            headerPressed = false;
+            barPressed = false;
             return false;
         }
         int x = TftTouchShield.touchX();
         int y = TftTouchShield.touchY();
-        if (y < DisplayList.HEADER) {
-            boolean toggle = !headerPressed;
-            headerPressed = true;
+        if (y >= DisplayList.VIEW_BOTTOM) {
+            boolean toggle = !barPressed;
+            barPressed = true;
             if (toggle) {
                 autopilot = !autopilot;
                 if (autopilot) {
@@ -81,7 +81,7 @@ final class Controls {
             }
             return toggle;
         }
-        headerPressed = false;
+        barPressed = false;
         if (autopilot) {
             return false;
         }
@@ -89,7 +89,7 @@ final class Controls {
             Player.turn(TURN);
         } else if (x >= 2 * DisplayList.WIDTH / 3) {
             Player.turn(-TURN);
-        } else if (y < (DisplayList.HEADER + DisplayList.HEIGHT) / 2) {
+        } else if (y < (DisplayList.VIEW_TOP + DisplayList.VIEW_BOTTOM) / 2) {
             Player.walk(STRIDE, ceilings);
         } else {
             Weapon.fire(monsters, ceilings);
@@ -105,7 +105,7 @@ final class Controls {
         waitForRelease();
     }
 
-    private static void waitForRelease() {
+    static void waitForRelease() {
         int misses = 0;
         while (misses < 3) {
             if (TftTouchShield.readTouch()) {
