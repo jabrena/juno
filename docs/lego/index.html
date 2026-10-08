@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>LEGO Powered Up - Juno: Java for Arduino</title>
+  <meta property="og:title" content="LEGO Powered Up" />
+  <meta name="twitter:title" content="LEGO Powered Up">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, from the UNO R4 WiFi or the UNO Q.">
+  <meta property="og:description" content="Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, from the UNO R4 WiFi or the UNO Q." />
+  <meta name="twitter:description" content="Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, from the UNO R4 WiFi or the UNO Q.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/lego/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/lego/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/lego/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/juno/lego/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/juno/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
+    <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/juno/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/juno/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/juno/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/juno/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/juno/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="active" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
+    <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/juno/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/juno/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/juno/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">LEGO Powered Up</h1>
+  <p class="page-header-intro">
+    Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, from the UNO R4 WiFi or the UNO Q.
+  </p>
+</section>    <div class="content-prose">
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubRemote.java"><code>PoweredUpHubRemote</code></a>
+(<code>io.github.jabrena.juno.api.lego</code>) lets a Juno program remote-control a LEGO Powered Up hub — run
+its motors and set its status LED — the same way the LEGO apps do. The board acts as a Bluetooth
+Low Energy central and speaks the
+<a href="https://lego.github.io/lego-ble-wireless-protocol-docs/">LEGO Wireless Protocol 3.0</a> to the hub.
+It is a compiler intrinsic backed by the Arduino <code>ArduinoBLE</code> library.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>
+<p>One of the two supported boards. The same Java program runs on both; only the way the
+generated code reaches the radio differs:</p>
+<table>
+<thead>
+<tr>
+<th>Board</th>
+<th>Bluetooth LE path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UNO R4 WiFi</td>
+<td>The on-board ESP32-S3 radio module.</td>
+</tr>
+<tr>
+<td>UNO Q</td>
+<td>The Linux side's Bluetooth adapter (<code>hci0</code>). <code>ArduinoBLE</code> tunnels raw HCI packets to it through <code>Arduino_RouterBridge</code>, so the board's <code>arduino-router</code> must be 0.7.0 or newer (update the board image through App Lab if needed). While the sketch holds the adapter, Linux's own Bluetooth stack can't use it.</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>The Arduino <code>ArduinoBLE</code> library installed — 2.1.0 or newer, the first release with the UNO Q
+transport (also done by <code>juno:install-deps</code>):</p>
+<pre><code class="language-bash">arduino-cli lib install ArduinoBLE
+</code></pre>
+</li>
+<li>
+<p>A Powered Up hub: City Hub (88009), Technic Hub (88012), BOOST Move Hub (88006) or the DUPLO
+Train Hub. Close the LEGO apps first — a hub accepts a single connection at a time.</p>
+</li>
+</ul>
+<p>The UNO R4 WiFi's radio module cannot run Bluetooth LE and Wi-Fi at the same time, so a program
+for that board that uses <code>PoweredUpHubRemote</code> should not also use <code>Wifi</code>, <code>Udp</code>, or the HTTP/email APIs.</p>
+<h2 id="api">API</h2>
+<pre><code class="language-java">import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
+
+if (PoweredUpHubRemote.connect(10_000)) {              // scan up to 10 s; 0 waits forever
+    PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+    PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, 50);   // -100..100 percent
+    PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connect(timeoutMillis)</code></td>
+<td>Scans for the first advertising hub (press its green button) and connects. Returns <code>true</code> once connected, or immediately if already connected. A timeout of <code>0</code> or less waits indefinitely.</td>
+</tr>
+<tr>
+<td><code>isConnected()</code></td>
+<td><code>false</code> once the hub switches off or goes out of range; call <code>connect</code> again to reconnect.</td>
+</tr>
+<tr>
+<td><code>hubType()</code></td>
+<td>The hub's advertised system type: <code>TYPE_CITY_HUB</code>, <code>TYPE_TECHNIC_HUB</code>, <code>TYPE_MOVE_HUB</code>, <code>TYPE_DUPLO_TRAIN_HUB</code>, ... (<code>TYPE_UNKNOWN</code> before connecting).</td>
+</tr>
+<tr>
+<td><code>setMotorPower(port, percent)</code></td>
+<td>Runs any Powered Up motor (train, simple, or tacho) on <code>PORT_A</code>..<code>PORT_D</code>. Negative values reverse, <code>0</code> coasts, values beyond ±100 are clamped.</td>
+</tr>
+<tr>
+<td><code>brakeMotor(port)</code></td>
+<td>Actively brakes the motor, instead of letting it coast.</td>
+</tr>
+<tr>
+<td><code>setLedColor(color)</code></td>
+<td>Sets the hub's LED to a LEGO color index: <code>COLOR_OFF</code>, <code>COLOR_PINK</code>, ..., <code>COLOR_RED</code>, <code>COLOR_WHITE</code>.</td>
+</tr>
+<tr>
+<td><code>enableSensor(port, mode)</code></td>
+<td>Asks the hub to report every change of one mode of the motor or sensor on <code>port</code>. See <a href="#reading-motors-and-sensors">Reading motors and sensors</a>.</td>
+</tr>
+<tr>
+<td><code>readSensor(port)</code></td>
+<td>The latest value that port reported, or <code>0</code> before its first report.</td>
+</tr>
+<tr>
+<td><code>disconnect()</code></td>
+<td>Drops the connection; the hub stays on and starts advertising again.</td>
+</tr>
+<tr>
+<td><code>switchOff()</code></td>
+<td>Switches the hub off.</td>
+</tr>
+</tbody>
+</table>
+<p>A program talks to one hub at a time. Commands sent while no hub is connected are ignored, so
+check <code>isConnected()</code> in long-running loops and reconnect when it turns <code>false</code>.</p>
+<h2 id="reading-motors-and-sensors">Reading motors and sensors</h2>
+<p>Motors with a rotation sensor, sensors, and the Powered Up remote report values once a program
+subscribes to one of their <em>modes</em>. <code>enableSensor(port, mode)</code> subscribes, and from then on the hub
+sends a message whenever the value changes; <code>readSensor(port)</code> returns the latest one.</p>
+<pre><code class="language-java">PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.MODE_MOTOR_POSITION);
+...
+int degrees = PoweredUpHubRemote.readSensor(PoweredUpHubRemote.PORT_A);
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Device</th>
+<th>Mode</th>
+<th><code>readSensor</code> value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tacho motor (BOOST, Technic, SPIKE motors)</td>
+<td><code>MODE_MOTOR_POSITION</code></td>
+<td>Position in degrees, cumulative since the hub started.</td>
+</tr>
+<tr>
+<td>Tacho motor</td>
+<td><code>MODE_MOTOR_SPEED</code></td>
+<td>Speed, as a percentage of full speed.</td>
+</tr>
+<tr>
+<td>Color and Distance Sensor (88007)</td>
+<td><code>MODE_COLOR</code></td>
+<td>The sensor's color number (mostly, but not fully, matching the <code>COLOR_*</code> LED values), <code>-1</code> for none.</td>
+</tr>
+<tr>
+<td>Color and Distance Sensor (88007)</td>
+<td><code>MODE_PROXIMITY</code></td>
+<td><code>0</code> (touching) to <code>10</code> (nothing in range).</td>
+</tr>
+<tr>
+<td>Powered Up remote (88010), on <code>PORT_A</code>/<code>PORT_B</code></td>
+<td><code>MODE_REMOTE_BUTTONS</code></td>
+<td><code>REMOTE_RELEASED</code>, <code>REMOTE_PLUS</code>, <code>REMOTE_MINUS</code> or <code>REMOTE_STOP</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Mode numbers belong to each device, so other devices work too when given their mode number.
+Things to know:</p>
+<ul>
+<li><code>readSensor</code> decodes modes that report <strong>one</strong> 8-, 16- or 32-bit value. For modes reporting
+several values at once (a hub's tilt axes, raw RGB), it returns only the first byte.</li>
+<li>Up to <strong>eight</strong> ports report at a time; enabling a ninth is ignored.</li>
+<li>Values arrive while a <code>PoweredUpHubRemote</code> call runs, not during <code>Delay.millis</code>, so call <code>readSensor</code>
+regularly in loops that wait for a value.</li>
+<li>A new <code>connect()</code> starts with no ports reporting: enable them again after reconnecting.</li>
+<li>The remote connects as a hub of its own (<code>TYPE_REMOTE_CONTROL</code>). Since a program talks to one
+hub at a time, it can't yet drive a train hub from a remote.</li>
+</ul>
+<h3 id="example-driving-a-square">Example: driving a square</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/MagicSquarePoweredUpHub.java"><code>MagicSquarePoweredUpHub</code></a>
+drives a two-motor vehicle (left motor on port A, right on port B) around a square, forever: straight
+for 3 seconds, stop, turn left 90 degrees, straight for 3 seconds, stop, turn left 90 degrees:</p>
+<pre><code class="language-java">Serial.println(&quot;Straight&quot;);
+drive(POWER, POWER, STRAIGHT_MILLIS);
+stop();
+Serial.println(&quot;Turn left&quot;);
+drive(-POWER, POWER, TURN_MILLIS);
+stop();
+</code></pre>
+<p><code>TURN_MILLIS</code> is the time a spin on the spot takes for 90 degrees; tune it for your vehicle.
+<code>MagicSquareRcx</code> and <code>MagicSquareScout</code> in the same package do the same over infrared with an RCX or
+Scout brick, using <code>RcxRemote</code> and <code>ScoutRemote</code>.</p>
+<h2 id="example-a-shuttling-train">Example: a shuttling train</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java"><code>LegoTrain</code></a>
+ramps a train motor on port A up to cruising speed, brakes, and repeats in reverse, using the hub's
+LED to show the direction:</p>
+<pre><code class="language-java">@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+public final class LegoTrain {
+    private static final int MOTOR = PoweredUpHubRemote.PORT_A;
+
+    public static void main(String[] args) {
+        Serial.begin(9600);
+        while (true) {
+            if (!PoweredUpHubRemote.isConnected()) {
+                Serial.println(&quot;Waiting for a Powered Up hub...&quot;);
+                PoweredUpHubRemote.connect(0);
+            }
+            run(1, PoweredUpHubRemote.COLOR_GREEN);
+            run(-1, PoweredUpHubRemote.COLOR_BLUE);
+        }
+    }
+
+    private static void run(int direction, int color) {
+        PoweredUpHubRemote.setLedColor(color);
+        for (int power = 10; power &lt;= 60; power += 10) {
+            PoweredUpHubRemote.setMotorPower(MOTOR, direction * power);
+            Delay.millis(200);
+        }
+        Delay.millis(3000);
+        PoweredUpHubRemote.brakeMotor(MOTOR);
+        PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_RED);
+        Delay.millis(2000);
+    }
+}
+</code></pre>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lego.LegoTrain \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+</code></pre>
+<p>Switch the hub on after the upload; the sketch connects to it and prints the hub type on the
+serial monitor (<code>juno:monitor</code>).</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

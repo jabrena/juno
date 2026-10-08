@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="active" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -138,7 +139,7 @@
     Reading and writing over USB serial.
   </p>
 </section>    <div class="content-prose">
-<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/usb/Serial.java"><code>Serial</code></a> is a compiler
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/serial/Serial.java"><code>Serial</code></a> is a compiler
 intrinsic that wraps the Arduino core's USB serial port (<code>Serial.begin</code>/<code>print</code>/<code>println</code>). It is
 the primary way a Juno program talks back to the development machine while it runs on real
 hardware.</p>
@@ -163,14 +164,16 @@ crash, since there is no stack trace to read afterward.</li>
 program <em>before</em> debugging hardware behavior, not after. Flashing the board and reading its serial
 output is the normal way to confirm a change actually behaves correctly on real hardware.</p>
 <h2 id="api">API</h2>
-<pre><code class="language-java">import io.github.jabrena.juno.api.io.usb.BaudRate;
-import io.github.jabrena.juno.api.io.usb.Serial;
+<pre><code class="language-java">import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
 
 Serial.begin(BaudRate.BAUD_115200);   // preferred: a named, valid rate
 Serial.begin(115200);                 // equivalent, for a custom/non-standard rate
 
 Serial.print(42);                     // &quot;42&quot;
 Serial.println(42);                   // &quot;42\n&quot;
+Serial.print(true);                   // &quot;true&quot;
+Serial.println(false);                // &quot;false\n&quot;
 Serial.println(123456789012L);        // 64-bit integer
 Serial.println(3.14f);                // single-precision floating point
 Serial.println(3.141592653589793);    // double-precision floating point
@@ -189,13 +192,18 @@ Serial.println(e.getMessage());       // runtime String (prints &quot;null&quot;
 <tbody>
 <tr>
 <td><code>begin(BaudRate)</code></td>
-<td>a <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/usb/BaudRate.java"><code>BaudRate</code></a> constant</td>
+<td>a <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/serial/BaudRate.java"><code>BaudRate</code></a> constant</td>
 <td>preferred; keeps the rate and the monitor's config in sync</td>
 </tr>
 <tr>
 <td><code>begin(int)</code></td>
 <td>a data rate in bits per second</td>
 <td>for a rate <code>BaudRate</code> doesn't name</td>
+</tr>
+<tr>
+<td><code>print(boolean)</code> / <code>println(boolean)</code></td>
+<td>any <code>boolean</code> expression</td>
+<td>prints <code>true</code> or <code>false</code></td>
 </tr>
 <tr>
 <td><code>print(int)</code> / <code>println(int)</code></td>
@@ -229,15 +237,16 @@ Serial.println(e.getMessage());       // runtime String (prints &quot;null&quot;
 default.</p>
 <h3 id="printing-runtime-strings">Printing runtime strings</h3>
 <p><code>Serial.print(String)</code>/<code>println(String)</code> also print runtime <code>String</code> values — <code>String.valueOf(...)</code>,
-a <code>StringBuilder</code> result, a JSON string, or an exception's <code>getMessage()</code>. String concatenation with
-<code>+</code> is still unsupported (<code>javac</code> uses the <code>StringConcatFactory</code> <code>invokedynamic</code> bootstrap; Juno only
-accepts lambda/metafactory call sites), so print computed data in parts:</p>
+a <code>StringBuilder</code> result, a JSON string, an exception's <code>getMessage()</code>, or a bounded concatenation.
+Juno lowers javac's <code>StringConcatFactory.makeConcatWithConstants</code> call sites for strings and primitive
+values; the resulting UTF-8 text must fit in the 31-byte runtime-string payload:</p>
 <pre><code class="language-java">int temperature = /* ... */;
-Serial.print(&quot;Temperature C: &quot;);
-Serial.println(temperature);
+Serial.println(&quot;Temperature C: &quot; + temperature);
 </code></pre>
+<p>Concatenating an arbitrary object remains unsupported because it requires broader
+<code>String.valueOf(Object)</code>/<code>toString()</code> behavior.</p>
 <h2 id="a-minimal-example">A minimal example</h2>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java"><code>SerialCounter</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/serial/SerialCounter.java"><code>SerialCounter</code></a>
 opens the connection and prints an incrementing counter, one value per line, once a second:</p>
 <pre><code class="language-java">@Board(ArduinoUnoR4WiFi.class)
 public final class SerialCounter {
@@ -257,7 +266,7 @@ public final class SerialCounter {
 <p>Build, upload, and open the serial monitor with <code>juno-maven-plugin</code> (see
 <a href="../juno-maven-plugin">docs/JUNO-MAVEN-PLUGIN.md</a>):</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+  -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
 
 ./mvnw -f juno-examples/pom.xml juno:monitor
 </code></pre>

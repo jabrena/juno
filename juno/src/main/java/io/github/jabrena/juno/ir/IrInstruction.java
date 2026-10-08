@@ -4,6 +4,7 @@ import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.linker.LambdaSite;
+import io.github.jabrena.juno.linker.ConstantTables;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +54,10 @@ public sealed interface IrInstruction {
 
     /** A compiler-created immutable int/reference array, used for enum values and switch maps. */
     record IntArrayConst(Value target, List<Integer> values) implements IrInstruction {
+    }
+
+    /** The address of a read-only {@code static final} lookup table placed in flash (see {@link ConstantTables}). */
+    record ConstantTableRef(Value target, ConstantTables.Table table) implements IrInstruction {
     }
 
     /** A fixed-size multidimensional primitive array allocated recursively from the arena. */

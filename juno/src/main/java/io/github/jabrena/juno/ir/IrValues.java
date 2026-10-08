@@ -28,6 +28,7 @@ final class IrValues {
             case IrInstruction.LoadField load -> List.of(load.target(), load.receiver());
             case IrInstruction.StoreField store -> List.of(store.receiver(), store.value());
             case IrInstruction.IntArrayConst array -> List.of(array.target());
+            case IrInstruction.ConstantTableRef table -> List.of(table.target());
             case IrInstruction.NewMultiArray array -> List.of(array.target());
             case IrInstruction.Panic ignored -> List.of();
             case IrInstruction.NullCheck check -> List.of(check.value());

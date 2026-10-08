@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -165,6 +166,17 @@ its method (i.e. &quot;effectively final&quot;) right after <code>new T[...]</co
 parameter, or a reassigned local, still supports <code>arr[i]</code>/<code>arr[i] = v</code> but without a bounds check
 and without <code>.length</code>, since its size isn't known at compile time there. Fixed-size multidimensional
 primitive arrays are supported when every dimension is a compile-time constant.</li>
+<li>read-only lookup tables in flash: a <code>static final</code> one-dimensional primitive array with an
+all-constant initializer (<code>static final short[] SINE = {0, 804, 1608, ...};</code>) that reachable code
+only ever reads as <code>TABLE[i]</code> or <code>TABLE.length</code> is emitted once into <code>.rodata</code> at its natural element
+width, instead of being built in the arena by <code>&lt;clinit&gt;</code>. Tables cost flash, not RAM, so they can be far
+larger than the 8 KiB arena (the UNO R4 WiFi has 256 KiB of flash), and their known length gives every
+access a bounds check and makes <code>.length</code> work. Flash cannot be written by an ordinary store, so Juno checks
+each read on the bytecode: a table that is passed to a method, stored in a local or field, written, or
+selected across a branch (<code>(c ? A : B)[i]</code>) stays in the arena as before, and <code>JUNO-RISK-012</code> says which
+read kept it there. The index itself may be any expression, including another table read
+(<code>VALUES[ORDER[i]]</code>). <code>javac</code> limits one class's static initializer to 64 KiB of bytecode, about 8,000
+elements, so split a larger data set across several holder classes.</li>
 <li><code>long</code> locals, method parameters/results, fields, and arrays (see <a href="/limitations">Known Limitations</a>), with arithmetic, shifts, bitwise
 operations, comparisons, numeric conversions, calls, returns, and loops. JVM locals/stack values are
 represented internally as paired 32-bit halves and packed to native <code>int64_t</code> at storage/call boundaries.</li>
@@ -183,8 +195,8 @@ accessors, and supported primitive/array/reference components. Generated <code>e
 <li>final closed-world classes with constructors, primitive/reference instance fields, and statically
 resolvable instance calls. Objects come from a fixed 8 KiB zero-filled arena backed by a conservative
 mark/sweep garbage collector: a collection runs automatically when an allocation would otherwise
-exceed the arena, reclaiming any block no longer reachable from the native call stack (Juno has no
-reference-typed static fields, so the stack is the collector's only root set). This is Boehm-GC
+exceed the arena, reclaiming any block no longer reachable from reference-valued static fields or
+any live thread stack. This is Boehm-GC
 style — no GC type metadata and no compaction, since a collector that can't tell a real pointer from an int
 that happens to match a heap address can't safely move objects — so a program whose <em>simultaneously
 live</em> objects exceed 8 KiB still exhausts the arena and panics exactly as before; only the total
@@ -202,9 +214,11 @@ used without linking their JDK implementation classes. Lambda captures and param
 method references to Juno hardware/runtime intrinsics and <code>altMetafactory</code> call sites remain unsupported.</li>
 <li>direct static calls with closed-world reachability; unused methods are omitted</li>
 <li>runtime {@code String} references in locals, parameters, and return values, with string literals,
-{@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Integer conversions use eight
-rotating 12-byte UTF-8 slots instead of the arena, so conversion-heavy loops remain allocation-free;
-a converted value must be consumed before eight newer conversions overwrite its slot. APIs documented
+{@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Juno lowers javac's
+{@code StringConcatFactory.makeConcatWithConstants} protocol for {@code String} and primitive operands;
+concatenation maps a null string to {@code &quot;null&quot;} and panics if the UTF-8 result exceeds the 31-byte
+payload. Runtime values use eight rotating 32-byte UTF-8 slots instead of the arena, so string-heavy
+loops remain allocation-free; a value must be consumed before eight newer results overwrite its slot. APIs documented
 as compile-time-string-only (including networking paths/bodies and LED text unrolling) retain that rule.</li>
 <li>opaque <code>DigitalOutput</code> handles which compile down to integer pin numbers without heap allocation</li>
 <li>UNO R4 WiFi networking through allocation-free <code>Wifi</code>, plain HTTP, and certificate-validated HTTPS
@@ -227,6 +241,23 @@ backed by <code>libm</code>, with Java's exact semantics where they differ from 
 <code>round</code>'s ties-toward-positive-infinity and saturation, <code>pow</code>'s NaN rules, <code>floorDiv</code> overflow). Where
 Java would throw (<code>floorDiv</code>/<code>floorMod</code> by zero, <code>clamp</code> with <code>min &gt; max</code>), the program panics, like
 native integer division by zero.</li>
+<li><code>java.math</code>: arbitrary-precision <code>BigInteger</code>, <code>BigDecimal</code> and <code>MathContext</code>, plus the <code>RoundingMode</code> constants.
+<code>BigInteger</code>: <code>valueOf</code>, <code>new BigInteger(String)</code>, <code>ZERO</code>/<code>ONE</code>/<code>TWO</code>/<code>TEN</code>, <code>add</code>, <code>subtract</code>, <code>multiply</code>,
+<code>divide</code>, <code>remainder</code>, <code>mod</code>, <code>pow</code>, <code>sqrt</code>, <code>gcd</code>, <code>negate</code>, <code>abs</code>, <code>min</code>, <code>max</code>, <code>shiftLeft</code>/<code>shiftRight</code>,
+<code>signum</code>, <code>bitLength</code>, <code>compareTo</code>, <code>equals</code>, <code>intValue</code>/<code>longValue</code>/<code>doubleValue</code> and <code>toString</code>.
+<code>BigDecimal</code>: <code>valueOf</code>, <code>new BigDecimal(String|int|long|BigInteger[, scale])</code>, the constants, <code>add</code>, <code>subtract</code>,
+<code>multiply</code> (exact or with a <code>MathContext</code>), <code>divide</code> (exact, with a scale and <code>RoundingMode</code>, with a
+<code>RoundingMode</code>, or with a <code>MathContext</code>), <code>sqrt</code>, <code>round</code>, <code>setScale</code>, <code>pow</code>, <code>negate</code>, <code>abs</code>, <code>min</code>, <code>max</code>,
+<code>stripTrailingZeros</code>, <code>movePointLeft</code>/<code>movePointRight</code>, <code>signum</code>, <code>scale</code>, <code>precision</code>, <code>unscaledValue</code>,
+<code>compareTo</code>, <code>equals</code>, <code>toBigInteger</code>, the numeric conversions, <code>toString</code> and <code>toPlainString</code>. <code>MathContext</code>:
+<code>new MathContext(precision[, mode])</code>, <code>getPrecision</code> and <code>UNLIMITED</code>/<code>DECIMAL32</code>/<code>DECIMAL64</code>/<code>DECIMAL128</code>.
+Results, scales, rounding and text follow the JDK exactly (checked against it on randomized operations).
+Values are immutable blocks in the 8 KB arena and are garbage-collected, so precision is limited by memory, not
+by a fixed width; <code>toString()</code> returns an arena string, so print it with <code>Serial.println(value.toString())</code>
+rather than concatenating it (concatenation uses the 32-byte string slots). <code>ArithmeticException</code> and
+<code>NumberFormatException</code> are raised as in Java. Not supported: <code>new BigDecimal(double)</code>, bit operations beyond
+shifts, <code>modPow</code>/<code>isProbablePrime</code>, <code>divideAndRemainder</code> and the other methods; <code>BigDecimal.valueOf(double)</code>
+goes through Juno's own <code>double</code> formatting. See the board-ready <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java"><code>ScopedValuesPrecision</code> example</a>.</li>
 <li>exception handling: <code>throw</code>, <code>try</code>/<code>catch</code> (including multi-catch and catching by a supertype),
 <code>finally</code>, nested handlers, and <code>try</code>-with-resources, including exceptions that propagate out of the
 method that throws them to a <code>catch</code>/<code>finally</code> in any caller (the exception is left pending and each
@@ -243,6 +274,49 @@ fields). <code>getMessage()</code> is supported. An exception no frame up to <co
 <code>Exception in thread &quot;main&quot; &lt;class&gt;: &lt;message&gt;</code> over <code>Serial</code> and panics. An <code>int</code>/<code>long</code> division or remainder by zero inside a <code>try</code> whose handler catches
 <code>ArithmeticException</code> (or a supertype, or <code>finally</code>) raises <code>ArithmeticException(&quot;/ by zero&quot;)</code> there;
 anywhere else it unwinds to the callers' handlers if any <code>catch</code>/<code>finally</code> in the program can receive <code>ArithmeticException</code>, and panics if none can, as do Juno's other runtime failures (array bounds, arena exhaustion).</li>
+<li>Cooperative scheduling under <code>StructuredTaskScope</code>, on both boards: <code>Thread.sleep(long)</code> and <code>Thread.yield()</code> are
+available inside a forked subtask (and in <code>main</code>). Each subtask runs on a stack of its own, and control moves
+between them only where the program already pauses — loop iterations (at most once per millisecond),
+<code>Delay.millis</code>, <code>Thread.sleep</code>, <code>Thread.yield</code> and <code>join</code> — so a statement is never interrupted halfway and the
+arena, the garbage collector and the pending-exception slot need no locking. At most four threads run at once, the
+owner included, each extra one with a 2 KiB stack on the UNO R4 WiFi and 4 KiB on the UNO Q (a stack overflow on
+the UNO R4 panics with <code>[juno-thread] stack overflow</code> when the subtask next switches away). The collector scans
+every live stack. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each subtask is a Zephyr thread that
+waits for a baton, so only one runs at a time. <code>java.lang.Thread</code> itself is not part of the language subset:
+<code>new Thread(...)</code>, <code>start()</code>, <code>join()</code>, <code>setDaemon(boolean)</code> and the rest fail with a <code>CompileException</code> that points
+to <code>StructuredTaskScope</code>, and so do other <code>java.util.concurrent</code> APIs.</li>
+<li>JDK 27 preview <code>StructuredTaskScope</code>, lowered onto the same cooperative task runtime: <code>open()</code>, <code>open(Joiner)</code>,
+<code>fork(Callable)</code>, <code>fork(Runnable)</code>, <code>join()</code>, <code>isCancelled()</code>, try-with-resources <code>close()</code>, and
+<code>Subtask.state()</code>/<code>get()</code>/<code>exception()</code>. The supported built-in joiners are <code>allSuccessfulOrThrow</code>,
+<code>anySuccessfulOrThrow</code>, <code>awaitAllSuccessfulOrThrow</code>; fail-fast policies cancel sibling
+tasks and report failures as <code>ExecutionException</code>. At most three subtasks can be active because
+the four scheduler slots include the owner thread. Compile source with JDK 27 and <code>--enable-preview</code> (the examples
+module does this). Java 21's removed <code>ShutdownOnFailure</code>/<code>ShutdownOnSuccess</code> classes, custom joiners, <code>allUntil</code>,
+the <code>Configuration</code> overload, and the factory overloads that take an exception-mapping <code>Function</code> are unsupported.
+<code>allSuccessfulOrThrow().join()</code> (a <code>List</code> of results in JDK 27) may be ignored or kept as an opaque non-null
+result; reading the list is rejected at compile time.</li>
+<li><code>java.lang.ScopedValue</code> (final in JDK 25, no preview flag): <code>ScopedValue.newInstance()</code>, <code>ScopedValue.where(key, value)</code>,
+<code>Carrier.where(key, value)</code>, <code>Carrier.run(Runnable)</code>, <code>Carrier.call(CallableOp)</code>, <code>get()</code>, <code>isBound()</code> and
+<code>orElse(value)</code>. A bound value is one reference word (a <code>String</code>, array or object; there is no boxing, so bind an
+<code>int[]</code> holder for numbers). A binding is entered on the calling thread's own stack, so an inner <code>where(...)</code>
+rebinds only for its extent and the outer binding returns afterwards, even if the body throws. Subtasks forked in
+a <code>StructuredTaskScope</code> inherit the owner's bindings; <code>get()</code> on an unbound
+value throws <code>NoSuchElementException</code>. Not supported: <code>runWhere</code>/<code>callWhere</code>/<code>getWhere</code>, <code>orElseThrow</code>, and
+<code>Carrier.get</code>. See the board-ready
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java"><code>ScopedValuesPrecision</code> example</a>.</li>
+<li><code>java.util.concurrent.atomic</code> subset: <code>AtomicInteger</code>, <code>AtomicBoolean</code> and <code>AtomicLong</code> with <code>new</code>, <code>get</code>, <code>set</code>,
+<code>getAndSet</code>, <code>compareAndSet</code> and, on the numeric ones, <code>incrementAndGet</code>, <code>decrementAndGet</code>, <code>getAndIncrement</code>,
+<code>getAndDecrement</code>, <code>addAndGet</code> and <code>getAndAdd</code> (plus <code>intValue()</code>/<code>longValue()</code>). Each is a small arena cell, and the
+cooperative scheduler never switches inside an operation, so none needs a monitor. <code>AtomicReference</code>, the array
+and adder classes, <code>updateAndGet</code>/<code>accumulateAndGet</code> and <code>lazySet</code> are rejected with a <code>CompileException</code>.</li>
+<li>restricted synchronization for cooperative subtasks: <code>volatile</code> primitive/reference fields are always loaded from
+and stored to memory, including across calls and loop backedges; <code>synchronized (lock)</code> blocks use a bounded table
+of eight reentrant intrinsic monitors; and concrete <code>java.util.concurrent.locks.ReentrantLock</code> supports only
+<code>new ReentrantLock()</code>, <code>lock()</code>, zero-argument <code>tryLock()</code>, and <code>unlock()</code>, backed by the same monitor runtime.
+Contended <code>lock()</code>/monitor entry yields cooperatively until ownership is available. Synchronized methods, fair
+locks, timed/interruptible locking, <code>Condition</code>, the <code>Lock</code> interface, and the rest of <code>java.util.concurrent</code>
+remain unsupported. See the board-ready
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java"><code>Synchronization</code> example</a>.</li>
 <li><code>.class</code> inputs from directories, individual files, or JARs</li>
 </ul>
 <h2 id="runtime-risk-inspection">Runtime-risk inspection</h2>
@@ -283,6 +357,30 @@ programmatically as immutable records with stable diagnostic codes.</p>
 <td><code>JUNO-RISK-006</code></td>
 <td>A dereference uses a value proven null at compile time.</td>
 </tr>
+<tr>
+<td><code>JUNO-RISK-007</code></td>
+<td>A <code>StringBuilder</code> is created with a capacity of 32 or more (or a non-constant one); <code>toString()</code> panics once content reaches the slot size.</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-008</code></td>
+<td><code>StructuredTaskScope.fork</code> sits in a control-flow loop; only three threads can be active beside the caller.</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-009</code></td>
+<td>More than three subtasks are forked with no <code>join</code> in between.</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-010</code></td>
+<td>A subtask body (found where a lambda or object is passed to <code>fork</code> in the same method) opens a task scope, competing for the same four slots.</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-011</code></td>
+<td>A subtask body reaches a recursive cycle, or its estimated stack exceeds the smallest thread stack (2 KiB on the UNO R4 WiFi).</td>
+</tr>
+<tr>
+<td><code>JUNO-RISK-012</code></td>
+<td>(info) A <code>static final</code> constant-initialized array stays in the arena instead of flash, because a read passes it on, stores it, writes it or selects it across a branch.</td>
+</tr>
 </tbody>
 </table>
 <p>The 8 KiB arena capacity and the counts of emitted bounds checks are exact compiler facts. Arena,
@@ -306,13 +404,13 @@ iteration first can't fit alongside everything still reachable, rather than alwa
 <ul>
 <li>class inheritance/virtual polymorphic dispatch, inherited/default interface implementations, or object
 arrays with polymorphism</li>
-<li>general string construction/concatenation and other {@code String} methods, threads, reflection, or
-dynamic loading</li>
+<li>general string construction, arbitrary-object concatenation, other {@code String} methods,
+reflection, or dynamic loading</li>
 <li>exception causes, stack traces, suppressed exceptions (<code>addSuppressed</code> is accepted and dropped, so a
 <code>close()</code> failure during unwinding is lost), and exception types in method parameters or return values</li>
 <li>enum string methods (<code>.name()</code>, <code>.toString()</code>), <code>valueOf()</code>, and enum state beyond one directly
 assigned, compile-time integer value per constant (including mutable fields and per-constant class bodies)</li>
-<li>record <code>equals()</code>/<code>hashCode()</code>/<code>toString()</code>, string concatenation, and other non-lambda
+<li>record <code>equals()</code>/<code>hashCode()</code>/<code>toString()</code> and non-lambda/non-string-concat
 <code>invokedynamic</code> bootstrap protocols</li>
 <li>the desktop JDK class library</li>
 </ul>

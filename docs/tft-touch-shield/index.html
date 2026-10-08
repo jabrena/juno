@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -233,7 +234,7 @@ replaces it; pad shorter strings with spaces to erase leftovers.</p>
 <h3 id="touch-calibration">Touch calibration</h3>
 <p>Touch positions are mapped with ELEGOO's published calibration range for this panel (raw X
 120-900, raw Y 70-920), with the axis directions confirmed on real hardware (raw Y runs opposite to
-the display's y). If a panel reports offset or mirrored positions, run <code>TftTouchPaint</code>, touch near
+the display's y). If a panel reports offset or mirrored positions, run <code>TouchPaintTFT</code>, touch near
 each edge, read the logged <code>rawX</code>/<code>rawY</code> values, and pass the raw readings for portrait x = 0,
 x = 239, y = 0, and y = 319 to:</p>
 <pre><code class="language-java">TftTouchShield.calibrateTouch(rawLeft, rawRight, rawTop, rawBottom);
@@ -243,25 +244,26 @@ pressure estimate from the last read; presses between 10 and 1000 count as touch
 <h2 id="examples">Examples</h2>
 <p>For every game at a glance, sorted by category with screenshots, see <a href="../games">GAMES.md</a>.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.TftTouchPaint
+  -Djuno.main=io.github.jabrena.juno.api.tft.TouchPaintTFT
 </code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TftTouchPaint.java"><code>TftTouchPaint</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TouchPaintTFT.java"><code>TouchPaintTFT</code></a>
 is a minimal finger-paint program in <code>PORTRAIT_FLIPPED</code> rotation: pick a color from the palette
-along the top, then draw. Each touch is logged to Serial with screen and raw coordinates, for
+along the top, then draw; the white swatch with a black center at the end of the palette clears the
+canvas. Each touch is logged to Serial with screen and raw coordinates, for
 calibration. Confirmed working on a real UNO R4 WiFi with this shield.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps   # SdFat, once
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusTFT
+  -Djuno.main=io.github.jabrena.juno.api.net.WifiStatusTFT
 </code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/WifiStatusTFT.java"><code>WifiStatusTFT</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatusTFT.java"><code>WifiStatusTFT</code></a>
 is the TFT version of <a href="../storage"><code>WifiStatusSD</code></a>: it loads <code>wifi.ssid</code>/<code>wifi.password</code> from
 <code>application.properties</code> on the shield's own microSD card, connects, and shows the connection
 state, SSID, and <code>Wifi.status()</code> value in landscape. If loading or connecting fails, tap the
 screen to reload the card and retry.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.weather.WeatherTFT
+  -Djuno.main=io.github.jabrena.juno.api.net.weather.WeatherTFT
 </code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/weather/WeatherTFT.java"><code>WeatherTFT</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/WeatherTFT.java"><code>WeatherTFT</code></a>
 is a desk weather station in the style of the small &quot;weather clock&quot; cubes. After connecting with
 the SD-card credentials, it geolocates the board's public IP with <a href="https://ipinfo.io">ipinfo.io</a>,
 passes the returned coordinates to <a href="https://open-meteo.com">Open-Meteo</a>, and shows the city, wind

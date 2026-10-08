@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -153,7 +154,7 @@ arduino-cli core install arduino:renesas_uno
 arduino-cli core list
 </code></pre>
 <p>Some examples also need an optional Arduino library not bundled with that core (<code>Mouse</code> for
-<code>RatonLoco</code>, <code>ESP_SSLClient</code> for <code>Smtp</code>'s <code>STARTTLS</code> upgrade, <code>Servo</code> for <code>ServoSweep</code>, and <code>SdFat</code>
+<code>RatonLoco</code>, <code>ArduinoBLE</code> for <code>LegoTrain</code>, <code>ESP_SSLClient</code> for <code>Smtp</code>'s <code>STARTTLS</code> upgrade, <code>Servo</code> for <code>ServoSweep</code>, and <code>SdFat</code>
 for <code>WifiStatusSD</code>/<code>WifiStatusTFT</code> — see their sections below). Install the core and every one of those libraries in one go instead of hunting
 them down per example:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps
@@ -196,7 +197,7 @@ connected matching board:</p>
 a second.</p>
 <p>To compile another example, override the configured entry point. For example, <code>SerialCounter</code>:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+  -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
 </code></pre>
 <p>Open an interactive serial monitor (115200 baud by default, matching every juno-examples program's
 <code>Serial.begin(...)</code> rate) with:</p>
@@ -205,11 +206,11 @@ a second.</p>
 <p>Use <code>-Djuno.baudRate=...</code> to select another baud rate and <code>-Djuno.port=...</code> to select a port.
 Press <code>Ctrl+C</code> to exit.</p>
 <h3 id="example-serialcounter-reading-serial-output">Example: SerialCounter (reading Serial output)</h3>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/io/usb/SerialCounter.java</code></a> counts
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/serial/SerialCounter.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/io/serial/SerialCounter.java</code></a> counts
 up once a second over USB serial, so it doubles as a check that the toolchain and the board's
 serial port both work end to end:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.usb.SerialCounter
+  -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
 </code></pre>
 <p>Then open the serial monitor at the same baud rate the sketch uses
 (<code>Serial.begin(BaudRate.BAUD_115200)</code>, <code>juno:monitor</code>'s default):</p>
@@ -249,23 +250,23 @@ drives the ELEGOO 2.8&quot; TFT touch screen shield (ILI9341 on an 8-bit paralle
 resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built entirely from
 <code>Gpio</code>/<code>Delay</code>. See <a href="../tft-touch-shield">TFT-TOUCH-SHIELD.md</a>.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.TftTouchPaint
+  -Djuno.main=io.github.jabrena.juno.api.tft.TouchPaintTFT
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusTFT
+  -Djuno.main=io.github.jabrena.juno.api.net.WifiStatusTFT
 </code></pre>
-<p><code>WeatherTFT</code> (<code>-Djuno.main=io.github.jabrena.juno.api.io.net.weather.WeatherTFT</code>) is a desk
+<p><code>WeatherTFT</code> (<code>-Djuno.main=io.github.jabrena.juno.api.net.weather.WeatherTFT</code>) is a desk
 weather station: public IP → ipinfo.io location → Open-Meteo weather, with a seven-segment clock.
 <code>Chess</code> (<code>-Djuno.main=io.github.jabrena.juno.games.chess.Chess</code>) plays you
 against a small 3-ply engine, and <code>Blackjack</code>
 (<code>-Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack</code>) plays against the dealer with a bankroll. Further games in this catalogue:
 <code>battleship.Battleship</code>, <code>texasholdem.TexasHoldem</code> and the arcade games (<code>pacman.PacMan</code>, <code>lunarlander.LunarLander</code>, …) — see
 <a href="../tft-touch-shield#examples">TFT-TOUCH-SHIELD.md</a> and the illustrated catalogue in <a href="../games">GAMES.md</a>.
-<code>TftTouchPaint</code> is a finger-paint demo that logs raw touch readings for calibration;
+<code>TouchPaintTFT</code> is a finger-paint demo that logs raw touch readings for calibration;
 <code>WifiStatusTFT</code> is the TFT version of <code>WifiStatusSD</code>, reading its credentials from the shield's own
-microSD socket. Both were uploaded to a real UNO R4 WiFi with this shield; <code>TftTouchPaint</code>'s drawing and touch
+microSD socket. Both were uploaded to a real UNO R4 WiFi with this shield; <code>TouchPaintTFT</code>'s drawing and touch
 mapping are confirmed working.</p>
 <h3 id="example-ratonloco-usb-mouse-control">Example: RatonLoco (USB mouse control)</h3>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java</code></a> is a
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java</code></a> is a
 port of <a href="https://github.com/jabrena/raton-loco/blob/main/arduino/raton-loco.ino">raton-loco.ino</a>:
 it blinks the built-in LED, then drags the host computer's mouse cursor in a square (right, down,
 left, up) over USB HID.</p>
@@ -276,7 +277,7 @@ sketch to stop it.</p>
 <code>juno:install-deps</code> above, or on its own with <code>arduino-cli lib install Mouse</code>) and a board with
 native USB (UNO R4 WiFi):</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.hid.RatonLoco
+  -Djuno.main=io.github.jabrena.juno.api.hid.RatonLoco
 </code></pre>
 <p><strong>Re-uploading over a running HID sketch:</strong> <code>arduino-cli upload</code> normally resets the board into
 its bootloader by opening the serial port at 1200 baud and closing it again. That trick relies on
@@ -297,10 +298,22 @@ diagram in the class Javadoc for how to connect the servo's signal/power/ground 
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.motors.ServoSweep
 </code></pre>
+<h3 id="example-legotrain-lego-powered-up-over-bluetooth-le">Example: LegoTrain (LEGO Powered Up over Bluetooth LE)</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java</code></a>
+connects to a LEGO Powered Up hub and shuttles a train motor on port A back and forth using
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubRemote.java"><code>PoweredUpHubRemote</code></a> —
+see <a href="../lego">the LEGO Powered Up guide</a> for the full API. <code>MagicSquarePoweredUpHub</code> in the same package
+drives a two-motor vehicle around a square.</p>
+<p>It needs the <code>ArduinoBLE</code> library (not bundled with the <code>arduino:renesas_uno</code> core, installed by
+<code>juno:install-deps</code> above, or on its own with <code>arduino-cli lib install ArduinoBLE</code>):</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lego.LegoTrain \
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+</code></pre>
 <h3 id="example-inboxcount-basic-email-support">Example: InboxCount (basic email support)</h3>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Smtp.java"><code>Smtp</code></a> sends a
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Smtp.java"><code>Smtp</code></a> sends a
 plain-text message to one recipient over <code>STARTTLS</code> (mail submission on port 587), and
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/net/email/Pop3Client.java"><code>Pop3Client</code></a>
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Pop3Client.java"><code>Pop3Client</code></a>
 reports the mailbox message count and reads the newest message's <code>From</code>/<code>Subject</code>/body over
 POP3S (port 995) — see that package's Javadoc for the full scope and its deliberate limits (one
 recipient, plain text only, no attachments/HTML/MIME/folders/OAuth2).</p>
@@ -309,19 +322,19 @@ needs the third-party <code>ESP_SSLClient</code> library (the UNO R4 WiFi's nati
 negotiate TLS from the first byte, not upgrade an existing plaintext connection the way
 <code>STARTTLS</code> requires) — installed by <code>juno:install-deps</code> above, or on its own with
 <code>arduino-cli lib install ESP_SSLClient</code>.</p>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/InboxCount.java"><code>InboxCount</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/InboxCount.java"><code>InboxCount</code></a>
 connects to WiFi and the mailbox configured by <code>SMTP_HOST</code>/<code>SMPT_USERNAME</code>/<code>SMTP_PASSWORD</code> in
 <code>.env</code>, polls <code>Pop3Client.messageCount</code> every 30 seconds, and shows the current count on the LCD
 Keypad Shield's first row (<code>Pop3Client</code> only, so it does not need <code>ESP_SSLClient</code>):</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.email.InboxCount
+  -Djuno.main=io.github.jabrena.juno.api.net.email.InboxCount
 </code></pre>
 <p>The same package also has
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldLCD.java"><code>EmailHelloWorldLCD</code></a>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/EmailHelloWorldLCD.java"><code>EmailHelloWorldLCD</code></a>
 (proves <code>Smtp.send</code> actually delivers by checking the inbox count before/after sending) and
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailHelloWorldTFT.java"><code>EmailHelloWorldTFT</code></a>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/EmailHelloWorldTFT.java"><code>EmailHelloWorldTFT</code></a>
 (the TFT touch-screen version), plus
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/net/email/EmailClient.java"><code>EmailClient</code></a>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/email/EmailClient.java"><code>EmailClient</code></a>
 (a menu-driven client: Inbox count/subject-list, Send Email, About). See
 <a href="../email">docs/EMAIL.md</a> for the full <code>Smtp</code>/<code>Pop3Client</code> reference, and
 <a href="../apis">docs/APIS.md</a> for how these compiler-intrinsic API classes work internally.</p>

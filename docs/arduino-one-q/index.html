@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -244,6 +245,11 @@ arduino-cli core list
 using <code>Wifi</code>/<code>Udp</code>: without it, the zephyr core's <code>Arduino.h</code> fails to compile with <code>#error &quot;Please install the Arduino_RouterBridge library from the Library Manager for proper Serial support on this board.&quot;</code></p>
 <pre><code class="language-bash">arduino-cli lib install Arduino_RouterBridge
 </code></pre>
+<p>Programs using <a href="../lego"><code>PoweredUpHubRemote</code></a> also need <code>ArduinoBLE</code> 2.1.0 or newer, which reaches the
+Linux side's Bluetooth adapter through the same bridge (and <code>arduino-router</code> 0.7.0 or newer on the
+board):</p>
+<pre><code class="language-bash">arduino-cli lib install ArduinoBLE
+</code></pre>
 <p>Connect the board and confirm that its FQBN is detected:</p>
 <pre><code class="language-bash">arduino-cli board list
 </code></pre>
@@ -298,12 +304,12 @@ loaded by the board's Zephyr firmware.</p>
 <tr>
 <td>TFT games</td>
 <td align="right">Yes</td>
-<td>Battleship, Blackjack, Chess, Tempest and Texas Hold'em support both UNO Q and UNO R4 WiFi; Empire Strikes Back, Missile Command, Pac-Man, Red Baron, Space Paranoids, Star Trek and Star Wars target UNO Q only; Lunar Lander targets UNO R4 WiFi only</td>
+<td>Battleship, Blackjack, Chess, Tempest and Texas Hold'em support both UNO Q and UNO R4 WiFi; Empire Strikes Back, Missile Command, Pac-Man, Red Baron, Space Paranoids, Star Trek, Star Wars and DOOM target UNO Q only; Lunar Lander targets UNO R4 WiFi only</td>
 </tr>
 <tr>
 <td>Onboard LED matrix</td>
-<td align="right">No</td>
-<td>The UNO Q matrix belongs to the Linux side</td>
+<td align="right">Yes</td>
+<td>13x8 through the Zephyr core's <code>Arduino_LED_Matrix</code>; <code>LedCanvas.width()</code> is 13 here and 12 on the UNO R4 WiFi, so frames and fonts adapt. Compiles with <code>arduino-cli</code>; not yet confirmed on hardware</td>
 </tr>
 <tr>
 <td><code>Wifi</code> and <code>Udp</code></td>

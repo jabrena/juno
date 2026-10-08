@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="active" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -138,8 +139,8 @@
     Emulating a USB HID mouse from a sketch.
   </p>
 </section>    <div class="content-prose">
-<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/hid/Mouse.java"><code>Mouse</code></a>
-(<code>io.github.jabrena.juno.api.io.hid</code>) lets a Juno program act as a USB HID mouse, moving the
+<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/hid/Mouse.java"><code>Mouse</code></a>
+(<code>io.github.jabrena.juno.api.hid</code>) lets a Juno program act as a USB HID mouse, moving the
 pointer of whatever computer the board's USB port is plugged into. It is a compiler intrinsic
 backed by the Arduino <code>Mouse</code> library.</p>
 <h2 id="requirements">Requirements</h2>
@@ -160,7 +161,7 @@ make the board harder to interact with (see the warning below).</p>
 </li>
 </ul>
 <h2 id="api">API</h2>
-<pre><code class="language-java">import io.github.jabrena.juno.api.io.hid.Mouse;
+<pre><code class="language-java">import io.github.jabrena.juno.api.hid.Mouse;
 
 Mouse.begin();
 Mouse.move(10, -5);   // relative move: (x, y) pixels from the current pointer position
@@ -172,7 +173,7 @@ arguments within that range — a larger value wraps around instead of clamping.
 <pre><code class="language-java">import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.hid.Mouse;
+import io.github.jabrena.juno.api.hid.Mouse;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class MouseSquare {
@@ -202,13 +203,13 @@ public final class MouseSquare {
 }
 </code></pre>
 <p>The repository ships a fuller version of this idea as
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/RatonLoco.java"><code>RatonLoco</code></a>,
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java"><code>RatonLoco</code></a>,
 which also blinks the built-in LED and draws a
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/hid/MouseIcon.java">mouse-face icon</a>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hid/MouseIcon.java">mouse-face icon</a>
 on the LED matrix first. Build, flash, and run it with <code>juno-maven-plugin</code> (see
 <a href="../juno-maven-plugin">docs/JUNO-MAVEN-PLUGIN.md</a>):</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.hid.RatonLoco
+  -Djuno.main=io.github.jabrena.juno.api.hid.RatonLoco
 </code></pre>
 <h2 id="warning">Warning</h2>
 <p>Once uploaded, a program that calls <code>Mouse.begin()</code>/<code>Mouse.move(...)</code> in a loop takes control of

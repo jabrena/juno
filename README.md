@@ -111,7 +111,8 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`Operators`](juno-examples/src/main/java/io/github/jabrena/juno/Operators.java), and
   [`ControlFlow`](juno-examples/src/main/java/io/github/jabrena/juno/ControlFlow.java).
 - **Arrays:** fixed-size primitive arrays (`boolean` through `double`, including fixed-size
-  multidimensional arrays) allocated from the fixed 8 KiB arena. See
+  multidimensional arrays) allocated from the fixed 8 KiB arena, and `static final` read-only lookup
+  tables with an all-constant initializer, kept in flash instead of RAM. See
   [`Arrays`](juno-examples/src/main/java/io/github/jabrena/juno/Arrays.java).
 - **Strings:** string literals, `String.valueOf(int)`, `length()`, and `charAt(int)` for runtime
   string references, `equals`, plus `+` concatenation of strings and a `StringBuilder`. See

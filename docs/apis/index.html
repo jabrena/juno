@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -147,7 +148,7 @@ end-user detail in <a href="../internet">the Internet access guide</a>.</p>
 <h2 id="what-an-api-class-actually-is">What an API class actually is</h2>
 <p>There is no JVM on the board, so a method like <code>HttpClient.get(...)</code> never runs as real Java.
 Every operation Juno recognizes is declared as a <code>public static native</code> method:</p>
-<pre><code class="language-java">// juno/src/main/java/io/github/jabrena/juno/api/io/net/http/HttpClient.java
+<pre><code class="language-java">// juno/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java
 public static native int get(String host, int port, String path,
         byte[] responseBuffer, int responseBufferLength,
         byte[] headersBuffer, int headersBufferLength,
@@ -251,7 +252,7 @@ its own codes — read it before assuming <code>&lt; 0</code> always means the s
 <p>Adding (or understanding) an intrinsic touches four places, all in the <code>juno</code> module. Numbers
 below match <code>HttpClient.get</code>'s real wiring.</p>
 <h3 id="1-the-java-facing-api-class">1. The Java-facing API class</h3>
-<p><code>io.github.jabrena.juno.api.io.net.http.HttpClient</code> — <code>final</code>, private constructor, one <code>public static native</code> method per operation. This is the only file <code>juno-examples</code> code ever imports;
+<p><code>io.github.jabrena.juno.api.net.http.HttpClient</code> — <code>final</code>, private constructor, one <code>public static native</code> method per operation. This is the only file <code>juno-examples</code> code ever imports;
 everything past this point is internal to <code>juno</code> itself.</p>
 <h3 id="2-an-intrinsic-enum-constant">2. An <code>Intrinsic</code> enum constant</h3>
 <p><code>io.github.jabrena.juno.intrinsic.Intrinsic</code> gets one constant per distinct operation
@@ -262,7 +263,7 @@ that reaches it.</p>
 <p><code>io.github.jabrena.juno.intrinsic.IntrinsicRegistry</code> maps the method's exact JVM-internal
 <code>MethodRef</code> (owner as a slash-separated internal name, plus the JVM descriptor string) to that
 <code>Intrinsic</code> constant:</p>
-<pre><code class="language-java">Map.entry(new MethodRef(&quot;io/github/jabrena/juno/api/io/net/http/HttpClient&quot;, &quot;get&quot;,
+<pre><code class="language-java">Map.entry(new MethodRef(&quot;io/github/jabrena/juno/api/net/http/HttpClient&quot;, &quot;get&quot;,
         &quot;(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I&quot;), Intrinsic.HTTP_GET),
 </code></pre>
 <p>This is the single place <code>BytecodeToIr</code> (bytecode-lowering time) decides a given call site is an

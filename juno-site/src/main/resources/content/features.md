@@ -32,6 +32,17 @@ Supported today:
   parameter, or a reassigned local, still supports `arr[i]`/`arr[i] = v` but without a bounds check
   and without `.length`, since its size isn't known at compile time there. Fixed-size multidimensional
   primitive arrays are supported when every dimension is a compile-time constant.
+- read-only lookup tables in flash: a `static final` one-dimensional primitive array with an
+  all-constant initializer (`static final short[] SINE = {0, 804, 1608, ...};`) that reachable code
+  only ever reads as `TABLE[i]` or `TABLE.length` is emitted once into `.rodata` at its natural element
+  width, instead of being built in the arena by `<clinit>`. Tables cost flash, not RAM, so they can be far
+  larger than the 8 KiB arena (the UNO R4 WiFi has 256 KiB of flash), and their known length gives every
+  access a bounds check and makes `.length` work. Flash cannot be written by an ordinary store, so Juno checks
+  each read on the bytecode: a table that is passed to a method, stored in a local or field, written, or
+  selected across a branch (`(c ? A : B)[i]`) stays in the arena as before, and `JUNO-RISK-012` says which
+  read kept it there. The index itself may be any expression, including another table read
+  (`VALUES[ORDER[i]]`). `javac` limits one class's static initializer to 64 KiB of bytecode, about 8,000
+  elements, so split a larger data set across several holder classes.
 - `long` locals, method parameters/results, fields, and arrays (see [Known Limitations](/limitations)), with arithmetic, shifts, bitwise
   operations, comparisons, numeric conversions, calls, returns, and loops. JVM locals/stack values are
   represented internally as paired 32-bit halves and packed to native `int64_t` at storage/call boundaries.
@@ -196,6 +207,7 @@ The first analysis slice reports:
 | `JUNO-RISK-009` | More than three subtasks are forked with no `join` in between. |
 | `JUNO-RISK-010` | A subtask body (found where a lambda or object is passed to `fork` in the same method) opens a task scope, competing for the same four slots. |
 | `JUNO-RISK-011` | A subtask body reaches a recursive cycle, or its estimated stack exceeds the smallest thread stack (2 KiB on the UNO R4 WiFi). |
+| `JUNO-RISK-012` | (info) A `static final` constant-initialized array stays in the arena instead of flash, because a read passes it on, stores it, writes it or selects it across a branch. |
 
 The 8 KiB arena capacity and the counts of emitted bounds checks are exact compiler facts. Arena,
 static-RAM, and stack figures are conservative source-level estimates: alignment is overestimated,

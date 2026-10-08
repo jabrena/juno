@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -159,7 +160,8 @@ over a parameter (which javac compiles to <code>arraylength</code>) is rejected.
 it is called through directly.</li>
 <li><strong>JDK functional interfaces</strong> such as <code>IntBinaryOperator</code> in signatures. Declare your own interface.</li>
 <li><strong><code>Object</code> in signatures</strong>, which rules out <code>equals(Object)</code> on records and classes when it is reachable.</li>
-<li><strong>String concatenation with <code>+</code></strong> on runtime values (it compiles to <code>invokedynamic</code>).</li>
+<li><strong>Concatenating arbitrary objects.</strong> Juno lowers <code>StringConcatFactory</code> for strings and primitive
+values, but not the general <code>String.valueOf(Object)</code>/<code>toString()</code> path.</li>
 </ul>
 <h2 id="exceptions">Exceptions</h2>
 <p>See <a href="/features">Feature Inventory</a> for the supported subset. Beyond it:</p>
@@ -170,7 +172,7 @@ it is called through directly.</li>
 <li>Exception causes and stack traces are not modelled.</li>
 </ul>
 <h2 id="how-these-are-found">How these are found</h2>
-<p><code>./mvnw -f juno-examples/pom.xml -Pqemu verify</code> builds each program in <code>juno-examples/src/test/qemu/programs</code>
+<p><code>./mvnw -f juno/pom.xml -Pqemu verify</code> builds each program in <code>juno/src/test/qemu/programs</code>
 with the real generated assembly, runs it in QEMU (Cortex-M4) and requires output identical to the JVM. Known
 bugs are listed in <code>QemuRunIT.KNOWN_GAPS</code> and skipped, so the suite stays green while the bug stays visible.
 The harness models no hardware, so it covers language and runtime behavior only.</p>

@@ -35,6 +35,7 @@ import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.UnaryOp;
 import io.github.jabrena.juno.ir.Value;
+import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.InterfaceCallSite;
@@ -84,7 +85,7 @@ import java.util.stream.Collectors;
  * <ul>
  *   <li>A JVM local slot is treated as a known-length array only when it is assigned via {@code astore}
  *       exactly once in the whole method (i.e. "effectively final"), immediately after {@code newarray} with
- *       a compile-time-constant count ({@link #computeSingleAssignmentArrayLocals}). Since that slot can then
+ *       a compile-time-constant count ({@code LocalSlotAnalysis.computeSingleAssignmentArrayLocals}). Since that slot can then
  *       only ever hold that one array for its entire reachable lifetime, every load of it is safely
  *       known-length too, without needing a merge-aware, cross-block dataflow pass. Anything else holding an
  *       array reference (a parameter, a reassigned local) falls back to raw-pointer semantics: array
@@ -106,6 +107,8 @@ public final class BytecodeToIr {
     private final Map<String, List<FieldInfo>> validatedRecords = new HashMap<>();
     /** Set by {@link #lower(Program)}: some handler in the program can catch an {@code ArithmeticException}. */
     private boolean divisionByZeroUnwinds;
+    /** Set by {@link #lower(Program)}: the program's flash-resident {@code static final} lookup tables. */
+    private ConstantTables constantTables = ConstantTables.none();
 
     // Opcodes grouped by which lower* helper handles them, so the per-instruction dispatch in lower()
     // is a handful of set-membership checks instead of one huge switch spanning every opcode.
@@ -142,6 +145,7 @@ public final class BytecodeToIr {
 
     public IrProgram lower(Program program) {
         divisionByZeroUnwinds = anyHandlerCatchesArithmetic(program.methods(), program.classes());
+        constantTables = ConstantTables.of(program);
         List<String> throwableClasses = throwableClasses(program.methods(), program.classes());
         Map<String, Integer> objectTypeIds = objectTypeIds(program.interfaceDispatches(), throwableClasses);
         List<IrMethod> methods = lowerMethods(program, throwableClasses, objectTypeIds, Set.of());
@@ -278,6 +282,9 @@ public final class BytecodeToIr {
         tracking.unwindDivisionByZero(divisionByZeroUnwinds);
         List<ArrayDeclaration> arrayDeclarations = new ArrayList<>();
         List<IrBasicBlock> blocks = new ArrayList<>();
+        // A flash table's <clinit> initializer is straight-line code with no net stack effect, so dropping it
+        // leaves every block's entry depth unchanged; its getstatic reads become ConstantTableRef instead.
+        Set<Integer> tableInitializer = constantTables.initializerOffsets(linked.method().reference());
         int nextValueId = 0;
         for (BasicBlock block : linked.controlFlowGraph().blocks()) {
             List<IrInstruction> instructions = new ArrayList<>();
@@ -287,6 +294,9 @@ public final class BytecodeToIr {
             tracking.startBlock();
             IrTerminator terminator = null;
             for (Instruction instruction : block.instructions()) {
+                if (tableInitializer.contains(instruction.offset())) {
+                    continue;
+                }
                 int opcode = instruction.opcode();
                 InstructionLowering lowered = lowerInstruction(linked, instruction, opcode, block, irBlockStart,
                         blocks, instructions, stackBase, depth, nextValueId, tracking, classes, throwableClasses,
@@ -348,7 +358,7 @@ public final class BytecodeToIr {
         }
         if (opcode == 178 || opcode == 179) {
             return InstructionLowering.of(FieldLowering.lowerStaticField(linked, instruction, opcode, instructions,
-                    stackBase, depth, nextValueId, tracking, classes, decoder), irBlockStart);
+                    stackBase, depth, nextValueId, tracking, classes, decoder, constantTables), irBlockStart);
         }
         if (opcode == 180) {
             return InstructionLowering.of(FieldLowering.lowerFieldLoad(linked, instruction, instructions, stackBase,
