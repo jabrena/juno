@@ -26,3 +26,7 @@ build/
 HANDOFF.md
 
 juno-site/node_modules/
+
+# Game data from commercial WADs (e.g. DOOM1.WAD) is never committed
+*.wad
+*.WAD

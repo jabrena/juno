@@ -44,6 +44,7 @@ class GameScreenshotTest {
                 game("games.battleship.Battleship", "battleship", "35000:120,160 50000:180,170 end:70000"),
                 game("games.blackjack.Blackjack", "blackjack", "35000:120,160 50000:180,170 end:70000"),
                 game("games.chess.Chess", "chess", "35000:120,160 50000:180,170 end:70000"),
+                game("games.doom.Doom", "doom", "end:7000"),
                 game("games.empirestrikesback.EmpireStrikesBack", "empire-strikes-back", "6000:160,130 6500:85,140 10200:200,150 end:10600"),
                 game("games.lunarlander.LunarLander", "lunar-lander", "500:120,190 1000:180,140 end:9000"),
                 game("games.missilecommand.MissileCommand", "missile-command",
