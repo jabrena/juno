@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="active" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -197,18 +198,11 @@ formatted as FAT16 or FAT32; exFAT is not supported by the shield's documented S
 <p>If a different reader or shield routes CS elsewhere, call <code>SdCard.begin(chipSelectPin)</code> explicitly.</p>
 <p>The ELEGOO 2.8&quot; TFT touch screen shield's microSD socket also uses D10, and shares no pins with its
 display: see <a href="../tft-touch-shield#examples"><code>WifiStatusTFT</code></a> for the same flow shown on the TFT.</p>
-<h3 id="using-the-lcd-keypad-shield-at-the-same-time">Using the LCD Keypad Shield at the same time</h3>
-<p>The LCD Keypad Shield uses D10 for backlight control, while the data logger shield uses D10 for SD
-chip select. Do not stack both shields unchanged: electrically isolate or reroute the LCD
-backlight's D10 connection first. <code>WifiStatusSD</code> initializes the LCD before the SD card and never
-changes the backlight after SD initialization, but software ordering cannot remove the physical pin
-conflict. The LCD itself continues to use D4-D9 and can display the connection state once D10 has
-been isolated.</p>
 <h2 id="build">Build</h2>
 <p>Install the Arduino <code>SdFat</code> library once, then compile the example through the real toolchain:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.net.WifiStatusSD
+  -Djuno.main=io.github.jabrena.juno.api.net.WifiStatusSD
 </code></pre>
 <p>The essential Java flow is:</p>
 <pre><code class="language-java">import java.io.IOException;

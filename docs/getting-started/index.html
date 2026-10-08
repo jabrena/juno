@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -163,7 +164,7 @@ sketch (<code>.S</code> assembly + <code>Shim.cpp</code> runtime + <code>.ino</c
 <li><a href="https://github.com/jabrena/juno/tree/main/juno"><code>juno/</code></a> — the Juno compiler itself (<code>classfile</code>, <code>bytecode</code>, <code>linker</code>, <code>backend</code>, …),
 plus the small Java-facing hardware API Juno recognizes as compiler intrinsics
 (<code>io.github.jabrena.juno.api</code>: <code>Delay</code>, <code>Clock</code>, <code>Random</code>, <code>LedMatrix</code>, <code>api.io.Gpio</code>,
-<code>api.io.DigitalOutput</code>, <code>api.lcd.LcdKeypadShield</code>, <code>api.tft.TftTouchShield</code>, <code>api.io.hid.Mouse</code>, <code>api.io.usb.Serial</code>, …) and the
+<code>api.io.DigitalOutput</code>, <code>api.lcd.LcdKeypadShield</code>, <code>api.tft.TftTouchShield</code>, <code>api.hid.Mouse</code>, <code>api.io.serial.Serial</code>, …) and the
 <code>io.github.jabrena.juno.annotations</code> package
 (<code>Board</code>, <code>ArduinoBoard</code>, <code>ArduinoUnoR4WiFi</code>, <code>ArduinoUnoQ</code>) that entry-point classes use to select a
 compilation target. Builds <code>juno/target/juno-&lt;version&gt;.jar</code>, an executable jar whose main class
@@ -177,7 +178,7 @@ sole code-generation backend.</li>
 (<code>juno-examples/target/classes</code>) so they are checked for compile errors on every build.</li>
 </ul>
 <h2 id="quick-start">Quick start</h2>
-<p>Requirements: JDK 25+ and Maven 3.9+.</p>
+<p>Requirements: JDK 27+ and Maven 3.9+.</p>
 <pre><code class="language-bash">./mvnw clean install
 </code></pre>
 <p>This builds all three modules: <code>juno/target/juno-0.1.0-SNAPSHOT.jar</code> (the compiler and hardware
@@ -256,7 +257,8 @@ Juno compiles for, and <code>juno:verify</code>/<code>juno:upload</code> build f
 </tr>
 </tbody>
 </table>
-<p>A class with no <code>@Board</code> annotation targets the UNO R4 WiFi. GPIO, time, Serial, <code>Wifi</code>/<code>Udp</code>,
+<p>A class with no <code>@Board</code> annotation is not restricted to one board: it builds for the board named by
+<code>-Djuno.board=&lt;id&gt;</code>, or the UNO R4 WiFi when the option is omitted. GPIO, time, Serial, <code>Wifi</code>/<code>Udp</code>,
 and the shields built on them (LCD keypad, TFT touch) compile and upload for both boards. The LED
 matrix, Wi-Fi with HTTP/HTTPS/email, and <code>@Watchdog</code> are UNO R4 WiFi only (on the UNO Q, the LED
 matrix belongs to the board's Linux side, and its Zephyr core has no HTTP/HTTPS/email libraries

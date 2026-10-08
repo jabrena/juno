@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -247,7 +248,7 @@ calls) is the single place that bridges the two:</p>
 <tr>
 <td><code>Serial.println(int value)</code></td>
 <td><code>bl juno_serial_println</code></td>
-<td>prints a signed decimal <code>int32_t</code>; overloads for <code>long</code>, <code>float</code>, and <code>double</code> call type-specific shims, while <code>Serial.println(String)</code> compiles to <code>bl juno_serial_println_str</code> for a compile-time string literal (see <a href="../features">FEATURES.md</a> for the current runtime-<code>String</code> support)</td>
+<td>prints a signed decimal <code>int32_t</code>; the <code>boolean</code> overload prints <code>true</code>/<code>false</code> through the string intrinsic, <code>long</code>/<code>float</code>/<code>double</code> use type-specific shims, and <code>String</code> values compile to <code>bl juno_serial_println_str</code></td>
 </tr>
 <tr>
 <td><code>LedMatrix.loadFrame(int, int, int)</code></td>
@@ -289,9 +290,10 @@ time).</p>
 <code>INT32</code> values. JVM <code>long</code> stack/local values remain paired 32-bit halves and are packed when crossing
 a call, field, or array boundary. Remaining exclusions include:</p>
 <ul>
-<li>general <code>String</code> construction/concatenation and most <code>String</code>/<code>StringBuilder</code> methods — a bounded
-set of runtime-<code>String</code> operations is supported instead (string literals, <code>String.valueOf(int)</code>/
-<code>(double)</code>, <code>length()</code>, <code>charAt(int)</code>, and a fixed-capacity <code>StringBuilder</code>); see
+<li>general <code>String</code> construction and most <code>String</code>/<code>StringBuilder</code> methods — a bounded
+set of runtime-<code>String</code> operations is supported instead (string literals, primitive/string <code>+</code>
+concatenation, <code>String.valueOf(int)</code>/<code>(double)</code>, <code>length()</code>, <code>charAt(int)</code>, and a fixed-capacity
+<code>StringBuilder</code>); see
 <a href="../features">FEATURES.md</a> for the exact list. Multi-character LED matrix display (see
 <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java"><code>LedCanvas</code></a>) still works
 character-by-character with hand-encoded font tables rather than string data</li>

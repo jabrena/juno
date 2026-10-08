@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -178,6 +179,11 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 <td>Runs <code>juno:compile</code> and <code>juno:verify</code>, resolves the board's serial port, and flashes it with <code>arduino-cli upload</code>.</td>
 </tr>
 <tr>
+<td><code>juno:boards</code></td>
+<td>(none — run explicitly)</td>
+<td>Lists the connected boards and serial ports (address, protocol, board name, FQBN). Read-only.</td>
+</tr>
+<tr>
 <td><code>juno:monitor</code></td>
 <td>(none — run explicitly)</td>
 <td>Resolves the board's serial port and opens an interactive <code>arduino-cli monitor</code> session.</td>
@@ -244,7 +250,7 @@ can be selected without editing the POM.</p>
 </tr>
 <tr>
 <td><code>juno.arduinoCli</code></td>
-<td><code>verify</code>, <code>upload</code>, <code>monitor</code>, <code>install-deps</code></td>
+<td><code>verify</code>, <code>upload</code>, <code>boards</code>, <code>monitor</code>, <code>install-deps</code></td>
 <td><code>arduino-cli</code></td>
 <td>Executable name or path.</td>
 </tr>
@@ -314,7 +320,7 @@ the full explanation, including the <code>--add-opens</code> JVM flags this goal
 <ul>
 <li><strong>&quot;Missing required Juno entry point&quot;:</strong> set <code>&lt;mainClass&gt;</code> in the plugin configuration or pass
 <code>-Djuno.main=&lt;fully-qualified-class-name&gt;</code>.</li>
-<li><strong><code>upload</code>/<code>monitor</code> can't find a port:</strong> run <code>arduino-cli board list</code> and pass the port
+<li><strong><code>upload</code>/<code>monitor</code> can't find a port:</strong> run <code>./mvnw juno:boards</code> and pass the port
 explicitly with <code>-Djuno.port=...</code> when more than one matching board is attached.</li>
 <li><strong>Uploaded sketch targets the wrong board variant:</strong> pass <code>-Djuno.fqbn=...</code> to override the FQBN
 Juno derived from the entry point's <code>@Board</code> annotation; the plugin logs a warning whenever an

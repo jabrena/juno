@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -339,7 +340,7 @@ Juno generates GNU ARM (Cortex-M4) assembly plus a small C++ runtime shim, and t
 <code>arduino:renesas_uno</code> core assembles/compiles and links them into native RA4M1 machine code. The
 entry-point class's <code>@Board</code> annotation
 (<code>io.github.jabrena.juno.annotations.Board</code>) selects the target board; a class with no <code>@Board</code> annotation
-targets the WiFi variant by default.</p>
+builds for the board named by <code>-Djuno.board</code>, or the WiFi variant when it is omitted.</p>
 <table>
 <thead>
 <tr>

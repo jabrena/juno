@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3IICCZA6.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-JETFUVMT.css" />
 
 </head>
 <body >
@@ -91,6 +91,7 @@
     <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
     <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
     <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
     <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
     <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
     <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
@@ -155,7 +156,7 @@ when more than one board is declared fails with the list of choices instead of g
 <p>The screenshots were rendered on a desktop by running each game's unmodified code, including the real <code>TftTouchShield</code> driver and its font, against an emulation of the shield's ILI9341 display controller (see <a href="#testing-without-the-board">Testing without the board</a>). The real panel's colors vary slightly.</p>
 <h2 id="contents">Contents</h2>
 <ul>
-<li><a href="#arcade">Arcade</a>: <a href="#pac-man">Pac-Man</a>, <a href="#missile-command">Missile Command</a>, <a href="#tempest">Tempest</a>, <a href="#star-wars">Star Wars</a>, <a href="#the-empire-strikes-back">The Empire Strikes Back</a>, <a href="#red-baron">Red Baron</a>, <a href="#star-trek">Star Trek</a>, <a href="#space-paranoids">Space Paranoids</a>, <a href="#lunar-lander">Lunar Lander</a></li>
+<li><a href="#arcade">Arcade</a>: <a href="#pac-man">Pac-Man</a>, <a href="#missile-command">Missile Command</a>, <a href="#tempest">Tempest</a>, <a href="#star-wars">Star Wars</a>, <a href="#the-empire-strikes-back">The Empire Strikes Back</a>, <a href="#red-baron">Red Baron</a>, <a href="#star-trek">Star Trek</a>, <a href="#space-paranoids">Space Paranoids</a>, <a href="#doom">DOOM</a>, <a href="#lunar-lander">Lunar Lander</a></li>
 <li><a href="#board-and-strategy">Board and strategy</a>: <a href="#chess">Chess</a>, <a href="#battleship">Battleship</a></li>
 <li><a href="#cards-and-casino">Cards and casino</a>: <a href="#blackjack">Blackjack</a>, <a href="#texas-holdem">Texas Hold'em</a></li>
 </ul>
@@ -215,6 +216,15 @@ when more than one board is declared fails with the list of choices instead of g
 <p>After the arcade game from TRON, in landscape. It opens like the film: a laser scan line digitizes the grid, which then rushes past as a hunter spins in, and the title materializes letter by letter; every game over returns there. After the title, choose the pilot: <strong>HUMAN</strong> to play yourself, or <strong>CPU</strong> to watch an autopilot hunt along the shortest path, head for an energy pool when its shield runs low and shoot what it sees, with an aim that wanders enough to miss now and then; tap the header during the game to switch between the two. Space Paranoids targets the <strong>Arduino UNO Q</strong> (<code>@Board(ArduinoUnoQ.class)</code>). Drive a tank through a wireframe maze and destroy every flying hunter before the sector's timer runs out, while enemy tanks and gun turrets fire back. Hold <code>&lt;</code>/<code>&gt;</code> to turn, <code>^</code>/<code>v</code> to drive and <code>FIRE</code> to shoot (tapping the view fires too); the radar between the buttons shows the maze from above. Hits drain your shield and green energy pools recharge it. Three lives, one more every 10,000 points, and every sector is a new maze with more enemies. The walls are ray cast with hidden lines removed.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
+</code></pre>
+<h3 id="doom">DOOM</h3>
+<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield: the animated cover, then the CPU autopilot walking E1M1 until it dies" width="320">
+<p>DOOM in wireframe, after <a href="https://github.com/ebenupton/doom">Eben Upton's BBC Micro E1M1 renderer</a>, in landscape. It opens on a pixel-art cover: a dark-red sky gradient, then live lava that floods up from the bottom and keeps flowing and bubbling, the DOOM logo drawn letter by letter over it (circuit-board blue over orange brick, with hollow slots, a V in the M, sloping bottoms and thick red sides), and a blinking <code>TAP TO PLAY</code> plaque. It is DOOM's own renderer drawing edges instead of textured columns: the BSP tree is walked front to back, every wall is projected in perspective, and each screen column keeps the open window between what is already drawn above and below it, so walls, steps (yellow), lintels (blue) and doors (red) hide whatever is behind them, monsters included. Doors open as the marine walks up to them. The map's monsters are there, placed as on Ultra-Violence: zombiemen fire single shots, shotgun sergeants three pellets, imps throw fireballs and demons bite. They sleep until they see the marine or hear a shot, then chase and attack, flinch when hit, and the dead rise again out of sight after a while. The marine has a pistol, 100% health (hits are halved, as on DOOM's easiest skill) and picks up the map's health bonuses, stimpacks, medikits and armor by walking over them; dying restarts the map. After the title, choose the pilot: <strong>HUMAN</strong> to play yourself, touching the left or right third of the view to turn, the upper middle to walk forward and the lower middle to fire, or <strong>CPU</strong> to watch an autopilot walk the map's demo route and play like a person: it takes a moment to react, swings its aim past the target and back, misses, strafes and backs away under fire, retreats when badly hurt, steps aside for health and armor it needs, and sometimes dies; tap the status bar during the game to switch between the two. The status bar under the view follows DOOM's: kills, health, the arms grid, the marine's face (bloodier as health drops, grimacing when hit), armor, and the map and pilot. The GIF shows the cover, the pilot choice and the CPU autopilot walking E1M1 (generated from <code>DOOM1.WAD</code> as described below) until the marine dies. A map's exit switch ends the level: walking up to it shows <code>E1M1 COMPLETE</code> and starts the map again. DOOM targets the <strong>Arduino UNO Q</strong> (<code>@Board(ArduinoUnoQ.class)</code>).</p>
+<p>The map lives in flash as <code>static final</code> lookup tables (see <a href="/features">Feature Inventory</a>), so it costs no RAM. The repository ships a small original two-room test map; DOOM's levels are id Software's data and are never committed. To walk E1M1, generate its tables from a <code>DOOM1.WAD</code> you have, build or upload the game, then restore the test map:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml test -Dtest=LevelGeneratorTest -Djuno.doom.wad=/path/to/DOOM1.WAD
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.doom.Doom
+git checkout -- juno-examples/src/main/java/io/github/jabrena/juno/games/doom/Level.java
 </code></pre>
 <h3 id="lunar-lander">Lunar Lander</h3>
 <img src="../images/games/lunar-lander-cpu.gif" alt="Lunar Lander on the TFT shield, flown by the CPU" width="240">
@@ -298,7 +308,7 @@ screen and a diff to <code>juno-examples/target/screenshots</code>. After an int
 regenerate the pictures with
 <code>./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true</code>.</li>
 <li><code>CardGamesTest</code>, <code>PacManTest</code>, <code>MissileCommandTest</code>, <code>TempestTest</code>, <code>StarWarsTest</code>,
-<code>EmpireStrikesBackTest</code>, <code>RedBaronTest</code>, <code>StarTrekTest</code>, <code>SpaceParanoidsTest</code> and
+<code>EmpireStrikesBackTest</code>, <code>RedBaronTest</code>, <code>StarTrekTest</code>, <code>SpaceParanoidsTest</code>, <code>DoomTest</code> and
 <code>LunarLanderTest</code> check rules and computer players: the poker hand ranking against a brute-force
 reference, no chip lost across all-ins and side pots, and that autopilots clear Missile Command
 waves, Tempest levels, Space Paranoids and Star Trek sectors, whole Red Baron and
@@ -306,17 +316,17 @@ Empire Strikes Back waves, and nearly every dot of a Pac-Man maze.</li>
 </ul>
 <p>This runs the games' Java on the JVM, not the code Juno generates for the board.</p>
 <h2 id="compiling-with-the-real-arduino-toolchain-in-docker">Compiling with the real Arduino toolchain in Docker</h2>
-<p><code>ArduinoCliCompileIT</code> does what <code>juno:verify</code> does for every game — Juno generates the sketch,
-then <code>arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi</code> builds and links it with the real
-UNO R4 core — inside a Docker container started with <a href="https://testcontainers.com">Testcontainers</a>,
-so you need Docker but no local Arduino installation. It fails if a game stops compiling or no
-longer fits the board's flash or RAM, and prints each game's usage. It is opt-in:</p>
-<pre><code class="language-bash">./mvnw install -DskipTests
-./mvnw -f juno-examples/pom.xml -Parduino-cli verify
+<p><code>juno:verify</code> compiles a game with the real toolchain, and you can run it on any game. The compiler's own
+suite, <code>ArduinoCliCompileIT</code> in the <code>juno</code> module, does the same for small programs that each exercise one
+API or shield (GPIO, Serial, Servo, I2C, TFT touch, LCD keypad, ...) once per board they declare —
+Juno generates the sketch, then <code>arduino-cli compile</code> builds and links it with the real UNO R4 or UNO Q
+core — inside a Docker container started with <a href="https://testcontainers.com">Testcontainers</a>,
+so you need Docker but no local Arduino installation. It is opt-in:</p>
+<pre><code class="language-bash">./mvnw -f juno/pom.xml -Parduino-cli verify
 </code></pre>
 <p>The first run builds the image from
-<a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/test/docker/arduino-cli/Dockerfile"><code>juno-examples/src/test/docker/arduino-cli/Dockerfile</code></a>
-(<code>arduino-cli</code> plus the <code>arduino:renesas_uno</code> core, several hundred MB) and Docker caches it for
+<a href="https://github.com/jabrena/juno/tree/main/juno/src/test/docker/arduino-cli/Dockerfile"><code>juno/src/test/docker/arduino-cli/Dockerfile</code></a>
+(<code>arduino-cli</code> plus the <code>arduino:renesas_uno</code> and <code>arduino:zephyr</code> cores, several hundred MB) and Docker caches it for
 later runs. To use an image you built or pulled yourself, add
 <code>-Djuno.arduinoCliImage=&lt;image&gt;</code>. Without Docker the test is skipped. If your network blocks
 Docker Hub, also set <code>TESTCONTAINERS_RYUK_DISABLED=true</code>, since Testcontainers otherwise pulls its
