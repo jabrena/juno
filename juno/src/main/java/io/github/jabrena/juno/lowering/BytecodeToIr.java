@@ -233,7 +233,7 @@ public final class BytecodeToIr {
                     MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
                     if (StructuredTaskSupport.isStructuredTaskOwner(called.owner())) {
                         names.add("java/lang/IllegalStateException");
-                        names.add("java/util/concurrent/StructuredTaskScope$FailedException");
+                        names.add("java/util/concurrent/ExecutionException");
                     }
                     if (ScopedValueSupport.isScopedValueOwner(called.owner())) {
                         names.add("java/util/NoSuchElementException");

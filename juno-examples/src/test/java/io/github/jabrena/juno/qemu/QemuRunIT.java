@@ -175,7 +175,7 @@ class QemuRunIT {
         Files.createDirectories(destination);
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         List<String> arguments = new ArrayList<>(List.of(
-                "--enable-preview", "--release", "25",
+                "--enable-preview", "--release", "27",
                 "-d", destination.toString(), "-cp",
                 String.join(File.pathSeparator, classpath.stream().map(Path::toString).toList())));
         sources.forEach(source -> arguments.add(source.toString()));

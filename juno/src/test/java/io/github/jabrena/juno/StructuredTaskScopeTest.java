@@ -56,18 +56,13 @@ class StructuredTaskScopeTest {
                     scope.join();
                 }
                 try (var scope = StructuredTaskScope.open(
-                        StructuredTaskScope.Joiner.<String>anySuccessfulResultOrThrow())) {
+                        StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
                     scope.fork(() -> "winner");
                     scope.join();
                 }
                 try (var scope = StructuredTaskScope.open(
                         StructuredTaskScope.Joiner.<String>awaitAllSuccessfulOrThrow())) {
                     scope.fork(() -> "done");
-                    scope.join();
-                }
-                try (var scope = StructuredTaskScope.open(
-                        StructuredTaskScope.Joiner.<String>awaitAll())) {
-                    scope.fork(() -> { throw new IllegalStateException("ignored"); });
                     scope.join();
                 }
                 """);
@@ -90,7 +85,7 @@ class StructuredTaskScopeTest {
         for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
             CompilationResult result = compile("""
                     try (var outer = StructuredTaskScope.open(
-                            StructuredTaskScope.Joiner.<String>anySuccessfulResultOrThrow())) {
+                            StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
                         outer.fork(() -> {
                             synchronized (new Object()) {
                                 try (var inner = StructuredTaskScope.open()) {
@@ -151,7 +146,7 @@ class StructuredTaskScopeTest {
 
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("JDK 25 StructuredTaskScope subset")
+                .hasMessageContaining("JDK 27 StructuredTaskScope subset")
                 .hasMessageContaining("allUntil");
     }
 
@@ -161,8 +156,9 @@ class StructuredTaskScopeTest {
                 package demo;
                 import java.util.concurrent.StructuredTaskScope;
                 public final class Tasks {
-                    static final class CustomJoiner implements StructuredTaskScope.Joiner<Object, Void> {
+                    static final class CustomJoiner implements StructuredTaskScope.Joiner<Object, Void, RuntimeException> {
                         public Void result() { return null; }
+                        public Void timeout() { return null; }
                     }
                     public static void main() throws Exception {
                         var joiner = new CustomJoiner();
@@ -181,15 +177,40 @@ class StructuredTaskScopeTest {
     }
 
     @Test
-    void rejectsCustomJoinerLambdasAtCompileTime() throws Exception {
+    void rejectsJoinerFactoryOverloadsThatChooseTheExceptionType() throws Exception {
+        for (String factory : new String[]{"allSuccessfulOrThrow", "anySuccessfulOrThrow",
+                "awaitAllSuccessfulOrThrow"}) {
+            String source = """
+                    package demo;
+                    import java.util.concurrent.StructuredTaskScope;
+                    public final class Tasks {
+                        public static void main() throws Exception {
+                            StructuredTaskScope.open(StructuredTaskScope.Joiner.<String, Exception>%s(null));
+                        }
+                    }
+                    """.formatted(factory);
+            Path directory = Files.createTempDirectory(temporaryDirectory, factory);
+            CompilerTestSupport.compileJavaWithPreview(directory, "demo.Tasks", source);
+
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(directory, "demo.Tasks"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("StructuredTaskScope subset")
+                    .hasMessageContaining(factory);
+        }
+    }
+
+    @Test
+    void rejectsReadingTheResultListOfAllSuccessfulOrThrow() throws Exception {
         String source = """
                 package demo;
                 import java.util.concurrent.StructuredTaskScope;
                 public final class Tasks {
                     public static void main() throws Exception {
-                        StructuredTaskScope.Joiner<Object, Void> joiner = () -> null;
-                        try (var scope = StructuredTaskScope.open(joiner)) {
-                            scope.join();
+                        try (var scope = StructuredTaskScope.open(
+                                StructuredTaskScope.Joiner.<String>allSuccessfulOrThrow())) {
+                            scope.fork(() -> "a");
+                            java.util.List<String> results = scope.join();
+                            results.get(0);
                         }
                     }
                 }
@@ -197,8 +218,7 @@ class StructuredTaskScopeTest {
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Tasks", source);
 
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("custom Joiner implementations");
+                .isInstanceOf(CompileException.class);
     }
 
     @Test
@@ -208,7 +228,7 @@ class StructuredTaskScopeTest {
                 import java.util.concurrent.StructuredTaskScope;
                 public final class Tasks {
                     public static void main() {
-                        StructuredTaskScope.open(StructuredTaskScope.Joiner.awaitAll(), null);
+                        StructuredTaskScope.open(StructuredTaskScope.Joiner.awaitAllSuccessfulOrThrow(), null);
                     }
                 }
                 """;
@@ -216,7 +236,7 @@ class StructuredTaskScopeTest {
 
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("JDK 25 StructuredTaskScope subset")
+                .hasMessageContaining("JDK 27 StructuredTaskScope subset")
                 .hasMessageContaining("Configuration");
     }
 

@@ -19,7 +19,7 @@ public final class StructuredConcurrency {
     // Subtasks cannot return an int, so each one stores its partial result in its own slot.
     private final int[] counts = new int[SLICES];
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
         Serial.begin(BaudRate.BAUD_115200);
         Serial.println("Counting primes below " + LIMIT);
 
@@ -29,7 +29,7 @@ public final class StructuredConcurrency {
     }
 
     /** Forks one subtask per slice of the range and waits for all of them. */
-    private void countInParallel() throws InterruptedException {
+    private void countInParallel() throws Exception {
         int slice = LIMIT / SLICES;
 
         try (var scope = StructuredTaskScope.open()) {

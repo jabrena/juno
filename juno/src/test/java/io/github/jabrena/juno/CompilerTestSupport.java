@@ -32,7 +32,7 @@ public final class CompilerTestSupport {
 
     public static Path compileJavaWithPreview(Path directory, String className, String source)
             throws IOException {
-        return compileJava(directory, className, source, "25", true);
+        return compileJava(directory, className, source, "27", true);
     }
 
     private static Path compileJava(Path directory, String className, String source, String release,

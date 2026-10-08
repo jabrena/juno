@@ -26,7 +26,7 @@ final class InvokeDynamicSupport {
         MethodRef caller = linked.method().reference();
         if (lambdaResolver.targetsInterface(linked, instruction, StructuredTaskSupport.JOINER)) {
             throw new CompileException(caller.displayName() + " at bytecode offset "
-                    + instruction.offset() + ": Juno's JDK 25 StructuredTaskScope subset does not support "
+                    + instruction.offset() + ": Juno's JDK 27 StructuredTaskScope subset does not support "
                     + "custom Joiner implementations");
         }
         LambdaSite lambda = lambdaResolver.resolve(linked, instruction, classes);

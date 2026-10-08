@@ -140,15 +140,16 @@ Supported today:
   waits for a baton, so only one runs at a time. `java.lang.Thread` itself is not part of the language subset:
   `new Thread(...)`, `start()`, `join()`, `setDaemon(boolean)` and the rest fail with a `CompileException` that points
   to `StructuredTaskScope`, and so do other `java.util.concurrent` APIs.
-- JDK 25 preview `StructuredTaskScope`, lowered onto the same cooperative task runtime: `open()`, `open(Joiner)`,
+- JDK 27 preview `StructuredTaskScope`, lowered onto the same cooperative task runtime: `open()`, `open(Joiner)`,
   `fork(Callable)`, `fork(Runnable)`, `join()`, `isCancelled()`, try-with-resources `close()`, and
   `Subtask.state()`/`get()`/`exception()`. The supported built-in joiners are `allSuccessfulOrThrow`,
-  `anySuccessfulResultOrThrow`, `awaitAllSuccessfulOrThrow`, and `awaitAll`; fail-fast policies cancel sibling
-  tasks and report failures as `StructuredTaskScope.FailedException`. At most three subtasks can be active because
-  the four scheduler slots include the owner thread. Compile source with JDK 25 and `--enable-preview` (the examples
+  `anySuccessfulOrThrow`, `awaitAllSuccessfulOrThrow`; fail-fast policies cancel sibling
+  tasks and report failures as `ExecutionException`. At most three subtasks can be active because
+  the four scheduler slots include the owner thread. Compile source with JDK 27 and `--enable-preview` (the examples
   module does this). Java 21's removed `ShutdownOnFailure`/`ShutdownOnSuccess` classes, custom joiners, `allUntil`,
-  and the `Configuration` overload are unsupported. `allSuccessfulOrThrow().join()` may be ignored or kept as an
-  opaque non-null result; Stream operations on it are not supported.
+  the `Configuration` overload, and the factory overloads that take an exception-mapping `Function` are unsupported.
+  `allSuccessfulOrThrow().join()` (a `List` of results in JDK 27) may be ignored or kept as an opaque non-null
+  result; reading the list is rejected at compile time.
 - `java.lang.ScopedValue` (final in JDK 25, no preview flag): `ScopedValue.newInstance()`, `ScopedValue.where(key, value)`,
   `Carrier.where(key, value)`, `Carrier.run(Runnable)`, `Carrier.call(CallableOp)`, `get()`, `isBound()` and
   `orElse(value)`. A bound value is one reference word (a `String`, array or object; there is no boxing, so bind an

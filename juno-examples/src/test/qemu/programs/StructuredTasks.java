@@ -24,7 +24,7 @@ public final class StructuredTasks {
             scope.fork(() -> "possibly cancelled");
             try {
                 scope.join();
-            } catch (StructuredTaskScope.FailedException failure) {
+            } catch (java.util.concurrent.ExecutionException failure) {
                 Serial.println("failed");
                 Serial.println(scope.isCancelled() ? 1 : 0);
             }
@@ -35,7 +35,7 @@ public final class StructuredTasks {
         Serial.println(failed.exception().getMessage());
 
         try (var scope = StructuredTaskScope.open(
-                StructuredTaskScope.Joiner.<Object>anySuccessfulResultOrThrow())) {
+                StructuredTaskScope.Joiner.<Object>anySuccessfulOrThrow())) {
             scope.fork(() -> "winner");
             scope.fork(() -> "possibly cancelled");
             Object winner = scope.join();
@@ -43,13 +43,6 @@ public final class StructuredTasks {
             // "winner" first, so only check that the result is one of the two valid answers.
             Serial.println(winner == "winner" || winner == "possibly cancelled" ? 1 : 0);
             Serial.println(scope.isCancelled() ? 1 : 0);
-        }
-
-        try (var scope = StructuredTaskScope.open(StructuredTaskScope.Joiner.<String>awaitAll())) {
-            var ignoredFailure = scope.fork(() -> { throw new IllegalStateException("ignored"); });
-            scope.join();
-            Serial.println(ignoredFailure.state() == StructuredTaskScope.Subtask.State.FAILED ? 1 : 0);
-            Serial.println(ignoredFailure.exception().getMessage());
         }
 
         final int[] ran = {0};

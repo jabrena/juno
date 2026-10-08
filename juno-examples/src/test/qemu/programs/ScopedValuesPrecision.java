@@ -71,7 +71,7 @@ public final class ScopedValuesPrecision {
             sqrt2 = first.get();
             pi = second.get();
             e = third.get();
-        } catch (InterruptedException interrupted) {
+        } catch (InterruptedException | java.util.concurrent.ExecutionException interrupted) {
             throw new IllegalStateException("interrupted");
         }
         MathContext context = PRECISION.get();

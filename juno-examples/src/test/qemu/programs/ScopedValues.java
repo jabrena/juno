@@ -68,7 +68,7 @@ public final class ScopedValues {
                 Serial.println(first.get());
                 Serial.println(third.get());
                 Serial.println(USER.get());
-            } catch (InterruptedException interrupted) {
+            } catch (InterruptedException | java.util.concurrent.ExecutionException interrupted) {
                 Serial.println("interrupted");
             }
         });

@@ -620,7 +620,7 @@ final class RuntimeShim {
             shim.append(ThreadRuntime.scheduler(core.delayMillisFunction(), uses(ShimFeature.EXCEPTIONS),
                     uses(ShimFeature.THREAD_ENTRY), uses(ShimFeature.TASK_CALLABLE_ENTRY),
                     uses(ShimFeature.STRUCTURED_TASKS), uses(ShimFeature.SCOPED_VALUES),
-                    throwableClasses.indexOf("java/util/concurrent/StructuredTaskScope$FailedException"),
+                    throwableClasses.indexOf("java/util/concurrent/ExecutionException"),
                     throwableClasses.indexOf("java/lang/IllegalStateException")));
         } else if (uses(ShimFeature.THREAD_BASICS)) {
             shim.append(ThreadRuntime.basics(core.delayMillisFunction()));

@@ -11,7 +11,7 @@ import java.util.List;
 
 import static io.github.jabrena.juno.lowering.StackValueOps.storeToStack;
 
-/** Bytecode-stack adaptations specific to JDK 25 structured-task joiners and interface calls. */
+/** Bytecode-stack adaptations specific to JDK 27 structured-task joiners and interface calls. */
 final class StructuredTaskLowering {
     private StructuredTaskLowering() {
     }

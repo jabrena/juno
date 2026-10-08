@@ -52,7 +52,7 @@ class ScopedValueTest {
                         try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
                             scope.fork(() -> USER.get());
                             scope.join();
-                        } catch (InterruptedException e) {
+                        } catch (InterruptedException | java.util.concurrent.ExecutionException e) {
                             throw new IllegalStateException();
                         }
                     });

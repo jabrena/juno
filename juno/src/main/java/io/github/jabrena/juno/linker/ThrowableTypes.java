@@ -45,7 +45,6 @@ public final class ThrowableTypes {
             Map.entry("java/lang/InterruptedException", "java/lang/Exception"),
             Map.entry("java/util/NoSuchElementException", "java/lang/RuntimeException"),
             Map.entry("java/util/concurrent/ExecutionException", "java/lang/Exception"),
-            Map.entry("java/util/concurrent/StructuredTaskScope$FailedException", "java/lang/RuntimeException"),
             Map.entry("java/util/concurrent/TimeoutException", "java/lang/Exception"),
             Map.entry("java/io/IOException", "java/lang/Exception"));
 

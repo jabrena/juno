@@ -19,7 +19,7 @@ public final class NestedCancellation {
     public static void main() throws Exception {
         // The slow task holds LOCK and owns an inner scope when the fast sibling wins and cancels it.
         try (var scope = StructuredTaskScope.open(
-                StructuredTaskScope.Joiner.<String>anySuccessfulResultOrThrow())) {
+                StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
             scope.fork(() -> {
                 synchronized (LOCK) {
                     try (var inner = StructuredTaskScope.open()) {
