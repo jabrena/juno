@@ -53,7 +53,7 @@ This is a multi-module Maven build:
 
 ## Quick start
 
-Requirements: JDK 25+ and Maven 3.9+.
+Requirements: JDK 27+ and Maven 3.9+.
 
 ```bash
 ./mvnw clean install

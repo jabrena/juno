@@ -33,7 +33,7 @@ This is a multi-module Maven build:
 
 ## Quick start
 
-Requirements: JDK 25+ and Maven 3.9+.
+Requirements: JDK 27+ and Maven 3.9+.
 
 ```bash
 ./mvnw clean install
@@ -140,7 +140,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   `finally`, nested handlers, propagation between methods, custom final exception classes, and
   try-with-resources. See
   [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/Exceptions.java).
-- **Concurrency:** the supported JDK 25 preview `StructuredTaskScope` subset (up to four threads
+- **Concurrency:** the supported JDK 27 preview `StructuredTaskScope` subset (up to four threads
   including `main`, with `Thread.sleep` and `Thread.yield` inside subtasks), restricted monitors and
   `ReentrantLock`, and `ScopedValue` bindings inherited by forked subtasks. `java.lang.Thread` itself is
   rejected at compile time; `AtomicInteger`, `AtomicBoolean` and `AtomicLong` are available. See

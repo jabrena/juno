@@ -16,7 +16,7 @@
     </modules>
 
     <properties>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.release>27</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <junit.version>6.1.3</junit.version>
@@ -33,6 +33,7 @@
         <maven-plugin-jar.version>3.5.1</maven-plugin-jar.version>
         <maven-plugin-javadoc.version>3.12.0</maven-plugin-javadoc.version>
         <maven-plugin-pmd.version>3.28.0</maven-plugin-pmd.version>
+        <pmd.version>7.28.0</pmd.version>
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
     </properties>
 
@@ -142,6 +143,19 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-pmd-plugin</artifactId>
                         <version>${maven-plugin-pmd.version}</version>
+                        <dependencies>
+                            <!-- PMD 7.17 (bundled) cannot read Java 27 class files (major version 71). -->
+                            <dependency>
+                                <groupId>net.sourceforge.pmd</groupId>
+                                <artifactId>pmd-core</artifactId>
+                                <version>${pmd.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>net.sourceforge.pmd</groupId>
+                                <artifactId>pmd-java</artifactId>
+                                <version>${pmd.version}</version>
+                            </dependency>
+                        </dependencies>
                         <configuration>
                             <!-- Anchored at the root so every module finds the shared ruleset. -->
                             <rulesets>
