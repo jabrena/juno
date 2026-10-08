@@ -128,7 +128,7 @@ loaded by the board's Zephyr firmware.
 | `Serial` | Yes | Uses the MCU sketch's serial path |
 | LCD keypad and TFT touch shields | Yes | Built on GPIO, timing and analog input |
 | TFT games | Yes | Battleship, Blackjack, Chess, Tempest and Texas Hold'em support both UNO Q and UNO R4 WiFi; Empire Strikes Back, Missile Command, Pac-Man, Red Baron, Space Paranoids, Star Trek and Star Wars target UNO Q only; Lunar Lander targets UNO R4 WiFi only |
-| Onboard LED matrix | No | The UNO Q matrix belongs to the Linux side |
+| Onboard LED matrix | Yes | 13x8 through the Zephyr core's `Arduino_LED_Matrix`; `LedCanvas.width()` is 13 here and 12 on the UNO R4 WiFi, so frames and fonts adapt. Compiles with `arduino-cli`; not yet confirmed on hardware |
 | `Wifi` and `Udp` | Yes | Linux owns Wi-Fi; the MCU exchanges datagrams through `Arduino_RouterBridge` and `BridgeUDP` |
 | Juno HTTPS client API | Yes | TLS connections use `BridgeTCPClient` and the Linux system trust store |
 | Juno HTTP server and email APIs | No | Current intrinsics target the UNO R4 WiFi's `WiFiS3` libraries |

@@ -353,15 +353,14 @@ All commands use the Maven wrapper (`./mvnw`) from the repository root, with the
 
 ### Run generated code on a toolchain
 
-Both profiles need Docker and are opt-in, because they start containers. Run `./mvnw install -DskipTests`
-once first so the examples module can resolve the plugin and compiler.
+Both profiles live in the `juno` module, need Docker and are opt-in, because they start containers.
 
 ```bash
-# Compile every TFT game with the real arduino-cli (does not touch hardware)
-./mvnw -f juno-examples/pom.xml -Parduino-cli verify
+# Compile the small API and shield fixtures for each board with the real arduino-cli (does not touch hardware)
+./mvnw -f juno/pom.xml -Parduino-cli verify
 
 # Run the core-feature programs under QEMU (Cortex-M4) and compare their serial output with the JVM's
-./mvnw -f juno-examples/pom.xml -Pqemu verify
+./mvnw -f juno/pom.xml -Pqemu verify
 ```
 
 ### Code quality

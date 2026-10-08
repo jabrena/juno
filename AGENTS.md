@@ -9,7 +9,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - **Language:** Java, `maven.compiler.release=27`. Build/dev JDK is pinned
   to 27 via `.sdkmanrc` and CI (`.github/workflows/maven.yaml`).
 - **Build:** Maven via the `./mvnw` wrapper (`.mvn/wrapper/maven-wrapper.properties`).
-- **Test framework:** JUnit (Jupiter). `juno-examples` also uses Testcontainers (test scope) for the opt-in `arduino-cli` compile test.
+- **Test framework:** JUnit (Jupiter). `juno` also uses Testcontainers (test scope) for the opt-in `arduino-cli` and QEMU tests.
 - **External toolchain:** Arduino CLI with the `arduino:renesas_uno` (UNO R4 WiFi) and `arduino:zephyr`
   (UNO Q) cores, used to actually compile/upload generated sketches to real hardware; not a Maven dependency.
 
@@ -52,12 +52,13 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
 
-# Compile every TFT game with the real arduino-cli inside Docker (Testcontainers; needs Docker)
-./mvnw -f juno-examples/pom.xml -Parduino-cli verify
+# Compile the small API/shield fixtures (juno/src/test/arduino/programs) for each board with the real
+# arduino-cli inside Docker (Testcontainers; needs Docker)
+./mvnw -f juno/pom.xml -Parduino-cli verify
 
 # Run core-feature programs under QEMU (Cortex-M4) in Docker and compare their
 # serial output with a JVM run of the same source (Testcontainers; needs Docker; models no hardware)
-./mvnw -f juno-examples/pom.xml -Pqemu verify
+./mvnw -f juno/pom.xml -Pqemu verify
 
 # Flash the generated program; auto-detects one matching board, or accepts -Djuno.port=<PORT>
 ./mvnw -f juno-examples/pom.xml compile juno:upload

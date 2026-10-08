@@ -43,9 +43,9 @@ This is a multi-module project. The following modules are declared in the root `
 
 | Module | Artifact ID | Packaging | Commands |
 |--------|-------------|-----------|----------|
-| `juno` | `juno` | `jar` | `./mvnw clean verify -pl juno`<br>`./mvnw clean install -pl juno` |
+| `juno` | `juno` | `jar` | `./mvnw clean verify -pl juno`<br>`./mvnw clean install -pl juno`<br>`./mvnw clean verify -pl juno -P arduino-cli`<br>`./mvnw clean verify -pl juno -P qemu` |
 | `juno-maven-plugin` | `juno-maven-plugin` | `maven-plugin` | `./mvnw clean verify -pl juno-maven-plugin`<br>`./mvnw clean install -pl juno-maven-plugin` |
-| `juno-examples` | `juno-examples` | `jar` | `./mvnw clean verify -pl juno-examples`<br>`./mvnw clean verify -pl juno-examples -P arduino-cli`<br>`./mvnw clean verify -pl juno-examples -P qemu` |
+| `juno-examples` | `juno-examples` | `jar` | `./mvnw clean verify -pl juno-examples` |
 | `juno-site` | `juno-site` | `quarkus` | `./mvnw clean verify -pl juno-site`<br>`./mvnw clean verify -pl juno-site -P site` |
 
 ## Maven Profiles
@@ -56,8 +56,15 @@ The following profiles are declared in this project. Activate them with `-P <pro
 |------------|---------|------------|
 | `cyclomatic-complexity` (root `pom.xml`) | `./mvnw clean verify -P cyclomatic-complexity` | default (activeByDefault) |
 | `site` (root `pom.xml`, `juno-site/pom.xml`) | `./mvnw clean verify -P site` | manual |
-| `arduino-cli` (`juno-examples/pom.xml`) | `./mvnw -f juno-examples/pom.xml -P arduino-cli verify` | manual |
-| `qemu` (`juno-examples/pom.xml`) | `./mvnw -f juno-examples/pom.xml -P qemu verify` | manual |
+| `arduino-cli` (`juno/pom.xml`) | `./mvnw -f juno/pom.xml -P arduino-cli verify` | manual (needs Docker) |
+| `qemu` (`juno/pom.xml`) | `./mvnw -f juno/pom.xml -P qemu verify` | manual (needs Docker) |
+
+The two Docker profiles run the compiler's end-to-end tests with Testcontainers:
+
+- `arduino-cli` compiles the small API and shield fixtures in `juno/src/test/arduino/programs` for each board they
+  declare (UNO R4 WiFi and UNO Q) with the real `arduino-cli`.
+- `qemu` runs the language fixtures in `juno/src/test/qemu/programs` on QEMU (Cortex-M4) and compares their serial
+  output with a JVM run of the same source.
 
 ## Plugin Goals Reference
 
