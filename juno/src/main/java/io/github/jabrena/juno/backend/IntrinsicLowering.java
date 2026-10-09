@@ -404,6 +404,8 @@ final class IntrinsicLowering {
                 List.of(arg(0), arg(1)), ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_BRAKE_MOTOR, "juno_lego_hub_brake_motor", Result.NONE, List.of(arg(0)),
                 ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_HOLD_MOTOR, "juno_lego_hub_hold_motor", Result.NONE, List.of(arg(0)),
+                ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_SET_LED_COLOR, "juno_lego_hub_set_led_color", Result.NONE, List.of(arg(0)),
                 ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_ENABLE_SENSOR, "juno_lego_hub_enable_sensor", Result.NONE, List.of(arg(0), arg(1)),
@@ -422,6 +424,8 @@ final class IntrinsicLowering {
         shim(Intrinsic.LEGO_HUB_FIRMWARE_VERSION, "juno_lego_hub_firmware_version", Result.WORD, List.of(),
                 ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_HARDWARE_VERSION, "juno_lego_hub_hardware_version", Result.WORD, List.of(),
+                ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.LEGO_HUB_PORT_DEVICE, "juno_lego_hub_port_device", Result.WORD, List.of(arg(0)),
                 ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_NAME, "juno_lego_hub_name", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.LEGO_POWERED_UP);

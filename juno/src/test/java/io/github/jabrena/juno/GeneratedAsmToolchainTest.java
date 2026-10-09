@@ -877,6 +877,32 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    @Test
+    void compilesAPoweredUpHubPortDeviceProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
+                public final class AsmHubPorts {
+                    public static void main(String[] args) {
+                        if (!PoweredUpHubRemote.connect(0)) return;
+                        if (PoweredUpHubRemote.portDevice(PoweredUpHubRemote.PORT_B)
+                                == PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_MOTOR) {
+                            PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_B, 30);
+                            PoweredUpHubRemote.holdMotor(PoweredUpHubRemote.PORT_B);
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHubPorts", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHubPorts");
+        Path shim = temporaryDirectory.resolve("AsmHubPortsShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
     /** On the UNO Q the same ArduinoBLE-based shim sits next to the Zephyr core's own runtime glue. */
     @Test
     void compilesAnUnoQLegoPoweredUpProgramsShimWithACppCompiler() throws Exception {

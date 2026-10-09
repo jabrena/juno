@@ -280,6 +280,8 @@ final class ShimLibraries {
                 // The status LED's current input mode: -1 not set up, 0 color index, 1 RGB.
                 static int juno_lego_led_mode = -1;
                 static int32_t juno_lego_hub_type = 0;
+                // The I/O device type (Hub Attached I/O event 0x01) of each external port A..D; 0 means nothing attached.
+                static int32_t juno_lego_port_devices[4] = {0, 0, 0, 0};
 
                 // Latest single-value Port Value (0x45) reading per enabled port; a port of 0xFF marks a free slot.
                 static const int JUNO_LEGO_SENSOR_SLOTS = 8;
@@ -338,6 +340,10 @@ final class ShimLibraries {
                 static void juno_lego_receive_attached(const uint8_t* message, int length, int header) {
                   uint8_t port = message[header + 2];
                   uint8_t event = message[header + 3];
+                  if (port < 4) {
+                    juno_lego_port_devices[port] = event == 0x01 && length >= header + 6
+                        ? (message[header + 4] | (message[header + 5] << 8)) : 0;
+                  }
                   if (event == 0x00) {
                     juno_lego_forget_link(port);
                   } else if (event == 0x02 && length >= header + 8) {
@@ -500,6 +506,9 @@ final class ShimLibraries {
                   juno_lego_clear_sensors();
                   juno_lego_clear_properties();
                   juno_lego_clear_links();
+                  for (int i = 0; i < 4; i++) {
+                    juno_lego_port_devices[i] = 0;
+                  }
                   juno_lego_led_mode = -1;
                   BLE.scanForUuid(juno_lego_service_uuid);
                   uint32_t started = millis();
@@ -555,6 +564,13 @@ final class ShimLibraries {
 
                 extern "C" void juno_lego_hub_brake_motor(int32_t port) {
                   juno_lego_write_mode0(port, 127);
+                }
+
+                // Port output command (0x81) StartSpeed (subcommand 0x07) with a speed of 0: the motor's speed control
+                // keeps it where it is, so it resists being turned, unlike the brake, which only slows it.
+                extern "C" void juno_lego_hub_hold_motor(int32_t port) {
+                  const uint8_t payload[] = {static_cast<uint8_t>(port), 0x11, 0x07, 0x00, 100, 0x00};
+                  juno_lego_send(0x81, payload, sizeof(payload));
                 }
 
                 // Port input format setup (0x41): puts the LED in the given mode (0 color index, 1 RGB), delta 1,
@@ -661,6 +677,11 @@ final class ShimLibraries {
                   juno_lego_ensure_properties();
                   BLE.poll();
                   return juno_lego_hardware;
+                }
+
+                extern "C" int32_t juno_lego_hub_port_device(int32_t port) {
+                  BLE.poll();
+                  return port >= 0 && port < 4 ? juno_lego_port_devices[port] : 0;
                 }
 
                 extern "C" int32_t juno_lego_hub_name(uint8_t* buffer, int32_t capacity) {
