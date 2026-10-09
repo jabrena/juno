@@ -59,7 +59,8 @@ task at any moment, and it keeps the processor until it reaches a **switch point
 - a loop back-edge in compiled Java (a task switch happens at most once per millisecond),
 - `Delay`, `Thread.sleep` and `Thread.yield`,
 - a scope's `join`,
-- entering a monitor that another task holds.
+- entering a monitor that another task holds,
+- a Powered Up call waiting for the hub: scanning for it, or waiting for its reply.
 
 The runtime never switches a task in the middle of an allocation, a collection or a throw. That is why the arena, the
 collector and the pending-exception slot need no locks.
@@ -82,13 +83,21 @@ parallel on separate cores. Write the code as though it ran on the JVM:
 
 `AtomicReference` is not supported.
 
-### Native calls are atomic
+### Native calls are atomic, except the Powered Up waits
 
-A call into the hardware runtime (Bluetooth, Wi-Fi, SD card, the TFT shield) runs to completion before any other task
-gets a turn, however long it takes. This is the main place where behavior differs from the JVM, where a blocking call
-stalls only the thread that made it. For example, a `PoweredUpHubRemote.connect` that scans for ten seconds holds up
-every other task for those ten seconds. A forked task that draws a progress line while it waits would stay silent
-until the call returns. Keep long hardware calls out of programs that depend on other tasks making progress.
+A call into the hardware runtime (Wi-Fi, SD card, the TFT shield) runs to completion before any other task gets a
+turn, however long it takes. This is the main place where behavior differs from the JVM, where a blocking call stalls
+only the thread that made it. Keep long hardware calls out of programs that depend on other tasks making progress.
+
+`PoweredUpHubRemote` is the exception. While it scans for a hub or waits for the hub's reply, it lets the other tasks
+run, so a forked task can keep drawing a progress line during a `connect`. Two limits remain:
+
+- The second or so that ArduinoBLE spends connecting to a hub it has found, and discovering its services, cannot be
+  interrupted.
+- Only one task at a time is inside a `PoweredUpHubRemote` call. A second task that calls one meanwhile waits its
+  turn, like a `synchronized` method, so the hub never sees two commands interleaved.
+
+See the `PoweredUpHubScanWhileBlinking` example.
 
 ## How it compares with the JVM
 
@@ -96,9 +105,9 @@ until the call returns. Keep long hardware calls out of programs that depend on 
 |---|---|---|---|
 | Scheduling | The operating system, preemptive | Cooperative at blocking calls, on preemptive carrier threads | Cooperative only |
 | Parallel execution | Yes | Yes | No, one task at a time |
-| Where a switch can happen | Anywhere | Blocking operations | Loop back-edges, `sleep`, `yield`, `join`, contended monitors |
+| Where a switch can happen | Anywhere | Blocking operations | Loop back-edges, `sleep`, `yield`, `join`, contended monitors, Powered Up waits |
 | Memory ordering | Java Memory Model | Java Memory Model | Sequentially consistent |
-| A long blocking call | Stalls only its thread | Pins its carrier thread | Stalls every task |
+| A long blocking call | Stalls only its thread | Pins its carrier thread | Stalls every task (Powered Up waits excepted) |
 
 Juno behaves like virtual threads running on a single carrier, with an extra switch point at each loop back-edge. That
 is why `StructuredTaskScope`, which uses virtual threads on the JVM, is the supported way to run work concurrently.

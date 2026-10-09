@@ -8,27 +8,28 @@ import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * A discussion example for yielding inside the shim's blocking waits: one subtask scans for a Powered Up hub
- * with {@code PoweredUpHubRemote.connect}, a second one keeps printing "Scanning... N s" every half second, so
- * the program shows signs of life while the Arduino looks for the hub. Switch the hub on first.
+ * Two subtasks side by side: one scans for a Powered Up hub with {@code PoweredUpHubRemote.connect}, the other prints
+ * "Scanning... N s" every half second, so the program shows signs of life while the Arduino looks for the hub. Switch
+ * the hub on before the scan starts or during it.
  *
- * <p>On the JVM the two subtasks run side by side, so the progress line appears all through the scan. Under the
- * cooperative ASM runtime the line only appears while {@code connect} lets the scheduler run, and today it never
- * does: the scan is a C++ busy loop in the shim, which is not a switch point, so nothing is printed until
- * {@code connect} returns (the hub is found or the timeout ends). With the scan's wait loop calling the shim's
- * yield, the ASM output matches the JVM's, except for the final stretch inside ArduinoBLE's own blocking
- * {@code connect()}/{@code discoverService()} (about a second or two), which stays atomic.
+ * <p>On the JVM the two subtasks run in parallel. Under the cooperative runtime the progress line can only appear
+ * because the shim's scan loop yields to the scheduler while no hub has answered yet. The one stretch that stays
+ * silent is the second or so inside ArduinoBLE's own blocking connect and service discovery, once a hub is found.
  *
- * <p>Expected output once the wait loop yields (one line per 500 ms, then the result):
+ * <p>Expected output (one line per 500 ms, then the result):
  * <pre>
  * Scanning... 0 s
+ * Scanning... 0 s
  * Scanning... 1 s
- * Connected, battery 87 %
+ * Connected, battery 100 %
  * </pre>
- * Pick the board with {@code -Djuno.board}.
+ * The program waits a few seconds before scanning so a serial monitor can attach first. On the UNO R4 WiFi the
+ * default runtime configuration does not fit with ArduinoBLE: build it with three scheduler slots, as the
+ * configuration analysis suggests. Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubScanWhileBlinking {
-    private static final int SCAN_TIMEOUT_MILLIS = 10_000;
+    private static final int STARTUP_MILLIS = 5_000;
+    private static final int SCAN_TIMEOUT_MILLIS = 30_000;
     private static final int PROGRESS_MILLIS = 500;
 
     // Shared between the two subtasks; atomic so the same source is also data-race free on the JVM.
@@ -37,6 +38,8 @@ public class PoweredUpHubScanWhileBlinking {
 
     public static void main(String[] args) throws Exception {
         Serial.begin(BaudRate.BAUD_115200);
+        // The USB serial drops what is printed before a monitor opens the port.
+        Delay.millis(STARTUP_MILLIS);
         PoweredUpHubScanWhileBlinking example = new PoweredUpHubScanWhileBlinking();
         example.scan();
         example.report();
@@ -51,7 +54,7 @@ public class PoweredUpHubScanWhileBlinking {
         }
     }
 
-    /** The blocking call: in the ASM runtime it must yield while it waits for a hub to advertise. */
+    /** The blocking call; the shim yields while it waits for a hub to advertise. */
     private void connect() {
         found.set(PoweredUpHubRemote.connect(SCAN_TIMEOUT_MILLIS));
         scanning.set(false);

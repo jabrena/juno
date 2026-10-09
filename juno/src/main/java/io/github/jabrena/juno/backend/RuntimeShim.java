@@ -548,7 +548,7 @@ final class RuntimeShim {
             shim.append(ShimLibraries.servoHelpers());
         }
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
-            shim.append(ShimLibraries.legoPoweredUpHelpers());
+            shim.append(ShimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS)));
         }
         if (uses(ShimFeature.INFRARED)) {
             shim.append(ShimLibraries.infraredHelpers());
