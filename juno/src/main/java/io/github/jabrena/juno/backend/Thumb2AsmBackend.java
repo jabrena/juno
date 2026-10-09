@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.classfile.MethodRef;
@@ -128,6 +129,7 @@ public final class Thumb2AsmBackend {
     private final Set<Intrinsic> usedMath = EnumSet.noneOf(Intrinsic.class);
     private final boolean gcLoggingEnabled;
     private final Board board;
+    private final RuntimeConfig runtimeConfig;
     private MethodRef entryPoint;
     private final List<String> clinitLabels = new ArrayList<>();
     private boolean usesWatchdog;
@@ -160,8 +162,16 @@ public final class Thumb2AsmBackend {
      *     {@code CoreRuntime} glue, and its capabilities gate optional shim blocks
      */
     public Thumb2AsmBackend(boolean gcLoggingEnabled, Board board) {
+        this(gcLoggingEnabled, board, RuntimeConfig.DEFAULT);
+    }
+
+    /**
+     * @param runtimeConfig the arena and task-stack capacities of the generated runtime shim
+     */
+    public Thumb2AsmBackend(boolean gcLoggingEnabled, Board board, RuntimeConfig runtimeConfig) {
         this.gcLoggingEnabled = gcLoggingEnabled;
         this.board = board;
+        this.runtimeConfig = runtimeConfig;
     }
 
     public Output generate(IrProgram program) {
@@ -202,7 +212,7 @@ public final class Thumb2AsmBackend {
         for (IrMethod method : program.methods()) {
             emitMethod(output, method);
         }
-        String runtimeShim = new RuntimeShim(board, coreRuntime, gcLoggingEnabled, features, usedMath,
+        String runtimeShim = new RuntimeShim(board, coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
         return new Output(output.toString(), runtimeShim, functionLabels.get(entryPoint));
     }

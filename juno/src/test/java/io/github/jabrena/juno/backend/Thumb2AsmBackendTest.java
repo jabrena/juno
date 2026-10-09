@@ -848,4 +848,20 @@ class Thumb2AsmBackendTest {
         assertThat(generated.assembly()).contains("bl millis");
         assertThat(generated.assembly()).contains("bl micros");
     }
+
+    @Test
+    void sizesTheArenaFromTheRuntimeConfig() {
+        MethodRef mainRef = new MethodRef("Main", "main", "([Ljava/lang/String;)V");
+        IrMethod main = IrMethod.withInferredValues(mainRef, 1, 0, List.of(),
+                List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty()))));
+        IrProgram program = new IrProgram(mainRef, List.of(main));
+
+        String defaultShim = new Thumb2AsmBackend().generate(program).runtimeShim();
+        String configuredShim = new Thumb2AsmBackend(false, io.github.jabrena.juno.board.Board.DEFAULT,
+                new io.github.jabrena.juno.RuntimeConfig(16384, 4, java.util.OptionalInt.empty()))
+                .generate(program).runtimeShim();
+
+        assertThat(defaultShim).contains("juno_arena[8192]");
+        assertThat(configuredShim).contains("juno_arena[16384]").doesNotContain("juno_arena[8192]");
+    }
 }

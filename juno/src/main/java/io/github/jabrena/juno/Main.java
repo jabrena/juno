@@ -1,6 +1,7 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.analysis.BasicBlock;
+import io.github.jabrena.juno.analysis.ConfigSuggestionFormatter;
 import io.github.jabrena.juno.analysis.RuntimeRiskReportFormatter;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.ir.IrBasicBlock;
@@ -95,6 +96,7 @@ public final class Main {
                 + " for " + board.displayName() + " (fqbn " + board.fqbn() + ")");
         System.out.println();
         RuntimeRiskReportFormatter.format(result.report().runtimeRisks()).forEach(System.out::println);
+        ConfigSuggestionFormatter.format(result.report().configSuggestions()).forEach(System.out::println);
     }
 
     private static String baseName(Path path) {

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
@@ -28,17 +29,21 @@ final class RuntimeShim {
     private final List<String> throwableClasses;
     private final boolean usesWatchdog;
     private final int watchdogTimeoutMillis;
+    private final RuntimeConfig config;
 
     /**
      * @param core {@code board}'s per-core runtime glue (see {@link CoreRuntime#of})
+     * @param config the arena and task-stack capacities
      * @param features every optional shim feature the lowered program uses
      * @param usedMath every {@code java.lang.Math} intrinsic the lowered program calls
      * @param watchdogTimeoutMillis the entry point's {@code @Watchdog} timeout, if it has one
      */
-    RuntimeShim(Board board, CoreRuntime core, boolean gcLoggingEnabled, Set<ShimFeature> features,
+    RuntimeShim(Board board, CoreRuntime core, RuntimeConfig config, boolean gcLoggingEnabled,
+                Set<ShimFeature> features,
                 Set<Intrinsic> usedMath, List<String> throwableClasses, Optional<Integer> watchdogTimeoutMillis) {
         this.board = board;
         this.core = core;
+        this.config = config;
         this.gcLoggingEnabled = gcLoggingEnabled;
         this.features = features;
         this.usedMath = usedMath;
@@ -484,7 +489,7 @@ final class RuntimeShim {
                 }
                 """.replace("${JUNO_YIELD_FUNCTION}", yieldFunction)
                 .replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions)
-                .replace("${JUNO_ARENA_CAPACITY}", Integer.toString(RuntimeLimits.ARENA_CAPACITY_BYTES))
+                .replace("${JUNO_ARENA_CAPACITY}", Integer.toString(config.arenaBytes()))
                 .replace("${JUNO_GC_STACK_SCAN}", gcStackScan)
                 .replace("${JUNO_GC_THREAD_DECLARATION}", gcThreadDeclaration)
                 .replace("${JUNO_GC_LOG_BEFORE}", gcLogBefore)
@@ -631,7 +636,7 @@ final class RuntimeShim {
                     throwableClasses.indexOf("java/util/NoSuchElementException")));
         }
         if (uses(ShimFeature.THREADS)) {
-            shim.append(core.threadPort());
+            shim.append(core.threadPort(config));
             shim.append(ThreadRuntime.scheduler(core.delayMillisFunction(), uses(ShimFeature.EXCEPTIONS),
                     uses(ShimFeature.THREAD_ENTRY), uses(ShimFeature.TASK_CALLABLE_ENTRY),
                     uses(ShimFeature.STRUCTURED_TASKS), uses(ShimFeature.SCOPED_VALUES),

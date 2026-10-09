@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.board.ArduinoCore;
+
 /**
  * The UNO R4's {@code arduino:renesas_uno} core: {@code delay()}/{@code delayMicroseconds()} are real
  * symbols the assembly calls directly, and the shim overrides the core's weak {@code yield()} to keep
@@ -124,7 +127,8 @@ record RenesasCoreRuntime() implements CoreRuntime {
     }
 
     @Override
-    public String threadPort() {
-        return ThreadRuntime.renesasPort();
+    public String threadPort(RuntimeConfig config) {
+        return ThreadRuntime.renesasPort(config.maxThreads(),
+                config.threadStackBytes(ArduinoCore.RENESAS_UNO.defaultThreadStackBytes()));
     }
 }
