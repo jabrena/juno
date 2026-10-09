@@ -99,6 +99,15 @@ public final class PoweredUpHubRemote {
     /** Actively brakes the motor on {@code port}, unlike {@code setMotorPower(port, 0)}, which lets it coast. */
     public static native void brakeMotor(int port);
 
+    /**
+     * Holds the motor on {@code port} where it is, resisting being turned: the third way to stop, next to
+     * letting it coast ({@code setMotorPower(port, 0)}) and {@link #brakeMotor}. It sends a speed command of
+     * 0, which the hub's speed control holds, so it needs a motor with a rotation sensor. The message
+     * follows the protocol documentation; a first hands-on try suggests that it holds, but it has not been
+     * checked systematically. Any later power command releases the hold.
+     */
+    public static native void holdMotor(int port);
+
     /** Sets the hub's status LED to one of the {@code COLOR_*} values. */
     public static native void setLedColor(int color);
 
@@ -141,6 +150,28 @@ public final class PoweredUpHubRemote {
 
     /** The hub's hardware version in the same packed form as {@link #firmwareVersion}, or {@code -1} if unknown. */
     public static native int hardwareVersion();
+
+    /** I/O device types {@link #portDevice} can return, from the LEGO Wireless Protocol. */
+    public static final int DEVICE_NONE = 0;
+    public static final int DEVICE_MEDIUM_LINEAR_MOTOR = 1;
+    public static final int DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR = 2;
+    public static final int DEVICE_MOTION_SENSOR = 35;
+    public static final int DEVICE_COLOR_DISTANCE_SENSOR = 37;
+    public static final int DEVICE_MEDIUM_ANGULAR_MOTOR = 38;
+    public static final int DEVICE_LARGE_ANGULAR_MOTOR = 39;
+    public static final int DEVICE_TECHNIC_LARGE_MOTOR = 46;
+    public static final int DEVICE_TECHNIC_XL_MOTOR = 47;
+    public static final int DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR = 48;
+    public static final int DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR = 49;
+
+    /**
+     * The I/O device type the hub reported (Hub Attached I/O) for the external port {@code port}
+     * ({@code PORT_A..PORT_D}), one of the {@code DEVICE_*} constants or another protocol type id, or
+     * {@code 0} if nothing is attached, the hub has not reported it yet, or {@code port} is out of range.
+     * The hub announces its ports right after {@link #connect} and again when something is plugged or
+     * unplugged; the announcements are received while a hub call runs, so call this regularly.
+     */
+    public static native int portDevice(int port);
 
     /**
      * Copies the hub's advertised name (up to 20 characters, ASCII bytes, no terminator) into

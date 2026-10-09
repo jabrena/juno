@@ -53,6 +53,9 @@ if (PoweredUpHubRemote.connect(10_000)) {              // scan up to 10 s; 0 wai
 | `hubType()` | The hub's advertised system type: `TYPE_CITY_HUB`, `TYPE_TECHNIC_HUB`, `TYPE_MOVE_HUB`, `TYPE_DUPLO_TRAIN_HUB`, ... (`TYPE_UNKNOWN` before connecting). |
 | `setMotorPower(port, percent)` | Runs any Powered Up motor (train, simple, or tacho) on `PORT_A`..`PORT_D`. Negative values reverse, `0` coasts, values beyond ±100 are clamped. |
 | `brakeMotor(port)` | Actively brakes the motor, instead of letting it coast. |
+| `holdMotor(port)` | Holds a tacho motor where it is, resisting being turned: the third stop level next to coasting (`setMotorPower(port, 0)`) and braking. Any later power command releases it. |
+| `portDevice(port)` | The device the hub detected on `PORT_A`..`PORT_D` (a `DEVICE_*` type such as `DEVICE_TECHNIC_LARGE_MOTOR`, or `DEVICE_NONE`). The hub announces its ports after `connect` and when something is plugged or unplugged, so call it regularly. |
+| `linkMotors(a, b)`, `setLinkedMotorPower(port, first, second)`, `brakeLinkedMotors(port)`, `unlinkMotors(port)` | Pairs two motors into one virtual port, so a single command drives both in sync. |
 | `setLedColor(color)` | Sets the hub's LED to a LEGO color index: `COLOR_OFF`, `COLOR_PINK`, ..., `COLOR_RED`, `COLOR_WHITE`. |
 | `enableSensor(port, mode)` | Asks the hub to report every change of one mode of the motor or sensor on `port`. See [Reading motors and sensors](#reading-motors-and-sensors). |
 | `readSensor(port)` | The latest value that port reported, or `0` before its first report. |
@@ -112,6 +115,32 @@ stop();
 `TURN_MILLIS` is the time a spin on the spot takes for 90 degrees; tune it for your vehicle.
 `MagicSquareRcx` and `MagicSquareScout` in the same package do the same over infrared with an RCX or
 Scout brick, using `RcxRemote` and `ScoutRemote`.
+
+## Example: a touch screen remote
+
+[`PoweredUpHubHello`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubHello.java)
+is the smallest check that a hub connects: it cycles the hub's LED through nine colors and reconnects if the
+link drops.
+
+[`PoweredUpHubTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubTFT.java)
+is a remote for the [ELEGOO 2.8" TFT touch shield](../tft-touch-shield). A button along the bottom connects and
+disconnects, and four tabs choose the view:
+
+| Tab | What it does |
+| --- | --- |
+| INFO | Hub type, battery, signal strength (RSSI), firmware and hardware versions, and the tilt angles of a Technic Hub. |
+| LED | A grid of nine colors; a touch sets the hub LED. |
+| MOTORS | All four ports with the device the hub detected on each (`portDevice`). A motor gets `-` / `+` buttons for its power and shows its tacho value; STOP brakes every motor and ZERO sets the tacho values to 0 (an offset kept on the Arduino). |
+| PAIR | The first two detected motors as a pair. SYNC links them (`linkMotors`) so one `-` / `+` drives both with a single command. Three stop levels for the STOP button: COAST, BRAKE and HOLD. ZERO sets the two tacho values to 0. |
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.lego.PoweredUpHubTFT \
+  -Djuno.board=arduino-uno-q
+```
+
+The device type numbers, the tacho values and the hold command follow the community documentation of the
+LEGO Wireless Protocol; they have been tried on a hub only briefly, so check them on yours.
 
 ## Example: a shuttling train
 
