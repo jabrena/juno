@@ -268,7 +268,7 @@ final class ShimLibraries {
      * characteristic, framed as {@code [length, hub id 0, message type, payload...]}, and the hub's
      * notifications on that characteristic carry the sensor values {@code enableSensor} asked for.
      */
-    static String legoPoweredUpHelpers() {
+    static String legoPoweredUpHelpers(boolean threads) {
         return """
 
                 static const char juno_lego_service_uuid[] = "00001623-1212-efde-1623-785feabcd123";
@@ -277,6 +277,13 @@ final class ShimLibraries {
                 // static: each write looks it up again on the connected hub, which is a plain-copy BLEDevice.
                 static BLEDevice juno_lego_hub;
                 static bool juno_lego_ble_started = false;
+                // ArduinoBLE is polled only once BLE.begin() has succeeded: on the UNO R4 WiFi a poll goes through the
+                // ESP32 modem, and polling it before begin stalled the first call for about 10 s.
+                static void juno_lego_poll() {
+                  if (juno_lego_ble_started) {
+                    BLE.poll();
+                  }
+                }
                 // The status LED's current input mode: -1 not set up, 0 color index, 1 RGB.
                 static int juno_lego_led_mode = -1;
                 static int32_t juno_lego_hub_type = 0;
@@ -454,8 +461,26 @@ final class ShimLibraries {
                   juno_lego_receive(characteristic.value(), characteristic.valueLength());
                 }
 
+                // The wait loops below call juno_lego_wait() so that, in a program with tasks, another task can run while
+                // this one waits on the radio; without tasks it does nothing. juno_lego_hub_* entries take the guard so a
+                // second task cannot re-enter the BLE calls while another is inside one (the cooperative runtime only
+                // switches at a wait, so this never blocks a single-task program).
+                ${JUNO_LEGO_WAIT}
+                static bool juno_lego_busy = false;
+                struct JunoLegoGuard {
+                  JunoLegoGuard() {
+                    while (juno_lego_busy) {
+                      juno_lego_wait();
+                    }
+                    juno_lego_busy = true;
+                  }
+                  ~JunoLegoGuard() {
+                    juno_lego_busy = false;
+                  }
+                };
+
                 static bool juno_lego_connected() {
-                  BLE.poll();
+                  juno_lego_poll();
                   return juno_lego_hub && juno_lego_hub.connected();
                 }
 
@@ -493,6 +518,7 @@ final class ShimLibraries {
                 }
 
                 extern "C" int32_t juno_lego_hub_connect(int32_t timeoutMillis) {
+                  JunoLegoGuard juno_lego_guard;
                   if (juno_lego_connected()) {
                     return 1;
                   }
@@ -515,6 +541,7 @@ final class ShimLibraries {
                   while (timeoutMillis <= 0 || millis() - started < static_cast<uint32_t>(timeoutMillis)) {
                     BLEDevice candidate = BLE.available();
                     if (!candidate) {
+                      juno_lego_wait();
                       continue;
                     }
                     BLE.stopScan();
@@ -546,14 +573,17 @@ final class ShimLibraries {
                 }
 
                 extern "C" int32_t juno_lego_hub_is_connected() {
+                  JunoLegoGuard juno_lego_guard;
                   return juno_lego_connected() ? 1 : 0;
                 }
 
                 extern "C" int32_t juno_lego_hub_type_id() {
+                  JunoLegoGuard juno_lego_guard;
                   return juno_lego_hub_type;
                 }
 
                 extern "C" void juno_lego_hub_set_motor_power(int32_t port, int32_t powerPercent) {
+                  JunoLegoGuard juno_lego_guard;
                   if (powerPercent > 100) {
                     powerPercent = 100;
                   } else if (powerPercent < -100) {
@@ -563,12 +593,14 @@ final class ShimLibraries {
                 }
 
                 extern "C" void juno_lego_hub_brake_motor(int32_t port) {
+                  JunoLegoGuard juno_lego_guard;
                   juno_lego_write_mode0(port, 127);
                 }
 
                 // Port output command (0x81) StartSpeed (subcommand 0x07) with a speed of 0: the motor's speed control
                 // keeps it where it is, so it resists being turned, unlike the brake, which only slows it.
                 extern "C" void juno_lego_hub_hold_motor(int32_t port) {
+                  JunoLegoGuard juno_lego_guard;
                   const uint8_t payload[] = {static_cast<uint8_t>(port), 0x11, 0x07, 0x00, 100, 0x00};
                   juno_lego_send(0x81, payload, sizeof(payload));
                 }
@@ -584,12 +616,14 @@ final class ShimLibraries {
                 }
 
                 extern "C" void juno_lego_hub_set_led_color(int32_t color) {
+                  JunoLegoGuard juno_lego_guard;
                   uint8_t port = juno_lego_led_port();
                   juno_lego_led_use_mode(port, 0);
                   juno_lego_write_mode0(port, color);
                 }
 
                 extern "C" void juno_lego_hub_set_led_rgb(int32_t red, int32_t green, int32_t blue) {
+                  JunoLegoGuard juno_lego_guard;
                   uint8_t port = juno_lego_led_port();
                   juno_lego_led_use_mode(port, 1);
                   // WriteDirectModeData (0x51) of three bytes in mode 1: red, green, blue.
@@ -599,6 +633,7 @@ final class ShimLibraries {
                 }
 
                 extern "C" void juno_lego_hub_enable_sensor(int32_t port, int32_t mode) {
+                  JunoLegoGuard juno_lego_guard;
                   uint8_t portId = static_cast<uint8_t>(port);
                   int slot = juno_lego_sensor_slot(portId);
                   if (slot < 0) {
@@ -617,7 +652,8 @@ final class ShimLibraries {
                 }
 
                 extern "C" int32_t juno_lego_hub_read_sensor(int32_t port) {
-                  BLE.poll();
+                  JunoLegoGuard juno_lego_guard;
+                  juno_lego_poll();
                   int slot = juno_lego_sensor_slot(static_cast<uint8_t>(port));
                   return slot < 0 ? 0 : juno_lego_sensor_values[slot];
                 }
@@ -645,48 +681,56 @@ final class ShimLibraries {
                   uint32_t started = millis();
                   while (millis() - started < 300 && (juno_lego_battery < 0 || juno_lego_firmware < 0
                       || juno_lego_hardware < 0 || juno_lego_name_length == 0)) {
-                    BLE.poll();
+                    juno_lego_poll();
+                    juno_lego_wait();
                   }
                 }
 
                 extern "C" int32_t juno_lego_hub_battery_percent() {
+                  JunoLegoGuard juno_lego_guard;
                   juno_lego_ensure_properties();
-                  BLE.poll();
+                  juno_lego_poll();
                   return juno_lego_battery;
                 }
 
                 extern "C" int32_t juno_lego_hub_button_pressed() {
+                  JunoLegoGuard juno_lego_guard;
                   juno_lego_ensure_properties();
-                  BLE.poll();
+                  juno_lego_poll();
                   return juno_lego_button;
                 }
 
                 extern "C" int32_t juno_lego_hub_rssi() {
+                  JunoLegoGuard juno_lego_guard;
                   juno_lego_ensure_properties();
-                  BLE.poll();
+                  juno_lego_poll();
                   return juno_lego_rssi;
                 }
 
                 extern "C" int32_t juno_lego_hub_firmware_version() {
+                  JunoLegoGuard juno_lego_guard;
                   juno_lego_ensure_properties();
-                  BLE.poll();
+                  juno_lego_poll();
                   return juno_lego_firmware;
                 }
 
                 extern "C" int32_t juno_lego_hub_hardware_version() {
+                  JunoLegoGuard juno_lego_guard;
                   juno_lego_ensure_properties();
-                  BLE.poll();
+                  juno_lego_poll();
                   return juno_lego_hardware;
                 }
 
                 extern "C" int32_t juno_lego_hub_port_device(int32_t port) {
-                  BLE.poll();
+                  JunoLegoGuard juno_lego_guard;
+                  juno_lego_poll();
                   return port >= 0 && port < 4 ? juno_lego_port_devices[port] : 0;
                 }
 
                 extern "C" int32_t juno_lego_hub_name(uint8_t* buffer, int32_t capacity) {
+                  JunoLegoGuard juno_lego_guard;
                   juno_lego_ensure_properties();
-                  BLE.poll();
+                  juno_lego_poll();
                   if (buffer == nullptr || capacity <= 0) {
                     return 0;
                   }
@@ -700,7 +744,8 @@ final class ShimLibraries {
                 // The index-th value of the latest report as a signed little-endian integer of width 1, 2 or 4 bytes;
                 // 0 when the report has none that wide.
                 extern "C" int32_t juno_lego_hub_read_sensor_value(int32_t port, int32_t index, int32_t width) {
-                  BLE.poll();
+                  JunoLegoGuard juno_lego_guard;
+                  juno_lego_poll();
                   int slot = juno_lego_sensor_slot(static_cast<uint8_t>(port));
                   if (slot < 0 || index < 0 || (width != 1 && width != 2 && width != 4)
                       || juno_lego_sensor_raw_size[slot] < (index + 1) * width) {
@@ -717,13 +762,15 @@ final class ShimLibraries {
                 }
 
                 extern "C" int32_t juno_lego_hub_sensor_report_count(int32_t port) {
-                  BLE.poll();
+                  JunoLegoGuard juno_lego_guard;
+                  juno_lego_poll();
                   int slot = juno_lego_sensor_slot(static_cast<uint8_t>(port));
                   return slot < 0 ? 0 : juno_lego_sensor_reports[slot];
                 }
 
                 extern "C" int32_t juno_lego_hub_sensor_report_size(int32_t port) {
-                  BLE.poll();
+                  JunoLegoGuard juno_lego_guard;
+                  juno_lego_poll();
                   int slot = juno_lego_sensor_slot(static_cast<uint8_t>(port));
                   return slot < 0 ? 0 : juno_lego_sensor_raw_size[slot];
                 }
@@ -731,6 +778,7 @@ final class ShimLibraries {
                 // Virtual Port Setup (0x61): connect (0x01) two motor ports into one virtual port, whose id the hub
                 // announces in a Hub Attached I/O event; waits up to 500 ms for it. Returns the id or -1.
                 extern "C" int32_t juno_lego_hub_link_motors(int32_t portA, int32_t portB) {
+                  JunoLegoGuard juno_lego_guard;
                   int32_t existing = juno_lego_find_link(static_cast<uint8_t>(portA), static_cast<uint8_t>(portB));
                   if (existing >= 0) {
                     return existing;
@@ -742,7 +790,8 @@ final class ShimLibraries {
                   juno_lego_send(0x61, payload, sizeof(payload));
                   uint32_t started = millis();
                   while (true) {
-                    BLE.poll();
+                    juno_lego_poll();
+                    juno_lego_wait();
                     int32_t id = juno_lego_find_link(static_cast<uint8_t>(portA), static_cast<uint8_t>(portB));
                     if (id >= 0) {
                       return id;
@@ -754,6 +803,7 @@ final class ShimLibraries {
                 }
 
                 extern "C" void juno_lego_hub_unlink_motors(int32_t virtualPort) {
+                  JunoLegoGuard juno_lego_guard;
                   const uint8_t payload[] = {0x00, static_cast<uint8_t>(virtualPort)};
                   juno_lego_send(0x61, payload, sizeof(payload));
                   juno_lego_forget_link(static_cast<uint8_t>(virtualPort));
@@ -772,14 +822,17 @@ final class ShimLibraries {
                 }
 
                 extern "C" void juno_lego_hub_set_linked_motor_power(int32_t virtualPort, int32_t first, int32_t second) {
+                  JunoLegoGuard juno_lego_guard;
                   juno_lego_write_linked_power(virtualPort, juno_lego_clamp_power(first), juno_lego_clamp_power(second));
                 }
 
                 extern "C" void juno_lego_hub_brake_linked_motors(int32_t virtualPort) {
+                  JunoLegoGuard juno_lego_guard;
                   juno_lego_write_linked_power(virtualPort, 127, 127);
                 }
 
                 extern "C" void juno_lego_hub_disconnect() {
+                  JunoLegoGuard juno_lego_guard;
                   if (juno_lego_hub) {
                     juno_lego_hub.disconnect();
                   }
@@ -787,12 +840,18 @@ final class ShimLibraries {
                 }
 
                 extern "C" void juno_lego_hub_switch_off() {
+                  JunoLegoGuard juno_lego_guard;
                   // Hub action (0x02): switch off hub (0x01).
                   const uint8_t payload[] = {0x01};
                   juno_lego_send(0x02, payload, sizeof(payload));
                   juno_lego_led_mode = -1;
                 }
-                """;
+                """.replace("${JUNO_LEGO_WAIT}", threads
+                ? "extern \"C\" void juno_thread_yield();\n"
+                        + "                static void juno_lego_wait() {\n"
+                        + "                  juno_thread_yield();\n"
+                        + "                }"
+                : "static void juno_lego_wait() {\n                }");
     }
 
     /** Exposes the arena allocator's current usage. */
