@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.board.ArduinoCore;
+
 /**
  * The UNO Q's {@code arduino:zephyr} core: it provides {@code yield()} itself but inlines
  * {@code delay()}/{@code delayMicroseconds()}, so they are reached through shim wrappers.
@@ -167,7 +170,7 @@ record ZephyrCoreRuntime() implements CoreRuntime {
     }
 
     @Override
-    public String threadPort() {
-        return ThreadRuntime.zephyrPort();
+    public String threadPort(RuntimeConfig config) {
+        return ThreadRuntime.zephyrPort(config.maxThreads(), config.threadStackBytes(ArduinoCore.ZEPHYR.defaultThreadStackBytes()));
     }
 }

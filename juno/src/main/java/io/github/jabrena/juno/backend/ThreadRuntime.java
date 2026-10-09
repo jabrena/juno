@@ -46,7 +46,7 @@ final class ThreadRuntime {
      * The UNO R4's port: its own stacks and a context switch that saves the AAPCS callee-saved registers
      * (and, with an FPU, {@code s16}-{@code s31}) on the outgoing stack before swapping {@code sp}.
      */
-    static String renesasPort() {
+    static String renesasPort(int maxThreads, int stackBytes) {
         return """
 
                 // ---- Juno threads: UNO R4 port (no RTOS: a stack per thread, switched by swapping sp) ----
@@ -135,15 +135,15 @@ final class ThreadRuntime {
                 static uintptr_t juno_port_saved_sp(uint32_t slot) {
                   return juno_saved_sp[slot];
                 }
-                """.replace("${JUNO_MAX_THREADS}", Integer.toString(RuntimeLimits.MAX_THREADS))
-                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(RuntimeLimits.MIN_THREAD_STACK_BYTES));
+                """.replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
     /**
      * The UNO Q's port: every Juno thread is a Zephyr thread, but each parks on its own semaphore and only the
      * one holding the baton runs, so scheduling stays cooperative and the runtime needs no other locking.
      */
-    static String zephyrPort() {
+    static String zephyrPort(int maxThreads, int stackBytes) {
         return """
 
                 // ---- Juno threads: UNO Q port (Zephyr threads handing a baton, one runs at a time) ----
@@ -216,8 +216,8 @@ final class ThreadRuntime {
                 static uintptr_t juno_port_saved_sp(uint32_t slot) {
                   return juno_zephyr_sp[slot];
                 }
-                """.replace("${JUNO_MAX_THREADS}", Integer.toString(RuntimeLimits.MAX_THREADS))
-                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(4096));
+                """.replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
     /** The cooperative scheduler and the {@code Thread} intrinsics, over a core's port. */

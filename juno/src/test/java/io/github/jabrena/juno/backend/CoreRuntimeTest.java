@@ -1,6 +1,9 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.board.ArduinoCore;
+import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,5 +43,26 @@ class CoreRuntimeTest {
                 .contains("extern \"C\" void " + runtime.delayMillisFunction() + "(uint32_t ms)",
                         "extern \"C\" void " + runtime.delayMicrosFunction() + "(uint32_t us)")
                 .doesNotContain("void yield()");
+    }
+
+    @Test
+    void theThreadPortsDefaultToTheBoardsStackAndTheConfiguredSlots() {
+        String renesas = CoreRuntime.of(ArduinoCore.RENESAS_UNO).threadPort(RuntimeConfig.DEFAULT);
+        String zephyr = CoreRuntime.of(ArduinoCore.ZEPHYR).threadPort(RuntimeConfig.DEFAULT);
+
+        assertThat(renesas).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
+                "JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.MIN_THREAD_STACK_BYTES + "u");
+        assertThat(zephyr).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
+                "JUNO_THREAD_STACK_BYTES = 4096u");
+    }
+
+    @Test
+    void theThreadPortsTakeTheConfiguredSlotsAndStack() {
+        RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.of(1536));
+
+        assertThat(CoreRuntime.of(ArduinoCore.RENESAS_UNO).threadPort(config))
+                .contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 1536u");
+        assertThat(CoreRuntime.of(ArduinoCore.ZEPHYR).threadPort(config))
+                .contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 1536u");
     }
 }

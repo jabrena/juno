@@ -11,14 +11,21 @@ import java.util.Optional;
  *     one {@code Serial} line per collection (see {@link io.github.jabrena.juno.backend.Thumb2AsmBackend}).
  * @param requestedBoard the target board (see {@code io.github.jabrena.juno.board.Board#fromId}), required
  *     only when the entry point's {@code @Board} annotation declares more than one board.
+ * @param runtimeConfig the arena and task-stack capacities of the generated runtime; {@link RuntimeConfig#DEFAULT}
+ *     when not given.
  */
 public record CompilationRequest(List<Path> classPath, String mainClass, boolean gcLoggingEnabled,
-                                  Optional<String> requestedBoard) {
+                                  Optional<String> requestedBoard, RuntimeConfig runtimeConfig) {
     public CompilationRequest(List<Path> classPath, String mainClass) {
         this(classPath, mainClass, false, Optional.empty());
     }
 
     public CompilationRequest(List<Path> classPath, String mainClass, boolean gcLoggingEnabled) {
         this(classPath, mainClass, gcLoggingEnabled, Optional.empty());
+    }
+
+    public CompilationRequest(List<Path> classPath, String mainClass, boolean gcLoggingEnabled,
+                              Optional<String> requestedBoard) {
+        this(classPath, mainClass, gcLoggingEnabled, requestedBoard, RuntimeConfig.DEFAULT);
     }
 }

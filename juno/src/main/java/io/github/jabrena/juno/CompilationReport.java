@@ -18,6 +18,10 @@ import java.util.Set;
 public record CompilationReport(MethodRef entryPoint, Board board, int reachableMethods, int irBlocks,
                                 Set<Intrinsic> intrinsics, RuntimeRiskReport runtimeRisks) {
     static CompilationReport from(Program program, IrProgram optimized) {
+        return from(program, optimized, RuntimeConfig.DEFAULT);
+    }
+
+    static CompilationReport from(Program program, IrProgram optimized, RuntimeConfig runtimeConfig) {
         int irBlocks = optimized.methods().stream().mapToInt(method -> method.blocks().size()).sum();
         Set<Intrinsic> intrinsics = new LinkedHashSet<>();
         for (IrMethod method : optimized.methods()) {
@@ -29,7 +33,7 @@ public record CompilationReport(MethodRef entryPoint, Board board, int reachable
                 }
             }
         }
-        RuntimeRiskReport runtimeRisks = new RuntimeRiskAnalyzer().analyze(program, optimized);
+        RuntimeRiskReport runtimeRisks = new RuntimeRiskAnalyzer(runtimeConfig).analyze(program, optimized);
         return new CompilationReport(program.entryPoint(), program.board(), program.methods().size(), irBlocks,
                 Set.copyOf(intrinsics), runtimeRisks);
     }

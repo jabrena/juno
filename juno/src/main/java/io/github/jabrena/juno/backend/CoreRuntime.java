@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
@@ -85,7 +86,7 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime {
     /**
      * The core's half of the {@code java.lang.Thread} runtime (see {@link ThreadRuntime}): how a thread's stack
      * is created and how control moves between two threads, plus the {@code JUNO_MAX_THREADS} and
-     * {@code JUNO_THREAD_STACK_BYTES} constants.
+     * {@code JUNO_THREAD_STACK_BYTES} constants, sized from {@code config}.
      */
-    String threadPort();
+    String threadPort(RuntimeConfig config);
 }

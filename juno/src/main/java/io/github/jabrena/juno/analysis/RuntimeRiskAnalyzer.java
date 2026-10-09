@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.analysis;
 
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
@@ -18,6 +19,16 @@ import java.util.Set;
 
 /** Conservative resource and runtime-risk analysis over the optimized closed-world IR. */
 public final class RuntimeRiskAnalyzer {
+    private final RuntimeConfig config;
+
+    public RuntimeRiskAnalyzer() {
+        this(RuntimeConfig.DEFAULT);
+    }
+
+    public RuntimeRiskAnalyzer(RuntimeConfig config) {
+        this.config = config;
+    }
+
     public RuntimeRiskReport analyze(Program linked, IrProgram program) {
         Map<MethodRef, Set<MethodRef>> calls = new HashMap<>();
         Map<MethodRef, List<MethodRef>> callSites = new HashMap<>();
@@ -76,11 +87,11 @@ public final class RuntimeRiskAnalyzer {
         }
 
         int arenaBytes = CallGraphMetrics.startupAllocationEstimate(program, callSites, directAllocation);
-        if (arenaBytes > RuntimeLimits.ARENA_CAPACITY_BYTES) {
+        if (arenaBytes > config.arenaBytes()) {
             findings.add(new RuntimeRisk("JUNO-RISK-002", RiskSeverity.WARNING, program.entryPoint(),
                     "conservative startup arena estimate (assuming no intermediate garbage collection "
                             + "reclaims space) is " + arenaBytes + " bytes, exceeding the "
-                            + RuntimeLimits.ARENA_CAPACITY_BYTES + " byte capacity"));
+                            + config.arenaBytes() + " byte capacity"));
         }
 
         for (ConstantTables.RamFallback fallback : ConstantTables.of(linked).ramFallbacks()) {
@@ -97,16 +108,16 @@ public final class RuntimeRiskAnalyzer {
 
         int staticFieldBytes = staticFields.stream()
                 .mapToInt(field -> AllocationSizeEstimator.descriptorSize(field.descriptor())).sum();
-        int estimatedStaticRam = RuntimeLimits.ARENA_CAPACITY_BYTES + staticFieldBytes + constantArrayBytes + 4;
+        int estimatedStaticRam = config.arenaBytes() + staticFieldBytes + constantArrayBytes + 4;
         int maxDepth = recursive.isEmpty() ? CallGraphMetrics.maximumStartupCallDepth(program, calls) : -1;
         int maxStack = recursive.isEmpty() ? CallGraphMetrics.maximumStartupStack(program, calls, frames) : -1;
         findings.sort(RuntimeRiskAnalyzer::compareFindings);
 
-        return new RuntimeRiskReport(RuntimeLimits.ARENA_CAPACITY_BYTES, arenaBytes, unboundedArena,
+        return new RuntimeRiskReport(config.arenaBytes(), arenaBytes, unboundedArena,
                 estimatedStaticRam, maxStack, maxDepth, boundsChecks, uncheckedArrayAccesses, findings);
     }
 
-    private static void addScanFindings(List<RuntimeRisk> findings, MethodRef method,
+    private void addScanFindings(List<RuntimeRisk> findings, MethodRef method,
                                         InstructionRiskScanner.MethodScan scan) {
         if (scan.possibleDivisionByZero() > 0) {
             findings.add(new RuntimeRisk("JUNO-RISK-005", RiskSeverity.WARNING, method,
@@ -119,12 +130,12 @@ public final class RuntimeRiskAnalyzer {
         if (scan.launchesInLoops() > 0) {
             findings.add(new RuntimeRisk("JUNO-RISK-008", RiskSeverity.WARNING, method,
                     scan.launchesInLoops() + " fork call(s) sit in a control-flow loop; at most "
-                            + (RuntimeLimits.MAX_THREADS - 1) + " threads can be active beside the caller"));
+                            + (config.maxThreads() - 1) + " threads can be active beside the caller"));
         }
-        if (scan.peakUnjoinedLaunches() > RuntimeLimits.MAX_THREADS - 1) {
+        if (scan.peakUnjoinedLaunches() > config.maxThreads() - 1) {
             findings.add(new RuntimeRisk("JUNO-RISK-009", RiskSeverity.WARNING, method,
                     scan.peakUnjoinedLaunches() + " subtasks are forked with no join in between; at most "
-                            + (RuntimeLimits.MAX_THREADS - 1) + " can be active beside the caller"));
+                            + (config.maxThreads() - 1) + " can be active beside the caller"));
         }
         if (scan.oversizedStringBuilders() > 0) {
             findings.add(new RuntimeRisk("JUNO-RISK-007", RiskSeverity.WARNING, method,
@@ -135,7 +146,7 @@ public final class RuntimeRiskAnalyzer {
     }
 
     /** {@code JUNO-RISK-010}/{@code 011}: what a thread body does with its own small stack and the shared slots. */
-    private static void addThreadBodyFindings(List<RuntimeRisk> findings, Set<MethodRef> threadEntries,
+    private void addThreadBodyFindings(List<RuntimeRisk> findings, Set<MethodRef> threadEntries,
                                               Set<MethodRef> launchers, Set<MethodRef> recursive,
                                               Map<MethodRef, Set<MethodRef>> calls,
                                               Map<MethodRef, Integer> frames) {
@@ -145,21 +156,26 @@ public final class RuntimeRiskAnalyzer {
             if (reachable.stream().anyMatch(launchers::contains)) {
                 findings.add(new RuntimeRisk("JUNO-RISK-010", RiskSeverity.WARNING, entry,
                         "subtask body opens a task scope; nested subtasks share the "
-                                + RuntimeLimits.MAX_THREADS + " scheduler slots with their parent"));
+                                + config.maxThreads() + " scheduler slots with their parent"));
             }
             if (reachable.stream().anyMatch(recursive::contains)) {
                 findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
-                        "subtask body reaches a recursive call cycle; its " + RuntimeLimits.MIN_THREAD_STACK_BYTES
+                        "subtask body reaches a recursive call cycle; its " + threadStackBytes()
                                 + " byte stack cannot be proven sufficient"));
                 continue;
             }
             int stack = CallGraphMetrics.maximumStack(entry, calls, frames);
-            if (stack > RuntimeLimits.MIN_THREAD_STACK_BYTES) {
+            if (stack > threadStackBytes()) {
                 findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
                         "estimated subtask stack use of " + stack + " bytes exceeds the smallest thread stack ("
-                                + RuntimeLimits.MIN_THREAD_STACK_BYTES + " bytes, UNO R4 WiFi)"));
+                                + threadStackBytes() + " bytes, UNO R4 WiFi)"));
             }
         }
+    }
+
+    /** The task stack the analysis judges bodies against: the configured one, else the smallest board's. */
+    private int threadStackBytes() {
+        return config.threadStackBytes(RuntimeLimits.MIN_THREAD_STACK_BYTES);
     }
 
     private static int compareFindings(RuntimeRisk left, RuntimeRisk right) {
