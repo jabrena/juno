@@ -104,6 +104,17 @@ initTheme();
 <li><a href="#REMOTE_PLUS" tabindex="0">REMOTE_PLUS</a></li>
 <li><a href="#REMOTE_MINUS" tabindex="0">REMOTE_MINUS</a></li>
 <li><a href="#REMOTE_STOP" tabindex="0">REMOTE_STOP</a></li>
+<li><a href="#DEVICE_NONE" tabindex="0">DEVICE_NONE</a></li>
+<li><a href="#DEVICE_MEDIUM_LINEAR_MOTOR" tabindex="0">DEVICE_MEDIUM_LINEAR_MOTOR</a></li>
+<li><a href="#DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR" tabindex="0">DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR</a></li>
+<li><a href="#DEVICE_MOTION_SENSOR" tabindex="0">DEVICE_MOTION_SENSOR</a></li>
+<li><a href="#DEVICE_COLOR_DISTANCE_SENSOR" tabindex="0">DEVICE_COLOR_DISTANCE_SENSOR</a></li>
+<li><a href="#DEVICE_MEDIUM_ANGULAR_MOTOR" tabindex="0">DEVICE_MEDIUM_ANGULAR_MOTOR</a></li>
+<li><a href="#DEVICE_LARGE_ANGULAR_MOTOR" tabindex="0">DEVICE_LARGE_ANGULAR_MOTOR</a></li>
+<li><a href="#DEVICE_TECHNIC_LARGE_MOTOR" tabindex="0">DEVICE_TECHNIC_LARGE_MOTOR</a></li>
+<li><a href="#DEVICE_TECHNIC_XL_MOTOR" tabindex="0">DEVICE_TECHNIC_XL_MOTOR</a></li>
+<li><a href="#DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR" tabindex="0">DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR</a></li>
+<li><a href="#DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR" tabindex="0">DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR</a></li>
 <li><a href="#PORT_TECHNIC_ACCELEROMETER" tabindex="0">PORT_TECHNIC_ACCELEROMETER</a></li>
 <li><a href="#PORT_TECHNIC_GYRO" tabindex="0">PORT_TECHNIC_GYRO</a></li>
 <li><a href="#PORT_TECHNIC_TILT" tabindex="0">PORT_TECHNIC_TILT</a></li>
@@ -119,6 +130,7 @@ initTheme();
 <li><a href="#hubType()" tabindex="0">hubType()</a></li>
 <li><a href="#setMotorPower(int,int)" tabindex="0">setMotorPower(int, int)</a></li>
 <li><a href="#brakeMotor(int)" tabindex="0">brakeMotor(int)</a></li>
+<li><a href="#holdMotor(int)" tabindex="0">holdMotor(int)</a></li>
 <li><a href="#setLedColor(int)" tabindex="0">setLedColor(int)</a></li>
 <li><a href="#enableSensor(int,int)" tabindex="0">enableSensor(int, int)</a></li>
 <li><a href="#readSensor(int)" tabindex="0">readSensor(int)</a></li>
@@ -127,6 +139,7 @@ initTheme();
 <li><a href="#rssi()" tabindex="0">rssi()</a></li>
 <li><a href="#firmwareVersion()" tabindex="0">firmwareVersion()</a></li>
 <li><a href="#hardwareVersion()" tabindex="0">hardwareVersion()</a></li>
+<li><a href="#portDevice(int)" tabindex="0">portDevice(int)</a></li>
 <li><a href="#hubName(byte%5B%5D,int)" tabindex="0">hubName(byte[], int)</a></li>
 <li><a href="#versionMajor(int)" tabindex="0">versionMajor(int)</a></li>
 <li><a href="#versionMinor(int)" tabindex="0">versionMinor(int)</a></li>
@@ -227,104 +240,139 @@ side: <code>ArduinoBLE</code> 2.1.0 or newer tunnels raw HCI to its <code>hci0</
 <div class="col-second even-row-color"><code><a href="#COLOR_YELLOW" class="member-name-link">COLOR_YELLOW</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#MODE_COLOR" class="member-name-link">MODE_COLOR</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#DEVICE_COLOR_DISTANCE_SENSOR" class="member-name-link">DEVICE_COLOR_DISTANCE_SENSOR</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#DEVICE_LARGE_ANGULAR_MOTOR" class="member-name-link">DEVICE_LARGE_ANGULAR_MOTOR</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#DEVICE_MEDIUM_ANGULAR_MOTOR" class="member-name-link">DEVICE_MEDIUM_ANGULAR_MOTOR</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#DEVICE_MEDIUM_LINEAR_MOTOR" class="member-name-link">DEVICE_MEDIUM_LINEAR_MOTOR</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#DEVICE_MOTION_SENSOR" class="member-name-link">DEVICE_MOTION_SENSOR</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR" class="member-name-link">DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#DEVICE_NONE" class="member-name-link">DEVICE_NONE</a></code></div>
 <div class="col-last odd-row-color">
+<div class="block">I/O device types <a href="#portDevice(int)"><code>portDevice(int)</code></a> can return, from the LEGO Wireless Protocol.</div>
+</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR" class="member-name-link">DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#DEVICE_TECHNIC_LARGE_MOTOR" class="member-name-link">DEVICE_TECHNIC_LARGE_MOTOR</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR" class="member-name-link">DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#DEVICE_TECHNIC_XL_MOTOR" class="member-name-link">DEVICE_TECHNIC_XL_MOTOR</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#MODE_COLOR" class="member-name-link">MODE_COLOR</a></code></div>
+<div class="col-last even-row-color">
 <div class="block"><a href="#enableSensor(int,int)"><code>enableSensor(int, int)</code></a> modes of the Color and Distance Sensor (88007): the detected color as the
 sensor's own color number, which mostly but not fully matches the <code>COLOR_*</code> LED values,
 or <code>-1</code> when it detects none.</div>
 </div>
-<div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#MODE_IMU_VALUES" class="member-name-link">MODE_IMU_VALUES</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#MODE_IMU_VALUES" class="member-name-link">MODE_IMU_VALUES</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">Mode 0 of the three built-in sensors: gravity per axis, rotation rate per axis, and tilt angles in degrees.</div>
 </div>
-<div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#MODE_MOTOR_POSITION" class="member-name-link">MODE_MOTOR_POSITION</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#MODE_MOTOR_POSITION" class="member-name-link">MODE_MOTOR_POSITION</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">Cumulative motor position in degrees, relative to where the motor was when the hub started.</div>
 </div>
-<div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#MODE_MOTOR_SPEED" class="member-name-link">MODE_MOTOR_SPEED</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#MODE_MOTOR_SPEED" class="member-name-link">MODE_MOTOR_SPEED</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block"><a href="#enableSensor(int,int)"><code>enableSensor(int, int)</code></a> modes of a tacho motor (BOOST, Technic and SPIKE motors with a rotation sensor).</div>
 </div>
-<div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#MODE_PROXIMITY" class="member-name-link">MODE_PROXIMITY</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#MODE_PROXIMITY" class="member-name-link">MODE_PROXIMITY</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">Proximity of the nearest object, <code>0</code> (touching) to <code>10</code> (nothing in range).</div>
 </div>
-<div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#MODE_REMOTE_BUTTONS" class="member-name-link">MODE_REMOTE_BUTTONS</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#MODE_REMOTE_BUTTONS" class="member-name-link">MODE_REMOTE_BUTTONS</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block"><a href="#enableSensor(int,int)"><code>enableSensor(int, int)</code></a> mode of each button set (<a href="#PORT_A"><code>PORT_A</code></a> left, <a href="#PORT_B"><code>PORT_B</code></a> right) of
 the Powered Up remote (88010), connected as a hub of <a href="#TYPE_REMOTE_CONTROL"><code>TYPE_REMOTE_CONTROL</code></a>; reads one of
 the <code>REMOTE_*</code> values.</div>
 </div>
-<div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#PORT_A" class="member-name-link">PORT_A</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#PORT_B" class="member-name-link">PORT_B</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PORT_A" class="member-name-link">PORT_A</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#PORT_C" class="member-name-link">PORT_C</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#PORT_B" class="member-name-link">PORT_B</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#PORT_D" class="member-name-link">PORT_D</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PORT_C" class="member-name-link">PORT_C</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#PORT_TECHNIC_ACCELEROMETER" class="member-name-link">PORT_TECHNIC_ACCELEROMETER</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-second odd-row-color"><code><a href="#PORT_D" class="member-name-link">PORT_D</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#PORT_TECHNIC_ACCELEROMETER" class="member-name-link">PORT_TECHNIC_ACCELEROMETER</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">The Technic Hub's (88012) built-in motion sensors, which report like a sensor on a port once
 <a href="#enableSensor(int,int)"><code>enableSensor(int, int)</code></a> subscribes to them: the accelerometer, the gyroscope and the tilt sensor.</div>
 </div>
-<div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#PORT_TECHNIC_CURRENT" class="member-name-link">PORT_TECHNIC_CURRENT</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#PORT_TECHNIC_CURRENT" class="member-name-link">PORT_TECHNIC_CURRENT</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">The Technic Hub's (88012) built-in current and voltage sensors, on the same footing as the motion sensors above.</div>
 </div>
-<div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#PORT_TECHNIC_GYRO" class="member-name-link">PORT_TECHNIC_GYRO</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#PORT_TECHNIC_TILT" class="member-name-link">PORT_TECHNIC_TILT</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PORT_TECHNIC_GYRO" class="member-name-link">PORT_TECHNIC_GYRO</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#PORT_TECHNIC_VOLTAGE" class="member-name-link">PORT_TECHNIC_VOLTAGE</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#PORT_TECHNIC_TILT" class="member-name-link">PORT_TECHNIC_TILT</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#REMOTE_MINUS" class="member-name-link">REMOTE_MINUS</a></code></div>
+<div class="col-second even-row-color"><code><a href="#PORT_TECHNIC_VOLTAGE" class="member-name-link">PORT_TECHNIC_VOLTAGE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#REMOTE_PLUS" class="member-name-link">REMOTE_PLUS</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#REMOTE_MINUS" class="member-name-link">REMOTE_MINUS</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#REMOTE_RELEASED" class="member-name-link">REMOTE_RELEASED</a></code></div>
+<div class="col-second even-row-color"><code><a href="#REMOTE_PLUS" class="member-name-link">REMOTE_PLUS</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#REMOTE_STOP" class="member-name-link">REMOTE_STOP</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#REMOTE_RELEASED" class="member-name-link">REMOTE_RELEASED</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#TYPE_CITY_HUB" class="member-name-link">TYPE_CITY_HUB</a></code></div>
+<div class="col-second even-row-color"><code><a href="#REMOTE_STOP" class="member-name-link">REMOTE_STOP</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#TYPE_DUPLO_TRAIN_HUB" class="member-name-link">TYPE_DUPLO_TRAIN_HUB</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#TYPE_CITY_HUB" class="member-name-link">TYPE_CITY_HUB</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#TYPE_MARIO" class="member-name-link">TYPE_MARIO</a></code></div>
+<div class="col-second even-row-color"><code><a href="#TYPE_DUPLO_TRAIN_HUB" class="member-name-link">TYPE_DUPLO_TRAIN_HUB</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#TYPE_MOVE_HUB" class="member-name-link">TYPE_MOVE_HUB</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#TYPE_MARIO" class="member-name-link">TYPE_MARIO</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#TYPE_REMOTE_CONTROL" class="member-name-link">TYPE_REMOTE_CONTROL</a></code></div>
+<div class="col-second even-row-color"><code><a href="#TYPE_MOVE_HUB" class="member-name-link">TYPE_MOVE_HUB</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#TYPE_TECHNIC_HUB" class="member-name-link">TYPE_TECHNIC_HUB</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#TYPE_REMOTE_CONTROL" class="member-name-link">TYPE_REMOTE_CONTROL</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#TYPE_UNKNOWN" class="member-name-link">TYPE_UNKNOWN</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-second even-row-color"><code><a href="#TYPE_TECHNIC_HUB" class="member-name-link">TYPE_TECHNIC_HUB</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#TYPE_UNKNOWN" class="member-name-link">TYPE_UNKNOWN</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block"><a href="#hubType()"><code>hubType()</code></a> values: the LEGO system type id advertised by each hub.</div>
 </div>
 </div>
@@ -403,30 +451,43 @@ with <a href="#versionMajor(int)"><code>versionMajor(int)</code></a>, <a href="#
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The hub's hardware version in the same packed form as <a href="#firmwareVersion()"><code>firmwareVersion()</code></a>, or <code>-1</code> if unknown.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#hubName(byte%5B%5D,int)" class="member-name-link">hubName</a><wbr>(byte[]&nbsp;buffer,
- int&nbsp;capacity)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#holdMotor(int)" class="member-name-link">holdMotor</a><wbr>(int&nbsp;port)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Holds the motor on <code>port</code> where it is, resisting being turned: the third way to stop, next to
+letting it coast (<code>setMotorPower(port, 0)</code>) and <a href="#brakeMotor(int)"><code>brakeMotor(int)</code></a>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#hubName(byte%5B%5D,int)" class="member-name-link">hubName</a><wbr>(byte[]&nbsp;buffer,
+ int&nbsp;capacity)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Copies the hub's advertised name (up to 20 characters, ASCII bytes, no terminator) into
 <code>buffer</code>, at most <code>capacity</code> bytes, and returns how many were copied, <code>0</code> if
 the hub has not reported its name.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#hubType()" class="member-name-link">hubType</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#hubType()" class="member-name-link">hubType</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The connected hub's <code>TYPE_*</code> system type id, or <a href="#TYPE_UNKNOWN"><code>TYPE_UNKNOWN</code></a> before <a href="#connect(int)"><code>connect(int)</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#isConnected()" class="member-name-link">isConnected</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#isConnected()" class="member-name-link">isConnected</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Whether a hub is currently connected; turns <code>false</code> once the hub switches off or goes out of range.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#linkMotors(int,int)" class="member-name-link">linkMotors</a><wbr>(int&nbsp;portA,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#linkMotors(int,int)" class="member-name-link">linkMotors</a><wbr>(int&nbsp;portA,
  int&nbsp;portB)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Pairs the motors on ports <code>portA</code> and <code>portB</code> into one virtual port, so a single
 command (<a href="#setLinkedMotorPower(int,int,int)"><code>setLinkedMotorPower(int, int, int)</code></a>) drives both in sync, as for a two-motor vehicle.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#portDevice(int)" class="member-name-link">portDevice</a><wbr>(int&nbsp;port)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The I/O device type the hub reported (Hub Attached I/O) for the external port <code>port</code>
+(<code>PORT_A..PORT_D</code>), one of the <code>DEVICE_*</code> constants or another protocol type id, or
+<code>0</code> if nothing is attached, the hub has not reported it yet, or <code>port</code> is out of range.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#readSensor(int)" class="member-name-link">readSensor</a><wbr>(int&nbsp;port)</code></div>
@@ -1036,6 +1097,183 @@ the <code>REMOTE_*</code> values.</div>
 </section>
 </li>
 <li>
+<section class="detail" id="DEVICE_NONE">
+<h3>DEVICE_NONE</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_NONE</span></div>
+<div class="block">I/O device types <a href="#portDevice(int)"><code>portDevice(int)</code></a> can return, from the LEGO Wireless Protocol.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_NONE">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_MEDIUM_LINEAR_MOTOR">
+<h3>DEVICE_MEDIUM_LINEAR_MOTOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_MEDIUM_LINEAR_MOTOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_MEDIUM_LINEAR_MOTOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR">
+<h3>DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_MOTION_SENSOR">
+<h3>DEVICE_MOTION_SENSOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_MOTION_SENSOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_MOTION_SENSOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_COLOR_DISTANCE_SENSOR">
+<h3>DEVICE_COLOR_DISTANCE_SENSOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_COLOR_DISTANCE_SENSOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_COLOR_DISTANCE_SENSOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_MEDIUM_ANGULAR_MOTOR">
+<h3>DEVICE_MEDIUM_ANGULAR_MOTOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_MEDIUM_ANGULAR_MOTOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_MEDIUM_ANGULAR_MOTOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_LARGE_ANGULAR_MOTOR">
+<h3>DEVICE_LARGE_ANGULAR_MOTOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_LARGE_ANGULAR_MOTOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_LARGE_ANGULAR_MOTOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_TECHNIC_LARGE_MOTOR">
+<h3>DEVICE_TECHNIC_LARGE_MOTOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_TECHNIC_LARGE_MOTOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_MOTOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_TECHNIC_XL_MOTOR">
+<h3>DEVICE_TECHNIC_XL_MOTOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_TECHNIC_XL_MOTOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_TECHNIC_XL_MOTOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR">
+<h3>DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR">
+<h3>DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.api.lego.PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="PORT_TECHNIC_ACCELEROMETER">
 <h3>PORT_TECHNIC_ACCELEROMETER</h3>
 <div class="horizontal-scroll">
@@ -1196,6 +1434,19 @@ negative. Returns <code>true</code> immediately if a hub is already connected.</
 </section>
 </li>
 <li>
+<section class="detail" id="holdMotor(int)">
+<h3>holdMotor</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">holdMotor</span><wbr><span class="parameters">(int&nbsp;port)</span></div>
+<div class="block">Holds the motor on <code>port</code> where it is, resisting being turned: the third way to stop, next to
+letting it coast (<code>setMotorPower(port, 0)</code>) and <a href="#brakeMotor(int)"><code>brakeMotor(int)</code></a>. It sends a speed command of
+0, which the hub's speed control holds, so it needs a motor with a rotation sensor. The message
+follows the protocol documentation; a first hands-on try suggests that it holds, but it has not been
+checked systematically. Any later power command releases the hold.</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="setLedColor(int)">
 <h3>setLedColor</h3>
 <div class="horizontal-scroll">
@@ -1276,6 +1527,19 @@ with <a href="#versionMajor(int)"><code>versionMajor(int)</code></a>, <a href="#
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">hardwareVersion</span>()</div>
 <div class="block">The hub's hardware version in the same packed form as <a href="#firmwareVersion()"><code>firmwareVersion()</code></a>, or <code>-1</code> if unknown.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="portDevice(int)">
+<h3>portDevice</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">portDevice</span><wbr><span class="parameters">(int&nbsp;port)</span></div>
+<div class="block">The I/O device type the hub reported (Hub Attached I/O) for the external port <code>port</code>
+(<code>PORT_A..PORT_D</code>), one of the <code>DEVICE_*</code> constants or another protocol type id, or
+<code>0</code> if nothing is attached, the hub has not reported it yet, or <code>port</code> is out of range.
+The hub announces its ports right after <a href="#connect(int)"><code>connect(int)</code></a> and again when something is plugged or
+unplugged; the announcements are received while a hub call runs, so call this regularly.</div>
 </div>
 </section>
 </li>
