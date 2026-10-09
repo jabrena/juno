@@ -1,5 +1,7 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.analysis.ConfigAnalyzer;
+import io.github.jabrena.juno.analysis.ConfigSuggestion;
 import io.github.jabrena.juno.analysis.RuntimeRiskAnalyzer;
 import io.github.jabrena.juno.analysis.RuntimeRiskReport;
 import io.github.jabrena.juno.board.Board;
@@ -12,11 +14,13 @@ import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.Program;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /** What the compiler found while producing a {@link CompilationResult}. */
 public record CompilationReport(MethodRef entryPoint, Board board, int reachableMethods, int irBlocks,
-                                Set<Intrinsic> intrinsics, RuntimeRiskReport runtimeRisks) {
+                                Set<Intrinsic> intrinsics, RuntimeRiskReport runtimeRisks,
+                                List<ConfigSuggestion> configSuggestions) {
     static CompilationReport from(Program program, IrProgram optimized) {
         return from(program, optimized, RuntimeConfig.DEFAULT);
     }
@@ -35,6 +39,7 @@ public record CompilationReport(MethodRef entryPoint, Board board, int reachable
         }
         RuntimeRiskReport runtimeRisks = new RuntimeRiskAnalyzer(runtimeConfig).analyze(program, optimized);
         return new CompilationReport(program.entryPoint(), program.board(), program.methods().size(), irBlocks,
-                Set.copyOf(intrinsics), runtimeRisks);
+                Set.copyOf(intrinsics), runtimeRisks,
+                new ConfigAnalyzer(runtimeConfig).analyze(optimized, runtimeRisks, program.board()));
     }
 }
