@@ -61,6 +61,22 @@
 
     <build>
         <plugins>
+            <!-- The compiler reads juno-api's class files from the program's classpath and never links against them;
+                 the compile-scope dependency is the module contract (users of juno-compiler get the API with it). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze-dependencies</id>
+                        <configuration>
+                            <ignoredNonTestScopedDependencies>
+                                <ignoredNonTestScopedDependency>io.github.jabrena:juno-api</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- NullAway (via Error Prone) fails the build on nullness errors; settings live in the root pom. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

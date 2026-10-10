@@ -44,6 +44,7 @@
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
         <maven-plugin-enforcer.version>3.6.3</maven-plugin-enforcer.version>
         <extra-enforcer-rules.version>1.12.1</extra-enforcer-rules.version>
+        <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
         <java.version>${maven.compiler.release}</java.version>
     </properties>
 
@@ -179,6 +180,31 @@
                         <goals>
                             <goal>enforce</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${maven-plugin-dependency.version}</version>
+                <executions>
+                    <execution>
+                        <id>analyze-dependencies</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                            <ignoreNonCompile>true</ignoreNonCompile>
+                            <!-- Modules declare the junit-jupiter/archunit-junit5 aggregators on purpose; tests call into their parts. -->
+                            <ignoredUsedUndeclaredDependencies>
+                                <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api</ignoredUsedUndeclaredDependency>
+                                <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-params</ignoredUsedUndeclaredDependency>
+                                <ignoredUsedUndeclaredDependency>com.tngtech.archunit:archunit</ignoredUsedUndeclaredDependency>
+                                <ignoredUsedUndeclaredDependency>com.tngtech.archunit:archunit-junit5-api</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
