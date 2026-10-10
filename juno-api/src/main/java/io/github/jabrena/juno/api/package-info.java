@@ -42,4 +42,7 @@
  * io.github.jabrena.juno.annotations.Board @Board} annotation and then calls into this API from
  * {@code main}.
  */
+@NullMarked
 package io.github.jabrena.juno.api;
+
+import org.jspecify.annotations.NullMarked;

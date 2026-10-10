@@ -3,6 +3,7 @@ package io.github.jabrena.juno.backend;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrTerminator;
+import org.jspecify.annotations.Nullable;
 
 /** Emits the jump, branch, switch, or return that ends each IR block. */
 final class TerminatorLowering {
@@ -22,7 +23,7 @@ final class TerminatorLowering {
      * {@code fused} compare was left out of the block's instructions: the branch tests its condition directly.
      */
     void emit(StringBuilder output, FrameLayout frame, String label, IrBasicBlock block,
-              IrInstruction.Compare fused, Runnable beforeReturn) {
+              IrInstruction.@Nullable Compare fused, Runnable beforeReturn) {
         switch (block.terminator()) {
             case IrTerminator.Jump jump -> {
                 emitYieldIfBackedge(output, block.start(), jump.target());

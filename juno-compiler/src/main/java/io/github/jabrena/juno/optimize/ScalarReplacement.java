@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -66,14 +67,19 @@ public final class ScalarReplacement implements CompilerPass {
                 List.copyOf(blocks));
     }
 
+    /** The local slot holding {@code field} of a scalar-replaced {@code receiver}; every candidate field has one. */
+    private static int slot(Map<Value, Map<FieldRef, Integer>> slots, Value receiver, FieldRef field) {
+        return Objects.requireNonNull(Objects.requireNonNull(slots.get(receiver)).get(field));
+    }
+
     private static void rewrite(IrInstruction instruction, Map<Value, Map<FieldRef, JunoType>> candidates,
                                 Map<Value, Map<FieldRef, Integer>> slots, List<Value> values,
                                 List<IrInstruction> out) {
         switch (instruction) {
             case IrInstruction.NewObject object when candidates.containsKey(object.target()) -> {
                 Map<FieldRef, JunoType> fields = candidates.get(object.target());
-                for (Map.Entry<FieldRef, Integer> slot : slots.get(object.target()).entrySet()) {
-                    JunoType type = fields.get(slot.getKey());
+                for (Map.Entry<FieldRef, Integer> slot : Objects.requireNonNull(slots.get(object.target())).entrySet()) {
+                    JunoType type = Objects.requireNonNull(fields.get(slot.getKey()));
                     Value zero = new Value(values.size(), type);
                     values.add(zero);
                     out.add(type == JunoType.FLOAT64 ? new IrInstruction.DoubleConst(zero, 0.0)
@@ -83,9 +89,9 @@ public final class ScalarReplacement implements CompilerPass {
                 }
             }
             case IrInstruction.StoreField store when candidates.containsKey(store.receiver()) ->
-                    out.add(new IrInstruction.StoreLocal(slots.get(store.receiver()).get(store.field()), store.value()));
+                    out.add(new IrInstruction.StoreLocal(slot(slots, store.receiver(), store.field()), store.value()));
             case IrInstruction.LoadField load when candidates.containsKey(load.receiver()) ->
-                    out.add(new IrInstruction.LoadLocal(load.target(), slots.get(load.receiver()).get(load.field())));
+                    out.add(new IrInstruction.LoadLocal(load.target(), slot(slots, load.receiver(), load.field())));
             case IrInstruction.NullCheck check when candidates.containsKey(check.value()) -> {
                 // A freshly allocated object is never null.
             }

@@ -168,6 +168,8 @@ public final class Thumb2AsmBackend {
     /**
      * @param runtimeConfig the arena and task-stack capacities of the generated runtime shim
      */
+    // entryPoint, layout and the lowering helpers are per-program state that generate() assigns before any use.
+    @SuppressWarnings("NullAway.Init")
     public Thumb2AsmBackend(boolean gcLoggingEnabled, Board board, RuntimeConfig runtimeConfig) {
         this.gcLoggingEnabled = gcLoggingEnabled;
         this.board = board;
@@ -215,11 +217,11 @@ public final class Thumb2AsmBackend {
         String runtimeShim = new RuntimeShim(board, coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
         return new Output(AssemblyPeepholeOptimizer.optimize(output.toString()), runtimeShim,
-                functionLabels.get(entryPoint));
+                java.util.Objects.requireNonNull(functionLabels.get(entryPoint)));
     }
 
     private void emitMethod(StringBuilder output, IrMethod method) {
-        String label = functionLabels.get(method.reference());
+        String label = java.util.Objects.requireNonNull(functionLabels.get(method.reference()));
         boolean isEntryPoint = method.reference().equals(entryPoint);
         FrameLayout frame = FrameLayout.of(method);
         // JVMS 2.6.1: for a non-static method, local 0 is the implicit `this`/receiver, which the
@@ -403,8 +405,8 @@ public final class Thumb2AsmBackend {
             // juno_alloc zero-fills, so the message word already starts out null.
             asm.emitLoadImmediate(output, "r1", classId);
             output.append("    str r1, [r0, #").append(ThrowableTypes.CLASS_ID_OFFSET).append("]\n");
-        } else if (layout.objectTypeId(object.className()) != null) {
-            asm.emitLoadImmediate(output, "r1", layout.objectTypeId(object.className()));
+        } else if (layout.objectTypeId(object.className()) instanceof Integer typeId) {
+            asm.emitLoadImmediate(output, "r1", typeId);
             output.append("    str r1, [r0, #0]\n");
         }
         asm.store(output, frame, "r0", object.target());
@@ -515,7 +517,7 @@ public final class Thumb2AsmBackend {
                     .append("    bne ").append(next).append('\n');
             if (target.isLambda()) {
                 emitLambdaCall(output, frame,
-                        new IrInstruction.LambdaCall(call.target(), target.lambda(), call.arguments()));
+                        new IrInstruction.LambdaCall(call.target(), java.util.Objects.requireNonNull(target.lambda()), call.arguments()));
             } else {
                 emitResolvedCall(output, frame, target.method(), call.arguments(), call.target());
             }

@@ -9,4 +9,7 @@
  * — {@code linker} and {@code lowering} give the resulting instructions their control-flow and
  * IR meaning.
  */
+@NullMarked
 package io.github.jabrena.juno.bytecode;
+
+import org.jspecify.annotations.NullMarked;

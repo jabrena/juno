@@ -11,6 +11,7 @@ import io.github.jabrena.juno.classfile.InvokeDynamicRef;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,7 @@ final class ConstantAndStackSupport {
             Map.entry(190, 0), Map.entry(191, -1), Map.entry(194, -1), Map.entry(195, -1), Map.entry(198, -1),
             Map.entry(199, -1));
 
-    static Integer constantPushValue(Instruction instruction, LinkedMethod linked) {
+    static @Nullable Integer constantPushValue(Instruction instruction, LinkedMethod linked) {
         return switch (instruction.opcode()) {
             case 2 -> -1;
             case 3, 4, 5, 6, 7, 8 -> instruction.opcode() - 3;

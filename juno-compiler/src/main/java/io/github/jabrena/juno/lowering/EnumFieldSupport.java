@@ -8,6 +8,7 @@ import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.linker.Descriptor;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ final class EnumFieldSupport {
     private EnumFieldSupport() {
     }
 
-    static Integer resolveEnumOrdinal(FieldRef field, Map<String, JavaClass> classes) {
+    static @Nullable Integer resolveEnumOrdinal(FieldRef field, Map<String, JavaClass> classes) {
         if (field.owner().equals("java/util/concurrent/StructuredTaskScope$Subtask$State")) {
             return switch (field.name()) {
                 case "UNAVAILABLE" -> 0;
@@ -32,7 +33,7 @@ final class EnumFieldSupport {
         return ordinal < 0 ? null : ordinal;
     }
 
-    static List<Integer> resolveEnumIntegerFieldValues(FieldRef field, Map<String, JavaClass> classes,
+    static @Nullable List<Integer> resolveEnumIntegerFieldValues(FieldRef field, Map<String, JavaClass> classes,
                                                         BytecodeDecoder decoder) {
         JavaClass enumClass = classes.get(field.owner());
         if (enumClass == null || !enumClass.isEnum()) {

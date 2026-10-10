@@ -20,6 +20,7 @@ import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.BitSet;
 import java.util.List;
@@ -177,7 +178,7 @@ final class ControlFlowLowering {
             case 5 -> Condition.LESS_EQUAL;
             default -> throw new IllegalStateException("Unexpected comparison opcode " + opcode);
         };
-    }    static Integer arithmeticHandler(LinkedMethod linked, int offset, Map<String, JavaClass> classes) {
+    }    static @Nullable Integer arithmeticHandler(LinkedMethod linked, int offset, Map<String, JavaClass> classes) {
         for (ExceptionHandler handler : linked.method().exceptionHandlers()) {
             if (handler.covers(offset) && (handler.catchesAny()
                     || ThrowableTypes.isSubtype(ARITHMETIC_EXCEPTION, handler.catchType(), classes))) {

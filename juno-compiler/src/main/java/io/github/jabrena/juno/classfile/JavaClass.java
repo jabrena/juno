@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.classfile;
 
+
+import org.jspecify.annotations.Nullable;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +24,7 @@ import java.util.Optional;
  * components (JLS 8.10), so every non-static field, in declaration order, is a record component; see
  * {@link #recordComponents()}.
  */
-public record JavaClass(String name, int accessFlags, String superClassName, List<String> interfaces,
+public record JavaClass(String name, int accessFlags, @Nullable String superClassName, List<String> interfaces,
                          ConstantPool constantPool,
                          List<JavaMethod> methods, List<FieldInfo> fields, List<String> boardApiClassNames,
                          Optional<Integer> watchdogTimeoutMillis, List<BootstrapMethod> bootstrapMethods) {
@@ -66,14 +69,14 @@ public record JavaClass(String name, int accessFlags, String superClassName, Lis
         return fields.stream().filter(field -> !field.isStatic()).toList();
     }
 
-    public JavaMethod findMethod(String methodName, String descriptor) {
+    public @Nullable JavaMethod findMethod(String methodName, String descriptor) {
         return methods.stream()
                 .filter(method -> method.name().equals(methodName) && method.descriptor().equals(descriptor))
                 .findFirst()
                 .orElse(null);
     }
 
-    public FieldInfo findField(String fieldName, String descriptor) {
+    public @Nullable FieldInfo findField(String fieldName, String descriptor) {
         return fields.stream()
                 .filter(field -> field.name().equals(fieldName) && field.descriptor().equals(descriptor))
                 .findFirst()

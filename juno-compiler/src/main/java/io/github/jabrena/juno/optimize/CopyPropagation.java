@@ -10,6 +10,7 @@ import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.IrValues;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -155,7 +156,7 @@ public final class CopyPropagation implements CompilerPass {
     }
 
     /** The int constant {@code slot} holds in {@code state}, or null. */
-    private static Integer numberIn(Facts state, int slot, Map<Value, Integer> constants) {
+    private static @Nullable Integer numberIn(Facts state, int slot, Map<Value, Integer> constants) {
         Integer agreed = state.constants().get(slot);
         if (agreed != null) {
             return agreed;

@@ -7,6 +7,7 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrValues;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -72,7 +73,7 @@ public final class DeadValueElimination implements CompilerPass {
     }
 
     /** The single value a side-effect-free instruction defines, or null when the instruction must stay. */
-    private static Value pureTarget(IrInstruction instruction) {
+    private static @Nullable Value pureTarget(IrInstruction instruction) {
         return switch (instruction) {
             case IrInstruction.Const node -> node.target();
             case IrInstruction.StringConst node -> node.target();

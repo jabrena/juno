@@ -10,11 +10,13 @@ import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.UnaryOp;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Folds {@code Binary}/{@code Unary}/{@code Compare} instructions into {@code Const} when their operands are known
@@ -50,7 +52,7 @@ public final class ConstantFolder implements CompilerPass {
         do {
             known = constants.size();
             for (int start : order) {
-                folded.put(start, foldBlock(folded.get(start), constants));
+                folded.put(start, foldBlock(Objects.requireNonNull(folded.get(start)), constants));
             }
         } while (constants.size() != known);
         List<IrBasicBlock> blocks = new ArrayList<>();
@@ -133,7 +135,7 @@ public final class ConstantFolder implements CompilerPass {
     }
 
     /** Returns null when the operation is not safe to fold at compile time (division/remainder by zero). */
-    private Integer foldBinary(BinaryOp operation, int left, int right) {
+    private @Nullable Integer foldBinary(BinaryOp operation, int left, int right) {
         return switch (operation) {
             case ADD -> left + right;
             case SUBTRACT -> left - right;

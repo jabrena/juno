@@ -7,4 +7,7 @@
  * or a compile-time string literal only — Juno has no heap for a runtime-built {@code String} —
  * so computed values are printed as separate literal/int calls rather than one formatted string.
  */
+@NullMarked
 package io.github.jabrena.juno.api.io.serial;
+
+import org.jspecify.annotations.NullMarked;

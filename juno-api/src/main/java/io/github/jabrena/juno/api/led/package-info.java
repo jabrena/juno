@@ -13,4 +13,7 @@
  * each font instead encodes a glyph as a small function returning whether one pixel is lit, and
  * only the glyphs a program actually calls are linked into the generated firmware.
  */
+@NullMarked
 package io.github.jabrena.juno.api.led;
+
+import org.jspecify.annotations.NullMarked;

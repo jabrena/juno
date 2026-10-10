@@ -8,4 +8,7 @@
  * every operation is built entirely from {@link io.github.jabrena.juno.api.io.Gpio} pin operations
  * and {@link io.github.jabrena.juno.api.Delay}.
  */
+@NullMarked
 package io.github.jabrena.juno.api.tft;
+
+import org.jspecify.annotations.NullMarked;

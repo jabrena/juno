@@ -16,4 +16,7 @@
  * <p>Unreachable methods are simply omitted from {@code Program}, which is how Juno keeps
  * generated firmware limited to what a program actually calls.
  */
+@NullMarked
 package io.github.jabrena.juno.linker;
+
+import org.jspecify.annotations.NullMarked;

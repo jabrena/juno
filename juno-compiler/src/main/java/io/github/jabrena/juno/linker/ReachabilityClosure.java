@@ -2,6 +2,7 @@ package io.github.jabrena.juno.linker;
 
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -28,7 +29,7 @@ final class ReachabilityClosure {
                      Set<String> instantiatedClasses, Map<LambdaCallSite, LambdaSite> lambdaSites);
     }
 
-    Result resolve(MethodRef entryPoint, MethodRef mainInitializer, Map<String, JavaClass> classes,
+    Result resolve(MethodRef entryPoint, @Nullable MethodRef mainInitializer, Map<String, JavaClass> classes,
                    Function<MethodRef, LinkedMethod> methodLinker, DependencyEnqueuer dependencyEnqueuer,
                    InterfaceDispatchResolver interfaceResolver, Predicate<MethodRef> hasReachableBody,
                    BiConsumer<InterfaceDispatch, MethodRef> interfaceTargetValidator) {

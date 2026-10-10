@@ -12,4 +12,7 @@
  * {@code ArduinoBLE} library installed ({@code arduino-cli lib install ArduinoBLE}; 2.1.0 or newer
  * on the UNO Q).
  */
+@NullMarked
 package io.github.jabrena.juno.api.lego;
+
+import org.jspecify.annotations.NullMarked;

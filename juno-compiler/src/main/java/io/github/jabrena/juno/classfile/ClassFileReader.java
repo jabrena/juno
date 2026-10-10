@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.classfile;
 
 import io.github.jabrena.juno.CompileException;
+import org.jspecify.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -144,7 +145,7 @@ public final class ClassFileReader {
     }
 
     /** A method's {@code Code} attribute; {@link #ABSENT} for abstract and native methods. */
-    private record CodeAttribute(int maxStack, int maxLocals, byte[] code, List<ExceptionHandler> exceptionHandlers) {
+    private record CodeAttribute(int maxStack, int maxLocals, byte @Nullable [] code, List<ExceptionHandler> exceptionHandlers) {
         private static final CodeAttribute ABSENT = new CodeAttribute(0, 0, null, List.of());
     }
 
@@ -244,7 +245,7 @@ public final class ClassFileReader {
     }
 
     /** One {@code element_value}'s parsed payload — only the fields a supported tag can populate are non-empty. */
-    private record ElementValue(String classInternalName, Integer intValue, List<String> classInternalNames) {
+    private record ElementValue(@Nullable String classInternalName, @Nullable Integer intValue, List<String> classInternalNames) {
         private static final ElementValue EMPTY = new ElementValue(null, null, List.of());
     }
 

@@ -2,6 +2,7 @@ package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -51,7 +52,7 @@ record ControlLowered(int nextValueId, int depth, IrTerminator terminator) {
  * block start and terminator, so lowerInstruction has one return shape for
  * every opcode group.
  */
-record InstructionLowering(int nextValueId, int depth, int irBlockStart, IrTerminator terminator) {
+record InstructionLowering(int nextValueId, int depth, int irBlockStart, @Nullable IrTerminator terminator) {
     static InstructionLowering of(Lowered lowered, int irBlockStart) {
         return new InstructionLowering(lowered.nextValueId(), lowered.depth(), irBlockStart, null);
     }
@@ -71,7 +72,7 @@ record InstructionLowering(int nextValueId, int depth, int irBlockStart, IrTermi
  * parameter an intrinsic requires/prefers as compile-time text) a
  * {@code literalStrings} entry, never both.
  */
-record CallArguments(Value[] arguments, String[] literalStrings, int nextValueId, int depth) {
+record CallArguments(Value[] arguments, @Nullable String[] literalStrings, int nextValueId, int depth) {
 }
 
 /**

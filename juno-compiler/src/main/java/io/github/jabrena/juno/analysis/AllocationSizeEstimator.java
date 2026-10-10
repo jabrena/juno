@@ -10,6 +10,7 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 import io.github.jabrena.juno.RuntimeLimits;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -119,7 +120,7 @@ final class AllocationSizeEstimator {
         return Math.addExact(size, alignment - 1);
     }
 
-    private static int objectSize(JavaClass javaClass) {
+    private static int objectSize(@Nullable JavaClass javaClass) {
         if (javaClass == null) {
             return 1;
         }
@@ -135,7 +136,7 @@ final class AllocationSizeEstimator {
         return Math.max(1, align(offset, maximumAlignment));
     }
 
-    private static int objectAlignment(JavaClass javaClass) {
+    private static int objectAlignment(@Nullable JavaClass javaClass) {
         if (javaClass == null) return 1;
         return javaClass.fields().stream()
                 .filter(field -> !field.isStatic())

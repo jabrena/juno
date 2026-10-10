@@ -14,4 +14,7 @@
  * io.github.jabrena.juno.api.net.http.HttpServer#respond(int, String, String)}'s body is the
  * one exception).
  */
+@NullMarked
 package io.github.jabrena.juno.api.net.http;
+
+import org.jspecify.annotations.NullMarked;

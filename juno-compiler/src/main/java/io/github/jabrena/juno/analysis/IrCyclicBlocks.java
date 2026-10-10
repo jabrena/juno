@@ -24,8 +24,9 @@ final class IrCyclicBlocks {
             edges.put(block.start(), endsInNoReturnCall(block) ? List.of() : successors(block.terminator()));
         }
         Set<Integer> cyclic = new HashSet<>();
-        for (int block : edges.keySet()) {
-            for (int successor : edges.get(block)) {
+        for (Map.Entry<Integer, List<Integer>> entry : edges.entrySet()) {
+            int block = entry.getKey();
+            for (int successor : entry.getValue()) {
                 if (reaches(successor, block, edges, new HashSet<>())) {
                     cyclic.add(block);
                     break;

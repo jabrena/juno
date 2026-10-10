@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.classfile;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.List;
 
 public record JavaMethod(
@@ -9,7 +11,7 @@ public record JavaMethod(
         String descriptor,
         int maxStack,
         int maxLocals,
-        byte[] code,
+        byte @Nullable [] code,
         List<ExceptionHandler> exceptionHandlers) {
 
     public JavaMethod {
@@ -17,7 +19,7 @@ public record JavaMethod(
     }
 
     public JavaMethod(String owner, int accessFlags, String name, String descriptor, int maxStack, int maxLocals,
-                      byte[] code) {
+                      byte @Nullable [] code) {
         this(owner, accessFlags, name, descriptor, maxStack, maxLocals, code, List.of());
     }
 

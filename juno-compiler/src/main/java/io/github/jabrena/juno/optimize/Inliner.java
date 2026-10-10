@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -142,7 +143,7 @@ public final class Inliner implements CompilerPass {
         }
 
         private int scaled(int start) {
-            return ranks.get(start) * SPACING;
+            return Objects.requireNonNull(ranks.get(start)) * SPACING;
         }
 
         IrMethod inline() {
@@ -176,7 +177,7 @@ public final class Inliner implements CompilerPass {
                     segment.add(new IrInstruction.StoreLocal(window + argument, call.arguments().get(argument)));
                 }
                 blocks.add(new IrBasicBlock(start, List.copyOf(segment),
-                        new IrTerminator.Jump(calleeBlocks.get(callee.blocks().getFirst().start()))));
+                        new IrTerminator.Jump(Objects.requireNonNull(calleeBlocks.get(callee.blocks().getFirst().start())))));
                 copyCallee(callee, calleeBlocks, continuation);
                 segment = new ArrayList<>();
                 if (call.target().isPresent()) {
@@ -208,7 +209,7 @@ public final class Inliner implements CompilerPass {
                     terminator = IrRewriting.map(block.terminator(), value -> rename(renamed, value),
                             calleeBlocks::get);
                 }
-                blocks.add(new IrBasicBlock(calleeBlocks.get(block.start()), List.copyOf(instructions), terminator));
+                blocks.add(new IrBasicBlock(Objects.requireNonNull(calleeBlocks.get(block.start())), List.copyOf(instructions), terminator));
             }
         }
 

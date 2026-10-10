@@ -10,4 +10,7 @@
  * implements, so the linker can resolve an API call to a concrete operation instead of rejecting
  * it as unreachable ordinary code.
  */
+@NullMarked
 package io.github.jabrena.juno.intrinsic;
+
+import org.jspecify.annotations.NullMarked;

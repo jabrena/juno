@@ -6,6 +6,7 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.IrValues;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,13 +33,13 @@ final class CompareFusion {
      * definition plus that one use), or null. Only the last instruction qualifies: nothing runs between the
      * comparison and the branch, so the operands' frame slots cannot have been reused in between.
      */
-    IrInstruction.Compare fusedCompare(IrBasicBlock block) {
+    IrInstruction.@Nullable Compare fusedCompare(IrBasicBlock block) {
         if (block.instructions().isEmpty()
                 || !(block.instructions().getLast() instanceof IrInstruction.Compare compare)
                 || !(block.terminator() instanceof IrTerminator.Branch branch)
                 || !branch.condition().equals(compare.target())) {
             return null;
         }
-        return occurrences.get(compare.target()) == 2 ? compare : null;
+        return occurrences.getOrDefault(compare.target(), 0) == 2 ? compare : null;
     }
 }

@@ -33,4 +33,7 @@
  * runtime shim generation). {@code api}, {@code annotations}, {@code board}, and {@code intrinsic}
  * define the Java-facing hardware API and the compiler's model of what it can target.
  */
+@NullMarked
 package io.github.jabrena.juno;
+
+import org.jspecify.annotations.NullMarked;

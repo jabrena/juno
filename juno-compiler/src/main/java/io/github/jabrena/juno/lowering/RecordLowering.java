@@ -17,6 +17,7 @@ import io.github.jabrena.juno.linker.LinkedMethod;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /** Compact-record constructor and accessor opcode lowering, split out of {@link BytecodeToIr}. */
@@ -59,7 +60,7 @@ final class RecordLowering {
                                          List<IrInstruction> instructions, int stackBase, int depth,
                                          int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes,
                                          BytecodeDecoder decoder, Map<String, List<FieldInfo>> validatedRecords) {
-        JavaClass recordClass = classes.get(called.owner());
+        JavaClass recordClass = Objects.requireNonNull(classes.get(called.owner()), called.owner());
         List<FieldInfo> components = validateSimpleRecord(recordClass, decoder, validatedRecords);
         int componentIndex = -1;
         for (int index = 0; index < components.size(); index++) {
