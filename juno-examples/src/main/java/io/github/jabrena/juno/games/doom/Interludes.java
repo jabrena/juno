@@ -7,7 +7,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * The screens between the game's moments. The cover is still {@link Lava} with a large DOOM title and a blinking
  * prompt on dark plaques; it waits for a tap. At startup the cover shows while the WAD is inspected, and the prompt
  * appears once episode selection is available. The title is text rather than the drawn logo so the UNO Q's sketch heap
- * keeps room for the map and its route. The marine and demons of {@link Figures} are switched off behind flags.
+ * keeps room for the map and its route.
  */
 final class Interludes {
     static final int PROMPT_X = 80;
@@ -21,10 +21,6 @@ final class Interludes {
     private static final int FRAME_MILLIS = 60;
     private static final int DEATH_TOP = 84;
     private static final int DEATH_HEIGHT = 48;
-    /** Switches the horned demons on the cover back on. */
-    private static final boolean DEMONS = false;
-    /** Switches the marine, his plasma and muzzle flash on the cover back on. */
-    private static final boolean MARINE = false;
 
     private static final int EDGE = TftTouchShield.color(215, 70, 30);
     private static final int EDGE_DARK = TftTouchShield.color(120, 25, 12);
@@ -45,13 +41,6 @@ final class Interludes {
         plaque((DisplayList.WIDTH - titleWidth) / 2 - PLAQUE_MARGIN, TITLE_Y - PLAQUE_MARGIN,
                 titleWidth + 2 * PLAQUE_MARGIN, 7 * TITLE_SIZE + 2 * PLAQUE_MARGIN);
         Hud.showCentered("DOOM", TITLE_Y, TITLE_SIZE, TftTouchShield.RED);
-        if (DEMONS) {
-            Figures.scenery();
-            Figures.demonsInLava();
-        }
-        if (MARINE) {
-            Figures.marine();
-        }
         plaque(PROMPT_X, PROMPT_Y, PROMPT_WIDTH, PROMPT_HEIGHT);
     }
 
@@ -78,12 +67,15 @@ final class Interludes {
         Lava.paint();
     }
 
-    /** Shows which WAD map is being read after the menus or between two completed maps. */
-    static void loadingMap() {
+    /**
+     * The tally's frame for a map about to start, without its statistics: the map's name and ENTERING, as DOOM shows
+     * between maps. The first map of an episode is read under it, so every map starts from the same screen.
+     */
+    static void entering() {
         flood();
-        plaque(52, 88, 216, 64);
-        showMapMessage("LOADING ", 108, 3, TftTouchShield.YELLOW);
-        Loading.show(72, 136, 160);
+        plaque(14, 8, 292, 224);
+        showMapMessage("", 20, 3, TftTouchShield.YELLOW);
+        Hud.showCentered("ENTERING", 49, 3, TftTouchShield.RED);
     }
 
     /** A dark plaque with a double red edge, holding the title or the blinking prompt over the lava. */

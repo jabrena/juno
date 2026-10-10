@@ -59,7 +59,7 @@ public final class Doom {
         Controls.choosePilot();
         chooseGame();
         Random.seed(Clock.micros());
-        enterLevel(ceilings, monsters, shots, taken, true);
+        enterLevel(ceilings, monsters, shots, taken, false);
 
         int next = Clock.millis();
         int mapStarted = next;
@@ -112,17 +112,18 @@ public final class Doom {
                     Controls.choosePilot();
                     chooseGame();
                 }
-                enterLevel(ceilings, monsters, shots, taken, !ready);
+                enterLevel(ceilings, monsters, shots, taken, false);
                 next = Clock.millis();
                 mapStarted = next;
             } else if (Player.health == 0) {
                 // As in DOOM the map can restart where the marine died, or the player quits to the title.
-                if (!Interludes.died()) {
+                boolean restart = Interludes.died();
+                if (!restart) {
                     Interludes.title();
                     Controls.choosePilot();
                     chooseGame();
                 }
-                enterLevel(ceilings, monsters, shots, taken, true);
+                enterLevel(ceilings, monsters, shots, taken, restart);
                 next = Clock.millis();
                 mapStarted = next;
             }
@@ -130,8 +131,9 @@ public final class Doom {
     }
 
     /**
-     * The episode and skill menus, for the WAD's maps, then the episode's first map that loads; the built-in map
-     * has no episodes. If none of the episode's maps loads, the menus come back.
+     * The episode and skill menus, for the WAD's maps, then the episode's first map that loads, read and planned
+     * under the ENTERING screen until a tap starts it; the built-in map has no episodes. If none of the episode's
+     * maps loads, the menus come back.
      */
     private static void chooseGame() {
         if (!World.fromWad) {
@@ -144,11 +146,13 @@ public final class Doom {
             World.map = 0;
             loaded = nextMap(false);
         }
+        World.planRoute();
+        Interludes.waitToPlay();
     }
 
     /**
      * Loads the episode's next map, skipping any that does not load (too large or missing), saying so on the tally
-     * ({@code overTally}) or on a loading screen; {@code false} once the episode's last map is done. The built-in
+     * ({@code overTally}) or on the ENTERING screen; {@code false} once the episode's last map is done. The built-in
      * map simply starts over.
      */
     private static boolean nextMap(boolean overTally) {
@@ -157,11 +161,10 @@ public final class Doom {
         }
         while (World.map < World.LAST_MAP) {
             World.map = World.map + 1;
-            if (overTally) {
-                Interludes.tallyLoading();
-            } else {
-                Interludes.loadingMap();
+            if (!overTally) {
+                Interludes.entering();
             }
+            Interludes.tallyLoading();
             if (World.loadMap()) {
                 return true;
             }
@@ -170,14 +173,15 @@ public final class Doom {
     }
 
     /**
-     * Starts the map afresh: the marine at the start, every monster back at its post, every item in place, and the
-     * CPU's route planned again from the start, unless it was already planned while the tally showed.
+     * Starts the map afresh: the marine at the start, every monster back at its post, every item in place. The CPU's
+     * route was planned while the tally or ENTERING screen showed; a {@code restart} after a death puts that route
+     * back instead of planning it again.
      */
-    private static void enterLevel(short[] ceilings, short[] monsters, short[] shots, byte[] taken, boolean plan) {
+    private static void enterLevel(short[] ceilings, short[] monsters, short[] shots, byte[] taken, boolean restart) {
         Lifts.reset();
         Player.spawn(ceilings);
-        if (plan) {
-            World.planRoute();
+        if (restart) {
+            World.restoreRoute();
         }
         Monsters.reset(monsters, shots);
         Items.reset(taken);

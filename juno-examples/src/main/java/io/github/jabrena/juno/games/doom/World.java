@@ -46,7 +46,7 @@ final class World {
     static final int WAD_ARENA_BYTES = 2 * (2 * MAX_VERTICES + 4 * MAX_LINES + 4 * MAX_SEGS + 6 * MAX_NODES
             + 3 * MAX_SUBSECTORS + 3 * MAX_SECTORS + 4 * MAX_DOORS + (3 + Monsters.STRIDE) * MAX_MONSTERS
             + 3 * MAX_ITEMS + 2 * MAX_ROUTE + 2 * LINE_WORDS + 2 * SECTOR_WORDS) + MAX_ITEMS + 44 * 16
-            + Lifts.ARENA_BYTES;
+            + Lifts.ARENA_BYTES + 4 * MAX_ROUTE + 2 * 16;
 
     /**
      * What {@link RoutePlanner} keeps for planning: open ceilings, per subsector a distance, parent, entry point,
@@ -119,6 +119,11 @@ final class World {
     static short[] itemKind;
     static short[] routeX;
     static short[] routeY;
+    /** The route as planned when the map started: a restart after a death walks it again without re-planning. */
+    private static short[] plannedX;
+    private static short[] plannedY;
+    private static int plannedLength;
+    private static int plannedLoop;
     /** One bit per line: set when the WAD marks it impassable ({@link #ML_BLOCKING}), like most windows. */
     static short[] lineBlocking;
     /** One bit per line: set when it is impassable to monsters only ({@link #ML_BLOCKMONSTERS}). */
@@ -200,6 +205,28 @@ final class World {
                 : RoutePlanner.shortOfExit ? " exit unreachable, route to nearest spot, waypoints="
                 : " no route to the exit, waypoints=");
         Serial.println(routeLength);
+        for (int i = 0; i < routeLength; i++) {
+            plannedX[i] = routeX[i];
+            plannedY[i] = routeY[i];
+        }
+        plannedLength = routeLength;
+        plannedLoop = loopStart;
+    }
+
+    /**
+     * Puts back the route planned when the map started, for a restart after a death: the CPU may have re-planned
+     * part of it since, and planning the whole map again would hold the restart for seconds on the board.
+     */
+    static void restoreRoute() {
+        if (!fromWad) {
+            return;
+        }
+        for (int i = 0; i < plannedLength; i++) {
+            routeX[i] = plannedX[i];
+            routeY[i] = plannedY[i];
+        }
+        routeLength = plannedLength;
+        loopStart = plannedLoop;
     }
 
     private static void printArena() {
@@ -274,6 +301,10 @@ final class World {
         short[] iy = new short[MAX_ITEMS];
         short[] ik = new short[MAX_ITEMS];
         short[] rx = new short[MAX_ROUTE];
+        short[] keptX = new short[MAX_ROUTE];
+        short[] keptY = new short[MAX_ROUTE];
+        plannedX = keptX;
+        plannedY = keptY;
         short[] ry = new short[MAX_ROUTE];
         short[] live = new short[MAX_SECTORS];
         short[] states = new short[MAX_MONSTERS * Monsters.STRIDE];
