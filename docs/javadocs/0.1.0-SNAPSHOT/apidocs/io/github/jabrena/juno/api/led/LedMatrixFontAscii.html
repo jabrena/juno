@@ -99,22 +99,16 @@ initTheme();
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
 <div class="block">A 5x7 dot-matrix font covering the full printable ASCII range (32 space .. 126 <code>~</code>), for
 printing arbitrary ASCII characters on the UNO R4 WiFi's 12x8 LED matrix one at a time (two
-glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns). Digits and uppercase letters
-reuse <a href="LedMatrixFont.html" title="class in io.github.jabrena.juno.api.led"><code>LedMatrixFont</code></a>'s shapes; this class adds space, punctuation/symbols, and distinct
-lowercase letter shapes so every printable ASCII code has a glyph.
+glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT shield's text.
+Digits and uppercase letters are <a href="LedMatrixFont.html" title="class in io.github.jabrena.juno.api.led"><code>LedMatrixFont</code></a>'s shapes; space, punctuation/symbols and
+distinct lowercase letter shapes complete the range so every printable ASCII code has a glyph.
 
-<p>Juno v0.1 has no <code>String</code>, so there is no "print a string" entry point here: callers
-draw one <code>char</code>/ASCII code at a time with <a href="#charPixel(int,int,int)"><code>charPixel(int, int, int)</code></a>, exactly like
+<p>Callers draw one <code>char</code>/ASCII code at a time with <a href="#charPixel(int,int,int)"><code>charPixel(int, int, int)</code></a>, exactly like
 <a href="LedMatrixFont.html#digitPixel(int,int,int)"><code>LedMatrixFont.digitPixel(int, int, int)</code></a> and <a href="LedMatrixFont.html#letterPixel(int,int,int)"><code>LedMatrixFont.letterPixel(int, int, int)</code></a>.
 
-<p>Unlike <code>digitPixel</code>/<code>letterPixel</code>, which only link in the specific glyph table a
-program actually calls, <a href="#charPixel(int,int,int)"><code>charPixel(int, int, int)</code></a> is a single dispatcher spanning the whole printable
-range: calling it for even one character statically reaches every symbol/lowercase glyph
-function below, so the whole table is linked into flash. Programs that only ever print digits
-and/or uppercase letters should keep using <a href="LedMatrixFont.html" title="class in io.github.jabrena.juno.api.led"><code>LedMatrixFont</code></a> directly to stay flash-lean.
-
-<p>As with <a href="LedMatrixFont.html" title="class in io.github.jabrena.juno.api.led"><code>LedMatrixFont</code></a>, each glyph is encoded as a small function returning, for a
-given row (0 = top .. 6 = bottom), a 5-bit mask of its lit columns (bit 4 = leftmost column).</div>
+<p>The glyphs are one constant table, <code>ROWS</code>: for each code, seven rows (0 = top .. 6 =
+bottom), each a 5-bit mask of its lit columns (bit 4 = leftmost column). Read only by index, the
+table stays in flash: 665 bytes, where the glyphs encoded as code took about 17 KB.</div>
 </div>
 </section>
 <section class="summary">
