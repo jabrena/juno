@@ -101,7 +101,11 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">DeadLocalStoreElimination</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
 implements <a href="CompilerPass.html" title="interface in io.github.jabrena.juno.optimize">CompilerPass</a></span></div>
-<div class="block">Removes stores to JVM/synthetic local slots that the optimized method never reads.</div>
+<div class="block">Removes stores to JVM/synthetic local slots that no later load can read. A backward liveness analysis over the CFG
+finds, after every store, whether some path still reads the slot before overwriting it; a store nothing reads is
+dropped. A <code>double</code> occupies two consecutive slots, so its loads and stores touch both. Exceptional control
+flow is explicit in the IR (a throwing call ends its block and branches to the handler), so a handler's reads are
+ordinary successor reads.</div>
 </div>
 </section>
 <section class="summary">

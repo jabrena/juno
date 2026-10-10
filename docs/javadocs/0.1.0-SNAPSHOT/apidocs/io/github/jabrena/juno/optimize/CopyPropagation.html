@@ -105,8 +105,10 @@ implements <a href="CompilerPass.html" title="interface in io.github.jabrena.jun
 load's target are rewritten to the stored value.
 
 <p>A forward CFG data-flow analysis intersects predecessor states: knowledge crosses a block boundary only
-when every predecessor carries the exact same typed IR value in that local slot. Conflicting branch values
-become unknown. The transformation repeats until no load can be removed, allowing a propagated load/store
+when every predecessor carries the exact same typed IR value in that local slot. When the predecessors carry
+different values that are all the same int constant (two branches that each store <code>0</code>), the load becomes a
+<code>Const</code> of that number: no single one of those values can stand in for it, but the number can, and the load
+keeps its value defined in its own block. Conflicting branch values become unknown. The transformation repeats until no load can be removed, allowing a propagated load/store
 chain to expose another fact in the next iteration. Field loads are never treated as memory facts: every
 <code>volatile</code> field read remains an actual read across calls and loop backedges.</div>
 </div>

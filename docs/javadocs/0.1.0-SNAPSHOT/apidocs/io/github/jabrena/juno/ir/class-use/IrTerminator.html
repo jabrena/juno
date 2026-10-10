@@ -108,9 +108,14 @@ consumes to generate assembly.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code><a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">IrBasicBlock.</span><code><a href="../IrBasicBlock.html#terminator()" class="member-name-link">terminator</a>()</code></div>
-<div class="col-last even-row-color">
+<div class="col-first even-row-color"><code>static <a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">IrRewriting.</span><code><a href="../IrRewriting.html#map(io.github.jabrena.juno.ir.IrTerminator,java.util.function.UnaryOperator,java.util.function.IntUnaryOperator)" class="member-name-link">map</a><wbr>(<a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a>&nbsp;terminator,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/function/UnaryOperator.html" title="interface in java.util.function" class="external-link">UnaryOperator</a>&lt;<a href="../Value.html" title="class in io.github.jabrena.juno.ir">Value</a>&gt;&nbsp;values,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/function/IntUnaryOperator.html" title="interface in java.util.function" class="external-link">IntUnaryOperator</a>&nbsp;blocks)</code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">IrBasicBlock.</span><code><a href="../IrBasicBlock.html#terminator()" class="member-name-link">terminator</a>()</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Returns the value of the <code>terminator</code> record component.</div>
 </div>
 </div>
@@ -119,9 +124,19 @@ consumes to generate assembly.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a><wbr>&lt;<a href="../Value.html" title="class in io.github.jabrena.juno.ir">Value</a>&gt;</code></div>
-<div class="col-second even-row-color"><span class="type-name-label">IrValues.</span><code><a href="../IrValues.html#of(io.github.jabrena.juno.ir.IrTerminator)" class="member-name-link">of</a><wbr>(<a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a>&nbsp;terminator)</code></div>
+<div class="col-first even-row-color"><code>static <a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">IrRewriting.</span><code><a href="../IrRewriting.html#map(io.github.jabrena.juno.ir.IrTerminator,java.util.function.UnaryOperator,java.util.function.IntUnaryOperator)" class="member-name-link">map</a><wbr>(<a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a>&nbsp;terminator,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/function/UnaryOperator.html" title="interface in java.util.function" class="external-link">UnaryOperator</a>&lt;<a href="../Value.html" title="class in io.github.jabrena.juno.ir">Value</a>&gt;&nbsp;values,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/function/IntUnaryOperator.html" title="interface in java.util.function" class="external-link">IntUnaryOperator</a>&nbsp;blocks)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a><wbr>&lt;<a href="../Value.html" title="class in io.github.jabrena.juno.ir">Value</a>&gt;</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">IrValues.</span><code><a href="../IrValues.html#of(io.github.jabrena.juno.ir.IrTerminator)" class="member-name-link">of</a><wbr>(<a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a>&nbsp;terminator)</code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a><wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Integer.html" title="class in java.lang" class="external-link">Integer</a>&gt;</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">ControlFlowGraph.</span><code><a href="../ControlFlowGraph.html#successors(io.github.jabrena.juno.ir.IrTerminator)" class="member-name-link">successors</a><wbr>(<a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a>&nbsp;terminator)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Where control may go after <code>terminator</code>, in the order its targets are listed.</div>
+</div>
 </div>
 <div class="caption"><span>Constructors in <a href="../package-summary.html">io.github.jabrena.juno.ir</a> with parameters of type <a href="../IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a></span></div>
 <div class="summary-table three-column-summary">

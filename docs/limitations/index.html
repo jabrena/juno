@@ -174,7 +174,7 @@ values, but not the general <code>String.valueOf(Object)</code>/<code>toString()
 </ul>
 <h2 id="how-these-are-found">How these are found</h2>
 <p><code>./mvnw -f juno/pom.xml -Pqemu verify</code> builds each program in <code>juno/src/test/qemu/programs</code>
-with the real generated assembly, runs it in QEMU (Cortex-M4) and requires output identical to the JVM. Known
+with the real generated assembly, runs it in QEMU (Cortex-M4) and requires output identical to the same source run on OpenJDK. Known
 bugs are listed in <code>QemuRunIT.KNOWN_GAPS</code> and skipped, so the suite stays green while the bug stays visible.
 The harness models no hardware, so it covers language and runtime behavior only.</p>
     </div>
