@@ -4,7 +4,7 @@ description: "Timing intrinsics: Delay and Clock."
 layout: page
 ---
 
-[`Clock`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Clock.java)
+[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/Clock.java)
 (`io.github.jabrena.juno.api`) is a compiler intrinsic that reads the board's monotonic uptime
 clock, backed directly by the Arduino core's `millis()`/`micros()`.
 
@@ -26,7 +26,7 @@ with `<`/`>`.
 
 ## `Clock` vs. `Delay`
 
-[`Delay`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java) (`millis`/`micros`) blocks
+[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/Delay.java) (`millis`/`micros`) blocks
 the program for a fixed duration and does nothing else meanwhile. `Clock` instead reports elapsed
 time, so a program built around it can do other work — polling a button, updating a display,
 handling network I/O — while still acting on a schedule. Reach for `Clock` whenever a loop needs

@@ -134,9 +134,9 @@ arduino-cli core install arduino:megaavr
 Generate a Juno sketch, then compile it for the board:
 
 ```bash
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+java -jar juno-compiler/target/juno-compiler-0.1.0-SNAPSHOT.jar compile \
   --main <ExampleClassName> \
-  --classpath juno-examples/target/classes:juno/target/classes
+  --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile \
   --fqbn arduino:megaavr:uno2018 \

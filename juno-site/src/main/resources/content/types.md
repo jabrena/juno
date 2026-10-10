@@ -12,7 +12,7 @@ and Arduino type systems meet.
 ## Supported Java types
 
 Method descriptor validation (in
-[`juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java))
+[`juno-compiler/src/main/java/io/github/jabrena/juno/linker/Descriptor.java`](https://github.com/jabrena/juno/blob/main/juno-compiler/src/main/java/io/github/jabrena/juno/linker/Descriptor.java))
 admits eight primitive JVM descriptor types as ordinary scalar method parameters/results:
 
 | Java type | JVM descriptor |
@@ -115,7 +115,7 @@ a call, field, or array boundary. Remaining exclusions include:
   concatenation, `String.valueOf(int)`/`(double)`, `length()`, `charAt(int)`, and a fixed-capacity
   `StringBuilder`); see
   [FEATURES.md](../features) for the exact list. Multi-character LED matrix display (see
-  [`LedCanvas`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java)) still works
+  [`LedCanvas`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java)) still works
   character-by-character with hand-encoded font tables rather than string data
 - polymorphic objects/inheritance and unbounded allocation. Final closed-world objects and records use
   one-slot handles into a fixed 8 KiB program-lifetime arena with no reclamation

@@ -20,5 +20,5 @@ fi
 # Resolve plugins/dependencies for the core modules so offline-ish test runs are fast.
 # juno-site (Quarkus/Roq) is left out: it is only needed for -Psite docs regeneration.
 cd "$CLAUDE_PROJECT_DIR"
-./mvnw --batch-mode --no-transfer-progress -q -pl juno,juno-maven-plugin,juno-examples -am \
+./mvnw --batch-mode --no-transfer-progress -q -pl juno-api,juno-compiler,juno-maven-plugin,juno-examples -am \
   -DskipTests install >/dev/null

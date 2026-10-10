@@ -7,9 +7,9 @@ layout: page
 Juno provides a small, allocation-free email stack for the Arduino UNO R4 WiFi. Programs can:
 
 - send a plain-text message to one recipient with
-  [`Smtp`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Smtp.java); and
+  [`Smtp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/email/Smtp.java); and
 - report a mailbox's message count, read the newest message, and read any message's subject with
-  [`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Pop3Client.java).
+  [`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/email/Pop3Client.java).
 
 Like `HttpClient`/`HttpsClient` (see [the Internet access guide](../internet)), these are compiler
 intrinsics: Java declares them as `native` methods, and Juno emits their Arduino C++

@@ -9,15 +9,18 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - **Language:** Java, `maven.compiler.release=27`. Build/dev JDK is pinned
   to 27 via `.sdkmanrc` and CI (`.github/workflows/maven.yaml`).
 - **Build:** Maven via the `./mvnw` wrapper (`.mvn/wrapper/maven-wrapper.properties`).
-- **Test framework:** JUnit (Jupiter). `juno` also uses Testcontainers (test scope) for the opt-in `arduino-cli` and QEMU tests.
+- **Test framework:** JUnit (Jupiter). `juno-compiler` also uses Testcontainers (test scope) for the opt-in `arduino-cli` and QEMU tests.
 - **External toolchain:** Arduino CLI with the `arduino:renesas_uno` (UNO R4 WiFi) and `arduino:zephyr`
   (UNO Q) cores, used to actually compile/upload generated sketches to real hardware; not a Maven dependency.
 
 ## File structure
 
-- `juno/` – the compiler (`src/main/java/io/github/jabrena/juno/`: `api`, `annotations`, `classfile`, `bytecode`,
-  `linker`, `backend`) plus its unit tests; a new `native` API method needs entries in `IntrinsicRegistry` and
-  `IntrinsicLowering`, and the backend never branches on a specific board.
+- `juno-api/` – the programming model programs compile against (`src/main/java/io/github/jabrena/juno/`: `api`,
+  `annotations`); it has no dependency on the compiler.
+- `juno-compiler/` – the compiler (`src/main/java/io/github/jabrena/juno/`: `classfile`, `bytecode`, `linker`,
+  `backend`, …) plus its unit tests; depends on `juno-api`. A new `native` API method is declared in `juno-api`
+  and needs entries in `IntrinsicRegistry` and `IntrinsicLowering` here, and the backend never branches on a
+  specific board.
 - `juno-maven-plugin/` – Maven goals (`juno:compile`, `verify`, `upload`, `monitor`) and their tests; tests use a
   fake process executor and never touch hardware.
 - `juno-examples/` – example programs buildable with `arduino-cli`, plus game, `arduino-cli` and QEMU tests.
@@ -36,7 +39,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 # Full verify, matching CI (.github/workflows/maven.yaml)
 ./mvnw --batch-mode --no-transfer-progress verify
 
-# Generate the juno module's Javadoc HTML into docs/javadocs/<version>/apidocs
+# Generate the juno-api and juno-compiler modules' Javadoc HTML into docs/javadocs/<version>/apidocs
 ./mvnw javadoc:aggregate
 
 # Install reactor artifacts so the example module can resolve the development plugin
@@ -52,13 +55,13 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
 
-# Compile the small API/shield fixtures (juno/src/test/arduino/programs) for each board with the real
+# Compile the small API/shield fixtures (juno-compiler/src/test/arduino/programs) for each board with the real
 # arduino-cli inside Docker (Testcontainers; needs Docker)
-./mvnw -f juno/pom.xml -Parduino-cli verify
+./mvnw -pl juno-compiler -am -Parduino-cli verify
 
 # Run core-feature programs under QEMU (Cortex-M4) in Docker and compare their
 # serial output with an OpenJDK run of the same source (Testcontainers; needs Docker; models no hardware)
-./mvnw -f juno/pom.xml -Pqemu verify
+./mvnw -pl juno-compiler -am -Pqemu verify
 
 # Flash the generated program; auto-detects one matching board, or accepts -Djuno.port=<PORT>
 ./mvnw -f juno-examples/pom.xml compile juno:upload

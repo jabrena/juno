@@ -4,7 +4,7 @@ description: "Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, fro
 layout: page
 ---
 
-[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubRemote.java)
+[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubRemote.java)
 (`io.github.jabrena.juno.api.lego`) lets a Juno program remote-control a LEGO Powered Up hub — run
 its motors and set its status LED — the same way the LEGO apps do. The board acts as a Bluetooth
 Low Energy central and speaks the

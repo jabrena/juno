@@ -43,7 +43,7 @@ See [Feature Inventory](/features) for the supported subset. Beyond it:
 
 ## How these are found
 
-`./mvnw -f juno/pom.xml -Pqemu verify` builds each program in `juno/src/test/qemu/programs`
+`./mvnw -pl juno-compiler -am -Pqemu verify` builds each program in `juno-compiler/src/test/qemu/programs`
 with the real generated assembly, runs it in QEMU (Cortex-M4) and requires output identical to the same source run on OpenJDK. Known
 bugs are listed in `QemuRunIT.KNOWN_GAPS` and skipped, so the suite stays green while the bug stays visible.
 The harness models no hardware, so it covers language and runtime behavior only.

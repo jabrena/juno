@@ -6,12 +6,12 @@ layout: page
 
 Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiFi. Programs can:
 
-- connect to a Wi-Fi network with [`Wifi`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/Wifi.java);
+- connect to a Wi-Fi network with [`Wifi`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/Wifi.java);
 - send plain HTTP or TLS-protected HTTPS `GET`, `POST`, `DELETE`, `PATCH`, and `QUERY` requests with
-  [`HttpClient`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java) and
-  [`HttpsClient`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/http/HttpsClient.java); and
+  [`HttpClient`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java) and
+  [`HttpsClient`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/HttpsClient.java); and
 - extract typed values directly from JSON response bytes with
-  [`Json`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/http/Json.java).
+  [`Json`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/Json.java).
 
 These APIs are compiler intrinsics, like every Juno API — see [docs/APIS.md](../apis) for what
 that means, how they're built, and the general rules (compile-time-only `String` arguments,
@@ -445,9 +445,9 @@ and monitor it:
 
 JUNO_WIFI_SSID='your-network-name' \
 JUNO_WIFI_PASSWORD='your-network-password' \
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+java -jar juno-compiler/target/juno-compiler-0.1.0-SNAPSHOT.jar compile \
   --main InternetExample \
-  --classpath juno-examples/target/classes:juno/target/classes
+  --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile \
   --fqbn arduino:renesas_uno:unor4wifi \

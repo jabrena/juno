@@ -6,6 +6,7 @@ import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.analysis.ConfigSuggestion;
 import io.github.jabrena.juno.analysis.ConfigSuggestionFormatter;
+import io.github.jabrena.juno.annotations.Watchdog;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -51,8 +52,9 @@ class PoweredUpHubScanWhileBlinkingConfigTest {
 
     private static CompilationResult compile(RuntimeConfig config) throws URISyntaxException {
         Path examples = Path.of("target/classes");
-        Path juno = Path.of(JunoCompiler.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        return new JunoCompiler().compile(new CompilationRequest(List.of(examples, juno), MAIN, false,
+        // Anchored on an annotation: test sources here shadow some api classes (e.g. a fake Gpio).
+        Path api = Path.of(Watchdog.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        return new JunoCompiler().compile(new CompilationRequest(List.of(examples, api), MAIN, false,
                 Optional.of("arduino-uno-r4-wifi"), config));
     }
 }

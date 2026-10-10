@@ -9,7 +9,8 @@
     <description>A tiny Java AOT compiler for Arduino UNO R4 WiFi</description>
 
     <modules>
-        <module>juno</module>
+        <module>juno-api</module>
+        <module>juno-compiler</module>
         <module>juno-maven-plugin</module>
         <module>juno-examples</module>
         <module>juno-site</module>
@@ -41,7 +42,12 @@
         <dependencies>
             <dependency>
                 <groupId>io.github.jabrena</groupId>
-                <artifactId>juno</artifactId>
+                <artifactId>juno-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.jabrena</groupId>
+                <artifactId>juno-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

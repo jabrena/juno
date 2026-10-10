@@ -4,7 +4,7 @@ description: "Emulating a USB HID mouse from a sketch."
 layout: page
 ---
 
-[`Mouse`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/hid/Mouse.java)
+[`Mouse`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hid/Mouse.java)
 (`io.github.jabrena.juno.api.hid`) lets a Juno program act as a USB HID mouse, moving the
 pointer of whatever computer the board's USB port is plugged into. It is a compiler intrinsic
 backed by the Arduino `Mouse` library.

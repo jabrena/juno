@@ -285,18 +285,18 @@ This runs the games' Java on the JVM, not the code Juno generates for the board.
 ## Compiling with the real Arduino toolchain in Docker
 
 `juno:verify` compiles a game with the real toolchain, and you can run it on any game. The compiler's own
-suite, `ArduinoCliCompileIT` in the `juno` module, does the same for small programs that each exercise one
+suite, `ArduinoCliCompileIT` in the `juno-compiler` module, does the same for small programs that each exercise one
 API or shield (GPIO, Serial, Servo, I2C, TFT touch, LCD keypad, ...) once per board they declare —
 Juno generates the sketch, then `arduino-cli compile` builds and links it with the real UNO R4 or UNO Q
 core — inside a Docker container started with [Testcontainers](https://testcontainers.com),
 so you need Docker but no local Arduino installation. It is opt-in:
 
 ```bash
-./mvnw -f juno/pom.xml -Parduino-cli verify
+./mvnw -pl juno-compiler -am -Parduino-cli verify
 ```
 
 The first run builds the image from
-[`juno/src/test/docker/arduino-cli/Dockerfile`](https://github.com/jabrena/juno/tree/main/juno/src/test/docker/arduino-cli/Dockerfile)
+[`juno-compiler/src/test/docker/arduino-cli/Dockerfile`](https://github.com/jabrena/juno/tree/main/juno-compiler/src/test/docker/arduino-cli/Dockerfile)
 (`arduino-cli` plus the `arduino:renesas_uno` and `arduino:zephyr` cores, several hundred MB) and Docker caches it for
 later runs. To use an image you built or pulled yourself, add
 `-Djuno.arduinoCliImage=<image>`. Without Docker the test is skipped. If your network blocks

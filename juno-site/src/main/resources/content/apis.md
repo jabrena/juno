@@ -17,7 +17,7 @@ There is no JVM on the board, so a method like `HttpClient.get(...)` never runs 
 Every operation Juno recognizes is declared as a `public static native` method:
 
 ```java
-// juno/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java
+// juno-api/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java
 public static native int get(String host, int port, String path,
         byte[] responseBuffer, int responseBufferLength,
         byte[] headersBuffer, int headersBufferLength,
@@ -151,14 +151,15 @@ its own codes — read it before assuming `< 0` always means the same thing acro
 
 ## Anatomy of an API, piece by piece
 
-Adding (or understanding) an intrinsic touches four places, all in the `juno` module. Numbers
+Adding (or understanding) an intrinsic touches four places: the API class in the `juno-api` module and
+the rest in the `juno-compiler` module. Numbers
 below match `HttpClient.get`'s real wiring.
 
 ### 1. The Java-facing API class
 
 `io.github.jabrena.juno.api.net.http.HttpClient` — `final`, private constructor, one `public
 static native` method per operation. This is the only file `juno-examples` code ever imports;
-everything past this point is internal to `juno` itself.
+everything past this point is internal to `juno-compiler`.
 
 ### 2. An `Intrinsic` enum constant
 
