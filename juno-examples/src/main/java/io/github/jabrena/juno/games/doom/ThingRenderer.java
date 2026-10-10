@@ -5,8 +5,9 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 /**
  * Things drawn after the walls: items, monsters, corpses and fireballs as billboards that always face
  * the marine, each line kept only in the columns where it stands nearer than the wall {@link Renderer}
- * closed that column with; then the pistol, its muzzle flash, the crosshair and the red frame of a
- * fresh wound over the view.
+ * closed that column with; then the muzzle flash and the red frame of a fresh wound over the view. The
+ * pistol and the crosshair never change, so they are added before the walls, into the display list's
+ * pinned overlay ({@link #drawGun}).
  */
 final class ThingRenderer {
     private static final int NEAREST_THING = 16;
@@ -27,6 +28,10 @@ final class ThingRenderer {
     private static float clipY0;
     private static float clipX1;
     private static float clipY1;
+    // The billboard being drawn, once projected.
+    private static float scale;
+    private static float centerX;
+    private static int distance;
 
     private ThingRenderer() {
     }
@@ -36,11 +41,11 @@ final class ThingRenderer {
         viewX = Player.x;
         viewY = Player.y;
         viewZ = Player.eye;
-        cos = (float) Math.cos(Player.angle);
-        sin = (float) Math.sin(Player.angle);
+        cos = Renderer.cos;
+        sin = Renderer.sin;
         drawItems(lines, taken);
         drawThings(lines, monsters, shots);
-        drawOverlay(lines);
+        drawEffects(lines);
     }
 
     private static void drawItems(short[] lines, byte[] taken) {
@@ -48,9 +53,12 @@ final class ThingRenderer {
             if (taken[i] == 0) {
                 float x = World.itemX[i];
                 float y = World.itemY[i];
-                int kind = World.itemKind[i];
-                drawShape(lines, Sprites.itemShape(kind), x, y, World.sectorFloor[Player.sectorAt(x, y)],
-                        Sprites.itemColor(kind));
+                // Only an item in view needs its floor, which takes a walk down the BSP tree.
+                if (project(x, y)) {
+                    int kind = World.itemKind[i];
+                    strokes(lines, Sprites.itemShape(kind), World.sectorFloor[Player.sectorAt(x, y)],
+                            Sprites.itemColor(kind));
+                }
             }
         }
     }
@@ -83,19 +91,28 @@ final class ThingRenderer {
 
     /** A billboard: the shape stands at (wx, wy) with its origin at height {@code baseZ}, facing the view. */
     private static void drawShape(short[] lines, int shape, float wx, float wy, float baseZ, int color) {
+        if (project(wx, wy)) {
+            strokes(lines, shape, baseZ, color);
+        }
+    }
+
+    /** Projects a billboard standing at (wx, wy); returns whether it is far enough ahead and near the view. */
+    private static boolean project(float wx, float wy) {
         float x = wx - viewX;
         float y = wy - viewY;
         float depth = x * cos + y * sin;
         if (depth < NEAREST_THING) {
-            return;
+            return false;
         }
-        float scale = FOCAL / depth;
-        float centerX = CX + (x * sin - y * cos) * scale;
+        scale = FOCAL / depth;
+        centerX = CX + (x * sin - y * cos) * scale;
+        distance = Math.round(depth);
+        return centerX >= -40 * scale && centerX <= DisplayList.WIDTH + 40 * scale;
+    }
+
+    /** The projected billboard's lines, with its origin at height {@code baseZ}. */
+    private static void strokes(short[] lines, int shape, float baseZ, int color) {
         float baseY = CY - (baseZ - viewZ) * scale;
-        if (centerX < -40 * scale || centerX > DisplayList.WIDTH + 40 * scale) {
-            return;
-        }
-        int distance = Math.round(depth);
         for (int i = Sprites.START[shape]; i < Sprites.START[shape + 1]; i += 4) {
             spriteLine(lines, centerX + Sprites.SEGMENTS[i] * scale, baseY - Sprites.SEGMENTS[i + 1] * scale,
                     centerX + Sprites.SEGMENTS[i + 2] * scale, baseY - Sprites.SEGMENTS[i + 3] * scale,
@@ -171,8 +188,8 @@ final class ThingRenderer {
         return true;
     }
 
-    /** The pistol, its muzzle flash, the crosshair and the red frame of a fresh wound, over the view. */
-    private static void drawOverlay(short[] lines) {
+    /** The crosshair and the pistol: the same lines every frame. */
+    static void drawGun(short[] lines) {
         DisplayList.add(lines, CX - 3, CY, CX + 3, CY, CROSSHAIR);
         DisplayList.add(lines, CX, CY - 3, CX, CY + 3, CROSSHAIR);
         DisplayList.add(lines, 146, 199, 149, 173, GUN);
@@ -183,6 +200,10 @@ final class ThingRenderer {
         DisplayList.add(lines, 156, 165, 156, 156, GUN);
         DisplayList.add(lines, 156, 156, 164, 156, GUN);
         DisplayList.add(lines, 164, 156, 164, 165, GUN);
+    }
+
+    /** The muzzle flash and the red frame of a fresh wound, over the view. */
+    private static void drawEffects(short[] lines) {
         if (Weapon.flash > 0) {
             DisplayList.add(lines, 150, 146, 170, 146, Sprites.FLASH_COLOR);
             DisplayList.add(lines, 160, 138, 160, 153, Sprites.FLASH_COLOR);

@@ -25,7 +25,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * {@link Autopilot} walk the map (a route {@link RoutePlanner} plans to the exit, or the built-in map's patrol), and
  * tapping the status bar switches between them. With the WAD, an episode menu ({@link Episodes}) follows.
  * {@link Player} walks and opens doors, {@link Renderer} builds each frame and {@link DisplayList} draws
- * only what changed.
+ * only what changed. {@link FrameStats} reports what each frame costs over the serial port.
  */
 @Board(ArduinoUnoQ.class)
 public final class Doom {
@@ -42,6 +42,7 @@ public final class Doom {
         World.load();
         short[] lines = new short[2 * DisplayList.LIST_SIZE];
         byte[] clips = new byte[2 * DisplayList.WIDTH];
+        byte[] changes = new byte[DisplayList.MAX_LINES];
         short[] stack = new short[64];
         short[] depths = new short[DisplayList.WIDTH];
         short[] shots = new short[Monsters.SHOTS * Monsters.SHOT_STRIDE];
@@ -65,6 +66,7 @@ public final class Doom {
                 next = Clock.millis();
             }
             frame = frame + 1;
+            int started = Clock.micros();
             Weapon.tick();
             if (Player.hurt > 0) {
                 Player.hurt = Player.hurt - 1;
@@ -79,7 +81,11 @@ public final class Doom {
             Player.settle();
             Items.pickUp(taken);
             Monsters.think(monsters, shots, ceilings, frame);
-            Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken);
+            int building = Clock.micros();
+            Renderer.build(lines, clips, depths, stack, ceilings, monsters, shots, taken);
+            int presenting = Clock.micros();
+            DisplayList.present(lines, changes);
+            FrameStats.record(started, building, presenting, Clock.micros());
             if ((frame & 3) == 0) {
                 Hud.drawStatus();
             }

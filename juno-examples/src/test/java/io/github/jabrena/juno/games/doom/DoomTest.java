@@ -4,6 +4,7 @@ import static io.github.jabrena.juno.api.tft.Internals.getInt;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.io.Gpio;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,6 +25,7 @@ class DoomTest {
     private short[] monsters;
     private short[] shots;
     private byte[] taken;
+    private byte[] changes;
 
     @BeforeEach
     void spawn() {
@@ -31,6 +33,7 @@ class DoomTest {
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
         lines = new short[2 * DisplayList.LIST_SIZE];
         clips = new byte[2 * DisplayList.WIDTH];
+        changes = new byte[DisplayList.MAX_LINES];
         stack = new short[64];
         World.loadBuiltIn();
         ceilings = World.ceilings;
@@ -114,7 +117,7 @@ class DoomTest {
         Player.x = 100;
         Player.y = 256;
         Player.angle = (float) Math.PI;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken);
+        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         for (int x = 0; x < DisplayList.WIDTH; x++) {
             assertThat((clips[x] & 0xFF) + 1).as("column %d closed", x)
                     .isGreaterThanOrEqualTo(clips[DisplayList.WIDTH + x] & 0xFF);
@@ -127,12 +130,73 @@ class DoomTest {
         Player.x = 300;
         Player.y = 256;
         Player.angle = 0;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken);
+        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         assertThat(colors()).contains(Renderer.STEP, Renderer.LINTEL);
         int middle = DisplayList.WIDTH / 2;
         assertThat((clips[middle] & 0xFF) + 1)
                 .as("the far room's wall finally closes the middle column")
                 .isGreaterThanOrEqualTo(clips[DisplayList.WIDTH + middle] & 0xFF);
+    }
+
+    @Test
+    void aVerticalLineIsOneFillAndASteepOneOnePerColumn() {
+        DisplayList.windows = 0;
+        DisplayList.pixels = 0;
+        DisplayList.drawLine(10, 10, 10, 100, Renderer.WALL);
+        assertThat(DisplayList.windows).as("a vertical line is a single address window").isEqualTo(1);
+        assertThat(DisplayList.pixels).isEqualTo(91);
+        DisplayList.windows = 0;
+        DisplayList.pixels = 0;
+        DisplayList.drawLine(20, 100, 30, 10, Renderer.WALL);
+        assertThat(DisplayList.windows).as("one run per column it spans").isEqualTo(11);
+        assertThat(DisplayList.pixels).as("one pixel per row").isEqualTo(91);
+    }
+
+    @Test
+    void theGunKeepsItsSlotsWhileTheWallsChange() {
+        Player.x = 300;
+        Player.y = 256;
+        Player.angle = 0;
+        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        short[] gun = gunLines();
+        int walls = getInt(DisplayList.class, "shown");
+        Player.angle = (float) Math.PI;
+        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        assertThat(getInt(DisplayList.class, "shown")).as("the view changed").isNotEqualTo(walls);
+        assertThat(gunLines()).isEqualTo(gun);
+    }
+
+    @Test
+    void anUnchangedFrameSendsNothingToTheScreen() {
+        Player.x = 300;
+        Player.y = 256;
+        Player.angle = 0;
+        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        DisplayList.windows = 0;
+        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        assertThat(DisplayList.windows).isZero();
+    }
+
+    @Test
+    void afterAWalkTheScreenShowsExactlyWhatAFreshDrawOfTheLastFrameWould() {
+        DisplayList.clearView();
+        for (int frame = 0; frame < 240; frame++) {
+            Weapon.tick();
+            Autopilot.step(ceilings, monsters, taken);
+            Player.operateDoors(ceilings);
+            Player.settle();
+            Monsters.think(monsters, shots, ceilings, frame);
+            Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        }
+        boolean[] walked = litView();
+        DisplayList.clearView();
+        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        boolean[] fresh = litView();
+        int wrong = 0;
+        for (int i = 0; i < fresh.length; i++) {
+            wrong = wrong + (fresh[i] != walked[i] ? 1 : 0);
+        }
+        assertThat(wrong).as("pixels left lit or erased by the frame-to-frame diff").isZero();
     }
 
     @Test
@@ -203,13 +267,13 @@ class DoomTest {
         Player.x = 100;
         Player.y = 450;
         Player.angle = (float) Math.atan2(320 - 450, 860 - 100);
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken);
+        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         assertThat(colors()).as("the wall at x=512 stands between them").doesNotContain(Sprites.ZOMBIEMAN_COLOR);
 
         Player.x = 600;
         Player.y = 320;
         Player.angle = 0;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken);
+        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         assertThat(colors()).as("in the same room").contains(Sprites.ZOMBIEMAN_COLOR);
     }
 
@@ -304,6 +368,25 @@ class DoomTest {
 
     private short[] shots() {
         return shots;
+    }
+
+    /** Which pixels of the 3D view are lit on the emulated screen. */
+    private static boolean[] litView() {
+        boolean[] lit = new boolean[DisplayList.WIDTH * DisplayList.VIEW_BOTTOM];
+        for (int y = DisplayList.VIEW_TOP; y < DisplayList.VIEW_BOTTOM; y++) {
+            for (int x = 0; x < DisplayList.WIDTH; x++) {
+                lit[y * DisplayList.WIDTH + x] = Gpio.FRAMEBUFFER[y * Gpio.STRIDE + x] != DisplayList.BACKGROUND;
+            }
+        }
+        return lit;
+    }
+
+    /** The shown frame's first ten slots: the crosshair and the pistol, pinned at the head of the list. */
+    private short[] gunLines() {
+        int base = getInt(DisplayList.class, "front") * DisplayList.LIST_SIZE;
+        short[] gun = new short[10 * 5];
+        System.arraycopy(lines, base, gun, 0, gun.length);
+        return gun;
     }
 
     /** Colors of the line fragments the last render built: after present() that half is the front one. */

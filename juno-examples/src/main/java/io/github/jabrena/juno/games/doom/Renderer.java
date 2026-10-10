@@ -30,8 +30,9 @@ final class Renderer {
     private static float viewX;
     private static float viewY;
     private static float viewZ;
-    private static float cos;
-    private static float sin;
+    /** The view direction, shared with {@link ThingRenderer} so each frame takes one cosine and one sine. */
+    static float cos;
+    static float sin;
     private static int closed;
     private static short[] depths;
     private static final int FAR = Short.MAX_VALUE;
@@ -47,9 +48,16 @@ final class Renderer {
     private Renderer() {
     }
 
-    /** Builds the frame seen from the marine's eye into the display list. */
+    /** Builds the frame seen from the marine's eye and presents it. */
     static void render(short[] lines, byte[] clips, short[] columnDepths, short[] stack, short[] ceilings,
-                       short[] monsters, short[] shots, byte[] taken) {
+                       short[] monsters, short[] shots, byte[] taken, byte[] changes) {
+        build(lines, clips, columnDepths, stack, ceilings, monsters, shots, taken);
+        DisplayList.present(lines, changes);
+    }
+
+    /** Builds the frame seen from the marine's eye into the display list, without drawing it. */
+    static void build(short[] lines, byte[] clips, short[] columnDepths, short[] stack, short[] ceilings,
+                      short[] monsters, short[] shots, byte[] taken) {
         depths = columnDepths;
         viewX = Player.x;
         viewY = Player.y;
@@ -63,6 +71,8 @@ final class Renderer {
         }
         closed = 0;
         DisplayList.begin();
+        ThingRenderer.drawGun(lines);
+        DisplayList.pin();
 
         int count = World.nodes;
         int depth = 0;
@@ -83,7 +93,6 @@ final class Renderer {
             }
         }
         ThingRenderer.draw(lines, depths, monsters, shots, taken);
-        DisplayList.present(lines);
     }
 
     private static void drawSubsector(short[] lines, byte[] clips, short[] ceilings, int subsector) {

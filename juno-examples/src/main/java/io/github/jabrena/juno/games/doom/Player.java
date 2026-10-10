@@ -28,6 +28,12 @@ final class Player {
     /** Frames left of the red flash that shows the marine was just hit. */
     static int hurt;
 
+    // The box around the path blocked() or canSee() tests: a line outside it cannot cross the path.
+    private static float lowX;
+    private static float lowY;
+    private static float highX;
+    private static float highY;
+
     private Player() {
     }
 
@@ -156,6 +162,7 @@ final class Player {
 
     /** Whether walking from one point to another crosses a wall, a step over 24 units or a too-low opening. */
     static boolean blocked(float fromX, float fromY, float toX, float toY, short[] ceilings) {
+        box(fromX, fromY, toX, toY);
         for (int line = 0; line < World.lines; line++) {
             int v1 = World.lineV1[line];
             int v2 = World.lineV2[line];
@@ -163,6 +170,9 @@ final class Player {
             float ay = World.vertexY[v1];
             float bx = World.vertexX[v2];
             float by = World.vertexY[v2];
+            if (outside(ax, ay, bx, by)) {
+                continue;
+            }
             float from = side(ax, ay, bx, by, fromX, fromY);
             float to = side(ax, ay, bx, by, toX, toY);
             if (from * to >= 0) {
@@ -194,14 +204,18 @@ final class Player {
      * opening the sight line passes above or below.
      */
     static boolean canSee(float ax, float ay, float az, float bx, float by, float bz, short[] ceilings) {
+        box(ax, ay, bx, by);
         for (int line = 0; line < World.lines; line++) {
-            int back = World.lineBack[line];
             int v1 = World.lineV1[line];
             int v2 = World.lineV2[line];
             float lx = World.vertexX[v1];
             float ly = World.vertexY[v1];
             float mx = World.vertexX[v2];
             float my = World.vertexY[v2];
+            if (outside(lx, ly, mx, my)) {
+                continue;
+            }
+            int back = World.lineBack[line];
             float from = side(lx, ly, mx, my, ax, ay);
             float to = side(lx, ly, mx, my, bx, by);
             if (from * to >= 0) {
@@ -224,6 +238,19 @@ final class Player {
             }
         }
         return true;
+    }
+
+    private static void box(float ax, float ay, float bx, float by) {
+        lowX = Math.min(ax, bx);
+        lowY = Math.min(ay, by);
+        highX = Math.max(ax, bx);
+        highY = Math.max(ay, by);
+    }
+
+    /** Whether the line a&#8594;b lies wholly to one side of the path's box, so the two cannot cross. */
+    private static boolean outside(float ax, float ay, float bx, float by) {
+        return Math.max(ax, bx) < lowX || Math.min(ax, bx) > highX || Math.max(ay, by) < lowY
+                || Math.min(ay, by) > highY;
     }
 
     /** Cross product sign: negative when ({@code px}, {@code py}) is right of the line a&#8594;b. */
