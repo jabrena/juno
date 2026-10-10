@@ -44,19 +44,19 @@ final class ThingRenderer {
     }
 
     private static void drawItems(short[] lines, byte[] taken) {
-        for (int i = 0; i < Level.ITEMS; i++) {
+        for (int i = 0; i < World.items; i++) {
             if (taken[i] == 0) {
-                float x = Level.ITEM_X[i];
-                float y = Level.ITEM_Y[i];
-                int kind = Level.ITEM_KIND[i];
-                drawShape(lines, Sprites.itemShape(kind), x, y, Level.SECTOR_FLOOR[Player.sectorAt(x, y)],
+                float x = World.itemX[i];
+                float y = World.itemY[i];
+                int kind = World.itemKind[i];
+                drawShape(lines, Sprites.itemShape(kind), x, y, World.sectorFloor[Player.sectorAt(x, y)],
                         Sprites.itemColor(kind));
             }
         }
     }
 
     private static void drawThings(short[] lines, short[] monsters, short[] shots) {
-        for (int i = 0; i < Level.MONSTERS; i++) {
+        for (int i = 0; i < World.monsters; i++) {
             int at = i * Monsters.STRIDE;
             int state = monsters[at + Monsters.STATE];
             int kind = monsters[at + Monsters.KIND];

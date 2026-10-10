@@ -18,18 +18,18 @@ final class Items {
     }
 
     static void reset(byte[] taken) {
-        for (int i = 0; i < Level.ITEMS; i++) {
+        for (int i = 0; i < World.items; i++) {
             taken[i] = 0;
         }
     }
 
     /** Picks up whatever useful item the marine is standing on. */
     static void pickUp(byte[] taken) {
-        for (int i = 0; i < Level.ITEMS; i++) {
-            float dx = Level.ITEM_X[i] - Player.x;
-            float dy = Level.ITEM_Y[i] - Player.y;
-            if (taken[i] == 0 && dx * dx + dy * dy < REACH * REACH && useful(Level.ITEM_KIND[i])) {
-                apply(Level.ITEM_KIND[i]);
+        for (int i = 0; i < World.items; i++) {
+            float dx = World.itemX[i] - Player.x;
+            float dy = World.itemY[i] - Player.y;
+            if (taken[i] == 0 && dx * dx + dy * dy < REACH * REACH && useful(World.itemKind[i])) {
+                apply(World.itemKind[i]);
                 taken[i] = 1;
             }
         }

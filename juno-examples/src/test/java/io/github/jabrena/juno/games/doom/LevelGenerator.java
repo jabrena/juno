@@ -197,8 +197,19 @@ public final class LevelGenerator {
                     static final int EXIT_Y = %d;
                     static final int MONSTERS = %d;
                     static final int ITEMS = %d;
+                    // Table sizes, so World can allocate RAM for this map with compile-time-constant lengths.
+                    static final int VERTICES = %d;
+                    static final int LINES = %d;
+                    static final int SEGS = %d;
+                    static final int NODES = %d;
+                    static final int SUBSECTORS = %d;
+                    static final int SECTORS = %d;
+                    static final int DOORS = %d;
+                    static final int ROUTE_POINTS = %d;
 
-                """.formatted(map, map, map, startX, startY, startAngle, route.loopStart(), exitX, exitY, monsters.size(), items.size()));
+                """.formatted(map, map, map, startX, startY, startAngle, route.loopStart(), exitX, exitY, monsters.size(),
+                items.size(), vertexCount, lineCount, segCount, nodeCount, subsectorCount, sectorCount, doors,
+                route.points().length / 2));
         int[] routeX = new int[route.points().length / 2];
         int[] routeY = new int[routeX.length];
         for (int i = 0; i < routeX.length; i++) {

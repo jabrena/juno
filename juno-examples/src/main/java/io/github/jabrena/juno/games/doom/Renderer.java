@@ -64,7 +64,7 @@ final class Renderer {
         closed = 0;
         DisplayList.begin();
 
-        int count = LevelNodes.X.length;
+        int count = World.nodes;
         int depth = 0;
         stack[depth] = (short) (count == 0 ? 0x8000 : count - 1);
         depth = depth + 1;
@@ -75,8 +75,8 @@ final class Renderer {
                 drawSubsector(lines, clips, ceilings, child & 0x7FFF);
             } else if (depth + 2 <= STACK) {
                 boolean back = Player.onBackSide(child, viewX, viewY);
-                int near = back ? LevelNodes.LEFT[child] : LevelNodes.RIGHT[child];
-                int far = back ? LevelNodes.RIGHT[child] : LevelNodes.LEFT[child];
+                int near = back ? World.nodeLeft[child] : World.nodeRight[child];
+                int far = back ? World.nodeRight[child] : World.nodeLeft[child];
                 stack[depth] = (short) far;
                 stack[depth + 1] = (short) near;
                 depth = depth + 2;
@@ -87,20 +87,20 @@ final class Renderer {
     }
 
     private static void drawSubsector(short[] lines, byte[] clips, short[] ceilings, int subsector) {
-        int first = LevelNodes.SUBSECTOR_FIRST[subsector];
-        int last = first + LevelNodes.SUBSECTOR_COUNT[subsector];
+        int first = World.subsectorFirst[subsector];
+        int last = first + World.subsectorCount[subsector];
         for (int seg = first; seg < last && closed < DisplayList.WIDTH; seg++) {
             drawSeg(lines, clips, ceilings, seg);
         }
     }
 
     private static void drawSeg(short[] lines, byte[] clips, short[] ceilings, int seg) {
-        int v1 = LevelSegs.V1[seg];
-        int v2 = LevelSegs.V2[seg];
-        float x1 = LevelVertices.X[v1] - viewX;
-        float y1 = LevelVertices.Y[v1] - viewY;
-        float x2 = LevelVertices.X[v2] - viewX;
-        float y2 = LevelVertices.Y[v2] - viewY;
+        int v1 = World.segV1[seg];
+        int v2 = World.segV2[seg];
+        float x1 = World.vertexX[v1] - viewX;
+        float y1 = World.vertexY[v1] - viewY;
+        float x2 = World.vertexX[v2] - viewX;
+        float y2 = World.vertexY[v2] - viewY;
         float depth1 = x1 * cos + y1 * sin;
         float depth2 = x2 * cos + y2 * sin;
         if (depth1 < NEAR && depth2 < NEAR) {
@@ -108,9 +108,9 @@ final class Renderer {
         }
         float side1 = x1 * sin - y1 * cos;
         float side2 = x2 * sin - y2 * cos;
-        int line = LevelSegs.LINE[seg];
-        boolean startCorner = v1 == LevelLines.V1[line] || v1 == LevelLines.V2[line];
-        boolean endCorner = v2 == LevelLines.V1[line] || v2 == LevelLines.V2[line];
+        int line = World.segLine[seg];
+        boolean startCorner = v1 == World.lineV1[line] || v1 == World.lineV2[line];
+        boolean endCorner = v2 == World.lineV1[line] || v2 == World.lineV2[line];
         if (depth1 < NEAR) {
             float t = (NEAR - depth1) / (depth2 - depth1);
             side1 = side1 + (side2 - side1) * t;
@@ -137,10 +137,10 @@ final class Renderer {
         startCorner = startCorner && leftX >= 0;
         endCorner = endCorner && rightX <= DisplayList.WIDTH;
 
-        boolean backSide = LevelSegs.SIDE[seg] != 0;
-        int front = backSide ? LevelLines.BACK[line] : LevelLines.FRONT[line];
-        int back = backSide ? LevelLines.FRONT[line] : LevelLines.BACK[line];
-        float frontFloor = Level.SECTOR_FLOOR[front] - viewZ;
+        boolean backSide = World.segSide[seg] != 0;
+        int front = backSide ? World.lineBack[line] : World.lineFront[line];
+        int back = backSide ? World.lineFront[line] : World.lineBack[line];
+        float frontFloor = World.sectorFloor[front] - viewZ;
         float frontCeiling = ceilings[front] - viewZ;
         int shade = shade(depth1 + depth2);
         if (back < 0) {
@@ -150,7 +150,7 @@ final class Renderer {
             closeColumns(clips);
             return;
         }
-        float backFloor = Level.SECTOR_FLOOR[back] - viewZ;
+        float backFloor = World.sectorFloor[back] - viewZ;
         float backCeiling = ceilings[back] - viewZ;
         int color = isDoor(front) || isDoor(back) ? DOOR : STEP;
         if (backFloor != frontFloor) {
@@ -255,8 +255,8 @@ final class Renderer {
     }
 
     private static boolean isDoor(int sector) {
-        for (int d = 0; d < Level.DOOR_SECTOR.length; d++) {
-            if (Level.DOOR_SECTOR[d] == sector) {
+        for (int d = 0; d < World.doors; d++) {
+            if (World.doorSector[d] == sector) {
                 return true;
             }
         }

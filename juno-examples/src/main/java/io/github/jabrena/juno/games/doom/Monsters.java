@@ -54,7 +54,7 @@ final class Monsters {
     }
 
     static void reset(short[] monsters, short[] shots) {
-        for (int i = 0; i < Level.MONSTERS; i++) {
+        for (int i = 0; i < World.monsters; i++) {
             spawn(monsters, i);
         }
         for (int i = 0; i < SHOTS * SHOT_STRIDE; i++) {
@@ -65,14 +65,14 @@ final class Monsters {
 
     private static void spawn(short[] monsters, int i) {
         int at = i * STRIDE;
-        monsters[at + X] = Level.MONSTER_X[i];
-        monsters[at + Y] = Level.MONSTER_Y[i];
-        int kind = Level.MONSTER_KIND[i];
+        monsters[at + X] = World.monsterX[i];
+        monsters[at + Y] = World.monsterY[i];
+        int kind = World.monsterKind[i];
         monsters[at + KIND] = (short) kind;
         monsters[at + HEALTH] = (short) fullHealth(kind);
         monsters[at + STATE] = IDLE;
         monsters[at + TIMER] = 0;
-        monsters[at + FLOOR] = Level.SECTOR_FLOOR[Player.sectorAt(Level.MONSTER_X[i], Level.MONSTER_Y[i])];
+        monsters[at + FLOOR] = World.sectorFloor[Player.sectorAt(World.monsterX[i], World.monsterY[i])];
         monsters[at + FLASH] = 0;
     }
 
@@ -90,7 +90,7 @@ final class Monsters {
     }
 
     static void think(short[] monsters, short[] shots, short[] ceilings, int frame) {
-        for (int i = 0; i < Level.MONSTERS; i++) {
+        for (int i = 0; i < World.monsters; i++) {
             int at = i * STRIDE;
             if (monsters[at + FLASH] > 0) {
                 monsters[at + FLASH] = (short) (monsters[at + FLASH] - 1);
@@ -155,7 +155,7 @@ final class Monsters {
     private static void place(short[] monsters, int at, float x, float y) {
         monsters[at + X] = (short) Math.round(x);
         monsters[at + Y] = (short) Math.round(y);
-        monsters[at + FLOOR] = Level.SECTOR_FLOOR[Player.sectorAt(x, y)];
+        monsters[at + FLOOR] = World.sectorFloor[Player.sectorAt(x, y)];
     }
 
     private static void attack(short[] monsters, short[] shots, int at, float distance, short[] ceilings) {
@@ -242,7 +242,7 @@ final class Monsters {
 
     /** A gunshot wakes every sleeping monster within earshot. */
     static void hearShot(short[] monsters) {
-        for (int i = 0; i < Level.MONSTERS; i++) {
+        for (int i = 0; i < World.monsters; i++) {
             int at = i * STRIDE;
             float dx = Player.x - monsters[at + X];
             float dy = Player.y - monsters[at + Y];

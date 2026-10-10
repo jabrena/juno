@@ -6,7 +6,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 /**
  * Pilot selection and touch controls. A HUMAN marine turns with the left and right thirds of the
  * view, walks forward with the upper half of the middle and fires the pistol with its lower half; the
- * CPU marine walks the map's demo route and shoots what it meets. Tapping the status bar switches between
+ * CPU marine walks the map's route and shoots what it meets. Tapping the status bar switches between
  * the two at any time.
  */
 final class Controls {
@@ -18,8 +18,8 @@ final class Controls {
     private static final int CHOICE_WIDTH = 130;
     private static final int CHOICE_HEIGHT = 72;
     private static final int CHOICE_GAP = 20;
-    private static final int CHOICE = 0x2124;
-    private static final int CHOICE_CHOSEN = 0x7800;
+    static final int CHOICE = 0x2124;
+    static final int CHOICE_CHOSEN = 0x7800;
 
     static boolean autopilot = true;
     private static boolean barPressed;
@@ -31,7 +31,11 @@ final class Controls {
     static void choosePilot() {
         TftTouchShield.fillScreen(DisplayList.BACKGROUND);
         Hud.showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.RED);
-        Hud.showCentered("Who walks " + Level.NAME + "?", 74, 1, TftTouchShield.WHITE);
+        if (World.fromWad) {
+            Hud.showCentered("Who walks E1M1?", 74, 1, TftTouchShield.WHITE);
+        } else {
+            Hud.showCentered("Who walks " + Level.NAME + "?", 74, 1, TftTouchShield.WHITE);
+        }
         drawChoice(0, "HUMAN", "You walk and shoot", false);
         drawChoice(1, "CPU", "Autopilot plays", false);
         Hud.showCentered("Tap the status bar in game to switch", 206, 1, Renderer.WALL_FAR);

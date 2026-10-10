@@ -118,7 +118,11 @@ final class Hud {
         TftTouchShield.print("MAP");
         TftTouchShield.setTextColor(TftTouchShield.YELLOW, STONE);
         TftTouchShield.setCursor(281, BAR_Y + 12);
-        TftTouchShield.print(Level.NAME);
+        if (World.fromWad) {
+            TftTouchShield.print("E1M1");
+        } else {
+            TftTouchShield.print(Level.NAME);
+        }
         TftTouchShield.setTextColor(LABEL, STONE);
         TftTouchShield.setCursor(281, BAR_Y + 21);
         TftTouchShield.print("PILOT");

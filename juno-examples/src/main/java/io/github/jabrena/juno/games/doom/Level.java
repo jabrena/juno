@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.doom;
 
-// An original two-room test map in the format LevelGenerator writes, so the game builds and runs
-// without any WAD. Generate a real map over this file locally (see LevelGenerator) and never
-// commit the result: it contains id Software's data.
+// An original two-room test map in the format LevelGenerator writes: the built-in map the game plays
+// when there is no DOOM1.WAD on the SD card (see World). Generate a real map over this file locally
+// (see LevelGenerator) and never commit the result: it contains id Software's data.
 
 /** Map TEST: player start, sector heights, doors, monsters, pickups and the autopilot route. */
 final class Level {
@@ -15,6 +15,15 @@ final class Level {
     static final int EXIT_Y = -30000;
     static final int MONSTERS = 3;
     static final int ITEMS = 2;
+    // Table sizes, so World can allocate RAM for this map with compile-time-constant lengths.
+    static final int VERTICES = 8;
+    static final int LINES = 11;
+    static final int SEGS = 12;
+    static final int NODES = 1;
+    static final int SUBSECTORS = 2;
+    static final int SECTORS = 2;
+    static final int DOORS = 0;
+    static final int ROUTE_POINTS = 9;
 
     static final short[] ROUTE_X = {256, 420, 700, 900, 900, 620, 420, 150, 110};
     static final short[] ROUTE_Y = {256, 256, 256, 400, 110, 200, 256, 420, 110};

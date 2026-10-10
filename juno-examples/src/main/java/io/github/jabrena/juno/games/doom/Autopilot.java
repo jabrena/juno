@@ -3,7 +3,8 @@ package io.github.jabrena.juno.games.doom;
 import io.github.jabrena.juno.api.Random;
 
 /**
- * The CPU marine: walks the map's demo route (turn toward the next waypoint, stride to it, loop),
+ * The CPU marine: walks the map's route (turn toward the next waypoint, stride to it, loop): on a WAD map the walk
+ * to the exit switch that {@link RoutePlanner} plans, on the built-in map its own patrol. It
  * fights the monsters it notices and steps off the route for health or armor it needs and can reach.
  *
  * <p>It fights like a person, not an aimbot: it needs a moment to react to a new monster, swings its
@@ -46,7 +47,7 @@ final class Autopilot {
     }
 
     static void restart() {
-        target = Math.min(1, Level.ROUTE_X.length - 1);
+        target = Math.min(1, World.routeLength - 1);
         detouring = false;
         enemy = -1;
         reaction = 0;
@@ -68,15 +69,15 @@ final class Autopilot {
         float bestReachable = Float.MAX_VALUE;
         int nearest = target;
         int reachable = -1;
-        for (int i = 0; i < Level.ROUTE_X.length; i++) {
-            float dx = Level.ROUTE_X[i] - Player.x;
-            float dy = Level.ROUTE_Y[i] - Player.y;
+        for (int i = 0; i < World.routeLength; i++) {
+            float dx = World.routeX[i] - Player.x;
+            float dy = World.routeY[i] - Player.y;
             float distance = dx * dx + dy * dy;
             if (distance < best) {
                 best = distance;
                 nearest = i;
             }
-            if (distance < bestReachable && !Player.blocked(Player.x, Player.y, Level.ROUTE_X[i], Level.ROUTE_Y[i], ceilings)) {
+            if (distance < bestReachable && !Player.blocked(Player.x, Player.y, World.routeX[i], World.routeY[i], ceilings)) {
                 bestReachable = distance;
                 reachable = i;
             }
@@ -95,7 +96,7 @@ final class Autopilot {
                 detourX = Player.x;
                 detourY = Player.y;
             }
-            walkTo(Level.ITEM_X[item], Level.ITEM_Y[item], ceilings);
+            walkTo(World.itemX[item], World.itemY[item], ceilings);
             return;
         }
         if (detouring) {
@@ -107,16 +108,16 @@ final class Autopilot {
             }
             detouring = false;
         }
-        float dx = Level.ROUTE_X[target] - Player.x;
-        float dy = Level.ROUTE_Y[target] - Player.y;
+        float dx = World.routeX[target] - Player.x;
+        float dy = World.routeY[target] - Player.y;
         if (dx * dx + dy * dy < ARRIVED * ARRIVED) {
             target = target + 1;
-            if (target == Level.ROUTE_X.length) {
-                target = Level.LOOP_START;
+            if (target == World.routeLength) {
+                target = World.loopStart;
             }
             return;
         }
-        walkTo(Level.ROUTE_X[target], Level.ROUTE_Y[target], ceilings);
+        walkTo(World.routeX[target], World.routeY[target], ceilings);
     }
 
     private static void walkTo(float x, float y, short[] ceilings) {
@@ -135,7 +136,7 @@ final class Autopilot {
             if (detouring) {
                 detouring = false;
             } else {
-                target = target + 1 == Level.ROUTE_X.length ? Level.LOOP_START : target + 1;
+                target = target + 1 == World.routeLength ? World.loopStart : target + 1;
             }
         }
     }
@@ -144,14 +145,14 @@ final class Autopilot {
     private static int wanted(byte[] taken, short[] ceilings) {
         int best = -1;
         float nearest = GRAB;
-        for (int i = 0; i < Level.ITEMS; i++) {
-            if (taken[i] != 0 || !Items.useful(Level.ITEM_KIND[i])) {
+        for (int i = 0; i < World.items; i++) {
+            if (taken[i] != 0 || !Items.useful(World.itemKind[i])) {
                 continue;
             }
-            float dx = Level.ITEM_X[i] - Player.x;
-            float dy = Level.ITEM_Y[i] - Player.y;
+            float dx = World.itemX[i] - Player.x;
+            float dy = World.itemY[i] - Player.y;
             float distance = (float) Math.sqrt(dx * dx + dy * dy);
-            if (distance < nearest && !Player.blocked(Player.x, Player.y, Level.ITEM_X[i], Level.ITEM_Y[i], ceilings)) {
+            if (distance < nearest && !Player.blocked(Player.x, Player.y, World.itemX[i], World.itemY[i], ceilings)) {
                 best = i;
                 nearest = distance;
             }
@@ -208,7 +209,7 @@ final class Autopilot {
         int nearest = -1;
         float nearestDistance = ENGAGE;
         float currentDistance = Float.MAX_VALUE;
-        for (int i = 0; i < Level.MONSTERS; i++) {
+        for (int i = 0; i < World.monsters; i++) {
             int at = i * Monsters.STRIDE;
             int state = monsters[at + Monsters.STATE];
             if (state == Monsters.DEAD) {

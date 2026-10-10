@@ -56,7 +56,7 @@ final class Weapon {
     static int aimed(short[] monsters, short[] ceilings) {
         int best = -1;
         float bestDistance = Float.MAX_VALUE;
-        for (int i = 0; i < Level.MONSTERS; i++) {
+        for (int i = 0; i < World.monsters; i++) {
             int at = i * Monsters.STRIDE;
             if (monsters[at + Monsters.STATE] == Monsters.DEAD) {
                 continue;

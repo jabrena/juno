@@ -32,11 +32,12 @@ class DoomTest {
         lines = new short[2 * DisplayList.LIST_SIZE];
         clips = new byte[2 * DisplayList.WIDTH];
         stack = new short[64];
-        ceilings = new short[Level.SECTOR_CEILING.length];
+        World.loadBuiltIn();
+        ceilings = World.ceilings;
         depths = new short[DisplayList.WIDTH];
-        monsters = new short[Level.MONSTERS * Monsters.STRIDE];
+        monsters = World.monsterStates;
         shots = new short[Monsters.SHOTS * Monsters.SHOT_STRIDE];
-        taken = new byte[Level.ITEMS];
+        taken = World.taken;
         Random.seed(7);
         Player.spawn(ceilings);
         Monsters.reset(monsters, shots);
@@ -52,6 +53,13 @@ class DoomTest {
         assertThat(Controls.choiceAt(235, 140)).as("CPU").isEqualTo(1);
         assertThat(Controls.choiceAt(160, 140)).as("the gap between them").isEqualTo(-1);
         assertThat(Controls.choiceAt(85, 40)).as("above the boxes").isEqualTo(-1);
+    }
+
+    @Test
+    void theEpisodeBoxTakesTheTapsOnIt() {
+        assertThat(Episodes.inside(160, 140)).as("the middle of the box").isTrue();
+        assertThat(Episodes.inside(160, 40)).as("the title above it").isFalse();
+        assertThat(Episodes.inside(10, 140)).as("left of it").isFalse();
     }
 
     @Test
