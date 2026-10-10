@@ -550,6 +550,9 @@ final class RuntimeShim {
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
             shim.append(ShimLibraries.legoPoweredUpHelpers());
         }
+        if (uses(ShimFeature.PARALLEL_BUS)) {
+            shim.append(core.parallelBusHelpers());
+        }
         if (uses(ShimFeature.INFRARED)) {
             shim.append(ShimLibraries.infraredHelpers());
         }

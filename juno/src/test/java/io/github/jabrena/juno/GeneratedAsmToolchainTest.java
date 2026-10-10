@@ -665,6 +665,47 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    /** {@code ParallelBus} is the core's GPIO port registers on the UNO R4: RA {@code PCNTR3} set/reset stores. */
+    @Test
+    void compilesAParallelBusProgramsShimWithACppCompiler() throws Exception {
+        assertParallelBusShimCompiles("", "AsmParallelBus", "PCNTR3");
+    }
+
+    /** On the UNO Q the same helpers write ports through Zephyr's raw GPIO port API, over the devicetree pin table. */
+    @Test
+    void compilesAnUnoQParallelBusProgramsShimWithACppCompiler() throws Exception {
+        assertParallelBusShimCompiles("@io.github.jabrena.juno.annotations.Board(io.github.jabrena.juno.annotations.ArduinoUnoQ.class)",
+                "AsmUnoQParallelBus", "gpio_port_set_clr_bits_raw");
+    }
+
+    private void assertParallelBusShimCompiles(String board, String name, String portWrite) throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.ParallelBus;
+                ${BOARD}
+                public final class ${NAME} {
+                    private static final int[] PINS = {8, 9, 2, 3, 4, 5, 6, 7};
+                    public static void main(String[] args) {
+                        ParallelBus.begin(PINS, 15);
+                        ParallelBus.write(0x2C);
+                        ParallelBus.repeat16(0xF800, 320);
+                    }
+                }
+                """.replace("${BOARD}", board).replace("${NAME}", name);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+        assertThat(result.runtimeShim()).contains("juno_parallel_bus_begin", "juno_parallel_bus_write",
+                "juno_parallel_bus_repeat16", portWrite);
+        assertThat(result.assembly()).contains("bl juno_parallel_bus_begin", "bl juno_parallel_bus_write",
+                "bl juno_parallel_bus_repeat16");
+        Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
     @Test
     void compilesAnInfraredLoopbackProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();

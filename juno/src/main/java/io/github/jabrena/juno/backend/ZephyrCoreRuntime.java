@@ -41,6 +41,23 @@ record ZephyrCoreRuntime() implements CoreRuntime {
         return 13;
     }
 
+    /**
+     * The same devicetree pin table the core's {@code digitalWrite} indexes, written through the GPIO driver's
+     * raw port API: one call sets and clears any of a port's bits.
+     */
+    @Override
+    public String parallelBusHelpers() {
+        return ParallelBusRuntime.helpers("""
+                #include <zephyr/drivers/gpio.h>
+                static const struct gpio_dt_spec juno_bus_pin_table[] = {
+                    DT_FOREACH_PROP_ELEM_SEP(DT_PATH(zephyr_user), digital_pin_gpios, GPIO_DT_SPEC_GET_BY_IDX, (, ))};""",
+                "const struct device*",
+                """
+                port = juno_bus_pin_table[pin].port;
+                  mask = 1u << juno_bus_pin_table[pin].pin;""",
+                "gpio_port_set_clr_bits_raw(port, set, clear);");
+    }
+
     @Override
     public String wifiIncludes(boolean udp) {
         // UNO Q networking belongs to its Linux MPU. Arduino_RouterBridge carries UDP and other

@@ -415,9 +415,10 @@ class JunoCompilerTest {
 
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.TftDemo");
 
-        // The driver is plain Java over Gpio/Delay: it lowers to Arduino core calls only.
-        assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl analogRead");
-        assertThat(result.runtimeShim()).doesNotContain(
+        // The driver is Java over Gpio/Delay for control and touch, and ParallelBus for the display's bytes.
+        assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl analogRead",
+                "bl juno_parallel_bus_begin", "bl juno_parallel_bus_write", "bl juno_parallel_bus_repeat16");
+        assertThat(result.runtimeShim()).contains("juno_parallel_bus_repeat16").doesNotContain(
                 "#include <SdFat.h>", "#include <WiFiS3.h>", "#include <Mouse.h>");
     }
 
@@ -1719,7 +1720,7 @@ class JunoCompilerTest {
 
         CompilationResult plainResult = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Plain");
 
-        assertThat(plainResult.runtimeShim()).doesNotContain("Mouse.h", "juno_mouse_begin");
+        assertThat(plainResult.runtimeShim()).doesNotContain("Mouse.h", "juno_mouse_begin", "juno_parallel_bus");
     }
 
     @Test

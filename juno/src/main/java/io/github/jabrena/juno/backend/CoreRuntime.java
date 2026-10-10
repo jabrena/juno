@@ -80,6 +80,13 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime {
      */
     String yieldFunction();
 
+    /**
+     * The core's {@code ParallelBus} helpers: {@code juno_parallel_bus_begin(const int32_t* pins, int32_t strobe)},
+     * {@code juno_parallel_bus_write(int32_t value)} and {@code juno_parallel_bus_repeat16(int32_t value,
+     * int32_t count)}, writing whole GPIO ports through the core's own pin table.
+     */
+    String parallelBusHelpers();
+
     /** Core-specific header the thread port needs ({@code ""} when the core brings none). */
     String threadIncludes();
 

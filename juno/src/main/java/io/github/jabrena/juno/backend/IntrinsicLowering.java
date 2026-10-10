@@ -467,6 +467,12 @@ final class IntrinsicLowering {
                 List.of(arg(0), arg(1), arg(2)), ShimFeature.LEGO_POWERED_UP);
         shim(Intrinsic.LEGO_HUB_BRAKE_LINKED_MOTORS, "juno_lego_hub_brake_linked_motors", Result.NONE,
                 List.of(arg(0)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.PARALLEL_BUS_BEGIN, "juno_parallel_bus_begin", Result.NONE, List.of(arg(0), arg(1)),
+                ShimFeature.PARALLEL_BUS);
+        shim(Intrinsic.PARALLEL_BUS_WRITE, "juno_parallel_bus_write", Result.NONE, List.of(arg(0)),
+                ShimFeature.PARALLEL_BUS);
+        shim(Intrinsic.PARALLEL_BUS_REPEAT16, "juno_parallel_bus_repeat16", Result.NONE, List.of(arg(0), arg(1)),
+                ShimFeature.PARALLEL_BUS);
         shim(Intrinsic.IR_BEGIN, "juno_ir_begin", Result.NONE, List.of(arg(0), arg(1), arg(2)), ShimFeature.INFRARED);
         shim(Intrinsic.IR_RECEIVING, "juno_ir_receiving", Result.WORD, List.of(), ShimFeature.INFRARED);
         shim(Intrinsic.IR_READ_BYTE, "juno_ir_read_byte", Result.WORD, List.of(arg(0)), ShimFeature.INFRARED);
