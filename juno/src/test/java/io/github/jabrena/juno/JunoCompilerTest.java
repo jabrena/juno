@@ -2388,6 +2388,9 @@ class JunoCompilerTest {
                 "bl juno_i2d", "bl juno_l2d", "bl juno_f2d");
         assertThat(result.runtimeShim()).contains(
                 "extern \"C\" JUNO_ASM_ABI double juno_drem(double a, double b) { return fmod(a, b); }");
+        // A JVM local is one 4-byte slot; doubles use the two consecutive slots the JVMS reserves.
+        // This guards the compact layout through the complete javac -> IR -> Thumb-2 path.
+        assertThat(result.metrics().maximumFixedFrameBytes()).isLessThan(512);
     }
 
     @Test

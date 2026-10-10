@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Emits GNU ARM Thumb-2 assembly straight from Juno IR, restricted to instructions common to the UNO R4's
@@ -46,9 +47,8 @@ import java.util.Set;
  * {@code long}/{@code float}/{@code double} helpers) rather than hand-rolled soft-float assembly. A {@code long} keeps this
  * backend's existing split-low/high-word representation (two ordinary {@code int32} stack slots);
  * {@code float}/{@code double} are new {@link JunoType#FLOAT32}/{@link JunoType#FLOAT64} stack slots
- * (4/8 bytes, holding the raw IEEE-754 bit pattern) — see {@code FrameLayout}. Every JVM local slot
- * is a full 8 bytes regardless of its actual type, so a {@code double} local can never overlap the next slot's
- * storage.
+ * (4/8 bytes, holding the raw IEEE-754 bit pattern) — see {@code FrameLayout}. Each JVM local slot is
+ * one 32-bit word; {@code long}/{@code double} use the two consecutive slots reserved by the JVMS.
  *
  * <h2>{@code HttpClient}/{@code HttpsClient}/{@code Json}</h2>
  * Backed by an {@code extern "C"} HTTP/1.1 codec and allocation-free JSON scanner in the generated
@@ -57,9 +57,9 @@ import java.util.Set;
  * {@code AsmEmitter#emitShimCall}, the same mechanism {@link #emitCall} already uses for user methods.
  *
  * <h2>Storage model</h2>
- * Unlike a register-allocating backend, every IR {@code Value} and every JVM local variable slot
- * lives in a fixed offset in its method's own stack frame (never in a register across instructions) —
- * see {@code FrameLayout}. This trades code density for a design that can't run out of registers
+ * Unlike a register-allocating backend, every live IR {@code Value} and every JVM local variable slot
+ * lives in a stack-frame offset (never in a register across instructions) — see {@code FrameLayout}.
+ * Non-overlapping block-local value lifetimes reuse offsets. This trades code density for a design that can't run out of registers
  * regardless of how many live values a method has, which matters once methods stop being
  * one-block-with-three-intrinsic-calls (helper methods with many {@code int} parameters, or
  * {@code LedMatrixAsciiScroll}, whose full-ASCII-font dispatch tree reaches 116 methods). Registers are used only as scratch within a single instruction's codegen. Arena
@@ -266,7 +266,13 @@ public final class Thumb2AsmBackend {
             asm.emitLoadImmediate(output, "r12", frame.frameSize());
             output.append("    sub sp, sp, r12\n");
         }
-        convention.emitParameterSpill(output, frame, parameterTypes, method.isStatic());
+        Set<Integer> readLocals = method.blocks().stream()
+                .flatMap(block -> block.instructions().stream())
+                .filter(IrInstruction.LoadLocal.class::isInstance)
+                .map(IrInstruction.LoadLocal.class::cast)
+                .map(IrInstruction.LoadLocal::local)
+                .collect(Collectors.toSet());
+        convention.emitParameterSpill(output, frame, parameterTypes, method.isStatic(), readLocals);
         // Enabled before anything else the program does (including <clinit>, below), so @Watchdog
         // protects the whole program lifetime, not just the user's own main() body.
         if (isEntryPoint && usesWatchdog) {

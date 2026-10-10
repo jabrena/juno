@@ -2,12 +2,11 @@ package io.github.jabrena.juno.analysis;
 
 import io.github.jabrena.juno.classfile.FieldInfo;
 import io.github.jabrena.juno.classfile.JavaClass;
+import io.github.jabrena.juno.backend.StackFrameSizing;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
-import io.github.jabrena.juno.ir.JunoType;
-import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 import io.github.jabrena.juno.RuntimeLimits;
@@ -76,18 +75,7 @@ final class AllocationSizeEstimator {
     }
 
     static int estimatedFrameBytes(IrMethod method) {
-        Descriptor descriptor = Descriptor.parse(method.reference().descriptor());
-        boolean typedSlots = method.values().stream().anyMatch(value -> value.type() != JunoType.INT32)
-                || descriptor.parameters().stream().anyMatch(type -> Descriptor.isLong(type)
-                        || Descriptor.isFloat(type) || Descriptor.isDouble(type));
-        int bytes = Math.max(1, method.maxLocals()) * (typedSlots ? 8 : 4);
-        for (Value value : method.values()) {
-            bytes += switch (value.type()) {
-                case INT32, FLOAT32 -> 4;
-                case INT64, FLOAT64 -> 8;
-            };
-        }
-        return bytes + maximumTemporaryBytes(method);
+        return StackFrameSizing.methodStackBytes(method) + maximumTemporaryBytes(method);
     }
 
     private static int maximumTemporaryBytes(IrMethod method) {

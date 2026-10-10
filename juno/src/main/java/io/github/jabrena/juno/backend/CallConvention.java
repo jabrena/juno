@@ -5,6 +5,7 @@ import io.github.jabrena.juno.linker.Descriptor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Juno's internal calling convention: arguments are 32-bit words in order (a {@code long}/{@code double}
@@ -40,24 +41,43 @@ final class CallConvention {
      * AsmEmitter.PUSH_BYTES} above this function's {@code sp} after its prologue.
      */
     void emitParameterSpill(StringBuilder output, FrameLayout frame, List<String> parameterTypes,
-                                    boolean isStatic) {
+                            boolean isStatic, Set<Integer> readLocals) {
         int word = 0;
         int slot = 0;
         if (!isStatic) {
-            spillWord(output, frame, word++, frame.localOffset(slot++));
+            if (readLocals.contains(slot)) {
+                spillWord(output, frame, word, frame.localOffset(slot));
+            }
+            word++;
+            slot++;
         }
         for (String type : parameterTypes) {
             if (Descriptor.isDouble(type)) {
-                // A double is one 8-byte local (low word first), like a LoadLocal of FLOAT64 reads it.
-                spillWord(output, frame, word++, frame.localOffset(slot));
-                spillWord(output, frame, word++, frame.localOffset(slot) + AsmEmitter.WORD);
+                // A double uses two consecutive JVM slots (low word first), matching LoadLocal FLOAT64.
+                if (readLocals.contains(slot)) {
+                    spillWord(output, frame, word, frame.localOffset(slot));
+                    spillWord(output, frame, word + 1, frame.localOffset(slot) + AsmEmitter.WORD);
+                }
+                word += 2;
                 slot += 2;
             } else if (Descriptor.isLong(type)) {
                 // A long is two int32 locals, one per JVM slot.
-                spillWord(output, frame, word++, frame.localOffset(slot++));
-                spillWord(output, frame, word++, frame.localOffset(slot++));
+                if (readLocals.contains(slot)) {
+                    spillWord(output, frame, word, frame.localOffset(slot));
+                }
+                word++;
+                slot++;
+                if (readLocals.contains(slot)) {
+                    spillWord(output, frame, word, frame.localOffset(slot));
+                }
+                word++;
+                slot++;
             } else {
-                spillWord(output, frame, word++, frame.localOffset(slot++));
+                if (readLocals.contains(slot)) {
+                    spillWord(output, frame, word, frame.localOffset(slot));
+                }
+                word++;
+                slot++;
             }
         }
     }
