@@ -96,6 +96,9 @@ Supported today:
 - read-only SPI SD-card files through the standard `java.io.InputStream`, plus intrinsic
   lowering of `java.util.Properties` construction, `load(InputStream)`, `getProperty`, and `size`;
   loaded values have stable arena-backed storage and can be passed directly to `Wifi.begin`
+- read-only random access to SD-card files through the standard `java.io.RandomAccessFile` (mode `"r"`: `seek`,
+  `getFilePointer`, `length`, `read`, `readFully`, `skipBytes`, `close`), raising the JDK's `FileNotFoundException`,
+  `EOFException` and `IOException`;
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
 - Arduino-backed pseudorandom numbers through `Random.seed(int)`, `Random.nextInt(bound)`, and
   `Random.nextInt(origin, bound)`, with exclusive upper bounds

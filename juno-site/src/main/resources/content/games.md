@@ -143,13 +143,11 @@ Drive a tank through a wireframe maze and destroy the flying hunters before time
 
 Wireframe DOOM in landscape, drawn with DOOM's own BSP renderer: walls, doors and monsters from E1M1. Pick **HUMAN** (touch to turn, walk and fire) or **CPU** (an autopilot that plays like a person and sometimes dies). Runs on the Arduino UNO Q.
 
-The map lives in flash as `static final` lookup tables (see [Feature Inventory](/features)). The repository ships a small original test map; DOOM's levels are never committed. To walk E1M1, generate its tables from your own `DOOM1.WAD`, upload, then restore the test map:
+At startup the game reads E1M1 from your own `DOOM1.WAD` on the shield's SD card, with `java.io.RandomAccessFile` (see [Storage](/storage)). With no card, no file, or too little arena, it plays a small original test map built into flash instead; DOOM's levels are never committed. Copy `DOOM1.WAD` to the card's root, then build with a bigger arena, since the map is held in RAM:
 
 ```bash
-./mvnw -f juno-examples/pom.xml test -Dtest=LevelGeneratorTest -Djuno.doom.wad=/path/to/DOOM1.WAD
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.doom.Doom
-git checkout -- juno-examples/src/main/java/io/github/jabrena/juno/games/doom/Level.java
+  -Djuno.main=io.github.jabrena.juno.games.doom.Doom -Djuno.Xmx=26k
 ```
 
 ### Lunar Lander

@@ -81,3 +81,48 @@ Because the standard `Properties.load(InputStream)` declaration throws `IOExcept
 method must declare `throws IOException` (or catch it). Juno's embedded implementation never actually
 throws from `load`, so such a handler is accepted but never runs. As specified by the Java API, `load` reads from the stream's current position
 and leaves it open, so close the `InputStream` explicitly.
+
+## Random access with `RandomAccessFile`
+
+For files read out of order, such as a game's data file with a directory of offsets, Juno supports the standard
+`java.io.RandomAccessFile` in read-only mode. The same code runs unchanged on a desktop JVM against a local file:
+
+```java
+import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
+byte[] header = new byte[12];
+if (SdCard.begin()) {
+    try (RandomAccessFile file = new RandomAccessFile("DATA.BIN", "r")) {
+        file.readFully(header);                // the first 12 bytes
+        file.seek(file.length() - 16);         // jump anywhere in the file
+        int read = file.read(header, 0, 4);    // up to 4 bytes, or -1 at the end
+    } catch (FileNotFoundException missing) {
+        // no such file on the card
+    } catch (EOFException truncated) {
+        // readFully ran out of file
+    } catch (IOException failed) {
+        // any other card error
+    }
+}
+```
+
+Supported: the `(String, "r")` constructor, `read()`, `read(byte[])`, `read(byte[], int, int)`, `readFully(byte[])`,
+`readFully(byte[], int, int)`, `seek(long)`, `getFilePointer()`, `length()`, `skipBytes(int)` and `close()`.
+Failures throw the JDK's own exceptions, as above, and a `RandomAccessFile` can be passed to helper methods.
+
+Limits:
+
+- The path is a compile-time string literal and the mode must be `"r"`; any other mode is a compile error.
+- `read(byte[])` and `readFully(byte[])` take their length from the array, so they need a local array created
+  with a constant size in the same method. Pass `(buffer, offset, length)` for any other array; its bounds are
+  then not checked against the array's real size.
+- `seek` past the end of the file throws `IOException` (the JDK allows it).
+- `RandomAccessFile` and `SdCard.open()` share the card's four open-file slots.
+
+Every byte array, like any other `new` object, lives in Juno's garbage-collected arena, 8 KB by default. A program
+that keeps large tables in RAM, such as data loaded from a file at startup, can raise it with the Maven plugin's
+JVM-style `-Djuno.Xmx` (for example `-Djuno.Xmx=32k`), and check the room left at run time with
+`Memory.arenaCapacityBytes() - Memory.arenaUsedBytes()`. `-Djuno.Xss` sets each extra task's stack the same way.
