@@ -3,8 +3,8 @@ package io.github.jabrena.juno.games.doom;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
- * DOOM's status bar under the view: kills, health, the arms grid, the marine's face, armor and a map
- * table, in stone panels with big red numbers. The face grows bloodier as health drops.
+ * DOOM's status bar under the view: kills, health, the arms grid, the marine's face, armor and a compact
+ * map/pilot/FPS panel, in stone panels with big red numbers. The face grows bloodier as health drops.
  */
 final class Hud {
     private static final int BAR_Y = DisplayList.VIEW_BOTTOM;
@@ -28,6 +28,7 @@ final class Hud {
     private static int shownKills = Integer.MIN_VALUE;
     private static int shownArmor = Integer.MIN_VALUE;
     private static int shownFace = Integer.MIN_VALUE;
+    private static int shownFps = Integer.MIN_VALUE;
 
     private Hud() {
     }
@@ -68,6 +69,7 @@ final class Hud {
             shownArmor = Player.armor;
             shownFace = face;
         }
+        performance();
     }
 
     static void showCentered(String text, int y, int size, int color) {
@@ -109,26 +111,38 @@ final class Hud {
         }
     }
 
-    /** The map and pilot table where DOOM lists its ammunition. */
+    /** The current map, pilot and measured frame rate, without labels in the narrow panel. */
     private static void table() {
         TftTouchShield.fillRect(278, BAR_Y + 2, 42, BAR_HEIGHT - 2, STONE);
         TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(LABEL, STONE);
-        TftTouchShield.setCursor(281, BAR_Y + 3);
-        TftTouchShield.print("MAP");
         TftTouchShield.setTextColor(TftTouchShield.YELLOW, STONE);
-        TftTouchShield.setCursor(281, BAR_Y + 12);
+        TftTouchShield.setCursor(281, BAR_Y + 4);
         if (World.fromWad) {
-            TftTouchShield.print("E1M1");
+            TftTouchShield.print("E");
+            TftTouchShield.print(World.episode);
+            TftTouchShield.print("M");
+            TftTouchShield.print(World.map);
         } else {
             TftTouchShield.print(Level.NAME);
         }
-        TftTouchShield.setTextColor(LABEL, STONE);
-        TftTouchShield.setCursor(281, BAR_Y + 21);
-        TftTouchShield.print("PILOT");
         TftTouchShield.setTextColor(Controls.autopilot ? TftTouchShield.MAGENTA : TftTouchShield.CYAN, STONE);
-        TftTouchShield.setCursor(281, BAR_Y + 29);
+        TftTouchShield.setCursor(281, BAR_Y + 15);
         TftTouchShield.print(Controls.autopilot ? "CPU  " : "HUMAN");
+        shownFps = Integer.MIN_VALUE;
+        performance();
+    }
+
+    private static void performance() {
+        int fps = FrameStats.fps();
+        if (fps != shownFps) {
+            TftTouchShield.fillRect(280, BAR_Y + 26, 39, 10, STONE);
+            TftTouchShield.setTextSize(1);
+            TftTouchShield.setTextColor(LABEL, STONE);
+            TftTouchShield.setCursor(281, BAR_Y + 27);
+            TftTouchShield.print(Math.min(999, fps));
+            TftTouchShield.print("FPS");
+            shownFps = fps;
+        }
     }
 
     /** 0 healthy, 1 scratched, 2 wounded, 3 near death, +4 while a wound is fresh, 8 dead. */

@@ -15,15 +15,19 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * renderer: full BSP traversal, perspective projection, occlusion and working doors, plus the map's
  * monsters ({@link Monsters}) to fight with the pistol ({@link Weapon}).
  *
- * <p>At startup {@link World} reads E1M1 from your own {@code DOOM1.WAD} on the shield's SD card
- * ({@link WadLevel}); without a card or the file it plays the small original test map built into flash
- * ({@link Level}). The WAD's map needs a bigger arena than the default: build with {@code -Djuno.Xmx=26k}.
+ * <p>At startup {@link World} finds the episodes in your own {@code DOOM1.WAD} on the shield's SD card without
+ * loading a map. Once an episode and skill are chosen, {@link WadLevel} reads its first map; without a card or the
+ * file the game plays the small original test map built into flash ({@link Level}). The WAD maps need a bigger
+ * arena than the default: build with {@code -Djuno.Xmx=92k}.
  * Like the other 3D vector games it targets the UNO Q, whose Cortex-M33 has the speed its per-column
  * floating-point projection needs.
  *
  * <p>After the title, choose the pilot ({@link Controls}): HUMAN walks with the touch screen, CPU lets
  * {@link Autopilot} walk the map (a route {@link RoutePlanner} plans to the exit, or the built-in map's patrol), and
- * tapping the status bar switches between them. With the WAD, an episode menu ({@link Episodes}) follows.
+ * tapping the CPU/HUMAN label switches between them. With the WAD, the episode ({@link Episodes}) and skill
+ * ({@link Skills}) menus follow; each map is read from the card when it starts, and the exit leads to the next one.
+ * A DOOM-style intermission tallies kills, items, secrets and time, and a tap loads the next map; E?M8 ends with an
+ * episode story before the menus. When the marine dies, the map restarts or the game quits to its title.
  * {@link Player} walks and opens doors, {@link Renderer} builds each frame and {@link DisplayList} draws
  * only what changed. {@link FrameStats} reports what each frame costs over the serial port.
  */
@@ -35,12 +39,12 @@ public final class Doom {
     }
 
     public static void main(String[] args) {
-        Serial.begin(BaudRate.BAUD_9600);
+        Serial.begin(BaudRate.BAUD_115200);
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
         Interludes.cover();
         Interludes.loading();
-        // The map before the buffers: planning its route borrows arena the renderer's buffers take over afterwards.
+        // Discover and allocate the WAD tables before the renderer buffers; the selected map is loaded after menus.
         World.load();
         short[] lines = new short[2 * DisplayList.LIST_SIZE];
         byte[] clips = new byte[2 * DisplayList.WIDTH];
@@ -53,11 +57,12 @@ public final class Doom {
         byte[] taken = World.taken;
         Interludes.waitForTap();
         Controls.choosePilot();
-        chooseEpisode();
+        chooseGame();
         Random.seed(Clock.micros());
         enterLevel(ceilings, monsters, shots, taken);
 
         int next = Clock.millis();
+        int mapStarted = next;
         int frame = 0;
         while (true) {
             while (Clock.millis() - next < 0) {
@@ -80,6 +85,7 @@ public final class Doom {
                 Autopilot.step(ceilings, monsters, taken);
             }
             Player.operateDoors(ceilings);
+            Lifts.operate(Player.x, Player.y);
             Player.settle();
             Items.pickUp(taken);
             Monsters.think(monsters, shots, ceilings, frame);
@@ -91,35 +97,80 @@ public final class Doom {
             if ((frame & 3) == 0) {
                 Hud.drawStatus();
             }
-            if (Player.atExit()) {
-                Interludes.complete();
+            if (Campaign.mapWon(monsters)) {
+                Interludes.complete(Clock.millis() - mapStarted, taken);
+                if (Campaign.episodeFinished() || !nextMap()) {
+                    // The episode story returns to the title, then the pilot, episode and skill menus.
+                    Interludes.episodeComplete();
+                    Interludes.title();
+                    Controls.choosePilot();
+                    chooseGame();
+                }
                 enterLevel(ceilings, monsters, shots, taken);
                 next = Clock.millis();
+                mapStarted = next;
             } else if (Player.health == 0) {
-                Interludes.died();
-                Interludes.title();
-                Controls.choosePilot();
-                chooseEpisode();
+                // As in DOOM the map can restart where the marine died, or the player quits to the title.
+                if (!Interludes.died()) {
+                    Interludes.title();
+                    Controls.choosePilot();
+                    chooseGame();
+                }
                 enterLevel(ceilings, monsters, shots, taken);
                 next = Clock.millis();
+                mapStarted = next;
             }
         }
     }
 
-    /** The episode menu, for the WAD's maps; the built-in map has no episodes. */
-    private static void chooseEpisode() {
-        if (World.fromWad) {
+    /**
+     * The episode and skill menus, for the WAD's maps, then the episode's first map that loads; the built-in map
+     * has no episodes. If none of the episode's maps loads, the menus come back.
+     */
+    private static void chooseGame() {
+        if (!World.fromWad) {
+            return;
+        }
+        boolean loaded = false;
+        while (!loaded) {
             Episodes.choose();
+            Skills.choose();
+            World.map = 0;
+            loaded = nextMap();
         }
     }
 
-    /** Starts the map afresh: the marine at the start, every monster back at its post, every item in place. */
+    /**
+     * Loads the episode's next map, skipping any that does not load (too large or missing); {@code false} once the
+     * episode's last map is done. The built-in map simply starts over.
+     */
+    private static boolean nextMap() {
+        if (!World.fromWad) {
+            return true;
+        }
+        while (World.map < World.LAST_MAP) {
+            World.map = World.map + 1;
+            Interludes.loadingMap();
+            if (World.loadMap()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Starts the map afresh: the marine at the start, every monster back at its post, every item in place, and the
+     * CPU's route planned again from the start.
+     */
     private static void enterLevel(short[] ceilings, short[] monsters, short[] shots, byte[] taken) {
+        Lifts.reset();
         Player.spawn(ceilings);
+        World.planRoute();
         Monsters.reset(monsters, shots);
         Items.reset(taken);
         Weapon.reset();
         Autopilot.restart();
+        FrameStats.reset();
         Hud.drawBar();
         DisplayList.clearView();
     }
