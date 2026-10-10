@@ -46,9 +46,12 @@
         <maven-plugin-enforcer.version>3.6.3</maven-plugin-enforcer.version>
         <extra-enforcer-rules.version>1.12.1</extra-enforcer-rules.version>
         <maven-plugin-jacoco.version>0.8.15</maven-plugin-jacoco.version>
-        <!-- Minimum coverage, per counter, for the modules that gate on it under -Pjacoco (juno-compiler). -->
+        <!-- Minimum coverage for the modules that gate on it: JaCoCo per counter under -Pjacoco, and PiTest's
+             mutation and line coverage under -Ppitest (juno-compiler). -->
         <coverage.level>80</coverage.level>
         <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
+        <maven-plugin-pitest.version>1.30.0</maven-plugin-pitest.version>
+        <maven-plugin-pitest-junit5.version>1.2.3</maven-plugin-pitest-junit5.version>
         <java.version>${maven.compiler.release}</java.version>
     </properties>
 

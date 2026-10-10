@@ -116,6 +116,58 @@
     </build>
 
     <profiles>
+        <!-- Mutation testing: ./mvnw verify -Ppitest -pl juno-compiler -am (report in target/pit-reports). Fails below
+             ${coverage.level}% mutation score or line coverage. The Docker-based *IT suites are not unit tests. -->
+        <profile>
+            <id>pitest</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <version>${maven-plugin-pitest.version}</version>
+                        <configuration>
+                            <targetClasses>
+                                <param>io.github.jabrena.juno.*</param>
+                            </targetClasses>
+                            <targetTests>
+                                <param>io.github.jabrena.juno.*</param>
+                            </targetTests>
+                            <excludedTestClasses>
+                                <param>io.github.jabrena.juno.**.*IT</param>
+                            </excludedTestClasses>
+                            <outputFormats>
+                                <outputFormat>HTML</outputFormat>
+                                <outputFormat>XML</outputFormat>
+                            </outputFormats>
+                            <mutationThreshold>${coverage.level}</mutationThreshold>
+                            <coverageThreshold>${coverage.level}</coverageThreshold>
+                            <timestampedReports>false</timestampedReports>
+                            <verbose>false</verbose>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.pitest</groupId>
+                                <artifactId>pitest-junit5-plugin</artifactId>
+                                <version>${maven-plugin-pitest-junit5.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>pitest-mutation-testing</id>
+                                <goals>
+                                    <goal>mutationCoverage</goal>
+                                </goals>
+                                <phase>verify</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!-- Under -Pjacoco (configured in the root pom), the compiler also fails below ${coverage.level}% on any counter. -->
         <profile>
             <id>jacoco</id>
