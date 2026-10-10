@@ -176,8 +176,8 @@ alarm blinks until any button is pressed, then returns to minute selection.
 
 [`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java)
 drives the ELEGOO 2.8" TFT touch screen shield (ILI9341 on an 8-bit parallel bus on D2-D9/`A0`-`A4`,
-resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built entirely from
-`Gpio`/`Delay`. See [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
+resistive touch, microSD on D10-D13), built from `Gpio`/`Delay` plus the `ParallelBus` intrinsic for the
+display's bytes. See [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \

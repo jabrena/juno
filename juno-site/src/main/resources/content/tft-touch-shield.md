@@ -9,14 +9,15 @@ drives the ELEGOO 2.8" TFT touch screen shield for UNO ("Pantalla Táctil TFT de
 240x320 ILI9341 color display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a
 microSD socket.
 
-Like the [LCD Keypad Shield](../lcd-keypad-shield), it needs no new compiler intrinsic and no
-extra Arduino library: every operation is built from
+It needs no extra Arduino library. Control lines and the touch panel use
 [`Gpio`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/Gpio.java) pin operations and
-[`Delay`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java). The trade-off is speed:
-each bus byte costs several `digitalWrite` calls, so a full-screen clear takes on the order of a
-second and a line of text tens of milliseconds. It suits status screens and simple touch UIs, not
-animation. Solid fills in colors whose two RGB565 bytes are equal (`BLACK`, `WHITE`) are the
-fastest, because the driver only rewrites data pins whose level changes.
+[`Delay`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java); the display's bytes go
+through [`ParallelBus`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/ParallelBus.java),
+a compiler intrinsic that resolves the eight data pins and the write strobe to their GPIO ports once and then
+writes a whole port per store (the UNO R4's port set/reset registers, the UNO Q's Zephyr raw port API). A run of
+one color is a single call, so pixels stream from the runtime instead of costing a `digitalWrite` per pin. Solid
+fills in colors whose two RGB565 bytes are equal (`BLACK`, `WHITE`, or any `0xVVVV`) are the fastest: the data
+pins are set once and only the strobe toggles.
 
 ## Wiring
 
