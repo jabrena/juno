@@ -33,8 +33,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - `juno-maven-plugin/` – Maven goals (`juno:compile`, `verify`, `upload`, `monitor`) and their tests; tests use a
   fake process executor and never touch hardware.
 - `juno-examples/` – example programs buildable with `arduino-cli`, plus game, `arduino-cli` and QEMU tests.
-- `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`.
-- `documentation/` – images and video assets.
+- `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`. Images
+  live once, in `src/main/resources/public/images/`; the README links to them there.
 
 ## Commands
 

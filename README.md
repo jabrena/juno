@@ -8,11 +8,11 @@ closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, T
 
 **Arduino UNO Q**
 
-![](./documentation/boards/arduino-one-q.png)
+![](./juno-site/src/main/resources/public/images/boards/arduino-one-q.png)
 
 **Arduino UNO R4 WiFi**
 
-![](./documentation/boards/arduino-one-r4-wifi.png)
+![](./juno-site/src/main/resources/public/images/boards/arduino-one-r4-wifi.png)
 
 ## Modules
 
