@@ -10,6 +10,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   to 27 via `.sdkmanrc` and CI (`.github/workflows/maven.yaml`).
 - **Build:** Maven via the `./mvnw` wrapper (`.mvn/wrapper/maven-wrapper.properties`).
 - **Test framework:** JUnit (Jupiter). `juno-compiler` also uses Testcontainers (test scope) for the opt-in `arduino-cli` and QEMU tests.
+- **Architecture rules:** ArchUnit (test scope). `ApiArchitectureTest` keeps `juno-api` free of compiler and
+  third-party code; `ExamplesArchitectureTest` keeps `juno-examples` on `juno-api` and the JDK only.
 - **External toolchain:** Arduino CLI with the `arduino:renesas_uno` (UNO R4 WiFi) and `arduino:zephyr`
   (UNO Q) cores, used to actually compile/upload generated sketches to real hardware; not a Maven dependency.
 
