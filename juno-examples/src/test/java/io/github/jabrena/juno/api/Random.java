@@ -3,7 +3,8 @@ package io.github.jabrena.juno.api;
 /**
  * Test double shadowing the {@code juno} artifact's native {@code Random} with a seeded
  * {@link java.util.Random}. Programs seed it from the (simulated, hence repeatable) clock, so runs
- * are deterministic; tests may also call {@link #seed} directly.
+ * are deterministic; tests may also call {@link #seed} directly. Recordings can select a repeatable run with
+ * {@code -Djuno.emulator.randomSeed=<seed>}.
  */
 public final class Random {
     private static java.util.Random random = new java.util.Random(0);
@@ -12,7 +13,7 @@ public final class Random {
     }
 
     public static void seed(int seed) {
-        random = new java.util.Random(seed);
+        random = new java.util.Random(Integer.getInteger("juno.emulator.randomSeed", seed));
     }
 
     public static int nextInt(int bound) {

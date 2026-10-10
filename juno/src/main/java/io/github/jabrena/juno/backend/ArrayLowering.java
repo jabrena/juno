@@ -84,17 +84,27 @@ final class ArrayLowering {
         output.append("    ").append(storeInstruction);
     }
 
+    /**
+     * Panics unless {@code 0 <= index < length}. One unsigned comparison covers both ends, since a negative index
+     * reads as a huge unsigned number; a constant index is decided here.
+     */
     void emitBoundsCheck(StringBuilder output, FrameLayout frame, IrInstruction.BoundsCheck check) {
-        String panicLabel = asm.newLabel(".Lbcpanic");
+        Integer constant = frame.constant(check.index());
+        if (constant != null) {
+            if (constant < 0 || constant >= check.length()) {
+                output.append("    bl juno_panic\n");
+            }
+            return;
+        }
         String okLabel = asm.newLabel(".Lbcok");
         asm.load(output, frame, "r0", check.index());
-        asm.emitLoadImmediate(output, "r1", check.length());
-        output.append("    cmp r0, #0\n")
-                .append("    blt ").append(panicLabel).append('\n')
-                .append("    cmp r0, r1\n")
-                .append("    bge ").append(panicLabel).append('\n')
-                .append("    b ").append(okLabel).append('\n')
-                .append(panicLabel).append(":\n")
+        if (AsmEmitter.isModifiedImmediate(check.length())) {
+            output.append("    cmp r0, #").append(check.length()).append('\n');
+        } else {
+            asm.emitLoadImmediate(output, "r1", check.length());
+            output.append("    cmp r0, r1\n");
+        }
+        output.append("    blo ").append(okLabel).append('\n')
                 .append("    bl juno_panic\n")
                 .append(okLabel).append(":\n");
     }

@@ -3,12 +3,12 @@ package io.github.jabrena.juno.ir;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Extracts every value referenced or produced by an IR node for method-level validation. */
-final class IrValues {
+/** Extracts every value referenced or produced by an IR node. */
+public final class IrValues {
     private IrValues() {
     }
 
-    static List<Value> of(IrInstruction instruction) {
+    public static List<Value> of(IrInstruction instruction) {
         return switch (instruction) {
             case IrInstruction.Const constant -> List.of(constant.target());
             case IrInstruction.StringConst constant -> List.of(constant.target());
@@ -101,7 +101,7 @@ final class IrValues {
         };
     }
 
-    static List<Value> of(IrTerminator terminator) {
+    public static List<Value> of(IrTerminator terminator) {
         return switch (terminator) {
             case IrTerminator.Jump ignored -> List.of();
             case IrTerminator.Branch branch -> List.of(branch.condition());

@@ -8,6 +8,7 @@ import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
+import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
@@ -33,6 +34,10 @@ final class InvokeLowering {
                                       int stackBase, int depth, int nextValueId, ValueTracking tracking,
                                       Map<String, JavaClass> classes) {
         MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
+        if (RandomAccessFileMethods.isBufferRead(called)) {
+            return RandomAccessFileLowering.lowerBufferRead(linked, instruction, called, instructions, stackBase,
+                    depth, nextValueId, tracking);
+        }
         return isEnumOrdinal(classes, called)
                 ? lowerEnumOrdinal(instructions, stackBase, depth, nextValueId, tracking)
                 : ThrowableTypes.isGetMessage(called, classes)

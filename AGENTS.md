@@ -57,7 +57,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ./mvnw -f juno/pom.xml -Parduino-cli verify
 
 # Run core-feature programs under QEMU (Cortex-M4) in Docker and compare their
-# serial output with a JVM run of the same source (Testcontainers; needs Docker; models no hardware)
+# serial output with an OpenJDK run of the same source (Testcontainers; needs Docker; models no hardware)
 ./mvnw -f juno/pom.xml -Pqemu verify
 
 # Flash the generated program; auto-detects one matching board, or accepts -Djuno.port=<PORT>

@@ -21,11 +21,13 @@ import java.util.Set;
 public record CompilationReport(MethodRef entryPoint, Board board, int reachableMethods, int irBlocks,
                                 Set<Intrinsic> intrinsics, RuntimeRiskReport runtimeRisks,
                                 List<ConfigSuggestion> configSuggestions) {
-    static CompilationReport from(Program program, IrProgram optimized) {
-        return from(program, optimized, RuntimeConfig.DEFAULT);
+    static CompilationReport from(Program program, IrProgram lowered, IrProgram optimized) {
+        return from(program, lowered, optimized, RuntimeConfig.DEFAULT);
     }
 
-    static CompilationReport from(Program program, IrProgram optimized, RuntimeConfig runtimeConfig) {
+    /** {@code lowered} is the IR before optimization, where every array access still shows its bounds check. */
+    static CompilationReport from(Program program, IrProgram lowered, IrProgram optimized,
+                                  RuntimeConfig runtimeConfig) {
         int irBlocks = optimized.methods().stream().mapToInt(method -> method.blocks().size()).sum();
         Set<Intrinsic> intrinsics = new LinkedHashSet<>();
         for (IrMethod method : optimized.methods()) {
@@ -37,7 +39,7 @@ public record CompilationReport(MethodRef entryPoint, Board board, int reachable
                 }
             }
         }
-        RuntimeRiskReport runtimeRisks = new RuntimeRiskAnalyzer(runtimeConfig).analyze(program, optimized);
+        RuntimeRiskReport runtimeRisks = new RuntimeRiskAnalyzer(runtimeConfig).analyze(program, optimized, lowered);
         return new CompilationReport(program.entryPoint(), program.board(), program.methods().size(), irBlocks,
                 Set.copyOf(intrinsics), runtimeRisks,
                 new ConfigAnalyzer(runtimeConfig).analyze(optimized, runtimeRisks, program.board()));

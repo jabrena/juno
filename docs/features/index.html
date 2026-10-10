@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OTB2XA3Z.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
 
 </head>
 <body >
@@ -79,6 +79,7 @@
     <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
     <li><a class="active" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
     <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
+    <li><a class="" href="/juno/memory-model" ><i class="fa-solid fa-memory"></i>Memory Model</a></li>
     <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
     <li class="menu-group"><span>Boards</span></li>
     <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
@@ -165,7 +166,10 @@ bounds-checked <code>arr[i]</code>/<code>arr[i] = v</code> work only on an array
 its method (i.e. &quot;effectively final&quot;) right after <code>new T[...]</code> — an array received as a
 parameter, or a reassigned local, still supports <code>arr[i]</code>/<code>arr[i] = v</code> but without a bounds check
 and without <code>.length</code>, since its size isn't known at compile time there. Fixed-size multidimensional
-primitive arrays are supported when every dimension is a compile-time constant.</li>
+primitive arrays are supported when every dimension is a compile-time constant. A bounds check the compiler
+can prove never fails (a constant index, a counted loop such as <code>for (int i = 0; i &lt; a.length; i++)</code>, a masked
+index like <code>a[i &amp; 15]</code> into a 16-element array) is decided at compile time and costs nothing at run time; the
+others compile to a single unsigned compare.</li>
 <li>read-only lookup tables in flash: a <code>static final</code> one-dimensional primitive array with an
 all-constant initializer (<code>static final short[] SINE = {0, 804, 1608, ...};</code>) that reachable code
 only ever reads as <code>TABLE[i]</code> or <code>TABLE.length</code> is emitted once into <code>.rodata</code> at its natural element
@@ -230,6 +234,9 @@ validation, object dot paths and zero-based array indexes, value type/null detec
 <li>read-only SPI SD-card files through the standard <code>java.io.InputStream</code>, plus intrinsic
 lowering of <code>java.util.Properties</code> construction, <code>load(InputStream)</code>, <code>getProperty</code>, and <code>size</code>;
 loaded values have stable arena-backed storage and can be passed directly to <code>Wifi.begin</code></li>
+<li>read-only random access to SD-card files through the standard <code>java.io.RandomAccessFile</code> (mode <code>&quot;r&quot;</code>: <code>seek</code>,
+<code>getFilePointer</code>, <code>length</code>, <code>read</code>, <code>readFully</code>, <code>skipBytes</code>, <code>close</code>), raising the JDK's <code>FileNotFoundException</code>,
+<code>EOFException</code> and <code>IOException</code>;</li>
 <li>Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior</li>
 <li>Arduino-backed pseudorandom numbers through <code>Random.seed(int)</code>, <code>Random.nextInt(bound)</code>, and
 <code>Random.nextInt(origin, bound)</code>, with exclusive upper bounds</li>
@@ -383,7 +390,8 @@ programmatically as immutable records with stable diagnostic codes.</p>
 </tr>
 </tbody>
 </table>
-<p>The 8 KiB arena capacity and the counts of emitted bounds checks are exact compiler facts. Arena,
+<p>The 8 KiB arena capacity and the count of bounds-checked array accesses (checked at run time, or proved safe
+at compile time) are exact compiler facts. Arena,
 static-RAM, and stack figures are conservative source-level estimates: alignment is overestimated,
 branch feasibility is not modeled, and the downstream C++ compiler may optimize stack locals. The
 Arduino linker's final memory report is authoritative. Risk findings warn; they do not currently

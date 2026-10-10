@@ -12,6 +12,8 @@ enum ShimFeature {
     SERVO,
     /** {@code PoweredUpHubRemote}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */
     LEGO_POWERED_UP,
+    /** {@code ParallelBus}: eight data pins and a strobe, written through the core's GPIO port registers. */
+    PARALLEL_BUS,
     /** {@code Infrared}: bit-banged framed bytes over a 38 kHz IR receiver and LED, no library. */
     INFRARED,
     /** {@code I2c}: register access on the primary {@code Wire} bus, with the core-bundled library. */
@@ -19,6 +21,8 @@ enum ShimFeature {
     WIFI,
     UDP,
     SD,
+    /** {@code java.io.RandomAccessFile} over the SD open-file table; raises JDK exceptions, so it needs {@link #EXCEPTIONS}. */
+    RANDOM_ACCESS_FILE,
     LONG,
     FLOAT,
     DOUBLE,

@@ -59,6 +59,7 @@ public final class Main {
         String classPathValue = "target/classes";
         Path output = null;
         boolean gcLog = false;
+        boolean showMetrics = false;
         String requestedBoardId = null;
         for (int index = 1; index < args.length; index++) {
             String option = args[index];
@@ -70,6 +71,8 @@ public final class Main {
                 output = Path.of(value(args, ++index, option));
             } else if (option.equals("--gc-log")) {
                 gcLog = true;
+            } else if (option.equals("--metrics")) {
+                showMetrics = true;
             } else if (option.equals("--board")) {
                 requestedBoardId = value(args, ++index, option);
             } else {
@@ -97,6 +100,24 @@ public final class Main {
         System.out.println();
         RuntimeRiskReportFormatter.format(result.report().runtimeRisks()).forEach(System.out::println);
         ConfigSuggestionFormatter.format(result.report().configSuggestions()).forEach(System.out::println);
+        if (showMetrics) {
+            printMetrics(result.metrics());
+        }
+    }
+
+    private static void printMetrics(CompilationMetrics metrics) {
+        System.out.println();
+        System.out.println("Compilation metrics:");
+        System.out.println("  Generated methods: " + metrics.generatedMethods());
+        System.out.println("  Assembly instructions: " + metrics.assemblyInstructions());
+        System.out.println("  Loads / stores: " + metrics.loadInstructions() + " / " + metrics.storeInstructions());
+        System.out.println("  Branches / calls: " + metrics.branchInstructions() + " / " + metrics.callInstructions());
+        System.out.println("  Direct allocation calls: " + metrics.directAllocationCalls());
+        System.out.println("  Maximum fixed frame: " + metrics.maximumFixedFrameBytes() + " bytes");
+        System.out.println("  Total fixed frames: " + metrics.totalFixedFrameBytes() + " bytes");
+        System.out.println("  Assembly / runtime-shim source: " + metrics.assemblyBytes() + " / "
+                + metrics.runtimeShimBytes() + " bytes");
+        System.out.println("  Note: use the final ELF for flash/RAM size and target hardware for cycle counts.");
     }
 
     private static String baseName(Path path) {
@@ -154,8 +175,9 @@ public final class Main {
 
         CompilationPipeline pipeline = new CompilationPipeline();
         Program program = pipeline.link(classPath, mainClass, Optional.ofNullable(board));
-        IrProgram optimized = pipeline.optimize(pipeline.lower(program));
-        CompilationReport report = CompilationReport.from(program, optimized);
+        IrProgram lowered = pipeline.lower(program);
+        IrProgram optimized = pipeline.optimize(lowered);
+        CompilationReport report = CompilationReport.from(program, lowered, optimized);
 
         System.out.println("Entry point: " + report.entryPoint().displayName());
         System.out.println("Board: " + report.board().displayName() + " (fqbn " + report.board().fqbn() + ")");
@@ -226,6 +248,8 @@ public final class Main {
                                             line per collection (arena bytes used before/after),
                                             visible via juno:monitor. Off by default: costs no
                                             extra flash/RAM/time when omitted.
+                  --metrics                 Print deterministic generated-code counts and fixed-frame sizes.
+                                            Use the final ELF and target hardware for size/cycle measurements.
                   Also emits <Main>Shim.cpp and the matching <Main>.ino wrapper alongside it.
                   Runtime-risk resource estimates and structured findings are printed automatically
                   afterward (also true of juno-maven-plugin's compile/verify/upload goals).

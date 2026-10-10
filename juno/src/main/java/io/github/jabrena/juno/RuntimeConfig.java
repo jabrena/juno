@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
@@ -31,6 +32,35 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
                 && (threadStackBytes.getAsInt() < MIN_STACK_BYTES || threadStackBytes.getAsInt() % 8 != 0)) {
             throw new CompileException("The task stack size must be at least " + MIN_STACK_BYTES
                     + " bytes and a multiple of 8, not " + threadStackBytes.getAsInt());
+        }
+    }
+
+    /**
+     * The default configuration with the sizes given in the JVM's {@code -Xmx}/{@code -Xss} syntax (see
+     * {@link #parseBytes}); an empty or blank size keeps the default.
+     */
+    public static RuntimeConfig of(Optional<String> arenaSize, Optional<String> threadStackSize) {
+        Optional<String> arena = arenaSize.filter(size -> !size.isBlank());
+        Optional<String> stack = threadStackSize.filter(size -> !size.isBlank());
+        return new RuntimeConfig(arena.map(size -> parseBytes("juno.Xmx", size)).orElse(DEFAULT.arenaBytes()),
+                DEFAULT.maxThreads(),
+                stack.map(size -> OptionalInt.of(parseBytes("juno.Xss", size))).orElse(DEFAULT.threadStackBytes()));
+    }
+
+    /** A size as the JVM writes {@code -Xmx}/{@code -Xss}: bytes, or a whole number of {@code k}, {@code m} or {@code g}. */
+    static int parseBytes(String option, String size) {
+        String trimmed = size.trim();
+        int unit = switch (Character.toLowerCase(trimmed.charAt(trimmed.length() - 1))) {
+            case 'k' -> 1024;
+            case 'm' -> 1024 * 1024;
+            case 'g' -> 1024 * 1024 * 1024;
+            default -> 1;
+        };
+        String digits = unit == 1 ? trimmed : trimmed.substring(0, trimmed.length() - 1);
+        try {
+            return Math.multiplyExact(Integer.parseInt(digits), unit);
+        } catch (ArithmeticException | NumberFormatException invalid) {
+            throw new CompileException(option + " must be a size such as 49152, 48k or 1m, not '" + size + "'");
         }
     }
 

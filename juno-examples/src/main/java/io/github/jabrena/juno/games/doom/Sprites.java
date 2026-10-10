@@ -20,6 +20,11 @@ final class Sprites {
     static final int BOTTLE = 9;
     static final int HELMET = 10;
     static final int VEST = 11;
+    static final int RIFLE = 12;
+    static final int SAW = 13;
+    static final int AMMO = 14;
+    static final int AMMO_BOX = 15;
+    static final int PACK = 16;
 
     static final short[] SEGMENTS = {
         // Zombieman: head, torso, legs, arms holding a rifle.
@@ -56,45 +61,88 @@ final class Sprites {
         -6, 0, 6, 0, 6, 0, 5, 6, 5, 6, 0, 9, 0, 9, -5, 6, -5, 6, -6, 0,
         // Armor: a vest.
         -12, 0, 12, 0, 12, 0, 14, 20, 14, 20, 6, 24, 6, 24, 0, 18, 0, 18, -6, 24, -6, 24, -14, 20, -14, 20, -12, 0,
+        // A gun lying on the floor: stock, then body and barrel.
+        -16, 1, -4, 1, -16, 1, -16, 6, -16, 6, -4, 5, -4, 1, -4, 7, -4, 7, 18, 7, 18, 7, 18, 5, 18, 5, -4, 5,
+        // Chainsaw: the engine block and the toothed bar.
+        -14, 1, -2, 1, -2, 1, -2, 12, -2, 12, -14, 12, -14, 12, -14, 1, -2, 4, 22, 4, -2, 9, 22, 9, 22, 4, 24, 6,
+        24, 6, 22, 9,
+        // Ammo: a clip, shells, a rocket or a cell.
+        -4, 0, 4, 0, 4, 0, 4, 6, 4, 6, -4, 6, -4, 6, -4, 0,
+        // A box of ammo with its lid.
+        -10, 0, 10, 0, 10, 0, 10, 12, 10, 12, -10, 12, -10, 12, -10, 0, -10, 9, 10, 9,
+        // Backpack with its flap.
+        -8, 0, 8, 0, 8, 0, 9, 14, 9, 14, -9, 14, -9, 14, -8, 0, -9, 14, -4, 8, -4, 8, 4, 8, 4, 8, 9, 14,
     };
     /** First value of each shape in {@link #SEGMENTS}, then its end. */
-    static final short[] START = {0, 64, 140, 236, 280, 304, 328, 344, 368, 392, 416, 436, 464};
+    static final short[] START = {0, 64, 140, 236, 280, 304, 328, 344, 368, 392, 416, 436, 464, 492, 524, 540, 560,
+        588};
 
-    static final int ZOMBIEMAN_COLOR = TftTouchShield.color(210, 210, 200);
-    static final int SERGEANT_COLOR = TftTouchShield.color(150, 190, 110);
-    static final int IMP_COLOR = TftTouchShield.color(235, 125, 45);
-    static final int DEMON_COLOR = TftTouchShield.color(255, 120, 170);
-    static final int CORPSE_COLOR = TftTouchShield.color(150, 25, 25);
-    static final int FIREBALL_COLOR = TftTouchShield.color(255, 70, 0);
-    static final int FLASH_COLOR = TftTouchShield.color(255, 240, 80);
+    // One repeated byte each, like the walls' colors (see Renderer): cheap to send to the screen.
+    static final int ZOMBIEMAN_COLOR = 0xD6D6;
+    static final int SERGEANT_COLOR = 0x8D8D;
+    static final int IMP_COLOR = 0xE3E3;
+    static final int DEMON_COLOR = 0xF3F3;
+    static final int CORPSE_COLOR = 0xA0A0;
+    static final int FIREBALL_COLOR = 0xE1E1;
+    static final int FLASH_COLOR = 0xE7E7;
     static final int PAIN_COLOR = TftTouchShield.WHITE;
-    static final int HEALTH_COLOR = TftTouchShield.color(240, 240, 255);
-    static final int BONUS_COLOR = TftTouchShield.color(80, 140, 255);
-    static final int GREEN_ARMOR_COLOR = TftTouchShield.color(60, 220, 60);
-    static final int BLUE_ARMOR_COLOR = TftTouchShield.color(70, 110, 255);
-    static final int HELMET_COLOR = TftTouchShield.color(160, 200, 160);
+    static final int HEALTH_COLOR = 0xDFDF;
+    static final int BONUS_COLOR = 0x5C5C;
+    static final int GREEN_ARMOR_COLOR = 0x4747;
+    static final int BLUE_ARMOR_COLOR = 0x3B3B;
+    static final int HELMET_COLOR = 0x9696;
+    static final int GUN_COLOR = 0xB5B5;
+    static final int BULLET_COLOR = 0xE6E6;
+    static final int SHELL_COLOR = 0xC9C9;
+    static final int ROCKET_COLOR = 0x9C9C;
+    static final int CELL_COLOR = 0x5F5F;
+    static final int BFG_COLOR = 0x4747;
+    static final int PACK_COLOR = 0x8A8A;
 
     private Sprites() {
     }
 
-    /** The shape of a pickup kind: health bonus, stimpack, medikit, armor bonus, green or blue armor. */
+    /** The shape of a pickup kind ({@link Items}): health, armor, a weapon, ammo, a box of it or a backpack. */
     static int itemShape(int item) {
         return switch (item) {
-            case 0 -> BOTTLE;
-            case 1 -> STIMPACK;
-            case 2 -> MEDIKIT;
-            case 3 -> HELMET;
-            default -> VEST;
+            case Items.HEALTH_BONUS -> BOTTLE;
+            case Items.STIMPACK -> STIMPACK;
+            case Items.MEDIKIT -> MEDIKIT;
+            case Items.ARMOR_BONUS -> HELMET;
+            case Items.GREEN_ARMOR, Items.BLUE_ARMOR -> VEST;
+            case Items.CHAINSAW_PICKUP -> SAW;
+            case Items.BULLET_BOX, Items.SHELL_BOX, Items.ROCKET_BOX, Items.CELL_PACK -> AMMO_BOX;
+            case Items.BACKPACK -> PACK;
+            case Items.CLIP, Items.SHELLS, Items.ROCKET, Items.CELL, Items.DROPPED_CLIP -> AMMO;
+            default -> RIFLE;
         };
     }
 
     static int itemColor(int item) {
         return switch (item) {
-            case 0 -> BONUS_COLOR;
-            case 1, 2 -> HEALTH_COLOR;
-            case 3 -> HELMET_COLOR;
-            case 4 -> GREEN_ARMOR_COLOR;
-            default -> BLUE_ARMOR_COLOR;
+            case Items.HEALTH_BONUS -> BONUS_COLOR;
+            case Items.STIMPACK, Items.MEDIKIT -> HEALTH_COLOR;
+            case Items.ARMOR_BONUS -> HELMET_COLOR;
+            case Items.GREEN_ARMOR -> GREEN_ARMOR_COLOR;
+            case Items.BLUE_ARMOR -> BLUE_ARMOR_COLOR;
+            case Items.CHAINSAW_PICKUP -> FIREBALL_COLOR;
+            case Items.CLIP, Items.BULLET_BOX, Items.DROPPED_CLIP -> BULLET_COLOR;
+            case Items.SHELLS, Items.SHELL_BOX -> SHELL_COLOR;
+            case Items.ROCKET, Items.ROCKET_BOX -> ROCKET_COLOR;
+            case Items.CELL, Items.CELL_PACK, Items.BFG_PICKUP - 1 -> CELL_COLOR;
+            case Items.BFG_PICKUP -> BFG_COLOR;
+            case Items.BACKPACK -> PACK_COLOR;
+            default -> GUN_COLOR;
+        };
+    }
+
+    /** The color of what flies: an imp's fireball, a rocket's flame, plasma or the BFG's ball. */
+    static int shotColor(int kind) {
+        return switch (kind) {
+            case Monsters.ROCKET -> BULLET_COLOR;
+            case Monsters.PLASMA -> CELL_COLOR;
+            case Monsters.BFG_BALL -> BFG_COLOR;
+            default -> FIREBALL_COLOR;
         };
     }
 

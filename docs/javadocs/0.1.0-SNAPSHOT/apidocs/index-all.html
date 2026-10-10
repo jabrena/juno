@@ -121,8 +121,15 @@ initTheme();
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/io/Gpio.html#analogWrite(int,int)" class="member-name-link">analogWrite(int, int)</a> - Static method in class io.github.jabrena.juno.api.io.<a href="io/github/jabrena/juno/api/io/Gpio.html" title="class in io.github.jabrena.juno.api.io">Gpio</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigAnalyzer.html#analyze(io.github.jabrena.juno.ir.IrProgram,io.github.jabrena.juno.analysis.RuntimeRiskReport,io.github.jabrena.juno.board.Board)" class="member-name-link">analyze(IrProgram, RuntimeRiskReport, Board)</a> - Method in class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigAnalyzer.html" title="class in io.github.jabrena.juno.analysis">ConfigAnalyzer</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html#analyze(io.github.jabrena.juno.linker.Program,io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">analyze(Program, IrProgram)</a> - Method in class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskAnalyzer</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html#analyze(io.github.jabrena.juno.linker.Program,io.github.jabrena.juno.ir.IrProgram,io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">analyze(Program, IrProgram, IrProgram)</a> - Method in class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskAnalyzer</a></dt>
+<dd>
+<div class="block">Analyzes the optimized <code>program</code>, counting array accesses and their bounds checks on <code>lowered</code>,
+the IR before optimization.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/linker/ConstantTables.html#analyze(java.util.List)" class="member-name-link">analyze(List)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/ConstantTables.html" title="class in io.github.jabrena.juno.linker">ConstantTables</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/BinaryOp.html#AND" class="member-name-link">AND</a> - Enum constant in enum class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/BinaryOp.html" title="enum class in io.github.jabrena.juno.ir">BinaryOp</a></dt>
@@ -146,6 +153,10 @@ exist yet.</div>
 yet: unlike <a href="io/github/jabrena/juno/api/io/SdCard.html#appendLine(java.lang.String,java.lang.String)"><code>SdCard.appendLine(String, String)</code></a> no newline is added, so a record can be written in pieces
 (each piece within the runtime-string limit above) or be raw text such as CSV fields.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/optimize/BlockMerging.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/BlockMerging.html" title="class in io.github.jabrena.juno.optimize">BlockMerging</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/optimize/BoundsCheckElimination.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/BoundsCheckElimination.html" title="class in io.github.jabrena.juno.optimize">BoundsCheckElimination</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/optimize/CompilerPass.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in interface io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/CompilerPass.html" title="interface in io.github.jabrena.juno.optimize">CompilerPass</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/optimize/ConstantFolder.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/ConstantFolder.html" title="class in io.github.jabrena.juno.optimize">ConstantFolder</a></dt>
@@ -153,6 +164,14 @@ yet: unlike <a href="io/github/jabrena/juno/api/io/SdCard.html#appendLine(java.l
 <dt><a href="io/github/jabrena/juno/optimize/CopyPropagation.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/CopyPropagation.html" title="class in io.github.jabrena.juno.optimize">CopyPropagation</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/optimize/DeadBlockElimination.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/DeadBlockElimination.html" title="class in io.github.jabrena.juno.optimize">DeadBlockElimination</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/optimize/DeadLocalStoreElimination.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/DeadLocalStoreElimination.html" title="class in io.github.jabrena.juno.optimize">DeadLocalStoreElimination</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/optimize/DeadValueElimination.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/DeadValueElimination.html" title="class in io.github.jabrena.juno.optimize">DeadValueElimination</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/optimize/Inliner.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/Inliner.html" title="class in io.github.jabrena.juno.optimize">Inliner</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/optimize/ScalarReplacement.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/ScalarReplacement.html" title="class in io.github.jabrena.juno.optimize">ScalarReplacement</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/annotations/ArduinoBoard.html" class="type-name-link" title="interface in io.github.jabrena.juno.annotations">ArduinoBoard</a> - Interface in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
 <dd>
@@ -173,9 +192,17 @@ microcontroller (Cortex-M33) under Arduino's Zephyr core.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/RuntimeLimits.html#ARENA_CAPACITY_BYTES" class="member-name-link">ARENA_CAPACITY_BYTES</a> - Static variable in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#arenaBytes()" class="member-name-link">arenaBytes()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/RuntimeConfig.html#param-arenaBytes"><code>arenaBytes</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html#arenaCapacityBytes()" class="member-name-link">arenaCapacityBytes()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>arenaCapacityBytes</code> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/api/Memory.html#arenaCapacityBytes()" class="member-name-link">arenaCapacityBytes()</a> - Static method in class io.github.jabrena.juno.api.<a href="io/github/jabrena/juno/api/Memory.html" title="class in io.github.jabrena.juno.api">Memory</a></dt>
+<dd>
+<div class="block">The arena's total size in bytes, fixed when the program is compiled (the Maven plugin's <code>juno.Xmx</code>).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/Memory.html#arenaUsedBytes()" class="member-name-link">arenaUsedBytes()</a> - Static method in class io.github.jabrena.juno.api.<a href="io/github/jabrena/juno/api/Memory.html" title="class in io.github.jabrena.juno.api">Memory</a></dt>
 <dd>
@@ -256,6 +283,14 @@ microcontroller (Cortex-M33) under Arduino's Zephyr core.</div>
 <dt><a href="io/github/jabrena/juno/CompilationResult.html#assembly()" class="member-name-link">assembly()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationResult.html" title="class in io.github.jabrena.juno">CompilationResult</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>assembly</code> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#assemblyBytes()" class="member-name-link">assemblyBytes()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-assemblyBytes"><code>assemblyBytes</code></a> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#assemblyInstructions()" class="member-name-link">assemblyInstructions()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-assemblyInstructions"><code>assemblyInstructions</code></a> record component.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#ATOMIC_INT_ADD_AND_GET" class="member-name-link">ATOMIC_INT_ADD_AND_GET</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
@@ -422,6 +457,10 @@ calibration.</div>
 <dt><a href="io/github/jabrena/juno/api/net/http/HttpServer.html#begin(int)" class="member-name-link">begin(int)</a> - Static method in class io.github.jabrena.juno.api.net.http.<a href="io/github/jabrena/juno/api/net/http/HttpServer.html" title="class in io.github.jabrena.juno.api.net.http">HttpServer</a></dt>
 <dd>
 <div class="block">Starts listening on <code>port</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/api/io/ParallelBus.html#begin(int%5B%5D,int)" class="member-name-link">begin(int[], int)</a> - Static method in class io.github.jabrena.juno.api.io.<a href="io/github/jabrena/juno/api/io/ParallelBus.html" title="class in io.github.jabrena.juno.api.io">ParallelBus</a></dt>
+<dd>
+<div class="block">Uses <code>dataPins</code> (<a href="io/github/jabrena/juno/api/io/ParallelBus.html#WIDTH"><code>ParallelBus.WIDTH</code></a> of them, bit 0 first) and <code>strobePin</code>, which is left high.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/lego/RcxRemote.html#begin(int,int)" class="member-name-link">begin(int, int)</a> - Static method in class io.github.jabrena.juno.api.lego.<a href="io/github/jabrena/juno/api/lego/RcxRemote.html" title="class in io.github.jabrena.juno.api.lego">RcxRemote</a></dt>
 <dd>
@@ -630,12 +669,23 @@ a small custom bitmap.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/tft/TftTouchShield.html#BLACK" class="member-name-link">BLACK</a> - Static variable in class io.github.jabrena.juno.api.tft.<a href="io/github/jabrena/juno/api/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.api.tft">TftTouchShield</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html#block(int)" class="member-name-link">block(int)</a> - Method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/analysis/ControlFlowGraph.html#blockAt(int)" class="member-name-link">blockAt(int)</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ControlFlowGraph.html" title="class in io.github.jabrena.juno.analysis">ControlFlowGraph</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/optimize/BlockMerging.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">BlockMerging</a> - Class in <a href="io/github/jabrena/juno/optimize/package-summary.html">io.github.jabrena.juno.optimize</a></dt>
+<dd>
+<div class="block">Joins a block that ends in a <code>Jump</code> with its target when it is that target's only way in, so straight-line
+code (an inlined body and its continuation, say) is one block with no branch between the halves.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/optimize/BlockMerging.html#%3Cinit%3E()" class="member-name-link">BlockMerging()</a> - Constructor for class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/BlockMerging.html" title="class in io.github.jabrena.juno.optimize">BlockMerging</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/analysis/ControlFlowGraph.html#blocks()" class="member-name-link">blocks()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ControlFlowGraph.html" title="class in io.github.jabrena.juno.analysis">ControlFlowGraph</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>blocks</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html#blocks()" class="member-name-link">blocks()</a> - Method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/IrMethod.html#blocks()" class="member-name-link">blocks()</a> - Method in record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrMethod.html" title="class in io.github.jabrena.juno.ir">IrMethod</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>blocks</code> record component.</div>
@@ -691,6 +741,12 @@ a small custom bitmap.</div>
 <dd>
 <div class="block">Creates an instance of a <code>BoundsCheck</code> record class.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/optimize/BoundsCheckElimination.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">BoundsCheckElimination</a> - Class in <a href="io/github/jabrena/juno/optimize/package-summary.html">io.github.jabrena.juno.optimize</a></dt>
+<dd>
+<div class="block">Removes a <a href="io/github/jabrena/juno/ir/IrInstruction.BoundsCheck.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.BoundsCheck</code></a> whose index is proved to lie in <code>[0, length)</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/optimize/BoundsCheckElimination.html#%3Cinit%3E()" class="member-name-link">BoundsCheckElimination()</a> - Constructor for class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/BoundsCheckElimination.html" title="class in io.github.jabrena.juno.optimize">BoundsCheckElimination</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html#boundsChecks()" class="member-name-link">boundsChecks()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>boundsChecks</code> record component.</div>
@@ -714,6 +770,10 @@ a small custom bitmap.</div>
 <dt><a href="io/github/jabrena/juno/ir/IrTerminator.Branch.html#%3Cinit%3E(io.github.jabrena.juno.ir.Value,int,int)" class="member-name-link">Branch(Value, int, int)</a> - Constructor for record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrTerminator.Branch.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Branch</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>Branch</code> record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#branchInstructions()" class="member-name-link">branchInstructions()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-branchInstructions"><code>branchInstructions</code></a> record component.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/net/Udp.html#broadcast(int,byte%5B%5D,int)" class="member-name-link">broadcast(int, byte[], int)</a> - Static method in class io.github.jabrena.juno.api.net.<a href="io/github/jabrena/juno/api/net/Udp.html" title="class in io.github.jabrena.juno.api.net">Udp</a></dt>
 <dd>
@@ -762,6 +822,10 @@ operand-stack push/pop becomes an explicit <a href="io/github/jabrena/juno/ir/Va
 </dd>
 <dt><a href="io/github/jabrena/juno/lowering/BytecodeToIr.html#%3Cinit%3E()" class="member-name-link">BytecodeToIr()</a> - Constructor for class io.github.jabrena.juno.lowering.<a href="io/github/jabrena/juno/lowering/BytecodeToIr.html" title="class in io.github.jabrena.juno.lowering">BytecodeToIr</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#bytesDelta()" class="member-name-link">bytesDelta()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/analysis/ConfigSuggestion.html#param-bytesDelta"><code>bytesDelta</code></a> record component.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:C">C</h2>
 <dl class="index">
@@ -798,6 +862,10 @@ y = 319.</div>
 <dt><a href="io/github/jabrena/juno/linker/LambdaCallSite.html#caller()" class="member-name-link">caller()</a> - Method in record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/LambdaCallSite.html" title="class in io.github.jabrena.juno.linker">LambdaCallSite</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>caller</code> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#callInstructions()" class="member-name-link">callInstructions()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-callInstructions"><code>callInstructions</code></a> record component.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/linker/LambdaSite.html#callSite()" class="member-name-link">callSite()</a> - Method in record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a></dt>
 <dd>
@@ -905,6 +973,10 @@ y = 319.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#CLOCK_MILLIS" class="member-name-link">CLOCK_MILLIS</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#code()" class="member-name-link">code()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/analysis/ConfigSuggestion.html#param-code"><code>code</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRisk.html#code()" class="member-name-link">code()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRisk.html" title="class in io.github.jabrena.juno.analysis">RuntimeRisk</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>code</code> record component.</div>
@@ -953,11 +1025,19 @@ y = 319.</div>
 <dd>
 <div class="block">Creates an instance of a <code>Compare</code> record class.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html" class="type-name-link" title="class in io.github.jabrena.juno">CompilationMetrics</a> - Record Class in <a href="io/github/jabrena/juno/package-summary.html">io.github.jabrena.juno</a></dt>
+<dd>
+<div class="block">Deterministic structural measurements of one Juno compilation.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#%3Cinit%3E(int,int,int,int,int,int,int,int,int,int,int)" class="member-name-link">CompilationMetrics(int, int, int, int, int, int, int, int, int, int, int)</a> - Constructor for record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Creates an instance of a <code>CompilationMetrics</code> record class.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/CompilationReport.html" class="type-name-link" title="class in io.github.jabrena.juno">CompilationReport</a> - Record Class in <a href="io/github/jabrena/juno/package-summary.html">io.github.jabrena.juno</a></dt>
 <dd>
 <div class="block">What the compiler found while producing a <a href="io/github/jabrena/juno/CompilationResult.html" title="class in io.github.jabrena.juno"><code>CompilationResult</code></a>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/CompilationReport.html#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport)" class="member-name-link">CompilationReport(MethodRef, Board, int, int, Set, RuntimeRiskReport)</a> - Constructor for record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationReport.html" title="class in io.github.jabrena.juno">CompilationReport</a></dt>
+<dt><a href="io/github/jabrena/juno/CompilationReport.html#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport,java.util.List)" class="member-name-link">CompilationReport(MethodRef, Board, int, int, Set, RuntimeRiskReport, List)</a> - Constructor for record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationReport.html" title="class in io.github.jabrena.juno">CompilationReport</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>CompilationReport</code> record class.</div>
 </dd>
@@ -970,6 +1050,8 @@ y = 319.</div>
 <dt><a href="io/github/jabrena/juno/CompilationRequest.html#%3Cinit%3E(java.util.List,java.lang.String,boolean)" class="member-name-link">CompilationRequest(List, String, boolean)</a> - Constructor for record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationRequest.html" title="class in io.github.jabrena.juno">CompilationRequest</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/CompilationRequest.html#%3Cinit%3E(java.util.List,java.lang.String,boolean,java.util.Optional)" class="member-name-link">CompilationRequest(List, String, boolean, Optional)</a> - Constructor for record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationRequest.html" title="class in io.github.jabrena.juno">CompilationRequest</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/CompilationRequest.html#%3Cinit%3E(java.util.List,java.lang.String,boolean,java.util.Optional,io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">CompilationRequest(List, String, boolean, Optional, RuntimeConfig)</a> - Constructor for record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationRequest.html" title="class in io.github.jabrena.juno">CompilationRequest</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>CompilationRequest</code> record class.</div>
 </dd>
@@ -1001,6 +1083,10 @@ y = 319.</div>
 <dd>
 <div class="block">One IR-to-IR transformation in the optimization pipeline, run between lowering and the backend.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/JunoCompiler.html#compileTo(io.github.jabrena.juno.CompilationRequest,java.nio.file.Path,java.nio.file.Path)" class="member-name-link">compileTo(CompilationRequest, Path, Path)</a> - Method in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/JunoCompiler.html" title="class in io.github.jabrena.juno">JunoCompiler</a></dt>
+<dd>
+<div class="block">Compiles <code>request</code> and writes the generated assembly and runtime shim.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/JunoCompiler.html#compileTo(java.util.List,java.lang.String,java.nio.file.Path,java.nio.file.Path)" class="member-name-link">compileTo(List, String, Path, Path)</a> - Method in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/JunoCompiler.html" title="class in io.github.jabrena.juno">JunoCompiler</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/JunoCompiler.html#compileTo(java.util.List,java.lang.String,java.nio.file.Path,java.nio.file.Path,boolean)" class="member-name-link">compileTo(List, String, Path, Path, boolean)</a> - Method in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/JunoCompiler.html" title="class in io.github.jabrena.juno">JunoCompiler</a></dt>
@@ -1018,6 +1104,28 @@ y = 319.</div>
 <dt><a href="io/github/jabrena/juno/ir/Condition.html" class="type-name-link" title="enum class in io.github.jabrena.juno.ir">Condition</a> - Enum Class in <a href="io/github/jabrena/juno/ir/package-summary.html">io.github.jabrena.juno.ir</a></dt>
 <dd>
 <div class="block">The comparison an <a href="io/github/jabrena/juno/ir/IrInstruction.Compare.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.Compare</code></a> evaluates between its two operands.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigAnalyzer.html" class="type-name-link" title="class in io.github.jabrena.juno.analysis">ConfigAnalyzer</a> - Class in <a href="io/github/jabrena/juno/analysis/package-summary.html">io.github.jabrena.juno.analysis</a></dt>
+<dd>
+<div class="block">Compares the <a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno"><code>RuntimeConfig</code></a> with what the program needs and suggests a better one.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigAnalyzer.html#%3Cinit%3E(io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">ConfigAnalyzer(RuntimeConfig)</a> - Constructor for class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigAnalyzer.html" title="class in io.github.jabrena.juno.analysis">ConfigAnalyzer</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" class="type-name-link" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a> - Record Class in <a href="io/github/jabrena/juno/analysis/package-summary.html">io.github.jabrena.juno.analysis</a></dt>
+<dd>
+<div class="block">A change to the runtime configuration that would suit the program better.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#%3Cinit%3E(java.lang.String,java.lang.String,int,int,int,java.lang.String)" class="member-name-link">ConfigSuggestion(String, String, int, int, int, String)</a> - Constructor for record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
+<dd>
+<div class="block">Creates an instance of a <code>ConfigSuggestion</code> record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestionFormatter.html" class="type-name-link" title="class in io.github.jabrena.juno.analysis">ConfigSuggestionFormatter</a> - Class in <a href="io/github/jabrena/juno/analysis/package-summary.html">io.github.jabrena.juno.analysis</a></dt>
+<dd>
+<div class="block">Renders <a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis"><code>ConfigSuggestion</code></a>s as human-readable lines, shared by the CLI and the Maven plugin.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationReport.html#configSuggestions()" class="member-name-link">configSuggestions()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationReport.html" title="class in io.github.jabrena.juno">CompilationReport</a></dt>
+<dd>
+<div class="block">Returns the value of the <code>configSuggestions</code> record component.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html#CONFIGURATION" class="member-name-link">CONFIGURATION</a> - Static variable in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html" title="class in io.github.jabrena.juno.linker">StructuredTaskSupport</a></dt>
 <dd>&nbsp;</dd>
@@ -1042,9 +1150,8 @@ connected afterwards.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/optimize/ConstantFolder.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">ConstantFolder</a> - Class in <a href="io/github/jabrena/juno/optimize/package-summary.html">io.github.jabrena.juno.optimize</a></dt>
 <dd>
-<div class="block">Folds <code>Binary</code>/<code>Unary</code>/<code>Compare</code> instructions into <code>Const</code> when their operands are
-already known constants earlier in the same block, and folds a <code>Branch</code> into a <code>Jump</code> when its
-condition is a known constant.</div>
+<div class="block">Folds <code>Binary</code>/<code>Unary</code>/<code>Compare</code> instructions into <code>Const</code> when their operands are known
+constants, and folds a <code>Branch</code> into a <code>Jump</code> when its condition is a known constant.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/optimize/ConstantFolder.html#%3Cinit%3E()" class="member-name-link">ConstantFolder()</a> - Constructor for class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/ConstantFolder.html" title="class in io.github.jabrena.juno.optimize">ConstantFolder</a></dt>
 <dd>&nbsp;</dd>
@@ -1087,11 +1194,18 @@ one-dimensional primitive array whose <code>&lt;clinit&gt;</code> initializer is
 <dd>
 <div class="block">One flash-resident table: element values as raw bits, sign-extended for the integer types.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html#CONSTRUCTOR" class="member-name-link">CONSTRUCTOR</a> - Static variable in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/LockSupport.html#CONSTRUCTOR" class="member-name-link">CONSTRUCTOR</a> - Static variable in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/LockSupport.html" title="class in io.github.jabrena.juno.linker">LockSupport</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/LinkedMethod.html#controlFlowGraph()" class="member-name-link">controlFlowGraph()</a> - Method in record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/LinkedMethod.html" title="class in io.github.jabrena.juno.linker">LinkedMethod</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>controlFlowGraph</code> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" class="type-name-link" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a> - Class in <a href="io/github/jabrena/juno/ir/package-summary.html">io.github.jabrena.juno.ir</a></dt>
+<dd>
+<div class="block">The control-flow graph of one <a href="io/github/jabrena/juno/ir/IrMethod.html" title="class in io.github.jabrena.juno.ir"><code>IrMethod</code></a>, shared by the data-flow passes: every block's successors and
+predecessors (by block start), a reverse postorder from the entry block, and the dominator tree.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/analysis/ControlFlowGraph.html" class="type-name-link" title="class in io.github.jabrena.juno.analysis">ControlFlowGraph</a> - Record Class in <a href="io/github/jabrena/juno/analysis/package-summary.html">io.github.jabrena.juno.analysis</a></dt>
 <dd>
@@ -1110,8 +1224,7 @@ a CFG edge, replacing byte-offset jumps with an explicit block graph.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/optimize/CopyPropagation.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">CopyPropagation</a> - Class in <a href="io/github/jabrena/juno/optimize/package-summary.html">io.github.jabrena.juno.optimize</a></dt>
 <dd>
-<div class="block">Eliminates a <a href="io/github/jabrena/juno/ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when an earlier <a href="io/github/jabrena/juno/ir/IrInstruction.StoreLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.StoreLocal</code></a> in the same
-basic block determines the slot's value.</div>
+<div class="block">Eliminates a <a href="io/github/jabrena/juno/ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when preceding stores determine the slot's value.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/optimize/CopyPropagation.html#%3Cinit%3E()" class="member-name-link">CopyPropagation()</a> - Constructor for class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/CopyPropagation.html" title="class in io.github.jabrena.juno.optimize">CopyPropagation</a></dt>
 <dd>&nbsp;</dd>
@@ -1123,6 +1236,10 @@ basic block determines the slot's value.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/net/http/HttpStatus.html#CREATED" class="member-name-link">CREATED</a> - Static variable in class io.github.jabrena.juno.api.net.http.<a href="io/github/jabrena/juno/api/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.api.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#current()" class="member-name-link">current()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/analysis/ConfigSuggestion.html#param-current"><code>current</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#currentMilliamps()" class="member-name-link">currentMilliamps()</a> - Static method in class io.github.jabrena.juno.api.lego.<a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html" title="class in io.github.jabrena.juno.api.lego">PoweredUpHubRemote</a></dt>
 <dd>
 <div class="block">The current the Technic Hub draws, in milliamps (all motors and the hub together), or <code>-1</code> if
@@ -1167,9 +1284,24 @@ the hub has not answered; subscribed on the first call like <a href="io/github/j
 </dd>
 <dt><a href="io/github/jabrena/juno/optimize/DeadBlockElimination.html#%3Cinit%3E()" class="member-name-link">DeadBlockElimination()</a> - Constructor for class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/DeadBlockElimination.html" title="class in io.github.jabrena.juno.optimize">DeadBlockElimination</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/optimize/DeadLocalStoreElimination.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">DeadLocalStoreElimination</a> - Class in <a href="io/github/jabrena/juno/optimize/package-summary.html">io.github.jabrena.juno.optimize</a></dt>
+<dd>
+<div class="block">Removes stores to JVM/synthetic local slots that no later load can read.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/optimize/DeadLocalStoreElimination.html#%3Cinit%3E()" class="member-name-link">DeadLocalStoreElimination()</a> - Constructor for class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/DeadLocalStoreElimination.html" title="class in io.github.jabrena.juno.optimize">DeadLocalStoreElimination</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/optimize/DeadValueElimination.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">DeadValueElimination</a> - Class in <a href="io/github/jabrena/juno/optimize/package-summary.html">io.github.jabrena.juno.optimize</a></dt>
+<dd>
+<div class="block">Removes instructions that only compute a value nothing reads: constants, local loads, integer arithmetic other
+than division and remainder (which can panic on zero), comparisons and conversions.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/optimize/DeadValueElimination.html#%3Cinit%3E()" class="member-name-link">DeadValueElimination()</a> - Constructor for class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/DeadValueElimination.html" title="class in io.github.jabrena.juno.optimize">DeadValueElimination</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/bytecode/BytecodeDecoder.html#decode(io.github.jabrena.juno.classfile.JavaMethod)" class="member-name-link">decode(JavaMethod)</a> - Method in class io.github.jabrena.juno.bytecode.<a href="io/github/jabrena/juno/bytecode/BytecodeDecoder.html" title="class in io.github.jabrena.juno.bytecode">BytecodeDecoder</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/board/Board.html#DEFAULT" class="member-name-link">DEFAULT</a> - Static variable in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#DEFAULT" class="member-name-link">DEFAULT</a> - Static variable in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/net/email/Pop3Client.html#DEFAULT_BODY_BUFFER_SIZE" class="member-name-link">DEFAULT_BODY_BUFFER_SIZE</a> - Static variable in class io.github.jabrena.juno.api.net.email.<a href="io/github/jabrena/juno/api/net/email/Pop3Client.html" title="class in io.github.jabrena.juno.api.net.email">Pop3Client</a></dt>
 <dd>
@@ -1198,6 +1330,10 @@ the hub has not answered; subscribed on the first call like <a href="io/github/j
 <dt><a href="io/github/jabrena/juno/ir/IrTerminator.Switch.html#defaultTarget()" class="member-name-link">defaultTarget()</a> - Method in record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrTerminator.Switch.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Switch</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>defaultTarget</code> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/board/ArduinoCore.html#defaultThreadStackBytes()" class="member-name-link">defaultThreadStackBytes()</a> - Method in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></dt>
+<dd>
+<div class="block">Stack bytes of each extra task when the runtime configuration does not choose one.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/Delay.html" class="type-name-link" title="class in io.github.jabrena.juno.api">Delay</a> - Class in <a href="io/github/jabrena/juno/api/package-summary.html">io.github.jabrena.juno.api</a></dt>
 <dd>
@@ -1305,6 +1441,10 @@ the hub has not answered; subscribed on the first call like <a href="io/github/j
 <dd>
 <div class="block">Returns the value of the <code>dimensions</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#directAllocationCalls()" class="member-name-link">directAllocationCalls()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-directAllocationCalls"><code>directAllocationCalls</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#disconnect()" class="member-name-link">disconnect()</a> - Static method in class io.github.jabrena.juno.api.lego.<a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html" title="class in io.github.jabrena.juno.api.lego">PoweredUpHubRemote</a></dt>
 <dd>
 <div class="block">Closes the BLE connection, leaving the hub on and advertising again.</div>
@@ -1321,6 +1461,10 @@ the hub has not answered; subscribed on the first call like <a href="io/github/j
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/FloatBinaryOp.html#DIVIDE" class="member-name-link">DIVIDE</a> - Enum constant in enum class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/FloatBinaryOp.html" title="enum class in io.github.jabrena.juno.ir">FloatBinaryOp</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html#dominates(int,int)" class="member-name-link">dominates(int, int)</a> - Method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></dt>
+<dd>
+<div class="block">Whether every path from the entry to <code>block</code> passes through <code>dominator</code> (a block dominates itself).</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ir/ArrayElementType.html#DOUBLE" class="member-name-link">DOUBLE</a> - Enum constant in enum class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ArrayElementType.html" title="enum class in io.github.jabrena.juno.ir">ArrayElementType</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/IrInstruction.DoubleBinary.html#%3Cinit%3E(io.github.jabrena.juno.ir.Value,io.github.jabrena.juno.ir.FloatBinaryOp,io.github.jabrena.juno.ir.Value,io.github.jabrena.juno.ir.Value)" class="member-name-link">DoubleBinary(Value, FloatBinaryOp, Value, Value)</a> - Constructor for record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrInstruction.DoubleBinary.html" title="class in io.github.jabrena.juno.ir">IrInstruction.DoubleBinary</a></dt>
@@ -1514,6 +1658,10 @@ for <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#readSensor(
 <dd>
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
+<dd>
+<div class="block">Indicates whether some other object is "equal to" this one.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/analysis/ControlFlowGraph.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ControlFlowGraph.html" title="class in io.github.jabrena.juno.analysis">ControlFlowGraph</a></dt>
 <dd>
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
@@ -1619,6 +1767,10 @@ for <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#readSensor(
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/classfile/MethodRef.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></dt>
+<dd>
+<div class="block">Indicates whether some other object is "equal to" this one.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
 <dd>
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
@@ -1942,6 +2094,10 @@ for <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#readSensor(
 <dd>
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">Indicates whether some other object is "equal to" this one.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RiskSeverity.html#ERROR" class="member-name-link">ERROR</a> - Enum constant in enum class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RiskSeverity.html" title="enum class in io.github.jabrena.juno.analysis">RiskSeverity</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html#estimatedArenaBytes()" class="member-name-link">estimatedArenaBytes()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></dt>
@@ -1969,6 +2125,10 @@ continue at <code>handlerPc</code>.</div>
 <dt><a href="io/github/jabrena/juno/classfile/JavaMethod.html#exceptionHandlers()" class="member-name-link">exceptionHandlers()</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/JavaMethod.html" title="class in io.github.jabrena.juno.classfile">JavaMethod</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>exceptionHandlers</code> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html#EXCEPTIONS" class="member-name-link">EXCEPTIONS</a> - Static variable in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></dt>
+<dd>
+<div class="block">Every exception a <code>RandomAccessFile</code> call can raise, so a program that uses one has their class ids.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/io/SdCard.html#exists(java.lang.String)" class="member-name-link">exists(String)</a> - Static method in class io.github.jabrena.juno.api.io.<a href="io/github/jabrena/juno/api/io/SdCard.html" title="class in io.github.jabrena.juno.api.io">SdCard</a></dt>
 <dd>
@@ -2117,11 +2277,23 @@ with <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#versionMaj
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskReportFormatter.html#format(io.github.jabrena.juno.analysis.RuntimeRiskReport)" class="member-name-link">format(RuntimeRiskReport)</a> - Static method in class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRiskReportFormatter.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReportFormatter</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestionFormatter.html#format(java.util.List)" class="member-name-link">format(List)</a> - Static method in class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestionFormatter.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestionFormatter</a></dt>
+<dd>
+<div class="block">One line per suggestion, or none when the configuration already suits the program.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/board/Board.html#fqbn()" class="member-name-link">fqbn()</a> - Method in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/io/ir/Infrared.html#FRAMING_ERROR" class="member-name-link">FRAMING_ERROR</a> - Static variable in class io.github.jabrena.juno.api.io.ir.<a href="io/github/jabrena/juno/api/io/ir/Infrared.html" title="class in io.github.jabrena.juno.api.io.ir">Infrared</a></dt>
 <dd>
 <div class="block"><a href="io/github/jabrena/juno/api/io/ir/Infrared.html#readByte(int)"><code>Infrared.readByte(int)</code></a> result when a byte arrived with a wrong parity bit or stop bit.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#from(io.github.jabrena.juno.CompilationResult)" class="member-name-link">from(CompilationResult)</a> - Static method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Measures the generated sources in <code>result</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#from(java.lang.String,java.lang.String)" class="member-name-link">from(String, String)</a> - Static method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Measures generated assembly and runtime-shim sources without executing either one.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/board/Board.html#fromApiClassName(java.lang.String)" class="member-name-link">fromApiClassName(String)</a> - Static method in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a></dt>
 <dd>
@@ -2150,6 +2322,10 @@ with <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#versionMaj
 </dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html#generate(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">generate(IrProgram)</a> - Method in class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#generatedMethods()" class="member-name-link">generatedMethods()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-generatedMethods"><code>generatedMethods</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/net/http/HttpsClient.html#get(java.lang.String,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">get(String, int, byte[], int, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.api.net.http.<a href="io/github/jabrena/juno/api/net/http/HttpsClient.html" title="class in io.github.jabrena.juno.api.net.http">HttpsClient</a></dt>
 <dd>
 <div class="block">Sends an HTTPS GET request whose path is the first <code>pathLength</code> ASCII bytes of
@@ -2253,6 +2429,10 @@ gyroscope; the derivative of <a href="io/github/jabrena/juno/api/imu/NineAxisMot
 <div class="block">The hub's hardware version in the same packed form as <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#firmwareVersion()"><code>PoweredUpHubRemote.firmwareVersion()</code></a>, or <code>-1</code> if unknown.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/analysis/BasicBlock.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/BasicBlock.html" title="class in io.github.jabrena.juno.analysis">BasicBlock</a></dt>
+<dd>
+<div class="block">Returns a hash code value for this object.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
 <dd>
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
@@ -2361,6 +2541,10 @@ gyroscope; the derivative of <a href="io/github/jabrena/juno/api/imu/NineAxisMot
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/classfile/MethodRef.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></dt>
+<dd>
+<div class="block">Returns a hash code value for this object.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
 <dd>
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
@@ -2684,6 +2868,10 @@ gyroscope; the derivative of <a href="io/github/jabrena/juno/api/imu/NineAxisMot
 <dd>
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">Returns a hash code value for this object.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/net/http/HttpMethod.html#HEAD" class="member-name-link">HEAD</a> - Static variable in class io.github.jabrena.juno.api.net.http.<a href="io/github/jabrena/juno/api/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.api.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/ThrowableTypes.html#HEADER_BYTES" class="member-name-link">HEADER_BYTES</a> - Static variable in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/ThrowableTypes.html" title="class in io.github.jabrena.juno.linker">ThrowableTypes</a></dt>
@@ -2850,6 +3038,13 @@ bit-banged on two plain pins, with no Arduino library.</div>
 <dd>
 <div class="block">Bytecode offsets of <code>method</code>'s instructions that only built a flash table; lowering skips them.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/optimize/Inliner.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">Inliner</a> - Class in <a href="io/github/jabrena/juno/optimize/package-summary.html">io.github.jabrena.juno.optimize</a></dt>
+<dd>
+<div class="block">Replaces a <a href="io/github/jabrena/juno/ir/IrInstruction.Call.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.Call</code></a> to a small leaf method with the method's own blocks, so getters, setters,
+constructors and small math helpers cost no call, no prologue and no argument shuffling.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/optimize/Inliner.html#%3Cinit%3E()" class="member-name-link">Inliner()</a> - Constructor for class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/Inliner.html" title="class in io.github.jabrena.juno.optimize">Inliner</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/io/Gpio.html#INPUT" class="member-name-link">INPUT</a> - Static variable in class io.github.jabrena.juno.api.io.<a href="io/github/jabrena/juno/api/io/Gpio.html" title="class in io.github.jabrena.juno.api.io">Gpio</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/lego/RcxBrick.html#INPUT_1" class="member-name-link">INPUT_1</a> - Static variable in class io.github.jabrena.juno.api.lego.<a href="io/github/jabrena/juno/api/lego/RcxBrick.html" title="class in io.github.jabrena.juno.api.lego">RcxBrick</a></dt>
@@ -3366,6 +3561,12 @@ id stored in each of its objects' headers (see <code>ThrowableTypes</code>).</di
 <dd>
 <div class="block">Creates an instance of a <code>IrProgram</code> record class.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/ir/IrRewriting.html" class="type-name-link" title="class in io.github.jabrena.juno.ir">IrRewriting</a> - Class in <a href="io/github/jabrena/juno/ir/package-summary.html">io.github.jabrena.juno.ir</a></dt>
+<dd>
+<div class="block">Rebuilds IR nodes with their values, local slots and block targets mapped: every value an instruction defines or
+reads goes through <code>values</code>, every local slot through <code>locals</code>, and every jump target through
+<code>blocks</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ir/IrTerminator.html" class="type-name-link" title="interface in io.github.jabrena.juno.ir">IrTerminator</a> - Interface in <a href="io/github/jabrena/juno/ir/package-summary.html">io.github.jabrena.juno.ir</a></dt>
 <dd>
 <div class="block">Where control flow goes after the last instruction of an <a href="io/github/jabrena/juno/ir/IrBasicBlock.html" title="class in io.github.jabrena.juno.ir"><code>IrBasicBlock</code></a>.</div>
@@ -3378,6 +3579,10 @@ id stored in each of its objects' headers (see <code>ThrowableTypes</code>).</di
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/IrTerminator.Switch.html" class="type-name-link" title="class in io.github.jabrena.juno.ir">IrTerminator.Switch</a> - Record Class in <a href="io/github/jabrena/juno/ir/package-summary.html">io.github.jabrena.juno.ir</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ir/IrValues.html" class="type-name-link" title="class in io.github.jabrena.juno.ir">IrValues</a> - Class in <a href="io/github/jabrena/juno/ir/package-summary.html">io.github.jabrena.juno.ir</a></dt>
+<dd>
+<div class="block">Extracts every value referenced or produced by an IR node.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/classfile/JavaMethod.html#isAbstract()" class="member-name-link">isAbstract()</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/JavaMethod.html" title="class in io.github.jabrena.juno.classfile">JavaMethod</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/RecordSupport.html#isAccessorCall(java.util.Map,io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">isAccessorCall(Map, MethodRef)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/RecordSupport.html" title="class in io.github.jabrena.juno.linker">RecordSupport</a></dt>
@@ -3403,6 +3608,10 @@ storage that outlives the call — see <a href="io/github/jabrena/juno/lowering/
 <dt><a href="io/github/jabrena/juno/linker/BigNumberSupport.html#isBigNumberType(java.lang.String)" class="member-name-link">isBigNumberType(String)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/BigNumberSupport.html" title="class in io.github.jabrena.juno.linker">BigNumberSupport</a></dt>
 <dd>
 <div class="block">Whether <code>descriptor</code> is one of the four <code>java.math</code> types: one word, like a thread handle.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html#isBufferRead(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">isBufferRead(MethodRef)</a> - Static method in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></dt>
+<dd>
+<div class="block"><code>read(byte[]...)</code>/<code>readFully(byte[]...)</code>: the front end adds the buffer's known capacity.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/linker/ThrowableTypes.html#isBuiltIn(java.lang.String)" class="member-name-link">isBuiltIn(String)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/ThrowableTypes.html" title="class in io.github.jabrena.juno.linker">ThrowableTypes</a></dt>
 <dd>&nbsp;</dd>
@@ -3470,6 +3679,8 @@ storage that outlives the call — see <a href="io/github/jabrena/juno/lowering/
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/classfile/JavaMethod.html#isNative()" class="member-name-link">isNative()</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/JavaMethod.html" title="class in io.github.jabrena.juno.classfile">JavaMethod</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html#isOwner(java.lang.String)" class="member-name-link">isOwner(String)</a> - Static method in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/lego/RcxBrick.html#isPressed(int)" class="member-name-link">isPressed(int)</a> - Static method in class io.github.jabrena.juno.api.lego.<a href="io/github/jabrena/juno/api/lego/RcxBrick.html" title="class in io.github.jabrena.juno.api.lego">RcxBrick</a></dt>
 <dd>
 <div class="block">Whether the touch sensor on <code>input</code> is pressed; <code>false</code> also when the brick did not answer.</div>
@@ -3478,6 +3689,12 @@ storage that outlives the call — see <a href="io/github/jabrena/juno/lowering/
 <dd>
 <div class="block">Whether the touch sensor on <code>input</code> is pressed; <code>false</code> also when the Scout did not answer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/linker/Descriptor.html#isRandomAccessFile(java.lang.String)" class="member-name-link">isRandomAccessFile(String)</a> - Static method in record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/Descriptor.html" title="class in io.github.jabrena.juno.linker">Descriptor</a></dt>
+<dd>
+<div class="block"><code>java.io.RandomAccessFile</code>, an open SD card file's one-word handle, so helpers can share one open file.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html#isReachable(int)" class="member-name-link">isReachable(int)</a> - Method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/classfile/JavaClass.html#isRecord()" class="member-name-link">isRecord()</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/JavaClass.html" title="class in io.github.jabrena.juno.classfile">JavaClass</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/LockSupport.html#isReentrantLockClass(java.lang.String)" class="member-name-link">isReentrantLockClass(String)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/LockSupport.html" title="class in io.github.jabrena.juno.linker">LockSupport</a></dt>
@@ -3712,7 +3929,7 @@ WiFi and 13x8 on the UNO Q.</div>
 <dd>
 <div class="block">A 5x7 dot-matrix font covering the full printable ASCII range (32 space .. 126 <code>~</code>), for
 printing arbitrary ASCII characters on the UNO R4 WiFi's 12x8 LED matrix one at a time (two
-glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns).</div>
+glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT shield's text.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/led/LedMatrixFontSmall.html" class="type-name-link" title="class in io.github.jabrena.juno.api.led">LedMatrixFontSmall</a> - Class in <a href="io/github/jabrena/juno/api/led/package-summary.html">io.github.jabrena.juno.api.led</a></dt>
 <dd>
@@ -3892,6 +4109,10 @@ command (<a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#setLin
 the UNO R4's 96 pixels use the first three words and ignore <code>word3</code>; the UNO Q's 104 pixels use
 all four, the last holding the final 8 pixels in its top bits.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#loadInstructions()" class="member-name-link">loadInstructions()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-loadInstructions"><code>loadInstructions</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ir/IrInstruction.LoadLocal.html#%3Cinit%3E(io.github.jabrena.juno.ir.Value,int)" class="member-name-link">LoadLocal(Value, int)</a> - Constructor for record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir">IrInstruction.LoadLocal</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>LoadLocal</code> record class.</div>
@@ -3978,6 +4199,10 @@ entries), one byte value (0-255) per element, most significant first — e.g.</d
 <dd>
 <div class="block">Returns the value of the <code>mainClass</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/ir/IrRewriting.html#map(io.github.jabrena.juno.ir.IrInstruction,java.util.function.UnaryOperator,java.util.function.IntUnaryOperator)" class="member-name-link">map(IrInstruction, UnaryOperator, IntUnaryOperator)</a> - Static method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrRewriting.html" title="class in io.github.jabrena.juno.ir">IrRewriting</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ir/IrRewriting.html#map(io.github.jabrena.juno.ir.IrTerminator,java.util.function.UnaryOperator,java.util.function.IntUnaryOperator)" class="member-name-link">map(IrTerminator, UnaryOperator, IntUnaryOperator)</a> - Static method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrRewriting.html" title="class in io.github.jabrena.juno.ir">IrRewriting</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/io/ir/Infrared.html#mark(int)" class="member-name-link">mark(int)</a> - Static method in class io.github.jabrena.juno.api.io.ir.<a href="io/github/jabrena/juno/api/io/ir/Infrared.html" title="class in io.github.jabrena.juno.api.io.ir">Infrared</a></dt>
 <dd>
 <div class="block">Transmits a burst of the 38 kHz carrier for <code>micros</code> microseconds.</div>
@@ -4096,6 +4321,10 @@ entries), one byte value (0-255) per element, most significant first — e.g.</d
 <dd>
 <div class="block">Returns the value of the <code>maxCallDepth</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#maximumFixedFrameBytes()" class="member-name-link">maximumFixedFrameBytes()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-maximumFixedFrameBytes"><code>maximumFixedFrameBytes</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/classfile/JavaMethod.html#maxLocals()" class="member-name-link">maxLocals()</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/JavaMethod.html" title="class in io.github.jabrena.juno.classfile">JavaMethod</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>maxLocals</code> record component.</div>
@@ -4108,14 +4337,28 @@ entries), one byte value (0-255) per element, most significant first — e.g.</d
 <dd>
 <div class="block">Returns the value of the <code>maxStack</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#maxThreads()" class="member-name-link">maxThreads()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/RuntimeConfig.html#param-maxThreads"><code>maxThreads</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/BigNumberMethods.html#mayThrow(io.github.jabrena.juno.intrinsic.Intrinsic)" class="member-name-link">mayThrow(Intrinsic)</a> - Static method in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/BigNumberMethods.html" title="class in io.github.jabrena.juno.intrinsic">BigNumberMethods</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html#mayThrow(io.github.jabrena.juno.intrinsic.Intrinsic)" class="member-name-link">mayThrow(Intrinsic)</a> - Static method in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></dt>
+<dd>
+<div class="block">Every <code>RandomAccessFile</code> intrinsic can fail: a closed file, a missing one, a short read.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/Memory.html" class="type-name-link" title="class in io.github.jabrena.juno.api">Memory</a> - Class in <a href="io/github/jabrena/juno/api/package-summary.html">io.github.jabrena.juno.api</a></dt>
 <dd>
 <div class="block">Read-only introspection into Juno's arena allocator, recognized as a compiler intrinsic.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#MEMORY_ARENA_CAPACITY" class="member-name-link">MEMORY_ARENA_CAPACITY</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#MEMORY_ARENA_USED" class="member-name-link">MEMORY_ARENA_USED</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#message()" class="member-name-link">message()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/analysis/ConfigSuggestion.html#param-message"><code>message</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRisk.html#message()" class="member-name-link">message()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRisk.html" title="class in io.github.jabrena.juno.analysis">RuntimeRisk</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>message</code> record component.</div>
@@ -4174,6 +4417,8 @@ failing step: connect (<code>-1</code>), greeting (<code>-2</code>), <code>USER<
 <dd>
 <div class="block">Returns the value of the <code>method</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html#method(java.lang.String,java.lang.String)" class="member-name-link">method(String, String)</a> - Static method in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/net/http/HttpStatus.html#METHOD_NOT_ALLOWED" class="member-name-link">METHOD_NOT_ALLOWED</a> - Static variable in class io.github.jabrena.juno.api.net.http.<a href="io/github/jabrena/juno/api/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.api.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/classfile/ConstantPool.html#methodHandle(int)" class="member-name-link">methodHandle(int)</a> - Method in class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/ConstantPool.html" title="class in io.github.jabrena.juno.classfile">ConstantPool</a></dt>
@@ -4214,11 +4459,19 @@ failing step: connect (<code>-1</code>), greeting (<code>-2</code>), <code>USER<
 <dd>
 <div class="block">Returns the value of the <code>methods</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/backend/StackFrameSizing.html#methodStackBytes(io.github.jabrena.juno.ir.IrMethod)" class="member-name-link">methodStackBytes(IrMethod)</a> - Static method in class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/StackFrameSizing.html" title="class in io.github.jabrena.juno.backend">StackFrameSizing</a></dt>
+<dd>
+<div class="block">Total fixed per-invocation stack cost, including registers saved by the prologue.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/classfile/ConstantPool.html#methodType(int)" class="member-name-link">methodType(int)</a> - Method in class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/ConstantPool.html" title="class in io.github.jabrena.juno.classfile">ConstantPool</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/classfile/ConstantPool.MethodTypeEntry.html#%3Cinit%3E(int)" class="member-name-link">MethodTypeEntry(int)</a> - Constructor for record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/ConstantPool.MethodTypeEntry.html" title="class in io.github.jabrena.juno.classfile">ConstantPool.MethodTypeEntry</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>MethodTypeEntry</code> record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationResult.html#metrics()" class="member-name-link">metrics()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationResult.html" title="class in io.github.jabrena.juno">CompilationResult</a></dt>
+<dd>
+<div class="block">Deterministic structural measurements of the generated sources.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/Clock.html#micros()" class="member-name-link">micros()</a> - Static method in class io.github.jabrena.juno.api.<a href="io/github/jabrena/juno/api/Clock.html" title="class in io.github.jabrena.juno.api">Clock</a></dt>
 <dd>&nbsp;</dd>
@@ -4424,8 +4677,19 @@ Java on top of <a href="io/github/jabrena/juno/api/io/i2c/I2c.html" title="class
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/motors/Servo.html#of(int)" class="member-name-link">of(int)</a> - Static method in class io.github.jabrena.juno.api.motors.<a href="io/github/jabrena/juno/api/motors/Servo.html" title="class in io.github.jabrena.juno.api.motors">Servo</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ir/IrValues.html#of(io.github.jabrena.juno.ir.IrInstruction)" class="member-name-link">of(IrInstruction)</a> - Static method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrValues.html" title="class in io.github.jabrena.juno.ir">IrValues</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html#of(io.github.jabrena.juno.ir.IrMethod)" class="member-name-link">of(IrMethod)</a> - Static method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ir/IrValues.html#of(io.github.jabrena.juno.ir.IrTerminator)" class="member-name-link">of(IrTerminator)</a> - Static method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrValues.html" title="class in io.github.jabrena.juno.ir">IrValues</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/ConstantTables.html#of(io.github.jabrena.juno.linker.Program)" class="member-name-link">of(Program)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/ConstantTables.html" title="class in io.github.jabrena.juno.linker">ConstantTables</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#of(java.util.Optional,java.util.Optional)" class="member-name-link">of(Optional, Optional)</a> - Static method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">The default configuration with the sizes given in the JVM's <code>-Xmx</code>/<code>-Xss</code> syntax (see
+<code>RuntimeConfig.parseBytes(String, String)</code>); an empty or blank size keeps the default.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/bytecode/Instruction.html#offset()" class="member-name-link">offset()</a> - Method in record class io.github.jabrena.juno.bytecode.<a href="io/github/jabrena/juno/bytecode/Instruction.html" title="class in io.github.jabrena.juno.bytecode">Instruction</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>offset</code> record component.</div>
@@ -4516,6 +4780,8 @@ Java on top of <a href="io/github/jabrena/juno/api/io/i2c/I2c.html" title="class
 <dd>
 <div class="block">Returns the value of the <code>owner</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html#OWNER" class="member-name-link">OWNER</a> - Static variable in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:P">P</h2>
 <dl class="index">
@@ -4531,6 +4797,21 @@ left-to-right/top-to-bottom, exactly as <a href="io/github/jabrena/juno/api/led/
 <dt><a href="io/github/jabrena/juno/ir/IrInstruction.Panic.html#%3Cinit%3E()" class="member-name-link">Panic()</a> - Constructor for record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrInstruction.Panic.html" title="class in io.github.jabrena.juno.ir">IrInstruction.Panic</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>Panic</code> record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#PARALLEL_BUS_BEGIN" class="member-name-link">PARALLEL_BUS_BEGIN</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#PARALLEL_BUS_REPEAT16" class="member-name-link">PARALLEL_BUS_REPEAT16</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#PARALLEL_BUS_WRITE" class="member-name-link">PARALLEL_BUS_WRITE</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/api/io/ParallelBus.html" class="type-name-link" title="class in io.github.jabrena.juno.api.io">ParallelBus</a> - Class in <a href="io/github/jabrena/juno/api/io/package-summary.html">io.github.jabrena.juno.api.io</a></dt>
+<dd>
+<div class="block">An 8-bit parallel output bus, as display shields wire it: eight data pins written together, latched by a write
+strobe pulsed low then high.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#parameter()" class="member-name-link">parameter()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/analysis/ConfigSuggestion.html#param-parameter"><code>parameter</code></a> record component.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/linker/Descriptor.html#parameters()" class="member-name-link">parameters()</a> - Method in record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/Descriptor.html" title="class in io.github.jabrena.juno.linker">Descriptor</a></dt>
 <dd>
@@ -4664,6 +4945,8 @@ into an IR Receiver (8884) set to one of its four channels.</div>
 <dd>
 <div class="block">Switches the Scout off.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html#predecessorsOf(int)" class="member-name-link">predecessorsOf(int)</a> - Method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/IntrinsicRegistry.html#prefersLiteralStringArgument(io.github.jabrena.juno.intrinsic.Intrinsic,int)" class="member-name-link">prefersLiteralStringArgument(Intrinsic, int)</a> - Static method in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/IntrinsicRegistry.html" title="class in io.github.jabrena.juno.intrinsic">IntrinsicRegistry</a></dt>
 <dd>
 <div class="block">Whether a known-literal argument for this runtime-capable parameter should still be passed as a literal.</div>
@@ -4809,6 +5092,24 @@ RFC 10008.</div>
 </dl>
 <h2 class="title" id="I:R">R</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RAF_CLOSE" class="member-name-link">RAF_CLOSE</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RAF_GET_FILE_POINTER" class="member-name-link">RAF_GET_FILE_POINTER</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RAF_LENGTH" class="member-name-link">RAF_LENGTH</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RAF_OPEN" class="member-name-link">RAF_OPEN</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RAF_READ" class="member-name-link">RAF_READ</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RAF_READ_BYTES" class="member-name-link">RAF_READ_BYTES</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RAF_READ_FULLY" class="member-name-link">RAF_READ_FULLY</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RAF_SEEK" class="member-name-link">RAF_SEEK</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RAF_SKIP_BYTES" class="member-name-link">RAF_SKIP_BYTES</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/ConstantTables.RamFallback.html#%3Cinit%3E(io.github.jabrena.juno.classfile.FieldRef,io.github.jabrena.juno.classfile.MethodRef,java.lang.String)" class="member-name-link">RamFallback(FieldRef, MethodRef, String)</a> - Constructor for record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/ConstantTables.RamFallback.html" title="class in io.github.jabrena.juno.linker">ConstantTables.RamFallback</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>RamFallback</code> record class.</div>
@@ -4825,6 +5126,12 @@ RFC 10008.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#RANDOM_SEED" class="member-name-link">RANDOM_SEED</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" class="type-name-link" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a> - Class in <a href="io/github/jabrena/juno/intrinsic/package-summary.html">io.github.jabrena.juno.intrinsic</a></dt>
+<dd>
+<div class="block">The read-only <code>java.io.RandomAccessFile</code> subset, backed by the SD card's open-file table: a file opened
+with mode <code>"r"</code> by a compile-time literal path, then <code>seek</code>/<code>getFilePointer</code>/<code>length</code>,
+single-byte and buffer reads, <code>skipBytes</code> and <code>close</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/lego/RcxBrick.html" class="type-name-link" title="class in io.github.jabrena.juno.api.lego">RcxBrick</a> - Class in <a href="io/github/jabrena/juno/api/lego/package-summary.html">io.github.jabrena.juno.api.lego</a></dt>
 <dd>
 <div class="block">Direct commands to an RCX brick that answer back, over the same infrared link as
@@ -4843,6 +5150,10 @@ message commands to an RCX brick.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/classfile/ClassFileReader.html#read(byte%5B%5D)" class="member-name-link">read(byte[])</a> - Method in class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/ClassFileReader.html" title="class in io.github.jabrena.juno.classfile">ClassFileReader</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html#READ_ONLY_MODE" class="member-name-link">READ_ONLY_MODE</a> - Static variable in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></dt>
+<dd>
+<div class="block">The only mode Juno opens a file with: read-only.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/lcd/LcdKeypadShield.html#readButton()" class="member-name-link">readButton()</a> - Static method in class io.github.jabrena.juno.api.lcd.<a href="io/github/jabrena/juno/api/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.api.lcd">LcdKeypadShield</a></dt>
 <dd>
 <div class="block">Reads the currently pressed button (undebounced), one of <a href="io/github/jabrena/juno/api/lcd/LcdKeypadShield.html#NONE"><code>LcdKeypadShield.NONE</code></a>, <a href="io/github/jabrena/juno/api/lcd/LcdKeypadShield.html#RIGHT"><code>LcdKeypadShield.RIGHT</code></a>,
@@ -5002,6 +5313,10 @@ it ever reaches lowering.</div>
 <dd>
 <div class="block"><code>arduino:renesas_uno</code>: the UNO R4's classic, non-RTOS core.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/api/io/ParallelBus.html#repeat16(int,int)" class="member-name-link">repeat16(int, int)</a> - Static method in class io.github.jabrena.juno.api.io.<a href="io/github/jabrena/juno/api/io/ParallelBus.html" title="class in io.github.jabrena.juno.api.io">ParallelBus</a></dt>
+<dd>
+<div class="block">Writes the 16-bit <code>value</code> high byte first, <code>count</code> times over: a run of one RGB565 color.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/CompilationResult.html#report()" class="member-name-link">report()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationResult.html" title="class in io.github.jabrena.juno">CompilationResult</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>report</code> record component.</div>
@@ -5013,6 +5328,10 @@ it ever reaches lowering.</div>
 <dt><a href="io/github/jabrena/juno/intrinsic/IntrinsicRegistry.html#requiresLiteralStringArgument(io.github.jabrena.juno.intrinsic.Intrinsic,int)" class="member-name-link">requiresLiteralStringArgument(Intrinsic, int)</a> - Static method in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/IntrinsicRegistry.html" title="class in io.github.jabrena.juno.intrinsic">IntrinsicRegistry</a></dt>
 <dd>
 <div class="block">Whether <code>intrinsic</code>'s <code>String</code> parameter at <code>parameterIndex</code> must be a compile-time literal.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/backend/StackFrameSizing.html#reservedFrameBytes(io.github.jabrena.juno.ir.IrMethod)" class="member-name-link">reservedFrameBytes(IrMethod)</a> - Static method in class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/StackFrameSizing.html" title="class in io.github.jabrena.juno.backend">StackFrameSizing</a></dt>
+<dd>
+<div class="block">Bytes reserved below the saved-register area by the method prologue.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/IntrinsicRegistry.html#resolve(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">resolve(MethodRef)</a> - Static method in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/IntrinsicRegistry.html" title="class in io.github.jabrena.juno.intrinsic">IntrinsicRegistry</a></dt>
 <dd>&nbsp;</dd>
@@ -5039,6 +5358,10 @@ it ever reaches lowering.</div>
 <dt><a href="io/github/jabrena/juno/linker/Descriptor.html#returnType()" class="member-name-link">returnType()</a> - Method in record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/Descriptor.html" title="class in io.github.jabrena.juno.linker">Descriptor</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>returnType</code> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html#reversePostorder()" class="member-name-link">reversePostorder()</a> - Method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></dt>
+<dd>
+<div class="block">Blocks reachable from the entry, each before its successors except along backedges.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/ir/IrInstruction.Binary.html#right()" class="member-name-link">right()</a> - Method in record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrInstruction.Binary.html" title="class in io.github.jabrena.juno.ir">IrInstruction.Binary</a></dt>
 <dd>
@@ -5111,6 +5434,18 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/linker/ThreadSupport.html#RUNNABLE_RUN" class="member-name-link">RUNNABLE_RUN</a> - Static variable in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/ThreadSupport.html" title="class in io.github.jabrena.juno.linker">ThreadSupport</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/CompilationRequest.html#runtimeConfig()" class="member-name-link">runtimeConfig()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationRequest.html" title="class in io.github.jabrena.juno">CompilationRequest</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationRequest.html#param-runtimeConfig"><code>runtimeConfig</code></a> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html" class="type-name-link" title="class in io.github.jabrena.juno">RuntimeConfig</a> - Record Class in <a href="io/github/jabrena/juno/package-summary.html">io.github.jabrena.juno</a></dt>
+<dd>
+<div class="block">The capacities of the generated runtime: how much RAM the arena and the task stacks take.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#%3Cinit%3E(int,int,java.util.OptionalInt)" class="member-name-link">RuntimeConfig(int, int, OptionalInt)</a> - Constructor for record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">Creates an instance of a <code>RuntimeConfig</code> record class.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/RuntimeLimits.html" class="type-name-link" title="class in io.github.jabrena.juno">RuntimeLimits</a> - Class in <a href="io/github/jabrena/juno/package-summary.html">io.github.jabrena.juno</a></dt>
 <dd>
 <div class="block">Runtime constants shared by analysis and the current UNO R4 backend.</div>
@@ -5128,6 +5463,8 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 <div class="block">Conservative resource and runtime-risk analysis over the optimized closed-world IR.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html#%3Cinit%3E()" class="member-name-link">RuntimeRiskAnalyzer()</a> - Constructor for class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskAnalyzer</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html#%3Cinit%3E(io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">RuntimeRiskAnalyzer(RuntimeConfig)</a> - Constructor for class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskAnalyzer</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html" class="type-name-link" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a> - Record Class in <a href="io/github/jabrena/juno/analysis/package-summary.html">io.github.jabrena.juno.analysis</a></dt>
 <dd>
@@ -5155,9 +5492,21 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html#runtime-shim-heading" class="search-tag-link">Runtime shim</a> - Section in class io.github.jabrena.juno.backend.Thumb2AsmBackend</dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#runtimeShimBytes()" class="member-name-link">runtimeShimBytes()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-runtimeShimBytes"><code>runtimeShimBytes</code></a> record component.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:S">S</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/optimize/ScalarReplacement.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">ScalarReplacement</a> - Class in <a href="io/github/jabrena/juno/optimize/package-summary.html">io.github.jabrena.juno.optimize</a></dt>
+<dd>
+<div class="block">Removes an allocation whose object never escapes the method, keeping its fields in local slots instead of the
+arena: no <code>juno_alloc</code>, no garbage for the collector, and field accesses that copy propagation and constant
+folding can see through.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/optimize/ScalarReplacement.html#%3Cinit%3E()" class="member-name-link">ScalarReplacement()</a> - Constructor for class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/ScalarReplacement.html" title="class in io.github.jabrena.juno.optimize">ScalarReplacement</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html#SCOPE" class="member-name-link">SCOPE</a> - Static variable in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html" title="class in io.github.jabrena.juno.linker">StructuredTaskSupport</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#SCOPED_CARRIER_CALL" class="member-name-link">SCOPED_CARRIER_CALL</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
@@ -5456,6 +5805,10 @@ Scout takes the same commands, which has not been verified), so <a href="io/gith
 <dd>
 <div class="block">Keeps the IR LED dark for <code>micros</code> microseconds.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/backend/StackFrameSizing.html" class="type-name-link" title="class in io.github.jabrena.juno.backend">StackFrameSizing</a> - Class in <a href="io/github/jabrena/juno/backend/package-summary.html">io.github.jabrena.juno.backend</a></dt>
+<dd>
+<div class="block">Authoritative target-backend stack sizing shared with static runtime-risk analysis.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/analysis/BasicBlock.html#start()" class="member-name-link">start()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/BasicBlock.html" title="class in io.github.jabrena.juno.analysis">BasicBlock</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>start</code> record component.</div>
@@ -5501,6 +5854,10 @@ Scout takes the same commands, which has not been verified), so <a href="io/gith
 <dt><a href="io/github/jabrena/juno/ir/IrInstruction.StoreField.html#%3Cinit%3E(io.github.jabrena.juno.classfile.FieldRef,io.github.jabrena.juno.ir.Value,io.github.jabrena.juno.ir.Value)" class="member-name-link">StoreField(FieldRef, Value, Value)</a> - Constructor for record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrInstruction.StoreField.html" title="class in io.github.jabrena.juno.ir">IrInstruction.StoreField</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>StoreField</code> record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#storeInstructions()" class="member-name-link">storeInstructions()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-storeInstructions"><code>storeInstructions</code></a> record component.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/ir/IrInstruction.StoreLocal.html#%3Cinit%3E(int,io.github.jabrena.juno.ir.Value)" class="member-name-link">StoreLocal(int, Value)</a> - Constructor for record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrInstruction.StoreLocal.html" title="class in io.github.jabrena.juno.ir">IrInstruction.StoreLocal</a></dt>
 <dd>
@@ -5598,6 +5955,16 @@ runtime <code>String</code> (<code>String.valueOf</code>, <code>Json.getString(b
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/FloatBinaryOp.html#SUBTRACT" class="member-name-link">SUBTRACT</a> - Enum constant in enum class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/FloatBinaryOp.html" title="enum class in io.github.jabrena.juno.ir">FloatBinaryOp</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html#successors(io.github.jabrena.juno.ir.IrTerminator)" class="member-name-link">successors(IrTerminator)</a> - Static method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></dt>
+<dd>
+<div class="block">Where control may go after <code>terminator</code>, in the order its targets are listed.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html#successorsOf(int)" class="member-name-link">successorsOf(int)</a> - Method in class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#suggested()" class="member-name-link">suggested()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/analysis/ConfigSuggestion.html#param-suggested"><code>suggested</code></a> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/classfile/JavaClass.html#superClassName()" class="member-name-link">superClassName()</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/JavaClass.html" title="class in io.github.jabrena.juno.classfile">JavaClass</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>superClassName</code> record component.</div>
@@ -5983,6 +6350,14 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#THREAD_YIELD" class="member-name-link">THREAD_YIELD</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#threadStackBytes()" class="member-name-link">threadStackBytes()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/RuntimeConfig.html#param-threadStackBytes"><code>threadStackBytes</code></a> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#threadStackBytes(int)" class="member-name-link">threadStackBytes(int)</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">The task stack size to use on a board whose own size is <code>boardDefault</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/linker/ThreadSupport.html" class="type-name-link" title="class in io.github.jabrena.juno.linker">ThreadSupport</a> - Class in <a href="io/github/jabrena/juno/linker/package-summary.html">io.github.jabrena.juno.linker</a></dt>
 <dd>
 <div class="block">The closed-world plumbing behind <code>java.lang.Thread</code>: a started thread runs its <code>Runnable</code> on a
@@ -6028,6 +6403,8 @@ differences live in <code>CoreRuntime</code>.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board)" class="member-name-link">Thumb2AsmBackend(boolean, Board)</a> - Constructor for class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board,io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">Thumb2AsmBackend(boolean, Board, RuntimeConfig)</a> - Constructor for class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html" class="type-name-link" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend.Output</a> - Record Class in <a href="io/github/jabrena/juno/backend/package-summary.html">io.github.jabrena.juno.backend</a></dt>
 <dd>
 <div class="block"><code>runtimeShim</code> is a small <code>extern "C"</code> C++ source that must be compiled alongside
@@ -6052,6 +6429,10 @@ differences live in <code>CoreRuntime</code>.</div>
 <dt><a href="io/github/jabrena/juno/api/io/Gpio.html#toggle(int)" class="member-name-link">toggle(int)</a> - Static method in class io.github.jabrena.juno.api.io.<a href="io/github/jabrena/juno/api/io/Gpio.html" title="class in io.github.jabrena.juno.api.io">Gpio</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/analysis/BasicBlock.html#toString()" class="member-name-link">toString()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/BasicBlock.html" title="class in io.github.jabrena.juno.analysis">BasicBlock</a></dt>
+<dd>
+<div class="block">Returns a string representation of this record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html#toString()" class="member-name-link">toString()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></dt>
 <dd>
 <div class="block">Returns a string representation of this record class.</div>
 </dd>
@@ -6160,6 +6541,10 @@ differences live in <code>CoreRuntime</code>.</div>
 <div class="block">Returns a string representation of this record class.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/classfile/MethodRef.html#toString()" class="member-name-link">toString()</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></dt>
+<dd>
+<div class="block">Returns a string representation of this record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#toString()" class="member-name-link">toString()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
 <dd>
 <div class="block">Returns a string representation of this record class.</div>
 </dd>
@@ -6482,6 +6867,14 @@ differences live in <code>CoreRuntime</code>.</div>
 <dt><a href="io/github/jabrena/juno/linker/StringConcatSite.html#toString()" class="member-name-link">toString()</a> - Method in record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/StringConcatSite.html" title="class in io.github.jabrena.juno.linker">StringConcatSite</a></dt>
 <dd>
 <div class="block">Returns a string representation of this record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#toString()" class="member-name-link">toString()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">Returns a string representation of this record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/CompilationMetrics.html#totalFixedFrameBytes()" class="member-name-link">totalFixedFrameBytes()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
+<dd>
+<div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-totalFixedFrameBytes"><code>totalFixedFrameBytes</code></a> record component.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/tft/TftTouchShield.html#touchPressure()" class="member-name-link">touchPressure()</a> - Static method in class io.github.jabrena.juno.api.tft.<a href="io/github/jabrena/juno/api/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.api.tft">TftTouchShield</a></dt>
 <dd>
@@ -6997,6 +7390,10 @@ version, 4 of minor, two binary-coded-decimal digits of bug-fix number, and 16 b
 <dd>
 <div class="block">Current width in pixels, for the current rotation.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/api/io/ParallelBus.html#WIDTH" class="member-name-link">WIDTH</a> - Static variable in class io.github.jabrena.juno.api.io.<a href="io/github/jabrena/juno/api/io/ParallelBus.html" title="class in io.github.jabrena.juno.api.io">ParallelBus</a></dt>
+<dd>
+<div class="block">How many data pins the bus has.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/net/Wifi.html" class="type-name-link" title="class in io.github.jabrena.juno.api.net">Wifi</a> - Class in <a href="io/github/jabrena/juno/api/net/package-summary.html">io.github.jabrena.juno.api.net</a></dt>
 <dd>
 <div class="block">WiFi connection control recognized as compiler intrinsics by Juno, backed by the Arduino
@@ -7029,6 +7426,10 @@ does not call it).</div>
 <dt><a href="io/github/jabrena/juno/ir/IrProgram.html#withMethods(java.util.List)" class="member-name-link">withMethods(List)</a> - Method in record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a></dt>
 <dd>
 <div class="block">This program with its methods replaced, as an optimization pass produces it.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/api/io/ParallelBus.html#write(int)" class="member-name-link">write(int)</a> - Static method in class io.github.jabrena.juno.api.io.<a href="io/github/jabrena/juno/api/io/ParallelBus.html" title="class in io.github.jabrena.juno.api.io">ParallelBus</a></dt>
+<dd>
+<div class="block">Drives the low byte of <code>value</code> onto the data pins and pulses the strobe.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/motors/Servo.html#write(int)" class="member-name-link">write(int)</a> - Method in class io.github.jabrena.juno.api.motors.<a href="io/github/jabrena/juno/api/motors/Servo.html" title="class in io.github.jabrena.juno.api.motors">Servo</a></dt>
 <dd>&nbsp;</dd>

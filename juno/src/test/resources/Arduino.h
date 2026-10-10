@@ -40,3 +40,17 @@ struct JunoSerial {
   explicit operator bool() const { return true; }
 };
 inline JunoSerial Serial;
+
+// The renesas_uno core's pin table and RA port registers, which the ParallelBus helpers write directly.
+typedef uint16_t bsp_io_port_pin_t;
+struct PinMuxCfg_t {
+  bsp_io_port_pin_t pin;
+};
+extern const PinMuxCfg_t g_pin_cfg[];
+struct R_PORT0_Type {
+  volatile uint32_t PCNTR1;
+  volatile uint32_t PCNTR2;
+  volatile uint32_t PCNTR3;
+};
+#define R_PORT0_BASE 0x40040000UL
+#define R_PORT1_BASE 0x40040020UL

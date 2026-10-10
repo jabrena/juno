@@ -85,6 +85,22 @@ class MainTest {
     }
 
     @Test
+    void compileWithMetricsPrintsDeterministicGeneratedCodeMeasurements() throws Exception {
+        compileFixture();
+        Path output = temporaryDirectory.resolve("out").resolve("Fixture.S");
+
+        Main.run(new String[]{"compile", "--main", "demo.Fixture", "--classpath", classPath(),
+                "--output", output.toString(), "--metrics"});
+
+        assertThat(captured.toString(StandardCharsets.UTF_8)).contains(
+                "Compilation metrics:",
+                "Generated methods: 1",
+                "Loads / stores:",
+                "Maximum fixed frame:",
+                "use the final ELF for flash/RAM size and target hardware for cycle counts");
+    }
+
+    @Test
     void inspectWithoutMainThrows() {
         assertThatThrownBy(() -> Main.run(new String[]{"inspect"})).isInstanceOf(CompileException.class);
     }

@@ -35,8 +35,6 @@ public final class LevelGenerator {
 
     /** Thing types the engine animates, by its monster kind: zombieman, shotgun sergeant, imp, demon. */
     private static final Map<Integer, Integer> MONSTER_KINDS = Map.of(3004, 0, 9, 1, 3001, 2, 3002, 3);
-    /** Pickups by item kind: health bonus, stimpack, medikit, armor bonus, green armor, blue armor. */
-    private static final Map<Integer, Integer> ITEM_KINDS = Map.of(2014, 0, 2011, 1, 2012, 2, 2015, 3, 2018, 4, 2019, 5);
     /** THINGS flag bits: placed on Ultra-Violence ("hard") skill, and only in multiplayer. */
     private static final int SKILL_HARD = 4;
     private static final int MULTIPLAYER_ONLY = 16;
@@ -119,6 +117,19 @@ public final class LevelGenerator {
                 doorSectors.add(lineBack[line]);
             }
         }
+        // Doors a switch or trigger elsewhere opens, by tag, after the manual ones and in sector order, as Lifts does.
+        Set<Integer> doorTags = new LinkedHashSet<>();
+        for (int line = 0; line < lineCount; line++) {
+            int tag = linedefs.getShort(line * 14 + 8);
+            if (tag != 0 && Lifts.isRemoteDoor(linedefs.getShort(line * 14 + 6))) {
+                doorTags.add(tag);
+            }
+        }
+        for (int sector = 0; sector < sectorCount; sector++) {
+            if (doorTags.contains((int) sectors.getShort(sector * 26 + 24)) && seen.add(sector)) {
+                doorSectors.add(sector);
+            }
+        }
         int exitX = -30000;
         int exitY = -30000;
         for (int line = 0; line < lineCount; line++) {
@@ -174,8 +185,10 @@ public final class LevelGenerator {
                 startAngle = things.getShort(thing * 10 + 4);
             } else if (MONSTER_KINDS.containsKey(type) && (flags & SKILL_HARD) != 0 && (flags & MULTIPLAYER_ONLY) == 0) {
                 monsters.add(new int[] {things.getShort(thing * 10), things.getShort(thing * 10 + 2), MONSTER_KINDS.get(type)});
-            } else if (ITEM_KINDS.containsKey(type) && (flags & SKILL_HARD) != 0 && (flags & MULTIPLAYER_ONLY) == 0) {
-                items.add(new int[] {things.getShort(thing * 10), things.getShort(thing * 10 + 2), ITEM_KINDS.get(type)});
+            } else if (WadThings.itemKind(type) >= 0 && (flags & SKILL_HARD) != 0 && (flags & MULTIPLAYER_ONLY) == 0) {
+                // Pickups by Items' kind, as the runtime loader maps them: health, armor, weapons and ammo.
+                items.add(new int[] {things.getShort(thing * 10), things.getShort(thing * 10 + 2),
+                    WadThings.itemKind(type)});
             }
         }
 
@@ -197,8 +210,19 @@ public final class LevelGenerator {
                     static final int EXIT_Y = %d;
                     static final int MONSTERS = %d;
                     static final int ITEMS = %d;
+                    // Table sizes, so World can allocate RAM for this map with compile-time-constant lengths.
+                    static final int VERTICES = %d;
+                    static final int LINES = %d;
+                    static final int SEGS = %d;
+                    static final int NODES = %d;
+                    static final int SUBSECTORS = %d;
+                    static final int SECTORS = %d;
+                    static final int DOORS = %d;
+                    static final int ROUTE_POINTS = %d;
 
-                """.formatted(map, map, map, startX, startY, startAngle, route.loopStart(), exitX, exitY, monsters.size(), items.size()));
+                """.formatted(map, map, map, startX, startY, startAngle, route.loopStart(), exitX, exitY, monsters.size(),
+                items.size(), vertexCount, lineCount, segCount, nodeCount, subsectorCount, sectorCount, doors,
+                route.points().length / 2));
         int[] routeX = new int[route.points().length / 2];
         int[] routeY = new int[routeX.length];
         for (int i = 0; i < routeX.length; i++) {

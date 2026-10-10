@@ -7,6 +7,7 @@ import io.github.jabrena.juno.linker.Program;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -55,9 +56,13 @@ public final class CompilerTestSupport {
         arguments.add("-d");
         arguments.add(directory.toString());
         arguments.add(sourceFile.toString());
-        int result = compiler.run(null, null, null, arguments.toArray(String[]::new));
+        // javac's diagnostics are captured, not printed: a test that expects javac to reject a fixture would otherwise
+        // print "error:" lines that CI's annotations flag as build errors. A real failure still shows them.
+        ByteArrayOutputStream diagnostics = new ByteArrayOutputStream();
+        int result = compiler.run(null, diagnostics, diagnostics, arguments.toArray(String[]::new));
         if (result != 0) {
-            throw new AssertionError("Fixture javac failed with exit code " + result);
+            throw new AssertionError("Fixture javac failed with exit code " + result + ":" + System.lineSeparator()
+                    + diagnostics.toString(StandardCharsets.UTF_8));
         }
         return directory;
     }

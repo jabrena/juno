@@ -296,10 +296,15 @@ single instruction. That is also why there is no dynamic class loading, reflecti
    representation (`ir`), making every operand-stack slot and local variable an explicit, typed value.
    Lambdas, string concatenation, enums, records, exceptions, and structured tasks are given their Juno-specific
    meaning here.
-6. **Optimize.** `optimize` runs small IR passes (copy propagation, constant folding, dead-block
-   elimination). `analysis` then inspects the result and reports runtime risks at build time: arena budget
-   versus estimated use, static RAM, call depth, allocation inside loops, recursion, possible division by zero,
-   unchecked array access, and proven-null dereferences.
+6. **Optimize.** `optimize` runs IR passes: small leaf methods (getters, setters, constructors, little math
+   helpers) are inlined; an object that never leaves its method is scalar-replaced, its fields kept in locals
+   instead of the arena; local copies and constants are propagated across the control-flow graph and folded;
+   branches with a constant condition, dead blocks, unused values and stores nothing reads are removed; and a
+   range analysis drops every array bounds check it proves can never fail. The backend folds constants into
+   Thumb-2 immediate operands and tests a comparison that feeds a branch directly. `analysis` then inspects
+   the result and reports runtime risks at build time: arena budget versus estimated use, static RAM, call
+   depth, allocation inside loops, recursion, possible division by zero, unchecked array access, and
+   proven-null dereferences.
 7. **Generate code.** `backend` emits GNU ARM Cortex-M4 (Thumb-2) assembly directly from the IR, plus a small
    `extern "C"` C++ runtime shim (GPIO, Serial, LED matrix, Wi-Fi, HTTP, JSON, strings, the arena allocator and
    its garbage collector, `long`/`float`/`double` support, exception and structured-task support) that the assembly calls
@@ -360,7 +365,7 @@ Both profiles live in the `juno` module, need Docker and are opt-in, because the
 # Compile the small API and shield fixtures for each board with the real arduino-cli (does not touch hardware)
 ./mvnw -f juno/pom.xml -Parduino-cli verify
 
-# Run the core-feature programs under QEMU (Cortex-M4) and compare their serial output with the JVM's
+# Run the core-feature programs under QEMU (Cortex-M4) and compare their serial output with OpenJDK's
 ./mvnw -f juno/pom.xml -Pqemu verify
 ```
 

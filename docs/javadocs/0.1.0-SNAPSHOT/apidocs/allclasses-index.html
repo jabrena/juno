@@ -126,18 +126,27 @@ halfway through an operation.</div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab3">
 <div class="block">A binary arithmetic or bitwise operation, with Java <code>int</code> (32-bit two's complement) semantics.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab6"><a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations">Board</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab6">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/BlockMerging.html" title="class in io.github.jabrena.juno.optimize">BlockMerging</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Joins a block that ends in a <code>Jump</code> with its target when it is that target's only way in, so straight-line
+code (an inlined body and its continuation, say) is one block with no branch between the halves.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab6"><a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations">Board</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab6">
 <div class="block">Declares which Arduino board(s) a Juno program targets, e.g.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
 <div class="block">A Juno compilation target, resolved from the entry-point class's <code>@Board</code> annotation (see
 <code>io.github.jabrena.juno.annotations.Board</code>).</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/classfile/BootstrapMethod.html" title="class in io.github.jabrena.juno.classfile">BootstrapMethod</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/classfile/BootstrapMethod.html" title="class in io.github.jabrena.juno.classfile">BootstrapMethod</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
 <div class="block">One entry in a class file's <code>BootstrapMethods</code> attribute.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/BoundsCheckElimination.html" title="class in io.github.jabrena.juno.optimize">BoundsCheckElimination</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Removes a <a href="io/github/jabrena/juno/ir/IrInstruction.BoundsCheck.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.BoundsCheck</code></a> whose index is proved to lie in <code>[0, length)</code>.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/bytecode/BytecodeDecoder.html" title="class in io.github.jabrena.juno.bytecode">BytecodeDecoder</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
@@ -162,35 +171,50 @@ operand-stack push/pop becomes an explicit <a href="io/github/jabrena/juno/ir/Va
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Monotonic clock operations recognized as compiler intrinsics by Juno.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/CompilationReport.html" title="class in io.github.jabrena.juno">CompilationReport</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="block">Deterministic structural measurements of one Juno compilation.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/CompilationReport.html" title="class in io.github.jabrena.juno">CompilationReport</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
 <div class="block">What the compiler found while producing a <a href="io/github/jabrena/juno/CompilationResult.html" title="class in io.github.jabrena.juno"><code>CompilationResult</code></a>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/CompilationRequest.html" title="class in io.github.jabrena.juno">CompilationRequest</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/CompilationRequest.html" title="class in io.github.jabrena.juno">CompilationRequest</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
 <div class="block">What to compile: a closed-world classpath plus the entry point's fully qualified class name.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/CompilationResult.html" title="class in io.github.jabrena.juno">CompilationResult</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/CompilationResult.html" title="class in io.github.jabrena.juno">CompilationResult</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
 <div class="block">Generated Cortex-M4 assembly, its C++ runtime shim, entry symbol, and compilation report.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab5"><a href="io/github/jabrena/juno/CompileException.html" title="class in io.github.jabrena.juno">CompileException</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab5">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab5"><a href="io/github/jabrena/juno/CompileException.html" title="class in io.github.jabrena.juno">CompileException</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab5">
 <div class="block">A user-facing error produced while linking or compiling Java bytecode.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/optimize/CompilerPass.html" title="interface in io.github.jabrena.juno.optimize">CompilerPass</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/optimize/CompilerPass.html" title="interface in io.github.jabrena.juno.optimize">CompilerPass</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">One IR-to-IR transformation in the optimization pipeline, run between lowering and the backend.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/ir/Condition.html" title="enum class in io.github.jabrena.juno.ir">Condition</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/ir/Condition.html" title="enum class in io.github.jabrena.juno.ir">Condition</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
 <div class="block">The comparison an <a href="io/github/jabrena/juno/ir/IrInstruction.Compare.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.Compare</code></a> evaluates between its two operands.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/analysis/ConfigAnalyzer.html" title="class in io.github.jabrena.juno.analysis">ConfigAnalyzer</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Compares the <a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno"><code>RuntimeConfig</code></a> with what the program needs and suggests a better one.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="block">A change to the runtime configuration that would suit the program better.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/analysis/ConfigSuggestionFormatter.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestionFormatter</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Renders <a href="io/github/jabrena/juno/analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis"><code>ConfigSuggestion</code></a>s as human-readable lines, shared by the CLI and the Maven plugin.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/ConstantFolder.html" title="class in io.github.jabrena.juno.optimize">ConstantFolder</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
-<div class="block">Folds <code>Binary</code>/<code>Unary</code>/<code>Compare</code> instructions into <code>Const</code> when their operands are
-already known constants earlier in the same block, and folds a <code>Branch</code> into a <code>Jump</code> when its
-condition is a known constant.</div>
+<div class="block">Folds <code>Binary</code>/<code>Unary</code>/<code>Compare</code> instructions into <code>Const</code> when their operands are known
+constants, and folds a <code>Branch</code> into a <code>Jump</code> when its condition is a known constant.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/classfile/ConstantPool.html" title="class in io.github.jabrena.juno.classfile">ConstantPool</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">&nbsp;</div>
@@ -227,85 +251,103 @@ one-dimensional primitive array whose <code>&lt;clinit&gt;</code> initializer is
 <div class="col-last even-row-color all-classes-table all-classes-table-tab4">
 <div class="block">The basic blocks of one method, in offset order, with branch targets resolved into block-to-block edges.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/analysis/ControlFlowGraphBuilder.html" title="class in io.github.jabrena.juno.analysis">ControlFlowGraphBuilder</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/ir/ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The control-flow graph of one <a href="io/github/jabrena/juno/ir/IrMethod.html" title="class in io.github.jabrena.juno.ir"><code>IrMethod</code></a>, shared by the data-flow passes: every block's successors and
+predecessors (by block start), a reverse postorder from the entry block, and the dominator tree.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/analysis/ControlFlowGraphBuilder.html" title="class in io.github.jabrena.juno.analysis">ControlFlowGraphBuilder</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Partitions a method's decoded instructions into <a href="io/github/jabrena/juno/analysis/BasicBlock.html" title="class in io.github.jabrena.juno.analysis"><code>BasicBlock</code></a>s and resolves every branch target into
 a CFG edge, replacing byte-offset jumps with an explicit block graph.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/CopyPropagation.html" title="class in io.github.jabrena.juno.optimize">CopyPropagation</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
-<div class="block">Eliminates a <a href="io/github/jabrena/juno/ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when an earlier <a href="io/github/jabrena/juno/ir/IrInstruction.StoreLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.StoreLocal</code></a> in the same
-basic block determines the slot's value.</div>
-</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/DeadBlockElimination.html" title="class in io.github.jabrena.juno.optimize">DeadBlockElimination</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/CopyPropagation.html" title="class in io.github.jabrena.juno.optimize">CopyPropagation</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Eliminates a <a href="io/github/jabrena/juno/ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when preceding stores determine the slot's value.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/DeadBlockElimination.html" title="class in io.github.jabrena.juno.optimize">DeadBlockElimination</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Removes basic blocks unreachable from a method's entry block.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/Delay.html" title="class in io.github.jabrena.juno.api">Delay</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/DeadLocalStoreElimination.html" title="class in io.github.jabrena.juno.optimize">DeadLocalStoreElimination</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Removes stores to JVM/synthetic local slots that no later load can read.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/DeadValueElimination.html" title="class in io.github.jabrena.juno.optimize">DeadValueElimination</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Removes instructions that only compute a value nothing reads: constants, local loads, integer arithmetic other
+than division and remainder (which can panic on zero), comparisons and conversions.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/Delay.html" title="class in io.github.jabrena.juno.api">Delay</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Timing operations recognized as compiler intrinsics by Juno.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/Descriptor.html" title="class in io.github.jabrena.juno.linker">Descriptor</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/io/DigitalOutput.html" title="class in io.github.jabrena.juno.api.io">DigitalOutput</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/Descriptor.html" title="class in io.github.jabrena.juno.linker">Descriptor</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/io/DigitalOutput.html" title="class in io.github.jabrena.juno.api.io">DigitalOutput</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A zero-cost GPIO handle.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/classfile/ExceptionHandler.html" title="class in io.github.jabrena.juno.classfile">ExceptionHandler</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/classfile/ExceptionHandler.html" title="class in io.github.jabrena.juno.classfile">ExceptionHandler</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
 <div class="block">One <code>Code</code> attribute exception-table entry: instructions in <code>[startPc, endPc)</code> that throw
 a <code>catchType</code> (or any throwable when <code>catchType</code> is <code>null</code>, as <code>finally</code> uses)
 continue at <code>handlerPc</code>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/classfile/FieldInfo.html" title="class in io.github.jabrena.juno.classfile">FieldInfo</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/classfile/FieldRef.html" title="class in io.github.jabrena.juno.classfile">FieldRef</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/classfile/FieldInfo.html" title="class in io.github.jabrena.juno.classfile">FieldInfo</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/ir/FloatBinaryOp.html" title="enum class in io.github.jabrena.juno.ir">FloatBinaryOp</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/classfile/FieldRef.html" title="class in io.github.jabrena.juno.classfile">FieldRef</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/ir/FloatBinaryOp.html" title="enum class in io.github.jabrena.juno.ir">FloatBinaryOp</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
 <div class="block">Arithmetic operations with Java <code>float</code> semantics.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/io/Gpio.html" title="class in io.github.jabrena.juno.api.io">Gpio</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/io/Gpio.html" title="class in io.github.jabrena.juno.api.io">Gpio</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">GPIO operations recognized as compiler intrinsics by Juno.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpClient.html" title="class in io.github.jabrena.juno.api.net.http">HttpClient</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpClient.html" title="class in io.github.jabrena.juno.api.net.http">HttpClient</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A minimal HTTP/1.1 client recognized as compiler intrinsics by Juno, backed by the Arduino
 <code>WiFiS3</code> library's <code>WiFiClient</code>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.api.net.http">HttpMethod</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.api.net.http">HttpMethod</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Named HTTP methods for matching against <a href="io/github/jabrena/juno/api/net/http/HttpServer.html#method()"><code>HttpServer.method()</code></a>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpsClient.html" title="class in io.github.jabrena.juno.api.net.http">HttpsClient</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpsClient.html" title="class in io.github.jabrena.juno.api.net.http">HttpsClient</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A minimal HTTPS client recognized as compiler intrinsics by Juno, backed by Arduino's
 <code>WiFiSSLClient</code> and its firmware CA bundle on UNO R4 WiFi, or Linux TLS through
 <code>Arduino_RouterBridge</code> on UNO Q.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpServer.html" title="class in io.github.jabrena.juno.api.net.http">HttpServer</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpServer.html" title="class in io.github.jabrena.juno.api.net.http">HttpServer</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A minimal, non-blocking HTTP/1.1 server recognized as compiler intrinsics by Juno, backed by
 the Arduino <code>WiFiS3</code> library's <code>WiFiServer</code> on UNO R4 WiFi and by <code>
 BridgeTCPServer</code> (a listener in <code>arduino-router</code> on Linux) on UNO Q.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.api.net.http">HttpStatus</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.api.net.http">HttpStatus</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Named HTTP status codes for <a href="io/github/jabrena/juno/api/net/http/HttpServer.html#respond(int,java.lang.String,java.lang.String)"><code>HttpServer.respond(int, String, String)</code></a>'s <code>status</code> parameter, which stays
 a plain <code>int</code> — these are ordinary compile-time-constant <code>int</code> fields, not a new
 intrinsic or type, exactly like <a href="io/github/jabrena/juno/api/io/Gpio.html#OUTPUT"><code>Gpio.OUTPUT</code></a>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/io/i2c/I2c.html" title="class in io.github.jabrena.juno.api.io.i2c">I2c</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/io/i2c/I2c.html" title="class in io.github.jabrena.juno.api.io.i2c">I2c</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Register access to an I2C peripheral on the board's primary I2C bus (<code>Wire</code>, the SDA/SCL
 pins), recognized as compiler intrinsics by Juno and backed by the core-bundled <code>Wire</code>
 library.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/io/ir/Infrared.html" title="class in io.github.jabrena.juno.api.io.ir">Infrared</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/io/ir/Infrared.html" title="class in io.github.jabrena.juno.api.io.ir">Infrared</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Serial bytes over modulated infrared light, recognized as compiler intrinsics by Juno and
 bit-banged on two plain pins, with no Arduino library.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/Inliner.html" title="class in io.github.jabrena.juno.optimize">Inliner</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Replaces a <a href="io/github/jabrena/juno/ir/IrInstruction.Call.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.Call</code></a> to a small leaf method with the method's own blocks, so getters, setters,
+constructors and small math helpers cost no call, no prologue and no argument shuffling.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/bytecode/Instruction.html" title="class in io.github.jabrena.juno.bytecode">Instruction</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
@@ -499,18 +541,28 @@ since every JVM local/stack slot and every backend <code>int32_t</code> is 32-bi
 <div class="block"><code>throwableClasses</code> lists every exception class the program allocates; a class's index is the
 id stored in each of its objects' headers (see <code>ThrowableTypes</code>).</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/ir/IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/ir/IrRewriting.html" title="class in io.github.jabrena.juno.ir">IrRewriting</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Rebuilds IR nodes with their values, local slots and block targets mapped: every value an instruction defines or
+reads goes through <code>values</code>, every local slot through <code>locals</code>, and every jump target through
+<code>blocks</code>.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/ir/IrTerminator.html" title="interface in io.github.jabrena.juno.ir">IrTerminator</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Where control flow goes after the last instruction of an <a href="io/github/jabrena/juno/ir/IrBasicBlock.html" title="class in io.github.jabrena.juno.ir"><code>IrBasicBlock</code></a>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/IrTerminator.Branch.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Branch</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/IrTerminator.Jump.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Jump</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/IrTerminator.Branch.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Branch</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/IrTerminator.Return.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Return</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/IrTerminator.Jump.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Jump</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/IrTerminator.Switch.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Switch</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/IrTerminator.Return.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Return</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/IrTerminator.Switch.html" title="class in io.github.jabrena.juno.ir">IrTerminator.Switch</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/ir/IrValues.html" title="class in io.github.jabrena.juno.ir">IrValues</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Extracts every value referenced or produced by an IR node.</div>
+</div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/classfile/JavaClass.html" title="class in io.github.jabrena.juno.classfile">JavaClass</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
 <div class="block"><code>superClassName</code> is the internal name of the direct superclass, or <code>null</code> only for
@@ -561,7 +613,7 @@ WiFi and 13x8 on the UNO Q.</div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A 5x7 dot-matrix font covering the full printable ASCII range (32 space .. 126 <code>~</code>), for
 printing arbitrary ASCII characters on the UNO R4 WiFi's 12x8 LED matrix one at a time (two
-glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns).</div>
+glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT shield's text.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/led/LedMatrixFontSmall.html" title="class in io.github.jabrena.juno.api.led">LedMatrixFontSmall</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
@@ -600,33 +652,44 @@ glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns).</div>
 <div class="block">The Bosch BNO055 orientation sensor of the Arduino 9 Axis Motion Shield, read over I2C as plain
 Java on top of <a href="io/github/jabrena/juno/api/io/i2c/I2c.html" title="class in io.github.jabrena.juno.api.io.i2c"><code>I2c</code></a> (so it needs no Arduino library).</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/email/Pop3Client.html" title="class in io.github.jabrena.juno.api.net.email">Pop3Client</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/io/ParallelBus.html" title="class in io.github.jabrena.juno.api.io">ParallelBus</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">An 8-bit parallel output bus, as display shields wire it: eight data pins written together, latched by a write
+strobe pulsed low then high.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/email/Pop3Client.html" title="class in io.github.jabrena.juno.api.net.email">Pop3Client</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A minimal POP3S client recognized as a compiler intrinsic by Juno, backed by the same
 board-specific implicit-TLS transport as
 <a href="io/github/jabrena/juno/api/net/http/HttpsClient.html" title="class in io.github.jabrena.juno.api.net.http"><code>HttpsClient</code></a>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html" title="class in io.github.jabrena.juno.api.lego">PoweredUpHubRemote</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html" title="class in io.github.jabrena.juno.api.lego">PoweredUpHubRemote</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A LEGO Powered Up hub (City Hub 88009, Technic Hub 88012, BOOST Move Hub 88006, DUPLO Train
 Hub, ...) controlled over Bluetooth Low Energy, recognized as compiler intrinsics by Juno and
 backed by the Arduino <code>ArduinoBLE</code> library (<code>arduino-cli lib install ArduinoBLE</code>).</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/lego/PowerFunctionsRemote.html" title="class in io.github.jabrena.juno.api.lego">PowerFunctionsRemote</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/lego/PowerFunctionsRemote.html" title="class in io.github.jabrena.juno.api.lego">PowerFunctionsRemote</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A LEGO Power Functions infrared remote (8885), which drives the motors, lights and servos plugged
 into an IR Receiver (8884) set to one of its four channels.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/Program.html" title="class in io.github.jabrena.juno.linker">Program</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/Program.html" title="class in io.github.jabrena.juno.linker">Program</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
 <div class="block"><code>classes</code> is every class loaded from the classpath (not just reachable methods' owners) — needed so
 that lowering can resolve a <code>getstatic</code> on an enum constant field to its ordinal, since the field's
 owner class may differ from the reachable method's own owner and is otherwise never visited (its
 <code>&lt;clinit&gt;</code>/<code>&lt;init&gt;</code>/<code>values()</code>/etc. are deliberately never added to <code>methods</code>).</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/Random.html" title="class in io.github.jabrena.juno.api">Random</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/Random.html" title="class in io.github.jabrena.juno.api">Random</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Pseudorandom-number operations backed by Arduino's random generator.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The read-only <code>java.io.RandomAccessFile</code> subset, backed by the SD card's open-file table: a file opened
+with mode <code>"r"</code> by a compile-time literal path, then <code>seek</code>/<code>getFilePointer</code>/<code>length</code>,
+single-byte and buffer reads, <code>skipBytes</code> and <code>close</code>.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/lego/RcxBrick.html" title="class in io.github.jabrena.juno.api.lego">RcxBrick</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
@@ -650,25 +713,35 @@ it ever reaches lowering.</div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
 <div class="block">Severity of a runtime-risk diagnostic emitted after IR optimization.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="block">The capacities of the generated runtime: how much RAM the arena and the task stacks take.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Runtime constants shared by analysis and the current UNO R4 backend.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/RuntimeRisk.html" title="class in io.github.jabrena.juno.analysis">RuntimeRisk</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/RuntimeRisk.html" title="class in io.github.jabrena.juno.analysis">RuntimeRisk</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
 <div class="block">One stable, machine-readable runtime-risk finding.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskAnalyzer</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/analysis/RuntimeRiskAnalyzer.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskAnalyzer</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Conservative resource and runtime-risk analysis over the optimized closed-world IR.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
 <div class="block">Resource estimates and runtime-risk findings for one closed-world compilation.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/analysis/RuntimeRiskReportFormatter.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReportFormatter</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/analysis/RuntimeRiskReportFormatter.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReportFormatter</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Renders a <a href="io/github/jabrena/juno/analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis"><code>RuntimeRiskReport</code></a> as human-readable lines, shared by the CLI and the Maven plugin.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/optimize/ScalarReplacement.html" title="class in io.github.jabrena.juno.optimize">ScalarReplacement</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Removes an allocation whose object never escapes the method, keeping its fields in local slots instead of the
+arena: no <code>juno_alloc</code>, no garbage for the collector, and field accesses that copy propagation and constant
+folding can see through.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/ScopedValueSupport.html" title="class in io.github.jabrena.juno.linker">ScopedValueSupport</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
@@ -697,111 +770,115 @@ backed by the Arduino <code>Servo</code> library.</div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A minimal SMTP client recognized as a compiler intrinsic by Juno.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/StringConcatResolver.html" title="class in io.github.jabrena.juno.linker">StringConcatResolver</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/backend/StackFrameSizing.html" title="class in io.github.jabrena.juno.backend">StackFrameSizing</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Authoritative target-backend stack sizing shared with static runtime-risk analysis.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/StringConcatResolver.html" title="class in io.github.jabrena.juno.linker">StringConcatResolver</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Validates and decodes the bounded subset of javac's string-concatenation bootstrap protocol.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/StringConcatSite.html" title="class in io.github.jabrena.juno.linker">StringConcatSite</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/StringConcatSite.html" title="class in io.github.jabrena.juno.linker">StringConcatSite</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
 <div class="block">A validated <code>StringConcatFactory.makeConcatWithConstants</code> call site.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/StringConcatSite.ArgumentPart.html" title="class in io.github.jabrena.juno.linker">StringConcatSite.ArgumentPart</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/StringConcatSite.LiteralPart.html" title="class in io.github.jabrena.juno.linker">StringConcatSite.LiteralPart</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/StringConcatSite.ArgumentPart.html" title="class in io.github.jabrena.juno.linker">StringConcatSite.ArgumentPart</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/linker/StringConcatSite.Part.html" title="interface in io.github.jabrena.juno.linker">StringConcatSite.Part</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/linker/StringConcatSite.LiteralPart.html" title="class in io.github.jabrena.juno.linker">StringConcatSite.LiteralPart</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/linker/StringConcatSite.Part.html" title="interface in io.github.jabrena.juno.linker">StringConcatSite.Part</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">One literal fragment or dynamic argument in the bootstrap recipe.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html" title="class in io.github.jabrena.juno.linker">StructuredTaskSupport</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html" title="class in io.github.jabrena.juno.linker">StructuredTaskSupport</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Closed-world plumbing for Juno's JDK 27 preview <code>StructuredTaskScope</code> subset.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/SupportedJdkMethods.html" title="class in io.github.jabrena.juno.linker">SupportedJdkMethods</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/SupportedJdkMethods.html" title="class in io.github.jabrena.juno.linker">SupportedJdkMethods</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Small JDK bytecode idioms Juno lowers without linking their JDK implementations.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/analysis/Terminator.html" title="interface in io.github.jabrena.juno.analysis">Terminator</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/analysis/Terminator.html" title="interface in io.github.jabrena.juno.analysis">Terminator</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Where control flow goes after the last instruction of a <a href="io/github/jabrena/juno/analysis/BasicBlock.html" title="class in io.github.jabrena.juno.analysis"><code>BasicBlock</code></a>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Branch.html" title="class in io.github.jabrena.juno.analysis">Terminator.Branch</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Branch.html" title="class in io.github.jabrena.juno.analysis">Terminator.Branch</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
 <div class="block">A conditional branch: control goes to <code>trueTarget</code> or falls through to <code>falseTarget</code>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Fallthrough.html" title="class in io.github.jabrena.juno.analysis">Terminator.Fallthrough</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Fallthrough.html" title="class in io.github.jabrena.juno.analysis">Terminator.Fallthrough</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
 <div class="block">Falls into the next block without an explicit branch instruction.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Jump.html" title="class in io.github.jabrena.juno.analysis">Terminator.Jump</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Jump.html" title="class in io.github.jabrena.juno.analysis">Terminator.Jump</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
 <div class="block">Unconditional <code>goto</code>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Return.html" title="class in io.github.jabrena.juno.analysis">Terminator.Return</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Return.html" title="class in io.github.jabrena.juno.analysis">Terminator.Return</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
 <div class="block">A supported JVM return opcode, or the implicit return past the last instruction of a method.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Switch.html" title="class in io.github.jabrena.juno.analysis">Terminator.Switch</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Throw.html" title="class in io.github.jabrena.juno.analysis">Terminator.Throw</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Switch.html" title="class in io.github.jabrena.juno.analysis">Terminator.Switch</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/analysis/Terminator.Throw.html" title="class in io.github.jabrena.juno.analysis">Terminator.Throw</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
 <div class="block"><code>athrow</code>: control continues at one of <code>handlers</code> — the distinct handler offsets whose
 exception-table ranges cover the throw, in matching order — or leaves the method when none catches it.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.api.tft">TftTouchShield</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.api.tft">TftTouchShield</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Driver for the ELEGOO 2.8" TFT touch screen shield ("Pantalla Táctil TFT de 2,8 pulgadas"): a
 240x320 ILI9341 display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a microSD
 socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Elegoo_TFTLCD</code> and
 <code>TouchScreen</code> libraries.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/ThreadSupport.html" title="class in io.github.jabrena.juno.linker">ThreadSupport</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/ThreadSupport.html" title="class in io.github.jabrena.juno.linker">ThreadSupport</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The closed-world plumbing behind <code>java.lang.Thread</code>: a started thread runs its <code>Runnable</code> on a
 stack of its own, entered from the runtime shim, so the linker registers one synthetic
 <code>Runnable.run()</code> call site that resolves against every reachable <code>Runnable</code> (classes and lambdas)
 and the lowering turns it into the generated <a href="io/github/jabrena/juno/linker/ThreadSupport.html#ENTRY_METHOD"><code>thread entry</code></a> function.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/ThrowableTypes.html" title="class in io.github.jabrena.juno.linker">ThrowableTypes</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/linker/ThrowableTypes.html" title="class in io.github.jabrena.juno.linker">ThrowableTypes</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The closed-world exception hierarchy: a fixed set of built-in JDK throwables (which Juno models
 itself, since their class files are never on the classpath) plus any program class whose superclass
 chain reaches one of them.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Emits GNU ARM Thumb-2 assembly straight from Juno IR, restricted to instructions common to the UNO R4's
 Cortex-M4 and the UNO Q's Cortex-M33, so one code generator serves every board; per-core runtime
 differences live in <code>CoreRuntime</code>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend.Output</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend.Output</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
 <div class="block"><code>runtimeShim</code> is a small <code>extern "C"</code> C++ source that must be compiled alongside
 <code>assembly</code> in the same sketch — see this class's doc.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/Udp.html" title="class in io.github.jabrena.juno.api.net">Udp</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/Udp.html" title="class in io.github.jabrena.juno.api.net">Udp</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Allocation-free UDP transport recognized as compiler intrinsics by Juno.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/ir/UnaryOp.html" title="enum class in io.github.jabrena.juno.ir">UnaryOp</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/ir/UnaryOp.html" title="enum class in io.github.jabrena.juno.ir">UnaryOp</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
 <div class="block">A single-operand operation: arithmetic negation or a narrowing conversion.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/Value.html" title="class in io.github.jabrena.juno.ir">Value</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab4">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab4"><a href="io/github/jabrena/juno/ir/Value.html" title="class in io.github.jabrena.juno.ir">Value</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab4">
 <div class="block">A typed symbolic virtual register: one value, produced by exactly one <a href="io/github/jabrena/juno/ir/IrInstruction.html" title="interface in io.github.jabrena.juno.ir"><code>IrInstruction</code></a>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab6"><a href="io/github/jabrena/juno/annotations/Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab6">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab6"><a href="io/github/jabrena/juno/annotations/Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab6">
 <div class="block">Enables the RA4M1's hardware watchdog timer on <code>@Watchdog</code>'s entry-point class.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/Wifi.html" title="class in io.github.jabrena.juno.api.net">Wifi</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/Wifi.html" title="class in io.github.jabrena.juno.api.net">Wifi</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">WiFi connection control recognized as compiler intrinsics by Juno, backed by the Arduino
 board networking stack (<code>WiFiS3</code> on UNO R4 WiFi, <code>Arduino_RouterBridge</code> on UNO Q).</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/WifiProvisioner.html" title="class in io.github.jabrena.juno.api.net">WifiProvisioner</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/api/net/WifiProvisioner.html" title="class in io.github.jabrena.juno.api.net">WifiProvisioner</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
 <a href="io/github/jabrena/juno/api/net/Wifi.html" title="class in io.github.jabrena.juno.api.net"><code>Wifi</code></a> and <a href="io/github/jabrena/juno/api/net/http/HttpServer.html" title="class in io.github.jabrena.juno.api.net.http"><code>HttpServer</code></a> (it adds no intrinsics, and costs nothing in a program that
 does not call it).</div>

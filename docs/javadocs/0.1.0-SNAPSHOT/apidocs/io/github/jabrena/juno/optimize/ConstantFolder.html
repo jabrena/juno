@@ -101,14 +101,15 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">ConstantFolder</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
 implements <a href="CompilerPass.html" title="interface in io.github.jabrena.juno.optimize">CompilerPass</a></span></div>
-<div class="block">Folds <code>Binary</code>/<code>Unary</code>/<code>Compare</code> instructions into <code>Const</code> when their operands are
-already known constants earlier in the same block, and folds a <code>Branch</code> into a <code>Jump</code> when its
-condition is a known constant.
+<div class="block">Folds <code>Binary</code>/<code>Unary</code>/<code>Compare</code> instructions into <code>Const</code> when their operands are known
+constants, and folds a <code>Branch</code> into a <code>Jump</code> when its condition is a known constant. Every IR value is
+defined exactly once, so a value defined by a constant is that constant wherever it is used: the constants are
+collected over the whole method, visiting blocks so that definitions come before uses, until nothing more folds.
 
 <p>This tracks constants purely at the <a href="../ir/Value.html" title="class in io.github.jabrena.juno.ir"><code>Value</code></a> level: a value reloaded from a JVM local or a
 synthetic operand-stack slot via <code>LoadLocal</code> is never treated as constant here, since its slot may
 have been written by more than one predecessor block. Seeing through a <code>StoreLocal</code>/<code>LoadLocal</code>
-round trip to the same slot is copy propagation, a separate, later pass. Field loads, including
+round trip to the same slot is copy propagation, the pass that runs before this one. Field loads, including
 <code>volatile</code> loads, are never entered in the constant map.</div>
 </div>
 </section>

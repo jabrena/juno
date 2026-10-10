@@ -2,6 +2,7 @@ package io.github.jabrena.juno.optimize;
 
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
+import io.github.jabrena.juno.ir.ControlFlowGraph;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
@@ -16,14 +17,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Folds {@code Binary}/{@code Unary}/{@code Compare} instructions into {@code Const} when their operands are
- * already known constants earlier in the same block, and folds a {@code Branch} into a {@code Jump} when its
- * condition is a known constant.
+ * Folds {@code Binary}/{@code Unary}/{@code Compare} instructions into {@code Const} when their operands are known
+ * constants, and folds a {@code Branch} into a {@code Jump} when its condition is a known constant. Every IR value is
+ * defined exactly once, so a value defined by a constant is that constant wherever it is used: the constants are
+ * collected over the whole method, visiting blocks so that definitions come before uses, until nothing more folds.
  *
  * <p>This tracks constants purely at the {@link Value} level: a value reloaded from a JVM local or a
  * synthetic operand-stack slot via {@code LoadLocal} is never treated as constant here, since its slot may
  * have been written by more than one predecessor block. Seeing through a {@code StoreLocal}/{@code LoadLocal}
- * round trip to the same slot is copy propagation, a separate, later pass. Field loads, including
+ * round trip to the same slot is copy propagation, the pass that runs before this one. Field loads, including
  * {@code volatile} loads, are never entered in the constant map.
  */
 public final class ConstantFolder implements CompilerPass {
@@ -37,16 +39,29 @@ public final class ConstantFolder implements CompilerPass {
     }
 
     private IrMethod foldMethod(IrMethod method) {
+        Map<Value, Integer> constants = new HashMap<>();
+        Map<Integer, IrBasicBlock> folded = new HashMap<>();
+        for (IrBasicBlock block : method.blocks()) {
+            folded.put(block.start(), block);
+        }
+        List<Integer> order = new ArrayList<>(ControlFlowGraph.of(method).reversePostorder());
+        method.blocks().stream().map(IrBasicBlock::start).filter(start -> !order.contains(start)).forEach(order::add);
+        int known;
+        do {
+            known = constants.size();
+            for (int start : order) {
+                folded.put(start, foldBlock(folded.get(start), constants));
+            }
+        } while (constants.size() != known);
         List<IrBasicBlock> blocks = new ArrayList<>();
         for (IrBasicBlock block : method.blocks()) {
-            blocks.add(foldBlock(block));
+            blocks.add(folded.get(block.start()));
         }
         return new IrMethod(method.reference(), method.isStatic(), method.maxLocals(), method.values(),
                 method.arrayDeclarations(), List.copyOf(blocks));
     }
 
-    private IrBasicBlock foldBlock(IrBasicBlock block) {
-        Map<Value, Integer> constants = new HashMap<>();
+    private IrBasicBlock foldBlock(IrBasicBlock block, Map<Value, Integer> constants) {
         List<IrInstruction> folded = new ArrayList<>();
         for (IrInstruction instruction : block.instructions()) {
             folded.add(foldInstruction(instruction, constants));

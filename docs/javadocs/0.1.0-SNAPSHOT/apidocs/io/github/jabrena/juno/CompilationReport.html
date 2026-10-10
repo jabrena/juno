@@ -73,7 +73,7 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport)" tabindex="0">CompilationReport(MethodRef, Board, int, int, Set, RuntimeRiskReport)</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport,java.util.List)" tabindex="0">CompilationReport(MethodRef, Board, int, int, Set, RuntimeRiskReport, List)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -87,6 +87,7 @@ initTheme();
 <li><a href="#irBlocks()" tabindex="0">irBlocks()</a></li>
 <li><a href="#intrinsics()" tabindex="0">intrinsics()</a></li>
 <li><a href="#runtimeRisks()" tabindex="0">runtimeRisks()</a></li>
+<li><a href="#configSuggestions()" tabindex="0">configSuggestions()</a></li>
 </ol>
 </li>
 </ol>
@@ -104,7 +105,7 @@ initTheme();
 <section class="class-description" id="class-description">
 <hr>
 <div class="horizontal-scroll">
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">CompilationReport</span>(<a href="classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;entryPoint, <a href="board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board, int&nbsp;reachableMethods, int&nbsp;irBlocks, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Set.html" title="interface in java.util" class="external-link">Set</a>&lt;<a href="intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;&nbsp;intrinsics, <a href="analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">CompilationReport</span>(<a href="classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;entryPoint, <a href="board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board, int&nbsp;reachableMethods, int&nbsp;irBlocks, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Set.html" title="interface in java.util" class="external-link">Set</a>&lt;<a href="intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;&nbsp;intrinsics, <a href="analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a>&gt;&nbsp;configSuggestions)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Record.html" title="class in java.lang" class="external-link">Record</a></span></div>
 <div class="block">What the compiler found while producing a <a href="CompilationResult.html" title="class in io.github.jabrena.juno"><code>CompilationResult</code></a>.</div>
 </div>
@@ -119,12 +120,13 @@ initTheme();
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport)" class="member-name-link">CompilationReport</a><wbr>(<a href="classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;entryPoint,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport,java.util.List)" class="member-name-link">CompilationReport</a><wbr>(<a href="classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;entryPoint,
  <a href="board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board,
  int&nbsp;reachableMethods,
  int&nbsp;irBlocks,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Set.html" title="interface in java.util" class="external-link">Set</a>&lt;<a href="intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;&nbsp;intrinsics,
- <a href="analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks)</code></div>
+ <a href="analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a>&gt;&nbsp;configSuggestions)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>CompilationReport</code> record class.</div>
 </div>
@@ -147,44 +149,49 @@ initTheme();
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>board</code> record component.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#entryPoint()" class="member-name-link">entryPoint</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a><wbr>&lt;<a href="analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#configSuggestions()" class="member-name-link">configSuggestions</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the value of the <code>configSuggestions</code> record component.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#entryPoint()" class="member-name-link">entryPoint</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>entryPoint</code> record component.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#equals(java.lang.Object)" class="member-name-link">equals</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>&nbsp;o)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#equals(java.lang.Object)" class="member-name-link">equals</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>&nbsp;o)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hashCode()" class="member-name-link">hashCode</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hashCode()" class="member-name-link">hashCode</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a hash code value for this object.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Set.html" title="interface in java.util" class="external-link">Set</a><wbr>&lt;<a href="intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#intrinsics()" class="member-name-link">intrinsics</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Set.html" title="interface in java.util" class="external-link">Set</a><wbr>&lt;<a href="intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#intrinsics()" class="member-name-link">intrinsics</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>intrinsics</code> record component.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#irBlocks()" class="member-name-link">irBlocks</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#irBlocks()" class="member-name-link">irBlocks</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>irBlocks</code> record component.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reachableMethods()" class="member-name-link">reachableMethods</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reachableMethods()" class="member-name-link">reachableMethods</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>reachableMethods</code> record component.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#runtimeRisks()" class="member-name-link">runtimeRisks</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#runtimeRisks()" class="member-name-link">runtimeRisks</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>runtimeRisks</code> record component.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a string representation of this record class.</div>
 </div>
 </div>
@@ -205,7 +212,7 @@ initTheme();
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport)">
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport,java.util.List)">
 <h3>CompilationReport</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">CompilationReport</span><wbr><span class="parameters">(<a href="classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;entryPoint,
@@ -213,7 +220,8 @@ initTheme();
  int&nbsp;reachableMethods,
  int&nbsp;irBlocks,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Set.html" title="interface in java.util" class="external-link">Set</a>&lt;<a href="intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;&nbsp;intrinsics,
- <a href="analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks)</span></div>
+ <a href="analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a>&gt;&nbsp;configSuggestions)</span></div>
 <div class="block">Creates an instance of a <code>CompilationReport</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -223,6 +231,7 @@ initTheme();
 <dd><code>irBlocks</code> - the value for the <code>irBlocks</code> record component</dd>
 <dd><code>intrinsics</code> - the value for the <code>intrinsics</code> record component</dd>
 <dd><code>runtimeRisks</code> - the value for the <code>runtimeRisks</code> record component</dd>
+<dd><code>configSuggestions</code> - the value for the <code>configSuggestions</code> record component</dd>
 </dl>
 </div>
 </section>
@@ -356,6 +365,19 @@ initTheme();
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the value of the <code>runtimeRisks</code> record component</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="configSuggestions()">
+<h3>configSuggestions</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a>&gt;</span>&nbsp;<span class="element-name">configSuggestions</span>()</div>
+<div class="block">Returns the value of the <code>configSuggestions</code> record component.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the value of the <code>configSuggestions</code> record component</dd>
 </dl>
 </div>
 </section>

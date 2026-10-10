@@ -73,19 +73,45 @@ initTheme();
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Package</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.ir">io.github.jabrena.juno.ir</a></div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.backend">io.github.jabrena.juno.backend</a></div>
 <div class="col-last even-row-color">
+<div class="block">Code generation: turns optimized Juno IR into a complete Arduino sketch for any supported board
+(the Cortex-M4 UNO R4 WiFi and the Cortex-M33 UNO Q).</div>
+</div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.ir">io.github.jabrena.juno.ir</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Juno's own intermediate representation: a non-SSA, block-structured form that
 <code>lowering</code> produces from JVM bytecode, <code>optimize</code> transforms, and <code>backend</code>
 consumes to generate assembly.</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.lowering">io.github.jabrena.juno.lowering</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.lowering">io.github.jabrena.juno.lowering</a></div>
+<div class="col-last even-row-color">
 <div class="block">Lowers linked, reachable JVM bytecode into Juno's IR.</div>
 </div>
 </div>
 <section class="class-uses">
 <ul class="block-list">
+<li>
+<section class="detail" id="io.github.jabrena.juno.backend">
+<h2>Uses of <a href="../IrMethod.html" title="class in io.github.jabrena.juno.ir">IrMethod</a> in <a href="../../backend/package-summary.html">io.github.jabrena.juno.backend</a></h2>
+<div class="caption"><span>Methods in <a href="../../backend/package-summary.html">io.github.jabrena.juno.backend</a> with parameters of type <a href="../IrMethod.html" title="class in io.github.jabrena.juno.ir">IrMethod</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static int</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">StackFrameSizing.</span><code><a href="../../backend/StackFrameSizing.html#methodStackBytes(io.github.jabrena.juno.ir.IrMethod)" class="member-name-link">methodStackBytes</a><wbr>(<a href="../IrMethod.html" title="class in io.github.jabrena.juno.ir">IrMethod</a>&nbsp;method)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Total fixed per-invocation stack cost, including registers saved by the prologue.</div>
+</div>
+<div class="col-first odd-row-color"><code>static int</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">StackFrameSizing.</span><code><a href="../../backend/StackFrameSizing.html#reservedFrameBytes(io.github.jabrena.juno.ir.IrMethod)" class="member-name-link">reservedFrameBytes</a><wbr>(<a href="../IrMethod.html" title="class in io.github.jabrena.juno.ir">IrMethod</a>&nbsp;method)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Bytes reserved below the saved-register area by the method prologue.</div>
+</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="io.github.jabrena.juno.ir">
 <h2>Uses of <a href="../IrMethod.html" title="class in io.github.jabrena.juno.ir">IrMethod</a> in <a href="../package-summary.html">io.github.jabrena.juno.ir</a></h2>
@@ -122,6 +148,15 @@ consumes to generate assembly.</div>
 <div class="col-last even-row-color">
 <div class="block">Returns the value of the <code>methods</code> record component.</div>
 </div>
+</div>
+<div class="caption"><span>Methods in <a href="../package-summary.html">io.github.jabrena.juno.ir</a> with parameters of type <a href="../IrMethod.html" title="class in io.github.jabrena.juno.ir">IrMethod</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static <a href="../ControlFlowGraph.html" title="class in io.github.jabrena.juno.ir">ControlFlowGraph</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">ControlFlowGraph.</span><code><a href="../ControlFlowGraph.html#of(io.github.jabrena.juno.ir.IrMethod)" class="member-name-link">of</a><wbr>(<a href="../IrMethod.html" title="class in io.github.jabrena.juno.ir">IrMethod</a>&nbsp;method)</code></div>
+<div class="col-last even-row-color">&nbsp;</div>
 </div>
 <div class="caption"><span>Method parameters in <a href="../package-summary.html">io.github.jabrena.juno.ir</a> with type arguments of type <a href="../IrMethod.html" title="class in io.github.jabrena.juno.ir">IrMethod</a></span></div>
 <div class="summary-table three-column-summary">

@@ -81,6 +81,9 @@ initTheme();
 <li><a href="#GPIO_ANALOG_WRITE" tabindex="0">GPIO_ANALOG_WRITE</a></li>
 <li><a href="#GPIO_TOGGLE" tabindex="0">GPIO_TOGGLE</a></li>
 <li><a href="#GPIO_BUILTIN_LED" tabindex="0">GPIO_BUILTIN_LED</a></li>
+<li><a href="#PARALLEL_BUS_BEGIN" tabindex="0">PARALLEL_BUS_BEGIN</a></li>
+<li><a href="#PARALLEL_BUS_WRITE" tabindex="0">PARALLEL_BUS_WRITE</a></li>
+<li><a href="#PARALLEL_BUS_REPEAT16" tabindex="0">PARALLEL_BUS_REPEAT16</a></li>
 <li><a href="#DELAY_MILLIS" tabindex="0">DELAY_MILLIS</a></li>
 <li><a href="#DELAY_MICROS" tabindex="0">DELAY_MICROS</a></li>
 <li><a href="#CLOCK_MILLIS" tabindex="0">CLOCK_MILLIS</a></li>
@@ -185,6 +188,15 @@ initTheme();
 <li><a href="#SD_APPEND_LINE" tabindex="0">SD_APPEND_LINE</a></li>
 <li><a href="#SD_APPEND_TEXT" tabindex="0">SD_APPEND_TEXT</a></li>
 <li><a href="#SD_REMOVE" tabindex="0">SD_REMOVE</a></li>
+<li><a href="#RAF_OPEN" tabindex="0">RAF_OPEN</a></li>
+<li><a href="#RAF_READ" tabindex="0">RAF_READ</a></li>
+<li><a href="#RAF_READ_BYTES" tabindex="0">RAF_READ_BYTES</a></li>
+<li><a href="#RAF_READ_FULLY" tabindex="0">RAF_READ_FULLY</a></li>
+<li><a href="#RAF_SEEK" tabindex="0">RAF_SEEK</a></li>
+<li><a href="#RAF_GET_FILE_POINTER" tabindex="0">RAF_GET_FILE_POINTER</a></li>
+<li><a href="#RAF_LENGTH" tabindex="0">RAF_LENGTH</a></li>
+<li><a href="#RAF_SKIP_BYTES" tabindex="0">RAF_SKIP_BYTES</a></li>
+<li><a href="#RAF_CLOSE" tabindex="0">RAF_CLOSE</a></li>
 <li><a href="#PROPERTIES_NEW" tabindex="0">PROPERTIES_NEW</a></li>
 <li><a href="#PROPERTIES_LOAD" tabindex="0">PROPERTIES_LOAD</a></li>
 <li><a href="#PROPERTIES_GET" tabindex="0">PROPERTIES_GET</a></li>
@@ -216,6 +228,7 @@ initTheme();
 <li><a href="#HTTP_SERVER_RESPOND" tabindex="0">HTTP_SERVER_RESPOND</a></li>
 <li><a href="#HTTP_SERVER_RESPOND_BUILDER" tabindex="0">HTTP_SERVER_RESPOND_BUILDER</a></li>
 <li><a href="#MEMORY_ARENA_USED" tabindex="0">MEMORY_ARENA_USED</a></li>
+<li><a href="#MEMORY_ARENA_CAPACITY" tabindex="0">MEMORY_ARENA_CAPACITY</a></li>
 <li><a href="#SMTP_SEND" tabindex="0">SMTP_SEND</a></li>
 <li><a href="#SMTP_SEND_TLS" tabindex="0">SMTP_SEND_TLS</a></li>
 <li><a href="#POP3_MESSAGE_COUNT" tabindex="0">POP3_MESSAGE_COUNT</a></li>
@@ -892,15 +905,23 @@ initTheme();
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code><a href="#MATH_TO_RADIANS" class="member-name-link">MATH_TO_RADIANS</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#MEMORY_ARENA_USED" class="member-name-link">MEMORY_ARENA_USED</a></code></div>
+<div class="col-first even-row-color"><code><a href="#MEMORY_ARENA_CAPACITY" class="member-name-link">MEMORY_ARENA_CAPACITY</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#MONITOR_ENTER" class="member-name-link">MONITOR_ENTER</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#MEMORY_ARENA_USED" class="member-name-link">MEMORY_ARENA_USED</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#MONITOR_EXIT" class="member-name-link">MONITOR_EXIT</a></code></div>
+<div class="col-first even-row-color"><code><a href="#MONITOR_ENTER" class="member-name-link">MONITOR_ENTER</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#MOUSE_BEGIN" class="member-name-link">MOUSE_BEGIN</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#MONITOR_EXIT" class="member-name-link">MONITOR_EXIT</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#MOUSE_MOVE" class="member-name-link">MOUSE_MOVE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#MOUSE_BEGIN" class="member-name-link">MOUSE_BEGIN</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="#MOUSE_MOVE" class="member-name-link">MOUSE_MOVE</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code><a href="#PARALLEL_BUS_BEGIN" class="member-name-link">PARALLEL_BUS_BEGIN</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="#PARALLEL_BUS_REPEAT16" class="member-name-link">PARALLEL_BUS_REPEAT16</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code><a href="#PARALLEL_BUS_WRITE" class="member-name-link">PARALLEL_BUS_WRITE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code><a href="#POP3_MESSAGE_COUNT" class="member-name-link">POP3_MESSAGE_COUNT</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
@@ -918,182 +939,200 @@ initTheme();
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code><a href="#PROPERTIES_SIZE" class="member-name-link">PROPERTIES_SIZE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#RANDOM_NEXT_BOUND" class="member-name-link">RANDOM_NEXT_BOUND</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#RAF_CLOSE" class="member-name-link">RAF_CLOSE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#RANDOM_NEXT_RANGE" class="member-name-link">RANDOM_NEXT_RANGE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#RAF_GET_FILE_POINTER" class="member-name-link">RAF_GET_FILE_POINTER</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#RANDOM_SEED" class="member-name-link">RANDOM_SEED</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#RAF_LENGTH" class="member-name-link">RAF_LENGTH</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#REENTRANT_LOCK_LOCK" class="member-name-link">REENTRANT_LOCK_LOCK</a></code></div>
+<div class="col-first even-row-color"><code><a href="#RAF_OPEN" class="member-name-link">RAF_OPEN</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#REENTRANT_LOCK_NEW" class="member-name-link">REENTRANT_LOCK_NEW</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#RAF_READ" class="member-name-link">RAF_READ</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#REENTRANT_LOCK_TRY_LOCK" class="member-name-link">REENTRANT_LOCK_TRY_LOCK</a></code></div>
+<div class="col-first even-row-color"><code><a href="#RAF_READ_BYTES" class="member-name-link">RAF_READ_BYTES</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#REENTRANT_LOCK_UNLOCK" class="member-name-link">REENTRANT_LOCK_UNLOCK</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#RAF_READ_FULLY" class="member-name-link">RAF_READ_FULLY</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SCOPED_CARRIER_CALL" class="member-name-link">SCOPED_CARRIER_CALL</a></code></div>
+<div class="col-first even-row-color"><code><a href="#RAF_SEEK" class="member-name-link">RAF_SEEK</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SCOPED_CARRIER_RUN" class="member-name-link">SCOPED_CARRIER_RUN</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#RAF_SKIP_BYTES" class="member-name-link">RAF_SKIP_BYTES</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SCOPED_CARRIER_WHERE" class="member-name-link">SCOPED_CARRIER_WHERE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#RANDOM_NEXT_BOUND" class="member-name-link">RANDOM_NEXT_BOUND</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SCOPED_VALUE_GET" class="member-name-link">SCOPED_VALUE_GET</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#RANDOM_NEXT_RANGE" class="member-name-link">RANDOM_NEXT_RANGE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SCOPED_VALUE_IS_BOUND" class="member-name-link">SCOPED_VALUE_IS_BOUND</a></code></div>
+<div class="col-first even-row-color"><code><a href="#RANDOM_SEED" class="member-name-link">RANDOM_SEED</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SCOPED_VALUE_NEW" class="member-name-link">SCOPED_VALUE_NEW</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#REENTRANT_LOCK_LOCK" class="member-name-link">REENTRANT_LOCK_LOCK</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SCOPED_VALUE_OR_ELSE" class="member-name-link">SCOPED_VALUE_OR_ELSE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#REENTRANT_LOCK_NEW" class="member-name-link">REENTRANT_LOCK_NEW</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SCOPED_VALUE_WHERE" class="member-name-link">SCOPED_VALUE_WHERE</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#REENTRANT_LOCK_TRY_LOCK" class="member-name-link">REENTRANT_LOCK_TRY_LOCK</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SD_APPEND_LINE" class="member-name-link">SD_APPEND_LINE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#REENTRANT_LOCK_UNLOCK" class="member-name-link">REENTRANT_LOCK_UNLOCK</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SD_APPEND_TEXT" class="member-name-link">SD_APPEND_TEXT</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SCOPED_CARRIER_CALL" class="member-name-link">SCOPED_CARRIER_CALL</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SD_BEGIN" class="member-name-link">SD_BEGIN</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SCOPED_CARRIER_RUN" class="member-name-link">SCOPED_CARRIER_RUN</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SD_EXISTS" class="member-name-link">SD_EXISTS</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SCOPED_CARRIER_WHERE" class="member-name-link">SCOPED_CARRIER_WHERE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SD_FILE_AVAILABLE" class="member-name-link">SD_FILE_AVAILABLE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SCOPED_VALUE_GET" class="member-name-link">SCOPED_VALUE_GET</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SD_FILE_CLOSE" class="member-name-link">SD_FILE_CLOSE</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SCOPED_VALUE_IS_BOUND" class="member-name-link">SCOPED_VALUE_IS_BOUND</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SD_FILE_READ" class="member-name-link">SD_FILE_READ</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SCOPED_VALUE_NEW" class="member-name-link">SCOPED_VALUE_NEW</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SD_OPEN" class="member-name-link">SD_OPEN</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SCOPED_VALUE_OR_ELSE" class="member-name-link">SCOPED_VALUE_OR_ELSE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SD_REMOVE" class="member-name-link">SD_REMOVE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SCOPED_VALUE_WHERE" class="member-name-link">SCOPED_VALUE_WHERE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SD_SIZE" class="member-name-link">SD_SIZE</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SD_APPEND_LINE" class="member-name-link">SD_APPEND_LINE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SERIAL_BEGIN" class="member-name-link">SERIAL_BEGIN</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SD_APPEND_TEXT" class="member-name-link">SD_APPEND_TEXT</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINT" class="member-name-link">SERIAL_PRINT</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SD_BEGIN" class="member-name-link">SD_BEGIN</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SERIAL_PRINT_DOUBLE" class="member-name-link">SERIAL_PRINT_DOUBLE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SD_EXISTS" class="member-name-link">SD_EXISTS</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINT_FLOAT" class="member-name-link">SERIAL_PRINT_FLOAT</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SD_FILE_AVAILABLE" class="member-name-link">SD_FILE_AVAILABLE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SERIAL_PRINT_LONG" class="member-name-link">SERIAL_PRINT_LONG</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SD_FILE_CLOSE" class="member-name-link">SD_FILE_CLOSE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINT_STRING" class="member-name-link">SERIAL_PRINT_STRING</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SD_FILE_READ" class="member-name-link">SD_FILE_READ</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SERIAL_PRINTLN" class="member-name-link">SERIAL_PRINTLN</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SD_OPEN" class="member-name-link">SD_OPEN</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINTLN_DOUBLE" class="member-name-link">SERIAL_PRINTLN_DOUBLE</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SD_REMOVE" class="member-name-link">SD_REMOVE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SERIAL_PRINTLN_FLOAT" class="member-name-link">SERIAL_PRINTLN_FLOAT</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SD_SIZE" class="member-name-link">SD_SIZE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINTLN_LONG" class="member-name-link">SERIAL_PRINTLN_LONG</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SERIAL_BEGIN" class="member-name-link">SERIAL_BEGIN</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SERIAL_PRINTLN_STRING" class="member-name-link">SERIAL_PRINTLN_STRING</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SERIAL_PRINT" class="member-name-link">SERIAL_PRINT</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SERVO_OF" class="member-name-link">SERVO_OF</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINT_DOUBLE" class="member-name-link">SERIAL_PRINT_DOUBLE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SERVO_WRITE" class="member-name-link">SERVO_WRITE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SERIAL_PRINT_FLOAT" class="member-name-link">SERIAL_PRINT_FLOAT</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#SMTP_SEND" class="member-name-link">SMTP_SEND</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINT_LONG" class="member-name-link">SERIAL_PRINT_LONG</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#SMTP_SEND_TLS" class="member-name-link">SMTP_SEND_TLS</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SERIAL_PRINT_STRING" class="member-name-link">SERIAL_PRINT_STRING</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#STRING_BUILDER_APPEND_CHAR" class="member-name-link">STRING_BUILDER_APPEND_CHAR</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINTLN" class="member-name-link">SERIAL_PRINTLN</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#STRING_BUILDER_APPEND_STRING" class="member-name-link">STRING_BUILDER_APPEND_STRING</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SERIAL_PRINTLN_DOUBLE" class="member-name-link">SERIAL_PRINTLN_DOUBLE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#STRING_BUILDER_NEW" class="member-name-link">STRING_BUILDER_NEW</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINTLN_FLOAT" class="member-name-link">SERIAL_PRINTLN_FLOAT</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#STRING_BUILDER_TO_STRING" class="member-name-link">STRING_BUILDER_TO_STRING</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SERIAL_PRINTLN_LONG" class="member-name-link">SERIAL_PRINTLN_LONG</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#STRING_CHAR_AT" class="member-name-link">STRING_CHAR_AT</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SERIAL_PRINTLN_STRING" class="member-name-link">SERIAL_PRINTLN_STRING</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#STRING_CONCAT_APPEND_BOOLEAN" class="member-name-link">STRING_CONCAT_APPEND_BOOLEAN</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SERVO_OF" class="member-name-link">SERVO_OF</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#STRING_CONCAT_APPEND_CHAR" class="member-name-link">STRING_CONCAT_APPEND_CHAR</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SERVO_WRITE" class="member-name-link">SERVO_WRITE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#STRING_CONCAT_APPEND_DOUBLE" class="member-name-link">STRING_CONCAT_APPEND_DOUBLE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#SMTP_SEND" class="member-name-link">SMTP_SEND</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#STRING_CONCAT_APPEND_FLOAT" class="member-name-link">STRING_CONCAT_APPEND_FLOAT</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#SMTP_SEND_TLS" class="member-name-link">SMTP_SEND_TLS</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#STRING_CONCAT_APPEND_INT" class="member-name-link">STRING_CONCAT_APPEND_INT</a></code></div>
+<div class="col-first even-row-color"><code><a href="#STRING_BUILDER_APPEND_CHAR" class="member-name-link">STRING_BUILDER_APPEND_CHAR</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#STRING_CONCAT_APPEND_LONG" class="member-name-link">STRING_CONCAT_APPEND_LONG</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#STRING_BUILDER_APPEND_STRING" class="member-name-link">STRING_BUILDER_APPEND_STRING</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#STRING_CONCAT_APPEND_STRING" class="member-name-link">STRING_CONCAT_APPEND_STRING</a></code></div>
+<div class="col-first even-row-color"><code><a href="#STRING_BUILDER_NEW" class="member-name-link">STRING_BUILDER_NEW</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#STRING_CONCAT_NEW" class="member-name-link">STRING_CONCAT_NEW</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#STRING_BUILDER_TO_STRING" class="member-name-link">STRING_BUILDER_TO_STRING</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#STRING_EQUALS" class="member-name-link">STRING_EQUALS</a></code></div>
+<div class="col-first even-row-color"><code><a href="#STRING_CHAR_AT" class="member-name-link">STRING_CHAR_AT</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#STRING_LENGTH" class="member-name-link">STRING_LENGTH</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#STRING_CONCAT_APPEND_BOOLEAN" class="member-name-link">STRING_CONCAT_APPEND_BOOLEAN</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#STRING_VALUE_OF_DOUBLE" class="member-name-link">STRING_VALUE_OF_DOUBLE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#STRING_CONCAT_APPEND_CHAR" class="member-name-link">STRING_CONCAT_APPEND_CHAR</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#STRING_VALUE_OF_INT" class="member-name-link">STRING_VALUE_OF_INT</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#STRING_CONCAT_APPEND_DOUBLE" class="member-name-link">STRING_CONCAT_APPEND_DOUBLE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#TASK_EXCEPTION" class="member-name-link">TASK_EXCEPTION</a></code></div>
+<div class="col-first even-row-color"><code><a href="#STRING_CONCAT_APPEND_FLOAT" class="member-name-link">STRING_CONCAT_APPEND_FLOAT</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#TASK_GET" class="member-name-link">TASK_GET</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#STRING_CONCAT_APPEND_INT" class="member-name-link">STRING_CONCAT_APPEND_INT</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#TASK_JOINER_ALL_SUCCESSFUL" class="member-name-link">TASK_JOINER_ALL_SUCCESSFUL</a></code></div>
+<div class="col-first even-row-color"><code><a href="#STRING_CONCAT_APPEND_LONG" class="member-name-link">STRING_CONCAT_APPEND_LONG</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#TASK_JOINER_ANY_SUCCESSFUL" class="member-name-link">TASK_JOINER_ANY_SUCCESSFUL</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#STRING_CONCAT_APPEND_STRING" class="member-name-link">STRING_CONCAT_APPEND_STRING</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#TASK_JOINER_AWAIT_ALL" class="member-name-link">TASK_JOINER_AWAIT_ALL</a></code></div>
+<div class="col-first even-row-color"><code><a href="#STRING_CONCAT_NEW" class="member-name-link">STRING_CONCAT_NEW</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#TASK_JOINER_AWAIT_ALL_SUCCESSFUL" class="member-name-link">TASK_JOINER_AWAIT_ALL_SUCCESSFUL</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#STRING_EQUALS" class="member-name-link">STRING_EQUALS</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#TASK_SCOPE_CLOSE" class="member-name-link">TASK_SCOPE_CLOSE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#STRING_LENGTH" class="member-name-link">STRING_LENGTH</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#TASK_SCOPE_FORK_CALLABLE" class="member-name-link">TASK_SCOPE_FORK_CALLABLE</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#STRING_VALUE_OF_DOUBLE" class="member-name-link">STRING_VALUE_OF_DOUBLE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#TASK_SCOPE_FORK_RUNNABLE" class="member-name-link">TASK_SCOPE_FORK_RUNNABLE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#STRING_VALUE_OF_INT" class="member-name-link">STRING_VALUE_OF_INT</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#TASK_SCOPE_IS_CANCELLED" class="member-name-link">TASK_SCOPE_IS_CANCELLED</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#TASK_EXCEPTION" class="member-name-link">TASK_EXCEPTION</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#TASK_SCOPE_JOIN" class="member-name-link">TASK_SCOPE_JOIN</a></code></div>
+<div class="col-first even-row-color"><code><a href="#TASK_GET" class="member-name-link">TASK_GET</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#TASK_SCOPE_OPEN" class="member-name-link">TASK_SCOPE_OPEN</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#TASK_JOINER_ALL_SUCCESSFUL" class="member-name-link">TASK_JOINER_ALL_SUCCESSFUL</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#TASK_SCOPE_OPEN_DEFAULT" class="member-name-link">TASK_SCOPE_OPEN_DEFAULT</a></code></div>
+<div class="col-first even-row-color"><code><a href="#TASK_JOINER_ANY_SUCCESSFUL" class="member-name-link">TASK_JOINER_ANY_SUCCESSFUL</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#TASK_STATE" class="member-name-link">TASK_STATE</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#TASK_JOINER_AWAIT_ALL" class="member-name-link">TASK_JOINER_AWAIT_ALL</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#THREAD_SLEEP" class="member-name-link">THREAD_SLEEP</a></code></div>
+<div class="col-first even-row-color"><code><a href="#TASK_JOINER_AWAIT_ALL_SUCCESSFUL" class="member-name-link">TASK_JOINER_AWAIT_ALL_SUCCESSFUL</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#THREAD_YIELD" class="member-name-link">THREAD_YIELD</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#TASK_SCOPE_CLOSE" class="member-name-link">TASK_SCOPE_CLOSE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#THROW_CATCH" class="member-name-link">THROW_CATCH</a></code></div>
+<div class="col-first even-row-color"><code><a href="#TASK_SCOPE_FORK_CALLABLE" class="member-name-link">TASK_SCOPE_FORK_CALLABLE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#THROW_DISPATCH" class="member-name-link">THROW_DISPATCH</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#TASK_SCOPE_FORK_RUNNABLE" class="member-name-link">TASK_SCOPE_FORK_RUNNABLE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#THROW_PENDING" class="member-name-link">THROW_PENDING</a></code></div>
+<div class="col-first even-row-color"><code><a href="#TASK_SCOPE_IS_CANCELLED" class="member-name-link">TASK_SCOPE_IS_CANCELLED</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#THROW_RAISE" class="member-name-link">THROW_RAISE</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#TASK_SCOPE_JOIN" class="member-name-link">TASK_SCOPE_JOIN</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#THROWABLE_GET_MESSAGE" class="member-name-link">THROWABLE_GET_MESSAGE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#TASK_SCOPE_OPEN" class="member-name-link">TASK_SCOPE_OPEN</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#THROWABLE_SET_MESSAGE" class="member-name-link">THROWABLE_SET_MESSAGE</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#TASK_SCOPE_OPEN_DEFAULT" class="member-name-link">TASK_SCOPE_OPEN_DEFAULT</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#UDP_BROADCAST" class="member-name-link">UDP_BROADCAST</a></code></div>
+<div class="col-first even-row-color"><code><a href="#TASK_STATE" class="member-name-link">TASK_STATE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#UDP_LISTEN" class="member-name-link">UDP_LISTEN</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#THREAD_SLEEP" class="member-name-link">THREAD_SLEEP</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#UDP_RECEIVE" class="member-name-link">UDP_RECEIVE</a></code></div>
+<div class="col-first even-row-color"><code><a href="#THREAD_YIELD" class="member-name-link">THREAD_YIELD</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#UDP_SEND" class="member-name-link">UDP_SEND</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#THROW_CATCH" class="member-name-link">THROW_CATCH</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#UDP_STOP" class="member-name-link">UDP_STOP</a></code></div>
+<div class="col-first even-row-color"><code><a href="#THROW_DISPATCH" class="member-name-link">THROW_DISPATCH</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#WIFI_BEGIN" class="member-name-link">WIFI_BEGIN</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#THROW_PENDING" class="member-name-link">THROW_PENDING</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#WIFI_BEGIN_AP" class="member-name-link">WIFI_BEGIN_AP</a></code></div>
+<div class="col-first even-row-color"><code><a href="#THROW_RAISE" class="member-name-link">THROW_RAISE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code><a href="#WIFI_LOCAL_IP" class="member-name-link">WIFI_LOCAL_IP</a></code></div>
+<div class="col-first odd-row-color"><code><a href="#THROWABLE_GET_MESSAGE" class="member-name-link">THROWABLE_GET_MESSAGE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code><a href="#WIFI_STATUS" class="member-name-link">WIFI_STATUS</a></code></div>
+<div class="col-first even-row-color"><code><a href="#THROWABLE_SET_MESSAGE" class="member-name-link">THROWABLE_SET_MESSAGE</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="#UDP_BROADCAST" class="member-name-link">UDP_BROADCAST</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code><a href="#UDP_LISTEN" class="member-name-link">UDP_LISTEN</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="#UDP_RECEIVE" class="member-name-link">UDP_RECEIVE</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code><a href="#UDP_SEND" class="member-name-link">UDP_SEND</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="#UDP_STOP" class="member-name-link">UDP_STOP</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code><a href="#WIFI_BEGIN" class="member-name-link">WIFI_BEGIN</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="#WIFI_BEGIN_AP" class="member-name-link">WIFI_BEGIN_AP</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code><a href="#WIFI_LOCAL_IP" class="member-name-link">WIFI_LOCAL_IP</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="#WIFI_STATUS" class="member-name-link">WIFI_STATUS</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -1192,6 +1231,30 @@ the order they are declared.</div>
 <h3>GPIO_BUILTIN_LED</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">GPIO_BUILTIN_LED</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="PARALLEL_BUS_BEGIN">
+<h3>PARALLEL_BUS_BEGIN</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">PARALLEL_BUS_BEGIN</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="PARALLEL_BUS_WRITE">
+<h3>PARALLEL_BUS_WRITE</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">PARALLEL_BUS_WRITE</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="PARALLEL_BUS_REPEAT16">
+<h3>PARALLEL_BUS_REPEAT16</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">PARALLEL_BUS_REPEAT16</span></div>
 </div>
 </section>
 </li>
@@ -2028,6 +2091,78 @@ the order they are declared.</div>
 </section>
 </li>
 <li>
+<section class="detail" id="RAF_OPEN">
+<h3>RAF_OPEN</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">RAF_OPEN</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="RAF_READ">
+<h3>RAF_READ</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">RAF_READ</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="RAF_READ_BYTES">
+<h3>RAF_READ_BYTES</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">RAF_READ_BYTES</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="RAF_READ_FULLY">
+<h3>RAF_READ_FULLY</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">RAF_READ_FULLY</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="RAF_SEEK">
+<h3>RAF_SEEK</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">RAF_SEEK</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="RAF_GET_FILE_POINTER">
+<h3>RAF_GET_FILE_POINTER</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">RAF_GET_FILE_POINTER</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="RAF_LENGTH">
+<h3>RAF_LENGTH</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">RAF_LENGTH</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="RAF_SKIP_BYTES">
+<h3>RAF_SKIP_BYTES</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">RAF_SKIP_BYTES</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="RAF_CLOSE">
+<h3>RAF_CLOSE</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">RAF_CLOSE</span></div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="PROPERTIES_NEW">
 <h3>PROPERTIES_NEW</h3>
 <div class="horizontal-scroll">
@@ -2272,6 +2407,14 @@ the order they are declared.</div>
 <h3>MEMORY_ARENA_USED</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">MEMORY_ARENA_USED</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="MEMORY_ARENA_CAPACITY">
+<h3>MEMORY_ARENA_CAPACITY</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></span>&nbsp;<span class="element-name">MEMORY_ARENA_CAPACITY</span></div>
 </div>
 </section>
 </li>

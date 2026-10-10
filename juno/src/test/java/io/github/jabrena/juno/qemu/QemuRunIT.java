@@ -35,12 +35,12 @@ import org.testcontainers.utility.MountableFile;
 /**
  * Runs Juno-generated Thumb-2 code instead of only compiling it: each program is compiled by Juno for a board,
  * assembled with the shim against a bare-metal harness, executed under QEMU (Cortex-M4, {@code mps2-an386}), and
- * its serial output compared with what the very same source prints on a JVM. This catches bugs that only exist
+ * its serial output compared with what the very same source prints on OpenJDK. This catches bugs that only exist
  * in the compiled code (calling convention, frame layout, garbage collection, exception unwinding), which neither
  * the IR tests nor an {@code arduino-cli} compile can see.
  *
- * <p>Programs live in {@code src/test/qemu/programs}; the JVM side shadows {@code Serial} with
- * {@code src/test/qemu/oracle}. The harness (stub {@code Arduino.h}, startup code, {@code run.sh}) is baked into
+ * <p>Programs live in {@code src/test/qemu/programs}; the OpenJDK side shadows {@code Serial} with
+ * {@code src/test/qemu/openjdk}. The harness (stub {@code Arduino.h}, startup code, {@code run.sh}) is baked into
  * the image built from {@code src/test/qemu/Dockerfile}. It models no hardware, so it covers language and
  * runtime behavior only. Opt-in: {@code ./mvnw -f juno/pom.xml -Pqemu verify}. Skipped when Docker is not available.
  */
@@ -51,8 +51,8 @@ class QemuRunIT {
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path QEMU = BASEDIR.resolve("src/test/qemu");
     private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/qemu/program-classes");
-    private static final Path ORACLE_CLASSES = BASEDIR.resolve("target/qemu/oracle-classes");
-    /** Programs whose output differs from the JVM because of a known compiler bug, with the reason. */
+    private static final Path OPENJDK_CLASSES = BASEDIR.resolve("target/qemu/openjdk-classes");
+    /** Programs whose output differs from OpenJDK because of a known compiler bug, with the reason. */
     private static final Map<String, String> KNOWN_GAPS = Map.of();
     private static final String EXIT_MARKER = "[juno-exit]\n";
 
@@ -70,12 +70,12 @@ class QemuRunIT {
             sources = files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
         }
         compile(sources, PROGRAM_CLASSES, junoClasspath());
-        List<Path> oracleSources;
-        try (Stream<Path> files = Files.walk(QEMU.resolve("oracle"))) {
-            oracleSources = files.filter(path -> path.toString().endsWith(".java")).toList();
+        List<Path> openJdkSources;
+        try (Stream<Path> files = Files.walk(QEMU.resolve("openjdk"))) {
+            openJdkSources = files.filter(path -> path.toString().endsWith(".java")).toList();
         }
-        compile(oracleSources, ORACLE_CLASSES, junoClasspath());
-        LOG.info("javac: {} programs + {} oracle sources in {} ms", sources.size(), oracleSources.size(),
+        compile(openJdkSources, OPENJDK_CLASSES, junoClasspath());
+        LOG.info("javac: {} programs + {} OpenJDK-side sources in {} ms", sources.size(), openJdkSources.size(),
                 millisSince(start));
     }
 
@@ -114,7 +114,7 @@ class QemuRunIT {
         LOG.info("[{} / {}] start", mainClass, board.id());
         long start = System.nanoTime();
         String expected = runOnJvm(mainClass);
-        LOG.info("[{} / {}] JVM oracle done in {} ms ({} chars)", mainClass, board.id(), millisSince(start),
+        LOG.info("[{} / {}] OpenJDK run done in {} ms ({} chars)", mainClass, board.id(), millisSince(start),
                 expected.length());
 
         String actual = runUnderQemu(mainClass, board);
@@ -149,10 +149,10 @@ class QemuRunIT {
         return run.getStdout();
     }
 
-    /** The same program on a JVM, with {@code Serial} shadowed by the oracle's stdout-printing double. */
+    /** The same program on OpenJDK, with {@code Serial} shadowed by a stdout-printing double. */
     private static String runOnJvm(String mainClass) throws Exception {
         List<String> classpath = new ArrayList<>();
-        classpath.add(ORACLE_CLASSES.toString());
+        classpath.add(OPENJDK_CLASSES.toString());
         classpath.add(PROGRAM_CLASSES.toString());
         junoClasspathWith(PROGRAM_CLASSES).forEach(path -> classpath.add(path.toString()));
         Process process = new ProcessBuilder(
@@ -162,7 +162,7 @@ class QemuRunIT {
                 .redirectErrorStream(true).start();
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
-        assertThat(process.exitValue()).as("JVM run of %s:%n%s", mainClass, output).isZero();
+        assertThat(process.exitValue()).as("OpenJDK run of %s:%n%s", mainClass, output).isZero();
         return output;
     }
 

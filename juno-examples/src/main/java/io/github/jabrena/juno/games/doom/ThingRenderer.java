@@ -1,20 +1,47 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.tft.TftTouchShield;
-
 /**
  * Things drawn after the walls: items, monsters, corpses and fireballs as billboards that always face
  * the marine, each line kept only in the columns where it stands nearer than the wall {@link Renderer}
- * closed that column with; then the pistol, its muzzle flash, the crosshair and the red frame of a
- * fresh wound over the view.
+ * closed that column with; then the muzzle flash and the red frame of a fresh wound over the view. The
+ * weapon in hand and the crosshair change only when the marine changes weapon, so they are added before the walls,
+ * into the display list's pinned overlay ({@link #drawGun}).
  */
 final class ThingRenderer {
     private static final int NEAREST_THING = 16;
     private static final float FOCAL = Renderer.FOCAL;
     private static final int CX = Renderer.CX;
     private static final int CY = Renderer.CY;
-    private static final int GUN = TftTouchShield.color(170, 170, 180);
-    private static final int CROSSHAIR = TftTouchShield.color(90, 90, 90);
+    // One repeated byte each, like the walls' colors (see Renderer): cheap to send to the screen.
+    private static final int GUN = 0xB5B5;
+    private static final int CROSSHAIR = 0x4B4B;
+    private static final int WOUND = 0xE0E0;
+    /** Pixels a weapon sinks per frame of a weapon change. */
+    private static final int SINK = 9;
+    /**
+     * The weapons in hand, as screen lines {@code x0, y0, x1, y1} at the bottom of the view, in {@link Weapon}'s order:
+     * fist, chainsaw, pistol, shotgun, chaingun, rocket launcher, plasma rifle, BFG 9000. Original line art.
+     */
+    private static final short[] ARMS = {
+        146, 199, 148, 180, 148, 180, 156, 174, 156, 174, 168, 174, 168, 174, 174, 182, 174, 182, 172, 199,
+        156, 174, 156, 182, 162, 174, 162, 182, 168, 174, 168, 182,
+        140, 199, 142, 182, 142, 182, 178, 182, 178, 182, 180, 199, 152, 182, 154, 140, 166, 182, 164, 140,
+        154, 140, 164, 140, 154, 170, 150, 166, 154, 155, 150, 151, 166, 170, 170, 166, 166, 155, 170, 151,
+        146, 199, 149, 173, 149, 173, 155, 165, 155, 165, 165, 165, 165, 165, 171, 173, 171, 173, 174, 199,
+        156, 165, 156, 156, 156, 156, 164, 156, 164, 156, 164, 165,
+        150, 199, 154, 150, 170, 199, 166, 150, 154, 150, 166, 150, 160, 152, 160, 199, 150, 186, 170, 186,
+        151, 176, 169, 176,
+        148, 199, 152, 160, 160, 199, 160, 158, 172, 199, 168, 160, 152, 160, 168, 160, 142, 199, 144, 186,
+        144, 186, 176, 186, 176, 186, 178, 199, 154, 172, 166, 172,
+        144, 199, 148, 156, 176, 199, 172, 156, 148, 156, 172, 156, 151, 162, 169, 162, 160, 156, 160, 150,
+        156, 150, 164, 150,
+        142, 199, 146, 166, 146, 166, 174, 166, 174, 166, 178, 199, 152, 166, 154, 156, 168, 166, 166, 156,
+        154, 156, 166, 156, 150, 180, 170, 180, 150, 188, 170, 188,
+        136, 199, 140, 160, 140, 160, 180, 160, 180, 160, 184, 199, 150, 160, 152, 148, 170, 160, 168, 148,
+        152, 148, 168, 148, 148, 176, 172, 176, 156, 168, 164, 168,
+    };
+    /** First value of each weapon in {@link #ARMS}, then its end. */
+    private static final short[] ARMS_START = {0, 32, 72, 104, 128, 160, 184, 216, 248};
 
     private static short[] depths;
     private static float viewX;
@@ -27,6 +54,10 @@ final class ThingRenderer {
     private static float clipY0;
     private static float clipX1;
     private static float clipY1;
+    // The billboard being drawn, once projected.
+    private static float scale;
+    private static float centerX;
+    private static int distance;
 
     private ThingRenderer() {
     }
@@ -36,27 +67,30 @@ final class ThingRenderer {
         viewX = Player.x;
         viewY = Player.y;
         viewZ = Player.eye;
-        cos = (float) Math.cos(Player.angle);
-        sin = (float) Math.sin(Player.angle);
+        cos = Renderer.cos;
+        sin = Renderer.sin;
         drawItems(lines, taken);
         drawThings(lines, monsters, shots);
-        drawOverlay(lines);
+        drawEffects(lines);
     }
 
     private static void drawItems(short[] lines, byte[] taken) {
-        for (int i = 0; i < Level.ITEMS; i++) {
+        for (int i = 0; i < World.items; i++) {
             if (taken[i] == 0) {
-                float x = Level.ITEM_X[i];
-                float y = Level.ITEM_Y[i];
-                int kind = Level.ITEM_KIND[i];
-                drawShape(lines, Sprites.itemShape(kind), x, y, Level.SECTOR_FLOOR[Player.sectorAt(x, y)],
-                        Sprites.itemColor(kind));
+                float x = World.itemX[i];
+                float y = World.itemY[i];
+                // Only an item in view needs its floor, which takes a walk down the BSP tree.
+                if (project(x, y)) {
+                    int kind = World.itemKind[i];
+                    strokes(lines, Sprites.itemShape(kind), World.sectorFloor[Player.sectorAt(x, y)],
+                            Sprites.itemColor(kind));
+                }
             }
         }
     }
 
     private static void drawThings(short[] lines, short[] monsters, short[] shots) {
-        for (int i = 0; i < Level.MONSTERS; i++) {
+        for (int i = 0; i < World.monsters; i++) {
             int at = i * Monsters.STRIDE;
             int state = monsters[at + Monsters.STATE];
             int kind = monsters[at + Monsters.KIND];
@@ -76,26 +110,35 @@ final class ThingRenderer {
             int shot = s * Monsters.SHOT_STRIDE;
             if (shots[shot + Monsters.LIFE] > 0) {
                 drawShape(lines, Sprites.FIREBALL, shots[shot + Monsters.SHOT_X], shots[shot + Monsters.SHOT_Y],
-                        shots[shot + Monsters.SHOT_Z], Sprites.FIREBALL_COLOR);
+                        shots[shot + Monsters.SHOT_Z], Sprites.shotColor(shots[shot + Monsters.SHOT_KIND]));
             }
         }
     }
 
     /** A billboard: the shape stands at (wx, wy) with its origin at height {@code baseZ}, facing the view. */
     private static void drawShape(short[] lines, int shape, float wx, float wy, float baseZ, int color) {
+        if (project(wx, wy)) {
+            strokes(lines, shape, baseZ, color);
+        }
+    }
+
+    /** Projects a billboard standing at (wx, wy); returns whether it is far enough ahead and near the view. */
+    private static boolean project(float wx, float wy) {
         float x = wx - viewX;
         float y = wy - viewY;
         float depth = x * cos + y * sin;
         if (depth < NEAREST_THING) {
-            return;
+            return false;
         }
-        float scale = FOCAL / depth;
-        float centerX = CX + (x * sin - y * cos) * scale;
+        scale = FOCAL / depth;
+        centerX = CX + (x * sin - y * cos) * scale;
+        distance = Math.round(depth);
+        return centerX >= -40 * scale && centerX <= DisplayList.WIDTH + 40 * scale;
+    }
+
+    /** The projected billboard's lines, with its origin at height {@code baseZ}. */
+    private static void strokes(short[] lines, int shape, float baseZ, int color) {
         float baseY = CY - (baseZ - viewZ) * scale;
-        if (centerX < -40 * scale || centerX > DisplayList.WIDTH + 40 * scale) {
-            return;
-        }
-        int distance = Math.round(depth);
         for (int i = Sprites.START[shape]; i < Sprites.START[shape + 1]; i += 4) {
             spriteLine(lines, centerX + Sprites.SEGMENTS[i] * scale, baseY - Sprites.SEGMENTS[i + 1] * scale,
                     centerX + Sprites.SEGMENTS[i + 2] * scale, baseY - Sprites.SEGMENTS[i + 3] * scale,
@@ -171,32 +214,44 @@ final class ThingRenderer {
         return true;
     }
 
-    /** The pistol, its muzzle flash, the crosshair and the red frame of a fresh wound, over the view. */
-    private static void drawOverlay(short[] lines) {
+    /**
+     * The crosshair and the weapon in hand: the same lines every frame, except while a weapon change sinks the old one
+     * out of view and raises the new one.
+     */
+    static void drawGun(short[] lines) {
         DisplayList.add(lines, CX - 3, CY, CX + 3, CY, CROSSHAIR);
         DisplayList.add(lines, CX, CY - 3, CX, CY + 3, CROSSHAIR);
-        DisplayList.add(lines, 146, 199, 149, 173, GUN);
-        DisplayList.add(lines, 149, 173, 155, 165, GUN);
-        DisplayList.add(lines, 155, 165, 165, 165, GUN);
-        DisplayList.add(lines, 165, 165, 171, 173, GUN);
-        DisplayList.add(lines, 171, 173, 174, 199, GUN);
-        DisplayList.add(lines, 156, 165, 156, 156, GUN);
-        DisplayList.add(lines, 156, 156, 164, 156, GUN);
-        DisplayList.add(lines, 164, 156, 164, 165, GUN);
+        int weapon = Weapon.current;
+        int swap = Weapon.swapping;
+        int sink = SINK * (swap > Weapon.SWAP ? 2 * Weapon.SWAP - swap : swap);
+        int bottom = DisplayList.VIEW_BOTTOM - 1;
+        for (int i = ARMS_START[weapon]; i < ARMS_START[weapon + 1]; i += 4) {
+            int y0 = ARMS[i + 1] + sink;
+            int y1 = ARMS[i + 3] + sink;
+            if (y0 <= bottom || y1 <= bottom) {
+                DisplayList.add(lines, ARMS[i], Math.min(y0, bottom), ARMS[i + 2], Math.min(y1, bottom), GUN);
+            }
+        }
+    }
+
+    /** The muzzle flash and the red frame of a fresh wound, over the view. */
+    private static void drawEffects(short[] lines) {
         if (Weapon.flash > 0) {
-            DisplayList.add(lines, 150, 146, 170, 146, Sprites.FLASH_COLOR);
-            DisplayList.add(lines, 160, 138, 160, 153, Sprites.FLASH_COLOR);
-            DisplayList.add(lines, 153, 140, 167, 152, Sprites.FLASH_COLOR);
-            DisplayList.add(lines, 153, 152, 167, 140, Sprites.FLASH_COLOR);
+            int color = Weapon.current == Weapon.PLASMA ? Sprites.CELL_COLOR
+                    : Weapon.current == Weapon.BFG ? Sprites.BFG_COLOR : Sprites.FLASH_COLOR;
+            DisplayList.add(lines, 150, 146, 170, 146, color);
+            DisplayList.add(lines, 160, 138, 160, 153, color);
+            DisplayList.add(lines, 153, 140, 167, 152, color);
+            DisplayList.add(lines, 153, 152, 167, 140, color);
         }
         if (Player.hurt > 0) {
             int top = DisplayList.VIEW_TOP + 1;
             int right = DisplayList.WIDTH - 1;
             int bottom = DisplayList.VIEW_BOTTOM - 1;
-            DisplayList.add(lines, 0, top, right, top, TftTouchShield.RED);
-            DisplayList.add(lines, right, top, right, bottom, TftTouchShield.RED);
-            DisplayList.add(lines, right, bottom, 0, bottom, TftTouchShield.RED);
-            DisplayList.add(lines, 0, bottom, 0, top, TftTouchShield.RED);
+            DisplayList.add(lines, 0, top, right, top, WOUND);
+            DisplayList.add(lines, right, top, right, bottom, WOUND);
+            DisplayList.add(lines, right, bottom, 0, bottom, WOUND);
+            DisplayList.add(lines, 0, bottom, 0, top, WOUND);
         }
     }
 }

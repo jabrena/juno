@@ -105,12 +105,13 @@ value types that connect them.</div>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../CompilationReport.html#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport)" class="member-name-link">CompilationReport</a><wbr>(<a href="../../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;entryPoint,
+<div class="col-second even-row-color"><code><a href="../../CompilationReport.html#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport,java.util.List)" class="member-name-link">CompilationReport</a><wbr>(<a href="../../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;entryPoint,
  <a href="../../board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board,
  int&nbsp;reachableMethods,
  int&nbsp;irBlocks,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Set.html" title="interface in java.util" class="external-link">Set</a>&lt;<a href="../../intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;&nbsp;intrinsics,
- <a href="../RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks)</code></div>
+ <a href="../RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="../ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a>&gt;&nbsp;configSuggestions)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>CompilationReport</code> record class.</div>
 </div>
@@ -129,15 +130,28 @@ value types that connect them.</div>
 <div class="col-second even-row-color"><span class="type-name-label">RuntimeRiskAnalyzer.</span><code><a href="../RuntimeRiskAnalyzer.html#analyze(io.github.jabrena.juno.linker.Program,io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">analyze</a><wbr>(<a href="../../linker/Program.html" title="class in io.github.jabrena.juno.linker">Program</a>&nbsp;linked,
  <a href="../../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;program)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="../RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">RuntimeRiskAnalyzer.</span><code><a href="../RuntimeRiskAnalyzer.html#analyze(io.github.jabrena.juno.linker.Program,io.github.jabrena.juno.ir.IrProgram,io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">analyze</a><wbr>(<a href="../../linker/Program.html" title="class in io.github.jabrena.juno.linker">Program</a>&nbsp;linked,
+ <a href="../../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;program,
+ <a href="../../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;lowered)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Analyzes the optimized <code>program</code>, counting array accesses and their bounds checks on <code>lowered</code>,
+the IR before optimization.</div>
+</div>
 </div>
 <div class="caption"><span>Methods in <a href="../package-summary.html">io.github.jabrena.juno.analysis</a> with parameters of type <a href="../RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a><wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second even-row-color"><span class="type-name-label">RuntimeRiskReportFormatter.</span><code><a href="../RuntimeRiskReportFormatter.html#format(io.github.jabrena.juno.analysis.RuntimeRiskReport)" class="member-name-link">format</a><wbr>(<a href="../RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;report)</code></div>
+<div class="col-first even-row-color"><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a><wbr>&lt;<a href="../ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a>&gt;</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">ConfigAnalyzer.</span><code><a href="../ConfigAnalyzer.html#analyze(io.github.jabrena.juno.ir.IrProgram,io.github.jabrena.juno.analysis.RuntimeRiskReport,io.github.jabrena.juno.board.Board)" class="member-name-link">analyze</a><wbr>(<a href="../../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;program,
+ <a href="../RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;report,
+ <a href="../../board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a><wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">RuntimeRiskReportFormatter.</span><code><a href="../RuntimeRiskReportFormatter.html#format(io.github.jabrena.juno.analysis.RuntimeRiskReport)" class="member-name-link">format</a><wbr>(<a href="../RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;report)</code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
 </li>

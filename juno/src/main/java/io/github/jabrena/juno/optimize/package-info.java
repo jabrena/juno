@@ -6,13 +6,16 @@
  * list. {@link io.github.jabrena.juno.optimize.ConstantFolder} folds arithmetic/comparison
  * instructions with already-known-constant operands into a single constant, and a branch with a
  * constant condition into an unconditional jump. {@link io.github.jabrena.juno.optimize.CopyPropagation}
- * eliminates a local load whose value an earlier store in the same block already determined.
+ * eliminates a local load whose value is already known, from an earlier store in its block or from every
+ * predecessor.
  * {@link io.github.jabrena.juno.optimize.DeadBlockElimination} then removes any basic block a
- * folded branch left unreachable from its method's entry block.
+ * folded branch left unreachable from its method's entry block, and
+ * {@link io.github.jabrena.juno.optimize.DeadLocalStoreElimination} removes stores to local slots
+ * no remaining instruction reads.
  *
- * <p>Every pass deliberately reasons only within a single basic block — JVM operand-stack
- * positions are represented as local slots that different predecessor blocks can store different
- * values into, so seeing across a block boundary soundly would need a separate CFG data-flow
- * analysis these passes don't attempt.
+ * <p>Copy propagation uses a conservative CFG meet: a JVM/synthetic local crosses a block boundary
+ * only when every predecessor contains the same typed IR value. Conflicting merge values stay as
+ * loads. Other method-wide passes only use properties independent of predecessor identity, such as
+ * whether a local slot has any read at all.
  */
 package io.github.jabrena.juno.optimize;

@@ -4,6 +4,7 @@ import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.ConstantTables;
@@ -30,6 +31,15 @@ public final class RuntimeRiskAnalyzer {
     }
 
     public RuntimeRiskReport analyze(Program linked, IrProgram program) {
+        return analyze(linked, program, program);
+    }
+
+    /**
+     * Analyzes the optimized {@code program}, counting array accesses and their bounds checks on {@code lowered},
+     * the IR before optimization. The optimizer removes a check it proves can never fail, and that access must not
+     * then be reported as unchecked: the count is of accesses whose array length is known at compile time.
+     */
+    public RuntimeRiskReport analyze(Program linked, IrProgram program, IrProgram lowered) {
         Map<MethodRef, Set<MethodRef>> calls = new HashMap<>();
         Map<MethodRef, List<MethodRef>> callSites = new HashMap<>();
         Map<MethodRef, Integer> directAllocation = new HashMap<>();
@@ -100,6 +110,10 @@ public final class RuntimeRiskAnalyzer {
                             + fallback.reason()));
         }
 
+        if (lowered != program) {
+            boundsChecks = count(lowered, IrInstruction.BoundsCheck.class);
+            arrayAccesses = count(lowered, IrInstruction.ArrayLoad.class) + count(lowered, IrInstruction.ArrayStore.class);
+        }
         int uncheckedArrayAccesses = Math.max(0, arrayAccesses - boundsChecks);
         if (uncheckedArrayAccesses > 0) {
             findings.add(new RuntimeRisk("JUNO-RISK-004", RiskSeverity.WARNING, program.entryPoint(),
@@ -184,5 +198,10 @@ public final class RuntimeRiskAnalyzer {
         int code = left.code().compareTo(right.code());
         if (code != 0) return code;
         return left.method().displayName().compareTo(right.method().displayName());
+    }
+
+    private static int count(IrProgram program, Class<? extends IrInstruction> kind) {
+        return (int) program.methods().stream().flatMap(method -> method.blocks().stream())
+                .flatMap(block -> block.instructions().stream()).filter(kind::isInstance).count();
     }
 }

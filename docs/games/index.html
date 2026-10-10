@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OTB2XA3Z.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
 
 </head>
 <body >
@@ -79,6 +79,7 @@
     <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
     <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
     <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
+    <li><a class="" href="/juno/memory-model" ><i class="fa-solid fa-memory"></i>Memory Model</a></li>
     <li><a class="active" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
     <li class="menu-group"><span>Boards</span></li>
     <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
@@ -218,14 +219,14 @@ when more than one board is declared fails with the list of choices instead of g
   -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
 </code></pre>
 <h3 id="doom">DOOM</h3>
-<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield: the animated cover, then the CPU autopilot walking E1M1 until it dies" width="320">
-<p>Wireframe DOOM in landscape, drawn with DOOM's own BSP renderer: walls, doors and monsters from E1M1. Pick <strong>HUMAN</strong> (touch to turn, walk and fire) or <strong>CPU</strong> (an autopilot that plays like a person and sometimes dies). Runs on the Arduino UNO Q.</p>
-<p>The map lives in flash as <code>static final</code> lookup tables (see <a href="/features">Feature Inventory</a>). The repository ships a small original test map; DOOM's levels are never committed. To walk E1M1, generate its tables from your own <code>DOOM1.WAD</code>, upload, then restore the test map:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml test -Dtest=LevelGeneratorTest -Djuno.doom.wad=/path/to/DOOM1.WAD
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.doom.Doom
-git checkout -- juno-examples/src/main/java/io/github/jabrena/juno/games/doom/Level.java
+<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield in the emulator: the CPU on I'm Too Young to Die clears E1M1 and E1M2 with the pistol, then picks up the shotgun on E1M3 and fights there until it dies" width="320">
+<p>Wireframe DOOM in landscape, drawn with DOOM's own BSP renderer: walls, doors, lifts and monsters from all four episodes. Pick <strong>HUMAN</strong> (touch to turn, walk and fire) or <strong>CPU</strong> (an autopilot that plays like a person and sometimes dies), then choose the episode and skill. Movement keeps DOOM's rules: the marine climbs steps of at most 24 units, slides along walls and round corners, cannot pass the windows and other lines the map marks impassable, and keeps a small body's distance from walls, so the camera never sees through them. Lifts lower when the marine comes near one of their lines, wait and rise again, and doors opened by a switch or trigger elsewhere open as the marine approaches. Tap the marine's face in the status bar to pause: continue, or quit to the title. Runs on the Arduino UNO Q.</p>
+<p>The marine carries DOOM's arms: fist and chainsaw (slot 1), pistol, shotgun, chaingun, rocket launcher, plasma rifle and BFG 9000 (slots 2-7), fed by bullets, shells, rockets and cells with DOOM's pickup amounts and limits, doubled by a backpack. Weapons and ammo lie in the map, zombiemen drop clips and sergeants their shotguns, and the status bar shows the ammo in hand and lights the weapons carried. Tap a number in the ARMS panel to raise that weapon, or the ARMS label to swap between fist and chainsaw; a weapon that runs dry gives way to the best one left. Rockets blast everything near where they burst, the marine included, and the BFG's ball sprays what he faces. He keeps his arms from map to map and loses them when he dies.</p>
+<p>At startup the game scans your own <code>DOOM1.WAD</code> on the shield's SD card with <code>java.io.RandomAccessFile</code> (see <a href="/storage">Storage</a>), but does not load a map yet. After the menus it loads the selected episode's first map, with a progress bar and the seconds left. Reaching an exit opens a DOOM-style intermission with kills, items, discovered secrets and elapsed time; while it shows, the next map is read and the CPU's route planned (<code>LOADING E1M2</code> with the bar), and a tap on <code>TAP TO PLAY E1M2</code> starts it. When the marine dies, choose to restart the map or quit to the title. Finishing E?M8 opens an episode story card and then returns to the title; tapping the title opens the pilot, episode and skill menus again. Difficulty controls the WAD's easy, medium and hard monster and pickup placements. With no card, no file, or too little arena, it plays a small original test map built into flash instead; DOOM's levels are never committed. Copy <code>DOOM1.WAD</code> to the card's root, then build with a bigger arena, since the largest supported map tables are held in RAM:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.doom.Doom -Djuno.Xmx=92k
 </code></pre>
+<p>The CPU plans its route through the map's subsectors to the exit, riding lifts and opening doors on the way, steps off it for weapons it lacks, ammo, health and armor it can see, and fights with the weapon that hits hardest at each monster's distance (the chainsaw when one comes close, never a rocket that would blast itself), and finishes E1M1, E1M2, E1M5, E1M6 and E1M7. Maps whose exit needs stairs that build or floors that move are not finished yet: there the CPU walks as close to the exit as it can reach. Reading a map from the SD card takes 10 to 35 seconds on the UNO Q, and planning its route a few more. <code>juno:monitor</code> shows what the game is doing over serial: each map's read and planning time, and with every frame report the frame rate, the marine's position, the waypoint the CPU walks to, its health, the weapon in hand with its ammo, and the routes it planned.</p>
 <h3 id="lunar-lander">Lunar Lander</h3>
 <img src="../images/games/lunar-lander-cpu.gif" alt="Lunar Lander on the TFT shield, flown by the CPU" width="240">
 <p>Land a spacecraft softly on a pad before the fuel runs out. Play it yourself or watch the CPU.</p>

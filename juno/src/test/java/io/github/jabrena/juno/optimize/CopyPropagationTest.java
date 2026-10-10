@@ -97,6 +97,135 @@ class CopyPropagationTest {
     }
 
     @Test
+    void propagatesAcrossALinearControlFlowEdge() {
+        Value source = Value.int32(0);
+        Value loaded = Value.int32(1);
+        IrBasicBlock producer = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(source, 7),
+                new IrInstruction.StoreLocal(0, source)), new IrTerminator.Jump(10));
+        IrBasicBlock consumer = new IrBasicBlock(10, List.of(
+                new IrInstruction.LoadLocal(loaded, 0)), new IrTerminator.Return(Optional.of(loaded)));
+
+        IrMethod optimized = propagation.apply(programOf(List.of(producer, consumer))).methods().getFirst();
+
+        assertThat(optimized.blocks().get(1).instructions()).isEmpty();
+        assertThat(((IrTerminator.Return) optimized.blocks().get(1).terminator()).value())
+                .contains(source);
+    }
+
+    @Test
+    void keepsAProducingLoadWhenItsSsaValueEscapesToAnotherBlock() {
+        Value source = Value.int32(0);
+        Value loaded = Value.int32(1);
+        IrBasicBlock producer = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(source, 7),
+                new IrInstruction.StoreLocal(0, source),
+                new IrInstruction.LoadLocal(loaded, 0)), new IrTerminator.Jump(10));
+        IrBasicBlock consumer = new IrBasicBlock(10, List.of(),
+                new IrTerminator.Return(Optional.of(loaded)));
+
+        IrMethod optimized = propagation.apply(programOf(List.of(producer, consumer))).methods().getFirst();
+
+        assertThat(optimized.blocks().getFirst().instructions())
+                .contains(new IrInstruction.LoadLocal(loaded, 0));
+        assertThat(((IrTerminator.Return) optimized.blocks().get(1).terminator()).value())
+                .contains(loaded);
+    }
+
+    @Test
+    void carriesTheReplacementOfARemovedLoadAcrossAnEdge() {
+        // The JVM's "astore; aload; astore" round trip through an operand-stack slot: the second store keeps
+        // the removed load's replacement, so the next block must read that, not the load nothing defines now.
+        Value source = Value.int32(0);
+        Value copied = Value.int32(1);
+        Value loaded = Value.int32(2);
+        IrBasicBlock producer = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(source, 7),
+                new IrInstruction.StoreLocal(6, source),
+                new IrInstruction.LoadLocal(copied, 6),
+                new IrInstruction.StoreLocal(2, copied)), new IrTerminator.Jump(10));
+        IrBasicBlock consumer = new IrBasicBlock(10, List.of(
+                new IrInstruction.LoadLocal(loaded, 2)), new IrTerminator.Return(Optional.of(loaded)));
+
+        IrMethod optimized = propagation.apply(programOf(List.of(producer, consumer))).methods().getFirst();
+
+        assertThat(optimized.blocks().getFirst().instructions())
+                .doesNotContain(new IrInstruction.LoadLocal(copied, 6));
+        assertThat(((IrTerminator.Return) optimized.blocks().get(1).terminator()).value())
+                .contains(source);
+    }
+
+    @Test
+    void propagatesTheSameValueThroughBothSidesOfABranchMerge() {
+        Value source = Value.int32(0);
+        Value condition = Value.int32(1);
+        Value loaded = Value.int32(2);
+        IrBasicBlock header = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(source, 7),
+                new IrInstruction.Const(condition, 1),
+                new IrInstruction.StoreLocal(0, source)),
+                new IrTerminator.Branch(condition, 10, 20));
+        IrBasicBlock left = new IrBasicBlock(10, List.of(), new IrTerminator.Jump(30));
+        IrBasicBlock right = new IrBasicBlock(20, List.of(), new IrTerminator.Jump(30));
+        IrBasicBlock merge = new IrBasicBlock(30, List.of(
+                new IrInstruction.LoadLocal(loaded, 0)), new IrTerminator.Return(Optional.of(loaded)));
+
+        IrMethod optimized = propagation.apply(programOf(List.of(header, left, right, merge))).methods().getFirst();
+
+        assertThat(optimized.blocks().get(3).instructions()).isEmpty();
+        assertThat(((IrTerminator.Return) optimized.blocks().get(3).terminator()).value())
+                .contains(source);
+    }
+
+    @Test
+    void propagatesAnUnchangedLoopInvariant() {
+        Value initial = Value.int32(0);
+        Value condition = Value.int32(1);
+        Value invariantLoad = Value.int32(2);
+        IrBasicBlock entry = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(initial, 7),
+                new IrInstruction.Const(condition, 1),
+                new IrInstruction.StoreLocal(0, initial)), new IrTerminator.Jump(10));
+        IrBasicBlock header = new IrBasicBlock(10, List.of(
+                new IrInstruction.LoadLocal(invariantLoad, 0),
+                new IrInstruction.StoreLocal(1, invariantLoad)),
+                new IrTerminator.Branch(condition, 20, 30));
+        IrBasicBlock body = new IrBasicBlock(20, List.of(), new IrTerminator.Jump(10));
+        IrBasicBlock exit = new IrBasicBlock(30, List.of(), new IrTerminator.Return(Optional.empty()));
+
+        IrMethod optimized = propagation.apply(programOf(List.of(entry, header, body, exit))).methods().getFirst();
+
+        assertThat(optimized.blocks().get(1).instructions())
+                .containsExactly(new IrInstruction.StoreLocal(1, initial));
+    }
+
+    @Test
+    void keepsALoadWhenTheLoopBackedgeReplacesTheLocal() {
+        Value initial = Value.int32(0);
+        Value replacement = Value.int32(1);
+        Value condition = Value.int32(2);
+        Value loaded = Value.int32(3);
+        IrBasicBlock entry = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(initial, 7),
+                new IrInstruction.Const(replacement, 8),
+                new IrInstruction.Const(condition, 1),
+                new IrInstruction.StoreLocal(0, initial)), new IrTerminator.Jump(10));
+        IrBasicBlock header = new IrBasicBlock(10, List.of(
+                new IrInstruction.LoadLocal(loaded, 0),
+                new IrInstruction.StoreLocal(1, loaded)),
+                new IrTerminator.Branch(condition, 20, 30));
+        IrBasicBlock body = new IrBasicBlock(20, List.of(
+                new IrInstruction.StoreLocal(0, replacement)), new IrTerminator.Jump(10));
+        IrBasicBlock exit = new IrBasicBlock(30, List.of(), new IrTerminator.Return(Optional.empty()));
+
+        IrMethod optimized = propagation.apply(programOf(List.of(entry, header, body, exit))).methods().getFirst();
+
+        assertThat(optimized.blocks().get(1).instructions())
+                .containsExactly(new IrInstruction.LoadLocal(loaded, 0),
+                        new IrInstruction.StoreLocal(1, loaded));
+    }
+
+    @Test
     void doesNotPropagateAcrossDifferentSlotTypes() {
         Value integer = Value.int32(0);
         Value floating = new Value(1, JunoType.FLOAT32);
@@ -216,6 +345,43 @@ class CopyPropagationTest {
         assertThat(method.blocks().get(0).instructions().get(3)).isInstanceOf(IrInstruction.Const.class);
         IrInstruction.Const foldedComparison = (IrInstruction.Const) method.blocks().get(0).instructions().get(3);
         assertThat(foldedComparison.value()).isEqualTo(1);
+    }
+
+    @Test
+    void turnsALoadIntoTheConstantBothBranchesStoredThroughDifferentValues() {
+        IrProgram optimized = new CopyPropagation().apply(programOf(List.of(
+                new IrBasicBlock(0, List.of(), new IrTerminator.Branch(Value.int32(9), 10, 20)),
+                new IrBasicBlock(10, List.of(
+                        new IrInstruction.Const(Value.int32(1), 0),
+                        new IrInstruction.StoreLocal(0, Value.int32(1))), new IrTerminator.Jump(30)),
+                new IrBasicBlock(20, List.of(
+                        new IrInstruction.Const(Value.int32(2), 0),
+                        new IrInstruction.StoreLocal(0, Value.int32(2))), new IrTerminator.Jump(30)),
+                new IrBasicBlock(30, List.of(
+                        new IrInstruction.LoadLocal(Value.int32(3), 0)),
+                        new IrTerminator.Return(Optional.of(Value.int32(3)))))));
+
+        IrBasicBlock join = optimized.methods().getFirst().blocks().get(3);
+        assertThat(join.instructions()).containsExactly(new IrInstruction.Const(Value.int32(3), 0));
+        assertThat(join.terminator()).isEqualTo(new IrTerminator.Return(Optional.of(Value.int32(3))));
+    }
+
+    @Test
+    void keepsTheLoadWhenTheBranchesStoredDifferentConstants() {
+        IrProgram optimized = new CopyPropagation().apply(programOf(List.of(
+                new IrBasicBlock(0, List.of(), new IrTerminator.Branch(Value.int32(9), 10, 20)),
+                new IrBasicBlock(10, List.of(
+                        new IrInstruction.Const(Value.int32(1), 0),
+                        new IrInstruction.StoreLocal(0, Value.int32(1))), new IrTerminator.Jump(30)),
+                new IrBasicBlock(20, List.of(
+                        new IrInstruction.Const(Value.int32(2), 1),
+                        new IrInstruction.StoreLocal(0, Value.int32(2))), new IrTerminator.Jump(30)),
+                new IrBasicBlock(30, List.of(
+                        new IrInstruction.LoadLocal(Value.int32(3), 0)),
+                        new IrTerminator.Return(Optional.of(Value.int32(3)))))));
+
+        assertThat(optimized.methods().getFirst().blocks().get(3).instructions())
+                .containsExactly(new IrInstruction.LoadLocal(Value.int32(3), 0));
     }
 
     private IrProgram programOf(List<IrBasicBlock> blocks) {

@@ -74,11 +74,13 @@ initTheme();
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
 <li><a href="#%3Cinit%3E()" tabindex="0">RuntimeRiskAnalyzer()</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.RuntimeConfig)" tabindex="0">RuntimeRiskAnalyzer(RuntimeConfig)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#analyze(io.github.jabrena.juno.linker.Program,io.github.jabrena.juno.ir.IrProgram)" tabindex="0">analyze(Program, IrProgram)</a></li>
+<li><a href="#analyze(io.github.jabrena.juno.linker.Program,io.github.jabrena.juno.ir.IrProgram,io.github.jabrena.juno.ir.IrProgram)" tabindex="0">analyze(Program, IrProgram, IrProgram)</a></li>
 </ol>
 </li>
 </ol>
@@ -111,6 +113,8 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">RuntimeRiskAnalyzer</a>()</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">RuntimeRiskAnalyzer</a><wbr>(<a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a>&nbsp;config)</code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -129,6 +133,14 @@ initTheme();
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#analyze(io.github.jabrena.juno.linker.Program,io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">analyze</a><wbr>(<a href="../linker/Program.html" title="class in io.github.jabrena.juno.linker">Program</a>&nbsp;linked,
  <a href="../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;program)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#analyze(io.github.jabrena.juno.linker.Program,io.github.jabrena.juno.ir.IrProgram,io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">analyze</a><wbr>(<a href="../linker/Program.html" title="class in io.github.jabrena.juno.linker">Program</a>&nbsp;linked,
+ <a href="../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;program,
+ <a href="../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;lowered)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Analyzes the optimized <code>program</code>, counting array accesses and their bounds checks on <code>lowered</code>,
+the IR before optimization.</div>
+</div>
 </div>
 </div>
 </div>
@@ -154,6 +166,14 @@ initTheme();
 </div>
 </section>
 </li>
+<li>
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.RuntimeConfig)">
+<h3>RuntimeRiskAnalyzer</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RuntimeRiskAnalyzer</span><wbr><span class="parameters">(<a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a>&nbsp;config)</span></div>
+</div>
+</section>
+</li>
 </ul>
 </section>
 </li>
@@ -168,6 +188,19 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></span>&nbsp;<span class="element-name">analyze</span><wbr><span class="parameters">(<a href="../linker/Program.html" title="class in io.github.jabrena.juno.linker">Program</a>&nbsp;linked,
  <a href="../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;program)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="analyze(io.github.jabrena.juno.linker.Program,io.github.jabrena.juno.ir.IrProgram,io.github.jabrena.juno.ir.IrProgram)">
+<h3>analyze</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></span>&nbsp;<span class="element-name">analyze</span><wbr><span class="parameters">(<a href="../linker/Program.html" title="class in io.github.jabrena.juno.linker">Program</a>&nbsp;linked,
+ <a href="../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;program,
+ <a href="../ir/IrProgram.html" title="class in io.github.jabrena.juno.ir">IrProgram</a>&nbsp;lowered)</span></div>
+<div class="block">Analyzes the optimized <code>program</code>, counting array accesses and their bounds checks on <code>lowered</code>,
+the IR before optimization. The optimizer removes a check it proves can never fail, and that access must not
+then be reported as unchecked: the count is of accesses whose array length is known at compile time.</div>
 </div>
 </section>
 </li>

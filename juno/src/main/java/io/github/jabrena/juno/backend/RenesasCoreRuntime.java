@@ -36,6 +36,21 @@ record RenesasCoreRuntime() implements CoreRuntime {
         return 12;
     }
 
+    /**
+     * A pin's {@code g_pin_cfg} entry holds its RA port (high byte) and bit (low byte); each port's {@code PCNTR3}
+     * sets its low half's bits and resets its high half's in one store.
+     */
+    @Override
+    public String parallelBusHelpers() {
+        return ParallelBusRuntime.helpers("",
+                "R_PORT0_Type*",
+                """
+                uint32_t io = static_cast<uint32_t>(g_pin_cfg[pin].pin);
+                  port = reinterpret_cast<R_PORT0_Type*>(R_PORT0_BASE + (R_PORT1_BASE - R_PORT0_BASE) * (io >> 8));
+                  mask = 1u << (io & 0xFFu);""",
+                "port->PCNTR3 = (clear << 16) | set;");
+    }
+
     @Override
     public String wifiIncludes(boolean udp) {
         // WiFiS3.h exposes WiFi, WiFiClient, WiFiServer, WiFiSSLClient and WiFiUDP.

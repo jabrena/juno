@@ -4,10 +4,10 @@ import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
- * The screens between the game's moments. The cover opens on a dark-red sky, then {@link Lava} floods up
- * from the bottom and keeps flowing while the {@link Logo} is drawn letter by letter and a blinking
- * prompt appears; it plays until a tap. The marine and demons of {@link Figures} and the mountains are
- * switched off behind flags.
+ * The screens between the game's moments. The cover is still {@link Lava} with a large DOOM title and a blinking
+ * prompt on dark plaques; it waits for a tap. At startup the cover shows while the WAD is inspected, and the prompt
+ * appears once episode selection is available. The title is text rather than the drawn logo so the UNO Q's sketch heap
+ * keeps room for the map and its route.
  */
 final class Interludes {
     static final int PROMPT_X = 80;
@@ -15,53 +15,47 @@ final class Interludes {
     static final int PROMPT_WIDTH = 160;
     static final int PROMPT_HEIGHT = 28;
 
-    private static final int ART_HEIGHT = DisplayList.HEIGHT;
+    private static final int TITLE_SIZE = 8;
+    private static final int TITLE_Y = 56;
+    private static final int PLAQUE_MARGIN = 12;
     private static final int FRAME_MILLIS = 60;
-    private static final int FLOOD_RISE = 10;
-    /** Switches the mountains on the cover back on (the sky is always painted first). */
-    private static final boolean MOUNTAINS = false;
-    /** Switches the horned demons on the cover back on. */
-    private static final boolean DEMONS = false;
-    /** Switches the marine, his plasma and muzzle flash on the cover back on. */
-    private static final boolean MARINE = false;
+    private static final int DEATH_TOP = 84;
+    private static final int DEATH_HEIGHT = 48;
+    private static final int PAUSE_TOP = 70;
+    private static final int PAUSE_HEIGHT = 48;
 
-    private static final int ROCK = TftTouchShield.color(130, 28, 12);
-    private static final int ROCK_DARK = TftTouchShield.color(80, 14, 8);
-    private static final int[] LEFT_PEAK = {64, 46, 36, 48, 72, 100, 128, 156, 184};
-    private static final int[] RIGHT_PEAK = {8, 0, 14, 38, 70, 104, 140};
+    private static final int EDGE = TftTouchShield.color(215, 70, 30);
+    private static final int EDGE_DARK = TftTouchShield.color(120, 25, 12);
 
     private Interludes() {
     }
 
     /** Plays the cover and returns once the screen has been tapped (and released). */
     static void title() {
-        TftTouchShield.fillScreen(DisplayList.BACKGROUND);
-        Lava.reset();
-        sky();
-        if (MOUNTAINS) {
-            mountains();
-        }
-        Delay.millis(500);
-        rise();
-        pause(150);
-        for (int letter = 0; letter < 4; letter++) {
-            Logo.draw(letter);
-            Lava.lettersShown = letter + 1;
-            pause(260);
-        }
-        if (DEMONS) {
-            Figures.scenery();
-        }
-        if (MARINE) {
-            Figures.marine();
-            Lava.marineShown = true;
-        }
-        prompt();
-        Lava.promptShown = true;
+        cover();
+        waitForTap();
+    }
+
+    /** The cover without its prompt: the lava, the DOOM title, and the prompt's empty plaque. */
+    static void cover() {
+        Lava.paint();
+        int titleWidth = 4 * 6 * TITLE_SIZE;
+        plaque((DisplayList.WIDTH - titleWidth) / 2 - PLAQUE_MARGIN, TITLE_Y - PLAQUE_MARGIN,
+                titleWidth + 2 * PLAQUE_MARGIN, 7 * TITLE_SIZE + 2 * PLAQUE_MARGIN);
+        Hud.showCentered("DOOM", TITLE_Y, TITLE_SIZE, TftTouchShield.RED);
+        plaque(PROMPT_X, PROMPT_Y, PROMPT_WIDTH, PROMPT_HEIGHT);
+    }
+
+    /** Says on the cover's plaque that the map is still loading, so no tap is asked for yet. */
+    static void loading() {
+        Hud.showCentered("LOADING", PROMPT_Y + 8, 2, TftTouchShield.YELLOW);
+    }
+
+    /** Blinks the prompt on the cover until the screen has been tapped (and released). */
+    static void waitForTap() {
         boolean tapped = false;
         int frame = 0;
         while (!tapped) {
-            flicker();
             blink(frame % 14 < 9);
             frame = frame + 1;
             tapped = TftTouchShield.readTouch();
@@ -70,93 +64,224 @@ final class Interludes {
         Controls.waitForRelease();
     }
 
-    /** Floods whatever is on the screen with lava, rising from the bottom edge to the top. */
+    /** Covers whatever is on the screen with lava, at once: the cut between the game's moments. */
     static void flood() {
-        Lava.reset();
-        rise();
+        Lava.paint();
     }
 
-    private static void rise() {
-        for (int top = DisplayList.HEIGHT - Lava.CELL; top > -Lava.CELL; top -= FLOOD_RISE) {
-            Lava.flood(Math.max(top, 0));
-            Lava.tick = Lava.tick + 1;
-            Delay.millis(FRAME_MILLIS);
-        }
+    /**
+     * The tally's frame for a map about to start, without its statistics: the map's name and ENTERING, as DOOM shows
+     * between maps. The first map of an episode is read under it, so every map starts from the same screen.
+     */
+    static void entering() {
+        flood();
+        plaque(14, 8, 292, 224);
+        showMapMessage("", 20, 3, TftTouchShield.YELLOW);
+        Hud.showCentered("ENTERING", 49, 3, TftTouchShield.RED);
     }
 
-    /** One animated frame: the lava, and the cast when it is switched on. */
-    private static void flicker() {
-        Lava.fx();
-        if (DEMONS) {
-            Figures.demonsInLava();
-        }
-        if (MARINE) {
-            Figures.flash(Lava.tick);
-        }
-        Lava.tick = Lava.tick + 1;
-    }
-
-    /** The plaque under the logo that holds the blinking prompt. */
-    private static void prompt() {
-        TftTouchShield.fillRect(PROMPT_X, PROMPT_Y, PROMPT_WIDTH, PROMPT_HEIGHT, DisplayList.BACKGROUND);
-        TftTouchShield.drawRect(PROMPT_X, PROMPT_Y, PROMPT_WIDTH, PROMPT_HEIGHT, Logo.EDGE);
-        TftTouchShield.drawRect(PROMPT_X + 2, PROMPT_Y + 2, PROMPT_WIDTH - 4, PROMPT_HEIGHT - 4, Logo.EDGE_DARK);
+    /** A dark plaque with a double red edge, holding the title or the blinking prompt over the lava. */
+    private static void plaque(int x, int y, int width, int height) {
+        TftTouchShield.fillRect(x, y, width, height, DisplayList.BACKGROUND);
+        TftTouchShield.drawRect(x, y, width, height, EDGE);
+        TftTouchShield.drawRect(x + 2, y + 2, width - 4, height - 4, EDGE_DARK);
     }
 
     private static void blink(boolean on) {
+        // As wide as "TAP TO PLAY", so it also wipes out "LOADING".
         Hud.showCentered(on ? "TAP TO PLAY" : "           ", PROMPT_Y + 8, 2, TftTouchShield.WHITE);
     }
 
-    /** Waits while the lava keeps flowing behind whatever is being painted. */
-    private static void pause(int millis) {
-        for (int waited = 0; waited < millis; waited += FRAME_MILLIS) {
-            flicker();
+    /** The DOOM-style tally shown after the exit; the next map is read while it shows. */
+    static void complete(int elapsedMillis, byte[] taken) {
+        flood();
+        plaque(14, 8, 292, 224);
+        if (World.fromWad) {
+            showMapMessage("", 20, 3, TftTouchShield.YELLOW);
+        } else {
+            Hud.showCentered(Level.NAME, 20, 3, TftTouchShield.YELLOW);
+        }
+        Hud.showCentered("FINISHED", 49, 3, TftTouchShield.RED);
+        statistic("KILLS", Monsters.kills, World.monsters, 91);
+        statistic("ITEMS", Campaign.itemsFound(taken, World.placedItems), Campaign.itemsCounted(World.placedItems), 121);
+        statistic("SECRETS", World.secretsFound, World.secrets, 151);
+        time(elapsedMillis, 183);
+    }
+
+    /** Says under the tally which map is being read, while it loads and the CPU's route is planned. */
+    static void tallyLoading() {
+        Hud.showCentered("                                  ", 215, 1, TftTouchShield.YELLOW);
+        showMapMessage("LOADING ", 215, 1, TftTouchShield.YELLOW);
+        Loading.show(70, 203, 160);
+    }
+
+    /**
+     * Blinks what a tap leads to under the tally until the screen is tapped: the map just loaded, the episode's end,
+     * or the built-in map once more.
+     */
+    static void waitToPlay() {
+        boolean tapped = false;
+        int frame = 0;
+        while (!tapped) {
+            boolean on = frame % 14 < 9;
+            if (!World.fromWad) {
+                Hud.showCentered(on ? "TAP TO PLAY AGAIN" : "                 ", 215, 1, TftTouchShield.YELLOW);
+            } else if (Campaign.episodeFinished()) {
+                Hud.showCentered(on ? "EPISODE COMPLETE - TAP TO CONTINUE" : "                                  ",
+                        215, 1, TftTouchShield.YELLOW);
+            } else if (on) {
+                showMapMessage("TAP TO PLAY ", 215, 1, TftTouchShield.YELLOW);
+            } else {
+                Hud.showCentered("                ", 215, 1, TftTouchShield.YELLOW);
+            }
+            frame = frame + 1;
+            tapped = TftTouchShield.readTouch();
             Delay.millis(FRAME_MILLIS);
         }
+        Controls.waitForRelease();
     }
 
-    /** The end-of-level card shown when the marine reaches the exit switch. */
-    static void complete() {
-        Hud.drawStatus();
-        Hud.showCentered(Level.NAME + " COMPLETE", 100, 3, TftTouchShield.GREEN);
-        Delay.millis(4000);
+    /** A distinct story card shown after E?M8; a tap returns to the game title. */
+    static void episodeComplete() {
+        flood();
+        plaque(8, 8, 304, 224);
+        showEpisodeHeading();
+        story();
+        waitForContinue();
     }
 
-    /** The card shown when the marine dies, which lava then floods before the game returns to its title. */
-    static void died() {
+    private static void statistic(String label, int found, int total, int y) {
+        TftTouchShield.setTextSize(2);
+        TftTouchShield.setTextColor(TftTouchShield.RED, DisplayList.BACKGROUND);
+        TftTouchShield.setCursor(32, y);
+        TftTouchShield.print(label);
+        TftTouchShield.setCursor(140, y);
+        TftTouchShield.print(found);
+        TftTouchShield.print("/");
+        TftTouchShield.print(total);
+        TftTouchShield.setCursor(248, y);
+        TftTouchShield.print(Campaign.percent(found, total));
+        TftTouchShield.print("%");
+    }
+
+    private static void time(int elapsedMillis, int y) {
+        int seconds = Math.max(0, elapsedMillis / 1000);
+        int minutes = Math.min(99, seconds / 60);
+        TftTouchShield.setTextSize(2);
+        TftTouchShield.setTextColor(TftTouchShield.RED, DisplayList.BACKGROUND);
+        TftTouchShield.setCursor(32, y);
+        TftTouchShield.print("TIME");
+        TftTouchShield.setCursor(196, y);
+        twoDigits(minutes);
+        TftTouchShield.print(":");
+        twoDigits(seconds % 60);
+    }
+
+    private static void twoDigits(int value) {
+        if (value < 10) {
+            TftTouchShield.print("0");
+        }
+        TftTouchShield.print(value);
+    }
+
+    private static void showEpisodeHeading() {
+        TftTouchShield.setTextSize(2);
+        TftTouchShield.setTextColor(TftTouchShield.RED, DisplayList.BACKGROUND);
+        TftTouchShield.setCursor(46, 24);
+        TftTouchShield.print("EPISODE ");
+        TftTouchShield.print(World.episode);
+        TftTouchShield.print(" COMPLETE");
+    }
+
+    private static void story() {
+        switch (World.episode) {
+            case 1 -> {
+                storyLine("THE PHOBOS BASE FALLS SILENT.", 70);
+                storyLine("YOU FOUGHT THROUGH EVERY GATE", 86);
+                storyLine("AND DROVE THE INVASION BACK.", 102);
+            }
+            case 2 -> {
+                storyLine("DEIMOS NO LONGER BELONGS TO HELL.", 70);
+                storyLine("THE LOST MOON IS QUIET AGAIN,", 86);
+                storyLine("BUT EARTH WAITS BEYOND THE VOID.", 102);
+            }
+            case 3 -> {
+                storyLine("HELL ITSELF COULD NOT HOLD YOU.", 70);
+                storyLine("THE INFERNAL GATES LIE BROKEN", 86);
+                storyLine("BENEATH THE MARINE'S BOOTS.", 102);
+            }
+            default -> {
+                storyLine("THE FINAL HORDE HAS FALLEN.", 70);
+                storyLine("EARTH HAS ONE MORE DAWN", 86);
+                storyLine("BECAUSE THE MARINE STOOD FAST.", 102);
+            }
+        }
+        storyLine("THE EPISODE IS COMPLETE.", 136);
+    }
+
+    private static void storyLine(String text, int y) {
+        Hud.showCentered(text, y, 1, TftTouchShield.RED);
+    }
+
+    private static void waitForContinue() {
+        boolean tapped = false;
+        int frame = 0;
+        while (!tapped) {
+            Hud.showCentered(frame % 14 < 9 ? "TAP TO RETURN TO TITLE" : "                      ", 207, 1,
+                    TftTouchShield.YELLOW);
+            frame = frame + 1;
+            tapped = TftTouchShield.readTouch();
+            Delay.millis(FRAME_MILLIS);
+        }
+        Controls.waitForRelease();
+    }
+
+    /** Centers a fixed prefix followed by the current four-character EeMm map name. */
+    private static void showMapMessage(String prefix, int y, int size, int color) {
+        int characters = prefix.length() + 4;
+        TftTouchShield.setTextSize(size);
+        TftTouchShield.setTextColor(color, DisplayList.BACKGROUND);
+        TftTouchShield.setCursor((DisplayList.WIDTH - characters * 6 * size) / 2, y);
+        TftTouchShield.print(prefix);
+        TftTouchShield.print("E");
+        TftTouchShield.print(World.episode);
+        TftTouchShield.print("M");
+        TftTouchShield.print(World.map);
+    }
+
+    /**
+     * The card shown when the marine dies, then a choice: {@code true} to restart the map, {@code false} to quit
+     * to the game's title.
+     */
+    /**
+     * The game paused over the view, from a tap on the marine's face in the status bar: carry on where it stopped, or
+     * quit to the title. Returns whether the player quits.
+     */
+    static boolean paused() {
+        Controls.waitForRelease();
+        plaque(14, 24, 292, 152);
+        Hud.showCentered("PAUSED", 34, 3, TftTouchShield.RED);
+        Menu.row(0, PAUSE_TOP, PAUSE_HEIGHT, "CONTINUE", "Back to the game", true, false);
+        Menu.row(1, PAUSE_TOP, PAUSE_HEIGHT, "QUIT TO TITLE", "Leave this game", true, false);
+        int row = Menu.choose(PAUSE_TOP, PAUSE_HEIGHT, 2, 3);
+        Menu.row(row, PAUSE_TOP, PAUSE_HEIGHT, row == 0 ? "CONTINUE" : "QUIT TO TITLE",
+                row == 0 ? "Back to the game" : "Leave this game", true, true);
+        Controls.waitForRelease();
+        return row == 1;
+    }
+
+    static boolean died() {
         Hud.drawStatus();
         Hud.showCentered("YOU DIED", 110, 4, TftTouchShield.RED);
-        Delay.millis(2500);
+        Delay.millis(2000);
+        Menu.open("YOU DIED", "Restart the map, or quit to the title?");
+        Menu.row(0, DEATH_TOP, DEATH_HEIGHT, "RESTART MAP", "Back to the start of this map", true, false);
+        Menu.row(1, DEATH_TOP, DEATH_HEIGHT, "QUIT", "Return to the DOOM title", true, false);
+        int row = Menu.choose(DEATH_TOP, DEATH_HEIGHT, 2, 3);
+        Menu.row(row, DEATH_TOP, DEATH_HEIGHT, row == 0 ? "RESTART MAP" : "QUIT",
+                row == 0 ? "Back to the start of this map" : "Return to the DOOM title", true, true);
+        Controls.waitForRelease();
         flood();
-    }
-
-    /** The sky, painted at once: dark red at the top, burning red mid-way, lava orange at the horizon. */
-    private static void sky() {
-        for (int y = 0; y < ART_HEIGHT; y += 4) {
-            TftTouchShield.fillRect(0, y, DisplayList.WIDTH, 4, skyColor(y));
-        }
-    }
-
-    private static int skyColor(int y) {
-        int t = y / 4 * 4 * 100 / ART_HEIGHT;
-        if (t < 50) {
-            return TftTouchShield.color(85 + (190 - 85) * t / 50, 8 + (35 - 8) * t / 50, 5 + 5 * t / 50);
-        }
-        return TftTouchShield.color(190 + (245 - 190) * (t - 50) / 50, 35 + (115 - 35) * (t - 50) / 50,
-                10 + 10 * (t - 50) / 50);
-    }
-
-    private static void mountains() {
-        for (int i = 0; i < LEFT_PEAK.length; i++) {
-            int top = LEFT_PEAK[i];
-            TftTouchShield.fillRect(i * 6, top, 6, ART_HEIGHT - top, ROCK);
-            TftTouchShield.fillRect(i * 6, top, 6, 3, ROCK_DARK);
-        }
-        for (int i = 0; i < RIGHT_PEAK.length; i++) {
-            int top = RIGHT_PEAK[i];
-            int x = DisplayList.WIDTH - (RIGHT_PEAK.length - i) * 7;
-            TftTouchShield.fillRect(x, top, 7, ART_HEIGHT - top, ROCK);
-            TftTouchShield.fillRect(x, top, 7, 3, ROCK_DARK);
-        }
+        return row == 0;
     }
 }

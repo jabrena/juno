@@ -89,22 +89,55 @@ initTheme();
 <div class="table-header col-second">Class</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../BlockMerging.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">BlockMerging</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Joins a block that ends in a <code>Jump</code> with its target when it is that target's only way in, so straight-line
+code (an inlined body and its continuation, say) is one block with no branch between the halves.</div>
+</div>
+<div class="col-first odd-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../BoundsCheckElimination.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">BoundsCheckElimination</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Removes a <a href="../../ir/IrInstruction.BoundsCheck.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.BoundsCheck</code></a> whose index is proved to lie in <code>[0, length)</code>.</div>
+</div>
+<div class="col-first even-row-color"><code>final class&nbsp;</code></div>
 <div class="col-second even-row-color"><code><a href="../ConstantFolder.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">ConstantFolder</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">Folds <code>Binary</code>/<code>Unary</code>/<code>Compare</code> instructions into <code>Const</code> when their operands are
-already known constants earlier in the same block, and folds a <code>Branch</code> into a <code>Jump</code> when its
-condition is a known constant.</div>
+<div class="block">Folds <code>Binary</code>/<code>Unary</code>/<code>Compare</code> instructions into <code>Const</code> when their operands are known
+constants, and folds a <code>Branch</code> into a <code>Jump</code> when its condition is a known constant.</div>
 </div>
 <div class="col-first odd-row-color"><code>final class&nbsp;</code></div>
 <div class="col-second odd-row-color"><code><a href="../CopyPropagation.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">CopyPropagation</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">Eliminates a <a href="../../ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when an earlier <a href="../../ir/IrInstruction.StoreLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.StoreLocal</code></a> in the same
-basic block determines the slot's value.</div>
+<div class="block">Eliminates a <a href="../../ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when preceding stores determine the slot's value.</div>
 </div>
 <div class="col-first even-row-color"><code>final class&nbsp;</code></div>
 <div class="col-second even-row-color"><code><a href="../DeadBlockElimination.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">DeadBlockElimination</a></code></div>
 <div class="col-last even-row-color">
 <div class="block">Removes basic blocks unreachable from a method's entry block.</div>
+</div>
+<div class="col-first odd-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../DeadLocalStoreElimination.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">DeadLocalStoreElimination</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Removes stores to JVM/synthetic local slots that no later load can read.</div>
+</div>
+<div class="col-first even-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../DeadValueElimination.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">DeadValueElimination</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Removes instructions that only compute a value nothing reads: constants, local loads, integer arithmetic other
+than division and remainder (which can panic on zero), comparisons and conversions.</div>
+</div>
+<div class="col-first odd-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../Inliner.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">Inliner</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Replaces a <a href="../../ir/IrInstruction.Call.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.Call</code></a> to a small leaf method with the method's own blocks, so getters, setters,
+constructors and small math helpers cost no call, no prologue and no argument shuffling.</div>
+</div>
+<div class="col-first even-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../ScalarReplacement.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">ScalarReplacement</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Removes an allocation whose object never escapes the method, keeping its fields in local slots instead of the
+arena: no <code>juno_alloc</code>, no garbage for the collector, and field accesses that copy propagation and constant
+folding can see through.</div>
 </div>
 </div>
 </section>

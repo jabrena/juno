@@ -6,6 +6,7 @@ import static io.github.jabrena.juno.lowering.StackValueOps.*;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.ir.ArrayDeclaration;
@@ -155,6 +156,7 @@ final class ArrayLowering {
 
     private static boolean isRuntimeHandleClass(String className) {
         return className.startsWith("java/lang/") || className.equals("java/util/Properties")
+                || RandomAccessFileMethods.isOwner(className)
                 || LockSupport.isReentrantLockClass(className)
                 || AtomicSupport.isAtomicClass(className) || BigNumberSupport.isBigNumberOwner(className);
     }
@@ -261,7 +263,9 @@ final class ArrayLowering {
             default -> throw new IllegalStateException("unreachable allocation opcode " + opcode);
         }
         return new Lowered(nextValueId, depth);
-    }    static Lowered lowerArrayLoad(List<IrInstruction> instructions, int stackBase, int depth,
+    }
+
+    static Lowered lowerArrayLoad(List<IrInstruction> instructions, int stackBase, int depth,
                                     int nextValueId, ValueTracking tracking, ArrayElementType elementType) {
         Popped index = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = index.nextValueId();

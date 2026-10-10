@@ -31,7 +31,10 @@ Supported today:
   its method (i.e. "effectively final") right after `new T[...]` — an array received as a
   parameter, or a reassigned local, still supports `arr[i]`/`arr[i] = v` but without a bounds check
   and without `.length`, since its size isn't known at compile time there. Fixed-size multidimensional
-  primitive arrays are supported when every dimension is a compile-time constant.
+  primitive arrays are supported when every dimension is a compile-time constant. A bounds check the compiler
+  can prove never fails (a constant index, a counted loop such as `for (int i = 0; i < a.length; i++)`, a masked
+  index like `a[i & 15]` into a 16-element array) is decided at compile time and costs nothing at run time; the
+  others compile to a single unsigned compare.
 - read-only lookup tables in flash: a `static final` one-dimensional primitive array with an
   all-constant initializer (`static final short[] SINE = {0, 804, 1608, ...};`) that reachable code
   only ever reads as `TABLE[i]` or `TABLE.length` is emitted once into `.rodata` at its natural element
@@ -96,6 +99,9 @@ Supported today:
 - read-only SPI SD-card files through the standard `java.io.InputStream`, plus intrinsic
   lowering of `java.util.Properties` construction, `load(InputStream)`, `getProperty`, and `size`;
   loaded values have stable arena-backed storage and can be passed directly to `Wifi.begin`
+- read-only random access to SD-card files through the standard `java.io.RandomAccessFile` (mode `"r"`: `seek`,
+  `getFilePointer`, `length`, `read`, `readFully`, `skipBytes`, `close`), raising the JDK's `FileNotFoundException`,
+  `EOFException` and `IOException`;
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
 - Arduino-backed pseudorandom numbers through `Random.seed(int)`, `Random.nextInt(bound)`, and
   `Random.nextInt(origin, bound)`, with exclusive upper bounds
@@ -209,7 +215,8 @@ The first analysis slice reports:
 | `JUNO-RISK-011` | A subtask body reaches a recursive cycle, or its estimated stack exceeds the smallest thread stack (2 KiB on the UNO R4 WiFi). |
 | `JUNO-RISK-012` | (info) A `static final` constant-initialized array stays in the arena instead of flash, because a read passes it on, stores it, writes it or selects it across a branch. |
 
-The 8 KiB arena capacity and the counts of emitted bounds checks are exact compiler facts. Arena,
+The 8 KiB arena capacity and the count of bounds-checked array accesses (checked at run time, or proved safe
+at compile time) are exact compiler facts. Arena,
 static-RAM, and stack figures are conservative source-level estimates: alignment is overestimated,
 branch feasibility is not modeled, and the downstream C++ compiler may optimize stack locals. The
 Arduino linker's final memory report is authoritative. Risk findings warn; they do not currently

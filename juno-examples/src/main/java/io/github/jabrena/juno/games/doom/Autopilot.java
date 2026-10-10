@@ -3,42 +3,33 @@ package io.github.jabrena.juno.games.doom;
 import io.github.jabrena.juno.api.Random;
 
 /**
- * The CPU marine: walks the map's demo route (turn toward the next waypoint, stride to it, loop),
- * fights the monsters it notices and steps off the route for health or armor it needs and can reach.
- *
- * <p>It fights like a person, not an aimbot: it needs a moment to react to a new monster, swings its
- * view with momentum (so it overshoots and corrects), aims with an error that only slowly settles and
- * is thrown off again by each shot's recoil, sometimes pulls the trigger before it is lined up, keeps
- * strafing, backs off from monsters that come close, retreats when badly hurt, and catches its breath
- * after a kill. So it misses, takes hits, and now and then dies.
+ * The CPU marine: walks the map's route (turn toward the next waypoint, stride to it, loop): on a WAD map the walk
+ * to the exit switch that {@link RoutePlanner} plans, on the built-in map its own patrol. It
+ * fights the monsters it notices ({@link Combat}) and steps off the route for health or armor it needs and can
+ * reach.
  */
 final class Autopilot {
     private static final float TURN = 0.11f;
     private static final float STRIDE = 9f;
     private static final float ARRIVED = 28f;
-    private static final float ENGAGE = 1600f;
-    private static final float FIELD_OF_VIEW = 1.2f;
+    /** How close a waypoint must be when the walk on from here to the next one is not clear yet. */
+    private static final float REACHED = 8f;
     private static final float GRAB = 450f;
+    /** How much farther the marine goes for a weapon it does not carry yet than for any other pickup. */
+    private static final float NEW_WEAPON = 3f;
+    private static final float EXIT_COMMIT = 512f;
 
     private static boolean detouring;
     private static float detourX;
     private static float detourY;
     private static int stuck;
+    private static float goalX;
+    private static float goalY;
+    private static float bestDistance;
     private static final int GIVE_UP = 40;
 
-    private static final float MAX_SPIN = 0.15f;
-    private static final float SPIN_ACCELERATION = 0.03f;
-    private static final float TOO_CLOSE = 160f;
-    private static final int LOW_HEALTH = 30;
 
-    private static int enemy = -1;
-    private static int reaction;
-    private static int calm;
-    private static float aimError;
-    private static float spin;
     private static float sway;
-    private static int strafeDirection;
-    private static int strafeTime;
 
     static int target;
 
@@ -46,16 +37,12 @@ final class Autopilot {
     }
 
     static void restart() {
-        target = Math.min(1, Level.ROUTE_X.length - 1);
+        target = Math.min(1, World.routeLength - 1);
         detouring = false;
-        enemy = -1;
-        reaction = 0;
-        calm = 0;
-        spin = 0;
+        stuck = 0;
+        goalX = Float.MAX_VALUE;
         sway = 0;
-        aimError = 0;
-        strafeDirection = 0;
-        strafeTime = 0;
+        Combat.restart();
     }
 
     /**
@@ -63,29 +50,42 @@ final class Autopilot {
      * straight to (or simply the nearest, when none is in reach).
      */
     static void resume(short[] ceilings) {
+        resume(ceilings, -1);
+    }
+
+    private static void resume(short[] ceilings, int avoided) {
         detouring = false;
+        sway = 0;
         float best = Float.MAX_VALUE;
         float bestReachable = Float.MAX_VALUE;
-        int nearest = target;
+        int nearest = target == avoided ? 0 : target;
         int reachable = -1;
-        for (int i = 0; i < Level.ROUTE_X.length; i++) {
-            float dx = Level.ROUTE_X[i] - Player.x;
-            float dy = Level.ROUTE_Y[i] - Player.y;
+        for (int i = 0; i < World.routeLength; i++) {
+            if (i == avoided) {
+                continue;
+            }
+            float dx = World.routeX[i] - Player.x;
+            float dy = World.routeY[i] - Player.y;
             float distance = dx * dx + dy * dy;
             if (distance < best) {
                 best = distance;
                 nearest = i;
             }
-            if (distance < bestReachable && !Player.blocked(Player.x, Player.y, Level.ROUTE_X[i], Level.ROUTE_Y[i], ceilings)) {
+            if (distance < bestReachable && !Player.blocked(Player.x, Player.y, World.routeX[i], World.routeY[i], ceilings)) {
                 bestReachable = distance;
                 reachable = i;
             }
         }
         target = reachable >= 0 ? reachable : nearest;
+        goalX = Float.MAX_VALUE;
     }
 
     static void step(short[] ceilings, short[] monsters, byte[] taken) {
-        if (fight(ceilings, monsters)) {
+        if (committedToExit()) {
+            followRoute(ceilings);
+            return;
+        }
+        if (Combat.fight(ceilings, monsters, sway)) {
             return;
         }
         int item = wanted(taken, ceilings);
@@ -95,7 +95,7 @@ final class Autopilot {
                 detourX = Player.x;
                 detourY = Player.y;
             }
-            walkTo(Level.ITEM_X[item], Level.ITEM_Y[item], ceilings);
+            walkTo(World.itemX[item], World.itemY[item], ceilings);
             return;
         }
         if (detouring) {
@@ -107,51 +107,101 @@ final class Autopilot {
             }
             detouring = false;
         }
-        float dx = Level.ROUTE_X[target] - Player.x;
-        float dy = Level.ROUTE_Y[target] - Player.y;
-        if (dx * dx + dy * dy < ARRIVED * ARRIVED) {
-            target = target + 1;
-            if (target == Level.ROUTE_X.length) {
-                target = Level.LOOP_START;
-            }
+        followRoute(ceilings);
+    }
+
+    /** Once the exit is close on the final approach, finishing the map takes priority over combat and pickups. */
+    private static boolean committedToExit() {
+        if (!World.fromWad || World.exitLine < 0 || World.routeLength < 2
+                || target < World.routeLength - 2) {
+            return false;
+        }
+        float dx = World.exitX - Player.x;
+        float dy = World.exitY - Player.y;
+        return dx * dx + dy * dy < EXIT_COMMIT * EXIT_COMMIT;
+    }
+
+    private static void followRoute(short[] ceilings) {
+        float dx = World.routeX[target] - Player.x;
+        float dy = World.routeY[target] - Player.y;
+        float distance = dx * dx + dy * dy;
+        if (distance < REACHED * REACHED || distance < ARRIVED * ARRIVED && clearToNext(ceilings)) {
+            target = next();
             return;
         }
-        walkTo(Level.ROUTE_X[target], Level.ROUTE_Y[target], ceilings);
+        walkTo(World.routeX[target], World.routeY[target], ceilings);
+    }
+
+    private static int next() {
+        return target + 1 == World.routeLength ? World.loopStart : target + 1;
+    }
+
+    /**
+     * Whether the marine may cut the corner at its waypoint: only when the walk on to the next one is clear from where
+     * it stands. The planner checked that walk from the waypoint itself, which can lie round a corner from here.
+     */
+    private static boolean clearToNext(short[] ceilings) {
+        int next = next();
+        return !Player.blocked(Player.x, Player.y, World.routeX[next], World.routeY[next], ceilings);
     }
 
     private static void walkTo(float x, float y, short[] ceilings) {
         float dx = x - Player.x;
         float dy = y - Player.y;
+        if (goalX != x || goalY != y) {
+            goalX = x;
+            goalY = y;
+            bestDistance = (float) Math.sqrt(dx * dx + dy * dy);
+            stuck = 0;
+        }
         sway = Math.max(-0.08f, Math.min(0.08f, sway * 0.97f + random(-0.012f, 0.012f)));
         float heading = Weapon.angleTo(dx, dy) + sway;
-        spin = 0;
+        Combat.steady();
         Player.turn(Math.max(-TURN, Math.min(TURN, heading)));
         float alignment = Math.abs(heading);
         if (alignment < 0.6f) {
-            stuck = Player.walk(STRIDE * (1f - alignment), ceilings) ? 0 : stuck + 1;
+            Player.walk(STRIDE * (1f - alignment), ceilings);
+            float remainingX = x - Player.x;
+            float remainingY = y - Player.y;
+            float after = (float) Math.sqrt(remainingX * remainingX + remainingY * remainingY);
+            if (after < bestDistance - 1f) {
+                bestDistance = after;
+                stuck = 0;
+            } else {
+                stuck = stuck + 1;
+            }
         }
         if (stuck > GIVE_UP) {
             stuck = 0;
             if (detouring) {
                 detouring = false;
+            } else if (World.fromWad && RoutePlanner.planFrom(Player.x, Player.y)) {
+                target = Math.min(1, World.routeLength - 1);
+                goalX = Float.MAX_VALUE;
             } else {
-                target = target + 1 == Level.ROUTE_X.length ? Level.LOOP_START : target + 1;
+                resume(ceilings, target);
             }
         }
     }
 
-    /** The nearest untaken item the marine needs, can see, and can walk straight to; or -1. */
+    /**
+     * The nearest untaken item the marine needs and can walk straight to, or -1. A weapon it does not carry yet counts
+     * as {@link #NEW_WEAPON} times nearer: worth a longer detour than ammo, health or armor.
+     */
     private static int wanted(byte[] taken, short[] ceilings) {
         int best = -1;
         float nearest = GRAB;
-        for (int i = 0; i < Level.ITEMS; i++) {
-            if (taken[i] != 0 || !Items.useful(Level.ITEM_KIND[i])) {
+        for (int i = 0; i < World.items; i++) {
+            int kind = World.itemKind[i];
+            if (taken[i] != 0 || !Items.useful(kind)) {
                 continue;
             }
-            float dx = Level.ITEM_X[i] - Player.x;
-            float dy = Level.ITEM_Y[i] - Player.y;
-            float distance = (float) Math.sqrt(dx * dx + dy * dy);
-            if (distance < nearest && !Player.blocked(Player.x, Player.y, Level.ITEM_X[i], Level.ITEM_Y[i], ceilings)) {
+            float dx = World.itemX[i] - Player.x;
+            float dy = World.itemY[i] - Player.y;
+            int weapon = Items.weaponOf(kind);
+            float distance = (float) Math.sqrt(dx * dx + dy * dy)
+                    / (weapon >= 0 && !Weapon.carries(weapon) ? NEW_WEAPON : 1f);
+            if (distance < nearest && !Player.blocked(Player.x, Player.y, World.itemX[i], World.itemY[i], ceilings)) {
                 best = i;
                 nearest = distance;
             }
@@ -159,110 +209,7 @@ final class Autopilot {
         return best;
     }
 
-    /**
-     * Fights the monster it has noticed, the way a player would; returns whether the marine was busy
-     * fighting (or catching its breath after a kill) instead of walking on.
-     */
-    private static boolean fight(short[] ceilings, short[] monsters) {
-        int seen = noticed(ceilings, monsters);
-        if (seen < 0) {
-            if (enemy >= 0) {
-                enemy = -1;
-                calm = Random.nextInt(8, 22);
-            }
-            if (calm > 0) {
-                calm = calm - 1;
-                Player.turn(sway * 0.5f);
-                return true;
-            }
-            return false;
-        }
-        if (seen != enemy) {
-            enemy = seen;
-            reaction = Random.nextInt(6, 18);
-            aimError = (Random.nextInt(2) == 0 ? -1 : 1) * random(0.08f, 0.25f);
-        }
-        if (reaction > 0) {
-            reaction = reaction - 1;
-            return false;
-        }
-        float dx = monsters[enemy + Monsters.X] - Player.x;
-        float dy = monsters[enemy + Monsters.Y] - Player.y;
-        float distance = (float) Math.sqrt(dx * dx + dy * dy);
-        aim(Weapon.angleTo(dx, dy) + aimError);
-        aimError = aimError * 0.96f + random(-0.02f, 0.02f);
-        float off = Math.abs(Weapon.angleTo(dx, dy) + aimError);
-        float tolerance = (float) Math.atan(14f / distance);
-        boolean lined = off < tolerance;
-        boolean impatient = off < 2.5f * tolerance && Random.nextInt(100) < 10;
-        if ((lined || impatient) && Weapon.loaded()) {
-            Weapon.fire(monsters, ceilings);
-            aimError = aimError + random(-0.14f, 0.14f);
-        }
-        dodge(distance, ceilings);
-        return true;
-    }
-
-    /** The monster to fight: the current one while it stays in sight, unless another is much closer. */
-    private static int noticed(short[] ceilings, short[] monsters) {
-        int nearest = -1;
-        float nearestDistance = ENGAGE;
-        float currentDistance = Float.MAX_VALUE;
-        for (int i = 0; i < Level.MONSTERS; i++) {
-            int at = i * Monsters.STRIDE;
-            int state = monsters[at + Monsters.STATE];
-            if (state == Monsters.DEAD) {
-                continue;
-            }
-            float dx = monsters[at + Monsters.X] - Player.x;
-            float dy = monsters[at + Monsters.Y] - Player.y;
-            float distance = (float) Math.sqrt(dx * dx + dy * dy);
-            if (distance >= ENGAGE) {
-                continue;
-            }
-            boolean aware = state != Monsters.IDLE || Math.abs(Weapon.angleTo(dx, dy)) < FIELD_OF_VIEW;
-            if (aware && Player.canSee(Player.x, Player.y, Player.eye, monsters[at + Monsters.X],
-                    monsters[at + Monsters.Y], monsters[at + Monsters.FLOOR] + Monsters.CENTER, ceilings)) {
-                if (at == enemy) {
-                    currentDistance = distance;
-                }
-                if (distance < nearestDistance) {
-                    nearest = at;
-                    nearestDistance = distance;
-                }
-            }
-        }
-        return currentDistance < Float.MAX_VALUE && nearestDistance > 0.6f * currentDistance ? enemy : nearest;
-    }
-
-    /** Swings the view toward {@code heading} with a hand's momentum: it speeds up, overshoots, corrects. */
-    private static void aim(float heading) {
-        float wanted = Math.max(-MAX_SPIN, Math.min(MAX_SPIN, heading * 0.4f));
-        spin = spin + Math.max(-SPIN_ACCELERATION, Math.min(SPIN_ACCELERATION, wanted - spin));
-        Player.turn(spin);
-    }
-
-    /** Keeps moving under fire: retreats when hurt, backs off from close monsters, otherwise strafes. */
-    private static void dodge(float distance, short[] ceilings) {
-        if (Player.health < LOW_HEALTH && distance < 500) {
-            Player.walk(-6f, ceilings);
-            return;
-        }
-        if (distance < TOO_CLOSE) {
-            Player.walk(-4f, ceilings);
-            return;
-        }
-        strafeTime = strafeTime - 1;
-        if (strafeTime <= 0) {
-            strafeDirection = Random.nextInt(3) - 1;
-            strafeTime = Random.nextInt(15, 40);
-        }
-        if (strafeDirection != 0 && !Player.strafe(4f * strafeDirection, ceilings)) {
-            strafeDirection = -strafeDirection;
-        }
-    }
-
-    private static float random(float low, float high) {
+    static float random(float low, float high) {
         return low + (high - low) * Random.nextInt(1001) / 1000f;
     }
 }

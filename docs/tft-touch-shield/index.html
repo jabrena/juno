@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OTB2XA3Z.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
 
 </head>
 <body >
@@ -79,6 +79,7 @@
     <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
     <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
     <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
+    <li><a class="" href="/juno/memory-model" ><i class="fa-solid fa-memory"></i>Memory Model</a></li>
     <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
     <li class="menu-group"><span>Boards</span></li>
     <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
@@ -143,14 +144,15 @@
 drives the ELEGOO 2.8&quot; TFT touch screen shield for UNO (&quot;Pantalla Táctil TFT de 2,8 pulgadas&quot;): a
 240x320 ILI9341 color display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a
 microSD socket.</p>
-<p>Like the <a href="../lcd-keypad-shield">LCD Keypad Shield</a>, it needs no new compiler intrinsic and no
-extra Arduino library: every operation is built from
+<p>It needs no extra Arduino library. Control lines and the touch panel use
 <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/Gpio.java"><code>Gpio</code></a> pin operations and
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java"><code>Delay</code></a>. The trade-off is speed:
-each bus byte costs several <code>digitalWrite</code> calls, so a full-screen clear takes on the order of a
-second and a line of text tens of milliseconds. It suits status screens and simple touch UIs, not
-animation. Solid fills in colors whose two RGB565 bytes are equal (<code>BLACK</code>, <code>WHITE</code>) are the
-fastest, because the driver only rewrites data pins whose level changes.</p>
+<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java"><code>Delay</code></a>; the display's bytes go
+through <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/ParallelBus.java"><code>ParallelBus</code></a>,
+a compiler intrinsic that resolves the eight data pins and the write strobe to their GPIO ports once and then
+writes a whole port per store (the UNO R4's port set/reset registers, the UNO Q's Zephyr raw port API). A run of
+one color is a single call, so pixels stream from the runtime instead of costing a <code>digitalWrite</code> per pin. Solid
+fills in colors whose two RGB565 bytes are equal (<code>BLACK</code>, <code>WHITE</code>, or any <code>0xVVVV</code>) are the fastest: the data
+pins are set once and only the strobe toggles.</p>
 <h2 id="wiring">Wiring</h2>
 <p>Seat the shield directly on the UNO R4 WiFi. The driver assumes the shield's standard pinout, as
 used by ELEGOO's <code>Elegoo_TFTLCD</code> and <code>TouchScreen</code> libraries:</p>

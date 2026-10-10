@@ -550,6 +550,9 @@ final class RuntimeShim {
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
             shim.append(ShimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS)));
         }
+        if (uses(ShimFeature.PARALLEL_BUS)) {
+            shim.append(core.parallelBusHelpers());
+        }
         if (uses(ShimFeature.INFRARED)) {
             shim.append(ShimLibraries.infraredHelpers());
         }
@@ -595,6 +598,13 @@ final class RuntimeShim {
         }
         if (uses(ShimFeature.EXCEPTIONS)) {
             shim.append(ShimLibraries.exceptionHelpers(throwableClasses));
+        }
+        if (uses(ShimFeature.RANDOM_ACCESS_FILE)) {
+            shim.append(ShimLibraries.randomAccessFileHelpers(
+                    throwableClasses.indexOf("java/io/IOException"),
+                    throwableClasses.indexOf("java/io/FileNotFoundException"),
+                    throwableClasses.indexOf("java/io/EOFException"),
+                    throwableClasses.indexOf("java/lang/IndexOutOfBoundsException")));
         }
         if (uses(ShimFeature.JSON)) {
             shim.append(NetworkShimLibraries.jsonHelpers());

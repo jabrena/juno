@@ -34,18 +34,26 @@ final class TableBytecode {
             return null;
         }
         long[] values = new long[length.intValue()];
+        boolean[] stored = new boolean[values.length];
         int cursor = start + 2;
-        for (int stored = 0; stored < values.length; stored++, cursor += 4) {
-            if (cursor + 3 >= instructions.size() || instructions.get(cursor).opcode() != DUP
-                    || instructions.get(cursor + 3).opcode() != storeOpcode(element)) {
+        // javac stores every element; the Eclipse compiler (used by IDE builds) leaves out the zero ones, which the
+        // new array already holds. Either way: dup, index, value, store, each index at most once.
+        while (cursor < instructions.size() && instructions.get(cursor).opcode() == DUP) {
+            if (cursor + 3 >= instructions.size() || instructions.get(cursor + 3).opcode() != storeOpcode(element)) {
                 return null;
             }
             Long index = constant(pool, instructions.get(cursor + 1), 'I');
             Long value = constant(pool, instructions.get(cursor + 2), element);
-            if (index == null || value == null || index < 0 || index >= values.length) {
+            if (index == null || value == null || index < 0 || index >= values.length || stored[index.intValue()]) {
                 return null;
             }
             values[index.intValue()] = value;
+            stored[index.intValue()] = true;
+            cursor += 4;
+        }
+        if (values.length > 0 && cursor == start + 2) {
+            // new T[n] with no stores is a buffer to fill at run time, not a constant table.
+            return null;
         }
         return cursor < instructions.size() && instructions.get(cursor).opcode() == PUTSTATIC
                 ? new Initializer(values, cursor) : null;

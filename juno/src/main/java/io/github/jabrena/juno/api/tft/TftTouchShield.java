@@ -10,13 +10,11 @@ import io.github.jabrena.juno.api.led.LedMatrixFontAscii;
  * socket, wired for the shield's standard UNO pinout as used by ELEGOO's {@code Elegoo_TFTLCD} and
  * {@code TouchScreen} libraries.
  *
- * <p>Like {@link io.github.jabrena.juno.api.lcd.LcdKeypadShield}, this shield needs no new compiler
- * intrinsic: every operation is built from {@link Gpio#pinMode}, {@link Gpio#digitalWrite},
- * {@link Gpio#analogRead}, and {@link Delay}. The price is speed — each bus byte costs a handful
- * of {@code digitalWrite} calls, so clearing the whole screen takes on the order of a second while
- * drawing a line of text takes tens of milliseconds. That suits status screens and simple UIs,
- * not animation. The driver only rewrites data pins whose level actually changes, so solid fills
- * in colors whose two bytes are equal (e.g. {@link #BLACK}, {@link #WHITE}) are the fastest.
+ * <p>The display bus is a {@link io.github.jabrena.juno.api.io.ParallelBus}: each byte is a few GPIO port writes
+ * and a run of one color is a single call, so pixels stream from the runtime without a call per byte. Commands
+ * still toggle the RS line with {@link Gpio#digitalWrite}, and the touch panel uses {@link Gpio#analogRead}.
+ * Fills in colors whose two bytes are equal (e.g. {@link #BLACK}, {@link #WHITE}) are the fastest: the data pins
+ * are set once and only the write strobe toggles.
  *
  * <p>The SD socket is an ordinary SPI card reader with chip select on D10: use
  * {@link io.github.jabrena.juno.api.io.SdCard#begin()} as-is. It shares no pins with the
@@ -140,6 +138,7 @@ public final class TftTouchShield {
         Gpio.digitalWrite(PIN_RS, true);
         Gpio.digitalWrite(PIN_CS, true);
         TftBus.restoreDataPins();
+        TftBus.begin();
 
         Gpio.digitalWrite(PIN_RESET, true);
         Delay.millis(5);

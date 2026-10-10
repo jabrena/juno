@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Emits GNU ARM Thumb-2 assembly straight from Juno IR, restricted to instructions common to the UNO R4's
@@ -46,9 +47,8 @@ import java.util.Set;
  * {@code long}/{@code float}/{@code double} helpers) rather than hand-rolled soft-float assembly. A {@code long} keeps this
  * backend's existing split-low/high-word representation (two ordinary {@code int32} stack slots);
  * {@code float}/{@code double} are new {@link JunoType#FLOAT32}/{@link JunoType#FLOAT64} stack slots
- * (4/8 bytes, holding the raw IEEE-754 bit pattern) — see {@code FrameLayout}. Every JVM local slot
- * is a full 8 bytes regardless of its actual type, so a {@code double} local can never overlap the next slot's
- * storage.
+ * (4/8 bytes, holding the raw IEEE-754 bit pattern) — see {@code FrameLayout}. Each JVM local slot is
+ * one 32-bit word; {@code long}/{@code double} use the two consecutive slots reserved by the JVMS.
  *
  * <h2>{@code HttpClient}/{@code HttpsClient}/{@code Json}</h2>
  * Backed by an {@code extern "C"} HTTP/1.1 codec and allocation-free JSON scanner in the generated
@@ -57,9 +57,9 @@ import java.util.Set;
  * {@code AsmEmitter#emitShimCall}, the same mechanism {@link #emitCall} already uses for user methods.
  *
  * <h2>Storage model</h2>
- * Unlike a register-allocating backend, every IR {@code Value} and every JVM local variable slot
- * lives in a fixed offset in its method's own stack frame (never in a register across instructions) —
- * see {@code FrameLayout}. This trades code density for a design that can't run out of registers
+ * Unlike a register-allocating backend, every live IR {@code Value} and every JVM local variable slot
+ * lives in a stack-frame offset (never in a register across instructions) — see {@code FrameLayout}.
+ * Non-overlapping block-local value lifetimes reuse offsets. This trades code density for a design that can't run out of registers
  * regardless of how many live values a method has, which matters once methods stop being
  * one-block-with-three-intrinsic-calls (helper methods with many {@code int} parameters, or
  * {@code LedMatrixAsciiScroll}, whose full-ASCII-font dispatch tree reaches 116 methods). Registers are used only as scratch within a single instruction's codegen. Arena
@@ -193,7 +193,7 @@ public final class Thumb2AsmBackend {
         ints = new IntArithmeticLowering(asm);
         wides = new WideArithmeticLowering(asm, features);
         arrays = new ArrayLowering(asm);
-        terminators = new TerminatorLowering(asm, usesThreads ? "juno_thread_backedge" : "yield");
+        terminators = new TerminatorLowering(asm, ints, usesThreads ? "juno_thread_backedge" : "yield");
         convention = new CallConvention(asm);
         fields = new FieldAccessLowering(asm, layout);
         CoreRuntime coreRuntime = CoreRuntime.of(board.core());
@@ -214,7 +214,8 @@ public final class Thumb2AsmBackend {
         }
         String runtimeShim = new RuntimeShim(board, coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
-        return new Output(output.toString(), runtimeShim, functionLabels.get(entryPoint));
+        return new Output(AssemblyPeepholeOptimizer.optimize(output.toString()), runtimeShim,
+                functionLabels.get(entryPoint));
     }
 
     private void emitMethod(StringBuilder output, IrMethod method) {
@@ -266,7 +267,13 @@ public final class Thumb2AsmBackend {
             asm.emitLoadImmediate(output, "r12", frame.frameSize());
             output.append("    sub sp, sp, r12\n");
         }
-        convention.emitParameterSpill(output, frame, parameterTypes, method.isStatic());
+        Set<Integer> readLocals = method.blocks().stream()
+                .flatMap(block -> block.instructions().stream())
+                .filter(IrInstruction.LoadLocal.class::isInstance)
+                .map(IrInstruction.LoadLocal.class::cast)
+                .map(IrInstruction.LoadLocal::local)
+                .collect(Collectors.toSet());
+        convention.emitParameterSpill(output, frame, parameterTypes, method.isStatic(), readLocals);
         // Enabled before anything else the program does (including <clinit>, below), so @Watchdog
         // protects the whole program lifetime, not just the user's own main() body.
         if (isEntryPoint && usesWatchdog) {
@@ -282,12 +289,16 @@ public final class Thumb2AsmBackend {
             }
         }
 
+        CompareFusion fusion = new CompareFusion(method);
         for (IrBasicBlock block : method.blocks()) {
             output.append(".L").append(label).append("block").append(block.start()).append(":\n");
-            for (IrInstruction instruction : block.instructions()) {
+            IrInstruction.Compare fused = fusion.fusedCompare(block);
+            List<IrInstruction> instructions = fused == null ? block.instructions()
+                    : block.instructions().subList(0, block.instructions().size() - 1);
+            for (IrInstruction instruction : instructions) {
                 emitInstruction(output, frame, instruction);
             }
-            terminators.emit(output, frame, label, block,
+            terminators.emit(output, frame, label, block, fused,
                     isEntryPoint ? () -> emitMainExit(output) : () -> { });
             // Flushes the literal pool (every `ldr rN, =symbol` — string literals, static fields —
             // pending since the last flush) right here. Thumb-2's PC-relative `ldr` only reaches 4095
@@ -310,8 +321,11 @@ public final class Thumb2AsmBackend {
     private void emitInstruction(StringBuilder output, FrameLayout frame, IrInstruction instruction) {
         switch (instruction) {
             case IrInstruction.Const constant -> {
-                asm.emitLoadImmediate(output, "r0", constant.value());
-                asm.store(output, frame, "r0", constant.target());
+                // Rematerialized at every use (see FrameLayout); only a Const defining its value twice keeps a slot.
+                if (frame.constant(constant.target()) == null) {
+                    asm.emitLoadImmediate(output, "r0", constant.value());
+                    asm.store(output, frame, "r0", constant.target());
+                }
             }
             case IrInstruction.StringConst constant -> {
                 asm.emitStringAddress(output, "r0", constant.value());
@@ -487,7 +501,7 @@ public final class Thumb2AsmBackend {
             return;
         }
         Value invocationArgument = call.arguments().get(1 + combinedIndex - captureCount);
-        asm.emitLoad(output, destination, frame.valueOffset(invocationArgument) + extraSpOffset);
+        asm.loadWord(output, frame, new WordSource.FromValue(invocationArgument), destination, extraSpOffset);
     }
 
     private void emitInterfaceCall(StringBuilder output, FrameLayout frame, IrInstruction.InterfaceCall call) {
@@ -518,18 +532,18 @@ public final class Thumb2AsmBackend {
         if (label == null) {
             throw unsupported("call to unresolved method " + method.displayName());
         }
-        List<Integer> words = CallConvention.argumentWordOffsets(frame, arguments);
+        List<WordSource> words = CallConvention.argumentWords(arguments);
         int extra = Math.max(0, words.size() - 4);
         int reserved = AsmEmitter.roundUp(extra * AsmEmitter.WORD, 8);
         if (reserved > 0) {
             output.append("    sub sp, sp, #").append(reserved).append('\n');
             for (int i = 4; i < words.size(); i++) {
-                asm.emitLoad(output, "r0", words.get(i) + reserved);
+                asm.loadWord(output, frame, words.get(i), "r0", reserved);
                 asm.emitStore(output, "r0", (i - 4) * AsmEmitter.WORD);
             }
         }
         for (int i = 0; i < Math.min(4, words.size()); i++) {
-            asm.emitLoad(output, "r" + i, words.get(i) + reserved);
+            asm.loadWord(output, frame, words.get(i), "r" + i, reserved);
         }
         output.append("    bl ").append(label).append('\n');
         if (reserved > 0) {
