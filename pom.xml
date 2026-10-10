@@ -44,6 +44,9 @@
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
         <maven-plugin-enforcer.version>3.6.3</maven-plugin-enforcer.version>
         <extra-enforcer-rules.version>1.12.1</extra-enforcer-rules.version>
+        <maven-plugin-jacoco.version>0.8.15</maven-plugin-jacoco.version>
+        <!-- Minimum coverage, per counter, for the modules that gate on it under -Pjacoco (juno-compiler). -->
+        <coverage.level>80</coverage.level>
         <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
         <java.version>${maven.compiler.release}</java.version>
     </properties>
@@ -220,6 +223,37 @@
     </build>
 
     <profiles>
+        <!-- Code coverage: ./mvnw clean verify -Pjacoco (report in each module's target/site/jacoco). -->
+        <profile>
+            <id>jacoco</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${maven-plugin-jacoco.version}</version>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!-- Cyclomatic Complexity Analysis Profile -->
         <profile>
             <id>cyclomatic-complexity</id>
