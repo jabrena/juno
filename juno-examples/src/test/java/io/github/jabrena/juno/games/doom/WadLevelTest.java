@@ -236,7 +236,7 @@ class WadLevelTest {
             System.arraycopy(monsters, 0, before, 0, monsters.length);
             Weapon.tick();
             Autopilot.step(World.ceilings, monsters, World.taken);
-            Player.operateDoors(World.ceilings);
+            Doors.operate(World.ceilings);
             Items.pickUp(World.taken);
             Monsters.think(monsters, shots, World.ceilings, frame);
             for (int at = 0; at < World.monsters * Monsters.STRIDE; at += Monsters.STRIDE) {
@@ -299,7 +299,7 @@ class WadLevelTest {
         for (int frame = 0; frame < 8000 && Player.health > 0 && !Player.atExit(); frame++) {
             Weapon.tick();
             Autopilot.step(World.ceilings, monsters, World.taken);
-            Player.operateDoors(World.ceilings);
+            Doors.operate(World.ceilings);
             Lifts.operate(Player.x, Player.y);
             Player.settle();
             Items.pickUp(World.taken);
@@ -341,7 +341,7 @@ class WadLevelTest {
         int frame = 0;
         while (frame < 20000 && !Player.atExit()) {
             Autopilot.step(World.ceilings, none, World.taken);
-            Player.operateDoors(World.ceilings);
+            Doors.operate(World.ceilings);
             Lifts.operate(Player.x, Player.y);
             Player.settle();
             frame = frame + 1;
@@ -374,7 +374,7 @@ class WadLevelTest {
                 Player.hurt = Player.hurt - 1;
             }
             Autopilot.step(World.ceilings, monsters, World.taken);
-            Player.operateDoors(World.ceilings);
+            Doors.operate(World.ceilings);
             Player.settle();
             Items.pickUp(World.taken);
             Monsters.think(monsters, shots, World.ceilings, frame);

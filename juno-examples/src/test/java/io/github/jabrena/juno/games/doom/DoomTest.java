@@ -295,7 +295,7 @@ class DoomTest {
         for (int frame = 0; frame < 240; frame++) {
             Weapon.tick();
             Autopilot.step(ceilings, monsters, taken);
-            Player.operateDoors(ceilings);
+            Doors.operate(ceilings);
             Player.settle();
             Monsters.think(monsters, shots, ceilings, frame);
             Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
@@ -318,7 +318,7 @@ class DoomTest {
         for (int frame = 0; frame < 240; frame++) {
             Weapon.tick();
             Autopilot.step(ceilings, monsters, taken);
-            Player.operateDoors(ceilings);
+            Doors.operate(ceilings);
             Player.settle();
             Monsters.think(monsters, shots, ceilings, frame);
             Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);

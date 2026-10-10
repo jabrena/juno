@@ -99,9 +99,9 @@ final class Combat {
      * margin, so a monster at the edge of two weapons' ranges does not keep the marine swapping instead of shooting.
      */
     private static void arm(float distance) {
-        int best = Weapon.best(distance);
+        int best = Arsenal.best(distance);
         int wanted = Weapon.wanted();
-        if (best != wanted && Weapon.damageRate(best, distance) > 1.25f * Weapon.damageRate(wanted, distance)) {
+        if (best != wanted && Arsenal.damageRate(best, distance) > 1.25f * Arsenal.damageRate(wanted, distance)) {
             Weapon.select(best);
         }
     }

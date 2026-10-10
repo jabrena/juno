@@ -31,7 +31,7 @@ final class Weapon {
     private static final int NO_AMMO = -1;
 
     /** Frames from one shot to the next, per weapon. */
-    private static final int[] CYCLE = {10, 3, 10, 26, 3, 14, 2, 42};
+    static final int[] CYCLE = {10, 3, 10, 26, 3, 14, 2, 42};
     /** The ammo each weapon uses and how much per shot. */
     private static final int[] AMMO_TYPE = {NO_AMMO, NO_AMMO, BULLETS, SHELLS, BULLETS, ROCKETS, CELLS, CELLS};
     private static final int[] AMMO_USE = {0, 0, 1, 1, 1, 1, 1, 40};
@@ -237,7 +237,7 @@ final class Weapon {
     private static boolean launch(int kind, int speed) {
         float cos = (float) Math.cos(Player.angle);
         float sin = (float) Math.sin(Player.angle);
-        Monsters.launch(kind, Player.x + 16 * cos, Player.y + 16 * sin, Player.eye - 10, speed * cos, speed * sin, 0);
+        Shots.launch(kind, Player.x + 16 * cos, Player.y + 16 * sin, Player.eye - 10, speed * cos, speed * sin, 0);
         return false;
     }
 
@@ -277,43 +277,6 @@ final class Weapon {
                     && Monsters.seenByMarine(monsters, at, ceilings)) {
                 best = at;
                 bestDistance = distance;
-            }
-        }
-        return best;
-    }
-
-    /**
-     * The damage per frame {@code weapon} can be expected to deal to a monster {@code distance} away, for the CPU to
-     * pick the hardest-hitting weapon it can use; 0 when it is not carried, has no ammo, or must not be used there:
-     * the fist and the chainsaw out of reach, a rocket or the BFG's ball so close its blast would hurt the marine.
-     */
-    static float damageRate(int weapon, float distance) {
-        if (!usable(weapon)) {
-            return 0f;
-        }
-        // The share of pellets that hit narrows with distance: a monster ~40 units wide against the spread.
-        float width = (float) Math.atan(20f / Math.max(distance, 1f));
-        return switch (weapon) {
-            case FIST -> distance < MELEE ? 1.1f : 0.05f;
-            case CHAINSAW -> distance < 2 * MELEE ? 7f : 0.05f;
-            case SHOTGUN -> 70f / CYCLE[SHOTGUN] * Math.min(1f, width / 0.1f);
-            case CHAINGUN -> 10f / CYCLE[CHAINGUN] * Math.min(1f, width / 0.05f);
-            case LAUNCHER -> distance < 2 * SPLASH ? 0f : 90f / CYCLE[LAUNCHER];
-            case PLASMA -> 22.5f / CYCLE[PLASMA];
-            case BFG -> distance < 2 * SPLASH ? 0f : 600f / CYCLE[BFG];
-            default -> 10f / CYCLE[PISTOL];
-        };
-    }
-
-    /** The carried weapon that deals the most damage to a monster {@code distance} away. */
-    static int best(float distance) {
-        int best = FIST;
-        float bestRate = -1f;
-        for (int weapon = 0; weapon < WEAPONS; weapon++) {
-            float rate = damageRate(weapon, distance);
-            if (rate > bestRate) {
-                best = weapon;
-                bestRate = rate;
             }
         }
         return best;

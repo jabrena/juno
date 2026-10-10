@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.doom;
 
 /**
- * Where the marine stands and looks, how they walk, and the doors they open. Movement follows DOOM's
- * rules closely enough for a walk-through: a step up of at most 24 units, at least 56 units of
+ * Where the marine stands and looks, and how they walk; {@link Doors} opens the doors they come to.
+ * Movement follows DOOM's rules closely enough for a walk-through: a step up of at most 24 units, at least 56 units of
  * headroom, no crossing a one-sided wall or a line the map marks impassable (most windows), and a move
  * into a wall slides along it instead of stopping.
  */
@@ -17,9 +17,6 @@ final class Player {
      */
     static final float RADIUS = 8f;
     private static final float USE_RANGE = 64f;
-    private static final int DOOR_REACH = 200;
-    private static final int DOOR_FORGET = 520;
-    private static final int DOOR_SPEED = 6;
 
     static final int FULL_HEALTH = 100;
 
@@ -143,7 +140,7 @@ final class Player {
         if (blocked(x, y, toX, toY, ceilings)) {
             return false;
         }
-        if (keepDoorsShut && opensDoor(toX, toY, ceilings) && !opensDoor(x, y, ceilings)) {
+        if (keepDoorsShut && Doors.wouldOpen(toX, toY, ceilings) && !Doors.wouldOpen(x, y, ceilings)) {
             return false;
         }
         float room = Clearance.room(toX, toY, RADIUS, ceilings);
@@ -173,34 +170,6 @@ final class Player {
     static boolean atExit() {
         // DOOM's use range, measured to the switch's line: the body keeps the marine out of a switch's recess.
         return World.exitLine >= 0 && Clearance.distanceToLine(x, y, World.exitLine) < USE_RANGE;
-    }
-
-    /** Whether standing at ({@code px}, {@code py}) would start a door that is not fully open opening. */
-    private static boolean opensDoor(float px, float py, short[] ceilings) {
-        for (int d = 0; d < World.doors; d++) {
-            float dx = World.doorX[d] - px;
-            float dy = World.doorY[d] - py;
-            if (dx * dx + dy * dy < DOOR_REACH * DOOR_REACH && ceilings[World.doorSector[d]] < World.doorTop[d]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** Opens the doors the marine walks up to and closes the ones left far behind. */
-    static void operateDoors(short[] ceilings) {
-        for (int d = 0; d < World.doors; d++) {
-            int door = World.doorSector[d];
-            float dx = World.doorX[d] - x;
-            float dy = World.doorY[d] - y;
-            float distance = (float) Math.sqrt(dx * dx + dy * dy);
-            int ceiling = ceilings[door];
-            if (distance < DOOR_REACH && ceiling < World.doorTop[d]) {
-                ceilings[door] = (short) Math.min(World.doorTop[d], ceiling + DOOR_SPEED);
-            } else if (distance > DOOR_FORGET && ceiling > World.sectorFloor[door]) {
-                ceilings[door] = (short) Math.max(World.sectorFloor[door], ceiling - DOOR_SPEED);
-            }
-        }
     }
 
     /** The sector containing ({@code px}, {@code py}), found by walking the BSP tree to a subsector. */

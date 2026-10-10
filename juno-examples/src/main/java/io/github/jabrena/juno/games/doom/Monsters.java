@@ -133,7 +133,7 @@ final class Monsters {
                 chase(monsters, at, dx, dy, distance, ceilings);
             }
         }
-        moveShots(monsters, shots, ceilings);
+        Shots.move(monsters, shots, ceilings);
     }
 
     private static void chase(short[] monsters, int at, float dx, float dy, float distance, short[] ceilings) {
@@ -183,7 +183,7 @@ final class Monsters {
         if (kind == Sprites.IMP) {
             float frames = Math.max(1f, distance / FIREBALL_SPEED);
             float z = monsters[at + FLOOR] + CENTER + 4;
-            launch(FIREBALL, monsters[at + X], monsters[at + Y], z, (Player.x - monsters[at + X]) / frames,
+            Shots.launch(FIREBALL, monsters[at + X], monsters[at + Y], z, (Player.x - monsters[at + X]) / frames,
                     (Player.y - monsters[at + Y]) / frames, (Player.eye - 14 - z) / frames);
             return;
         }
@@ -198,139 +198,6 @@ final class Monsters {
                 Player.damage(Random.nextInt(3, 16));
             }
         }
-    }
-
-    /** Puts a projectile of {@code kind} in flight, if a slot is free; it lives about five seconds. */
-    static void launch(int kind, float x, float y, float z, float dx, float dy, float dz) {
-        for (int s = 0; s < SHOTS; s++) {
-            int shot = s * SHOT_STRIDE;
-            if (shots[shot + LIFE] == 0) {
-                shots[shot + LIFE] = 120;
-                shots[shot + SHOT_X] = (short) Math.round(x);
-                shots[shot + SHOT_Y] = (short) Math.round(y);
-                shots[shot + SHOT_Z] = (short) Math.round(z);
-                shots[shot + SHOT_DX] = (short) Math.round(dx);
-                shots[shot + SHOT_DY] = (short) Math.round(dy);
-                shots[shot + SHOT_DZ] = (short) Math.round(dz);
-                shots[shot + SHOT_KIND] = (short) kind;
-                return;
-            }
-        }
-    }
-
-    private static void moveShots(short[] monsters, short[] shots, short[] ceilings) {
-        for (int s = 0; s < SHOTS; s++) {
-            int shot = s * SHOT_STRIDE;
-            if (shots[shot + LIFE] == 0) {
-                continue;
-            }
-            int kind = shots[shot + SHOT_KIND];
-            float x = shots[shot + SHOT_X];
-            float y = shots[shot + SHOT_Y];
-            float z = shots[shot + SHOT_Z];
-            float toX = x + shots[shot + SHOT_DX];
-            float toY = y + shots[shot + SHOT_DY];
-            float toZ = z + shots[shot + SHOT_DZ];
-            if (kind == FIREBALL) {
-                float dx = Player.x - toX;
-                float dy = Player.y - toY;
-                if (dx * dx + dy * dy < 26 * 26 && Math.abs(toZ - (Player.eye - 20)) < 40) {
-                    Player.damage(Random.nextInt(3, 25));
-                    shots[shot + LIFE] = 0;
-                    continue;
-                }
-            } else {
-                int struck = struck(monsters, toX, toY, toZ);
-                if (struck >= 0) {
-                    explode(monsters, ceilings, kind, struck, toX, toY, toZ);
-                    shots[shot + LIFE] = 0;
-                    continue;
-                }
-            }
-            if (!Player.canSee(x, y, z, toX, toY, toZ, ceilings) || shots[shot + LIFE] == 1) {
-                if (kind != FIREBALL) {
-                    explode(monsters, ceilings, kind, -1, x, y, z);
-                }
-                shots[shot + LIFE] = 0;
-            } else {
-                shots[shot + SHOT_X] = (short) Math.round(toX);
-                shots[shot + SHOT_Y] = (short) Math.round(toY);
-                shots[shot + SHOT_Z] = (short) Math.round(toZ);
-                shots[shot + LIFE] = (short) (shots[shot + LIFE] - 1);
-            }
-        }
-    }
-
-    /** The live monster a projectile at ({@code x}, {@code y}, {@code z}) runs into, or -1. */
-    private static int struck(short[] monsters, float x, float y, float z) {
-        for (int i = 0; i < World.monsters; i++) {
-            int at = i * STRIDE;
-            if (monsters[at + STATE] == DEAD) {
-                continue;
-            }
-            float dx = monsters[at + X] - x;
-            float dy = monsters[at + Y] - y;
-            float above = z - monsters[at + FLOOR];
-            if (dx * dx + dy * dy < 24 * 24 && above > -8 && above < 64) {
-                return at;
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * A projectile of the marine's bursts at ({@code x}, {@code y}, {@code z}), on the monster at {@code struck} or
-     * against a wall: plasma just burns what it hit; a rocket also blasts everything within {@link Weapon#SPLASH} it
-     * can reach, the marine included; the BFG's ball hits hard and then sprays what the marine faces.
-     */
-    private static void explode(short[] monsters, short[] ceilings, int kind, int struck, float x, float y, float z) {
-        if (struck >= 0) {
-            int damage = kind == PLASMA ? 5 : kind == ROCKET ? 20 : 100;
-            hit(monsters, struck, damage * Random.nextInt(1, 9));
-        }
-        if (kind == ROCKET) {
-            for (int i = 0; i < World.monsters; i++) {
-                int at = i * STRIDE;
-                float reach = Weapon.SPLASH - distance(monsters[at + X] - x, monsters[at + Y] - y);
-                if (monsters[at + STATE] != DEAD && reach > 0 && Player.canSee(x, y, z, monsters[at + X],
-                        monsters[at + Y], monsters[at + FLOOR] + CENTER, ceilings)) {
-                    hit(monsters, at, Math.round(reach));
-                }
-            }
-            float reach = Weapon.SPLASH - distance(Player.x - x, Player.y - y);
-            if (reach > 0 && Player.canSee(x, y, z, Player.x, Player.y, Player.eye - 20, ceilings)) {
-                Player.damage(Math.round(reach));
-            }
-        } else if (kind == BFG_BALL) {
-            spray(monsters, ceilings);
-        }
-    }
-
-    /**
-     * The BFG's spray: DOOM's 40 tracers fanned over the quarter circle the marine faces, each hitting the first
-     * monster in its line for 15-120. A monster takes as many tracers as its width covers.
-     */
-    private static void spray(short[] monsters, short[] ceilings) {
-        for (int i = 0; i < World.monsters; i++) {
-            int at = i * STRIDE;
-            float dx = monsters[at + X] - Player.x;
-            float dy = monsters[at + Y] - Player.y;
-            float distance = distance(dx, dy);
-            if (monsters[at + STATE] == DEAD || distance > 1024 || distance < 1
-                    || Math.abs(Weapon.angleTo(dx, dy)) > (float) Math.PI / 4 || !seenByMarine(monsters, at, ceilings)) {
-                continue;
-            }
-            int tracers = Math.max(1, Math.min(40, Math.round(2 * (float) Math.atan(20f / distance) / 0.039f)));
-            int damage = 0;
-            for (int t = 0; t < tracers; t++) {
-                damage = damage + Random.nextInt(15, 121);
-            }
-            hit(monsters, at, damage);
-        }
-    }
-
-    private static float distance(float dx, float dy) {
-        return (float) Math.sqrt(dx * dx + dy * dy);
     }
 
     /** Whether the monster at {@code at} has a line of sight to the marine's eye. */

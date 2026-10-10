@@ -84,7 +84,7 @@ public final class Doom {
             if (Controls.autopilot) {
                 Autopilot.step(ceilings, monsters, taken);
             }
-            Player.operateDoors(ceilings);
+            Doors.operate(ceilings);
             Lifts.operate(Player.x, Player.y);
             Player.settle();
             Items.pickUp(taken);
