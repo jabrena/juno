@@ -10,6 +10,7 @@ import io.github.jabrena.juno.optimize.CompilerPass;
 import io.github.jabrena.juno.optimize.ConstantFolder;
 import io.github.jabrena.juno.optimize.CopyPropagation;
 import io.github.jabrena.juno.optimize.DeadBlockElimination;
+import io.github.jabrena.juno.optimize.DeadLocalStoreElimination;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -24,7 +25,8 @@ import java.util.Optional;
  */
 final class CompilationPipeline {
     private static final List<CompilerPass> OPTIMIZATION_PASSES = List.of(
-            new CopyPropagation(), new ConstantFolder(), new DeadBlockElimination());
+            new CopyPropagation(), new ConstantFolder(), new DeadBlockElimination(),
+            new DeadLocalStoreElimination());
 
     Program link(List<Path> classPath, String mainClass) {
         return link(classPath, mainClass, Optional.empty());

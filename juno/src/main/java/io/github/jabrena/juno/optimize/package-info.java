@@ -8,10 +8,13 @@
  * constant condition into an unconditional jump. {@link io.github.jabrena.juno.optimize.CopyPropagation}
  * eliminates a local load whose value an earlier store in the same block already determined.
  * {@link io.github.jabrena.juno.optimize.DeadBlockElimination} then removes any basic block a
- * folded branch left unreachable from its method's entry block.
+ * folded branch left unreachable from its method's entry block, and
+ * {@link io.github.jabrena.juno.optimize.DeadLocalStoreElimination} removes stores to local slots
+ * no remaining instruction reads.
  *
  * <p>Copy propagation uses a conservative CFG meet: a JVM/synthetic local crosses a block boundary
  * only when every predecessor contains the same typed IR value. Conflicting merge values stay as
- * loads. The other passes reason only within a single basic block.
+ * loads. Other method-wide passes only use properties independent of predecessor identity, such as
+ * whether a local slot has any read at all.
  */
 package io.github.jabrena.juno.optimize;
