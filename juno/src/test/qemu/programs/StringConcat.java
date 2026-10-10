@@ -6,7 +6,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
-/** Runtime oracle for javac's StringConcatFactory bootstrap across every supported operand kind. */
+/** javac's StringConcatFactory bootstrap across every supported operand kind, compared with OpenJDK. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public class StringConcat {
 

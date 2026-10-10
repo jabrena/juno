@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.io.serial;
 
 /**
- * JVM oracle for QemuRunIT: shadows the juno artifact's native {@code Serial} and writes to standard output, so
- * the same program source run on a JVM yields the output the compiled program must reproduce under QEMU.
+ * OpenJDK side of QemuRunIT: shadows the juno artifact's native {@code Serial} and writes to standard output, so
+ * the same program source run on OpenJDK yields the output the compiled program must reproduce under QEMU.
  */
 public final class Serial {
     private Serial() {
