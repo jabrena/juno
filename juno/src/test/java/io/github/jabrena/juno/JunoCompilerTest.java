@@ -366,7 +366,7 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rendersDigitsAndTrimsUnusedLetterGlyphs() throws Exception {
+    void rendersDigitsFromTheGlyphTableWithoutAFunctionPerGlyph() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.led.LedCanvas;
@@ -384,11 +384,11 @@ class JunoCompilerTest {
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Digits");
 
         assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame");
-        // A digit-only program reaches drawDigit/packWord/setPixel and nothing from the unused
-        // letter-glyph tables: locked at 22 (main + 21 helpers, including the LedMatrixDigits0to4/
-        // LedMatrixDigits5to9 shard dispatchers, LedCanvas.width() and the 3-word LedMatrix.loadFrame
-        // wrapper), far fewer than every glyph would pull in.
-        assertThat(result.report().reachableMethods()).isEqualTo(22);
+        // The glyphs are one constant table read by index, so drawing a digit reaches no per-glyph
+        // code: locked at 10 (main, drawDigit/packWord/setPixel and their helpers, digitPixel,
+        // charPixel and the 3-word LedMatrix.loadFrame wrapper), where a function per glyph took 22.
+        assertThat(result.report().reachableMethods()).isEqualTo(10);
+        assertThat(result.assembly()).as("the table stays in flash").contains("juno_table_io_github_jabrena_juno_api_led_LedMatrixFontAscii_ROWS__B:");
     }
 
     @Test
