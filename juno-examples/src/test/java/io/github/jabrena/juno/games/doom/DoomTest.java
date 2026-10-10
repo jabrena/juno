@@ -76,12 +76,13 @@ class DoomTest {
     }
 
     @Test
-    void tappingTheMapNameOrFrameRatePausesButThePilotLabelDoesNot() {
-        assertThat(Controls.pausesAt(300, 205)).as("map row").isTrue();
-        assertThat(Controls.pausesAt(300, 232)).as("FPS row").isTrue();
-        assertThat(Controls.pausesAt(300, 219)).as("pilot label").isFalse();
+    void tappingTheFacePausesButTheOtherPanelsDoNot() {
+        assertThat(Controls.pausesAt(192, 220)).as("the face").isTrue();
+        assertThat(Controls.pausesAt(173, 201)).as("the face's corner").isTrue();
+        assertThat(Controls.pausesAt(150, 220)).as("arms panel").isFalse();
         assertThat(Controls.pausesAt(250, 219)).as("armor panel").isFalse();
-        assertThat(Controls.pausesAt(300, 150)).as("the view").isFalse();
+        assertThat(Controls.pausesAt(300, 205)).as("map row").isFalse();
+        assertThat(Controls.pausesAt(192, 150)).as("the view").isFalse();
     }
 
     @Test

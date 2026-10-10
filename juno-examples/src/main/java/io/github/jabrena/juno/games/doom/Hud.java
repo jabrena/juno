@@ -17,6 +17,9 @@ final class Hud {
     static final int ARMS_LEFT = 124;
     static final int ARMS_RIGHT = 172;
     static final int ARMS_LABEL_Y = BAR_Y + 24;
+    /** The face's panel, whose tap {@link Controls} takes to pause the game. */
+    static final int FACE_LEFT = 172;
+    static final int FACE_RIGHT = 212;
 
     private static final int STONE = TftTouchShield.color(88, 84, 78);
     private static final int STONE_LIGHT = TftTouchShield.color(140, 135, 125);

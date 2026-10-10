@@ -254,8 +254,8 @@ final class Interludes {
      * to the game's title.
      */
     /**
-     * The game paused over the view, from a tap on the status bar's map panel: carry on where it stopped, or quit to
-     * the title. Returns whether the player quits.
+     * The game paused over the view, from a tap on the marine's face in the status bar: carry on where it stopped, or
+     * quit to the title. Returns whether the player quits.
      */
     static boolean paused() {
         Controls.waitForRelease();

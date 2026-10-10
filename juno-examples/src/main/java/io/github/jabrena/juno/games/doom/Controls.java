@@ -7,8 +7,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * Pilot selection and touch controls. A HUMAN marine turns with the left and right thirds of the
  * view, walks forward with the upper half of the middle, fires with its lower half and changes weapon on the status
  * bar's arms panel; the CPU marine walks the map's route and shoots what it meets with the weapon that hits hardest.
- * Tapping the CPU/HUMAN label switches between the two at any time; tapping the map's name or the frame rate beside it
- * pauses the game.
+ * Tapping the CPU/HUMAN label switches between the two at any time; tapping the marine's face pauses the game.
  */
 final class Controls {
     private static final float TURN = 0.09f;
@@ -72,12 +71,12 @@ final class Controls {
         return -1;
     }
 
-    /** Whether ({@code x}, {@code y}) is on the map panel's name or frame rate, which pause the game. */
+    /** Whether ({@code x}, {@code y}) is on the marine's face in the status bar, which pauses the game. */
     static boolean pausesAt(int x, int y) {
-        return x >= PILOT_LEFT && y >= DisplayList.VIEW_BOTTOM && (y < PILOT_TOP || y >= PILOT_BOTTOM);
+        return x >= Hud.FACE_LEFT && x < Hud.FACE_RIGHT && y >= DisplayList.VIEW_BOTTOM;
     }
 
-    /** Whether the map panel (the map's name or the frame rate) was tapped to pause the game; asks only once. */
+    /** Whether the marine's face was tapped to pause the game; asks only once. */
     static boolean pauseTapped() {
         boolean tapped = pauseTapped;
         pauseTapped = false;
