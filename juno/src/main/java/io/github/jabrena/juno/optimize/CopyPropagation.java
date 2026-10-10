@@ -5,28 +5,42 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
+import io.github.jabrena.juno.ir.IrValues;
 import io.github.jabrena.juno.ir.Value;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
- * Eliminates a {@link IrInstruction.LoadLocal} when an earlier {@link IrInstruction.StoreLocal} in the same
- * basic block determines the slot's value. Uses of the load's target are rewritten to the stored value.
+ * Eliminates a {@link IrInstruction.LoadLocal} when preceding stores determine the slot's value. Uses of the
+ * load's target are rewritten to the stored value.
  *
- * <p>Knowledge is deliberately discarded at every block boundary. JVM operand-stack positions are represented
- * as local slots in Juno IR, and different predecessor blocks may store different values into the same slot
- * before a merge. Propagating through such a merge requires a separate CFG data-flow analysis; limiting this
- * pass to one block keeps it sound while still removing the store/load round trips around most lowered JVM
- * instructions. Field loads are never propagated: in particular, every {@code volatile} field read remains an
- * actual memory read across calls and loop backedges.
+ * <p>A forward CFG data-flow analysis intersects predecessor states: knowledge crosses a block boundary only
+ * when every predecessor carries the exact same typed IR value in that local slot. Conflicting branch values
+ * become unknown. The transformation repeats until no load can be removed, allowing a propagated load/store
+ * chain to expose another fact in the next iteration. Field loads are never treated as memory facts: every
+ * {@code volatile} field read remains an actual read across calls and loop backedges.
  */
 public final class CopyPropagation implements CompilerPass {
     @Override
     public IrProgram apply(IrProgram program) {
+        IrProgram current = program;
+        while (true) {
+            IrProgram propagated = propagateOnce(current);
+            if (propagated.equals(current)) {
+                return propagated;
+            }
+            current = propagated;
+        }
+    }
+
+    private IrProgram propagateOnce(IrProgram program) {
         List<IrMethod> methods = new ArrayList<>();
         for (IrMethod method : program.methods()) {
             methods.add(propagateMethod(method));
@@ -35,23 +49,113 @@ public final class CopyPropagation implements CompilerPass {
     }
 
     private IrMethod propagateMethod(IrMethod method) {
+        Map<Integer, Set<Integer>> predecessors = predecessors(method);
+        Set<Value> crossBlockValues = crossBlockValues(method);
+        Map<Integer, Map<Integer, Value>> outgoing = new LinkedHashMap<>();
+        boolean changed;
+        do {
+            changed = false;
+            for (int index = 0; index < method.blocks().size(); index++) {
+                IrBasicBlock block = method.blocks().get(index);
+                Map<Integer, Value> incoming = index == 0 ? Map.of()
+                        : meet(predecessors.getOrDefault(block.start(), Set.of()), outgoing);
+                Map<Integer, Value> transferred = propagateBlock(block, incoming, crossBlockValues).outgoing();
+                if (!transferred.equals(outgoing.put(block.start(), transferred))) {
+                    changed = true;
+                }
+            }
+        } while (changed);
+
         List<IrBasicBlock> blocks = new ArrayList<>();
-        for (IrBasicBlock block : method.blocks()) {
-            blocks.add(propagateBlock(block));
+        for (int index = 0; index < method.blocks().size(); index++) {
+            IrBasicBlock block = method.blocks().get(index);
+            Map<Integer, Value> incoming = index == 0 ? Map.of()
+                    : meet(predecessors.getOrDefault(block.start(), Set.of()), outgoing);
+            blocks.add(propagateBlock(block, incoming, crossBlockValues).block());
         }
         return new IrMethod(method.reference(), method.isStatic(), method.maxLocals(), method.values(),
                 method.arrayDeclarations(), List.copyOf(blocks));
     }
 
-    private IrBasicBlock propagateBlock(IrBasicBlock block) {
-        Map<Integer, Value> storedValues = new HashMap<>();
+    private Set<Value> crossBlockValues(IrMethod method) {
+        Map<Value, Integer> blocksSeen = new HashMap<>();
+        for (IrBasicBlock block : method.blocks()) {
+            Set<Value> values = new LinkedHashSet<>();
+            block.instructions().forEach(instruction -> values.addAll(IrValues.of(instruction)));
+            values.addAll(IrValues.of(block.terminator()));
+            values.forEach(value -> blocksSeen.merge(value, 1, Integer::sum));
+        }
+        Set<Value> result = new LinkedHashSet<>();
+        blocksSeen.forEach((value, count) -> {
+            if (count > 1) {
+                result.add(value);
+            }
+        });
+        return Set.copyOf(result);
+    }
+
+    private Map<Integer, Set<Integer>> predecessors(IrMethod method) {
+        Map<Integer, Set<Integer>> predecessors = new LinkedHashMap<>();
+        for (IrBasicBlock block : method.blocks()) {
+            predecessors.putIfAbsent(block.start(), new LinkedHashSet<>());
+        }
+        for (IrBasicBlock block : method.blocks()) {
+            for (int successor : successors(block.terminator())) {
+                Set<Integer> incoming = predecessors.get(successor);
+                if (incoming != null) {
+                    incoming.add(block.start());
+                }
+            }
+        }
+        return predecessors;
+    }
+
+    private List<Integer> successors(IrTerminator terminator) {
+        return switch (terminator) {
+            case IrTerminator.Jump jump -> List.of(jump.target());
+            case IrTerminator.Branch branch -> List.of(branch.trueTarget(), branch.falseTarget());
+            case IrTerminator.Return ignored -> List.of();
+            case IrTerminator.Switch switched -> {
+                List<Integer> targets = new ArrayList<>(switched.targets());
+                targets.add(switched.defaultTarget());
+                yield targets;
+            }
+        };
+    }
+
+    private Map<Integer, Value> meet(Set<Integer> predecessors,
+                                     Map<Integer, Map<Integer, Value>> outgoing) {
+        Map<Integer, Value> result = null;
+        for (int predecessor : predecessors) {
+            Map<Integer, Value> state = outgoing.get(predecessor);
+            if (state == null) {
+                continue;
+            }
+            if (result == null) {
+                result = new HashMap<>(state);
+            } else {
+                result.entrySet().removeIf(entry -> !entry.getValue().equals(state.get(entry.getKey())));
+            }
+        }
+        return result == null ? Map.of() : Map.copyOf(result);
+    }
+
+    /**
+     * The block with its determined loads removed, and the slot facts at its end. Those facts must come from the
+     * rewritten stores: a store of a load this block removes now stores that load's replacement, and a successor
+     * rewritten to the removed load's target would read a value nothing defines any more.
+     */
+    private Propagated propagateBlock(IrBasicBlock block, Map<Integer, Value> incoming,
+                                      Set<Value> crossBlockValues) {
+        Map<Integer, Value> storedValues = new HashMap<>(incoming);
         Map<Value, Value> replacements = new HashMap<>();
         List<IrInstruction> instructions = new ArrayList<>();
 
         for (IrInstruction instruction : block.instructions()) {
             if (instruction instanceof IrInstruction.LoadLocal load) {
                 Value stored = storedValues.get(load.local());
-                if (stored != null && stored.type() == load.target().type()) {
+                if (stored != null && stored.type() == load.target().type()
+                        && !crossBlockValues.contains(load.target())) {
                     replacements.put(load.target(), resolve(replacements, stored));
                     continue;
                 }
@@ -66,8 +170,11 @@ public final class CopyPropagation implements CompilerPass {
             }
         }
 
-        return new IrBasicBlock(block.start(), List.copyOf(instructions),
-                rewriteTerminator(block.terminator(), replacements));
+        return new Propagated(new IrBasicBlock(block.start(), List.copyOf(instructions),
+                rewriteTerminator(block.terminator(), replacements)), Map.copyOf(storedValues));
+    }
+
+    private record Propagated(IrBasicBlock block, Map<Integer, Value> outgoing) {
     }
 
     private IrInstruction rewriteInstruction(IrInstruction instruction, Map<Value, Value> replacements) {

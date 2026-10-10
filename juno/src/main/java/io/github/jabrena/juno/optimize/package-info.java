@@ -10,9 +10,8 @@
  * {@link io.github.jabrena.juno.optimize.DeadBlockElimination} then removes any basic block a
  * folded branch left unreachable from its method's entry block.
  *
- * <p>Every pass deliberately reasons only within a single basic block — JVM operand-stack
- * positions are represented as local slots that different predecessor blocks can store different
- * values into, so seeing across a block boundary soundly would need a separate CFG data-flow
- * analysis these passes don't attempt.
+ * <p>Copy propagation uses a conservative CFG meet: a JVM/synthetic local crosses a block boundary
+ * only when every predecessor contains the same typed IR value. Conflicting merge values stay as
+ * loads. The other passes reason only within a single basic block.
  */
 package io.github.jabrena.juno.optimize;
