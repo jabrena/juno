@@ -139,15 +139,15 @@ Drive a tank through a wireframe maze and destroy the flying hunters before time
 
 ### DOOM
 
-<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield: the lava cover, then the CPU autopilot walking E1M1 until it dies" width="320">
+<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield: the lava cover, then the CPU autopilot walking a WAD map" width="320">
 
-Wireframe DOOM in landscape, drawn with DOOM's own BSP renderer: walls, doors and monsters from E1M1. Pick **HUMAN** (touch to turn, walk and fire) or **CPU** (an autopilot that plays like a person and sometimes dies). Runs on the Arduino UNO Q.
+Wireframe DOOM in landscape, drawn with DOOM's own BSP renderer: walls, doors and monsters from all four episodes. Pick **HUMAN** (touch to turn, walk and fire) or **CPU** (an autopilot that plays like a person and sometimes dies), then choose the episode and skill. Movement keeps DOOM's rules: the marine climbs steps of at most 24 units, slides along walls, and cannot pass the windows and other lines the map marks impassable. Runs on the Arduino UNO Q.
 
-At startup the game reads E1M1 from your own `DOOM1.WAD` on the shield's SD card, with `java.io.RandomAccessFile` (see [Storage](/storage)). With no card, no file, or too little arena, it plays a small original test map built into flash instead; DOOM's levels are never committed. Copy `DOOM1.WAD` to the card's root, then build with a bigger arena, since the map is held in RAM:
+At startup the game scans your own `DOOM1.WAD` on the shield's SD card with `java.io.RandomAccessFile` (see [Storage](/storage)), but does not load a map yet. After the menus it loads the selected episode's first map. Reaching an exit opens a DOOM-style intermission with kills, items, discovered secrets and elapsed time before the following map loads. Finishing E?M8 opens an episode story card and then returns to the title; tapping the title opens the pilot, episode and skill menus again. Difficulty controls the WAD's easy, medium and hard monster and pickup placements. With no card, no file, or too little arena, it plays a small original test map built into flash instead; DOOM's levels are never committed. Copy `DOOM1.WAD` to the card's root, then build with a bigger arena, since the largest supported map tables are held in RAM:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.doom.Doom -Djuno.Xmx=26k
+  -Djuno.main=io.github.jabrena.juno.games.doom.Doom -Djuno.Xmx=92k
 ```
 
 ### Lunar Lander
