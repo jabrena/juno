@@ -4,7 +4,7 @@ description: "Reading and writing over USB serial."
 layout: page
 ---
 
-[`Serial`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/serial/Serial.java) is a compiler
+[`Serial`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/serial/Serial.java) is a compiler
 intrinsic that wraps the Arduino core's USB serial port (`Serial.begin`/`print`/`println`). It is
 the primary way a Juno program talks back to the development machine while it runs on real
 hardware.
@@ -54,7 +54,7 @@ Serial.println(e.getMessage());       // runtime String (prints "null" for null)
 
 | Method | Argument | Notes |
 |---|---|---|
-| `begin(BaudRate)` | a [`BaudRate`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/serial/BaudRate.java) constant | preferred; keeps the rate and the monitor's config in sync |
+| `begin(BaudRate)` | a [`BaudRate`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/serial/BaudRate.java) constant | preferred; keeps the rate and the monitor's config in sync |
 | `begin(int)` | a data rate in bits per second | for a rate `BaudRate` doesn't name |
 | `print(boolean)` / `println(boolean)` | any `boolean` expression | prints `true` or `false` |
 | `print(int)` / `println(int)` | any `int` expression | prints in decimal |

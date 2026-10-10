@@ -18,13 +18,15 @@ closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, T
 
 This is a multi-module Maven build:
 
-- [`juno/`](juno) — the compiler (`classfile`, `bytecode`, `linker`, `backend`, …), plus the
-  Java-facing hardware API it recognizes as intrinsics and the `@Board` annotations used to select
-  a compilation target. Builds the executable `juno/target/juno-<version>.jar`.
+- [`juno-api/`](juno-api) — the programming model: the Java-facing hardware API the compiler
+  recognizes as intrinsics (`api/`) and the `@Board` annotations used to select a compilation
+  target (`annotations/`). This is the only artifact programs compile against.
+- [`juno-compiler/`](juno-compiler) — the compiler (`classfile`, `bytecode`, `linker`, `backend`, …),
+  which depends on `juno-api`. Builds the executable `juno-compiler/target/juno-compiler-<version>.jar`.
 - [`juno-maven-plugin/`](juno-maven-plugin) — Maven goals for generating a sketch (`juno:compile`),
   compiling it with Arduino CLI (`juno:verify`), uploading it (`juno:upload`), and opening the
   serial monitor (`juno:monitor`).
-- [`juno-examples/`](juno-examples) — example Java programs written against `juno`'s API, built
+- [`juno-examples/`](juno-examples) — example Java programs written against `juno-api`, built
   like any other Maven module so they're checked for compile errors on every build.
 - [`juno-site/`](juno-site) — the [Roq](https://iamroq.dev)/Quarkus static site generator behind
   the [documentation site](https://jabrena.github.io/juno/). `docs/` is entirely generated from
@@ -342,9 +344,10 @@ entry point; select another with `-Djuno.main=<class>`):
 - `juno-maven-plugin` wraps the compiler and the Arduino CLI as the `juno:compile`, `juno:verify`,
   `juno:upload`, and `juno:monitor` goals.
 
-The compiler stages, along with the small Java-facing hardware abstraction (`api/`) and the `@Board`
-selection types (`annotations/`), live under
-[`juno/src/main/java/io/github/jabrena/juno/`](juno/src/main/java/io/github/jabrena/juno).
+The compiler stages live under
+[`juno-compiler/src/main/java/io/github/jabrena/juno/`](juno-compiler/src/main/java/io/github/jabrena/juno);
+the small Java-facing hardware abstraction (`api/`) and the `@Board` selection types (`annotations/`)
+live under [`juno-api/src/main/java/io/github/jabrena/juno/`](juno-api/src/main/java/io/github/jabrena/juno).
 
 ## Development
 
@@ -359,14 +362,14 @@ All commands use the Maven wrapper (`./mvnw`) from the repository root, with the
 
 ### Run generated code on a toolchain
 
-Both profiles live in the `juno` module, need Docker and are opt-in, because they start containers.
+Both profiles live in the `juno-compiler` module, need Docker and are opt-in, because they start containers.
 
 ```bash
 # Compile the small API and shield fixtures for each board with the real arduino-cli (does not touch hardware)
-./mvnw -f juno/pom.xml -Parduino-cli verify
+./mvnw -pl juno-compiler -am -Parduino-cli verify
 
 # Run the core-feature programs under QEMU (Cortex-M4) and compare their serial output with OpenJDK's
-./mvnw -f juno/pom.xml -Pqemu verify
+./mvnw -pl juno-compiler -am -Pqemu verify
 ```
 
 ### Code quality

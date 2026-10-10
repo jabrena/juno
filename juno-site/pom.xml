@@ -171,7 +171,7 @@
                                     <goal>javadoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourcepath>${project.basedir}/../juno/src/main/java</sourcepath>
+                                    <sourcepath>${project.basedir}/../juno-api/src/main/java${path.separator}${project.basedir}/../juno-compiler/src/main/java</sourcepath>
                                     <outputDirectory>${project.basedir}/../docs/javadocs/${project.version}</outputDirectory>
                                     <doclint>none</doclint>
                                 </configuration>

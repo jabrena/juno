@@ -4,15 +4,15 @@ description: "The ELEGOO 2.8-inch ILI9341 touch shield API: drawing, touch input
 layout: page
 ---
 
-[`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java)
+[`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java)
 drives the ELEGOO 2.8" TFT touch screen shield for UNO ("Pantalla Táctil TFT de 2,8 pulgadas"): a
 240x320 ILI9341 color display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a
 microSD socket.
 
 It needs no extra Arduino library. Control lines and the touch panel use
-[`Gpio`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/Gpio.java) pin operations and
-[`Delay`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java); the display's bytes go
-through [`ParallelBus`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/ParallelBus.java),
+[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/Gpio.java) pin operations and
+[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/Delay.java); the display's bytes go
+through [`ParallelBus`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/ParallelBus.java),
 a compiler intrinsic that resolves the eight data pins and the write strobe to their GPIO ports once and then
 writes a whole port per store (the UNO R4's port set/reset registers, the UNO Q's Zephyr raw port API). A run of
 one color is a single call, so pixels stream from the runtime instead of costing a `digitalWrite` per pin. Solid
@@ -77,7 +77,7 @@ if (TftTouchShield.readTouch()) {                      // true while the panel i
 ```
 
 Text uses the same 5x7 ASCII font as the LED matrix
-([`LedMatrixFontAscii`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedMatrixFontAscii.java)).
+([`LedMatrixFontAscii`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/led/LedMatrixFontAscii.java)).
 Each character paints its whole cell in the background color, so printing over older text
 replaces it; pad shorter strings with spaces to erase leftovers.
 

@@ -23,7 +23,13 @@
     <dependencies>
         <dependency>
             <groupId>io.github.jabrena</groupId>
-            <artifactId>juno</artifactId>
+            <artifactId>juno-api</artifactId>
+        </dependency>
+        <!-- Tests drive the compiler directly (JunoCompiler, CompilationRequest) on the example classes. -->
+        <dependency>
+            <groupId>io.github.jabrena</groupId>
+            <artifactId>juno-compiler</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

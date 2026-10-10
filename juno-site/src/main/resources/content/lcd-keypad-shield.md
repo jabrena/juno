@@ -4,15 +4,15 @@ description: "Driving a standard Hitachi HD44780 LCD keypad shield."
 layout: page
 ---
 
-[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java)
+[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java)
 drives the common "LCD Keypad Shield" — a 16x2 HD44780-compatible character LCD in 4-bit mode,
 plus 5 buttons wired through a single resistor ladder into one analog pin — using its standard
 pinout, as used by e.g. [dzindra/lcdkeypad](https://github.com/dzindra/lcdkeypad).
 
-Unlike the [LED matrix](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedMatrix.java), this
+Unlike the [LED matrix](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/led/LedMatrix.java), this
 shield needs no new compiler intrinsic: every operation is built entirely from
-[`Gpio`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/Gpio.java) pin operations and
-[`Delay`](https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java), so it works today on any
+[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/Gpio.java) pin operations and
+[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/Delay.java), so it works today on any
 board Juno's ASM backend targets.
 
 ## Wiring
