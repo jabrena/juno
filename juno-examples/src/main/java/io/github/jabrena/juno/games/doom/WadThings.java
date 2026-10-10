@@ -24,6 +24,7 @@ final class WadThings {
         wad.seek(offset);
         for (int thing = 0; thing < things; thing++) {
             wad.readFully(record, 0, THING_BYTES);
+            Loading.advance(1);
             int x = WadLevel.int16(record, 0);
             int y = WadLevel.int16(record, 2);
             int type = WadLevel.int16(record, 6);

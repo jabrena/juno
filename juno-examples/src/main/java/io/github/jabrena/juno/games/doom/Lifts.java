@@ -142,11 +142,13 @@ final class Lifts {
             return false;
         }
         if (lines == 0 && doorTags == 0) {
+            Loading.advance(World.sectors);
             return true;
         }
         for (int s = 0; s < World.sectors; s++) {
             wad.seek(sectors + s * sectorBytes + sectorBytes - 2);
             wad.readFully(record, 0, 2);
+            Loading.advance(1);
             int sectorTag = WadLevel.int16(record, 0);
             if (sectorTag == 0) {
                 continue;

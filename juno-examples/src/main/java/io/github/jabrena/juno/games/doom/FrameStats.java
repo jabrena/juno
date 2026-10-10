@@ -89,7 +89,10 @@ final class FrameStats {
         Serial.print(DisplayList.pixels / PERIOD);
         Serial.print(" dropped=");
         Serial.print(DisplayList.dropped);
-        // Where the marine is, the waypoint the CPU walks to, health, and how many routes were planned so far.
+        // The frame rate where the marine is, so slow spots of a map show up, then the waypoint the CPU walks to,
+        // health, and how many routes were planned so far.
+        Serial.print(" fps=");
+        Serial.print(currentFps);
         Serial.print(" cpu=");
         Serial.print((int) Player.x);
         Serial.print(",");

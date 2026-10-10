@@ -83,6 +83,7 @@ final class Interludes {
         flood();
         plaque(52, 88, 216, 64);
         showMapMessage("LOADING ", 108, 3, TftTouchShield.YELLOW);
+        Loading.show(72, 136, 160);
     }
 
     /** A dark plaque with a double red edge, holding the title or the blinking prompt over the lava. */
@@ -97,7 +98,7 @@ final class Interludes {
         Hud.showCentered(on ? "TAP TO PLAY" : "           ", PROMPT_Y + 8, 2, TftTouchShield.WHITE);
     }
 
-    /** The DOOM-style tally shown after the exit; a tap reads the next map (or ends the episode). */
+    /** The DOOM-style tally shown after the exit; the next map is read while it shows. */
     static void complete(int elapsedMillis, byte[] taken) {
         flood();
         plaque(14, 8, 292, 224);
@@ -111,11 +112,20 @@ final class Interludes {
         statistic("ITEMS", Campaign.itemsFound(taken, World.items), World.items, 121);
         statistic("SECRETS", World.secretsFound, World.secrets, 151);
         time(elapsedMillis, 183);
-        waitForNextMap();
     }
 
-    /** Blinks what a tap leads to under the tally, naming the next map, until the screen is tapped. */
-    private static void waitForNextMap() {
+    /** Says under the tally which map is being read, while it loads and the CPU's route is planned. */
+    static void tallyLoading() {
+        Hud.showCentered("                                  ", 215, 1, TftTouchShield.YELLOW);
+        showMapMessage("LOADING ", 215, 1, TftTouchShield.YELLOW);
+        Loading.show(70, 203, 160);
+    }
+
+    /**
+     * Blinks what a tap leads to under the tally until the screen is tapped: the map just loaded, the episode's end,
+     * or the built-in map once more.
+     */
+    static void waitToPlay() {
         boolean tapped = false;
         int frame = 0;
         while (!tapped) {
@@ -126,7 +136,7 @@ final class Interludes {
                 Hud.showCentered(on ? "EPISODE COMPLETE - TAP TO CONTINUE" : "                                  ",
                         215, 1, TftTouchShield.YELLOW);
             } else if (on) {
-                showNextMapPrompt();
+                showMapMessage("TAP TO PLAY ", 215, 1, TftTouchShield.YELLOW);
             } else {
                 Hud.showCentered("                ", 215, 1, TftTouchShield.YELLOW);
             }
@@ -135,19 +145,6 @@ final class Interludes {
             Delay.millis(FRAME_MILLIS);
         }
         Controls.waitForRelease();
-    }
-
-    /** "TAP TO LOAD EeMm" for the map after the one just finished. */
-    private static void showNextMapPrompt() {
-        String prefix = "TAP TO LOAD ";
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, DisplayList.BACKGROUND);
-        TftTouchShield.setCursor((DisplayList.WIDTH - (prefix.length() + 4) * 6) / 2, 215);
-        TftTouchShield.print(prefix);
-        TftTouchShield.print("E");
-        TftTouchShield.print(World.episode);
-        TftTouchShield.print("M");
-        TftTouchShield.print(World.map + 1);
     }
 
     /** A distinct story card shown after E?M8; a tap returns to the game title. */

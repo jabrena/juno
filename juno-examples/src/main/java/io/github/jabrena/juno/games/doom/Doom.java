@@ -59,7 +59,7 @@ public final class Doom {
         Controls.choosePilot();
         chooseGame();
         Random.seed(Clock.micros());
-        enterLevel(ceilings, monsters, shots, taken);
+        enterLevel(ceilings, monsters, shots, taken, true);
 
         int next = Clock.millis();
         int mapStarted = next;
@@ -98,15 +98,21 @@ public final class Doom {
                 Hud.drawStatus();
             }
             if (Campaign.mapWon(monsters)) {
+                // The next map is read and its route planned while the tally shows; a tap then starts it.
                 Interludes.complete(Clock.millis() - mapStarted, taken);
-                if (Campaign.episodeFinished() || !nextMap()) {
+                boolean ready = !World.fromWad || !Campaign.episodeFinished() && nextMap(true);
+                if (ready) {
+                    World.planRoute();
+                }
+                Interludes.waitToPlay();
+                if (!ready) {
                     // The episode story returns to the title, then the pilot, episode and skill menus.
                     Interludes.episodeComplete();
                     Interludes.title();
                     Controls.choosePilot();
                     chooseGame();
                 }
-                enterLevel(ceilings, monsters, shots, taken);
+                enterLevel(ceilings, monsters, shots, taken, !ready);
                 next = Clock.millis();
                 mapStarted = next;
             } else if (Player.health == 0) {
@@ -116,7 +122,7 @@ public final class Doom {
                     Controls.choosePilot();
                     chooseGame();
                 }
-                enterLevel(ceilings, monsters, shots, taken);
+                enterLevel(ceilings, monsters, shots, taken, true);
                 next = Clock.millis();
                 mapStarted = next;
             }
@@ -136,21 +142,26 @@ public final class Doom {
             Episodes.choose();
             Skills.choose();
             World.map = 0;
-            loaded = nextMap();
+            loaded = nextMap(false);
         }
     }
 
     /**
-     * Loads the episode's next map, skipping any that does not load (too large or missing); {@code false} once the
-     * episode's last map is done. The built-in map simply starts over.
+     * Loads the episode's next map, skipping any that does not load (too large or missing), saying so on the tally
+     * ({@code overTally}) or on a loading screen; {@code false} once the episode's last map is done. The built-in
+     * map simply starts over.
      */
-    private static boolean nextMap() {
+    private static boolean nextMap(boolean overTally) {
         if (!World.fromWad) {
             return true;
         }
         while (World.map < World.LAST_MAP) {
             World.map = World.map + 1;
-            Interludes.loadingMap();
+            if (overTally) {
+                Interludes.tallyLoading();
+            } else {
+                Interludes.loadingMap();
+            }
             if (World.loadMap()) {
                 return true;
             }
@@ -160,12 +171,14 @@ public final class Doom {
 
     /**
      * Starts the map afresh: the marine at the start, every monster back at its post, every item in place, and the
-     * CPU's route planned again from the start.
+     * CPU's route planned again from the start, unless it was already planned while the tally showed.
      */
-    private static void enterLevel(short[] ceilings, short[] monsters, short[] shots, byte[] taken) {
+    private static void enterLevel(short[] ceilings, short[] monsters, short[] shots, byte[] taken, boolean plan) {
         Lifts.reset();
         Player.spawn(ceilings);
-        World.planRoute();
+        if (plan) {
+            World.planRoute();
+        }
         Monsters.reset(monsters, shots);
         Items.reset(taken);
         Weapon.reset();

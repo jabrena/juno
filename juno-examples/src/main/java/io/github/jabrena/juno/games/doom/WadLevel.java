@@ -103,6 +103,17 @@ final class WadLevel {
         if (!count(lumps)) {
             return false;
         }
+        int things = lumps[2 * THINGS + 1] / WadThings.THING_BYTES;
+        Loading.beginLoad(World.vertices + 2 * World.sectors + 3 * World.lines + World.segs + World.subsectors
+                + World.nodes + things, World.subsectors);
+        boolean read = readRecords(wad, record, lumps, things);
+        Loading.endLoad();
+        return read;
+    }
+
+    /** The map's lumps into {@link World}, each record advancing {@link Loading}'s bar. */
+    private static boolean readRecords(RandomAccessFile wad, byte[] record, int[] lumps, int things)
+            throws IOException {
         readVertices(wad, record, lumps[2 * VERTEXES]);
         readSectors(wad, record, lumps[2 * SECTORS]);
         if (!readLines(wad, record, lumps[2 * LINEDEFS], lumps[2 * SIDEDEFS])
@@ -113,7 +124,7 @@ final class WadLevel {
         readSegs(wad, record, lumps[2 * SEGS]);
         readSubsectors(wad, record, lumps[2 * SSECTORS]);
         readNodes(wad, record, lumps[2 * NODES]);
-        if (!WadThings.read(wad, record, lumps[2 * THINGS], lumps[2 * THINGS + 1] / WadThings.THING_BYTES)) {
+        if (!WadThings.read(wad, record, lumps[2 * THINGS], things)) {
             return false;
         }
         // Until RoutePlanner replaces it, the route is just the start: the CPU stands and fights.
@@ -155,6 +166,7 @@ final class WadLevel {
         wad.seek(offset);
         for (int i = 0; i < World.vertices; i++) {
             wad.readFully(record, 0, VERTEX_BYTES);
+            Loading.advance(1);
             World.vertexX[i] = int16(record, 0);
             World.vertexY[i] = int16(record, 2);
         }
@@ -165,6 +177,7 @@ final class WadLevel {
         World.clearSectorSecrets();
         for (int i = 0; i < World.sectors; i++) {
             wad.readFully(record, 0, SECTOR_BYTES);
+            Loading.advance(1);
             World.sectorFloor[i] = int16(record, 0);
             World.sectorCeiling[i] = int16(record, 2);
             if (int16(record, 22) == 9) {
@@ -194,6 +207,7 @@ final class WadLevel {
         for (int line = 0; line < World.lines; line++) {
             wad.seek(offset + line * LINEDEF_BYTES);
             wad.readFully(record, 0, LINEDEF_BYTES);
+            Loading.advance(3);
             int v1 = int16(record, 0) & 0xFFFF;
             int v2 = int16(record, 2) & 0xFFFF;
             World.setLineFlags(line, int16(record, 4));
@@ -277,6 +291,7 @@ final class WadLevel {
         wad.seek(offset);
         for (int i = 0; i < World.segs; i++) {
             wad.readFully(record, 0, SEG_BYTES);
+            Loading.advance(1);
             World.segV1[i] = int16(record, 0);
             World.segV2[i] = int16(record, 2);
             World.segLine[i] = int16(record, 6);
@@ -289,6 +304,7 @@ final class WadLevel {
         wad.seek(offset);
         for (int i = 0; i < World.subsectors; i++) {
             wad.readFully(record, 0, SUBSECTOR_BYTES);
+            Loading.advance(1);
             int first = int16(record, 2);
             World.subsectorCount[i] = int16(record, 0);
             World.subsectorFirst[i] = (short) first;
@@ -301,6 +317,7 @@ final class WadLevel {
         wad.seek(offset);
         for (int i = 0; i < World.nodes; i++) {
             wad.readFully(record, 0, NODE_BYTES);
+            Loading.advance(1);
             World.nodeX[i] = int16(record, 0);
             World.nodeY[i] = int16(record, 2);
             World.nodeDx[i] = int16(record, 4);
