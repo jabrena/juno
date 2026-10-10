@@ -13,12 +13,13 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  */
 final class Loading {
     /**
-     * Initial rates, in microseconds per unit, measured on the UNO Q reading from the TFT shield's SD card: each record
-     * costs a seek and a short read (E3M1: 1473 units in 10.2 s), while the planner settles a subsector in about a
-     * millisecond. Each load and plan then refines them.
+     * Initial rates, in microseconds per unit, measured on the UNO Q reading from the TFT shield's SD card: a record
+     * costs a seek and a short read (E1M1 3471 units in 14.5 s, E1M2 7061 in 30.5 s, E1M3 7124 in 30.5 s), and the
+     * planner settles a subsector in 10-30 ms (E1M1 2.3 s over 239, E1M2 8.5 s over 448). Each load and plan then
+     * refines them.
      */
-    private static final int LOAD_MICROS_PER_UNIT = 7000;
-    private static final int PLAN_MICROS_PER_SUBSECTOR = 1500;
+    private static final int LOAD_MICROS_PER_UNIT = 4300;
+    private static final int PLAN_MICROS_PER_SUBSECTOR = 12000;
     private static final int BAR_HEIGHT = 6;
 
     private static int loadRate = LOAD_MICROS_PER_UNIT;
@@ -39,6 +40,9 @@ final class Loading {
     private static int planDone;
     private static int started;
     private static int estimateMillis;
+    /** The rates this load's bar is drawn with: fixed while it runs, so recalibrating cannot pull the bar back. */
+    private static int barLoadRate;
+    private static int barPlanRate;
 
     private Loading() {
     }
@@ -61,7 +65,9 @@ final class Loading {
         loadDone = 0;
         planUnits = Math.max(1, subsectors);
         planDone = 0;
-        estimateMillis = (loadUnits * loadRate + planUnits * planRate) / 1000;
+        barLoadRate = loadRate;
+        barPlanRate = planRate;
+        estimateMillis = (loadUnits * barLoadRate + planUnits * barPlanRate) / 1000;
         started = Clock.millis();
         redraw();
     }
@@ -115,8 +121,19 @@ final class Loading {
         planRate = (planRate + rate) / 2;
         report(" planned over ", planUnits, " subsectors in ", elapsed,
                 (planUnits * PLAN_MICROS_PER_SUBSECTOR) / 1000, rate);
-        planDone = planUnits;
-        redraw();
+        finish();
+    }
+
+    /** Fills the bar and clears the seconds left: the map is ready, whatever the estimate said. */
+    private static void finish() {
+        if (visible) {
+            TftTouchShield.fillRect(barX + drawn, barY, barWidth - drawn, BAR_HEIGHT, TftTouchShield.YELLOW);
+            drawn = barWidth;
+            TftTouchShield.setTextSize(1);
+            TftTouchShield.setTextColor(TftTouchShield.YELLOW, DisplayList.BACKGROUND);
+            TftTouchShield.setCursor(barX + barWidth + 6, barY - 1);
+            TftTouchShield.print("     ");
+        }
         visible = false;
     }
 
@@ -141,7 +158,7 @@ final class Loading {
         if (!visible) {
             return;
         }
-        int doneMicros = loadDone * loadRate + planDone * planRate;
+        int doneMicros = loadDone * barLoadRate + planDone * barPlanRate;
         int totalMicros = Math.max(1, estimateMillis * 1000);
         int width = (int) Math.min(barWidth, (long) doneMicros * barWidth / totalMicros);
         if (width > drawn) {
