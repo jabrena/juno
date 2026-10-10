@@ -81,6 +81,24 @@ public final class Doom {
             if (Controls.handle(ceilings, monsters)) {
                 Hud.drawBar();
             }
+            if (Controls.pauseTapped()) {
+                int pausedAt = Clock.millis();
+                boolean quit = Interludes.paused();
+                if (quit) {
+                    Interludes.title();
+                    Controls.choosePilot();
+                    chooseGame();
+                    enterLevel(ceilings, monsters, shots, taken, false);
+                } else {
+                    // Back where it stopped: the view and status bar drawn afresh, the pause left out of the map's time.
+                    FrameStats.reset();
+                    Hud.drawBar();
+                    DisplayList.clearView();
+                }
+                next = Clock.millis();
+                mapStarted = quit ? next : mapStarted + next - pausedAt;
+                continue;
+            }
             if (Controls.autopilot) {
                 Autopilot.step(ceilings, monsters, taken);
             }

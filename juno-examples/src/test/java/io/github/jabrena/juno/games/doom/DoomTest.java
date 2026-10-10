@@ -76,6 +76,15 @@ class DoomTest {
     }
 
     @Test
+    void tappingTheMapNameOrFrameRatePausesButThePilotLabelDoesNot() {
+        assertThat(Controls.pausesAt(300, 205)).as("map row").isTrue();
+        assertThat(Controls.pausesAt(300, 232)).as("FPS row").isTrue();
+        assertThat(Controls.pausesAt(300, 219)).as("pilot label").isFalse();
+        assertThat(Controls.pausesAt(250, 219)).as("armor panel").isFalse();
+        assertThat(Controls.pausesAt(300, 150)).as("the view").isFalse();
+    }
+
+    @Test
     void eightFortyMillisecondFrameIntervalsReportTwentyFiveFps() {
         FrameStats.reset();
         for (int frame = 0; frame <= 8; frame++) {

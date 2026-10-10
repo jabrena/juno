@@ -21,6 +21,8 @@ final class Interludes {
     private static final int FRAME_MILLIS = 60;
     private static final int DEATH_TOP = 84;
     private static final int DEATH_HEIGHT = 48;
+    private static final int PAUSE_TOP = 70;
+    private static final int PAUSE_HEIGHT = 48;
 
     private static final int EDGE = TftTouchShield.color(215, 70, 30);
     private static final int EDGE_DARK = TftTouchShield.color(120, 25, 12);
@@ -251,6 +253,23 @@ final class Interludes {
      * The card shown when the marine dies, then a choice: {@code true} to restart the map, {@code false} to quit
      * to the game's title.
      */
+    /**
+     * The game paused over the view, from a tap on the status bar's map panel: carry on where it stopped, or quit to
+     * the title. Returns whether the player quits.
+     */
+    static boolean paused() {
+        Controls.waitForRelease();
+        plaque(14, 24, 292, 152);
+        Hud.showCentered("PAUSED", 34, 3, TftTouchShield.RED);
+        Menu.row(0, PAUSE_TOP, PAUSE_HEIGHT, "CONTINUE", "Back to the game", true, false);
+        Menu.row(1, PAUSE_TOP, PAUSE_HEIGHT, "QUIT TO TITLE", "Leave this game", true, false);
+        int row = Menu.choose(PAUSE_TOP, PAUSE_HEIGHT, 2, 3);
+        Menu.row(row, PAUSE_TOP, PAUSE_HEIGHT, row == 0 ? "CONTINUE" : "QUIT TO TITLE",
+                row == 0 ? "Back to the game" : "Leave this game", true, true);
+        Controls.waitForRelease();
+        return row == 1;
+    }
+
     static boolean died() {
         Hud.drawStatus();
         Hud.showCentered("YOU DIED", 110, 4, TftTouchShield.RED);
