@@ -6,7 +6,9 @@ import java.io.RandomAccessFile;
 /** The THINGS lump of a WAD map: where the marine starts and which monsters and pickups {@link WadLevel} places. */
 final class WadThings {
     static final int THING_BYTES = 10;
-    /** THINGS flag bits: placed on Ultra-Violence ("hard") skill, and only in multiplayer. */
+    /** THINGS flag bits: placed on the easy skills (1-2), on Hurt Me Plenty (3), on the hard ones (4-5), multiplayer only. */
+    private static final int SKILL_EASY = 1;
+    private static final int SKILL_MEDIUM = 2;
     private static final int SKILL_HARD = 4;
     private static final int MULTIPLAYER_ONLY = 16;
     private static final int PLAYER_ONE_START = 1;
@@ -14,7 +16,7 @@ final class WadThings {
     private WadThings() {
     }
 
-    /** The player start, plus the monsters and pickups placed on Ultra-Violence in single player. */
+    /** The player start, plus the monsters and pickups the chosen skill ({@link World#skill}) places in single player. */
     static boolean read(RandomAccessFile wad, byte[] record, int offset, int things)
             throws IOException {
         World.monsters = 0;
@@ -26,7 +28,7 @@ final class WadThings {
             int y = WadLevel.int16(record, 2);
             int type = WadLevel.int16(record, 6);
             int flags = WadLevel.int16(record, 8);
-            boolean placed = (flags & SKILL_HARD) != 0 && (flags & MULTIPLAYER_ONLY) == 0;
+            boolean placed = (flags & skillBit()) != 0 && (flags & MULTIPLAYER_ONLY) == 0;
             int monster = monsterKind(type);
             int item = itemKind(type);
             if (type == PLAYER_ONE_START) {
@@ -54,13 +56,21 @@ final class WadThings {
         return true;
     }
 
-    /** The monster kinds the engine animates: zombieman, shotgun sergeant, imp, demon; -1 for anything else. */
+    private static int skillBit() {
+        return World.skill <= 2 ? SKILL_EASY : World.skill == 3 ? SKILL_MEDIUM : SKILL_HARD;
+    }
+
+    /**
+     * The monster kinds the engine animates: zombieman, shotgun sergeant, imp, demon; -1 for anything else. Later
+     * episodes' monsters take the kind that fights most like them: the spectre and the lost soul bite like a demon,
+     * the cacodemon, baron and cyberdemon throw fireballs like an imp, the spider mastermind fires like a sergeant.
+     */
     private static int monsterKind(int type) {
         return switch (type) {
             case 3004 -> 0;
-            case 9 -> 1;
-            case 3001 -> 2;
-            case 3002 -> 3;
+            case 9, 7 -> 1;
+            case 3001, 3005, 3003, 16 -> 2;
+            case 3002, 58, 3006 -> 3;
             default -> -1;
         };
     }

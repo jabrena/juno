@@ -3,13 +3,20 @@ package io.github.jabrena.juno.games.doom;
 /**
  * Where the marine stands and looks, how they walk, and the doors they open. Movement follows DOOM's
  * rules closely enough for a walk-through: a step up of at most 24 units, at least 56 units of
- * headroom, and no crossing a one-sided wall.
+ * headroom, no crossing a one-sided wall or a line the map marks impassable (most windows), and a move
+ * into a wall slides along it instead of stopping.
  */
 final class Player {
     static final float EYE_HEIGHT = 41f;
     static final int MAX_STEP = 24;
     static final int HEADROOM = 56;
-    private static final int EXIT_REACH = 56;
+    /**
+     * How close the marine's body, and so the camera, comes to a wall: enough that a wall in view always lies beyond
+     * the renderer's near plane (4 units, at up to 45 degrees off the view), so the camera never sees past it. DOOM's
+     * own 16 made doorways and corners too tight for the CPU's routes.
+     */
+    static final float RADIUS = 8f;
+    private static final float USE_RANGE = 64f;
     private static final int DOOR_REACH = 200;
     private static final int DOOR_FORGET = 520;
     private static final int DOOR_SPEED = 6;
@@ -46,6 +53,8 @@ final class Player {
             ceilings[s] = World.sectorCeiling[s];
         }
         sector = sectorAt(x, y);
+        World.resetFoundSecrets();
+        World.visitSector(sector);
         eye = World.sectorFloor[sector] + EYE_HEIGHT;
         health = FULL_HEALTH;
         armor = 0;
@@ -54,11 +63,11 @@ final class Player {
     }
 
     /**
-     * Takes a hit at "I'm too young to die" strength (DOOM halves every hit on its easiest skill), with
-     * the share the armor absorbs taken from the armor instead.
+     * Takes a hit, halved on "I'm Too Young to Die" (DOOM's easiest skill), with the share the armor absorbs taken
+     * from the armor instead.
      */
     static void damage(int amount) {
-        int taken = (amount + 1) / 2;
+        int taken = World.skill == 1 ? (amount + 1) / 2 : amount;
         int absorbed = armorClass == 2 ? taken / 2 : armorClass == 1 ? taken / 3 : 0;
         absorbed = Math.min(absorbed, armor);
         armor = armor - absorbed;
@@ -78,29 +87,66 @@ final class Player {
         }
     }
 
-    /** Walks {@code distance} units along the view direction, unless a wall or a step is in the way. */
+    /** Walks {@code distance} units along the view direction, sliding along a wall or step that is in the way. */
     static boolean walk(float distance, short[] ceilings) {
-        float toX = x + distance * (float) Math.cos(angle);
-        float toY = y + distance * (float) Math.sin(angle);
-        if (blocked(x, y, toX, toY, ceilings)) {
-            return false;
-        }
-        x = toX;
-        y = toY;
-        sector = sectorAt(x, y);
-        return true;
+        return move(x + distance * (float) Math.cos(angle), y + distance * (float) Math.sin(angle), ceilings);
     }
 
-    /** Sidesteps {@code distance} units to the right of the view (left when negative), unless blocked. */
+    /** Sidesteps {@code distance} units to the right of the view (left when negative), sliding along walls. */
     static boolean strafe(float distance, short[] ceilings) {
-        float toX = x + distance * (float) Math.sin(angle);
-        float toY = y - distance * (float) Math.cos(angle);
+        return move(x + distance * (float) Math.sin(angle), y - distance * (float) Math.cos(angle), ceilings);
+    }
+
+    /**
+     * Moves toward ({@code toX}, {@code toY}). Like DOOM, a move that runs into a wall is not simply refused: the
+     * marine slides along it, keeping whichever part of the move (east-west or north-south) is still free, the larger
+     * one first. Returns whether the marine moved at all.
+     */
+    private static boolean move(float toX, float toY, short[] ceilings) {
+        if (free(toX, toY, ceilings)) {
+            return place(toX, toY);
+        }
+        boolean xFirst = Math.abs(toX - x) >= Math.abs(toY - y);
+        float firstX = xFirst ? toX : x;
+        float firstY = xFirst ? y : toY;
+        if ((firstX != x || firstY != y) && free(firstX, firstY, ceilings)) {
+            return place(firstX, firstY);
+        }
+        float secondX = xFirst ? x : toX;
+        float secondY = xFirst ? toY : y;
+        if ((secondX != x || secondY != y) && free(secondX, secondY, ceilings)) {
+            return place(secondX, secondY);
+        }
+        return slideAlongWall(toX, toY, ceilings);
+    }
+
+    /**
+     * Pushes the target out to {@link #RADIUS} from the wall nearest it: how the body rounds a corner or slides
+     * along a wall at an angle, where the move as asked would press it into the wall.
+     */
+    private static boolean slideAlongWall(float toX, float toY, short[] ceilings) {
+        return Clearance.slide(x, y, toX, toY, RADIUS, ceilings) && free(Clearance.pushedX, Clearance.pushedY, ceilings)
+                && place(Clearance.pushedX, Clearance.pushedY);
+    }
+
+    /**
+     * Whether the marine can step to ({@code toX}, {@code toY}): no wall in the way, and the body keeps
+     * {@link #RADIUS} from every wall it cannot pass, or at least gets no closer to one. Without the radius the
+     * point-sized camera slid along walls and pressed into corners, showing the view past them.
+     */
+    private static boolean free(float toX, float toY, short[] ceilings) {
         if (blocked(x, y, toX, toY, ceilings)) {
             return false;
         }
+        float room = Clearance.room(toX, toY, RADIUS, ceilings);
+        return room >= RADIUS || room >= Clearance.room(x, y, RADIUS, ceilings);
+    }
+
+    private static boolean place(float toX, float toY) {
         x = toX;
         y = toY;
         sector = sectorAt(x, y);
+        World.visitSector(sector);
         return true;
     }
 
@@ -115,11 +161,10 @@ final class Player {
         }
     }
 
-    /** Whether the marine stands at the map's exit switch (a map without one parks it far away). */
+    /** Whether the marine is within reach of the map's exit switch; never on a map without one (the built-in map). */
     static boolean atExit() {
-        float dx = World.exitX - x;
-        float dy = World.exitY - y;
-        return dx * dx + dy * dy < EXIT_REACH * EXIT_REACH;
+        // DOOM's use range, measured to the switch's line: the body keeps the marine out of a switch's recess.
+        return World.exitLine >= 0 && Clearance.distanceToLine(x, y, World.exitLine) < USE_RANGE;
     }
 
     /** Opens the doors the marine walks up to and closes the ones left far behind. */
@@ -160,8 +205,20 @@ final class Player {
         return dy * World.nodeDx[node] >= dx * World.nodeDy[node];
     }
 
-    /** Whether walking from one point to another crosses a wall, a step over 24 units or a too-low opening. */
+    /**
+     * Whether walking from one point to another crosses a wall, a line the map marks impassable (most windows), a
+     * step over 24 units or a too-low opening.
+     */
     static boolean blocked(float fromX, float fromY, float toX, float toY, short[] ceilings) {
+        return blocked(fromX, fromY, toX, toY, ceilings, false);
+    }
+
+    /** {@link #blocked} for a monster, which the lines marked impassable to monsters stop as well. */
+    static boolean blockedForMonster(float fromX, float fromY, float toX, float toY, short[] ceilings) {
+        return blocked(fromX, fromY, toX, toY, ceilings, true);
+    }
+
+    private static boolean blocked(float fromX, float fromY, float toX, float toY, short[] ceilings, boolean monster) {
         box(fromX, fromY, toX, toY);
         for (int line = 0; line < World.lines; line++) {
             int v1 = World.lineV1[line];
@@ -180,11 +237,13 @@ final class Player {
             }
             float start = side(fromX, fromY, toX, toY, ax, ay);
             float end = side(fromX, fromY, toX, toY, bx, by);
-            if (start * end >= 0) {
+            // A path through a linedef endpoint still touches the wall. Treating zero as separate let the
+            // point-sized camera slip exactly between two solid walls that share that endpoint.
+            if (start * end > 0) {
                 continue;
             }
             int back = World.lineBack[line];
-            if (back < 0) {
+            if (back < 0 || World.isImpassable(line, monster)) {
                 return true;
             }
             int front = World.lineFront[line];
@@ -192,7 +251,9 @@ final class Player {
             int origin = from < 0 ? front : back;
             int floor = Math.max(World.sectorFloor[front], World.sectorFloor[back]);
             int ceiling = Math.min(ceilings[front], ceilings[back]);
-            if (World.sectorFloor[target] - World.sectorFloor[origin] > MAX_STEP || ceiling - floor < HEADROOM) {
+            boolean riding = Lifts.planning && Lifts.isLiftSector(origin);
+            if (World.sectorFloor[target] - World.sectorFloor[origin] > MAX_STEP && !riding
+                    || ceiling - floor < HEADROOM) {
                 return true;
             }
         }
@@ -223,7 +284,7 @@ final class Player {
             }
             float start = side(ax, ay, bx, by, lx, ly);
             float end = side(ax, ay, bx, by, mx, my);
-            if (start * end >= 0) {
+            if (start * end > 0) {
                 continue;
             }
             if (back < 0) {

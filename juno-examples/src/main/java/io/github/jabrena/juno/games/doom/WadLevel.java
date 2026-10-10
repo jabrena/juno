@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 /**
- * Reads E1M1 out of {@code DOOM1.WAD} on the SD card into {@link World} with {@link RandomAccessFile}, the JDK's
+ * Reads one map (E1M1 to E4M9) out of {@code DOOM1.WAD} on the SD card, when it is chosen or reached, into {@link World} with {@link RandomAccessFile}, the JDK's
  * own random-access API: the header points at the lump directory at the end of the file, the directory points at
  * the map's lumps, and each lump is a packed array of little-endian records read one at a time. Nothing is
  * converted ahead of time; derived data (door heights, which monsters and pickups the map places) is worked out
@@ -35,31 +35,63 @@ final class WadLevel {
     private static final int NODE_BYTES = 28;
     private static final int SECTOR_BYTES = 26;
 
-    /** The switch line special that ends the level (DOOM's S1 exit). */
-    private static final int EXIT_SPECIAL = 11;
+    /** The line specials that end the level: DOOM's S1 exit switch and W1 walk-over exit. */
+    private static final int EXIT_SWITCH = 11;
+    private static final int EXIT_WALK_OVER = 52;
     private static final int NO_EXIT = -30000;
 
     private WadLevel() {
     }
 
-    /** Reads E1M1 from the card's {@code DOOM1.WAD}; {@code false} when the file is missing, broken or too large. */
-    static boolean load() {
+    /** Reads map EeMm from the card's {@code DOOM1.WAD}; {@code false} when the file or map is missing, broken or too large. */
+    static boolean load(int episode, int map) {
         try (RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "r")) {
-            return read(wad);
+            return read(wad, episode, map);
         } catch (IOException missingOrBroken) {
             return false;
         }
     }
 
+    /** Which episodes the card's WAD holds: bit {@code e} set when map EeM1 is there; 0 without a readable WAD. */
+    static int episodes() {
+        try (RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "r")) {
+            return episodes(wad);
+        } catch (IOException missingOrBroken) {
+            return 0;
+        }
+    }
+
+    static int episodes(RandomAccessFile wad) throws IOException {
+        byte[] record = new byte[ENTRY_BYTES];
+        wad.readFully(record, 0, HEADER_BYTES);
+        if (record[1] != 'W' || record[2] != 'A' || record[3] != 'D') {
+            return 0;
+        }
+        int found = 0;
+        for (int episode = 1; episode <= 4; episode++) {
+            if (findMap(wad, record, int32(record, 4), int32(record, 8), episode, 1) >= 0) {
+                found = found | 1 << episode;
+            }
+            wad.seek(0);
+            wad.readFully(record, 0, HEADER_BYTES);
+        }
+        return found;
+    }
+
     /** Reads E1M1 from an open WAD into {@link World}'s WAD-sized tables. */
     static boolean read(RandomAccessFile wad) throws IOException {
+        return read(wad, 1, 1);
+    }
+
+    /** Reads map EeMm from an open WAD into {@link World}'s WAD-sized tables. */
+    static boolean read(RandomAccessFile wad, int episode, int map) throws IOException {
         byte[] record = new byte[NODE_BYTES];
         int[] lumps = new int[2 * LUMPS];
         wad.readFully(record, 0, HEADER_BYTES);
         if (record[1] != 'W' || record[2] != 'A' || record[3] != 'D') {
             return false;
         }
-        int marker = findMap(wad, record, int32(record, 4), int32(record, 8));
+        int marker = findMap(wad, record, int32(record, 4), int32(record, 8), episode, map);
         if (marker < 0) {
             return false;
         }
@@ -73,7 +105,8 @@ final class WadLevel {
         }
         readVertices(wad, record, lumps[2 * VERTEXES]);
         readSectors(wad, record, lumps[2 * SECTORS]);
-        if (!readLines(wad, record, lumps[2 * LINEDEFS], lumps[2 * SIDEDEFS])) {
+        if (!readLines(wad, record, lumps[2 * LINEDEFS], lumps[2 * SIDEDEFS])
+                || !Lifts.resolve(wad, record, lumps[2 * SECTORS], SECTOR_BYTES)) {
             return false;
         }
         placeDoors();
@@ -91,12 +124,14 @@ final class WadLevel {
         return true;
     }
 
-    /** The directory index of the {@code E1M1} marker lump, leaving the file right after its entry; -1 if absent. */
-    private static int findMap(RandomAccessFile wad, byte[] entry, int lumps, int directory) throws IOException {
+    /** The directory index of the EeMm marker lump, leaving the file right after its entry; -1 if absent. */
+    private static int findMap(RandomAccessFile wad, byte[] entry, int lumps, int directory, int episode, int map)
+            throws IOException {
         wad.seek(directory);
         for (int index = 0; index < lumps; index++) {
             wad.readFully(entry, 0, ENTRY_BYTES);
-            if (entry[8] == 'E' && entry[9] == '1' && entry[10] == 'M' && entry[11] == '1' && entry[12] == 0) {
+            if (entry[8] == 'E' && entry[9] == '0' + episode && entry[10] == 'M' && entry[11] == '0' + map
+                    && entry[12] == 0) {
                 return index;
             }
         }
@@ -127,29 +162,43 @@ final class WadLevel {
 
     private static void readSectors(RandomAccessFile wad, byte[] record, int offset) throws IOException {
         wad.seek(offset);
+        World.clearSectorSecrets();
         for (int i = 0; i < World.sectors; i++) {
             wad.readFully(record, 0, SECTOR_BYTES);
             World.sectorFloor[i] = int16(record, 0);
             World.sectorCeiling[i] = int16(record, 2);
+            if (int16(record, 22) == 9) {
+                World.markSecretSector(i);
+            }
         }
     }
 
     /**
      * Linedefs name their sides by sidedef number, and the sector is the sidedef's last field: each side is one
-     * seek into SIDEDEFS. Also collects the door sectors and the exit switch from the line specials.
+     * seek into SIDEDEFS. Also collects the door sectors and the exit switch from the line specials, and hands lift and
+     * remote door lines to {@link Lifts}.
      */
     private static boolean readLines(RandomAccessFile wad, byte[] record, int offset, int sidedefs)
             throws IOException {
         World.doors = 0;
+        Lifts.clear();
         World.exitX = NO_EXIT;
         World.exitY = NO_EXIT;
         World.exitLine = -1;
+        // These arrays are reused for every map, so no previous map's blocking flags may leak into the next one.
+        int words = (World.lines + 15) / 16;
+        for (int word = 0; word < words; word++) {
+            World.lineBlocking[word] = 0;
+            World.lineBlocksMonsters[word] = 0;
+        }
         for (int line = 0; line < World.lines; line++) {
             wad.seek(offset + line * LINEDEF_BYTES);
             wad.readFully(record, 0, LINEDEF_BYTES);
             int v1 = int16(record, 0) & 0xFFFF;
             int v2 = int16(record, 2) & 0xFFFF;
+            World.setLineFlags(line, int16(record, 4));
             int special = int16(record, 6);
+            Lifts.noteLine(line, special, int16(record, 8));
             int right = int16(record, 10);
             int left = int16(record, 12);
             World.lineV1[line] = (short) v1;
@@ -159,7 +208,7 @@ final class WadLevel {
             if (isDoor(special) && left >= 0 && !addDoor(World.lineBack[line])) {
                 return false;
             }
-            if (special == EXIT_SPECIAL && World.exitLine < 0) {
+            if ((special == EXIT_SWITCH || special == EXIT_WALK_OVER) && World.exitLine < 0) {
                 World.exitLine = line;
                 World.exitX = (World.vertexX[v1] + World.vertexX[v2]) / 2;
                 World.exitY = (World.vertexY[v1] + World.vertexY[v2]) / 2;
@@ -180,7 +229,7 @@ final class WadLevel {
                 || special == 117 || special == 118;
     }
 
-    private static boolean addDoor(int sector) {
+    static boolean addDoor(int sector) {
         for (int door = 0; door < World.doors; door++) {
             if (World.doorSector[door] == sector) {
                 return true;

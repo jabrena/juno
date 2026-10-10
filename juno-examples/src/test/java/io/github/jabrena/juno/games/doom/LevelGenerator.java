@@ -119,6 +119,19 @@ public final class LevelGenerator {
                 doorSectors.add(lineBack[line]);
             }
         }
+        // Doors a switch or trigger elsewhere opens, by tag, after the manual ones and in sector order, as Lifts does.
+        Set<Integer> doorTags = new LinkedHashSet<>();
+        for (int line = 0; line < lineCount; line++) {
+            int tag = linedefs.getShort(line * 14 + 8);
+            if (tag != 0 && Lifts.isRemoteDoor(linedefs.getShort(line * 14 + 6))) {
+                doorTags.add(tag);
+            }
+        }
+        for (int sector = 0; sector < sectorCount; sector++) {
+            if (doorTags.contains((int) sectors.getShort(sector * 26 + 24)) && seen.add(sector)) {
+                doorSectors.add(sector);
+            }
+        }
         int exitX = -30000;
         int exitY = -30000;
         for (int line = 0; line < lineCount; line++) {

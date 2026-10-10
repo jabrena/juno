@@ -20,11 +20,15 @@ final class Autopilot {
     private static final float ENGAGE = 1600f;
     private static final float FIELD_OF_VIEW = 1.2f;
     private static final float GRAB = 450f;
+    private static final float EXIT_COMMIT = 512f;
 
     private static boolean detouring;
     private static float detourX;
     private static float detourY;
     private static int stuck;
+    private static float goalX;
+    private static float goalY;
+    private static float bestDistance;
     private static final int GIVE_UP = 40;
 
     private static final float MAX_SPIN = 0.15f;
@@ -49,6 +53,8 @@ final class Autopilot {
     static void restart() {
         target = Math.min(1, World.routeLength - 1);
         detouring = false;
+        stuck = 0;
+        goalX = Float.MAX_VALUE;
         enemy = -1;
         reaction = 0;
         calm = 0;
@@ -64,12 +70,20 @@ final class Autopilot {
      * straight to (or simply the nearest, when none is in reach).
      */
     static void resume(short[] ceilings) {
+        resume(ceilings, -1);
+    }
+
+    private static void resume(short[] ceilings, int avoided) {
         detouring = false;
+        sway = 0;
         float best = Float.MAX_VALUE;
         float bestReachable = Float.MAX_VALUE;
-        int nearest = target;
+        int nearest = target == avoided ? 0 : target;
         int reachable = -1;
         for (int i = 0; i < World.routeLength; i++) {
+            if (i == avoided) {
+                continue;
+            }
             float dx = World.routeX[i] - Player.x;
             float dy = World.routeY[i] - Player.y;
             float distance = dx * dx + dy * dy;
@@ -83,9 +97,14 @@ final class Autopilot {
             }
         }
         target = reachable >= 0 ? reachable : nearest;
+        goalX = Float.MAX_VALUE;
     }
 
     static void step(short[] ceilings, short[] monsters, byte[] taken) {
+        if (committedToExit()) {
+            followRoute(ceilings);
+            return;
+        }
         if (fight(ceilings, monsters)) {
             return;
         }
@@ -108,6 +127,21 @@ final class Autopilot {
             }
             detouring = false;
         }
+        followRoute(ceilings);
+    }
+
+    /** Once the exit is close on the final approach, finishing the map takes priority over combat and pickups. */
+    private static boolean committedToExit() {
+        if (!World.fromWad || World.exitLine < 0 || World.routeLength < 2
+                || target < World.routeLength - 2) {
+            return false;
+        }
+        float dx = World.exitX - Player.x;
+        float dy = World.exitY - Player.y;
+        return dx * dx + dy * dy < EXIT_COMMIT * EXIT_COMMIT;
+    }
+
+    private static void followRoute(short[] ceilings) {
         float dx = World.routeX[target] - Player.x;
         float dy = World.routeY[target] - Player.y;
         if (dx * dx + dy * dy < ARRIVED * ARRIVED) {
@@ -123,20 +157,38 @@ final class Autopilot {
     private static void walkTo(float x, float y, short[] ceilings) {
         float dx = x - Player.x;
         float dy = y - Player.y;
+        if (goalX != x || goalY != y) {
+            goalX = x;
+            goalY = y;
+            bestDistance = (float) Math.sqrt(dx * dx + dy * dy);
+            stuck = 0;
+        }
         sway = Math.max(-0.08f, Math.min(0.08f, sway * 0.97f + random(-0.012f, 0.012f)));
         float heading = Weapon.angleTo(dx, dy) + sway;
         spin = 0;
         Player.turn(Math.max(-TURN, Math.min(TURN, heading)));
         float alignment = Math.abs(heading);
         if (alignment < 0.6f) {
-            stuck = Player.walk(STRIDE * (1f - alignment), ceilings) ? 0 : stuck + 1;
+            Player.walk(STRIDE * (1f - alignment), ceilings);
+            float remainingX = x - Player.x;
+            float remainingY = y - Player.y;
+            float after = (float) Math.sqrt(remainingX * remainingX + remainingY * remainingY);
+            if (after < bestDistance - 1f) {
+                bestDistance = after;
+                stuck = 0;
+            } else {
+                stuck = stuck + 1;
+            }
         }
         if (stuck > GIVE_UP) {
             stuck = 0;
             if (detouring) {
                 detouring = false;
+            } else if (World.fromWad && RoutePlanner.planFrom(Player.x, Player.y)) {
+                target = Math.min(1, World.routeLength - 1);
+                goalX = Float.MAX_VALUE;
             } else {
-                target = target + 1 == World.routeLength ? World.loopStart : target + 1;
+                resume(ceilings, target);
             }
         }
     }

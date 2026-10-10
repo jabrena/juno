@@ -85,8 +85,10 @@ final class Monsters {
         };
     }
 
+    /** Units a monster walks per frame; Nightmare! makes every monster half again as fast. */
     private static int speed(int kind) {
-        return kind == Sprites.DEMON ? 7 : 4;
+        int speed = kind == Sprites.DEMON ? 7 : 4;
+        return World.skill == 5 ? speed + speed / 2 : speed;
     }
 
     static void think(short[] monsters, short[] shots, short[] ceilings, int frame) {
@@ -130,13 +132,15 @@ final class Monsters {
             float step = speed(kind) / distance;
             float fromX = monsters[at + X];
             float fromY = monsters[at + Y];
-            float toX = fromX + dx * step;
-            float toY = fromY + dy * step;
-            if (!Player.blocked(fromX, fromY, toX, toY, ceilings)) {
+            // Positions are stored in whole units, so check the rounded move: checking the exact one let a monster
+            // pressed against a wall round onto or past it, and walk through it on the next step.
+            float toX = Math.round(fromX + dx * step);
+            float toY = Math.round(fromY + dy * step);
+            if (!Player.blockedForMonster(fromX, fromY, toX, toY, ceilings)) {
                 place(monsters, at, toX, toY);
-            } else if (!Player.blocked(fromX, fromY, toX, fromY, ceilings)) {
+            } else if (!Player.blockedForMonster(fromX, fromY, toX, fromY, ceilings)) {
                 place(monsters, at, toX, fromY);
-            } else if (!Player.blocked(fromX, fromY, fromX, toY, ceilings)) {
+            } else if (!Player.blockedForMonster(fromX, fromY, fromX, toY, ceilings)) {
                 place(monsters, at, fromX, toY);
             }
         }
