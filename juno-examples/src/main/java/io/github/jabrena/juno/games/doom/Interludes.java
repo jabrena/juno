@@ -5,7 +5,8 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * The screens between the game's moments. The cover is still {@link Lava} with a large DOOM title and a blinking
- * prompt on dark plaques; it waits for a tap. The title is text rather than the drawn logo so the UNO Q's sketch heap
+ * prompt on dark plaques; it waits for a tap. At startup the cover shows while the map loads, and the prompt only
+ * once it has. The title is text rather than the drawn logo so the UNO Q's sketch heap
  * keeps room for the map and its route. The marine and demons of {@link Figures} are switched off behind flags.
  */
 final class Interludes {
@@ -31,6 +32,12 @@ final class Interludes {
 
     /** Plays the cover and returns once the screen has been tapped (and released). */
     static void title() {
+        cover();
+        waitForTap();
+    }
+
+    /** The cover without its prompt: the lava, the DOOM title, and the prompt's empty plaque. */
+    static void cover() {
         Lava.paint();
         int titleWidth = 4 * 6 * TITLE_SIZE;
         plaque((DisplayList.WIDTH - titleWidth) / 2 - PLAQUE_MARGIN, TITLE_Y - PLAQUE_MARGIN,
@@ -44,6 +51,15 @@ final class Interludes {
             Figures.marine();
         }
         plaque(PROMPT_X, PROMPT_Y, PROMPT_WIDTH, PROMPT_HEIGHT);
+    }
+
+    /** Says on the cover's plaque that the map is still loading, so no tap is asked for yet. */
+    static void loading() {
+        Hud.showCentered("LOADING", PROMPT_Y + 8, 2, TftTouchShield.YELLOW);
+    }
+
+    /** Blinks the prompt on the cover until the screen has been tapped (and released). */
+    static void waitForTap() {
         boolean tapped = false;
         int frame = 0;
         while (!tapped) {
@@ -68,6 +84,7 @@ final class Interludes {
     }
 
     private static void blink(boolean on) {
+        // As wide as "TAP TO PLAY", so it also wipes out "LOADING".
         Hud.showCentered(on ? "TAP TO PLAY" : "           ", PROMPT_Y + 8, 2, TftTouchShield.WHITE);
     }
 

@@ -38,7 +38,9 @@ public final class Doom {
         Serial.begin(BaudRate.BAUD_9600);
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        // The map first: planning its route borrows arena the renderer's buffers take over afterwards.
+        Interludes.cover();
+        Interludes.loading();
+        // The map before the buffers: planning its route borrows arena the renderer's buffers take over afterwards.
         World.load();
         short[] lines = new short[2 * DisplayList.LIST_SIZE];
         byte[] clips = new byte[2 * DisplayList.WIDTH];
@@ -49,7 +51,7 @@ public final class Doom {
         short[] ceilings = World.ceilings;
         short[] monsters = World.monsterStates;
         byte[] taken = World.taken;
-        Interludes.title();
+        Interludes.waitForTap();
         Controls.choosePilot();
         chooseEpisode();
         Random.seed(Clock.micros());
