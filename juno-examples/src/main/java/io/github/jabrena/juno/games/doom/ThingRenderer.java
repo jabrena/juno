@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.tft.TftTouchShield;
-
 /**
  * Things drawn after the walls: items, monsters, corpses and fireballs as billboards that always face
  * the marine, each line kept only in the columns where it stands nearer than the wall {@link Renderer}
@@ -14,8 +12,10 @@ final class ThingRenderer {
     private static final float FOCAL = Renderer.FOCAL;
     private static final int CX = Renderer.CX;
     private static final int CY = Renderer.CY;
-    private static final int GUN = TftTouchShield.color(170, 170, 180);
-    private static final int CROSSHAIR = TftTouchShield.color(90, 90, 90);
+    // One repeated byte each, like the walls' colors (see Renderer): cheap to send to the screen.
+    private static final int GUN = 0xB5B5;
+    private static final int CROSSHAIR = 0x4B4B;
+    private static final int WOUND = 0xE0E0;
 
     private static short[] depths;
     private static float viewX;
@@ -214,10 +214,10 @@ final class ThingRenderer {
             int top = DisplayList.VIEW_TOP + 1;
             int right = DisplayList.WIDTH - 1;
             int bottom = DisplayList.VIEW_BOTTOM - 1;
-            DisplayList.add(lines, 0, top, right, top, TftTouchShield.RED);
-            DisplayList.add(lines, right, top, right, bottom, TftTouchShield.RED);
-            DisplayList.add(lines, right, bottom, 0, bottom, TftTouchShield.RED);
-            DisplayList.add(lines, 0, bottom, 0, top, TftTouchShield.RED);
+            DisplayList.add(lines, 0, top, right, top, WOUND);
+            DisplayList.add(lines, right, top, right, bottom, WOUND);
+            DisplayList.add(lines, right, bottom, 0, bottom, WOUND);
+            DisplayList.add(lines, 0, bottom, 0, top, WOUND);
         }
     }
 }

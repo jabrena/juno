@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.tft.TftTouchShield;
-
 /**
  * DOOM's renderer, drawing edges instead of textured columns. The BSP tree is walked front to back
  * from the marine's position; each wall seg is transformed into view space, clipped at the near
@@ -20,12 +18,14 @@ final class Renderer {
     private static final int BOTTOM = DisplayList.VIEW_BOTTOM;
     private static final int STACK = 64;
 
-    static final int WALL = TftTouchShield.color(40, 255, 90);
-    static final int WALL_FAR = TftTouchShield.color(20, 130, 50);
-    static final int WALL_DISTANT = TftTouchShield.color(10, 70, 30);
-    static final int STEP = TftTouchShield.color(255, 210, 40);
-    static final int LINTEL = TftTouchShield.color(60, 200, 255);
-    static final int DOOR = TftTouchShield.color(255, 60, 40);
+    // The view's colors repeat one byte (0xVVVV), so a pixel's two bus bytes set the same data pins and only
+    // the write strobe toggles: every lit pixel costs no more bus time than erasing one to black.
+    static final int WALL = 0x2F2F;
+    static final int WALL_FAR = 0x2424;
+    static final int WALL_DISTANT = 0x0202;
+    static final int STEP = 0xE6E6;
+    static final int LINTEL = 0x3E3E;
+    static final int DOOR = 0xE9E9;
 
     private static float viewX;
     private static float viewY;

@@ -200,6 +200,25 @@ class DoomTest {
     }
 
     @Test
+    void everyColorTheViewDrawsRepeatsOneByteSoItCostsNoMoreThanBlack() {
+        Set<Integer> drawn = new HashSet<>();
+        Player.hurt = 6;
+        for (int frame = 0; frame < 240; frame++) {
+            Weapon.tick();
+            Autopilot.step(ceilings, monsters, taken);
+            Player.operateDoors(ceilings);
+            Player.settle();
+            Monsters.think(monsters, shots, ceilings, frame);
+            Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+            drawn.addAll(colors());
+        }
+        assertThat(drawn).contains(Renderer.WALL, Sprites.FLASH_COLOR);
+        for (int color : drawn) {
+            assertThat(color >> 8).as("color 0x%04X", color).isEqualTo(color & 0xFF);
+        }
+    }
+
+    @Test
     void theAutopilotWalksTheWholeRouteAndLoops() {
         int visited = 0;
         int previous = Autopilot.target;

@@ -60,19 +60,20 @@ final class Sprites {
     /** First value of each shape in {@link #SEGMENTS}, then its end. */
     static final short[] START = {0, 64, 140, 236, 280, 304, 328, 344, 368, 392, 416, 436, 464};
 
-    static final int ZOMBIEMAN_COLOR = TftTouchShield.color(210, 210, 200);
-    static final int SERGEANT_COLOR = TftTouchShield.color(150, 190, 110);
-    static final int IMP_COLOR = TftTouchShield.color(235, 125, 45);
-    static final int DEMON_COLOR = TftTouchShield.color(255, 120, 170);
-    static final int CORPSE_COLOR = TftTouchShield.color(150, 25, 25);
-    static final int FIREBALL_COLOR = TftTouchShield.color(255, 70, 0);
-    static final int FLASH_COLOR = TftTouchShield.color(255, 240, 80);
+    // One repeated byte each, like the walls' colors (see Renderer): cheap to send to the screen.
+    static final int ZOMBIEMAN_COLOR = 0xD6D6;
+    static final int SERGEANT_COLOR = 0x8D8D;
+    static final int IMP_COLOR = 0xE3E3;
+    static final int DEMON_COLOR = 0xF3F3;
+    static final int CORPSE_COLOR = 0xA0A0;
+    static final int FIREBALL_COLOR = 0xE1E1;
+    static final int FLASH_COLOR = 0xE7E7;
     static final int PAIN_COLOR = TftTouchShield.WHITE;
-    static final int HEALTH_COLOR = TftTouchShield.color(240, 240, 255);
-    static final int BONUS_COLOR = TftTouchShield.color(80, 140, 255);
-    static final int GREEN_ARMOR_COLOR = TftTouchShield.color(60, 220, 60);
-    static final int BLUE_ARMOR_COLOR = TftTouchShield.color(70, 110, 255);
-    static final int HELMET_COLOR = TftTouchShield.color(160, 200, 160);
+    static final int HEALTH_COLOR = 0xDFDF;
+    static final int BONUS_COLOR = 0x5C5C;
+    static final int GREEN_ARMOR_COLOR = 0x4747;
+    static final int BLUE_ARMOR_COLOR = 0x3B3B;
+    static final int HELMET_COLOR = 0x9696;
 
     private Sprites() {
     }
