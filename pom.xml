@@ -24,6 +24,10 @@
         <assertj.version>3.27.7</assertj.version>
         <archunit.version>1.5.1</archunit.version>
         <jspecify.version>1.0.0</jspecify.version>
+        <error-prone.version>2.50.0</error-prone.version>
+        <nullaway.version>0.14.2</nullaway.version>
+        <!-- Compile-time null checking for the @NullMarked modules (juno-api, juno-compiler, juno-maven-plugin). -->
+        <nullaway.errorprone.arg>-Xplugin:ErrorProne -XepDisableAllChecks -Xep:NullAway:ERROR -XepOpt:NullAway:JSpecifyMode=true -XepOpt:NullAway:AnnotatedPackages=io.github.jabrena.juno -XepOpt:NullAway:TreatGeneratedAsUnannotated=true -XepOpt:NullAway:CheckOptionalEmptiness=true -XepOpt:NullAway:HandleTestAssertionLibraries=true -XepOpt:NullAway:AssertsEnabled=true -XepExcludedPaths:.*/src/test/.*</nullaway.errorprone.arg>
         <testcontainers.version>2.0.5</testcontainers.version>
         <logback.version>1.6.5</logback.version>
         <slf4j.version>2.0.20</slf4j.version>
