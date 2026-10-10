@@ -269,7 +269,7 @@ the real ones):
 On top of these:
 
 - `GameScreenshotTest` plays each game for a few simulated seconds with scripted taps and compares
-  the screen with its picture in [`docs/images/games`](https://github.com/jabrena/juno/tree/main/docs/images/games). A mismatch writes the actual
+  the screen with its picture in [`juno-examples/src/test/resources/screenshots/games`](https://github.com/jabrena/juno/tree/main/juno-examples/src/test/resources/screenshots/games). A mismatch writes the actual
   screen and a diff to `juno-examples/target/screenshots`. After an intended visual change,
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
