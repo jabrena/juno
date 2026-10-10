@@ -72,7 +72,8 @@ class CrossMethodExceptionsTest {
         assertThat(count(main, Intrinsic.THROW_CATCH)).isEqualTo(1);
         assertThat(count(main, Intrinsic.THROWABLE_GET_MESSAGE)).isEqualTo(1);
 
-        assertThat(count(method(program, "quiet"), Intrinsic.THROW_PENDING)).isZero();
+        // quiet() is small enough to be inlined into its caller; how it was lowered is what matters here.
+        assertThat(count(method(lowered("demo.Crossing"), "quiet"), Intrinsic.THROW_PENDING)).isZero();
     }
 
     @Test
@@ -286,9 +287,8 @@ class CrossMethodExceptionsTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Panics", source);
 
-        IrProgram program = optimized("demo.Panics");
-
-        assertThat(count(method(program, "ratio"), Intrinsic.THROW_RAISE)).isZero();
+        // ratio() is small enough to be inlined into main; how it was lowered is what matters here.
+        assertThat(count(method(lowered("demo.Panics"), "ratio"), Intrinsic.THROW_RAISE)).isZero();
     }
 
     private static boolean endsInRaise(IrBasicBlock block) {
@@ -299,6 +299,10 @@ class CrossMethodExceptionsTest {
     private static boolean isReturnBlock(IrMethod method, int start) {
         return method.blocks().stream().anyMatch(block -> block.start() == start
                 && block.terminator() instanceof IrTerminator.Return);
+    }
+
+    private IrProgram lowered(String mainClass) {
+        return new CompilationPipeline().lower(CompilerTestSupport.link(temporaryDirectory, mainClass));
     }
 
     private IrProgram optimized(String mainClass) {

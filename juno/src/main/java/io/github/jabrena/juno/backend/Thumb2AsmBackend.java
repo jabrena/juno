@@ -193,7 +193,7 @@ public final class Thumb2AsmBackend {
         ints = new IntArithmeticLowering(asm);
         wides = new WideArithmeticLowering(asm, features);
         arrays = new ArrayLowering(asm);
-        terminators = new TerminatorLowering(asm, usesThreads ? "juno_thread_backedge" : "yield");
+        terminators = new TerminatorLowering(asm, ints, usesThreads ? "juno_thread_backedge" : "yield");
         convention = new CallConvention(asm);
         fields = new FieldAccessLowering(asm, layout);
         CoreRuntime coreRuntime = CoreRuntime.of(board.core());
@@ -289,12 +289,16 @@ public final class Thumb2AsmBackend {
             }
         }
 
+        CompareFusion fusion = new CompareFusion(method);
         for (IrBasicBlock block : method.blocks()) {
             output.append(".L").append(label).append("block").append(block.start()).append(":\n");
-            for (IrInstruction instruction : block.instructions()) {
+            IrInstruction.Compare fused = fusion.fusedCompare(block);
+            List<IrInstruction> instructions = fused == null ? block.instructions()
+                    : block.instructions().subList(0, block.instructions().size() - 1);
+            for (IrInstruction instruction : instructions) {
                 emitInstruction(output, frame, instruction);
             }
-            terminators.emit(output, frame, label, block,
+            terminators.emit(output, frame, label, block, fused,
                     isEntryPoint ? () -> emitMainExit(output) : () -> { });
             // Flushes the literal pool (every `ldr rN, =symbol` — string literals, static fields —
             // pending since the last flush) right here. Thumb-2's PC-relative `ldr` only reaches 4095
@@ -317,8 +321,11 @@ public final class Thumb2AsmBackend {
     private void emitInstruction(StringBuilder output, FrameLayout frame, IrInstruction instruction) {
         switch (instruction) {
             case IrInstruction.Const constant -> {
-                asm.emitLoadImmediate(output, "r0", constant.value());
-                asm.store(output, frame, "r0", constant.target());
+                // Rematerialized at every use (see FrameLayout); only a Const defining its value twice keeps a slot.
+                if (frame.constant(constant.target()) == null) {
+                    asm.emitLoadImmediate(output, "r0", constant.value());
+                    asm.store(output, frame, "r0", constant.target());
+                }
             }
             case IrInstruction.StringConst constant -> {
                 asm.emitStringAddress(output, "r0", constant.value());
@@ -494,7 +501,7 @@ public final class Thumb2AsmBackend {
             return;
         }
         Value invocationArgument = call.arguments().get(1 + combinedIndex - captureCount);
-        asm.emitLoad(output, destination, frame.valueOffset(invocationArgument) + extraSpOffset);
+        asm.loadWord(output, frame, new WordSource.FromValue(invocationArgument), destination, extraSpOffset);
     }
 
     private void emitInterfaceCall(StringBuilder output, FrameLayout frame, IrInstruction.InterfaceCall call) {
@@ -525,18 +532,18 @@ public final class Thumb2AsmBackend {
         if (label == null) {
             throw unsupported("call to unresolved method " + method.displayName());
         }
-        List<Integer> words = CallConvention.argumentWordOffsets(frame, arguments);
+        List<WordSource> words = CallConvention.argumentWords(arguments);
         int extra = Math.max(0, words.size() - 4);
         int reserved = AsmEmitter.roundUp(extra * AsmEmitter.WORD, 8);
         if (reserved > 0) {
             output.append("    sub sp, sp, #").append(reserved).append('\n');
             for (int i = 4; i < words.size(); i++) {
-                asm.emitLoad(output, "r0", words.get(i) + reserved);
+                asm.loadWord(output, frame, words.get(i), "r0", reserved);
                 asm.emitStore(output, "r0", (i - 4) * AsmEmitter.WORD);
             }
         }
         for (int i = 0; i < Math.min(4, words.size()); i++) {
-            asm.emitLoad(output, "r" + i, words.get(i) + reserved);
+            asm.loadWord(output, frame, words.get(i), "r" + i, reserved);
         }
         output.append("    bl ").append(label).append('\n');
         if (reserved > 0) {

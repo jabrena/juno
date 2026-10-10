@@ -25,7 +25,7 @@ class FrameLayoutTest {
         Value loaded = Value.int32(1);
         IrMethod method = new IrMethod(METHOD, 3, List.of(stored, loaded), List.of(), List.of(
                 new IrBasicBlock(0, List.of(
-                        new IrInstruction.Const(stored, 7),
+                        new IrInstruction.LoadLocal(stored, 2),
                         new IrInstruction.StoreLocal(0, stored),
                         new IrInstruction.LoadLocal(loaded, 0)),
                         new IrTerminator.Return(Optional.of(loaded)))));
@@ -34,9 +34,10 @@ class FrameLayoutTest {
 
         assertThat(frame.valueOffset(stored)).isZero();
         assertThat(frame.valueOffset(loaded)).isZero();
-        assertThat(frame.localOffsets()).containsExactly(4, 8, 12);
-        assertThat(frame.frameSize()).isEqualTo(20);
-        assertThat(StackFrameSizing.methodStackBytes(method)).isEqualTo(56);
+        // Slots 0 and 2 are used; slot 1 is never loaded or stored, so it gets no word.
+        assertThat(frame.localOffsets()).containsExactly(4, -1, 8);
+        assertThat(frame.frameSize()).isEqualTo(12);
+        assertThat(StackFrameSizing.methodStackBytes(method)).isEqualTo(48);
     }
 
     @Test
@@ -45,10 +46,10 @@ class FrameLayoutTest {
         Value integer = Value.int32(1);
         Value narrowed = Value.int32(2);
         Value result = Value.int32(3);
-        IrMethod method = new IrMethod(METHOD, 0, List.of(wide, integer, narrowed, result), List.of(), List.of(
+        IrMethod method = new IrMethod(METHOD, 1, List.of(wide, integer, narrowed, result), List.of(), List.of(
                 new IrBasicBlock(0, List.of(
                         new IrInstruction.DoubleConst(wide, 2.5),
-                        new IrInstruction.Const(integer, 2),
+                        new IrInstruction.LoadLocal(integer, 0),
                         new IrInstruction.DoubleToInt(narrowed, wide),
                         new IrInstruction.Binary(result, BinaryOp.ADD, integer, narrowed)),
                         new IrTerminator.Return(Optional.of(result)))));
@@ -69,7 +70,7 @@ class FrameLayoutTest {
         Value result = Value.int32(2);
         IrMethod method = new IrMethod(METHOD, 1, List.of(crossBlock, loaded, result), List.of(), List.of(
                 new IrBasicBlock(0, List.of(
-                        new IrInstruction.Const(crossBlock, 7),
+                        new IrInstruction.LoadLocal(crossBlock, 0),
                         new IrInstruction.StoreLocal(0, crossBlock)),
                         new IrTerminator.Jump(10)),
                 new IrBasicBlock(10, List.of(
@@ -86,10 +87,35 @@ class FrameLayoutTest {
     }
 
     @Test
+    void rematerializesAConstantInsteadOfGivingItASlot() {
+        Value constant = Value.int32(0);
+        Value loaded = Value.int32(1);
+        Value result = Value.int32(2);
+        IrMethod method = new IrMethod(METHOD, 1, List.of(constant, loaded, result), List.of(), List.of(
+                new IrBasicBlock(0, List.of(
+                        new IrInstruction.Const(constant, 1000)),
+                        new IrTerminator.Jump(10)),
+                new IrBasicBlock(10, List.of(
+                        new IrInstruction.LoadLocal(loaded, 0),
+                        new IrInstruction.Binary(result, BinaryOp.ADD, loaded, constant)),
+                        new IrTerminator.Return(Optional.of(result)))));
+
+        FrameLayout frame = FrameLayout.of(method);
+
+        assertThat(frame.constant(constant)).isEqualTo(1000);
+        assertThat(frame.constant(loaded)).isNull();
+        assertThat(frame.valueOffset(loaded)).isZero();
+        assertThat(frame.valueOffset(result)).isEqualTo(4);
+        org.assertj.core.api.Assertions.assertThatIllegalStateException()
+                .isThrownBy(() -> frame.valueOffset(constant));
+    }
+
+    @Test
     void spillsOnlyParametersWhoseLocalSlotsAreRead() {
         IrMethod method = new IrMethod(new MethodRef("demo.Frame", "work", "(II)I"), 2,
-                List.of(), List.of(), List.of(
-                new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty()))));
+                List.of(Value.int32(0)), List.of(), List.of(
+                new IrBasicBlock(0, List.of(new IrInstruction.LoadLocal(Value.int32(0), 1)),
+                        new IrTerminator.Return(Optional.of(Value.int32(0))))));
         FrameLayout frame = FrameLayout.of(method);
         StringBuilder output = new StringBuilder();
 

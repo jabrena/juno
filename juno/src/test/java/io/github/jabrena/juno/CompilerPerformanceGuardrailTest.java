@@ -29,7 +29,7 @@ class CompilerPerformanceGuardrailTest {
                         Serial.println(run(100));
                     }
                 }
-                """, new Baseline(88, 20, 27, 93, 0));
+                """, new Baseline(64, 14, 20, 72, 0));
     }
 
     @Test
@@ -53,7 +53,7 @@ class CompilerPerformanceGuardrailTest {
                         Serial.println(run(16));
                     }
                 }
-                """, new Baseline(88, 31, 39, 149, 1));
+                """, new Baseline(64, 23, 29, 110, 1));
     }
 
     @Test
@@ -81,7 +81,7 @@ class CompilerPerformanceGuardrailTest {
                         Serial.println(run(1));
                     }
                 }
-                """, new Baseline(152, 38, 41, 137, 0));
+                """, new Baseline(96, 14, 28, 88, 0));
     }
 
     @Test
@@ -103,7 +103,7 @@ class CompilerPerformanceGuardrailTest {
                         Serial.println(run(20));
                     }
                 }
-                """, new Baseline(96, 34, 43, 146, 1));
+                """, new Baseline(64, 13, 19, 68, 0));
     }
 
     private void assertWithinBaseline(String simpleName, String source, Baseline baseline) throws Exception {

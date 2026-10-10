@@ -175,8 +175,9 @@ public final class Main {
 
         CompilationPipeline pipeline = new CompilationPipeline();
         Program program = pipeline.link(classPath, mainClass, Optional.ofNullable(board));
-        IrProgram optimized = pipeline.optimize(pipeline.lower(program));
-        CompilationReport report = CompilationReport.from(program, optimized);
+        IrProgram lowered = pipeline.lower(program);
+        IrProgram optimized = pipeline.optimize(lowered);
+        CompilationReport report = CompilationReport.from(program, lowered, optimized);
 
         System.out.println("Entry point: " + report.entryPoint().displayName());
         System.out.println("Board: " + report.board().displayName() + " (fqbn " + report.board().fqbn() + ")");

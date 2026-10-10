@@ -347,6 +347,43 @@ class CopyPropagationTest {
         assertThat(foldedComparison.value()).isEqualTo(1);
     }
 
+    @Test
+    void turnsALoadIntoTheConstantBothBranchesStoredThroughDifferentValues() {
+        IrProgram optimized = new CopyPropagation().apply(programOf(List.of(
+                new IrBasicBlock(0, List.of(), new IrTerminator.Branch(Value.int32(9), 10, 20)),
+                new IrBasicBlock(10, List.of(
+                        new IrInstruction.Const(Value.int32(1), 0),
+                        new IrInstruction.StoreLocal(0, Value.int32(1))), new IrTerminator.Jump(30)),
+                new IrBasicBlock(20, List.of(
+                        new IrInstruction.Const(Value.int32(2), 0),
+                        new IrInstruction.StoreLocal(0, Value.int32(2))), new IrTerminator.Jump(30)),
+                new IrBasicBlock(30, List.of(
+                        new IrInstruction.LoadLocal(Value.int32(3), 0)),
+                        new IrTerminator.Return(Optional.of(Value.int32(3)))))));
+
+        IrBasicBlock join = optimized.methods().getFirst().blocks().get(3);
+        assertThat(join.instructions()).containsExactly(new IrInstruction.Const(Value.int32(3), 0));
+        assertThat(join.terminator()).isEqualTo(new IrTerminator.Return(Optional.of(Value.int32(3))));
+    }
+
+    @Test
+    void keepsTheLoadWhenTheBranchesStoredDifferentConstants() {
+        IrProgram optimized = new CopyPropagation().apply(programOf(List.of(
+                new IrBasicBlock(0, List.of(), new IrTerminator.Branch(Value.int32(9), 10, 20)),
+                new IrBasicBlock(10, List.of(
+                        new IrInstruction.Const(Value.int32(1), 0),
+                        new IrInstruction.StoreLocal(0, Value.int32(1))), new IrTerminator.Jump(30)),
+                new IrBasicBlock(20, List.of(
+                        new IrInstruction.Const(Value.int32(2), 1),
+                        new IrInstruction.StoreLocal(0, Value.int32(2))), new IrTerminator.Jump(30)),
+                new IrBasicBlock(30, List.of(
+                        new IrInstruction.LoadLocal(Value.int32(3), 0)),
+                        new IrTerminator.Return(Optional.of(Value.int32(3)))))));
+
+        assertThat(optimized.methods().getFirst().blocks().get(3).instructions())
+                .containsExactly(new IrInstruction.LoadLocal(Value.int32(3), 0));
+    }
+
     private IrProgram programOf(List<IrBasicBlock> blocks) {
         return new IrProgram(method, List.of(new IrMethod(method, 4, Value.int32Values(32), List.of(), blocks)));
     }

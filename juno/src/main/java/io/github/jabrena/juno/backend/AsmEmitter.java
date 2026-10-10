@@ -54,11 +54,38 @@ final class AsmEmitter {
     }
 
     void load(StringBuilder output, FrameLayout frame, String register, Value value) {
-        emitLoad(output, register, frame.valueOffset(value));
+        Integer constant = frame.constant(value);
+        if (constant != null) {
+            emitLoadImmediate(output, register, constant);
+        } else {
+            emitLoad(output, register, frame.valueOffset(value));
+        }
     }
 
     void store(StringBuilder output, FrameLayout frame, String register, Value value) {
         emitStore(output, register, frame.valueOffset(value));
+    }
+
+    /**
+     * Whether {@code value} is a Thumb-2 modified immediate (ThumbExpandImm): an 8-bit value, the byte repeated in a
+     * halfword or word pattern, or an 8-bit value with its top bit set rotated anywhere. Such a constant can be the
+     * second operand of {@code cmp}, {@code and}, {@code orr}, {@code eor}, {@code add} and {@code sub} directly.
+     */
+    static boolean isModifiedImmediate(int value) {
+        int low = value & 0xFF;
+        if ((value & ~0xFF) == 0
+                || value == (low | low << 16)
+                || value == (low << 8 | low << 24)
+                || value == (low | low << 8 | low << 16 | low << 24)) {
+            return true;
+        }
+        for (int rotation = 8; rotation < 32; rotation++) {
+            int unrotated = Integer.rotateLeft(value, rotation);
+            if ((unrotated & ~0xFF) == 0 && (unrotated & 0x80) != 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -77,8 +104,10 @@ final class AsmEmitter {
         emitStore(output, highRegister, frame.valueOffset(value) + WORD);
     }
 
-    private void loadWord(StringBuilder output, FrameLayout frame, WordSource source, String register, int extraSpOffset) {
+    void loadWord(StringBuilder output, FrameLayout frame, WordSource source, String register, int extraSpOffset) {
         switch (source) {
+            case WordSource.FromValue from when frame.constant(from.value()) != null ->
+                    emitLoadImmediate(output, register, frame.constant(from.value()));
             case WordSource.FromValue from -> emitLoad(output, register, frame.valueOffset(from.value()) + extraSpOffset);
             case WordSource.FromValueLow from -> emitLoad(output, register, frame.valueOffset(from.value()) + extraSpOffset);
             case WordSource.FromValueHigh from ->

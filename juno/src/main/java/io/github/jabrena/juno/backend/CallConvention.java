@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Juno's internal calling convention: arguments are 32-bit words in order (a {@code long}/{@code double}
  * is two, low word first), the first four in r0-r3 and the rest on the stack; a wide result comes back in
- * r0:r1. The caller flattens values with {@link #argumentWordOffsets}; the callee's
+ * r0:r1. The caller flattens values with {@link #argumentWords}; the callee's
  * {@link #emitParameterSpill} copies the words into the JVM local slots its bytecode reads.
  */
 final class CallConvention {
@@ -21,15 +21,17 @@ final class CallConvention {
     }
 
     /**
-     * The frame offset of every 32-bit word an argument list passes, in order: a {@code long}/{@code double}
-     * contributes its low then high word, matching the JVM's two local slots in the callee's parameter spill.
+     * Every 32-bit word an argument list passes, in order: a {@code long}/{@code double} contributes its low then
+     * high word, matching the JVM's two local slots in the callee's parameter spill.
      */
-    static List<Integer> argumentWordOffsets(FrameLayout frame, List<Value> arguments) {
-        List<Integer> words = new ArrayList<>();
+    static List<WordSource> argumentWords(List<Value> arguments) {
+        List<WordSource> words = new ArrayList<>();
         for (Value argument : arguments) {
-            words.add(frame.valueOffset(argument));
             if (FrameLayout.isWide(argument.type())) {
-                words.add(frame.valueOffset(argument) + AsmEmitter.WORD);
+                words.add(new WordSource.FromValueLow(argument));
+                words.add(new WordSource.FromValueHigh(argument));
+            } else {
+                words.add(new WordSource.FromValue(argument));
             }
         }
         return words;

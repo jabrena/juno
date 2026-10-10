@@ -219,7 +219,8 @@ class Thumb2AsmBackendTest {
 
         assertThat(assembly.contains("bl juno_serial_begin")).isTrue();
         assertThat(assembly.contains("bl juno_serial_println")).isTrue();
-        assertThat(assembly.contains("add r0, r0, r1")).isTrue();
+        // The constant 1 is folded into the addition's immediate field rather than loaded into r1.
+        assertThat(assembly.contains("add r0, r0, #1")).isTrue();
         assertThat(assembly.contains("bl delay")).isTrue();
 
         String shim = result.runtimeShim();
@@ -458,8 +459,11 @@ class Thumb2AsmBackendTest {
                 .generate(new IrProgram(mainRef, List.of(main, classify)));
         String assembly = result.assembly();
 
-        assertThat(assembly.contains("cmp r0, r1")).isTrue();
-        assertThat(assembly.contains("blt .Lcmptrue")).isTrue();
+        // x < 0 feeds only the branch: one compare against an immediate, then the inverse condition skips to
+        // the false block; the 0/1 result is never materialized.
+        assertThat(assembly.contains("cmp r0, #0")).isTrue();
+        assertThat(assembly.contains("bge .Lbranchfalse")).isTrue();
+        assertThat(assembly.contains(".Lcmptrue")).isFalse();
         assertThat(assembly.contains("bl juno_fn1")).isTrue(); // main calling classify by its assigned label
         assertThat(assembly.contains(".global juno_Cond_asm")).isTrue(); // only the entry point is exported
     }

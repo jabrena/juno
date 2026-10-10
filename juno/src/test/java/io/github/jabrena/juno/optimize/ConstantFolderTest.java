@@ -127,6 +127,26 @@ class ConstantFolderTest {
         assertThat(folded.blocks().get(0).terminator().getClass()).isSameAs(returnTerminator.getClass());
     }
 
+    @Test
+    void foldsAConstantDefinedInAnEarlierBlockAndTheBranchItDecides() {
+        IrBasicBlock entry = new IrBasicBlock(0, List.of(
+                new IrInstruction.Const(Value.int32(0), 6)), new IrTerminator.Jump(10));
+        IrBasicBlock test = new IrBasicBlock(10, List.of(
+                new IrInstruction.Const(Value.int32(1), 7),
+                new IrInstruction.Binary(Value.int32(2), BinaryOp.MULTIPLY, Value.int32(0), Value.int32(1)),
+                new IrInstruction.Compare(Value.int32(3), Condition.EQUAL, Value.int32(2), Value.int32(2))),
+                new IrTerminator.Branch(Value.int32(3), 20, 30));
+        IrBasicBlock yes = new IrBasicBlock(20, List.of(), new IrTerminator.Return(Optional.of(Value.int32(2))));
+        IrBasicBlock no = new IrBasicBlock(30, List.of(), new IrTerminator.Return(Optional.empty()));
+        IrProgram program = new IrProgram(method, List.of(new IrMethod(method, 1, Value.int32Values(8), List.of(),
+                List.of(entry, test, yes, no))));
+
+        IrBasicBlock folded = new ConstantFolder().apply(program).methods().getFirst().blocks().get(1);
+
+        assertThat(folded.instructions().get(1)).isEqualTo(new IrInstruction.Const(Value.int32(2), 42));
+        assertThat(folded.terminator()).isEqualTo(new IrTerminator.Jump(20));
+    }
+
     private IrProgram programOf(List<IrInstruction> instructions, IrTerminator terminator) {
         IrBasicBlock block = new IrBasicBlock(0, instructions, terminator);
         IrMethod irMethod = new IrMethod(method, 1, Value.int32Values(8), List.of(), List.of(block));

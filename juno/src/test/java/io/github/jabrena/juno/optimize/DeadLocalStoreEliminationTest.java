@@ -51,6 +51,45 @@ class DeadLocalStoreEliminationTest {
                 .contains(new IrInstruction.StoreLocal(0, stored));
     }
 
+    @Test
+    void dropsAStoreEveryPathOverwritesBeforeReading() {
+        IrMethod method = new IrMethod(METHOD, 1, Value.int32Values(4), List.of(), List.of(
+                new IrBasicBlock(0, List.of(
+                        new IrInstruction.Const(Value.int32(0), 1),
+                        new IrInstruction.StoreLocal(0, Value.int32(0))),
+                        new IrTerminator.Branch(Value.int32(3), 10, 20)),
+                new IrBasicBlock(10, List.of(new IrInstruction.StoreLocal(0, Value.int32(3))),
+                        new IrTerminator.Jump(30)),
+                new IrBasicBlock(20, List.of(new IrInstruction.StoreLocal(0, Value.int32(3))),
+                        new IrTerminator.Jump(30)),
+                new IrBasicBlock(30, List.of(new IrInstruction.LoadLocal(Value.int32(1), 0)),
+                        new IrTerminator.Return(Optional.of(Value.int32(1))))));
+
+        IrMethod optimized = apply(method);
+
+        assertThat(optimized.blocks().getFirst().instructions())
+                .containsExactly(new IrInstruction.Const(Value.int32(0), 1));
+        assertThat(optimized.blocks().get(1).instructions()).hasSize(1);
+        assertThat(optimized.blocks().get(2).instructions()).hasSize(1);
+    }
+
+    @Test
+    void keepsAStoreThatOnlyOneBranchReads() {
+        IrMethod method = new IrMethod(METHOD, 1, Value.int32Values(4), List.of(), List.of(
+                new IrBasicBlock(0, List.of(
+                        new IrInstruction.Const(Value.int32(0), 1),
+                        new IrInstruction.StoreLocal(0, Value.int32(0))),
+                        new IrTerminator.Branch(Value.int32(3), 10, 20)),
+                new IrBasicBlock(10, List.of(new IrInstruction.StoreLocal(0, Value.int32(3))),
+                        new IrTerminator.Jump(30)),
+                new IrBasicBlock(20, List.of(), new IrTerminator.Jump(30)),
+                new IrBasicBlock(30, List.of(new IrInstruction.LoadLocal(Value.int32(1), 0)),
+                        new IrTerminator.Return(Optional.of(Value.int32(1))))));
+
+        assertThat(apply(method).blocks().getFirst().instructions())
+                .contains(new IrInstruction.StoreLocal(0, Value.int32(0)));
+    }
+
     private IrMethod apply(IrMethod method) {
         return elimination.apply(new IrProgram(METHOD, List.of(method))).methods().getFirst();
     }

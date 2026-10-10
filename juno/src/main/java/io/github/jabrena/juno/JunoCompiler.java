@@ -16,11 +16,12 @@ public final class JunoCompiler {
 
     public CompilationResult compile(CompilationRequest request) {
         Program program = pipeline.link(request.classPath(), request.mainClass(), request.requestedBoard());
-        IrProgram optimized = pipeline.optimize(pipeline.lower(program));
+        IrProgram lowered = pipeline.lower(program);
+        IrProgram optimized = pipeline.optimize(lowered);
         Thumb2AsmBackend.Output output = new Thumb2AsmBackend(request.gcLoggingEnabled(), program.board(), request.runtimeConfig())
                 .generate(optimized);
         return new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(),
-                CompilationReport.from(program, optimized, request.runtimeConfig()));
+                CompilationReport.from(program, lowered, optimized, request.runtimeConfig()));
     }
 
     public CompilationResult compile(List<Path> classPath, String mainClass) {
