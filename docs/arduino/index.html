@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OTB2XA3Z.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
 
 </head>
 <body >
@@ -79,6 +79,7 @@
     <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
     <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
     <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
+    <li><a class="" href="/juno/memory-model" ><i class="fa-solid fa-memory"></i>Memory Model</a></li>
     <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
     <li class="menu-group"><span>Boards</span></li>
     <li><a class="active" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
@@ -247,8 +248,8 @@ alarm blinks until any button is pressed, then returns to minute selection.</p>
 <h3 id="tft-touch-screen-shield-examples">TFT touch screen shield examples</h3>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java"><code>TftTouchShield</code></a>
 drives the ELEGOO 2.8&quot; TFT touch screen shield (ILI9341 on an 8-bit parallel bus on D2-D9/<code>A0</code>-<code>A4</code>,
-resistive touch, microSD on D10-D13) — again no new compiler intrinsic, built entirely from
-<code>Gpio</code>/<code>Delay</code>. See <a href="../tft-touch-shield">TFT-TOUCH-SHIELD.md</a>.</p>
+resistive touch, microSD on D10-D13), built from <code>Gpio</code>/<code>Delay</code> plus the <code>ParallelBus</code> intrinsic for the
+display's bytes. See <a href="../tft-touch-shield">TFT-TOUCH-SHIELD.md</a>.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.TouchPaintTFT
 ./mvnw -f juno-examples/pom.xml compile juno:upload \

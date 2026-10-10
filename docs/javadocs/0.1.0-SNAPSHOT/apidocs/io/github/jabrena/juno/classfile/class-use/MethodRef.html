@@ -127,12 +127,13 @@ outside Juno's supported subset — before any code generation is attempted.</di
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../CompilationReport.html#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport)" class="member-name-link">CompilationReport</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;entryPoint,
+<div class="col-second even-row-color"><code><a href="../../CompilationReport.html#%3Cinit%3E(io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.board.Board,int,int,java.util.Set,io.github.jabrena.juno.analysis.RuntimeRiskReport,java.util.List)" class="member-name-link">CompilationReport</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;entryPoint,
  <a href="../../board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board,
  int&nbsp;reachableMethods,
  int&nbsp;irBlocks,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Set.html" title="interface in java.util" class="external-link">Set</a>&lt;<a href="../../intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;&nbsp;intrinsics,
- <a href="../../analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks)</code></div>
+ <a href="../../analysis/RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a>&nbsp;runtimeRisks,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="../../analysis/ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a>&gt;&nbsp;configSuggestions)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>CompilationReport</code> record class.</div>
 </div>
@@ -206,17 +207,41 @@ outside Juno's supported subset — before any code generation is attempted.</di
 <li>
 <section class="detail" id="io.github.jabrena.juno.intrinsic">
 <h2>Uses of <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a> in <a href="../../intrinsic/package-summary.html">io.github.jabrena.juno.intrinsic</a></h2>
+<div class="caption"><span>Fields in <a href="../../intrinsic/package-summary.html">io.github.jabrena.juno.intrinsic</a> declared as <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Field</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static final <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">RandomAccessFileMethods.</span><code><a href="../../intrinsic/RandomAccessFileMethods.html#CONSTRUCTOR" class="member-name-link">CONSTRUCTOR</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+</div>
+<div class="caption"><span>Methods in <a href="../../intrinsic/package-summary.html">io.github.jabrena.juno.intrinsic</a> that return <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">RandomAccessFileMethods.</span><code><a href="../../intrinsic/RandomAccessFileMethods.html#method(java.lang.String,java.lang.String)" class="member-name-link">method</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;descriptor)</code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+</div>
 <div class="caption"><span>Methods in <a href="../../intrinsic/package-summary.html">io.github.jabrena.juno.intrinsic</a> with parameters of type <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static boolean</code></div>
-<div class="col-second even-row-color"><span class="type-name-label">IntrinsicRegistry.</span><code><a href="../../intrinsic/IntrinsicRegistry.html#isIntrinsic(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">isIntrinsic</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method)</code></div>
-<div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a><wbr>&lt;<a href="../../intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;</code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">IntrinsicRegistry.</span><code><a href="../../intrinsic/IntrinsicRegistry.html#resolve(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">resolve</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method)</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">RandomAccessFileMethods.</span><code><a href="../../intrinsic/RandomAccessFileMethods.html#isBufferRead(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">isBufferRead</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
+<div class="col-last even-row-color">
+<div class="block"><code>read(byte[]...)</code>/<code>readFully(byte[]...)</code>: the front end adds the buffer's known capacity.</div>
+</div>
+<div class="col-first odd-row-color"><code>static boolean</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">IntrinsicRegistry.</span><code><a href="../../intrinsic/IntrinsicRegistry.html#isIntrinsic(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">isIntrinsic</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method)</code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a><wbr>&lt;<a href="../../intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a>&gt;</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">IntrinsicRegistry.</span><code><a href="../../intrinsic/IntrinsicRegistry.html#resolve(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">resolve</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method)</code></div>
+<div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
 </li>

@@ -76,6 +76,7 @@ initTheme();
 <li><a href="#%3Cinit%3E(java.util.List,java.lang.String)" tabindex="0">CompilationRequest(List, String)</a></li>
 <li><a href="#%3Cinit%3E(java.util.List,java.lang.String,boolean)" tabindex="0">CompilationRequest(List, String, boolean)</a></li>
 <li><a href="#%3Cinit%3E(java.util.List,java.lang.String,boolean,java.util.Optional)" tabindex="0">CompilationRequest(List, String, boolean, Optional)</a></li>
+<li><a href="#%3Cinit%3E(java.util.List,java.lang.String,boolean,java.util.Optional,io.github.jabrena.juno.RuntimeConfig)" tabindex="0">CompilationRequest(List, String, boolean, Optional, RuntimeConfig)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -87,6 +88,7 @@ initTheme();
 <li><a href="#mainClass()" tabindex="0">mainClass()</a></li>
 <li><a href="#gcLoggingEnabled()" tabindex="0">gcLoggingEnabled()</a></li>
 <li><a href="#requestedBoard()" tabindex="0">requestedBoard()</a></li>
+<li><a href="#runtimeConfig()" tabindex="0">runtimeConfig()</a></li>
 </ol>
 </li>
 </ol>
@@ -108,10 +110,12 @@ initTheme();
     one <code>Serial</code> line per collection (see <a href="backend/Thumb2AsmBackend.html" title="class in io.github.jabrena.juno.backend"><code>Thumb2AsmBackend</code></a>).</dd>
 <dd><code><span id="param-requestedBoard">requestedBoard</span></code> - the target board (see <code>io.github.jabrena.juno.board.Board#fromId</code>), required
     only when the entry point's <code>@Board</code> annotation declares more than one board.</dd>
+<dd><code><span id="param-runtimeConfig">runtimeConfig</span></code> - the arena and task-stack capacities of the generated runtime; <a href="RuntimeConfig.html#DEFAULT"><code>RuntimeConfig.DEFAULT</code></a>
+    when not given.</dd>
 </dl>
 <hr>
 <div class="horizontal-scroll">
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">CompilationRequest</span>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/nio/file/Path.html" title="interface in java.nio.file" class="external-link">Path</a>&gt;&nbsp;classPath, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;mainClass, boolean&nbsp;gcLoggingEnabled, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;requestedBoard)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">CompilationRequest</span>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/nio/file/Path.html" title="interface in java.nio.file" class="external-link">Path</a>&gt;&nbsp;classPath, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;mainClass, boolean&nbsp;gcLoggingEnabled, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;requestedBoard, <a href="RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a>&nbsp;runtimeConfig)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Record.html" title="class in java.lang" class="external-link">Record</a></span></div>
 <div class="block">What to compile: a closed-world classpath plus the entry point's fully qualified class name.</div>
 </div>
@@ -137,7 +141,13 @@ initTheme();
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;mainClass,
  boolean&nbsp;gcLoggingEnabled,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;requestedBoard)</code></div>
-<div class="col-last even-row-color">
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(java.util.List,java.lang.String,boolean,java.util.Optional,io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">CompilationRequest</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/nio/file/Path.html" title="interface in java.nio.file" class="external-link">Path</a>&gt;&nbsp;classPath,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;mainClass,
+ boolean&nbsp;gcLoggingEnabled,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;requestedBoard,
+ <a href="RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a>&nbsp;runtimeConfig)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Creates an instance of a <code>CompilationRequest</code> record class.</div>
 </div>
 </div>
@@ -184,9 +194,14 @@ initTheme();
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <a href="#param-requestedBoard"><code>requestedBoard</code></a> record component.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#runtimeConfig()" class="member-name-link">runtimeConfig</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the value of the <a href="#param-runtimeConfig"><code>runtimeConfig</code></a> record component.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a string representation of this record class.</div>
 </div>
 </div>
@@ -233,6 +248,18 @@ initTheme();
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;mainClass,
  boolean&nbsp;gcLoggingEnabled,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;requestedBoard)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="&lt;init&gt;(java.util.List,java.lang.String,boolean,java.util.Optional,io.github.jabrena.juno.RuntimeConfig)">
+<h3>CompilationRequest</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">CompilationRequest</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/nio/file/Path.html" title="interface in java.nio.file" class="external-link">Path</a>&gt;&nbsp;classPath,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;mainClass,
+ boolean&nbsp;gcLoggingEnabled,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;requestedBoard,
+ <a href="RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a>&nbsp;runtimeConfig)</span></div>
 <div class="block">Creates an instance of a <code>CompilationRequest</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -240,6 +267,7 @@ initTheme();
 <dd><code>mainClass</code> - the value for the <code>mainClass</code> record component</dd>
 <dd><code>gcLoggingEnabled</code> - the value for the <a href="#param-gcLoggingEnabled"><code>gcLoggingEnabled</code></a> record component</dd>
 <dd><code>requestedBoard</code> - the value for the <a href="#param-requestedBoard"><code>requestedBoard</code></a> record component</dd>
+<dd><code>runtimeConfig</code> - the value for the <a href="#param-runtimeConfig"><code>runtimeConfig</code></a> record component</dd>
 </dl>
 </div>
 </section>
@@ -347,6 +375,19 @@ initTheme();
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the value of the <a href="#param-requestedBoard"><code>requestedBoard</code></a> record component</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="runtimeConfig()">
+<h3>runtimeConfig</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></span>&nbsp;<span class="element-name">runtimeConfig</span>()</div>
+<div class="block">Returns the value of the <a href="#param-runtimeConfig"><code>runtimeConfig</code></a> record component.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the value of the <a href="#param-runtimeConfig"><code>runtimeConfig</code></a> record component</dd>
 </dl>
 </div>
 </section>

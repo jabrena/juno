@@ -98,13 +98,17 @@ condition is a known constant.</div>
 <div class="col-first odd-row-color"><code>final class&nbsp;</code></div>
 <div class="col-second odd-row-color"><code><a href="../CopyPropagation.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">CopyPropagation</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">Eliminates a <a href="../../ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when an earlier <a href="../../ir/IrInstruction.StoreLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.StoreLocal</code></a> in the same
-basic block determines the slot's value.</div>
+<div class="block">Eliminates a <a href="../../ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when preceding stores determine the slot's value.</div>
 </div>
 <div class="col-first even-row-color"><code>final class&nbsp;</code></div>
 <div class="col-second even-row-color"><code><a href="../DeadBlockElimination.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">DeadBlockElimination</a></code></div>
 <div class="col-last even-row-color">
 <div class="block">Removes basic blocks unreachable from a method's entry block.</div>
+</div>
+<div class="col-first odd-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../DeadLocalStoreElimination.html" class="type-name-link" title="class in io.github.jabrena.juno.optimize">DeadLocalStoreElimination</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Removes stores to JVM/synthetic local slots that the optimized method never reads.</div>
 </div>
 </div>
 </section>

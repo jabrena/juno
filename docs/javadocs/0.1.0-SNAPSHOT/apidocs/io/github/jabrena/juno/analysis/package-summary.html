@@ -126,59 +126,71 @@ value types that connect them.</div>
 <div class="col-last even-row-color class-summary class-summary-tab4">
 <div class="block">A maximal run of instructions with one entry point (<code>start</code>) and one exit (<code>terminator</code>).</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="ControlFlowGraph.html" title="class in io.github.jabrena.juno.analysis">ControlFlowGraph</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab4">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ConfigAnalyzer.html" title="class in io.github.jabrena.juno.analysis">ConfigAnalyzer</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Compares the <a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno"><code>RuntimeConfig</code></a> with what the program needs and suggests a better one.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab4"><a href="ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestion</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab4">
+<div class="block">A change to the runtime configuration that would suit the program better.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ConfigSuggestionFormatter.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestionFormatter</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Renders <a href="ConfigSuggestion.html" title="class in io.github.jabrena.juno.analysis"><code>ConfigSuggestion</code></a>s as human-readable lines, shared by the CLI and the Maven plugin.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab4"><a href="ControlFlowGraph.html" title="class in io.github.jabrena.juno.analysis">ControlFlowGraph</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab4">
 <div class="block">The basic blocks of one method, in offset order, with branch targets resolved into block-to-block edges.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="ControlFlowGraphBuilder.html" title="class in io.github.jabrena.juno.analysis">ControlFlowGraphBuilder</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ControlFlowGraphBuilder.html" title="class in io.github.jabrena.juno.analysis">ControlFlowGraphBuilder</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Partitions a method's decoded instructions into <a href="BasicBlock.html" title="class in io.github.jabrena.juno.analysis"><code>BasicBlock</code></a>s and resolves every branch target into
 a CFG edge, replacing byte-offset jumps with an explicit block graph.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="RiskSeverity.html" title="enum class in io.github.jabrena.juno.analysis">RiskSeverity</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab3">
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="RiskSeverity.html" title="enum class in io.github.jabrena.juno.analysis">RiskSeverity</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">
 <div class="block">Severity of a runtime-risk diagnostic emitted after IR optimization.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab4"><a href="RuntimeRisk.html" title="class in io.github.jabrena.juno.analysis">RuntimeRisk</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab4">
+<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="RuntimeRisk.html" title="class in io.github.jabrena.juno.analysis">RuntimeRisk</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab4">
 <div class="block">One stable, machine-readable runtime-risk finding.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="RuntimeRiskAnalyzer.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskAnalyzer</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="RuntimeRiskAnalyzer.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskAnalyzer</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Conservative resource and runtime-risk analysis over the optimized closed-world IR.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab4"><a href="RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab4">
+<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReport</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab4">
 <div class="block">Resource estimates and runtime-risk findings for one closed-world compilation.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="RuntimeRiskReportFormatter.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReportFormatter</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="RuntimeRiskReportFormatter.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReportFormatter</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Renders a <a href="RuntimeRiskReport.html" title="class in io.github.jabrena.juno.analysis"><code>RuntimeRiskReport</code></a> as human-readable lines, shared by the CLI and the Maven plugin.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Terminator.html" title="interface in io.github.jabrena.juno.analysis">Terminator</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Terminator.html" title="interface in io.github.jabrena.juno.analysis">Terminator</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">Where control flow goes after the last instruction of a <a href="BasicBlock.html" title="class in io.github.jabrena.juno.analysis"><code>BasicBlock</code></a>.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="Terminator.Branch.html" title="class in io.github.jabrena.juno.analysis">Terminator.Branch</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab4">
+<div class="col-first even-row-color class-summary class-summary-tab4"><a href="Terminator.Branch.html" title="class in io.github.jabrena.juno.analysis">Terminator.Branch</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab4">
 <div class="block">A conditional branch: control goes to <code>trueTarget</code> or falls through to <code>falseTarget</code>.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab4"><a href="Terminator.Fallthrough.html" title="class in io.github.jabrena.juno.analysis">Terminator.Fallthrough</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab4">
+<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="Terminator.Fallthrough.html" title="class in io.github.jabrena.juno.analysis">Terminator.Fallthrough</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab4">
 <div class="block">Falls into the next block without an explicit branch instruction.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="Terminator.Jump.html" title="class in io.github.jabrena.juno.analysis">Terminator.Jump</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab4">
+<div class="col-first even-row-color class-summary class-summary-tab4"><a href="Terminator.Jump.html" title="class in io.github.jabrena.juno.analysis">Terminator.Jump</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab4">
 <div class="block">Unconditional <code>goto</code>.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab4"><a href="Terminator.Return.html" title="class in io.github.jabrena.juno.analysis">Terminator.Return</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab4">
+<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="Terminator.Return.html" title="class in io.github.jabrena.juno.analysis">Terminator.Return</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab4">
 <div class="block">A supported JVM return opcode, or the implicit return past the last instruction of a method.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="Terminator.Switch.html" title="class in io.github.jabrena.juno.analysis">Terminator.Switch</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab4">&nbsp;</div>
-<div class="col-first even-row-color class-summary class-summary-tab4"><a href="Terminator.Throw.html" title="class in io.github.jabrena.juno.analysis">Terminator.Throw</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab4">
+<div class="col-first even-row-color class-summary class-summary-tab4"><a href="Terminator.Switch.html" title="class in io.github.jabrena.juno.analysis">Terminator.Switch</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab4">&nbsp;</div>
+<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="Terminator.Throw.html" title="class in io.github.jabrena.juno.analysis">Terminator.Throw</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab4">
 <div class="block"><code>athrow</code>: control continues at one of <code>handlers</code> — the distinct handler offsets whose
 exception-table ranges cover the throw, in matching order — or leaves the method when none catches it.</div>
 </div>

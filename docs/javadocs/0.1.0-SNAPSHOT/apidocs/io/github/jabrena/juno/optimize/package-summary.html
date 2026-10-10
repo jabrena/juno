@@ -87,14 +87,17 @@ interface, so <code>CompilationPipeline</code> can run them as an ordered, indep
 list. <a href="ConstantFolder.html" title="class in io.github.jabrena.juno.optimize"><code>ConstantFolder</code></a> folds arithmetic/comparison
 instructions with already-known-constant operands into a single constant, and a branch with a
 constant condition into an unconditional jump. <a href="CopyPropagation.html" title="class in io.github.jabrena.juno.optimize"><code>CopyPropagation</code></a>
-eliminates a local load whose value an earlier store in the same block already determined.
+eliminates a local load whose value is already known, from an earlier store in its block or from every
+predecessor.
 <a href="DeadBlockElimination.html" title="class in io.github.jabrena.juno.optimize"><code>DeadBlockElimination</code></a> then removes any basic block a
-folded branch left unreachable from its method's entry block.
+folded branch left unreachable from its method's entry block, and
+<a href="DeadLocalStoreElimination.html" title="class in io.github.jabrena.juno.optimize"><code>DeadLocalStoreElimination</code></a> removes stores to local slots
+no remaining instruction reads.
 
-<p>Every pass deliberately reasons only within a single basic block — JVM operand-stack
-positions are represented as local slots that different predecessor blocks can store different
-values into, so seeing across a block boundary soundly would need a separate CFG data-flow
-analysis these passes don't attempt.</div>
+<p>Copy propagation uses a conservative CFG meet: a JVM/synthetic local crosses a block boundary
+only when every predecessor contains the same typed IR value. Conflicting merge values stay as
+loads. Other method-wide passes only use properties independent of predecessor identity, such as
+whether a local slot has any read at all.</div>
 </section>
 </div>
 <section class="summary">
@@ -132,12 +135,15 @@ condition is a known constant.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="CopyPropagation.html" title="class in io.github.jabrena.juno.optimize">CopyPropagation</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">Eliminates a <a href="../ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when an earlier <a href="../ir/IrInstruction.StoreLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.StoreLocal</code></a> in the same
-basic block determines the slot's value.</div>
+<div class="block">Eliminates a <a href="../ir/IrInstruction.LoadLocal.html" title="class in io.github.jabrena.juno.ir"><code>IrInstruction.LoadLocal</code></a> when preceding stores determine the slot's value.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="DeadBlockElimination.html" title="class in io.github.jabrena.juno.optimize">DeadBlockElimination</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Removes basic blocks unreachable from a method's entry block.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="DeadLocalStoreElimination.html" title="class in io.github.jabrena.juno.optimize">DeadLocalStoreElimination</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Removes stores to JVM/synthetic local slots that the optimized method never reads.</div>
 </div>
 </div>
 </div>

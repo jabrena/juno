@@ -85,6 +85,7 @@ initTheme();
 <li><a href="#%3Cinit%3E()" tabindex="0">Thumb2AsmBackend()</a></li>
 <li><a href="#%3Cinit%3E(boolean)" tabindex="0">Thumb2AsmBackend(boolean)</a></li>
 <li><a href="#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board)" tabindex="0">Thumb2AsmBackend(boolean, Board)</a></li>
+<li><a href="#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board,io.github.jabrena.juno.RuntimeConfig)" tabindex="0">Thumb2AsmBackend(boolean, Board, RuntimeConfig)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -127,9 +128,8 @@ to a small <code>extern "C"</code> runtime-shim function (see <code>ShimLibrarie
 <code>long</code>/<code>float</code>/<code>double</code> helpers) rather than hand-rolled soft-float assembly. A <code>long</code> keeps this
 backend's existing split-low/high-word representation (two ordinary <code>int32</code> stack slots);
 <code>float</code>/<code>double</code> are new <a href="../ir/JunoType.html#FLOAT32"><code>JunoType.FLOAT32</code></a>/<a href="../ir/JunoType.html#FLOAT64"><code>JunoType.FLOAT64</code></a> stack slots
-(4/8 bytes, holding the raw IEEE-754 bit pattern) — see <code>FrameLayout</code>. Every JVM local slot
-is a full 8 bytes regardless of its actual type, so a <code>double</code> local can never overlap the next slot's
-storage.
+(4/8 bytes, holding the raw IEEE-754 bit pattern) — see <code>FrameLayout</code>. Each JVM local slot is
+one 32-bit word; <code>long</code>/<code>double</code> use the two consecutive slots reserved by the JVMS.
 
 <h2 id="httpclient-httpsclient-json-heading"><code>HttpClient</code>/<code>HttpsClient</code>/<code>Json</code></h2>
 Backed by an <code>extern "C"</code> HTTP/1.1 codec and allocation-free JSON scanner in the generated
@@ -138,9 +138,9 @@ runtime shim. A call needing more than four argument words (e.g.
 <code>AsmEmitter#emitShimCall</code>, the same mechanism <code>emitCall(StringBuilder, FrameLayout, IrInstruction.Call)</code> already uses for user methods.
 
 <h2 id="storage-model-heading">Storage model</h2>
-Unlike a register-allocating backend, every IR <code>Value</code> and every JVM local variable slot
-lives in a fixed offset in its method's own stack frame (never in a register across instructions) —
-see <code>FrameLayout</code>. This trades code density for a design that can't run out of registers
+Unlike a register-allocating backend, every live IR <code>Value</code> and every JVM local variable slot
+lives in a stack-frame offset (never in a register across instructions) — see <code>FrameLayout</code>.
+Non-overlapping block-local value lifetimes reuse offsets. This trades code density for a design that can't run out of registers
 regardless of how many live values a method has, which matters once methods stop being
 one-block-with-three-intrinsic-calls (helper methods with many <code>int</code> parameters, or
 <code>LedMatrixAsciiScroll</code>, whose full-ASCII-font dispatch tree reaches 116 methods). Registers are used only as scratch within a single instruction's codegen. Arena
@@ -210,6 +210,10 @@ data sections), <code>AsmEmitter</code> (stack-slot moves, immediates, AAPCS shi
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board)" class="member-name-link">Thumb2AsmBackend</a><wbr>(boolean&nbsp;gcLoggingEnabled,
  <a href="../board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board,io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">Thumb2AsmBackend</a><wbr>(boolean&nbsp;gcLoggingEnabled,
+ <a href="../board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board,
+ <a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a>&nbsp;runtimeConfig)</code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -275,6 +279,20 @@ data sections), <code>AsmEmitter</code> (stack-slot moves, immediates, AAPCS shi
     disabled at runtime.</dd>
 <dd><code>board</code> - the target board; its <a href="../board/Board.html#core()"><code>Arduino core</code></a> selects the
     <code>CoreRuntime</code> glue, and its capabilities gate optional shim blocks</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="&lt;init&gt;(boolean,io.github.jabrena.juno.board.Board,io.github.jabrena.juno.RuntimeConfig)">
+<h3>Thumb2AsmBackend</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">Thumb2AsmBackend</span><wbr><span class="parameters">(boolean&nbsp;gcLoggingEnabled,
+ <a href="../board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board,
+ <a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a>&nbsp;runtimeConfig)</span></div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>runtimeConfig</code> - the arena and task-stack capacities of the generated runtime shim</dd>
 </dl>
 </div>
 </section>

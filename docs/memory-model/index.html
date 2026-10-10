@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Memory Model - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Memory Model" />
+  <meta name="twitter:title" content="Memory Model">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Where Juno programs keep their data, how the arena and its garbage collector work, and what concurrent tasks can observe compared with the JVM.">
+  <meta property="og:description" content="Where Juno programs keep their data, how the arena and its garbage collector work, and what concurrent tasks can observe compared with the JVM." />
+  <meta name="twitter:description" content="Where Juno programs keep their data, how the arena and its garbage collector work, and what concurrent tasks can observe compared with the JVM.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/memory-model/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/memory-model/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/memory-model/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.1.9" />
+
+<!-- Favicon -->
+
+<base href="/juno/memory-model/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#0f6e63">
+<meta name="msapplication-navbutton-color" content="#0f6e63">
+<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+
+
+    <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+
+</head>
+<body >
+
+
+
+<div class="wrapper default">
+
+
+<aside class="sidebar main">
+  <header>
+<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
+<section class="about">
+  <div class="site-name">Juno</div>
+  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
+</section>
+<section class="menu">
+  <h3 class="section-title menu-title">MENU</h3>
+  <ul>
+    <li><a class="" href="/juno/" ><i class="fa-solid fa-house"></i>Home</a></li>
+    <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
+    <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
+    <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
+    <li><a class="active" href="/juno/memory-model" ><i class="fa-solid fa-memory"></i>Memory Model</a></li>
+    <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
+    <li class="menu-group"><span>Boards</span></li>
+    <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
+    <li><a class="" href="/juno/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
+    <li><a class="" href="/juno/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
+    <li><a class="" href="/juno/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
+    <li><a class="" href="/juno/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
+    <li class="menu-group"><span>Hardware APIs</span></li>
+    <li><a class="" href="/juno/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
+    <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
+    <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
+    <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
+    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
+    <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
+    <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
+    <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
+    <li><a class="" href="/juno/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
+    <li class="menu-group"><span>Shields</span></li>
+    <li><a class="" href="/juno/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
+    <li><a class="" href="/juno/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
+    <li class="menu-group"><span>Tooling</span></li>
+    <li><a class="" href="/juno/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
+    <li><a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
+    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
+  </ul>
+</section>
+  </header> <!-- End Header -->
+  <footer>
+<section class="contact">
+    <h3 class="section-title contact-title">Contact me</h3>
+    <ul>
+        <li>
+            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</section>
+<section class="copyright">
+  <p>2026 &copy; Juno</p>
+</section>
+
+  </footer> <!-- End Footer -->
+</aside> <!-- End Sidebar -->
+<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
+<button class="dark-mode-toggle" aria-label="Toggle dark mode">
+  <i class="fas fa-moon"></i>
+</button>
+<main class="main-content">
+
+<article class="page-content">
+
+  <section class="content-main">
+
+<section class="page-header">
+  <h1 class="page-title">Memory Model</h1>
+  <p class="page-header-intro">
+    Where Juno programs keep their data, how the arena and its garbage collector work, and what concurrent tasks can observe compared with the JVM.
+  </p>
+</section>    <div class="content-prose">
+<p>A Juno program is compiled ahead of time to Thumb-2 assembly, so there is no JVM, no heap that grows, and no
+operating-system scheduler underneath it. This page explains the two halves of the resulting memory model: <strong>where
+data lives</strong> and <strong>what concurrent tasks can observe</strong>. The <a href="/limitations">Known Limitations</a> page lists the places
+where the behavior differs from the JVM; this page explains why.</p>
+<h2 id="where-data-lives">Where data lives</h2>
+<table>
+<thead>
+<tr>
+<th>Region</th>
+<th>What goes there</th>
+<th>Lifetime</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Arena</strong> (fixed 8 KiB)</td>
+<td>Objects, records, arrays, capturing closures, <code>BigInteger</code> / <code>BigDecimal</code> values, atomic cells, task and scope handles</td>
+<td>Garbage-collected</td>
+</tr>
+<tr>
+<td><strong>Static data</strong> (<code>.bss</code>)</td>
+<td>Mutable <code>static</code> fields, one symbol per field</td>
+<td>The whole program</td>
+</tr>
+<tr>
+<td><strong>Flash</strong> (<code>.rodata</code>)</td>
+<td>String literals and <code>static final</code> tables with an all-constant initializer</td>
+<td>The whole program, costs no RAM</td>
+</tr>
+<tr>
+<td><strong>Stack</strong></td>
+<td>Local variables, operand slots and call frames</td>
+<td>One call</td>
+</tr>
+<tr>
+<td><strong>String pool</strong></td>
+<td>Results of <code>String.valueOf</code>, <code>StringBuilder.toString()</code> and similar, in rotating 32-byte slots</td>
+<td>Until the slot is reused</td>
+</tr>
+<tr>
+<td><strong>Task stacks</strong></td>
+<td>One small stack for each extra task (2 KiB on the UNO R4 WiFi, 4 KiB on the UNO Q)</td>
+<td>One task</td>
+</tr>
+</tbody>
+</table>
+<p>There is no general heap. Everything that is allocated at run time comes from the arena, whose size is fixed at
+compile time, and no allocation can make it larger.</p>
+<h3 id="the-arena-and-its-garbage-collector">The arena and its garbage collector</h3>
+<p>Allocation takes a block from the arena. Every block carries a 4-byte header holding a mark bit, a free bit and the
+block's size. When an allocation does not fit, a <strong>conservative mark-and-sweep collector</strong> runs:</p>
+<ol>
+<li>It treats every word on the stack, in the static data and inside each marked object as a <em>possible</em> pointer.</li>
+<li>A word marks a block only if it points exactly at the start of an allocated block.</li>
+<li>Unmarked blocks go back to the free list.</li>
+</ol>
+<p>The collector has no type information and does not move objects, because it cannot tell a pointer from an integer that
+happens to look like one. Two consequences follow:</p>
+<ul>
+<li><strong>Object identity is stable.</strong> An object's address never changes, so identity and <code>==</code> behave as in Java.</li>
+<li><strong>Garbage can occasionally survive.</strong> An integer that looks like a block's address keeps that block alive. A live
+object is never freed.</li>
+</ul>
+<p>If the arena is full even after a collection, the program stops with a diagnostic on the serial port. There is no
+<code>OutOfMemoryError</code> to catch. The compiler reports risks it can see at build time (allocation inside loops, an
+estimated startup footprint above the arena size, arrays without a provable bound) as <code>JUNO-RISK-*</code> findings. Those
+findings are estimates that ignore garbage collection, so treat them as warnings, not as proof.</p>
+<h3 id="arrays-and-constants">Arrays and constants</h3>
+<p>Arrays are fixed-size and allocated from the arena. A <code>static final</code> array whose initializer is all constants is
+placed in flash instead, which keeps large lookup tables out of RAM. A table that cannot be placed in flash falls back
+to the arena, and the build reports why (<code>JUNO-RISK-012</code>).</p>
+<h2 id="what-tasks-can-observe">What tasks can observe</h2>
+<p>Juno's concurrency is <strong>cooperative</strong>. The public API is <code>StructuredTaskScope</code>; <code>new Thread</code> and the other
+<code>java.lang.Thread</code> members, apart from <code>sleep</code> and <code>yield</code>, are rejected at compile time. There is exactly one running
+task at any moment, and it keeps the processor until it reaches a <strong>switch point</strong>:</p>
+<ul>
+<li>a loop back-edge in compiled Java (a task switch happens at most once per millisecond),</li>
+<li><code>Delay</code>, <code>Thread.sleep</code> and <code>Thread.yield</code>,</li>
+<li>a scope's <code>join</code>,</li>
+<li>entering a monitor that another task holds.</li>
+</ul>
+<p>The runtime never switches a task in the middle of an allocation, a collection or a throw. That is why the arena, the
+collector and the pending-exception slot need no locks.</p>
+<h3 id="visibility-and-ordering">Visibility and ordering</h3>
+<p>With one task running at a time and no caches or store buffers to reorder anything, a task always sees the latest
+write of every other task, and operations happen in program order. In practice the model is <strong>sequentially
+consistent</strong>. Java's own memory model is weaker than that, so the rule for portable code is simple: a program that
+is correct under the Java Memory Model is correct on Juno.</p>
+<p>The converse does not hold. A data race can be invisible on a board and still be a bug on the JVM, where tasks run in
+parallel on separate cores. Write the code as though it ran on the JVM:</p>
+<ul>
+<li>A task can still be switched between any two loop iterations, so <code>count++</code> on a shared field is still a lost update
+across a loop back-edge. Use <code>AtomicInteger</code>, <code>AtomicLong</code> or <code>AtomicBoolean</code>, or <code>synchronized</code>.</li>
+<li>Use <code>volatile</code> or an atomic for a flag one task sets and another polls, even though both behave the same on the
+board. The JVM needs them.</li>
+<li>Share results through <code>join</code>. Reading a subtask's result after the scope has joined is safe on both.</li>
+</ul>
+<p><code>AtomicReference</code> is not supported.</p>
+<h3 id="native-calls-are-atomic">Native calls are atomic</h3>
+<p>A call into the hardware runtime (Bluetooth, Wi-Fi, SD card, the TFT shield) runs to completion before any other task
+gets a turn, however long it takes. This is the main place where behavior differs from the JVM, where a blocking call
+stalls only the thread that made it. For example, a <code>PoweredUpHubRemote.connect</code> that scans for ten seconds holds up
+every other task for those ten seconds. A forked task that draws a progress line while it waits would stay silent
+until the call returns. Keep long hardware calls out of programs that depend on other tasks making progress.</p>
+<h2 id="how-it-compares-with-the-jvm">How it compares with the JVM</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>JVM platform threads</th>
+<th>JVM virtual threads</th>
+<th>Juno</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scheduling</td>
+<td>The operating system, preemptive</td>
+<td>Cooperative at blocking calls, on preemptive carrier threads</td>
+<td>Cooperative only</td>
+</tr>
+<tr>
+<td>Parallel execution</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No, one task at a time</td>
+</tr>
+<tr>
+<td>Where a switch can happen</td>
+<td>Anywhere</td>
+<td>Blocking operations</td>
+<td>Loop back-edges, <code>sleep</code>, <code>yield</code>, <code>join</code>, contended monitors</td>
+</tr>
+<tr>
+<td>Memory ordering</td>
+<td>Java Memory Model</td>
+<td>Java Memory Model</td>
+<td>Sequentially consistent</td>
+</tr>
+<tr>
+<td>A long blocking call</td>
+<td>Stalls only its thread</td>
+<td>Pins its carrier thread</td>
+<td>Stalls every task</td>
+</tr>
+</tbody>
+</table>
+<p>Juno behaves like virtual threads running on a single carrier, with an extra switch point at each loop back-edge. That
+is why <code>StructuredTaskScope</code>, which uses virtual threads on the JVM, is the supported way to run work concurrently.</p>
+<h2 id="ram-budget">RAM budget</h2>
+<p>The arena is only one share of the board's RAM. The statics, the task stacks, the core's USB and networking runtime,
+and optional libraries such as <code>ArduinoBLE</code> and <code>WiFiS3</code> take the rest. On the UNO R4 WiFi, with 32 KB in total,
+combining Bluetooth, Wi-Fi and several task stacks can run out of room at link time. When it does, the linker reports
+that <code>.heap</code> does not fit in <code>RAM</code>. Reduce the number of forks, or drop an optional shield or library, and build again.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+</div>
+
+</body>
+</html>

@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OTB2XA3Z.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
 
 </head>
 <body >
@@ -79,6 +79,7 @@
     <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
     <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
     <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
+    <li><a class="" href="/juno/memory-model" ><i class="fa-solid fa-memory"></i>Memory Model</a></li>
     <li><a class="active" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
     <li class="menu-group"><span>Boards</span></li>
     <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
@@ -218,13 +219,11 @@ when more than one board is declared fails with the list of choices instead of g
   -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
 </code></pre>
 <h3 id="doom">DOOM</h3>
-<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield: the animated cover, then the CPU autopilot walking E1M1 until it dies" width="320">
+<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield: the lava cover, then the CPU autopilot walking E1M1 until it dies" width="320">
 <p>Wireframe DOOM in landscape, drawn with DOOM's own BSP renderer: walls, doors and monsters from E1M1. Pick <strong>HUMAN</strong> (touch to turn, walk and fire) or <strong>CPU</strong> (an autopilot that plays like a person and sometimes dies). Runs on the Arduino UNO Q.</p>
-<p>The map lives in flash as <code>static final</code> lookup tables (see <a href="/features">Feature Inventory</a>). The repository ships a small original test map; DOOM's levels are never committed. To walk E1M1, generate its tables from your own <code>DOOM1.WAD</code>, upload, then restore the test map:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml test -Dtest=LevelGeneratorTest -Djuno.doom.wad=/path/to/DOOM1.WAD
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.doom.Doom
-git checkout -- juno-examples/src/main/java/io/github/jabrena/juno/games/doom/Level.java
+<p>At startup the game reads E1M1 from your own <code>DOOM1.WAD</code> on the shield's SD card, with <code>java.io.RandomAccessFile</code> (see <a href="/storage">Storage</a>). With no card, no file, or too little arena, it plays a small original test map built into flash instead; DOOM's levels are never committed. Copy <code>DOOM1.WAD</code> to the card's root, then build with a bigger arena, since the map is held in RAM:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.doom.Doom -Djuno.Xmx=26k
 </code></pre>
 <h3 id="lunar-lander">Lunar Lander</h3>
 <img src="../images/games/lunar-lander-cpu.gif" alt="Lunar Lander on the TFT shield, flown by the CPU" width="240">

@@ -77,6 +77,15 @@ initTheme();
 <div class="block">Juno's top-level compiler entry points: the CLI, the embeddable compiler API, and the small
 value types that connect them.</div>
 </div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.analysis">io.github.jabrena.juno.analysis</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Control-flow structure and conservative resource/runtime-risk analysis over decoded bytecode.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.backend">io.github.jabrena.juno.backend</a></div>
+<div class="col-last even-row-color">
+<div class="block">Code generation: turns optimized Juno IR into a complete Arduino sketch for any supported board
+(the Cortex-M4 UNO R4 WiFi and the Cortex-M33 UNO Q).</div>
+</div>
 </div>
 <section class="package-uses">
 <ul class="block-list">
@@ -86,17 +95,51 @@ value types that connect them.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="class-use/CompilationReport.html#io.github.jabrena.juno">CompilationReport</a></div>
+<div class="col-first even-row-color"><a href="class-use/CompilationMetrics.html#io.github.jabrena.juno">CompilationMetrics</a></div>
 <div class="col-last even-row-color">
+<div class="block">Deterministic structural measurements of one Juno compilation.</div>
+</div>
+<div class="col-first odd-row-color"><a href="class-use/CompilationReport.html#io.github.jabrena.juno">CompilationReport</a></div>
+<div class="col-last odd-row-color">
 <div class="block">What the compiler found while producing a <a href="CompilationResult.html" title="class in io.github.jabrena.juno"><code>CompilationResult</code></a>.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/CompilationRequest.html#io.github.jabrena.juno">CompilationRequest</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="class-use/CompilationRequest.html#io.github.jabrena.juno">CompilationRequest</a></div>
+<div class="col-last even-row-color">
 <div class="block">What to compile: a closed-world classpath plus the entry point's fully qualified class name.</div>
 </div>
-<div class="col-first even-row-color"><a href="class-use/CompilationResult.html#io.github.jabrena.juno">CompilationResult</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="class-use/CompilationResult.html#io.github.jabrena.juno">CompilationResult</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Generated Cortex-M4 assembly, its C++ runtime shim, entry symbol, and compilation report.</div>
+</div>
+<div class="col-first even-row-color"><a href="class-use/RuntimeConfig.html#io.github.jabrena.juno">RuntimeConfig</a></div>
+<div class="col-last even-row-color">
+<div class="block">The capacities of the generated runtime: how much RAM the arena and the task stacks take.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.analysis">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno</a> used by <a href="analysis/package-summary.html">io.github.jabrena.juno.analysis</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/RuntimeConfig.html#io.github.jabrena.juno.analysis">RuntimeConfig</a></div>
+<div class="col-last even-row-color">
+<div class="block">The capacities of the generated runtime: how much RAM the arena and the task stacks take.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.backend">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno</a> used by <a href="backend/package-summary.html">io.github.jabrena.juno.backend</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/RuntimeConfig.html#io.github.jabrena.juno.backend">RuntimeConfig</a></div>
+<div class="col-last even-row-color">
+<div class="block">The capacities of the generated runtime: how much RAM the arena and the task stacks take.</div>
 </div>
 </div>
 </section>

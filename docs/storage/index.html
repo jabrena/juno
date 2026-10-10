@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OTB2XA3Z.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
 
 </head>
 <body >
@@ -79,6 +79,7 @@
     <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
     <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
     <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
+    <li><a class="" href="/juno/memory-model" ><i class="fa-solid fa-memory"></i>Memory Model</a></li>
     <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
     <li class="menu-group"><span>Boards</span></li>
     <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
@@ -223,6 +224,45 @@ if (SdCard.begin()) {
 method must declare <code>throws IOException</code> (or catch it). Juno's embedded implementation never actually
 throws from <code>load</code>, so such a handler is accepted but never runs. As specified by the Java API, <code>load</code> reads from the stream's current position
 and leaves it open, so close the <code>InputStream</code> explicitly.</p>
+<h2 id="random-access-with-randomaccessfile">Random access with <code>RandomAccessFile</code></h2>
+<p>For files read out of order, such as a game's data file with a directory of offsets, Juno supports the standard
+<code>java.io.RandomAccessFile</code> in read-only mode. The same code runs unchanged on a desktop JVM against a local file:</p>
+<pre><code class="language-java">import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
+byte[] header = new byte[12];
+if (SdCard.begin()) {
+    try (RandomAccessFile file = new RandomAccessFile(&quot;DATA.BIN&quot;, &quot;r&quot;)) {
+        file.readFully(header);                // the first 12 bytes
+        file.seek(file.length() - 16);         // jump anywhere in the file
+        int read = file.read(header, 0, 4);    // up to 4 bytes, or -1 at the end
+    } catch (FileNotFoundException missing) {
+        // no such file on the card
+    } catch (EOFException truncated) {
+        // readFully ran out of file
+    } catch (IOException failed) {
+        // any other card error
+    }
+}
+</code></pre>
+<p>Supported: the <code>(String, &quot;r&quot;)</code> constructor, <code>read()</code>, <code>read(byte[])</code>, <code>read(byte[], int, int)</code>, <code>readFully(byte[])</code>,
+<code>readFully(byte[], int, int)</code>, <code>seek(long)</code>, <code>getFilePointer()</code>, <code>length()</code>, <code>skipBytes(int)</code> and <code>close()</code>.
+Failures throw the JDK's own exceptions, as above, and a <code>RandomAccessFile</code> can be passed to helper methods.</p>
+<p>Limits:</p>
+<ul>
+<li>The path is a compile-time string literal and the mode must be <code>&quot;r&quot;</code>; any other mode is a compile error.</li>
+<li><code>read(byte[])</code> and <code>readFully(byte[])</code> take their length from the array, so they need a local array created
+with a constant size in the same method. Pass <code>(buffer, offset, length)</code> for any other array; its bounds are
+then not checked against the array's real size.</li>
+<li><code>seek</code> past the end of the file throws <code>IOException</code> (the JDK allows it).</li>
+<li><code>RandomAccessFile</code> and <code>SdCard.open()</code> share the card's four open-file slots.</li>
+</ul>
+<p>Every byte array, like any other <code>new</code> object, lives in Juno's garbage-collected arena, 8 KB by default. A program
+that keeps large tables in RAM, such as data loaded from a file at startup, can raise it with the Maven plugin's
+JVM-style <code>-Djuno.Xmx</code> (for example <code>-Djuno.Xmx=32k</code>), and check the room left at run time with
+<code>Memory.arenaCapacityBytes() - Memory.arenaUsedBytes()</code>. <code>-Djuno.Xss</code> sets each extra task's stack the same way.</p>
     </div>
   </section>
 </article>
