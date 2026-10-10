@@ -2,6 +2,7 @@ package io.github.jabrena.juno;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,5 +38,28 @@ class RuntimeConfigTest {
                 .isInstanceOf(CompileException.class).hasMessageContaining("task stack");
         assertThatThrownBy(() -> new RuntimeConfig(8192, 4, OptionalInt.of(1001)))
                 .isInstanceOf(CompileException.class).hasMessageContaining("multiple of 8");
+    }
+
+    @Test
+    void readsSizesInTheJvmsXmxAndXssSyntax() {
+        RuntimeConfig config = RuntimeConfig.of(Optional.of("48k"), Optional.of("8192"));
+
+        assertThat(config.arenaBytes()).isEqualTo(48 * 1024);
+        assertThat(config.threadStackBytes()).hasValue(8192);
+        assertThat(config.maxThreads()).isEqualTo(RuntimeLimits.MAX_THREADS);
+        assertThat(RuntimeConfig.of(Optional.of("1M"), Optional.empty()).arenaBytes()).isEqualTo(1024 * 1024);
+    }
+
+    @Test
+    void anAbsentOrBlankSizeKeepsTheDefault() {
+        assertThat(RuntimeConfig.of(Optional.empty(), Optional.of(" "))).isEqualTo(RuntimeConfig.DEFAULT);
+    }
+
+    @Test
+    void rejectsASizeThatIsNotANumberOfBytes() {
+        assertThatThrownBy(() -> RuntimeConfig.of(Optional.of("lots"), Optional.empty()))
+                .isInstanceOf(CompileException.class).hasMessageContaining("juno.Xmx");
+        assertThatThrownBy(() -> RuntimeConfig.of(Optional.empty(), Optional.of("4g")))
+                .isInstanceOf(CompileException.class).hasMessageContaining("juno.Xss");
     }
 }

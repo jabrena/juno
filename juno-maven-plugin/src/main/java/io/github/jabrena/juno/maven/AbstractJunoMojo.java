@@ -1,9 +1,11 @@
 package io.github.jabrena.juno.maven;
 
 import io.github.jabrena.juno.CompilationReport;
+import io.github.jabrena.juno.CompilationRequest;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.JunoCompiler;
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.analysis.ConfigSuggestionFormatter;
 import io.github.jabrena.juno.analysis.RuntimeRiskReportFormatter;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -45,6 +47,22 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     @Parameter(property = "juno.board")
     private String board;
 
+    /**
+     * Size of the garbage-collected arena, in the JVM's {@code -Xmx} syntax ({@code 49152}, {@code 48k},
+     * {@code 1m}); a multiple of 8. Defaults to the runtime's 8 KB. Every {@code new} array, string and object
+     * lives in the arena, so a program that keeps large data sets in RAM (for example, tables loaded from a file at
+     * startup) needs a bigger one; the compiler's startup estimate suggests a size when the default is too small.
+     */
+    @Parameter(property = "juno.Xmx")
+    private String arenaSize;
+
+    /**
+     * Stack of each extra task, in the JVM's {@code -Xss} syntax; a multiple of 8. Defaults to the board's own
+     * size (2048 bytes on the UNO R4 WiFi, 4096 on the UNO Q).
+     */
+    @Parameter(property = "juno.Xss")
+    private String threadStackSize;
+
     final CompiledSketch compileSketch() {
         if (mainClass == null || mainClass.isBlank()) {
             throw new ArduinoCliException("Missing required Juno entry point; configure <mainClass> or -Djuno.main=<class>");
@@ -68,8 +86,10 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         Path wrapper = sketchDirectory.resolve(sketchName + ".ino");
 
         Optional<String> requestedBoard = board == null || board.isBlank() ? Optional.empty() : Optional.of(board.trim());
-        CompilationResult result = new JunoCompiler().compileTo(classpath, mainClass, assembly, shim, gcLog,
-                requestedBoard);
+        RuntimeConfig runtimeConfig = RuntimeConfig.of(Optional.ofNullable(arenaSize),
+                Optional.ofNullable(threadStackSize));
+        CompilationResult result = new JunoCompiler().compileTo(
+                new CompilationRequest(classpath, mainClass, gcLog, requestedBoard, runtimeConfig), assembly, shim);
         writeAsmWrapper(wrapper, result.entryPointSymbol());
         String targetFqbn = targetFqbn(result.report().board().fqbn());
         warnForFqbnOverride(targetFqbn, result.report());

@@ -55,6 +55,14 @@ public final class JunoCompiler {
         return result;
     }
 
+    /** Compiles {@code request} and writes the generated assembly and runtime shim. */
+    public CompilationResult compileTo(CompilationRequest request, Path assemblyOutput, Path runtimeShimOutput) {
+        CompilationResult result = compile(request);
+        write(assemblyOutput, result.assembly(), "assembly");
+        write(runtimeShimOutput, result.runtimeShim(), "runtime shim");
+        return result;
+    }
+
     private static void write(Path output, String source, String description) {
         try {
             Path parent = output.toAbsolutePath().getParent();
