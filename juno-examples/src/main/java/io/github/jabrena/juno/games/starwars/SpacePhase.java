@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.starwars;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.starwars.Entities.E_AUX;
 import static io.github.jabrena.juno.games.starwars.Entities.E_STRIDE;
 import static io.github.jabrena.juno.games.starwars.Entities.E_TIMER;
@@ -15,9 +18,6 @@ import static io.github.jabrena.juno.games.starwars.Entities.T_FIREBALL;
 import static io.github.jabrena.juno.games.starwars.Entities.T_NONE;
 import static io.github.jabrena.juno.games.starwars.Entities.T_TIE;
 import static io.github.jabrena.juno.games.starwars.Entities.T_VADER;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * Space: TIE fighters swoop in and fire spinning fireballs until the wave's quota is destroyed.

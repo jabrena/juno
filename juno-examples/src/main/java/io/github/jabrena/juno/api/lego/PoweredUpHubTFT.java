@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.api.lego;
 
-import static io.github.jabrena.juno.api.lego.PoweredUpState.*;
-
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+
+import static io.github.jabrena.juno.api.lego.PoweredUpState.*;
 
 /**
  * A touch screen remote for a LEGO Powered Up hub (Technic Hub, Move Hub or City Hub), drawn on the

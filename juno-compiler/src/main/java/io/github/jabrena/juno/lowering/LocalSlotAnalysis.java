@@ -1,17 +1,15 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.ConstantAndStackSupport.*;
-
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.analysis.BasicBlock;
 import io.github.jabrena.juno.analysis.ControlFlowGraph;
 import io.github.jabrena.juno.analysis.Terminator;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.ExceptionHandler;
-import io.github.jabrena.juno.linker.Descriptor;
-import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.Value;
+import io.github.jabrena.juno.linker.Descriptor;
+import io.github.jabrena.juno.linker.LinkedMethod;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -23,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import static io.github.jabrena.juno.lowering.ConstantAndStackSupport.*;
 
 /** Local-variable-slot and array-parameter dataflow analysis, split out of {@link BytecodeToIr}. */
 final class LocalSlotAnalysis {

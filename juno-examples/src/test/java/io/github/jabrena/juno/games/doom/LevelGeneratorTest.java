@@ -1,8 +1,9 @@
 package io.github.jabrena.juno.games.doom;
 
-import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+
+import java.nio.file.Path;
 
 /**
  * Generates {@code Level.java} from a local DOOM WAD on demand:

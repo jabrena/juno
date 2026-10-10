@@ -1,5 +1,12 @@
 package io.github.jabrena.juno.games.redbaron;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import static io.github.jabrena.juno.api.tft.Internals.call;
 import static io.github.jabrena.juno.api.tft.Internals.callBoolean;
 import static io.github.jabrena.juno.api.tft.Internals.callInt;
@@ -7,13 +14,6 @@ import static io.github.jabrena.juno.api.tft.Internals.get;
 import static io.github.jabrena.juno.api.tft.Internals.getInt;
 import static io.github.jabrena.juno.api.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Rules of Red Baron: banking, turning, guns, enemy fire, crashes, the pilot screen, and the CPU

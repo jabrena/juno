@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.tft;
 
-import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
@@ -19,7 +18,7 @@ public final class TouchPaintTFT {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        
+
         TftTouchShield.begin();
         // Portrait with the palette on the edge opposite the shield's native row 0.
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);

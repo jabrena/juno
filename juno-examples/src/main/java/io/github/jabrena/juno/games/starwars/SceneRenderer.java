@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.starwars;
 
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.starwars.Entities.CAP_HEIGHT;
 import static io.github.jabrena.juno.games.starwars.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.starwars.Entities.E_AUX;
@@ -24,8 +26,6 @@ import static io.github.jabrena.juno.games.starwars.Entities.T_TIE;
 import static io.github.jabrena.juno.games.starwars.Entities.T_TOWER;
 import static io.github.jabrena.juno.games.starwars.Entities.T_TURRET;
 import static io.github.jabrena.juno.games.starwars.Entities.T_VADER;
-
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * Draws a frame in vector style: the phase's backdrop, then the entities farthest first, the lasers

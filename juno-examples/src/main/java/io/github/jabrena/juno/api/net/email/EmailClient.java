@@ -3,10 +3,10 @@ package io.github.jabrena.juno.api.net.email;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.api.net.Wifi;
 
 /**
  * A small menu-driven client on the LCD Keypad Shield: a menu view (row 0 {@code "UP/DOWN

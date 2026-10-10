@@ -1,5 +1,9 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.startrek.DisplayList.HEADER;
 import static io.github.jabrena.juno.games.startrek.DisplayList.HEIGHT;
 import static io.github.jabrena.juno.games.startrek.DisplayList.SPACE;
@@ -7,10 +11,6 @@ import static io.github.jabrena.juno.games.startrek.DisplayList.WIDTH;
 import static io.github.jabrena.juno.games.startrek.Geometry.SECTOR_FIX;
 import static io.github.jabrena.juno.games.startrek.SceneRenderer.STAR;
 import static io.github.jabrena.juno.games.startrek.SceneRenderer.STARBASE;
-
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /** The warp opening, the title screen, and the scenes between sectors. */
 final class Interludes {

@@ -1,23 +1,18 @@
 package io.github.jabrena.juno.games.chess;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.io.serial.Serial;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import static io.github.jabrena.juno.games.chess.BishopSprite.*;
 import static io.github.jabrena.juno.games.chess.Chess.*;
 import static io.github.jabrena.juno.games.chess.ChessEngine.*;
 import static io.github.jabrena.juno.games.chess.ChessRules.*;
-import static io.github.jabrena.juno.games.chess.MoveGenerator.*;
 import static io.github.jabrena.juno.games.chess.Controls.*;
-import static io.github.jabrena.juno.games.chess.SceneRenderer.*;
-import static io.github.jabrena.juno.games.chess.PieceSprites.*;
-import static io.github.jabrena.juno.games.chess.PawnSprite.*;
-import static io.github.jabrena.juno.games.chess.KnightSprite.*;
-import static io.github.jabrena.juno.games.chess.BishopSprite.*;
-import static io.github.jabrena.juno.games.chess.RookSprite.*;
-import static io.github.jabrena.juno.games.chess.QueenSprite.*;
 import static io.github.jabrena.juno.games.chess.KingSprite.*;
+import static io.github.jabrena.juno.games.chess.KnightSprite.*;
+import static io.github.jabrena.juno.games.chess.MoveGenerator.*;
+import static io.github.jabrena.juno.games.chess.PawnSprite.*;
+import static io.github.jabrena.juno.games.chess.PieceSprites.*;
+import static io.github.jabrena.juno.games.chess.QueenSprite.*;
+import static io.github.jabrena.juno.games.chess.RookSprite.*;
+import static io.github.jabrena.juno.games.chess.SceneRenderer.*;
 
 final class MoveGenerator {
     private MoveGenerator() {

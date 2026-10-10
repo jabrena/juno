@@ -5,6 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.concurrent.StructuredTaskScope;

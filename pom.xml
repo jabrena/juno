@@ -42,6 +42,17 @@
         <maven-plugin-pmd.version>3.28.0</maven-plugin-pmd.version>
         <pmd.version>7.28.0</pmd.version>
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
+        <maven-plugin-spotless.version>3.10.3</maven-plugin-spotless.version>
+        <maven-plugin-enforcer.version>3.6.3</maven-plugin-enforcer.version>
+        <extra-enforcer-rules.version>1.12.1</extra-enforcer-rules.version>
+        <maven-plugin-jacoco.version>0.8.15</maven-plugin-jacoco.version>
+        <!-- Minimum coverage for the modules that gate on it: JaCoCo per counter under -Pjacoco, and PiTest's
+             mutation and line coverage under -Ppitest (juno-compiler). -->
+        <coverage.level>80</coverage.level>
+        <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
+        <maven-plugin-pitest.version>1.30.0</maven-plugin-pitest.version>
+        <maven-plugin-pitest-junit5.version>1.2.3</maven-plugin-pitest-junit5.version>
+        <java.version>${maven.compiler.release}</java.version>
     </properties>
 
     <dependencyManagement>
@@ -141,6 +152,98 @@
         </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${maven-plugin-spotless.version}</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <java>
+                        <removeUnusedImports />
+                        <importOrder>
+                            <order>,java|javax,\#</order>
+                        </importOrder>
+                        <endWithNewline />
+                        <trimTrailingWhitespace />
+                        <indent>
+                            <spaces>true</spaces>
+                            <spacesPerTab>4</spacesPerTab>
+                        </indent>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-plugin-enforcer.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>extra-enforcer-rules</artifactId>
+                        <version>${extra-enforcer-rules.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <configuration>
+                            <rules>
+                                <banCircularDependencies/>
+                                <dependencyConvergence/>
+                                <banDuplicatePomDependencyVersions/>
+                                <requireMavenVersion>
+                                    <version>${maven.version}</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>${java.version}</version>
+                                </requireJavaVersion>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.projectlombok:lombok</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${maven-plugin-dependency.version}</version>
+                <executions>
+                    <execution>
+                        <id>analyze-dependencies</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                            <ignoreNonCompile>true</ignoreNonCompile>
+                            <!-- Modules declare the junit-jupiter/archunit-junit5 aggregators on purpose; tests call into their parts. -->
+                            <ignoredUsedUndeclaredDependencies>
+                                <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-api</ignoredUsedUndeclaredDependency>
+                                <ignoredUsedUndeclaredDependency>org.junit.jupiter:junit-jupiter-params</ignoredUsedUndeclaredDependency>
+                                <ignoredUsedUndeclaredDependency>com.tngtech.archunit:archunit</ignoredUsedUndeclaredDependency>
+                                <ignoredUsedUndeclaredDependency>com.tngtech.archunit:archunit-junit5-api</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
@@ -152,6 +255,37 @@
     </build>
 
     <profiles>
+        <!-- Code coverage: ./mvnw clean verify -Pjacoco (report in each module's target/site/jacoco). -->
+        <profile>
+            <id>jacoco</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${maven-plugin-jacoco.version}</version>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!-- Cyclomatic Complexity Analysis Profile -->
         <profile>
             <id>cyclomatic-complexity</id>

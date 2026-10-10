@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.api.Random;
+
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_AUX;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_SR;
@@ -17,8 +19,6 @@ import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_ATST;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_FIREBALL;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_PROBE;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_TIE;
-
-import io.github.jabrena.juno.api.Random;
 
 /**
  * The CPU at the controls, flying like a person rather than a machine: it lets targets come within

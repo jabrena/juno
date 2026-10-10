@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.RuntimeConfig;
-import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 

@@ -2,8 +2,8 @@ package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
-import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.IrValues;
+import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import org.jspecify.annotations.Nullable;
 

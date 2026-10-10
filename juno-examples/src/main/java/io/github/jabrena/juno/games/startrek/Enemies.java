@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.api.Random;
+
+import static io.github.jabrena.juno.games.startrek.Entities.E_AUX;
 import static io.github.jabrena.juno.games.startrek.Entities.E_COOL;
 import static io.github.jabrena.juno.games.startrek.Entities.E_HEADING;
 import static io.github.jabrena.juno.games.startrek.Entities.E_STRIDE;
@@ -9,14 +12,11 @@ import static io.github.jabrena.juno.games.startrek.Entities.E_VX;
 import static io.github.jabrena.juno.games.startrek.Entities.E_VY;
 import static io.github.jabrena.juno.games.startrek.Entities.E_X;
 import static io.github.jabrena.juno.games.startrek.Entities.E_Y;
-import static io.github.jabrena.juno.games.startrek.Entities.E_AUX;
 import static io.github.jabrena.juno.games.startrek.Entities.HIT_RADIUS;
 import static io.github.jabrena.juno.games.startrek.Entities.T_MINE;
 import static io.github.jabrena.juno.games.startrek.Entities.T_NONE;
 import static io.github.jabrena.juno.games.startrek.Entities.T_STARBASE;
 import static io.github.jabrena.juno.games.startrek.Geometry.FIX;
-
-import io.github.jabrena.juno.api.Random;
 
 /** How Klingons, anti-matter saucers, Nomad and its mines behave. */
 final class Enemies {

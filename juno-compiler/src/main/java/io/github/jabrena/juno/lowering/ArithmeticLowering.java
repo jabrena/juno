@@ -1,22 +1,22 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
-import static io.github.jabrena.juno.lowering.ControlFlowLowering.*;
-import static io.github.jabrena.juno.lowering.ConversionLowering.*;
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.JavaClass;
-import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.FloatBinaryOp;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.UnaryOp;
+import io.github.jabrena.juno.linker.LinkedMethod;
 
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+
+import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
+import static io.github.jabrena.juno.lowering.ControlFlowLowering.*;
+import static io.github.jabrena.juno.lowering.ConversionLowering.*;
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** Binary arithmetic, shift, and bitwise opcode lowering (96-131), split out of {@link BytecodeToIr}. */
 final class ArithmeticLowering {

@@ -5,12 +5,12 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.net.Wifi;
-import io.github.jabrena.juno.api.net.http.HttpsClient;
-import io.github.jabrena.juno.api.net.http.Json;
 import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.net.Wifi;
+import io.github.jabrena.juno.api.net.http.HttpsClient;
+import io.github.jabrena.juno.api.net.http.Json;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 import java.io.IOException;

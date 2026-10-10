@@ -1,8 +1,5 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -11,6 +8,9 @@ import io.github.jabrena.juno.ir.Value;
 
 import java.util.BitSet;
 import java.util.List;
+
+import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** Numeric conversion, {@code iinc}, and compare-to-int opcode lowering (132-152), split out of {@link BytecodeToIr}. */
 final class ConversionLowering {

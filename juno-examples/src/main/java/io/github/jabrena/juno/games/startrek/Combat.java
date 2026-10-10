@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.games.startrek;
 
+import static io.github.jabrena.juno.games.startrek.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.startrek.Entities.E_HP;
 import static io.github.jabrena.juno.games.startrek.Entities.E_STRIDE;
 import static io.github.jabrena.juno.games.startrek.Entities.E_TIMER;
@@ -8,7 +9,6 @@ import static io.github.jabrena.juno.games.startrek.Entities.E_VX;
 import static io.github.jabrena.juno.games.startrek.Entities.E_VY;
 import static io.github.jabrena.juno.games.startrek.Entities.E_X;
 import static io.github.jabrena.juno.games.startrek.Entities.E_Y;
-import static io.github.jabrena.juno.games.startrek.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.startrek.Entities.HIT_RADIUS;
 import static io.github.jabrena.juno.games.startrek.Entities.T_KLINGON;
 import static io.github.jabrena.juno.games.startrek.Entities.T_MINE;

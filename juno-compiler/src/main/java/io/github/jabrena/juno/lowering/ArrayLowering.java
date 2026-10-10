@@ -1,26 +1,26 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.ConstantAndStackSupport.*;
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
-import io.github.jabrena.juno.linker.AtomicSupport;
-import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.ir.ArrayDeclaration;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
-import io.github.jabrena.juno.linker.ThrowableTypes;
+import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
+import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.LockSupport;
+import io.github.jabrena.juno.linker.ThrowableTypes;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static io.github.jabrena.juno.lowering.ConstantAndStackSupport.*;
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** Array-load/store and object/array allocation opcode lowering, split out of {@link BytecodeToIr}. */
 final class ArrayLowering {

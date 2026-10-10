@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_AUX;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_FLAG;
@@ -22,8 +24,6 @@ import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_NONE;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_PROBE;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_SHOT;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_TIE;
-
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * Draws a frame in vector style: Hoth or the stars, then the entities farthest first, the lasers and

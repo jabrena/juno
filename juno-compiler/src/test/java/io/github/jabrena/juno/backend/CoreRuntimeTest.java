@@ -3,8 +3,9 @@ package io.github.jabrena.juno.backend;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.board.ArduinoCore;
-import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
+
+import java.util.OptionalInt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

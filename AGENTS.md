@@ -16,6 +16,9 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use `Objects.requireNonNull` for a
   lookup that must succeed by construction. NullAway (Error Prone, configured in the root `pom.xml`) enforces this at
   compile time in those three modules and fails the build on a nullness error.
+- **Build checks:** Spotless (formatting: imports as project/third-party, `java.*`, then static), the Maven
+  Enforcer (JDK/Maven versions, dependency convergence) and `dependency:analyze-only` (no undeclared or unused
+  dependencies) run on every `verify`; documented exceptions live in the poms.
 - **External toolchain:** Arduino CLI with the `arduino:renesas_uno` (UNO R4 WiFi) and `arduino:zephyr`
   (UNO Q) cores, used to actually compile/upload generated sketches to real hardware; not a Maven dependency.
 
@@ -30,8 +33,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - `juno-maven-plugin/` – Maven goals (`juno:compile`, `verify`, `upload`, `monitor`) and their tests; tests use a
   fake process executor and never touch hardware.
 - `juno-examples/` – example programs buildable with `arduino-cli`, plus game, `arduino-cli` and QEMU tests.
-- `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`.
-- `documentation/` – images and video assets.
+- `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`. Images
+  live once, in `src/main/resources/public/images/`; the README links to them there.
 
 ## Commands
 
@@ -42,8 +45,14 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 # Build all modules
 ./mvnw clean package
 
-# Full verify, matching CI (.github/workflows/maven.yaml)
+# Full verify, matching CI (.github/workflows/maven.yaml); also runs Spotless, the Enforcer and dependency analysis
 ./mvnw --batch-mode --no-transfer-progress verify
+
+# Fix formatting violations reported by spotless:check
+./mvnw spotless:apply
+
+# Coverage reports for every module (target/site/jacoco); fails if juno-compiler drops below coverage.level (80%)
+./mvnw clean verify -Pjacoco
 
 # Generate the juno-api and juno-compiler modules' Javadoc HTML into docs/javadocs/<version>/apidocs
 ./mvnw javadoc:aggregate

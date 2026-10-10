@@ -5,9 +5,10 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
-import static io.github.jabrena.juno.games.blackjack.Round.*;
+
 import static io.github.jabrena.juno.games.blackjack.Cards.*;
 import static io.github.jabrena.juno.games.blackjack.Controls.*;
+import static io.github.jabrena.juno.games.blackjack.Round.*;
 import static io.github.jabrena.juno.games.blackjack.SceneRenderer.*;
 
 /**

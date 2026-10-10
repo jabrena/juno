@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.site;
 
-import static org.hamcrest.Matchers.containsString;
-
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
+
+import static org.hamcrest.Matchers.containsString;
 
 @QuarkusTest
 class JunoSiteTest {

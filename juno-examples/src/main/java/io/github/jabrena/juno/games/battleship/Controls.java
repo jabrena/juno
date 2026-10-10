@@ -2,12 +2,12 @@ package io.github.jabrena.juno.games.battleship;
 
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
-import static io.github.jabrena.juno.games.battleship.Battleship.*;
-import static io.github.jabrena.juno.games.battleship.Fleet.*;
+
 import static io.github.jabrena.juno.games.battleship.AutopilotBattleship.*;
+import static io.github.jabrena.juno.games.battleship.Battleship.*;
 import static io.github.jabrena.juno.games.battleship.Controls.*;
+import static io.github.jabrena.juno.games.battleship.Fleet.*;
 import static io.github.jabrena.juno.games.battleship.SceneRenderer.*;
 
 final class Controls {

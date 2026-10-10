@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.startrek.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.startrek.Entities.E_AUX;
 import static io.github.jabrena.juno.games.startrek.Entities.E_COOL;
@@ -14,9 +17,6 @@ import static io.github.jabrena.juno.games.startrek.Entities.T_NOMAD;
 import static io.github.jabrena.juno.games.startrek.Entities.T_SAUCER;
 import static io.github.jabrena.juno.games.startrek.Entities.T_STARBASE;
 import static io.github.jabrena.juno.games.startrek.Geometry.FIX;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * One sector: who is in it (Klingons, the starbase, saucers from sector 2, and Nomad every fourth

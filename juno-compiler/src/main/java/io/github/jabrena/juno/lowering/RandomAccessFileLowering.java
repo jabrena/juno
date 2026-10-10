@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
@@ -15,6 +13,8 @@ import io.github.jabrena.juno.linker.LinkedMethod;
 
 import java.util.List;
 import java.util.Optional;
+
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /**
  * {@code new RandomAccessFile(path, "r")} and its buffer reads. Arrays carry no runtime length, so every buffer read

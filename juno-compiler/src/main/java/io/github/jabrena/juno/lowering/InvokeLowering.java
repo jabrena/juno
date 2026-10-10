@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.JavaClass;
@@ -9,16 +7,15 @@ import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
-import io.github.jabrena.juno.linker.Descriptor;
-import io.github.jabrena.juno.linker.LinkedMethod;
-import io.github.jabrena.juno.linker.InterfaceDispatch;
-import io.github.jabrena.juno.linker.SupportedJdkMethods;
-import io.github.jabrena.juno.linker.LockSupport;
-import io.github.jabrena.juno.linker.ThrowableTypes;
-import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.InterfaceTarget;
+import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
+import io.github.jabrena.juno.linker.Descriptor;
+import io.github.jabrena.juno.linker.InterfaceDispatch;
+import io.github.jabrena.juno.linker.LinkedMethod;
+import io.github.jabrena.juno.linker.SupportedJdkMethods;
+import io.github.jabrena.juno.linker.ThrowableTypes;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -26,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** {@code invokevirtual}/{@code invokespecial}/{@code invokestatic} opcode lowering, split out of {@link BytecodeToIr}. */
 final class InvokeLowering {

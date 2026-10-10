@@ -5,7 +5,6 @@ import io.github.jabrena.juno.classfile.MethodRef;
 
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 
-import java.util.Map;
 
 /**
  * The closed-world plumbing behind {@code java.lang.Thread}: a started thread runs its {@code Runnable} on a

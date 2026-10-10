@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.ir;
 
-import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.classfile.FieldRef;
+import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
-import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.linker.ConstantTables;
+import io.github.jabrena.juno.linker.LambdaSite;
 
 import java.util.List;
 import java.util.Optional;

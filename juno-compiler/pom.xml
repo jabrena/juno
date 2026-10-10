@@ -61,6 +61,22 @@
 
     <build>
         <plugins>
+            <!-- The compiler reads juno-api's class files from the program's classpath and never links against them;
+                 the compile-scope dependency is the module contract (users of juno-compiler get the API with it). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze-dependencies</id>
+                        <configuration>
+                            <ignoredNonTestScopedDependencies>
+                                <ignoredNonTestScopedDependency>io.github.jabrena:juno-api</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- NullAway (via Error Prone) fails the build on nullness errors; settings live in the root pom. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -100,6 +116,118 @@
     </build>
 
     <profiles>
+        <!-- Mutation testing: ./mvnw verify -Ppitest -pl juno-compiler -am (report in target/pit-reports). Fails below
+             ${coverage.level}% mutation score or line coverage. The Docker-based *IT suites are not unit tests. -->
+        <profile>
+            <id>pitest</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <version>${maven-plugin-pitest.version}</version>
+                        <configuration>
+                            <targetClasses>
+                                <param>io.github.jabrena.juno.*</param>
+                            </targetClasses>
+                            <targetTests>
+                                <param>io.github.jabrena.juno.*</param>
+                            </targetTests>
+                            <excludedTestClasses>
+                                <param>io.github.jabrena.juno.**.*IT</param>
+                            </excludedTestClasses>
+                            <outputFormats>
+                                <outputFormat>HTML</outputFormat>
+                                <outputFormat>XML</outputFormat>
+                            </outputFormats>
+                            <mutationThreshold>${coverage.level}</mutationThreshold>
+                            <coverageThreshold>${coverage.level}</coverageThreshold>
+                            <timestampedReports>false</timestampedReports>
+                            <verbose>false</verbose>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.pitest</groupId>
+                                <artifactId>pitest-junit5-plugin</artifactId>
+                                <version>${maven-plugin-pitest-junit5.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>pitest-mutation-testing</id>
+                                <goals>
+                                    <goal>mutationCoverage</goal>
+                                </goals>
+                                <phase>verify</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Under -Pjacoco (configured in the root pom), the compiler also fails below ${coverage.level}% on any counter. -->
+        <profile>
+            <id>jacoco</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>check</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <rule>
+                                            <element>BUNDLE</element>
+                                            <limits>
+                                            <limit>
+                                                <counter>LINE</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${coverage.level}%</minimum>
+                                            </limit>
+                                            <limit>
+                                                <counter>BRANCH</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${coverage.level}%</minimum>
+                                            </limit>
+                                            <limit>
+                                                <counter>METHOD</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${coverage.level}%</minimum>
+                                            </limit>
+                                            <limit>
+                                                <counter>CLASS</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${coverage.level}%</minimum>
+                                            </limit>
+                                            <limit>
+                                                <counter>INSTRUCTION</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${coverage.level}%</minimum>
+                                            </limit>
+                                            <limit>
+                                                <counter>COMPLEXITY</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>${coverage.level}%</minimum>
+                                            </limit>
+                                            </limits>
+                                        </rule>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!-- Compile the API and shield fixtures (src/test/arduino/programs) with the real arduino-cli in Docker. -->
         <profile>
             <id>arduino-cli</id>

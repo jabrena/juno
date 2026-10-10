@@ -56,6 +56,7 @@ The following profiles are declared in this project. Activate them with `-P <pro
 | Profile ID | Command | Activation |
 |------------|---------|------------|
 | `cyclomatic-complexity` (root `pom.xml`) | `./mvnw clean verify -P cyclomatic-complexity` | default (activeByDefault) |
+| `jacoco` (root and `juno-compiler/pom.xml`) | `./mvnw clean verify -P jacoco` | manual |
 | `site` (root `pom.xml`, `juno-site/pom.xml`) | `./mvnw clean verify -P site` | manual |
 | `arduino-cli` (`juno-compiler/pom.xml`) | `./mvnw -pl juno-compiler -am -Parduino-cli verify` | manual (needs Docker) |
 | `qemu` (`juno-compiler/pom.xml`) | `./mvnw -pl juno-compiler -am -Pqemu verify` | manual (needs Docker) |

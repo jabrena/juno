@@ -1,25 +1,19 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
-import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.analysis.BasicBlock;
 import io.github.jabrena.juno.analysis.Terminator;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.ExceptionHandler;
 import io.github.jabrena.juno.classfile.JavaClass;
-import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
-import io.github.jabrena.juno.linker.LinkedMethod;
-import io.github.jabrena.juno.linker.ThrowableTypes;
-import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.Value;
+import io.github.jabrena.juno.linker.LinkedMethod;
+import io.github.jabrena.juno.linker.ThrowableTypes;
 import org.jspecify.annotations.Nullable;
 
 import java.util.BitSet;
@@ -28,6 +22,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+
+import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** Branch, return, {@code athrow}, and division-guard opcode lowering, split out of {@link BytecodeToIr}. */
 final class ControlFlowLowering {

@@ -10,7 +10,6 @@ import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.MethodHandleRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 
-import java.util.List;
 import java.util.Map;
 
 /** Validates and resolves the deliberately small, javac-produced LambdaMetafactory protocol. */

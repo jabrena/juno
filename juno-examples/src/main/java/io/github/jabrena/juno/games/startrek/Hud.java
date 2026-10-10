@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.startrek.DisplayList.BRIDGE_BOTTOM;
 import static io.github.jabrena.juno.games.startrek.DisplayList.BRIDGE_TOP;
 import static io.github.jabrena.juno.games.startrek.DisplayList.BUTTON_HEIGHT;
@@ -15,9 +18,6 @@ import static io.github.jabrena.juno.games.startrek.Entities.T_NOMAD;
 import static io.github.jabrena.juno.games.startrek.SceneRenderer.BUTTON;
 import static io.github.jabrena.juno.games.startrek.SceneRenderer.BUTTON_EMPTY;
 import static io.github.jabrena.juno.games.startrek.SceneRenderer.FRAME;
-
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /** The header with the score, sector and shields, the panel of buttons, and centered text. */
 final class Hud {

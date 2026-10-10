@@ -7,10 +7,11 @@ import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
-import static io.github.jabrena.juno.games.texasholdem.Table.*;
-import static io.github.jabrena.juno.games.texasholdem.Deck.*;
+
 import static io.github.jabrena.juno.games.texasholdem.Controls.*;
+import static io.github.jabrena.juno.games.texasholdem.Deck.*;
 import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.*;
+import static io.github.jabrena.juno.games.texasholdem.Table.*;
 
 /**
  * No-limit Texas Hold'em on the ELEGOO 2.8" TFT touch screen shield: you against three computer

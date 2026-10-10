@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_AUX;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_FLAG;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_STRIDE;
@@ -16,9 +19,6 @@ import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_DEBRIS;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_FIREBALL;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_NONE;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_TIE;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * The asteroid field: at the controls of the Millennium Falcon, weave through tumbling asteroids

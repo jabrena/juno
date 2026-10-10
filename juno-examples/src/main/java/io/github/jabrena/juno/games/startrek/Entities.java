@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.startrek;
 
-import static io.github.jabrena.juno.games.startrek.Geometry.FIX;
-
 import io.github.jabrena.juno.api.Random;
+
+import static io.github.jabrena.juno.games.startrek.Geometry.FIX;
 
 /**
  * Everything in the sector besides the Enterprise, as packed records in one {@code int[]}:
