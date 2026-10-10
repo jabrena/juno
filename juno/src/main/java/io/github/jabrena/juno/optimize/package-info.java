@@ -6,7 +6,8 @@
  * list. {@link io.github.jabrena.juno.optimize.ConstantFolder} folds arithmetic/comparison
  * instructions with already-known-constant operands into a single constant, and a branch with a
  * constant condition into an unconditional jump. {@link io.github.jabrena.juno.optimize.CopyPropagation}
- * eliminates a local load whose value an earlier store in the same block already determined.
+ * eliminates a local load whose value is already known, from an earlier store in its block or from every
+ * predecessor.
  * {@link io.github.jabrena.juno.optimize.DeadBlockElimination} then removes any basic block a
  * folded branch left unreachable from its method's entry block, and
  * {@link io.github.jabrena.juno.optimize.DeadLocalStoreElimination} removes stores to local slots

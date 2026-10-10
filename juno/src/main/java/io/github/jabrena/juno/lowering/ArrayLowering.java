@@ -263,7 +263,9 @@ final class ArrayLowering {
             default -> throw new IllegalStateException("unreachable allocation opcode " + opcode);
         }
         return new Lowered(nextValueId, depth);
-    }    static Lowered lowerArrayLoad(List<IrInstruction> instructions, int stackBase, int depth,
+    }
+
+    static Lowered lowerArrayLoad(List<IrInstruction> instructions, int stackBase, int depth,
                                     int nextValueId, ValueTracking tracking, ArrayElementType elementType) {
         Popped index = pop(instructions, stackBase, --depth, nextValueId, tracking);
         nextValueId = index.nextValueId();
