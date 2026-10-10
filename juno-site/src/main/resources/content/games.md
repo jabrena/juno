@@ -139,7 +139,7 @@ Drive a tank through a wireframe maze and destroy the flying hunters before time
 
 ### DOOM
 
-<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield: the animated cover, then the CPU autopilot walking E1M1 until it dies" width="320">
+<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield: the lava cover, then the CPU autopilot walking E1M1 until it dies" width="320">
 
 Wireframe DOOM in landscape, drawn with DOOM's own BSP renderer: walls, doors and monsters from E1M1. Pick **HUMAN** (touch to turn, walk and fire) or **CPU** (an autopilot that plays like a person and sometimes dies). Runs on the Arduino UNO Q.
 
