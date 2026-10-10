@@ -8,8 +8,11 @@ import java.io.InputStream;
  * files on the card at startup take their no-card path, deterministically.
  */
 public final class SdCard {
-    /** Whether a card answers {@link #begin()}; every file operation still finds nothing on it. */
-    public static boolean present;
+    /**
+     * Whether a card answers {@link #begin()}; every file operation still finds nothing on it. Starts true with
+     * {@code -Djuno.emulator.sdCard=true}, so {@code RandomAccessFile} reads files from the working directory.
+     */
+    public static boolean present = Boolean.getBoolean("juno.emulator.sdCard");
 
     private SdCard() {
     }
