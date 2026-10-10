@@ -214,7 +214,8 @@ public final class Thumb2AsmBackend {
         }
         String runtimeShim = new RuntimeShim(board, coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
-        return new Output(output.toString(), runtimeShim, functionLabels.get(entryPoint));
+        return new Output(AssemblyPeepholeOptimizer.optimize(output.toString()), runtimeShim,
+                functionLabels.get(entryPoint));
     }
 
     private void emitMethod(StringBuilder output, IrMethod method) {
