@@ -39,7 +39,7 @@ final class Clearance {
     }
 
     /** Whether {@code line} is a wall: one-sided, marked impassable, or with no room to stand in its opening. */
-    private static boolean isWall(int line, short[] ceilings) {
+    static boolean isWall(int line, short[] ceilings) {
         int back = World.lineBack[line];
         if (back < 0 || World.isImpassable(line, false)) {
             return true;

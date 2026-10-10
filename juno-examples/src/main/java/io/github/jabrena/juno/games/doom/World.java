@@ -53,7 +53,7 @@ final class World {
      * flag and BSP parent, each node's parent, and four polygon buffers, plus each block's header.
      */
     static final int PLAN_ARENA_BYTES = 2 * MAX_SECTORS + 13 * MAX_SUBSECTORS + 2 * MAX_NODES
-            + 16 * LeafPolygon.MAX_CORNERS + 12 * 16;
+            + 16 * LeafPolygon.MAX_CORNERS + 4 * MAX_ROUTE + 14 * 16;
 
     /** Whether the maps come from the WAD rather than the built-in fallback. */
     static boolean fromWad;
@@ -185,7 +185,9 @@ final class World {
         if (!fromWad) {
             return;
         }
+        Loading.beginPlan();
         boolean planned = RoutePlanner.plan();
+        Loading.endPlan();
         if (!planned && !RoutePlanner.shortOfExit) {
             routeX[0] = (short) startX;
             routeY[0] = (short) startY;

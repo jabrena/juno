@@ -47,6 +47,9 @@ final class RoutePlanner {
     private static float[] cornerY;
     private static float[] spareX;
     private static float[] spareY;
+    /** The route as it was, while a local re-plan replaces its start. */
+    private static short[] keptX;
+    private static short[] keptY;
 
     /**
      * Whether the last plan stops short of the exit: no walk reaches it (a lift the engine does not model is in the
@@ -61,22 +64,53 @@ final class RoutePlanner {
 
     /** Replaces the route with a walk from the start to the exit; {@code false} when the map has none. */
     static boolean plan() {
-        return planFrom(World.startX, World.startY, true);
+        return planToExit(World.startX, World.startY);
     }
 
     /**
-     * Replaces the route with a walk from an in-progress CPU position to the exit; {@code false}, leaving the route as
-     * it was, when no walk reaches it: the CPU then picks its route up again rather than lose it to a dead end.
+     * Re-plans from where a stuck CPU stands, locally: a walk back to the waypoint it was heading for, then on along
+     * the route as it was. Searching only that far keeps the search near the marine; one all the way to the exit
+     * explores most of the map, which froze the board for up to a minute. {@code false}, leaving the route as it was,
+     * when the waypoint cannot be reached: the CPU then picks its route up again elsewhere.
      */
     static boolean planFrom(float startX, float startY) {
-        return planFrom(startX, startY, false);
+        plans = plans + 1;
+        shortOfExit = false;
+        if (World.exitLine < 0 || World.routeLength < 2) {
+            return false;
+        }
+        int from = Math.max(0, Math.min(Autopilot.target, World.routeLength - 1));
+        int kept = World.routeLength;
+        int keptLoop = World.loopStart;
+        for (int i = 0; i < kept; i++) {
+            keptX[i] = World.routeX[i];
+            keptY[i] = World.routeY[i];
+        }
+        prepare();
+        Lifts.beginPlanning();
+        float goalX = keptX[from];
+        float goalY = keptY[from];
+        int goalLeaf = search(startX, startY, goalX, goalY);
+        boolean planned = goalLeaf >= 0 && straighten(startX, startY, goalLeaf, goalX, goalY)
+                && World.routeLength + kept - from - 1 <= World.MAX_ROUTE;
+        Lifts.endPlanning();
+        int first = planned ? from + 1 : 0;
+        int at = planned ? World.routeLength : 0;
+        for (int i = first; i < kept; i++) {
+            World.routeX[at] = keptX[i];
+            World.routeY[at] = keptY[i];
+            at = at + 1;
+        }
+        World.routeLength = at;
+        World.loopStart = planned ? at - 1 : keptLoop;
+        return planned;
     }
 
     /**
-     * Plans a walk to the exit; when none reaches it and {@code fallback} is set, the route leads as close to it as
-     * the marine can walk instead ({@link #shortOfExit}).
+     * Plans a walk from the map's start to the exit; when none reaches it, the route leads as close to it as the
+     * marine can walk instead ({@link #shortOfExit}).
      */
-    private static boolean planFrom(float startX, float startY, boolean fallback) {
+    private static boolean planToExit(float startX, float startY) {
         plans = plans + 1;
         shortOfExit = false;
         if (World.exitLine < 0) {
@@ -100,7 +134,7 @@ final class RoutePlanner {
             goalLeaf = search(startX, startY, goalX, goalY);
             planned = goalLeaf >= 0 && straighten(startX, startY, goalLeaf, goalX, goalY);
         }
-        if (!planned && fallback) {
+        if (!planned) {
             shortOfExit = towardExit(startX, startY);
         }
         Lifts.endPlanning();
@@ -125,6 +159,8 @@ final class RoutePlanner {
         float[] polygonY = new float[LeafPolygon.MAX_CORNERS];
         float[] scratchX = new float[LeafPolygon.MAX_CORNERS];
         float[] scratchY = new float[LeafPolygon.MAX_CORNERS];
+        short[] routeXs = new short[World.MAX_ROUTE];
+        short[] routeYs = new short[World.MAX_ROUTE];
         open = ceilings;
         distance = distances;
         parent = parents;
@@ -137,6 +173,8 @@ final class RoutePlanner {
         cornerY = polygonY;
         spareX = scratchX;
         spareY = scratchY;
+        keptX = routeXs;
+        keptY = routeYs;
     }
 
     /** Fills the working tables for the current map: doors counted open, and each node's and leaf's BSP parent. */
@@ -192,6 +230,7 @@ final class RoutePlanner {
         while (leaf >= 0 && !(leaf == goalLeaf
                 && !Player.blocked(entryX[leaf], entryY[leaf], goalX, goalY, open))) {
             settled[leaf] = 1;
+            Loading.advancePlan();
             leaveThrough(leaf);
             leaf = closest();
         }
@@ -240,12 +279,14 @@ final class RoutePlanner {
         int next = Player.subsectorAt(x, y);
         // The whole walk from where the marine entered, not just the border: a subsector's polygon can reach into
         // the void where no seg of its own bounds it, and only the walls tell walkable floor from void.
-        if (next == leaf || settled[next] != 0 || Clearance.room(x, y, Player.RADIUS, open) < Player.RADIUS
-                || !reachable(entryX[leaf], entryY[leaf], x, y)) {
+        // Cheapest first: a crossing that cannot shorten the way into its subsector needs no wall checks at all, and
+        // each check below walks every line of the map, which on the board is what makes planning slow.
+        if (next == leaf || settled[next] != 0) {
             return;
         }
         int cost = distance[leaf] + length(entryX[leaf], entryY[leaf], x, y);
-        if (cost < distance[next]) {
+        if (cost < distance[next]
+                && Crossing.reachable(entryX[leaf], entryY[leaf], x, y, BODY_CLEARANCE, Player.RADIUS, open)) {
             distance[next] = cost;
             parent[next] = (short) leaf;
             entryX[next] = (short) Math.round(x);
@@ -253,20 +294,6 @@ final class RoutePlanner {
         }
     }
 
-    /** Whether walks from a to b and to {@link #BODY_CLEARANCE} either side of b, across the walk, are clear. */
-    private static boolean reachable(float ax, float ay, float bx, float by) {
-        float dx = bx - ax;
-        float dy = by - ay;
-        float length = (float) Math.sqrt(dx * dx + dy * dy);
-        if (length < 1f) {
-            return true;
-        }
-        float sideX = -dy / length * BODY_CLEARANCE;
-        float sideY = dx / length * BODY_CLEARANCE;
-        return !Player.blocked(ax, ay, bx, by, open)
-                && !Player.blocked(ax, ay, bx + sideX, by + sideY, open)
-                && !Player.blocked(ax, ay, bx - sideX, by - sideY, open);
-    }
 
     private static int closest() {
         int closest = -1;

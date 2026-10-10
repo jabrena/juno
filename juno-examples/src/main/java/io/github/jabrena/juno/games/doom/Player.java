@@ -223,41 +223,45 @@ final class Player {
         for (int line = 0; line < World.lines; line++) {
             int v1 = World.lineV1[line];
             int v2 = World.lineV2[line];
-            float ax = World.vertexX[v1];
-            float ay = World.vertexY[v1];
-            float bx = World.vertexX[v2];
-            float by = World.vertexY[v2];
-            if (outside(ax, ay, bx, by)) {
-                continue;
-            }
-            float from = side(ax, ay, bx, by, fromX, fromY);
-            float to = side(ax, ay, bx, by, toX, toY);
-            if (from * to >= 0) {
-                continue;
-            }
-            float start = side(fromX, fromY, toX, toY, ax, ay);
-            float end = side(fromX, fromY, toX, toY, bx, by);
-            // A path through a linedef endpoint still touches the wall. Treating zero as separate let the
-            // point-sized camera slip exactly between two solid walls that share that endpoint.
-            if (start * end > 0) {
-                continue;
-            }
-            int back = World.lineBack[line];
-            if (back < 0 || World.isImpassable(line, monster)) {
-                return true;
-            }
-            int front = World.lineFront[line];
-            int target = from < 0 ? back : front;
-            int origin = from < 0 ? front : back;
-            int floor = Math.max(World.sectorFloor[front], World.sectorFloor[back]);
-            int ceiling = Math.min(ceilings[front], ceilings[back]);
-            boolean riding = Lifts.planning && Lifts.isLiftSector(origin);
-            if (World.sectorFloor[target] - World.sectorFloor[origin] > MAX_STEP && !riding
-                    || ceiling - floor < HEADROOM) {
+            if (!outside(World.vertexX[v1], World.vertexY[v1], World.vertexX[v2], World.vertexY[v2])
+                    && stops(line, fromX, fromY, toX, toY, ceilings, monster)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Whether {@code line} stops a step from ({@code fromX}, {@code fromY}) to ({@code toX}, {@code toY}): the step
+     * crosses it, and it is a wall, marked impassable, a step up of more than {@link #MAX_STEP} or too low an opening.
+     */
+    static boolean stops(int line, float fromX, float fromY, float toX, float toY, short[] ceilings, boolean monster) {
+        float ax = World.vertexX[World.lineV1[line]];
+        float ay = World.vertexY[World.lineV1[line]];
+        float bx = World.vertexX[World.lineV2[line]];
+        float by = World.vertexY[World.lineV2[line]];
+        float from = side(ax, ay, bx, by, fromX, fromY);
+        float to = side(ax, ay, bx, by, toX, toY);
+        if (from * to >= 0) {
+            return false;
+        }
+        // A path through a linedef endpoint still touches the wall. Treating zero as separate let the
+        // point-sized camera slip exactly between two solid walls that share that endpoint.
+        if (side(fromX, fromY, toX, toY, ax, ay) * side(fromX, fromY, toX, toY, bx, by) > 0) {
+            return false;
+        }
+        int back = World.lineBack[line];
+        if (back < 0 || World.isImpassable(line, monster)) {
+            return true;
+        }
+        int front = World.lineFront[line];
+        int target = from < 0 ? back : front;
+        int origin = from < 0 ? front : back;
+        int floor = Math.max(World.sectorFloor[front], World.sectorFloor[back]);
+        int ceiling = Math.min(ceilings[front], ceilings[back]);
+        boolean riding = Lifts.planning && Lifts.isLiftSector(origin);
+        return World.sectorFloor[target] - World.sectorFloor[origin] > MAX_STEP && !riding
+                || ceiling - floor < HEADROOM;
     }
 
     /**
