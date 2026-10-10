@@ -133,9 +133,10 @@ public final class Doom {
     /**
      * The episode and skill menus, for the WAD's maps, then the episode's first map that loads, read and planned
      * under the ENTERING screen until a tap starts it; the built-in map has no episodes. If none of the episode's
-     * maps loads, the menus come back.
+     * maps loads, the menus come back. A new game starts with the fist and the pistol.
      */
     private static void chooseGame() {
+        Weapon.reset();
         if (!World.fromWad) {
             return;
         }
@@ -175,7 +176,8 @@ public final class Doom {
     /**
      * Starts the map afresh: the marine at the start, every monster back at its post, every item in place. The CPU's
      * route was planned while the tally or ENTERING screen showed; a {@code restart} after a death puts that route
-     * back instead of planning it again.
+     * back instead of planning it again. The marine keeps his weapons and ammo from map to map, and loses them when he
+     * dies.
      */
     private static void enterLevel(short[] ceilings, short[] monsters, short[] shots, byte[] taken, boolean restart) {
         Lifts.reset();
@@ -185,7 +187,11 @@ public final class Doom {
         }
         Monsters.reset(monsters, shots);
         Items.reset(taken);
-        Weapon.reset();
+        if (restart) {
+            Weapon.reset();
+        } else {
+            Weapon.enterMap();
+        }
         Autopilot.restart();
         FrameStats.reset();
         Hud.drawBar();

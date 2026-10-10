@@ -5,9 +5,9 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * Pilot selection and touch controls. A HUMAN marine turns with the left and right thirds of the
- * view, walks forward with the upper half of the middle and fires the pistol with its lower half; the
- * CPU marine walks the map's route and shoots what it meets. Tapping the CPU/HUMAN label switches
- * between the two at any time.
+ * view, walks forward with the upper half of the middle, fires with its lower half and changes weapon on the status
+ * bar's arms panel; the CPU marine walks the map's route and shoots what it meets with the weapon that hits hardest.
+ * Tapping the CPU/HUMAN label switches between the two at any time.
  */
 final class Controls {
     private static final float TURN = 0.09f;
@@ -94,6 +94,15 @@ final class Controls {
             boolean toggle = !barPressed;
             barPressed = true;
             return toggle && switchPilotAt(x, y, ceilings);
+        }
+        int slot = Hud.slotAt(x, y);
+        if (slot >= 0) {
+            boolean tap = !barPressed;
+            barPressed = true;
+            if (tap && !autopilot) {
+                Weapon.selectSlot(slot);
+            }
+            return false;
         }
         barPressed = false;
         if (y >= DisplayList.VIEW_BOTTOM) {

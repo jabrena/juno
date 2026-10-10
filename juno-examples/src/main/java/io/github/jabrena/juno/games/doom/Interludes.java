@@ -101,7 +101,7 @@ final class Interludes {
         }
         Hud.showCentered("FINISHED", 49, 3, TftTouchShield.RED);
         statistic("KILLS", Monsters.kills, World.monsters, 91);
-        statistic("ITEMS", Campaign.itemsFound(taken, World.items), World.items, 121);
+        statistic("ITEMS", Campaign.itemsFound(taken, World.placedItems), Campaign.itemsCounted(World.placedItems), 121);
         statistic("SECRETS", World.secretsFound, World.secrets, 151);
         time(elapsedMillis, 183);
     }

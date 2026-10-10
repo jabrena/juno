@@ -35,10 +35,21 @@ final class Campaign {
     static int itemsFound(byte[] taken, int items) {
         int found = 0;
         for (int item = 0; item < items; item++) {
-            if (taken[item] != 0) {
+            if (taken[item] != 0 && Items.countable(World.itemKind[item])) {
                 found = found + 1;
             }
         }
         return found;
+    }
+
+    /** Number of the map's items the intermission counts: its health and armor, not weapons, ammo or drops. */
+    static int itemsCounted(int items) {
+        int counted = 0;
+        for (int item = 0; item < items; item++) {
+            if (Items.countable(World.itemKind[item])) {
+                counted = counted + 1;
+            }
+        }
+        return counted;
     }
 }

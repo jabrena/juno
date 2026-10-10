@@ -12,7 +12,11 @@ final class Autopilot {
     private static final float TURN = 0.11f;
     private static final float STRIDE = 9f;
     private static final float ARRIVED = 28f;
+    /** How close a waypoint must be when the walk on from here to the next one is not clear yet. */
+    private static final float REACHED = 8f;
     private static final float GRAB = 450f;
+    /** How much farther the marine goes for a weapon it does not carry yet than for any other pickup. */
+    private static final float NEW_WEAPON = 3f;
     private static final float EXIT_COMMIT = 512f;
 
     private static boolean detouring;
@@ -120,14 +124,25 @@ final class Autopilot {
     private static void followRoute(short[] ceilings) {
         float dx = World.routeX[target] - Player.x;
         float dy = World.routeY[target] - Player.y;
-        if (dx * dx + dy * dy < ARRIVED * ARRIVED) {
-            target = target + 1;
-            if (target == World.routeLength) {
-                target = World.loopStart;
-            }
+        float distance = dx * dx + dy * dy;
+        if (distance < REACHED * REACHED || distance < ARRIVED * ARRIVED && clearToNext(ceilings)) {
+            target = next();
             return;
         }
         walkTo(World.routeX[target], World.routeY[target], ceilings);
+    }
+
+    private static int next() {
+        return target + 1 == World.routeLength ? World.loopStart : target + 1;
+    }
+
+    /**
+     * Whether the marine may cut the corner at its waypoint: only when the walk on to the next one is clear from where
+     * it stands. The planner checked that walk from the waypoint itself, which can lie round a corner from here.
+     */
+    private static boolean clearToNext(short[] ceilings) {
+        int next = next();
+        return !Player.blocked(Player.x, Player.y, World.routeX[next], World.routeY[next], ceilings);
     }
 
     private static void walkTo(float x, float y, short[] ceilings) {
@@ -169,17 +184,23 @@ final class Autopilot {
         }
     }
 
-    /** The nearest untaken item the marine needs, can see, and can walk straight to; or -1. */
+    /**
+     * The nearest untaken item the marine needs and can walk straight to, or -1. A weapon it does not carry yet counts
+     * as {@link #NEW_WEAPON} times nearer: worth a longer detour than ammo, health or armor.
+     */
     private static int wanted(byte[] taken, short[] ceilings) {
         int best = -1;
         float nearest = GRAB;
         for (int i = 0; i < World.items; i++) {
-            if (taken[i] != 0 || !Items.useful(World.itemKind[i])) {
+            int kind = World.itemKind[i];
+            if (taken[i] != 0 || !Items.useful(kind)) {
                 continue;
             }
             float dx = World.itemX[i] - Player.x;
             float dy = World.itemY[i] - Player.y;
-            float distance = (float) Math.sqrt(dx * dx + dy * dy);
+            int weapon = Items.weaponOf(kind);
+            float distance = (float) Math.sqrt(dx * dx + dy * dy)
+                    / (weapon >= 0 && !Weapon.carries(weapon) ? NEW_WEAPON : 1f);
             if (distance < nearest && !Player.blocked(Player.x, Player.y, World.itemX[i], World.itemY[i], ceilings)) {
                 best = i;
                 nearest = distance;

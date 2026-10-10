@@ -7,7 +7,9 @@ import io.github.jabrena.juno.api.Random;
  * its view with momentum (so it overshoots and corrects), aims with an error that only slowly settles and is thrown
  * off again by each shot's recoil, sometimes pulls the trigger before it is lined up, keeps strafing, backs off from
  * monsters that come close, retreats when badly hurt, and catches its breath after a kill. So it misses, takes hits,
- * and now and then dies. {@link Autopilot} walks the route when there is nothing to fight.
+ * and now and then dies. With several monsters near, it kills the toughest first. It fights with the weapon that deals the most damage at the monster's distance: the chainsaw
+ * when one is near enough to close in on, never a rocket that would blast the marine too. {@link Autopilot} walks the
+ * route when there is nothing to fight.
  */
 final class Combat {
     private static final float ENGAGE = 1600f;
@@ -16,6 +18,8 @@ final class Combat {
     private static final float SPIN_ACCELERATION = 0.03f;
     private static final float TOO_CLOSE = 160f;
     private static final int LOW_HEALTH = 30;
+    /** Within this distance the toughest monster is fought first; farther ones by distance alone. */
+    private static final float CLOSE = 600f;
 
     private static int enemy = -1;
     private static int reaction;
@@ -74,24 +78,44 @@ final class Combat {
         float dx = monsters[enemy + Monsters.X] - Player.x;
         float dy = monsters[enemy + Monsters.Y] - Player.y;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
+        arm(distance);
         aim(Weapon.angleTo(dx, dy) + aimError);
         aimError = aimError * 0.96f + Autopilot.random(-0.02f, 0.02f);
         float off = Math.abs(Weapon.angleTo(dx, dy) + aimError);
         float tolerance = (float) Math.atan(14f / distance);
         boolean lined = off < tolerance;
         boolean impatient = off < 2.5f * tolerance && Random.nextInt(100) < 10;
-        if ((lined || impatient) && Weapon.loaded()) {
+        boolean blastsBack = Weapon.current == Weapon.LAUNCHER && distance < Weapon.SPLASH + 32;
+        if ((lined || impatient) && Weapon.loaded() && !blastsBack) {
             Weapon.fire(monsters, ceilings);
             aimError = aimError + Autopilot.random(-0.14f, 0.14f);
         }
-        dodge(distance, ceilings);
+        dodge(distance, Math.abs(Weapon.angleTo(dx, dy)), ceilings);
         return true;
     }
 
-    /** The monster to fight: the current one while it stays in sight, unless another is much closer. */
+    /**
+     * Raises the weapon that deals the most damage at {@code distance}, when it beats the one in hand by a clear
+     * margin, so a monster at the edge of two weapons' ranges does not keep the marine swapping instead of shooting.
+     */
+    private static void arm(float distance) {
+        int best = Weapon.best(distance);
+        int wanted = Weapon.wanted();
+        if (best != wanted && Weapon.damageRate(best, distance) > 1.25f * Weapon.damageRate(wanted, distance)) {
+            Weapon.select(best);
+        }
+    }
+
+    /**
+     * The monster to fight. Of those near ({@link #CLOSE}), the toughest first (DOOM's starting health: a demon before an
+     * imp before a sergeant before a zombieman), then the rest; of those farther off, the nearest. The current one is
+     * kept while it stays in sight, unless a tougher one comes near or an equal one is much closer.
+     */
     private static int noticed(short[] ceilings, short[] monsters) {
-        int nearest = -1;
-        float nearestDistance = ENGAGE;
+        int best = -1;
+        int bestStrength = -1;
+        float bestDistance = ENGAGE;
+        int currentStrength = -1;
         float currentDistance = Float.MAX_VALUE;
         for (int i = 0; i < World.monsters; i++) {
             int at = i * Monsters.STRIDE;
@@ -106,18 +130,22 @@ final class Combat {
                 continue;
             }
             boolean aware = state != Monsters.IDLE || Math.abs(Weapon.angleTo(dx, dy)) < FIELD_OF_VIEW;
-            if (aware && Player.canSee(Player.x, Player.y, Player.eye, monsters[at + Monsters.X],
-                    monsters[at + Monsters.Y], monsters[at + Monsters.FLOOR] + Monsters.CENTER, ceilings)) {
+            if (aware && Monsters.seenByMarine(monsters, at, ceilings)) {
+                int strength = distance < CLOSE ? Monsters.fullHealth(monsters[at + Monsters.KIND]) : 0;
                 if (at == enemy) {
+                    currentStrength = strength;
                     currentDistance = distance;
                 }
-                if (distance < nearestDistance) {
-                    nearest = at;
-                    nearestDistance = distance;
+                if (strength > bestStrength || strength == bestStrength && distance < bestDistance) {
+                    best = at;
+                    bestStrength = strength;
+                    bestDistance = distance;
                 }
             }
         }
-        return currentDistance < Float.MAX_VALUE && nearestDistance > 0.6f * currentDistance ? enemy : nearest;
+        boolean keep = currentDistance < Float.MAX_VALUE && currentStrength == bestStrength
+                && bestDistance > 0.6f * currentDistance;
+        return keep ? enemy : best;
     }
 
     /** Swings the view toward {@code heading} with a hand's momentum: it speeds up, overshoots, corrects. */
@@ -127,8 +155,26 @@ final class Combat {
         Player.turn(spin);
     }
 
+    /** Dodges without stepping up to a closed door: opening one mid-fight lets out whatever waits behind it. */
+    private static void dodge(float distance, float off, short[] ceilings) {
+        Player.keepDoorsShut = true;
+        if (Weapon.wanted() <= Weapon.CHAINSAW && Player.health >= LOW_HEALTH) {
+            closeIn(distance, off, ceilings);
+        } else {
+            evade(distance, ceilings);
+        }
+        Player.keepDoorsShut = false;
+    }
+
+    /** With the chainsaw or the fist, walks up to the monster it faces until it is within reach. */
+    private static void closeIn(float distance, float off, short[] ceilings) {
+        if (distance > Weapon.MELEE - 24 && off < 0.5f) {
+            Player.walk(6f, ceilings);
+        }
+    }
+
     /** Keeps moving under fire: retreats when hurt, backs off from close monsters, otherwise strafes. */
-    private static void dodge(float distance, short[] ceilings) {
+    private static void evade(float distance, short[] ceilings) {
         if (Player.health < LOW_HEALTH && distance < 500) {
             Player.walk(-6f, ceilings);
             return;

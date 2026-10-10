@@ -103,6 +103,10 @@ final class FrameStats {
         Serial.print(World.routeLength);
         Serial.print(" hp=");
         Serial.print(Player.health);
+        Serial.print(" w=");
+        Serial.print(Weapon.current);
+        Serial.print(":");
+        Serial.print(Weapon.ammoInHand());
         Serial.print(" plans=");
         Serial.println(RoutePlanner.plans);
     }

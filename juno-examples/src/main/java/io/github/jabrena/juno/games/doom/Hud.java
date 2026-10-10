@@ -3,8 +3,9 @@ package io.github.jabrena.juno.games.doom;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
- * DOOM's status bar under the view: kills, health, the arms grid, the marine's face, armor and a compact
- * map/pilot/FPS panel, in stone panels with big red numbers. The face grows bloodier as health drops.
+ * DOOM's status bar under the view: ammo for the weapon in hand, health, the arms grid, the marine's face, armor and a
+ * compact map/pilot/FPS panel, in stone panels with big red numbers. The face grows bloodier as health drops. Tapping
+ * a number of the arms grid raises that weapon; tapping the ARMS label swaps between the fist and the chainsaw.
  */
 final class Hud {
     private static final int BAR_Y = DisplayList.VIEW_BOTTOM;
@@ -12,6 +13,10 @@ final class Hud {
     private static final int NUMBER_Y = BAR_Y + 5;
     private static final int LABEL_Y = BAR_Y + 28;
     private static final int[] DIVIDERS = {56, 124, 172, 212, 276};
+    /** The arms panel, whose numbers and label {@link Controls} takes taps on. */
+    static final int ARMS_LEFT = 124;
+    static final int ARMS_RIGHT = 172;
+    static final int ARMS_LABEL_Y = BAR_Y + 24;
 
     private static final int STONE = TftTouchShield.color(88, 84, 78);
     private static final int STONE_LIGHT = TftTouchShield.color(140, 135, 125);
@@ -25,7 +30,8 @@ final class Hud {
     private static final int BLOOD = TftTouchShield.color(190, 15, 10);
 
     private static int shownHealth = Integer.MIN_VALUE;
-    private static int shownKills = Integer.MIN_VALUE;
+    private static int shownAmmo = Integer.MIN_VALUE;
+    private static int shownArms = Integer.MIN_VALUE;
     private static int shownArmor = Integer.MIN_VALUE;
     private static int shownFace = Integer.MIN_VALUE;
     private static int shownFps = Integer.MIN_VALUE;
@@ -42,13 +48,12 @@ final class Hud {
             TftTouchShield.drawVerticalLine(DIVIDERS[divider] - 1, BAR_Y + 2, BAR_HEIGHT - 2, STONE_DARK);
             TftTouchShield.drawVerticalLine(DIVIDERS[divider], BAR_Y + 2, BAR_HEIGHT - 2, STONE_LIGHT);
         }
-        label("KILLS", 0, 56);
+        label("AMMO", 0, 56);
         label("HEALTH", 56, 124);
-        label("ARMS", 124, 172);
         label("ARMOR", 212, 276);
-        arms();
         table();
         shownHealth = Integer.MIN_VALUE;
+        shownArms = Integer.MIN_VALUE;
         shownFace = Integer.MIN_VALUE;
         drawStatus();
     }
@@ -56,18 +61,27 @@ final class Hud {
     /** Redraws only the numbers and the face that changed since the last call. */
     static void drawStatus() {
         int face = faceState();
-        if (Player.health != shownHealth || Monsters.kills != shownKills || Player.armor != shownArmor
-                || face != shownFace) {
-            number(Monsters.kills, false, 0, 56);
+        int ammo = Weapon.ammoInHand();
+        if (Player.health != shownHealth || ammo != shownAmmo || Player.armor != shownArmor || face != shownFace) {
+            if (ammo < 0) {
+                TftTouchShield.fillRect(2, NUMBER_Y, 53, 16, STONE);
+            } else {
+                number(ammo, false, 0, 56);
+            }
             number(Player.health, true, 56, 124);
             number(Player.armor, true, 212, 276);
             if (face != shownFace) {
                 face(face);
             }
             shownHealth = Player.health;
-            shownKills = Monsters.kills;
+            shownAmmo = ammo;
             shownArmor = Player.armor;
             shownFace = face;
+        }
+        int arms = Weapon.owned << 3 | Weapon.wanted();
+        if (arms != shownArms) {
+            arms();
+            shownArms = arms;
         }
         performance();
     }
@@ -101,14 +115,31 @@ final class Hud {
         }
     }
 
-    /** The 2-7 weapon slots: only the pistol (2) is carried. */
+    /** The 2-7 weapon slots: yellow when carried, white for the one in hand, dark otherwise. */
     private static void arms() {
         TftTouchShield.setTextSize(1);
-        for (int slot = 0; slot < 6; slot++) {
-            TftTouchShield.setTextColor(slot == 0 ? TftTouchShield.YELLOW : OFF, STONE);
-            TftTouchShield.setCursor(131 + slot % 3 * 14, BAR_Y + 7 + slot / 3 * 11);
-            TftTouchShield.print(slot + 2);
+        for (int slot = 2; slot <= 7; slot++) {
+            int color = slot == Weapon.wanted() ? TftTouchShield.WHITE
+                    : Weapon.carries(slot) ? TftTouchShield.YELLOW : OFF;
+            TftTouchShield.setTextColor(color, STONE);
+            TftTouchShield.setCursor(131 + (slot - 2) % 3 * 14, BAR_Y + 7 + (slot - 2) / 3 * 11);
+            TftTouchShield.print(slot);
         }
+        TftTouchShield.setTextColor(Weapon.wanted() <= Weapon.CHAINSAW ? TftTouchShield.WHITE : LABEL, STONE);
+        TftTouchShield.setCursor((ARMS_LEFT + ARMS_RIGHT - 4 * 6) / 2 + 1, LABEL_Y);
+        TftTouchShield.print("ARMS");
+    }
+
+    /** The weapon slot under a tap on the arms panel: 2-7 on its numbers, 1 on its label, -1 elsewhere. */
+    static int slotAt(int x, int y) {
+        if (x < ARMS_LEFT || x >= ARMS_RIGHT || y < BAR_Y) {
+            return -1;
+        }
+        if (y >= ARMS_LABEL_Y) {
+            return 1;
+        }
+        int column = Math.max(0, Math.min(2, (x - 128) / 14));
+        return 2 + column + (y < BAR_Y + 16 ? 0 : 3);
     }
 
     /** The current map, pilot and measured frame rate, without labels in the narrow panel. */

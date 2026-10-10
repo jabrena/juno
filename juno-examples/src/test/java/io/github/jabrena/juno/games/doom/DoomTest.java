@@ -137,8 +137,10 @@ class DoomTest {
     @Test
     void intermissionCountsOnlyTheItemsActuallyTaken() {
         byte[] pickedUp = {1, 0, 1, 1, 0};
+        World.itemKind = new short[] {Items.MEDIKIT, Items.STIMPACK, Items.CLIP, Items.HEALTH_BONUS, Items.GREEN_ARMOR};
 
-        assertThat(Campaign.itemsFound(pickedUp, 4)).isEqualTo(3);
+        assertThat(Campaign.itemsFound(pickedUp, 4)).as("the clip does not count").isEqualTo(2);
+        assertThat(Campaign.itemsCounted(5)).isEqualTo(4);
     }
 
     @Test

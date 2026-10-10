@@ -34,6 +34,11 @@ final class Player {
     static int armorClass;
     /** Frames left of the red flash that shows the marine was just hit. */
     static int hurt;
+    /**
+     * Set while the CPU dodges in a fight: a move that would start a closed door opening is refused, so backing off
+     * or strafing never lets out what waits behind it.
+     */
+    static boolean keepDoorsShut;
 
     // The box around the path blocked() or canSee() tests: a line outside it cannot cross the path.
     private static float lowX;
@@ -138,6 +143,9 @@ final class Player {
         if (blocked(x, y, toX, toY, ceilings)) {
             return false;
         }
+        if (keepDoorsShut && opensDoor(toX, toY, ceilings) && !opensDoor(x, y, ceilings)) {
+            return false;
+        }
         float room = Clearance.room(toX, toY, RADIUS, ceilings);
         return room >= RADIUS || room >= Clearance.room(x, y, RADIUS, ceilings);
     }
@@ -165,6 +173,18 @@ final class Player {
     static boolean atExit() {
         // DOOM's use range, measured to the switch's line: the body keeps the marine out of a switch's recess.
         return World.exitLine >= 0 && Clearance.distanceToLine(x, y, World.exitLine) < USE_RANGE;
+    }
+
+    /** Whether standing at ({@code px}, {@code py}) would start a door that is not fully open opening. */
+    private static boolean opensDoor(float px, float py, short[] ceilings) {
+        for (int d = 0; d < World.doors; d++) {
+            float dx = World.doorX[d] - px;
+            float dy = World.doorY[d] - py;
+            if (dx * dx + dy * dy < DOOR_REACH * DOOR_REACH && ceilings[World.doorSector[d]] < World.doorTop[d]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Opens the doors the marine walks up to and closes the ones left far behind. */

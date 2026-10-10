@@ -35,8 +35,6 @@ public final class LevelGenerator {
 
     /** Thing types the engine animates, by its monster kind: zombieman, shotgun sergeant, imp, demon. */
     private static final Map<Integer, Integer> MONSTER_KINDS = Map.of(3004, 0, 9, 1, 3001, 2, 3002, 3);
-    /** Pickups by item kind: health bonus, stimpack, medikit, armor bonus, green armor, blue armor. */
-    private static final Map<Integer, Integer> ITEM_KINDS = Map.of(2014, 0, 2011, 1, 2012, 2, 2015, 3, 2018, 4, 2019, 5);
     /** THINGS flag bits: placed on Ultra-Violence ("hard") skill, and only in multiplayer. */
     private static final int SKILL_HARD = 4;
     private static final int MULTIPLAYER_ONLY = 16;
@@ -187,8 +185,10 @@ public final class LevelGenerator {
                 startAngle = things.getShort(thing * 10 + 4);
             } else if (MONSTER_KINDS.containsKey(type) && (flags & SKILL_HARD) != 0 && (flags & MULTIPLAYER_ONLY) == 0) {
                 monsters.add(new int[] {things.getShort(thing * 10), things.getShort(thing * 10 + 2), MONSTER_KINDS.get(type)});
-            } else if (ITEM_KINDS.containsKey(type) && (flags & SKILL_HARD) != 0 && (flags & MULTIPLAYER_ONLY) == 0) {
-                items.add(new int[] {things.getShort(thing * 10), things.getShort(thing * 10 + 2), ITEM_KINDS.get(type)});
+            } else if (WadThings.itemKind(type) >= 0 && (flags & SKILL_HARD) != 0 && (flags & MULTIPLAYER_ONLY) == 0) {
+                // Pickups by Items' kind, as the runtime loader maps them: health, armor, weapons and ammo.
+                items.add(new int[] {things.getShort(thing * 10), things.getShort(thing * 10 + 2),
+                    WadThings.itemKind(type)});
             }
         }
 

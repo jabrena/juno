@@ -46,7 +46,10 @@ final class WadThings {
                 World.monsters = World.monsters + 1;
             } else if (placed && item >= 0) {
                 if (World.items == World.MAX_ITEMS) {
-                    return false;
+                    if (Items.countable(item)) {
+                        return false;
+                    }
+                    continue;
                 }
                 World.itemX[World.items] = (short) x;
                 World.itemY[World.items] = (short) y;
@@ -54,6 +57,7 @@ final class WadThings {
                 World.items = World.items + 1;
             }
         }
+        World.placedItems = World.items;
         return true;
     }
 
@@ -76,8 +80,12 @@ final class WadThings {
         };
     }
 
-    /** Pickups: health bonus, stimpack, medikit, armor bonus, green armor, blue armor; -1 for anything else. */
-    private static int itemKind(int type) {
+    /**
+     * Pickups ({@link Items}' kinds): health bonus, stimpack, medikit, armor bonus, green and blue armor; the chainsaw,
+     * shotgun, chaingun, rocket launcher, plasma rifle and BFG; clip, box of bullets, shells, box of shells, rocket,
+     * box of rockets, cell, cell pack and backpack. -1 for anything else.
+     */
+    static int itemKind(int type) {
         return switch (type) {
             case 2014 -> 0;
             case 2011 -> 1;
@@ -85,6 +93,21 @@ final class WadThings {
             case 2015 -> 3;
             case 2018 -> 4;
             case 2019 -> 5;
+            case 2005 -> 6;
+            case 2001 -> 7;
+            case 2002 -> 8;
+            case 2003 -> 9;
+            case 2004 -> 10;
+            case 2006 -> 11;
+            case 2007 -> 12;
+            case 2048 -> 13;
+            case 2008 -> 14;
+            case 2049 -> 15;
+            case 2010 -> 16;
+            case 2046 -> 17;
+            case 2047 -> 18;
+            case 17 -> 19;
+            case 8 -> 20;
             default -> -1;
         };
     }

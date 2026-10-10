@@ -4,8 +4,8 @@ package io.github.jabrena.juno.games.doom;
  * Things drawn after the walls: items, monsters, corpses and fireballs as billboards that always face
  * the marine, each line kept only in the columns where it stands nearer than the wall {@link Renderer}
  * closed that column with; then the muzzle flash and the red frame of a fresh wound over the view. The
- * pistol and the crosshair never change, so they are added before the walls, into the display list's
- * pinned overlay ({@link #drawGun}).
+ * weapon in hand and the crosshair change only when the marine changes weapon, so they are added before the walls,
+ * into the display list's pinned overlay ({@link #drawGun}).
  */
 final class ThingRenderer {
     private static final int NEAREST_THING = 16;
@@ -16,6 +16,32 @@ final class ThingRenderer {
     private static final int GUN = 0xB5B5;
     private static final int CROSSHAIR = 0x4B4B;
     private static final int WOUND = 0xE0E0;
+    /** Pixels a weapon sinks per frame of a weapon change. */
+    private static final int SINK = 9;
+    /**
+     * The weapons in hand, as screen lines {@code x0, y0, x1, y1} at the bottom of the view, in {@link Weapon}'s order:
+     * fist, chainsaw, pistol, shotgun, chaingun, rocket launcher, plasma rifle, BFG 9000. Original line art.
+     */
+    private static final short[] ARMS = {
+        146, 199, 148, 180, 148, 180, 156, 174, 156, 174, 168, 174, 168, 174, 174, 182, 174, 182, 172, 199,
+        156, 174, 156, 182, 162, 174, 162, 182, 168, 174, 168, 182,
+        140, 199, 142, 182, 142, 182, 178, 182, 178, 182, 180, 199, 152, 182, 154, 140, 166, 182, 164, 140,
+        154, 140, 164, 140, 154, 170, 150, 166, 154, 155, 150, 151, 166, 170, 170, 166, 166, 155, 170, 151,
+        146, 199, 149, 173, 149, 173, 155, 165, 155, 165, 165, 165, 165, 165, 171, 173, 171, 173, 174, 199,
+        156, 165, 156, 156, 156, 156, 164, 156, 164, 156, 164, 165,
+        150, 199, 154, 150, 170, 199, 166, 150, 154, 150, 166, 150, 160, 152, 160, 199, 150, 186, 170, 186,
+        151, 176, 169, 176,
+        148, 199, 152, 160, 160, 199, 160, 158, 172, 199, 168, 160, 152, 160, 168, 160, 142, 199, 144, 186,
+        144, 186, 176, 186, 176, 186, 178, 199, 154, 172, 166, 172,
+        144, 199, 148, 156, 176, 199, 172, 156, 148, 156, 172, 156, 151, 162, 169, 162, 160, 156, 160, 150,
+        156, 150, 164, 150,
+        142, 199, 146, 166, 146, 166, 174, 166, 174, 166, 178, 199, 152, 166, 154, 156, 168, 166, 166, 156,
+        154, 156, 166, 156, 150, 180, 170, 180, 150, 188, 170, 188,
+        136, 199, 140, 160, 140, 160, 180, 160, 180, 160, 184, 199, 150, 160, 152, 148, 170, 160, 168, 148,
+        152, 148, 168, 148, 148, 176, 172, 176, 156, 168, 164, 168,
+    };
+    /** First value of each weapon in {@link #ARMS}, then its end. */
+    private static final short[] ARMS_START = {0, 32, 72, 104, 128, 160, 184, 216, 248};
 
     private static short[] depths;
     private static float viewX;
@@ -84,7 +110,7 @@ final class ThingRenderer {
             int shot = s * Monsters.SHOT_STRIDE;
             if (shots[shot + Monsters.LIFE] > 0) {
                 drawShape(lines, Sprites.FIREBALL, shots[shot + Monsters.SHOT_X], shots[shot + Monsters.SHOT_Y],
-                        shots[shot + Monsters.SHOT_Z], Sprites.FIREBALL_COLOR);
+                        shots[shot + Monsters.SHOT_Z], Sprites.shotColor(shots[shot + Monsters.SHOT_KIND]));
             }
         }
     }
@@ -188,27 +214,35 @@ final class ThingRenderer {
         return true;
     }
 
-    /** The crosshair and the pistol: the same lines every frame. */
+    /**
+     * The crosshair and the weapon in hand: the same lines every frame, except while a weapon change sinks the old one
+     * out of view and raises the new one.
+     */
     static void drawGun(short[] lines) {
         DisplayList.add(lines, CX - 3, CY, CX + 3, CY, CROSSHAIR);
         DisplayList.add(lines, CX, CY - 3, CX, CY + 3, CROSSHAIR);
-        DisplayList.add(lines, 146, 199, 149, 173, GUN);
-        DisplayList.add(lines, 149, 173, 155, 165, GUN);
-        DisplayList.add(lines, 155, 165, 165, 165, GUN);
-        DisplayList.add(lines, 165, 165, 171, 173, GUN);
-        DisplayList.add(lines, 171, 173, 174, 199, GUN);
-        DisplayList.add(lines, 156, 165, 156, 156, GUN);
-        DisplayList.add(lines, 156, 156, 164, 156, GUN);
-        DisplayList.add(lines, 164, 156, 164, 165, GUN);
+        int weapon = Weapon.current;
+        int swap = Weapon.swapping;
+        int sink = SINK * (swap > Weapon.SWAP ? 2 * Weapon.SWAP - swap : swap);
+        int bottom = DisplayList.VIEW_BOTTOM - 1;
+        for (int i = ARMS_START[weapon]; i < ARMS_START[weapon + 1]; i += 4) {
+            int y0 = ARMS[i + 1] + sink;
+            int y1 = ARMS[i + 3] + sink;
+            if (y0 <= bottom || y1 <= bottom) {
+                DisplayList.add(lines, ARMS[i], Math.min(y0, bottom), ARMS[i + 2], Math.min(y1, bottom), GUN);
+            }
+        }
     }
 
     /** The muzzle flash and the red frame of a fresh wound, over the view. */
     private static void drawEffects(short[] lines) {
         if (Weapon.flash > 0) {
-            DisplayList.add(lines, 150, 146, 170, 146, Sprites.FLASH_COLOR);
-            DisplayList.add(lines, 160, 138, 160, 153, Sprites.FLASH_COLOR);
-            DisplayList.add(lines, 153, 140, 167, 152, Sprites.FLASH_COLOR);
-            DisplayList.add(lines, 153, 152, 167, 140, Sprites.FLASH_COLOR);
+            int color = Weapon.current == Weapon.PLASMA ? Sprites.CELL_COLOR
+                    : Weapon.current == Weapon.BFG ? Sprites.BFG_COLOR : Sprites.FLASH_COLOR;
+            DisplayList.add(lines, 150, 146, 170, 146, color);
+            DisplayList.add(lines, 160, 138, 160, 153, color);
+            DisplayList.add(lines, 153, 140, 167, 152, color);
+            DisplayList.add(lines, 153, 152, 167, 140, color);
         }
         if (Player.hurt > 0) {
             int top = DisplayList.VIEW_TOP + 1;

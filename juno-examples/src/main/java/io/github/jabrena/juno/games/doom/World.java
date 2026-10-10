@@ -27,7 +27,8 @@ final class World {
     static final int MAX_SECTORS = 328;
     static final int MAX_DOORS = 48;
     static final int MAX_MONSTERS = 180;
-    static final int MAX_ITEMS = 152;
+    /** Room for the largest map's pickups, weapons and ammo included, plus a few for what monsters drop. */
+    static final int MAX_ITEMS = 240;
     static final int MAX_ROUTE = 64;
     /** Words of one per-sector bitsets: 16 sectors to a {@code short}. */
     static final int SECTOR_WORDS = (MAX_SECTORS + 15) / 16;
@@ -73,6 +74,10 @@ final class World {
     static int doors;
     static int monsters;
     static int items;
+    /** How many of the {@link #items} the map itself placed; those after them were dropped by monsters. */
+    static int placedItems;
+    /** How many items the tables hold: the largest map's for the WAD, just its own for the built-in map. */
+    static int itemRoom;
     static int secrets;
     static int secretsFound;
     static int routeLength;
@@ -309,6 +314,7 @@ final class World {
         short[] live = new short[MAX_SECTORS];
         short[] states = new short[MAX_MONSTERS * Monsters.STRIDE];
         byte[] picked = new byte[MAX_ITEMS];
+        itemRoom = MAX_ITEMS;
         lineBlocking = new short[LINE_WORDS];
         lineBlocksMonsters = new short[LINE_WORDS];
         sectorSecrets = new short[SECTOR_WORDS];
@@ -357,6 +363,7 @@ final class World {
         short[] live = new short[Level.SECTORS];
         short[] states = new short[Level.MONSTERS * Monsters.STRIDE];
         byte[] picked = new byte[Level.ITEMS];
+        itemRoom = Level.ITEMS;
         // The built-in map marks no line impassable: its bitsets stay clear.
         lineBlocking = new short[(Level.LINES + 15) / 16];
         lineBlocksMonsters = new short[(Level.LINES + 15) / 16];
@@ -551,6 +558,7 @@ final class World {
             monsterKind[i] = Level.MONSTER_KIND[i];
         }
         items = Level.ITEM_X.length;
+        placedItems = items;
         for (int i = 0; i < items; i++) {
             itemX[i] = Level.ITEM_X[i];
             itemY[i] = Level.ITEM_Y[i];
