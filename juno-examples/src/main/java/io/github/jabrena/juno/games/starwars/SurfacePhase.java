@@ -1,5 +1,9 @@
 package io.github.jabrena.juno.games.starwars;
 
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.starwars.Entities.E_AUX;
 import static io.github.jabrena.juno.games.starwars.Entities.E_FLAG;
 import static io.github.jabrena.juno.games.starwars.Entities.E_STRIDE;
@@ -12,10 +16,6 @@ import static io.github.jabrena.juno.games.starwars.Entities.GROUND;
 import static io.github.jabrena.juno.games.starwars.Entities.T_DEBRIS;
 import static io.github.jabrena.juno.games.starwars.Entities.T_FIREBALL;
 import static io.github.jabrena.juno.games.starwars.Entities.T_TOWER;
-
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * The surface: laser towers stream past above the Death Star's surface. Shoot their yellow tops

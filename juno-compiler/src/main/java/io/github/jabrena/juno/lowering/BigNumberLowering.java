@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
@@ -14,6 +12,8 @@ import io.github.jabrena.juno.linker.LinkedMethod;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** {@code new BigInteger(...)}, {@code new BigDecimal(...)} and {@code new MathContext(...)}, split out of {@link InvokeLowering}. */
 final class BigNumberLowering {

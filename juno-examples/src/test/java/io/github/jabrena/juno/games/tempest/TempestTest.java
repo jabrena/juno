@@ -1,5 +1,12 @@
 package io.github.jabrena.juno.games.tempest;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import static io.github.jabrena.juno.api.tft.Internals.call;
 import static io.github.jabrena.juno.api.tft.Internals.callBoolean;
 import static io.github.jabrena.juno.api.tft.Internals.callInt;
@@ -7,13 +14,6 @@ import static io.github.jabrena.juno.api.tft.Internals.getInt;
 import static io.github.jabrena.juno.api.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Rules of Tempest: the tube's geometry, shots destroying flippers and bullets reaching the claw,

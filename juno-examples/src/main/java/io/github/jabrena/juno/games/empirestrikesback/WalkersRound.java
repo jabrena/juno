@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ATAT_HEAD_Y;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ATAT_HITS;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ATST_HEAD_Y;
@@ -21,9 +24,6 @@ import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_ATAT;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_ATST;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_DEBRIS;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_FIREBALL;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * The walkers: AT-AT walkers stride towards the rebel base. Their armor stops your lasers except at

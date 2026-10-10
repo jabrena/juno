@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_STRIDE;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_TIMER;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_TYPE;
@@ -13,9 +16,6 @@ import static io.github.jabrena.juno.games.empirestrikesback.Entities.GROUND;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_DEBRIS;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_FIREBALL;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_PROBE;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * Probe droids: fly your snowspeeder low over the snowfields of Hoth and destroy the Imperial probe

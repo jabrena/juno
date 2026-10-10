@@ -3,9 +3,9 @@ package io.github.jabrena.juno.api.tft;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.DigitalOutput;
 import io.github.jabrena.juno.api.hid.Mouse;
 import io.github.jabrena.juno.api.hid.MouseIcon;
+import io.github.jabrena.juno.api.io.DigitalOutput;
 import io.github.jabrena.juno.api.led.LedMatrix;
 
 /**

@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
@@ -19,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** Compact-record constructor and accessor opcode lowering, split out of {@link BytecodeToIr}. */
 final class RecordLowering {

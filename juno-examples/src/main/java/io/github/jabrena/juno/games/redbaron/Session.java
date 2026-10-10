@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.redbaron;
 
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.redbaron.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_STRIDE;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_TYPE;
@@ -10,9 +13,6 @@ import static io.github.jabrena.juno.games.redbaron.Entities.T_HANGAR;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_NONE;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_PYRAMID;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_TRACER;
-
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /** One game's score, planes, wave and current round. */
 final class Session {

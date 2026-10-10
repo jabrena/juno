@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.starwars;
 
+import io.github.jabrena.juno.api.Random;
+
 import static io.github.jabrena.juno.games.starwars.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.starwars.Entities.E_SR;
 import static io.github.jabrena.juno.games.starwars.Entities.E_STRIDE;
@@ -15,8 +17,6 @@ import static io.github.jabrena.juno.games.starwars.Entities.T_SHOT;
 import static io.github.jabrena.juno.games.starwars.Entities.T_TIE;
 import static io.github.jabrena.juno.games.starwars.Entities.T_TOWER;
 import static io.github.jabrena.juno.games.starwars.Entities.T_TURRET;
-
-import io.github.jabrena.juno.api.Random;
 
 /**
  * The CPU at the controls, flying like a person rather than a machine: it lets targets come within

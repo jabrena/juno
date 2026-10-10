@@ -8,8 +8,8 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.JunoType;
-import io.github.jabrena.juno.optimize.IntRanges.Range;
 import io.github.jabrena.juno.ir.Value;
+import io.github.jabrena.juno.optimize.IntRanges.Range;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;

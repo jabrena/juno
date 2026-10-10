@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.linker;
 
-import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilationResult;
+import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.board.ArduinoCore;
 import io.github.jabrena.juno.board.Board;

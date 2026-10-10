@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.ir;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 /** Where control flow goes after the last instruction of an {@link IrBasicBlock}. */
 public sealed interface IrTerminator {

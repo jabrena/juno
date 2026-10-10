@@ -1,9 +1,9 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.intrinsic.Intrinsic;
+import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
-import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.linker.Program;
 import org.junit.jupiter.api.Test;

@@ -1,15 +1,15 @@
 package io.github.jabrena.juno.games.pacman;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static io.github.jabrena.juno.api.tft.Internals.call;
 import static io.github.jabrena.juno.api.tft.Internals.callInt;
 import static io.github.jabrena.juno.api.tft.Internals.getInt;
 import static io.github.jabrena.juno.api.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 /**
  * Rules of Pac-Man: eating dots and energizers, ghost collisions, the pilot-choice screen, and an

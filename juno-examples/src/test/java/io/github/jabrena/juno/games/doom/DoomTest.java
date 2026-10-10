@@ -1,15 +1,16 @@
 package io.github.jabrena.juno.games.doom;
 
-import static io.github.jabrena.juno.api.tft.Internals.getInt;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.io.Gpio;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
-import java.util.HashSet;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static io.github.jabrena.juno.api.tft.Internals.getInt;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Rules of the DOOM walk-through on the committed test map: two rooms joined by a doorway, the far

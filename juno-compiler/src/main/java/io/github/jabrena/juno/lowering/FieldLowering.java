@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
@@ -13,17 +11,19 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.AtomicSupport;
-import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ConstantTables;
+import io.github.jabrena.juno.linker.Descriptor;
+import io.github.jabrena.juno.linker.LinkedMethod;
+import io.github.jabrena.juno.linker.LockSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.ThreadSupport;
-import io.github.jabrena.juno.linker.LockSupport;
-import io.github.jabrena.juno.linker.LinkedMethod;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** {@code getstatic}/{@code putstatic}/{@code getfield}/{@code putfield} opcode lowering, split out of {@link BytecodeToIr}. */
 final class FieldLowering {

@@ -6,8 +6,6 @@ import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.linker.Linker;
 import io.github.jabrena.juno.linker.Program;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 
 public final class CompilerTestSupport {
     private CompilerTestSupport() {

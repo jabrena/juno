@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.games.tempest;
 
-import io.github.jabrena.juno.api.Random;
 
 /** Score, lives, level progress, cooldowns, and the rules governing enemies, shots and bullets. */
 final class Session {

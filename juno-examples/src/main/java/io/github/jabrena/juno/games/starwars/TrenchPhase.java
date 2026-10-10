@@ -1,5 +1,9 @@
 package io.github.jabrena.juno.games.starwars;
 
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.starwars.Entities.E_STRIDE;
 import static io.github.jabrena.juno.games.starwars.Entities.E_TIMER;
 import static io.github.jabrena.juno.games.starwars.Entities.E_TYPE;
@@ -11,10 +15,6 @@ import static io.github.jabrena.juno.games.starwars.Entities.T_CATWALK;
 import static io.github.jabrena.juno.games.starwars.Entities.T_DEBRIS;
 import static io.github.jabrena.juno.games.starwars.Entities.T_PORT;
 import static io.github.jabrena.juno.games.starwars.Entities.T_TURRET;
-
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * The trench: the X-wing follows the crosshair past wall turrets and, from wave 2, catwalks, to the

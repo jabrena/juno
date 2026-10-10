@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.startrek.DisplayList.HEADER;
 import static io.github.jabrena.juno.games.startrek.DisplayList.HEIGHT;
 import static io.github.jabrena.juno.games.startrek.DisplayList.TACTICAL_RIGHT;
@@ -27,8 +29,6 @@ import static io.github.jabrena.juno.games.startrek.Geometry.FIX;
 import static io.github.jabrena.juno.games.startrek.Geometry.SECTOR;
 import static io.github.jabrena.juno.games.startrek.Geometry.dirX;
 import static io.github.jabrena.juno.games.startrek.Geometry.dirY;
-
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
  * The colors, one frame of both views, and the tactical view: the sector from above with the

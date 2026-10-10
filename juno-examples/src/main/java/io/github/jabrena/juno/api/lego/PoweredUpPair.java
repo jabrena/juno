@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.api.lego;
 
-import static io.github.jabrena.juno.api.lego.PoweredUpState.*;
-
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+
+import static io.github.jabrena.juno.api.lego.PoweredUpState.*;
 
 /** The PAIR view of {@link PoweredUpHubTFT}: the first two motors driven together. */
 final class PoweredUpPair {

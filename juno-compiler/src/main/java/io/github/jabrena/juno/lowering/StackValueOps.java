@@ -3,7 +3,6 @@ package io.github.jabrena.juno.lowering;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.FloatBinaryOp;
 import io.github.jabrena.juno.ir.IrInstruction;
-import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.UnaryOp;
 import io.github.jabrena.juno.ir.Value;
 

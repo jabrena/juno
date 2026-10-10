@@ -1,9 +1,5 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
-import static io.github.jabrena.juno.lowering.LocalSlotAnalysis.*;
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
@@ -13,6 +9,10 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
+import static io.github.jabrena.juno.lowering.LocalSlotAnalysis.*;
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** Local-store and stack-shuffle opcode lowering (54-89), split out of {@link BytecodeToIr}. */
 final class StoreLowering {

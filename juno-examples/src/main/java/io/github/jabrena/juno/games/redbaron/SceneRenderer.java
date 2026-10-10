@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.redbaron;
 
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.redbaron.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_HEADING;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_MODE;
@@ -23,8 +25,6 @@ import static io.github.jabrena.juno.games.redbaron.Entities.T_NONE;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_PLANE;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_PYRAMID;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_TRACER;
-
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /** Draws the landscape, entities and fixed cockpit into the display list. */
 final class SceneRenderer {

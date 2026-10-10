@@ -1,15 +1,16 @@
 package io.github.jabrena.juno.games.battleship;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
-import static io.github.jabrena.juno.games.battleship.Fleet.*;
+
 import static io.github.jabrena.juno.games.battleship.AutopilotBattleship.*;
 import static io.github.jabrena.juno.games.battleship.Controls.*;
+import static io.github.jabrena.juno.games.battleship.Fleet.*;
 import static io.github.jabrena.juno.games.battleship.SceneRenderer.*;
 
 /**

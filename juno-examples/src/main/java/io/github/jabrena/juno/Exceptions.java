@@ -1,7 +1,6 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.Exceptions.SensorException;
-import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 

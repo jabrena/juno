@@ -1,69 +1,51 @@
 package io.github.jabrena.juno.lowering;
 
+import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.analysis.BasicBlock;
+import io.github.jabrena.juno.analysis.Terminator;
+import io.github.jabrena.juno.bytecode.BytecodeDecoder;
+import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.classfile.FieldInfo;
+import io.github.jabrena.juno.classfile.JavaClass;
+import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
+import io.github.jabrena.juno.ir.ArrayDeclaration;
+import io.github.jabrena.juno.ir.IrBasicBlock;
+import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.ir.IrMethod;
+import io.github.jabrena.juno.ir.IrProgram;
+import io.github.jabrena.juno.ir.IrTerminator;
+import io.github.jabrena.juno.ir.Value;
+import io.github.jabrena.juno.linker.ConstantTables;
+import io.github.jabrena.juno.linker.Descriptor;
+import io.github.jabrena.juno.linker.InterfaceCallSite;
+import io.github.jabrena.juno.linker.InterfaceDispatch;
+import io.github.jabrena.juno.linker.LambdaCallSite;
+import io.github.jabrena.juno.linker.LambdaSite;
+import io.github.jabrena.juno.linker.LinkedMethod;
+import io.github.jabrena.juno.linker.Program;
+import io.github.jabrena.juno.linker.ScopedValueSupport;
+import io.github.jabrena.juno.linker.StringConcatResolver;
+import io.github.jabrena.juno.linker.StringConcatSite;
+import io.github.jabrena.juno.linker.StructuredTaskSupport;
+import io.github.jabrena.juno.linker.ThreadSupport;
+import io.github.jabrena.juno.linker.ThrowableTypes;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import static io.github.jabrena.juno.lowering.ArithmeticLowering.*;
 import static io.github.jabrena.juno.lowering.ConstantAndStackSupport.*;
 import static io.github.jabrena.juno.lowering.ControlFlowLowering.*;
 import static io.github.jabrena.juno.lowering.InvokeLowering.*;
 import static io.github.jabrena.juno.lowering.LocalSlotAnalysis.*;
 import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
-import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.analysis.BasicBlock;
-import io.github.jabrena.juno.analysis.ControlFlowGraph;
-import io.github.jabrena.juno.analysis.Terminator;
-import io.github.jabrena.juno.bytecode.BytecodeDecoder;
-import io.github.jabrena.juno.bytecode.Instruction;
-import io.github.jabrena.juno.classfile.ExceptionHandler;
-import io.github.jabrena.juno.classfile.FieldInfo;
-import io.github.jabrena.juno.classfile.FieldRef;
-import io.github.jabrena.juno.classfile.JavaClass;
-import io.github.jabrena.juno.classfile.JavaMethod;
-import io.github.jabrena.juno.classfile.MethodRef;
-import io.github.jabrena.juno.intrinsic.Intrinsic;
-import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
-import io.github.jabrena.juno.linker.RecordSupport;
-import io.github.jabrena.juno.ir.ArrayDeclaration;
-import io.github.jabrena.juno.ir.ArrayElementType;
-import io.github.jabrena.juno.ir.BinaryOp;
-import io.github.jabrena.juno.ir.Condition;
-import io.github.jabrena.juno.ir.FloatBinaryOp;
-import io.github.jabrena.juno.ir.IrBasicBlock;
-import io.github.jabrena.juno.ir.IrInstruction;
-import io.github.jabrena.juno.ir.IrMethod;
-import io.github.jabrena.juno.ir.IrProgram;
-import io.github.jabrena.juno.ir.IrTerminator;
-import io.github.jabrena.juno.ir.JunoType;
-import io.github.jabrena.juno.ir.UnaryOp;
-import io.github.jabrena.juno.ir.Value;
-import io.github.jabrena.juno.linker.ConstantTables;
-import io.github.jabrena.juno.linker.Descriptor;
-import io.github.jabrena.juno.linker.LinkedMethod;
-import io.github.jabrena.juno.linker.InterfaceCallSite;
-import io.github.jabrena.juno.linker.InterfaceDispatch;
-import io.github.jabrena.juno.linker.LambdaCallSite;
-import io.github.jabrena.juno.linker.LambdaSite;
-import io.github.jabrena.juno.linker.Program;
-import io.github.jabrena.juno.linker.ThreadSupport;
-import io.github.jabrena.juno.linker.ScopedValueSupport;
-import io.github.jabrena.juno.linker.StructuredTaskSupport;
-import io.github.jabrena.juno.linker.StringConcatResolver;
-import io.github.jabrena.juno.linker.StringConcatSite;
-import io.github.jabrena.juno.linker.ThrowableTypes;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 /**
  * Lowers each reachable method's JVM bytecode into Juno IR: a non-SSA, block-structured form where every
@@ -310,7 +292,7 @@ public final class BytecodeToIr {
 
     /** The result of lowering one bytecode instruction: {@link Lowered} plus the (rarely touched) IR
      * block start and terminator, so lowerInstruction has one return shape for every opcode group. */
-    
+
 
     /**
      * Dispatches one bytecode instruction to the {@code lower*} helper for its opcode group. Opcodes are
@@ -554,7 +536,7 @@ public final class BytecodeToIr {
 
     /** {@link #lowerCall}'s popped arguments: each slot is either a numeric {@link Value} or (for a parameter
      * an intrinsic requires/prefers as compile-time text) a {@code literalStrings} entry, never both. */
-    
+
 
 
 
@@ -580,13 +562,13 @@ public final class BytecodeToIr {
 
 
 
-    
+
 
     /** IR-only block ids live above every bytecode offset (a method's code is at most 65535 bytes). */
 
 
 
-    
+
 
     /**
      * The first handler (in exception-table order) that would catch an {@code ArithmeticException}
@@ -816,19 +798,19 @@ public final class BytecodeToIr {
 
 
 
-    
 
-    
 
-    
+
+
+
 
     /** Like {@link Lowered}, plus the possibly-split IR block start that a guarded division may advance. */
-    
+
 
     /** Like {@link Lowered}, plus the block's terminator when the opcode ends it (branch/return/throw/switch). */
-    
 
-    
+
+
 
     /**
      * Per-method bookkeeping of facts about values that a real type system would normally carry: whether a
@@ -838,8 +820,8 @@ public final class BytecodeToIr {
      * values are single-assignment, so a fact about one is true for its whole lifetime. The stack-slot views
      * are reset at the start of every block (see the class-level docs for why).
      */
-    
+
 
     /** A record instance that was never actually constructed on any heap — just its component field values. */
-    
+
 }

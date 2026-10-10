@@ -4,10 +4,10 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.net.http.HttpsClient;
-import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.net.Wifi;
+import io.github.jabrena.juno.api.net.http.HttpsClient;
 
 /**
  * Connects to WiFi, then periodically requests Madrid's current temperature and local time from
@@ -103,11 +103,11 @@ public final class MadridWeather {
         byte[] weatherResponse = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
         byte[] weatherHeaders = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
         int[] weatherStatusAndHeadersLength = new int[2];
-        
+
         byte[] timeResponse = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
         byte[] timeHeaders = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
         int[] timeStatusAndHeadersLength = new int[2];
-        
+
         byte[] timeText = new byte[TIME_TEXT_BUFFER_SIZE];
 
         while (true) {

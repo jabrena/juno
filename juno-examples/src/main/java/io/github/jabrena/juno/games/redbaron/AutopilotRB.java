@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.redbaron;
 
+import io.github.jabrena.juno.api.Random;
+
 import static io.github.jabrena.juno.games.redbaron.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_STRIDE;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_TYPE;
@@ -12,8 +14,6 @@ import static io.github.jabrena.juno.games.redbaron.Entities.T_HANGAR;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_PLANE;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_PYRAMID;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_TRACER;
-
-import io.github.jabrena.juno.api.Random;
 
 /** The CPU pilot: chases targets, evades tracers and climbs over pyramids. */
 final class AutopilotRB {

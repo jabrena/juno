@@ -1,16 +1,15 @@
 package io.github.jabrena.juno.games.spaceparanoids;
 
-import static io.github.jabrena.juno.api.tft.Internals.call;
-import static io.github.jabrena.juno.api.tft.Internals.callBoolean;
-import static io.github.jabrena.juno.api.tft.Internals.get;
-import static io.github.jabrena.juno.api.tft.Internals.getInt;
-import static io.github.jabrena.juno.api.tft.Internals.set;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static io.github.jabrena.juno.api.tft.Internals.call;
+import static io.github.jabrena.juno.api.tft.Internals.get;
+import static io.github.jabrena.juno.api.tft.Internals.getInt;
+import static io.github.jabrena.juno.api.tft.Internals.set;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Rules of Space Paranoids: the maze, ray casting, walls, shots, shields and pools, the pilot screen,

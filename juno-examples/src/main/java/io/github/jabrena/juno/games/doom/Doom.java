@@ -10,7 +10,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
- * DOOM in wireframe on the ELEGOO 2.8" TFT touch screen shield, after the original 1993 game by id Software. 
+ * DOOM in wireframe on the ELEGOO 2.8" TFT touch screen shield, after the original 1993 game by id Software.
  * The player is a space marine
  * renderer: full BSP traversal, perspective projection, occlusion and working doors, plus the map's
  * monsters ({@link Monsters}) to fight with the pistol ({@link Weapon}).

@@ -1,13 +1,10 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.FieldRef;
-import io.github.jabrena.juno.classfile.JavaClass;
-import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.classfile.InvokeDynamicRef;
+import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
@@ -15,6 +12,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /**
  * Compile-time-constant lookahead and the per-opcode operand-stack effect

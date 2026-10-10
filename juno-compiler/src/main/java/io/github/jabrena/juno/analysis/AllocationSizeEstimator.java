@@ -1,15 +1,15 @@
 package io.github.jabrena.juno.analysis;
 
+import io.github.jabrena.juno.RuntimeLimits;
+import io.github.jabrena.juno.backend.StackFrameSizing;
 import io.github.jabrena.juno.classfile.FieldInfo;
 import io.github.jabrena.juno.classfile.JavaClass;
-import io.github.jabrena.juno.backend.StackFrameSizing;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.ThrowableTypes;
-import io.github.jabrena.juno.RuntimeLimits;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;

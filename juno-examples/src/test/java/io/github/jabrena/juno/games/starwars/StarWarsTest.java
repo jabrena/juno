@@ -1,16 +1,16 @@
 package io.github.jabrena.juno.games.starwars;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static io.github.jabrena.juno.api.tft.Internals.call;
 import static io.github.jabrena.juno.api.tft.Internals.callBoolean;
 import static io.github.jabrena.juno.api.tft.Internals.get;
 import static io.github.jabrena.juno.api.tft.Internals.getInt;
 import static io.github.jabrena.juno.api.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 /**
  * Rules of Star Wars: clipping, lasers, Vader, shields, catwalks, the pilot screen, and the CPU pilot

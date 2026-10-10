@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.games.startrek;
 
-import static io.github.jabrena.juno.games.startrek.Geometry.FIX;
-import static io.github.jabrena.juno.games.startrek.Geometry.SECTOR_FIX;
-
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+
+import static io.github.jabrena.juno.games.startrek.Geometry.FIX;
+import static io.github.jabrena.juno.games.startrek.Geometry.SECTOR_FIX;
 
 /**
  * The Enterprise: where it is and where it is heading, in world units x FIX, and what it has left

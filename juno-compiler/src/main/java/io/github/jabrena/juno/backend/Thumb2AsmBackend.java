@@ -1,16 +1,15 @@
 package io.github.jabrena.juno.backend;
 
-import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.board.Board;
-import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.classfile.MethodHandleRef;
+import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
-import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;

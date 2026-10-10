@@ -1,14 +1,14 @@
 package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.classfile.FieldRef;
+import io.github.jabrena.juno.classfile.MethodHandleRef;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.ConstantTables;
-import io.github.jabrena.juno.linker.ThrowableTypes;
 import io.github.jabrena.juno.linker.LambdaSite;
-import io.github.jabrena.juno.classfile.MethodHandleRef;
+import io.github.jabrena.juno.linker.ThrowableTypes;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Comparator;

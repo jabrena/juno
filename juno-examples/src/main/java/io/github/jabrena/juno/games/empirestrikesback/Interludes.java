@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ATAT_HITS;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_FLAG;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_HP;
@@ -8,9 +11,6 @@ import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_TYPE;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_X;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_Z;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.T_ATAT;
-
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /** The scenes before the flying: the film's opening on Hoth and the title. */
 final class Interludes {

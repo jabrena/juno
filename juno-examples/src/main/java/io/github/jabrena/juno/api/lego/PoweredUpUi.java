@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.lego;
 
-import static io.github.jabrena.juno.api.lego.PoweredUpState.*;
-
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+
+import static io.github.jabrena.juno.api.lego.PoweredUpState.*;
 
 /** Small drawing and lookup helpers shared by the views of {@link PoweredUpHubTFT}. */
 final class PoweredUpUi {

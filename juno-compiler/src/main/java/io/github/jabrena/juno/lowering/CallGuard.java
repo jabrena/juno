@@ -1,11 +1,5 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.ControlFlowLowering.CALL_BLOCK_BASE;
-import static io.github.jabrena.juno.lowering.ControlFlowLowering.PROPAGATE_BLOCK;
-import static io.github.jabrena.juno.lowering.ControlFlowLowering.caughtMask;
-import static io.github.jabrena.juno.lowering.ControlFlowLowering.dispatchTerminator;
-import static io.github.jabrena.juno.lowering.ControlFlowLowering.handlersByClassId;
-
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
@@ -21,6 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static io.github.jabrena.juno.lowering.ControlFlowLowering.CALL_BLOCK_BASE;
+import static io.github.jabrena.juno.lowering.ControlFlowLowering.PROPAGATE_BLOCK;
+import static io.github.jabrena.juno.lowering.ControlFlowLowering.caughtMask;
+import static io.github.jabrena.juno.lowering.ControlFlowLowering.dispatchTerminator;
+import static io.github.jabrena.juno.lowering.ControlFlowLowering.handlersByClassId;
 
 /**
  * Cross-method exception propagation. A callee that throws leaves the exception in the runtime's pending slot

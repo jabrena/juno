@@ -1,15 +1,16 @@
 package io.github.jabrena.juno.lowering;
 
-import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
-
 import io.github.jabrena.juno.bytecode.Instruction;
-import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.linker.LinkedMethod;
+
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
+import static io.github.jabrena.juno.lowering.StackValueOps.*;
 
 /** Constant-push and local-load opcode lowering (0-45), split out of {@link BytecodeToIr}. */
 final class ConstAndLoadLowering {

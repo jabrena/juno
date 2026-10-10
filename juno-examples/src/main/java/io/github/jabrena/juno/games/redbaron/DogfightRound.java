@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.games.redbaron;
 
+import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.redbaron.Entities.E_AUX;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_HEADING;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_HP;
@@ -19,9 +22,6 @@ import static io.github.jabrena.juno.games.redbaron.Entities.T_DEBRIS;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_FALLING;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_PLANE;
 import static io.github.jabrena.juno.games.redbaron.Entities.T_TRACER;
-
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /** Enemy biplanes and the blimp flown in the first round of every wave. */
 final class DogfightRound {

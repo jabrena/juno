@@ -16,7 +16,7 @@ public final class WifiStatus {
         Serial.begin(BaudRate.BAUD_115200);
         Serial.println("Starting WiFi");
         Wifi.begin(
-            System.getenv("JUNO_WIFI_SSID"), 
+            System.getenv("JUNO_WIFI_SSID"),
             System.getenv("JUNO_WIFI_PASSWORD"));
 
         while (true) {

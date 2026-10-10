@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.spaceparanoids;
 
+import io.github.jabrena.juno.api.Random;
+
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.F_STRIDE;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.F_VX;
@@ -12,6 +14,7 @@ import static io.github.jabrena.juno.games.spaceparanoids.Entities.I_STRIDE;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.I_TIMER;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.I_TYPE;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.ONE;
+import static io.github.jabrena.juno.games.spaceparanoids.Entities.TO_CELLS;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.T_BLAST;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.T_ENEMY_SHOT;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.T_HUNTER;
@@ -19,9 +22,6 @@ import static io.github.jabrena.juno.games.spaceparanoids.Entities.T_NONE;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.T_SHOT;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.T_TANK;
 import static io.github.jabrena.juno.games.spaceparanoids.Entities.T_TURRET;
-import static io.github.jabrena.juno.games.spaceparanoids.Entities.TO_CELLS;
-
-import io.github.jabrena.juno.api.Random;
 
 /** Player and enemy shots, collision detection, damage and scoring. */
 final class Combat {

@@ -1,8 +1,8 @@
 package io.github.jabrena.juno;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.api.Assumptions;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
