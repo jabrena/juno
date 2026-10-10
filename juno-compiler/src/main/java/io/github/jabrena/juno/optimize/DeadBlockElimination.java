@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -44,7 +45,7 @@ public final class DeadBlockElimination implements CompilerPass {
         reachable.add(entry);
         work.add(entry);
         while (!work.isEmpty()) {
-            IrBasicBlock block = byStart.get(work.removeFirst());
+            IrBasicBlock block = Objects.requireNonNull(byStart.get(work.removeFirst()));
             for (int successor : successorsOf(block.terminator())) {
                 if (reachable.add(successor)) {
                     work.add(successor);

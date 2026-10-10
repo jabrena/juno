@@ -12,6 +12,9 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - **Test framework:** JUnit (Jupiter). `juno-compiler` also uses Testcontainers (test scope) for the opt-in `arduino-cli` and QEMU tests.
 - **Architecture rules:** ArchUnit (test scope). `ApiArchitectureTest` keeps `juno-api` free of compiler and
   third-party code; `ExamplesArchitectureTest` keeps `juno-examples` on `juno-api` and the JDK only.
+- **Nullness:** JSpecify (`provided` scope). Every `juno-api`, `juno-compiler` and `juno-maven-plugin` package is
+  `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use `Objects.requireNonNull` for a
+  lookup that must succeed by construction.
 - **External toolchain:** Arduino CLI with the `arduino:renesas_uno` (UNO R4 WiFi) and `arduino:zephyr`
   (UNO Q) cores, used to actually compile/upload generated sketches to real hardware; not a Maven dependency.
 

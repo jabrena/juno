@@ -26,4 +26,7 @@
  * {@code SystemCommandExecutor} types wrap {@code arduino-cli} invocations behind a small,
  * testable seam, with {@code ArduinoCliException} as their failure type.
  */
+@NullMarked
 package io.github.jabrena.juno.maven;
+
+import org.jspecify.annotations.NullMarked;

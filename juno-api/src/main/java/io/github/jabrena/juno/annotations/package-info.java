@@ -16,4 +16,7 @@
  *       a {@code juno_panic()}) instead of hanging forever.</li>
  * </ul>
  */
+@NullMarked
 package io.github.jabrena.juno.annotations;
+
+import org.jspecify.annotations.NullMarked;

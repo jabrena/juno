@@ -12,6 +12,7 @@ import io.github.jabrena.juno.linker.InterfaceDispatch;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -30,11 +31,11 @@ final class TaskEntryLowering {
         if (dispatch.targets().size() == 1) {
             InterfaceDispatch.Target target = dispatch.targets().getFirst();
             instructions.add(target.isLambda()
-                    ? new IrInstruction.LambdaCall(Optional.of(result), target.lambda(), List.of(callable))
+                    ? new IrInstruction.LambdaCall(Optional.of(result), Objects.requireNonNull(target.lambda()), List.of(callable))
                     : new IrInstruction.Call(Optional.of(result), target.method(), List.of(callable)));
         } else {
             List<InterfaceTarget> targets = dispatch.targets().stream()
-                    .map(target -> new InterfaceTarget(objectTypeIds.get(target.className()), target.method(),
+                    .map(target -> new InterfaceTarget(Objects.requireNonNull(objectTypeIds.get(target.className())), target.method(),
                             target.lambda()))
                     .toList();
             instructions.add(new IrInstruction.InterfaceCall(Optional.of(result), List.of(callable), targets));

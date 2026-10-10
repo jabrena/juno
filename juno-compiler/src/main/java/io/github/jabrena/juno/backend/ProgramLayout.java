@@ -9,11 +9,13 @@ import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.classfile.MethodHandleRef;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -123,7 +125,7 @@ final class ProgramLayout {
         return throwableClasses;
     }
 
-    Integer objectTypeId(String className) {
+    @Nullable Integer objectTypeId(String className) {
         return objectTypeIds.get(className);
     }
 
@@ -132,19 +134,19 @@ final class ProgramLayout {
     }
 
     int objectSize(String className) {
-        return objectSizes.get(className);
+        return Objects.requireNonNull(objectSizes.get(className), () -> "No object size for " + className);
     }
 
     int fieldOffset(FieldRef field) {
-        return fieldOffsets.get(field);
+        return Objects.requireNonNull(fieldOffsets.get(field), () -> "No field offset for " + field.displayName());
     }
 
     String staticSymbol(FieldRef field) {
-        return staticSymbols.get(field);
+        return Objects.requireNonNull(staticSymbols.get(field), () -> "No static symbol for " + field.displayName());
     }
 
     String intArraySymbol(IrInstruction.IntArrayConst array) {
-        return intArraySymbols.get(array);
+        return Objects.requireNonNull(intArraySymbols.get(array), "No symbol for an int array constant");
     }
 
     String constantTableSymbol(FieldRef field) {
@@ -152,7 +154,7 @@ final class ProgramLayout {
     }
 
     String lambdaFunctionSymbol(LambdaSite site) {
-        return lambdaFunctionSymbols.get(site);
+        return Objects.requireNonNull(lambdaFunctionSymbols.get(site), () -> "No function symbol for " + site);
     }
 
     /** Emits every data section the program needs, ahead of its {@code .text}. */

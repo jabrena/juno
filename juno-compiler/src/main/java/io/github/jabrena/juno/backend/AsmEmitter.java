@@ -106,8 +106,8 @@ final class AsmEmitter {
 
     void loadWord(StringBuilder output, FrameLayout frame, WordSource source, String register, int extraSpOffset) {
         switch (source) {
-            case WordSource.FromValue from when frame.constant(from.value()) != null ->
-                    emitLoadImmediate(output, register, frame.constant(from.value()));
+            case WordSource.FromValue from when frame.constant(from.value()) instanceof Integer constant ->
+                    emitLoadImmediate(output, register, constant);
             case WordSource.FromValue from -> emitLoad(output, register, frame.valueOffset(from.value()) + extraSpOffset);
             case WordSource.FromValueLow from -> emitLoad(output, register, frame.valueOffset(from.value()) + extraSpOffset);
             case WordSource.FromValueHigh from ->

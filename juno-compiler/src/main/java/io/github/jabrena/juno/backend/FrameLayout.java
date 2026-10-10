@@ -5,6 +5,7 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.IrValues;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<In
     }
 
     /** The value's constant, when it is a rematerialized {@code Const}; otherwise null. */
-    Integer constant(Value value) {
+    @Nullable Integer constant(Value value) {
         return constants.get(value.id());
     }
 

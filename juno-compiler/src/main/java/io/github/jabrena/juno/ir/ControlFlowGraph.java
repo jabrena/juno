@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -35,7 +36,7 @@ public final class ControlFlowGraph {
                     .filter(blocksByStart::containsKey).distinct().toList();
             successors.put(block.start(), targets);
             for (int target : targets) {
-                predecessors.get(target).add(block.start());
+                Objects.requireNonNull(predecessors.get(target)).add(block.start());
             }
         }
         reversePostorder = blocks.isEmpty() ? List.of() : computeReversePostorder(blocks.getFirst().start());
@@ -65,7 +66,7 @@ public final class ControlFlowGraph {
     }
 
     public IrBasicBlock block(int start) {
-        return blocksByStart.get(start);
+        return Objects.requireNonNull(blocksByStart.get(start), () -> "No block at " + start);
     }
 
     public List<Integer> successorsOf(int start) {
@@ -160,11 +161,11 @@ public final class ControlFlowGraph {
         int left = first;
         int right = second;
         while (left != right) {
-            while (order.get(left) > order.get(right)) {
-                left = dominators.get(left);
+            while (Objects.requireNonNull(order.get(left)) > Objects.requireNonNull(order.get(right))) {
+                left = Objects.requireNonNull(dominators.get(left));
             }
-            while (order.get(right) > order.get(left)) {
-                right = dominators.get(right);
+            while (Objects.requireNonNull(order.get(right)) > Objects.requireNonNull(order.get(left))) {
+                right = Objects.requireNonNull(dominators.get(right));
             }
         }
         return left;

@@ -24,4 +24,7 @@
  * HttpsClient}/{@code Pop3Client}'s use of the WiFi module's own firmware-backed validation — a
  * deliberate tradeoff to fit STARTTLS in the UNO R4 WiFi's 32KB of RAM.
  */
+@NullMarked
 package io.github.jabrena.juno.api.net.email;
+
+import org.jspecify.annotations.NullMarked;

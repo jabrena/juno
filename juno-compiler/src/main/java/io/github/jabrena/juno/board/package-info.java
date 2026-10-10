@@ -12,4 +12,7 @@
  * latter; the backend picks its per-core runtime from the former. Neither re-derives board behavior
  * from the annotation type or from per-board flags.
  */
+@NullMarked
 package io.github.jabrena.juno.board;
+
+import org.jspecify.annotations.NullMarked;

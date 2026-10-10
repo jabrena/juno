@@ -4,6 +4,7 @@ import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 32-bit {@code int} arithmetic, narrowing conversions and comparisons, all inline Thumb-2. A rematerialized
@@ -48,7 +49,7 @@ final class IntArithmeticLowering {
      * JVM's masked amount; a multiplication by a power of two is a left shift; an operation that leaves {@code r0}
      * unchanged emits nothing.
      */
-    static String immediateForm(BinaryOp operation, int constant) {
+    static @Nullable String immediateForm(BinaryOp operation, int constant) {
         return switch (operation) {
             case ADD -> addImmediate("add", "sub", constant);
             case SUBTRACT -> addImmediate("sub", "add", constant);
@@ -66,7 +67,7 @@ final class IntArithmeticLowering {
         };
     }
 
-    private static String addImmediate(String operation, String inverse, int constant) {
+    private static @Nullable String addImmediate(String operation, String inverse, int constant) {
         if (AsmEmitter.isModifiedImmediate(constant)) {
             return "    " + operation + " r0, r0, #" + constant + "\n";
         }

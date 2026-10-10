@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.linker;
 
 import io.github.jabrena.juno.classfile.MethodRef;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public record InterfaceDispatch(MethodRef interfaceMethod, List<Target> targets)
     }
 
     /** The receiver type and either its concrete method body or its compiler-generated lambda adapter. */
-    public record Target(String className, MethodRef method, LambdaSite lambda) {
+    public record Target(String className, MethodRef method, @Nullable LambdaSite lambda) {
         public Target(String className, MethodRef method) {
             this(className, method, null);
         }

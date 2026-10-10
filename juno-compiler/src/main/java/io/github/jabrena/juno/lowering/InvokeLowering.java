@@ -19,10 +19,12 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.InterfaceTarget;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /** {@code invokevirtual}/{@code invokespecial}/{@code invokestatic} opcode lowering, split out of {@link BytecodeToIr}. */
@@ -89,13 +91,13 @@ final class InvokeLowering {
         if (dispatch.targets().size() == 1) {
             InterfaceDispatch.Target target = dispatch.targets().getFirst();
             return target.isLambda()
-                    ? LambdaLowering.lowerCall(linked, instruction, target.lambda(), instructions, stackBase, depth,
+                    ? LambdaLowering.lowerCall(linked, instruction, Objects.requireNonNull(target.lambda()), instructions, stackBase, depth,
                             nextValueId, tracking)
                     : lowerResolvedCall(linked, instruction, target.method(), true, List.of(),
                             instructions, stackBase, depth, nextValueId, tracking);
         }
         List<InterfaceTarget> targets = dispatch.targets().stream()
-                .map(target -> new InterfaceTarget(objectTypeIds.get(target.className()), target.method(),
+                .map(target -> new InterfaceTarget(Objects.requireNonNull(objectTypeIds.get(target.className())), target.method(),
                         target.lambda()))
                 .toList();
         return lowerResolvedCall(linked, instruction, dispatch.interfaceMethod(), true, targets, instructions,
@@ -107,7 +109,7 @@ final class InvokeLowering {
                                           List<IrInstruction> instructions, int stackBase, int depth,
                                           int nextValueId, ValueTracking tracking) {
         Value[] arguments = new Value[descriptor.parameters().size()];
-        String[] literalStrings = new String[descriptor.parameters().size()];
+        @Nullable String[] literalStrings = new String[descriptor.parameters().size()];
         for (int index = arguments.length - 1; index >= 0; index--) {
             String parameterType = descriptor.parameters().get(index);
             depth -= Descriptor.jvmSlots(parameterType);
@@ -130,8 +132,8 @@ final class InvokeLowering {
                     literalStrings[index] = literal;
                 } else if (intrinsic.isPresent()
                         && IntrinsicRegistry.prefersLiteralStringArgument(intrinsic.get(), index)
-                        && tracking.knownString(popped.value()) != null) {
-                    literalStrings[index] = tracking.knownString(popped.value());
+                        && tracking.knownString(popped.value()) instanceof String literal) {
+                    literalStrings[index] = literal;
                 } else {
                     arguments[index] = popped.value();
                 }
@@ -165,7 +167,7 @@ final class InvokeLowering {
         CallArguments popped = popCallArguments(linked, instruction, called, descriptor, intrinsic, instructions,
                 stackBase, depth, nextValueId, tracking);
         Value[] arguments = popped.arguments();
-        String[] literalStrings = popped.literalStrings();
+        @Nullable String[] literalStrings = popped.literalStrings();
         nextValueId = popped.nextValueId();
         depth = popped.depth();
         List<Value> numericArguments = new ArrayList<>();
@@ -236,7 +238,7 @@ final class InvokeLowering {
 
     static Lowered lowerEnumValues(MethodRef called, List<IrInstruction> instructions, int stackBase, int depth,
                                    int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes) {
-        JavaClass enumClass = classes.get(called.owner());
+        JavaClass enumClass = Objects.requireNonNull(classes.get(called.owner()), called.owner());
         List<Integer> ordinals = new ArrayList<>();
         for (int index = 0; index < enumClass.enumConstantNames().size(); index++) {
             ordinals.add(index);

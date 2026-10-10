@@ -10,4 +10,7 @@
  * its {@link io.github.jabrena.juno.intrinsic.Intrinsic} and where enum/record-specific bytecode
  * shapes (ordinal lookups, accessor calls) get their Juno-specific meaning.
  */
+@NullMarked
 package io.github.jabrena.juno.lowering;
+
+import org.jspecify.annotations.NullMarked;

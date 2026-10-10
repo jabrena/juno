@@ -16,4 +16,7 @@
  * and {@link io.github.jabrena.juno.ir.ArrayElementType} describe a method's hoisted local arrays
  * and their storage width.
  */
+@NullMarked
 package io.github.jabrena.juno.ir;
+
+import org.jspecify.annotations.NullMarked;

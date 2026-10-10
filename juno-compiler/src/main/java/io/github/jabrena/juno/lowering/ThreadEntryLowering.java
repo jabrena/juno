@@ -11,6 +11,7 @@ import io.github.jabrena.juno.linker.ThreadSupport;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -30,11 +31,11 @@ final class ThreadEntryLowering {
         if (dispatch.targets().size() == 1) {
             InterfaceDispatch.Target target = dispatch.targets().getFirst();
             instructions.add(target.isLambda()
-                    ? new IrInstruction.LambdaCall(Optional.empty(), target.lambda(), List.of(runnable))
+                    ? new IrInstruction.LambdaCall(Optional.empty(), Objects.requireNonNull(target.lambda()), List.of(runnable))
                     : new IrInstruction.Call(Optional.empty(), target.method(), List.of(runnable)));
         } else {
             List<InterfaceTarget> targets = dispatch.targets().stream()
-                    .map(target -> new InterfaceTarget(objectTypeIds.get(target.className()), target.method(),
+                    .map(target -> new InterfaceTarget(Objects.requireNonNull(objectTypeIds.get(target.className())), target.method(),
                             target.lambda()))
                     .toList();
             instructions.add(new IrInstruction.InterfaceCall(Optional.empty(), List.of(runnable), targets));

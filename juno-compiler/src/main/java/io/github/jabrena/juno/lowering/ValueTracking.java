@@ -2,6 +2,7 @@ package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +51,7 @@ final class ValueTracking {
             parameterForwarded.add(value);
         }
 
-        Integer knownLength(Value value) {
+        @Nullable Integer knownLength(Value value) {
             return arrayLength.get(value);
         }
 
@@ -62,7 +63,7 @@ final class ValueTracking {
             recordOf.put(value, instance);
         }
 
-        RecordInstance knownRecord(Value value) {
+        @Nullable RecordInstance knownRecord(Value value) {
             return recordOf.get(value);
         }
 
@@ -79,7 +80,7 @@ final class ValueTracking {
             stringOf.put(value, literal);
         }
 
-        String knownString(Value value) {
+        @Nullable String knownString(Value value) {
             return stringOf.get(value);
         }
 
@@ -96,7 +97,7 @@ final class ValueTracking {
             currentStackSlotType.remove(slot);
         }
 
-        JunoType stackSlotType(int slot) {
+        @Nullable JunoType stackSlotType(int slot) {
             return currentStackSlotType.get(slot);
         }
 

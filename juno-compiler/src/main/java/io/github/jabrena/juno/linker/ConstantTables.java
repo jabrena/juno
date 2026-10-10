@@ -6,6 +6,7 @@ import io.github.jabrena.juno.classfile.FieldInfo;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,7 +113,7 @@ public final class ConstantTables {
     }
 
     /** The flash table {@code field} names, or {@code null} when it is an ordinary static field. */
-    public Table table(FieldRef field) {
+    public @Nullable Table table(FieldRef field) {
         return tables.get(field);
     }
 
@@ -161,7 +162,7 @@ public final class ConstantTables {
     }
 
     /** Why the field access at {@code index} keeps {@code candidate} out of flash, or {@code null} if it does not. */
-    private static String fallbackReason(LinkedMethod linked, int index, Candidate candidate) {
+    private static @Nullable String fallbackReason(LinkedMethod linked, int index, Candidate candidate) {
         Instruction instruction = linked.instructions().get(index);
         if (instruction.opcode() == PUTSTATIC) {
             boolean initializer = candidate.initializer().equals(linked.method().reference())

@@ -19,4 +19,7 @@
  * bytecode instructions or class shapes Juno's v0.1 subset actually supports — that judgment
  * belongs to {@code linker} and {@code lowering}.
  */
+@NullMarked
 package io.github.jabrena.juno.classfile;
+
+import org.jspecify.annotations.NullMarked;

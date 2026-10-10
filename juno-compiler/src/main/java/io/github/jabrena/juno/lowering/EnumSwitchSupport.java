@@ -6,6 +6,7 @@ import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ final class EnumSwitchSupport {
                                               BytecodeDecoder decoder) {
         JavaClass mappingClass = classes.get(requested.owner());
         JavaMethod initializer = mappingClass == null ? null : mappingClass.findMethod("<clinit>", "()V");
-        if (initializer == null) {
+        if (mappingClass == null || initializer == null) {
             throw new CompileException("Synthetic enum switch map has no initializer: " + requested.displayName());
         }
         List<Instruction> bytecode = decoder.decode(initializer);
@@ -42,7 +43,7 @@ final class EnumSwitchSupport {
             JavaClass enumClass = classes.get(enumField.owner());
             int ordinal = enumClass == null ? -1 : enumClass.enumConstantNames().indexOf(enumField.name());
             Integer switchValue = literalValue(valuePush, mappingClass);
-            if (ordinal < 0 || switchValue == null) {
+            if (enumClass == null || ordinal < 0 || switchValue == null) {
                 throw new CompileException("Cannot resolve synthetic enum switch entry for " + requested.displayName());
             }
             if (mapping == null) {
@@ -59,7 +60,7 @@ final class EnumSwitchSupport {
         return List.copyOf(mapping);
     }
 
-    static Integer literalValue(Instruction instruction, JavaClass owner) {
+    static @Nullable Integer literalValue(Instruction instruction, JavaClass owner) {
         return switch (instruction.opcode()) {
             case 2 -> -1;
             case 3, 4, 5, 6, 7, 8 -> instruction.opcode() - 3;

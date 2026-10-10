@@ -7,6 +7,7 @@ import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.linker.LinkedMethod;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,7 @@ final class LambdaLowering {
         return new Lowered(nextValueId, depth + target.type().jvmSlots());
     }
 
-    private static Value resultValue(Descriptor descriptor, int nextValueId) {
+    private static @Nullable Value resultValue(Descriptor descriptor, int nextValueId) {
         if (descriptor.returnsVoid()) {
             return null;
         }

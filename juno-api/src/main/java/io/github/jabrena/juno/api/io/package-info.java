@@ -13,4 +13,7 @@
  * <p>The {@code serial} subpackage holds Serial. Networking and USB HID live in the sibling {@code
  * io.github.jabrena.juno.api.net} and {@code io.github.jabrena.juno.api.hid} packages.
  */
+@NullMarked
 package io.github.jabrena.juno.api.io;
+
+import org.jspecify.annotations.NullMarked;

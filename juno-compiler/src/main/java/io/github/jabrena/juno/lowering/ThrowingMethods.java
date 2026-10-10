@@ -11,6 +11,7 @@ import io.github.jabrena.juno.ir.IrMethod;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -68,7 +69,7 @@ final class ThrowingMethods {
             case IrInstruction.Call call -> callees.add(call.method());
             case IrInstruction.LambdaCall call -> callees.add(call.site().implementation().method());
             case IrInstruction.InterfaceCall call -> call.targets().forEach(target ->
-                    callees.add(target.isLambda() ? target.lambda().implementation().method() : target.method()));
+                    callees.add(target.isLambda() ? Objects.requireNonNull(target.lambda()).implementation().method() : target.method()));
             default -> {
             }
         }

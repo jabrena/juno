@@ -17,4 +17,7 @@
  * {@code juno inspect --risks} command; the Arduino linker's own memory report remains
  * authoritative for final RAM/flash use.
  */
+@NullMarked
 package io.github.jabrena.juno.analysis;
+
+import org.jspecify.annotations.NullMarked;

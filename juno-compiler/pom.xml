@@ -16,6 +16,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-api</artifactId>
         </dependency>

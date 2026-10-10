@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Joins a block that ends in a {@code Jump} with its target when it is that target's only way in, so straight-line
@@ -43,7 +44,7 @@ public final class BlockMerging implements CompilerPass {
             IrBasicBlock block = blocks.get(original.start());
             while (block != null && block.terminator() instanceof IrTerminator.Jump jump
                     && canMerge(block, jump.target(), entry, graph, blocks)) {
-                IrBasicBlock next = blocks.remove(jump.target());
+                IrBasicBlock next = Objects.requireNonNull(blocks.remove(jump.target()));
                 List<IrInstruction> instructions = new ArrayList<>(block.instructions());
                 instructions.addAll(next.instructions());
                 block = new IrBasicBlock(block.start(), List.copyOf(instructions), next.terminator());

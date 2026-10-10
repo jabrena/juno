@@ -24,6 +24,7 @@ class ApiArchitectureTest {
     @ArchTest
     static final ArchRule apiDependsOnlyOnItselfAndTheJdk = classes()
             .should().onlyDependOnClassesThat().resideInAnyPackage(
-                    "io.github.jabrena.juno.api..", "io.github.jabrena.juno.annotations..", "java..")
+                    "io.github.jabrena.juno.api..", "io.github.jabrena.juno.annotations..", "java..",
+                    "org.jspecify.annotations..")
             .because("programs compile against juno-api alone, so it must not use the compiler or third-party code");
 }

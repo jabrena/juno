@@ -13,4 +13,7 @@
  * generated assembly text, the shim source, and the entry-point symbol the {@code .ino} wrapper
  * calls from {@code setup()}.
  */
+@NullMarked
 package io.github.jabrena.juno.backend;
+
+import org.jspecify.annotations.NullMarked;

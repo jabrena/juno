@@ -18,4 +18,7 @@
  * loads. Other method-wide passes only use properties independent of predecessor identity, such as
  * whether a local slot has any read at all.
  */
+@NullMarked
 package io.github.jabrena.juno.optimize;
+
+import org.jspecify.annotations.NullMarked;

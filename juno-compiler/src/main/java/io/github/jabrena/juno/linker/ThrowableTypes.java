@@ -2,6 +2,7 @@ package io.github.jabrena.juno.linker;
 
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
@@ -62,7 +63,7 @@ public final class ThrowableTypes {
     }
 
     /** Whether {@code className} is {@code ancestor} or inherits from it. */
-    public static boolean isSubtype(String className, String ancestor, Map<String, JavaClass> classes) {
+    public static boolean isSubtype(String className, @Nullable String ancestor, Map<String, JavaClass> classes) {
         String current = className;
         while (current != null && !current.isEmpty()) {
             if (current.equals(ancestor)) {

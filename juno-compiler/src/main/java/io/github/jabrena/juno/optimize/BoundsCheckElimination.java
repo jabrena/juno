@@ -10,6 +10,7 @@ import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.optimize.IntRanges.Range;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -134,7 +135,7 @@ public final class BoundsCheckElimination implements CompilerPass {
             return entries;
         }
 
-        private State incoming(int start) {
+        private @Nullable State incoming(int start) {
             State result = null;
             for (int predecessor : graph.predecessorsOf(start)) {
                 State state = edges.getOrDefault(predecessor, Map.of()).get(start);
@@ -174,7 +175,7 @@ public final class BoundsCheckElimination implements CompilerPass {
             edges.put(block.start(), out);
         }
 
-        private static void put(Map<Integer, State> out, int target, State state) {
+        private static void put(Map<Integer, State> out, int target, @Nullable State state) {
             if (state == null) {
                 return;
             }
@@ -247,7 +248,7 @@ public final class BoundsCheckElimination implements CompilerPass {
         }
 
         /** The {@code Compare} in this block that defines {@code condition}, or null. */
-        private static IrInstruction.Compare definingCompare(IrBasicBlock block, Value condition) {
+        private static IrInstruction.@Nullable Compare definingCompare(IrBasicBlock block, Value condition) {
             for (IrInstruction instruction : block.instructions()) {
                 if (instruction instanceof IrInstruction.Compare compare && compare.target().equals(condition)) {
                     return compare;
@@ -257,7 +258,7 @@ public final class BoundsCheckElimination implements CompilerPass {
         }
 
         /** {@code state} on the edge where {@code left <condition> right} holds, or null when it never can. */
-        private State refine(State state, Condition condition, IrInstruction.Compare compare,
+        private @Nullable State refine(State state, Condition condition, IrInstruction.Compare compare,
                              Map<Value, Integer> loadedFrom) {
             IntRanges.Narrowed narrowed = IntRanges.narrow(condition, range(compare.left(), state),
                     range(compare.right(), state));

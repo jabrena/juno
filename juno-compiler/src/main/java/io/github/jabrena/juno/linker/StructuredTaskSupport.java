@@ -4,6 +4,7 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Map;
@@ -67,7 +68,7 @@ public final class StructuredTaskSupport {
     }
 
     /** Runtime policy token represented by a supported built-in {@code Joiner} factory, or {@code null}. */
-    public static Integer joinerPolicy(MethodRef called) {
+    public static @Nullable Integer joinerPolicy(MethodRef called) {
         if (!called.owner().equals(JOINER) || !called.descriptor().equals("()L" + JOINER + ";")) {
             return null;
         }

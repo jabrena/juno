@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.maven;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -86,7 +88,7 @@ final class BoardListJsonParser {
                 + "unterminated detected_ports array");
     }
 
-    private static String firstField(String json, String name) {
+    private static @Nullable String firstField(String json, String name) {
         List<String> values = fields(json, name);
         return values.isEmpty() ? null : values.getFirst();
     }

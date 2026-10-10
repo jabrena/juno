@@ -7,4 +7,7 @@
  * JSON reading, and {@link io.github.jabrena.juno.api.net.email} for basic SMTP send / POP3S
  * read, both built on top of this connection.
  */
+@NullMarked
 package io.github.jabrena.juno.api.net;
+
+import org.jspecify.annotations.NullMarked;

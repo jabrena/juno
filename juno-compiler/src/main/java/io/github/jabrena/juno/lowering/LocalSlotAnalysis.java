@@ -12,6 +12,7 @@ import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.Value;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /** Local-variable-slot and array-parameter dataflow analysis, split out of {@link BytecodeToIr}. */
@@ -62,12 +64,12 @@ final class LocalSlotAnalysis {
         }
         Map<Integer, Integer> result = new HashMap<>();
         for (Map.Entry<Integer, Integer> entry : candidateLength.entrySet()) {
-            if (storeCounts.get(entry.getKey()) == 1) {
+            if (storeCounts.getOrDefault(entry.getKey(), 0) == 1) {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
         return result;
-    }    static Integer astoreSlot(Instruction instruction) {
+    }    static @Nullable Integer astoreSlot(Instruction instruction) {
         return switch (instruction.opcode()) {
             case 58 -> instruction.operandA();
             case 75, 76, 77, 78 -> instruction.opcode() - 75;
@@ -90,7 +92,7 @@ final class LocalSlotAnalysis {
         while (!work.isEmpty()) {
             int blockStart = work.removeFirst();
             BasicBlock block = cfg.blockAt(blockStart).orElseThrow();
-            int depth = entryDepth.get(blockStart);
+            int depth = Objects.requireNonNull(entryDepth.get(blockStart));
             for (Instruction instruction : block.instructions()) {
                 depth += ConstantAndStackSupport.stackDelta(linked, instruction);
             }
@@ -139,7 +141,7 @@ final class LocalSlotAnalysis {
             }
         }
         return result;
-    }    static Integer intLoadSlot(Instruction instruction) {
+    }    static @Nullable Integer intLoadSlot(Instruction instruction) {
         return switch (instruction.opcode()) {
             case 21 -> instruction.operandA();
             case 26, 27, 28, 29 -> instruction.opcode() - 26;
