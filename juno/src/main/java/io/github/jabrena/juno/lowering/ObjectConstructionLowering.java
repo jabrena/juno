@@ -2,6 +2,7 @@ package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
@@ -12,7 +13,7 @@ import java.util.List;
 
 /**
  * The {@code new X(...)} constructors Juno turns into one runtime handle (a {@code StringBuilder}, {@code Thread},
- * {@code ReentrantLock}, {@code Properties}, {@code BigInteger}, {@code BigDecimal} or {@code MathContext}),
+ * {@code ReentrantLock}, {@code Properties}, {@code RandomAccessFile}, {@code BigInteger}, {@code BigDecimal} or {@code MathContext}),
  * dispatched from {@link InvokeLowering#lowerInvokeSpecial}.
  */
 final class ObjectConstructionLowering {
@@ -24,7 +25,8 @@ final class ObjectConstructionLowering {
                 || InvokeLowering.isStringBuilderConstruction(called)
                 || called.equals(LockSupport.CONSTRUCTOR)
                 || AtomicSupport.isConstruction(called)
-                || InvokeLowering.isPropertiesConstruction(called);
+                || InvokeLowering.isPropertiesConstruction(called)
+                || called.equals(RandomAccessFileMethods.CONSTRUCTOR);
     }
 
     static Lowered lower(LinkedMethod linked, Instruction instruction, MethodRef called,
@@ -41,6 +43,10 @@ final class ObjectConstructionLowering {
         if (AtomicSupport.isConstruction(called)) {
             return BigNumberLowering.lowerConstruction(linked, instruction, called, instructions, stackBase, depth,
                     nextValueId, tracking);
+        }
+        if (called.equals(RandomAccessFileMethods.CONSTRUCTOR)) {
+            return RandomAccessFileLowering.lowerConstruction(linked, instruction, called, instructions, stackBase,
+                    depth, nextValueId, tracking);
         }
         if (called.equals(LockSupport.CONSTRUCTOR)) {
             return InvokeLowering.lowerReentrantLockConstruction(instructions, stackBase, depth, nextValueId,

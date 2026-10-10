@@ -967,6 +967,38 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    @Test
+    void compilesARandomAccessFileProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.SdCard;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.io.IOException;
+                import java.io.RandomAccessFile;
+                public final class AsmSdRandomAccess {
+                    public static void main(String[] args) {
+                        if (!SdCard.begin()) return;
+                        byte[] entry = new byte[16];
+                        try (RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "r")) {
+                            wad.seek(wad.length() - entry.length);
+                            wad.readFully(entry, 0, entry.length);
+                            Serial.println(wad.read(entry) + wad.read() + wad.skipBytes(2) + (int) wad.getFilePointer());
+                        } catch (IOException failed) {
+                            Serial.println(failed.getMessage());
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmSdRandomAccess", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmSdRandomAccess");
+        Path shim = temporaryDirectory.resolve("AsmSdRandomAccessShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
     /**
      * {@code io.github.jabrena.juno.backend.NetworkShimLibraries#httpServerHelpers} hand-writes
      * placement-new construction of a static {@code WiFiServer} and reads a {@code StringBuilder}

@@ -206,6 +206,8 @@ final class IntrinsicLowering {
                 List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LED_MATRIX);
         shim(Intrinsic.LED_MATRIX_CLEAR, "juno_led_matrix_clear", Result.NONE, List.of(), ShimFeature.LED_MATRIX);
         shim(Intrinsic.MEMORY_ARENA_USED, "juno_memory_arena_used", Result.WORD, List.of(), ShimFeature.MEMORY);
+        shim(Intrinsic.MEMORY_ARENA_CAPACITY, "juno_memory_arena_capacity", Result.WORD, List.of(),
+                ShimFeature.MEMORY);
     }
 
     /** {@code java.lang.Thread}: one scheduler call each; sleep and yield alone need no scheduler. */
@@ -379,6 +381,7 @@ final class IntrinsicLowering {
         shim(Intrinsic.SD_APPEND_TEXT, "juno_sd_file_append_text", Result.WORD, List.of(literal(0), arg(0)),
                 ShimFeature.SD);
         shim(Intrinsic.SD_REMOVE, "juno_sd_remove", Result.WORD, List.of(literal(0)), ShimFeature.SD);
+        registerRandomAccessFile();
         shim(Intrinsic.PROPERTIES_NEW, "juno_properties_new", Result.WORD, List.of(), ShimFeature.SD);
         shim(Intrinsic.PROPERTIES_LOAD, "juno_properties_load", Result.NONE, List.of(RECEIVER, arg(0)),
                 ShimFeature.SD);
@@ -387,6 +390,25 @@ final class IntrinsicLowering {
         shim(Intrinsic.PROPERTIES_GET_DEFAULT, "juno_properties_get_default", Result.WORD,
                 List.of(RECEIVER, arg(0), arg(1)), ShimFeature.SD);
         shim(Intrinsic.PROPERTIES_SIZE, "juno_properties_size", Result.WORD, List.of(RECEIVER), ShimFeature.SD);
+    }
+
+    /**
+     * Read-only {@code java.io.RandomAccessFile} on an SD card file; every call can raise a JDK exception. Buffer
+     * reads take the array, its capacity (added by the front end, {@code -1} when unknown), offset and length.
+     */
+    private void registerRandomAccessFile() {
+        ShimFeature[] runtime = {ShimFeature.SD, ShimFeature.EXCEPTIONS, ShimFeature.RANDOM_ACCESS_FILE};
+        List<Operand> buffer = List.of(RECEIVER, arg(0), arg(1), arg(2), arg(3));
+        shim(Intrinsic.RAF_OPEN, "juno_raf_open", Result.WORD, List.of(literal(0)), runtime);
+        shim(Intrinsic.RAF_READ, "juno_raf_read", Result.WORD, List.of(RECEIVER), runtime);
+        shim(Intrinsic.RAF_READ_BYTES, "juno_raf_read_bytes", Result.WORD, buffer, runtime);
+        shim(Intrinsic.RAF_READ_FULLY, "juno_raf_read_fully", Result.NONE, buffer, runtime);
+        shim(Intrinsic.RAF_SEEK, "juno_raf_seek", Result.NONE,
+                List.of(RECEIVER, new ArgumentLow(0), new ArgumentHigh(0)), runtime);
+        shim(Intrinsic.RAF_GET_FILE_POINTER, "juno_raf_get_file_pointer", Result.WIDE, List.of(RECEIVER), runtime);
+        shim(Intrinsic.RAF_LENGTH, "juno_raf_length", Result.WIDE, List.of(RECEIVER), runtime);
+        shim(Intrinsic.RAF_SKIP_BYTES, "juno_raf_skip_bytes", Result.WORD, List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.RAF_CLOSE, "juno_raf_close", Result.NONE, List.of(RECEIVER), runtime);
     }
 
     /** USB mouse, servos, LEGO Powered Up hubs, and the Wi-Fi radio. */

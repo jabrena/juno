@@ -19,6 +19,8 @@ enum ShimFeature {
     WIFI,
     UDP,
     SD,
+    /** {@code java.io.RandomAccessFile} over the SD open-file table; raises JDK exceptions, so it needs {@link #EXCEPTIONS}. */
+    RANDOM_ACCESS_FILE,
     LONG,
     FLOAT,
     DOUBLE,

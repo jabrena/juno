@@ -1019,6 +1019,156 @@ class JunoCompilerTest {
         assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_sd_remove(const char* path)");
     }
 
+    /**
+     * {@code java.io.RandomAccessFile} reads an SD card file at any offset, the way a WAD directory is walked: seek,
+     * fill a local buffer, skip, and every failure surfaces as the JDK's own exception in the program's handlers.
+     */
+    @Test
+    void lowersRandomAccessFileReadsWithJdkExceptions() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.SdCard;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.io.EOFException;
+                import java.io.FileNotFoundException;
+                import java.io.IOException;
+                import java.io.RandomAccessFile;
+                public final class WadHeader {
+                    public static void main(String[] args) {
+                        SdCard.begin();
+                        // Declared before the try: javac reuses a try block's local slots for its catch variables.
+                        byte[] header = new byte[12];
+                        try (RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "r")) {
+                            wad.readFully(header);
+                            wad.seek(wad.length() - 16);
+                            int read = wad.read(header, 4, 8);
+                            wad.skipBytes(4);
+                            Serial.println(read + wad.read() + (int) wad.getFilePointer() + header[0]);
+                        } catch (FileNotFoundException missing) {
+                            Serial.println(missing.getMessage());
+                        } catch (EOFException truncated) {
+                            Serial.println("truncated");
+                        } catch (IOException failed) {
+                            Serial.println(failed.getMessage());
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WadHeader", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WadHeader");
+
+        assertThat(result.assembly()).contains(".asciz \"DOOM1.WAD\"", "bl juno_raf_open", "bl juno_raf_read_fully",
+                "bl juno_raf_length", "bl juno_raf_seek", "bl juno_raf_read_bytes", "bl juno_raf_skip_bytes",
+                "bl juno_raf_read", "bl juno_raf_get_file_pointer", "bl juno_raf_close", "bl juno_throw_pending");
+        // readFully(byte[]) reads the whole local buffer: offset 0 and its compile-time length 12 as the length.
+        assertThat(result.assembly()).containsPattern("(?s)movs? r3, #0\\n.*?bl juno_raf_read_fully");
+        assertThat(result.runtimeShim()).contains("#include <SdFat.h>",
+                "extern \"C\" int32_t juno_raf_open(const char* path)",
+                "juno_raf_raise(JUNO_RAF_FILE_NOT_FOUND, path);", "juno_raf_raise(JUNO_RAF_EOF, nullptr);",
+                "extern \"C\" int64_t juno_raf_length(int32_t handle)",
+                "\"java.io.EOFException\"", "\"java.io.FileNotFoundException\"", "\"java.io.IOException\"");
+    }
+
+    /** An open file is passed to helper methods, the way a WAD reader splits the work per lump. */
+    @Test
+    void passesARandomAccessFileToAHelperMethod() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.io.IOException;
+                import java.io.RandomAccessFile;
+                public final class WadLumps {
+                    public static void main(String[] args) {
+                        byte[] entry = new byte[16];
+                        try (RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "r")) {
+                            Serial.println(directoryOffset(wad, entry));
+                        } catch (IOException failed) {
+                            Serial.println("no WAD");
+                        }
+                    }
+
+                    private static int directoryOffset(RandomAccessFile wad, byte[] buffer) throws IOException {
+                        wad.seek(8);
+                        wad.readFully(buffer, 0, 4);
+                        return (buffer[0] & 0xFF) | (buffer[1] & 0xFF) << 8 | (buffer[2] & 0xFF) << 16 | buffer[3] << 24;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WadLumps", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WadLumps");
+
+        // The helper's IOException reaches main's handler through the caller's pending-exception poll.
+        assertThat(result.assembly()).contains("bl juno_raf_seek", "bl juno_raf_read_fully",
+                "bl juno_throw_pending");
+    }
+
+    @Test
+    void rejectsAWritableRandomAccessFile() throws Exception {
+        String source = """
+                package demo;
+                import java.io.IOException;
+                import java.io.RandomAccessFile;
+                public final class WritableWad {
+                    public static void main(String[] args) throws IOException {
+                        RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "rw");
+                        wad.close();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WritableWad", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WritableWad"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("RandomAccessFile mode \"rw\" is not supported");
+    }
+
+    /** {@code read(byte[])} takes its length from the array, which only a local constant-size array has here. */
+    @Test
+    void rejectsAWholeBufferReadIntoAnArrayOfUnknownLength() throws Exception {
+        String source = """
+                package demo;
+                import java.io.IOException;
+                import java.io.RandomAccessFile;
+                public final class FieldBuffer {
+                    private static byte[] buffer;
+                    public static void main(String[] args) throws IOException {
+                        byte[] local = new byte[16];
+                        buffer = local;
+                        RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "r");
+                        wad.read(buffer);
+                        wad.close();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FieldBuffer", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FieldBuffer"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("pass (buffer, offset, length)");
+    }
+
+    @Test
+    void lowersTheArenaCapacity() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Memory;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                public final class ArenaRoom {
+                    public static void main(String[] args) {
+                        Serial.println(Memory.arenaCapacityBytes() - Memory.arenaUsedBytes());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ArenaRoom", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ArenaRoom");
+
+        assertThat(result.assembly()).contains("bl juno_memory_arena_capacity", "bl juno_memory_arena_used");
+        assertThat(result.runtimeShim()).contains("return static_cast<int32_t>(sizeof(juno_arena));");
+    }
+
     @Test
     void rejectsAnUnsetCompileTimeEnvironmentVariable() throws Exception {
         String source = """

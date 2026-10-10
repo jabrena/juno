@@ -44,7 +44,6 @@ import io.github.jabrena.juno.linker.LambdaCallSite;
 import io.github.jabrena.juno.linker.LambdaSite;
 import io.github.jabrena.juno.linker.Program;
 import io.github.jabrena.juno.linker.ThreadSupport;
-import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.StructuredTaskSupport;
 import io.github.jabrena.juno.linker.StringConcatResolver;
@@ -235,18 +234,7 @@ public final class BytecodeToIr {
                 }
                 if (instruction.opcode() >= 182 && instruction.opcode() <= 185) {
                     MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-                    if (StructuredTaskSupport.isStructuredTaskOwner(called.owner())) {
-                        names.add("java/lang/IllegalStateException");
-                        names.add("java/util/concurrent/ExecutionException");
-                    }
-                    if (ScopedValueSupport.isScopedValueOwner(called.owner())) {
-                        names.add("java/util/NoSuchElementException");
-                    }
-                    if (BigNumberSupport.isBigNumberOwner(called.owner())) {
-                        names.add(ARITHMETIC_EXCEPTION);
-                        names.add("java/lang/NumberFormatException");
-                        names.add("java/lang/IllegalArgumentException");
-                    }
+                    names.addAll(RuntimeRaisedExceptions.of(called.owner()));
                 }
             }
         }

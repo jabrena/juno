@@ -18,6 +18,9 @@ public:
   File32& operator=(File32&&) = default;
   int available() { return 0; }
   int read() { return -1; }
+  int read(void*, size_t) { return 0; }
+  bool seekSet(uint32_t) { return true; }
+  uint32_t curPosition() { return 0; }
   size_t size() { return 0; }
   void println(const char*) {}
   void print(const char*) {}

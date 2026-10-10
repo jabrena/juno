@@ -120,8 +120,14 @@ public record Descriptor(List<String> parameters, String returnType) {
                 || ScopedValueSupport.isScopedValueType(type)
                 || BigNumberSupport.isBigNumberType(type)
                 || AtomicSupport.isAtomicType(type)
+                || isRandomAccessFile(type)
                 || isSupportedArrayType(type, referenceClassNames)
                 || isReferenceType(type, referenceClassNames);
+    }
+
+    /** {@code java.io.RandomAccessFile}, an open SD card file's one-word handle, so helpers can share one open file. */
+    public static boolean isRandomAccessFile(String type) {
+        return type.equals("Ljava/io/RandomAccessFile;");
     }
 
     private static boolean isSupportedArrayType(String type, Set<String> referenceClassNames) {

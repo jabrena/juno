@@ -13,4 +13,10 @@ public final class Memory {
 
     /** Bytes currently allocated in Juno's arena (never negative, capped at the arena's fixed capacity). */
     public static native int arenaUsedBytes();
+
+    /**
+     * The arena's total size in bytes, fixed when the program is compiled (the Maven plugin's {@code juno.Xmx}).
+     * Subtract {@link #arenaUsedBytes()} to tell whether a large allocation fits before making it.
+     */
+    public static native int arenaCapacityBytes();
 }

@@ -6,6 +6,7 @@ import static io.github.jabrena.juno.lowering.StackValueOps.*;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.ir.ArrayDeclaration;
@@ -155,6 +156,7 @@ final class ArrayLowering {
 
     private static boolean isRuntimeHandleClass(String className) {
         return className.startsWith("java/lang/") || className.equals("java/util/Properties")
+                || RandomAccessFileMethods.isOwner(className)
                 || LockSupport.isReentrantLockClass(className)
                 || AtomicSupport.isAtomicClass(className) || BigNumberSupport.isBigNumberOwner(className);
     }
