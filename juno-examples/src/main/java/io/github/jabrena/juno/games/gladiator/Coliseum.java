@@ -12,6 +12,13 @@ final class Coliseum {
     static final int WALL_SEGMENTS = 32;
     /** A gladiator's radius. */
     static final int BODY = 22;
+    /** Radius of every pillar. */
+    static final int PILLAR_RADIUS = 32;
+    /**
+     * Centre-to-centre distance of neighbouring pillars: the gap between two pillars' edges fits two gladiators
+     * side by side, 2 bodies of 2 * {@link #BODY} each, plus a margin of 8.
+     */
+    static final int SPACING = 2 * PILLAR_RADIUS + 4 * BODY + 8;
     static final int EYE = 160;
     /** Where the left gladiator ({@code slot} 0) starts, facing right; the right one starts mirrored. */
     static final int SPAWN_X = 470;
@@ -32,17 +39,20 @@ final class Coliseum {
     private Coliseum() {
     }
 
-    /** The coliseum of the aerial picture: three rows of five pillars in an oval twice as wide as it is deep. */
+    /**
+     * The coliseum of the aerial picture: three rows of five pillars, {@link #SPACING} apart, in an oval a little more
+     * than twice as wide as it is deep, the wall wide enough to go round the whole block of pillars.
+     */
     static void build() {
-        radiusX = 615;
-        radiusY = 275;
+        radiusX = 1100;
+        radiusY = 480;
         wallHeight = 300;
-        pillarRadius = 32;
+        pillarRadius = PILLAR_RADIUS;
         pillarHeight = 420;
         pillars = 0;
         for (int row = -1; row <= 1; row++) {
             for (int column = -2; column <= 2; column++) {
-                addPillar(column * 145, row * 125);
+                addPillar(column * SPACING, row * SPACING);
             }
         }
         corners();

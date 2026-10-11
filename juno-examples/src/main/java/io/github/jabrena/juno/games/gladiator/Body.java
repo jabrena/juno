@@ -26,8 +26,11 @@ final class Body {
         angle = Eyes.wrap(angle + by);
     }
 
-    /** Headings, as turns off straight ahead, that a blocked walk tries in turn to slide round what is in the way. */
-    private static final float[] SLIDE = {0f, 0.35f, -0.35f, 0.75f, -0.75f, 1.2f, -1.2f};
+    /**
+     * Headings, as turns off straight ahead, that a blocked walk tries in turn to slide round what is in the way: up
+     * to 90 degrees either side, since a body touching a round pillar can only slide along its tangent.
+     */
+    private static final float[] SLIDE = {0f, 0.35f, -0.35f, 0.75f, -0.75f, 1.2f, -1.2f, 1.57f, -1.57f};
 
     /**
      * Walks {@code distance} forward (backward when negative), sliding round a pillar or along the wall when the way

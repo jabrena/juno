@@ -17,7 +17,8 @@ final class ArenaView {
     static final int MENU_LEFT = 268;
     private static final int CX = 160;
     private static final int CY = 97;
-    private static final float SCALE = 0.21f;
+    /** Pixels per unit: fits the wall's outer rim, 1.16 times the oval, inside the screen's width. */
+    private static final float SCALE = 0.12f;
     private static final int MAP_TOP = 22;
     private static final int MAP_BOTTOM = 172;
     private static final int STATUS_Y = 175;

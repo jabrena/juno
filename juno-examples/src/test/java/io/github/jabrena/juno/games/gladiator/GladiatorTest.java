@@ -28,7 +28,7 @@ class GladiatorTest {
         assertThat(Coliseum.walkable(Coliseum.spawnX(LEFT), 0)).as("left gate").isTrue();
         assertThat(Coliseum.walkable(Coliseum.spawnX(RIGHT), 0)).as("right gate").isTrue();
         assertThat(Coliseum.walkable(0, 0)).as("the middle pillar").isFalse();
-        assertThat(Coliseum.walkable(0, 260)).as("against the wall").isFalse();
+        assertThat(Coliseum.walkable(0, Coliseum.radiusY)).as("against the wall").isFalse();
     }
 
     @Test
@@ -45,8 +45,8 @@ class GladiatorTest {
         assertThat(GladiatorProtocol.slot(packet)).isEqualTo(RIGHT);
         assertThat(GladiatorProtocol.nodeId(packet)).isEqualTo(0xCAFEBABE);
         assertThat(GladiatorProtocol.readMap(packet)).isTrue();
-        assertThat(Coliseum.radiusX).isEqualTo(615);
-        assertThat(Coliseum.radiusY).isEqualTo(275);
+        assertThat(Coliseum.radiusX).isEqualTo(1100);
+        assertThat(Coliseum.radiusY).isEqualTo(480);
         assertThat(Coliseum.pillars).isEqualTo(15);
         assertThat(Coliseum.pillarX).containsExactly(pillarX);
         assertThat(Coliseum.pillarY).as("negative coordinates survive").containsExactly(pillarY);
@@ -177,8 +177,8 @@ class GladiatorTest {
     @Test
     void theViewNeverRunsOutOfLines() {
         Body body = new Body();
-        for (int x = -540; x <= 540; x += 60) {
-            for (int y = -200; y <= 200; y += 50) {
+        for (int x = -1000; x <= 1000; x += 100) {
+            for (int y = -400; y <= 400; y += 80) {
                 if (!Coliseum.walkable(x, y)) {
                     continue;
                 }
@@ -214,7 +214,7 @@ class GladiatorTest {
 
     @Test
     void gladiatorsThatSeeEachOtherPastAPillarEdgeWalkRoundItAndMeet() {
-        // The line between them clears the pillar at (-290, 0) by 40, so their eyes meet, but their bodies do not pass.
+        // The line between them clears the pillar at (-320, 0) by 8, so their eyes meet, but their bodies do not pass.
         Body[] bodies = {new Body(), new Body()};
         Brain[] brains = {new Brain(Brain.AGGRESSIVE), new Brain(Brain.AMBUSH)};
         bodies[LEFT].x = -400;
@@ -247,10 +247,29 @@ class GladiatorTest {
     }
 
     @Test
+    void twoGladiatorsCanPassSideBySideBetweenNeighbouringPillars() {
+        int fitsTwo = 2 * 2 * Coliseum.BODY;
+        int checked = 0;
+        for (int i = 0; i < Coliseum.pillars; i++) {
+            for (int j = i + 1; j < Coliseum.pillars; j++) {
+                double distance = Math.hypot(Coliseum.pillarX[i] - Coliseum.pillarX[j],
+                        Coliseum.pillarY[i] - Coliseum.pillarY[j]);
+                if (distance < 2.5 * Coliseum.SPACING) {
+                    checked++;
+                    assertThat(distance - 2 * Coliseum.PILLAR_RADIUS)
+                            .as("gap between pillars %d and %d", i, j)
+                            .isGreaterThanOrEqualTo(fitsTwo);
+                }
+            }
+        }
+        assertThat(checked).as("pairs of neighbouring pillars").isGreaterThan(Coliseum.pillars);
+    }
+
+    @Test
     void aBodyPushingIntoAPillarSlidesRoundIt() {
         Body body = new Body();
-        // Heading almost straight at the pillar at (-290, 0), a little off its centre.
-        body.x = -360;
+        // Heading almost straight at the pillar at (-320, 0), a little off its centre.
+        body.x = -420;
         body.y = 6;
         body.angle = 0f;
         float start = body.y;
