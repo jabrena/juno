@@ -504,11 +504,40 @@ decentralized blockchain with consensus.
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
 ```
 
-The wire format is
+### A leaderless, Bitcoin-style chain
+
+[`ChainNode`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/ChainNode.java)
+takes the same idea further. There is no leader: every board runs the same program and mines,
+validates and relays blocks.
+
+- **Proof-of-work.** A block counts when the SHA-256 hash of its 80-byte, Bitcoin-layout header has
+  at least `bits` leading zero bits. The miner absorbs the fixed first 64 header bytes once (the
+  midstate), so each attempt costs one compression.
+- **Useful work.** Each block must also carry the factorization of a 40-bit number derived from its
+  parent's hash, which every node checks. Miners can't choose an easy number.
+- **Consensus.** The branch with the most cumulative work is the chain. Every eight blocks the
+  difficulty moves one bit toward a block every 30 seconds.
+- **Joining late.** A node that boots late asks for the current tip. It fetches up to four missing
+  ancestors; if it still can't connect them to a block it knows, it adopts the oldest as a
+  checkpoint, much like a pruned Bitcoin node, and validates everything after it.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
+  -Djuno.main=io.github.jabrena.juno.api.net.ledger.ChainNode
+```
+
+This is phase 1 of the plan in [issue #43](https://github.com/jabrena/juno/issues/43): blocks are
+not signed yet, and block times are not bounded against the future.
+
+### Wire format and other boards
+
+The wire formats are
 plain fixed-size bytes on UDP port 4210 (documented in
-[`FactorProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/FactorProtocol.java)).
+[`FactorProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/FactorProtocol.java)
+and
+[`ChainProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/ChainProtocol.java)).
 A board Juno cannot compile for, such as the 8-bit [UNO WiFi Rev2](../arduino-one-r3-wifi), can
-still join as a worker with a hand-written sketch that speaks the same packets.
+still join with a hand-written sketch that speaks the same packets.
 
 ## Troubleshooting
 
