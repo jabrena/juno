@@ -162,9 +162,10 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`WifiStatusSDLcd`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatusSDLcd.java) (the same, with an LCD Keypad Shield),
   [`WifiProvisioning`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/WifiProvisioning.java) (access point and HTTP server to provide Wi-Fi credentials),
   [`HttpsMethods`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/HttpsMethods.java) (HTTP/HTTPS and JSON),
-  [`BlockchainGame`](juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/BlockchainGame.java) (UDP between
-  boards: pick LEADER, WORKER or MINER on the TFT screen to factor numbers together and chain the verified answers,
-  either with one leader or as a leaderless, Bitcoin-style proof-of-work chain), and
+  [`LedgerGame`](juno-examples/src/main/java/io/github/jabrena/juno/games/ledger/LedgerGame.java) and
+  [`MinerGame`](juno-examples/src/main/java/io/github/jabrena/juno/games/miner/MinerGame.java) (UDP between boards:
+  factor numbers together and chain the verified answers, centralized with a leader and workers picked on the TFT
+  screen, or decentralized as a leaderless, Bitcoin-style proof-of-work chain), and
   [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/SdFileOperations.java) (SD card).
 - **Shields:** stacked shields are driven through the same intrinsic APIs.
   The [LCD Keypad Shield](https://jabrena.github.io/juno/lcd-keypad-shield) (16x2 display, buttons,

@@ -4,7 +4,7 @@ description: "The playable games built for the ELEGOO TFT touch shield, with CPU
 layout: page
 ---
 
-Juno ships 15 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/tft`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](../features) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
+Juno ships 16 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/tft`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](../features) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
 
 ## How to play
 
@@ -35,7 +35,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 - [Arcade](#arcade): [Pac-Man](#pac-man), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Space Paranoids](#space-paranoids), [DOOM](#doom), [Lunar Lander](#lunar-lander)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Battleship](#battleship)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem)
-- [Network](#network): [Blockchain](#blockchain)
+- [Network](#network): [Ledger](#ledger), [Miner](#miner)
 
 ## Arcade
 
@@ -258,37 +258,59 @@ No-limit Texas Hold'em against three CPU opponents. Play a seat yourself or watc
 
 Games played by several boards together over Wi-Fi.
 
-### Blockchain
+Both games factor numbers together and chain the verified answers with SHA-256. They show the two ways a
+network can agree on a record: **Ledger** is centralized (one board decides), **Miner** is decentralized
+(no board is in charge). All boards must be on the same Wi-Fi network: the UNO R4 WiFi joins with the
+build-time `JUNO_WIFI_SSID`/`JUNO_WIFI_PASSWORD`, and the UNO Q uses the connection configured on its Linux
+side. Progress is also logged over serial at 115200 baud, and
+[Internet Access](../internet#boards-talking-to-each-other-over-udp) explains how they work.
 
-<img src="../images/games/blockchain-cpu.gif" alt="Blockchain on the TFT shield: the role menu, then a board mining on its own" width="240">
+### Ledger
 
-Factor numbers together and chain the verified answers. Every board runs the same program and picks its
-role on the touch screen; MENU goes back to the choice at any time.
+<img src="../images/games/ledger-cpu.gif" alt="Ledger on the TFT shield: the role menu, the leader screen, MENU, then the worker screen" width="240">
 
-- **LEADER** hands out 40-bit numbers to factor and keeps a SHA-256 hash chain of the verified answers.
-  Use one per network, typically the UNO Q.
+Centralized coordination. Every board runs the same program and picks its role on the touch screen; MENU
+goes back to the choice at any time.
+
+- **LEADER** hands out 40-bit numbers to factor, checks every answer and keeps a SHA-256 hash chain of
+  them. Use one per network, typically the UNO Q.
 - **WORKER** finds the leader by broadcast, factors what it is given and reports back. Add as many as you
   have, typically UNO R4 WiFi boards.
-- **MINER** needs no leader. Each miner mines a Bitcoin-style proof-of-work chain whose blocks also carry
-  a verified factorization, and the branch with the most work wins. A board mining on its own still
-  makes progress, as in the recording above.
-
-All boards must be on the same Wi-Fi network: the UNO R4 WiFi joins with the build-time
-`JUNO_WIFI_SSID`/`JUNO_WIFI_PASSWORD`, and the UNO Q uses the connection configured on its Linux side.
-Progress is also logged over serial at 115200 baud. [Internet Access](../internet#boards-talking-to-each-other-over-udp)
-explains how it works.
 
 ```bash
 # Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.blockchain.BlockchainGame \
+  -Djuno.main=io.github.jabrena.juno.games.ledger.LedgerGame \
   -Djuno.board=arduino-uno-q
 ```
 
 ```bash
 # Arduino UNO R4 WiFi
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.blockchain.BlockchainGame \
+  -Djuno.main=io.github.jabrena.juno.games.ledger.LedgerGame \
+  -Djuno.board=arduino-uno-r4-wifi
+```
+
+### Miner
+
+<img src="../images/games/miner-cpu.gif" alt="Miner on the TFT shield: a board mining the chain on its own" width="240">
+
+Decentralized consensus. There is no leader and no role to pick: every board is an equal node that mines a
+Bitcoin-style proof-of-work chain, and each block also carries a verified factorization. When boards
+disagree, the branch with the most work wins. A board mining on its own still makes progress, as in the
+recording above.
+
+```bash
+# Arduino UNO Q
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.miner.MinerGame \
+  -Djuno.board=arduino-uno-q
+```
+
+```bash
+# Arduino UNO R4 WiFi
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.miner.MinerGame \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
