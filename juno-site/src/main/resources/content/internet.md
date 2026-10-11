@@ -479,36 +479,35 @@ data for display on the LED matrix.
 works on both the UNO R4 WiFi and the UNO Q, and unlike the HTTP client its payloads are runtime
 `byte[]` buffers. That makes it the way for boards to exchange data they compute. The
 [`blockchain`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain)
-example builds a small factorization network on it:
+game builds a small factorization network on it. Every board runs
+[`BlockchainGame`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/BlockchainGame.java)
+and picks its role on the TFT touch screen (see [Games](../games#blockchain)):
 
-- [`FactorLedgerLeader`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/FactorLedgerLeader.java),
+- **LEADER** ([`LeaderFlow`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/LeaderFlow.java)),
   meant for an UNO Q, hands out 40-bit numbers to factor. It checks each answer by multiplying it
-  back and testing every factor for primality, then adds it to a SHA-256 hash chain printed over
-  serial. Each block hashes the previous block's hash, so changing an accepted result changes every
-  later hash.
-- [`FactorWorker`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/FactorWorker.java),
+  back and testing every factor for primality, then adds it to a SHA-256 hash chain. Each block
+  hashes the previous block's hash, so changing an accepted result changes every later hash.
+- **WORKER** ([`WorkerFlow`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/WorkerFlow.java)),
   meant for one or more UNO R4 WiFi boards, broadcasts `JOIN` until a leader answers. It then
   factors each task with trial division and Pollard's rho, and sends back the result.
 
-Both programs build for either board, and no addresses are configured: workers find the leader by
-broadcast and can join at any time. The leader's next task acknowledges a result, so a lost
-datagram only costs a resend. A worker that stays silent for two minutes loses its task to the next
-worker that asks. This is a tamper-evident log with a single writer (the leader), not a
-decentralized blockchain with consensus.
+No addresses are configured: workers find the leader by broadcast and can join at any time. The
+leader's next task acknowledges a result, so a lost datagram only costs a resend. A worker that
+stays silent for two minutes loses its task to the next worker that asks. This is a tamper-evident
+log with a single writer (the leader), not a decentralized blockchain with consensus.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-q \
-  -Djuno.main=io.github.jabrena.juno.games.blockchain.FactorLedgerLeader
+  -Djuno.main=io.github.jabrena.juno.games.blockchain.BlockchainGame
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.main=io.github.jabrena.juno.games.blockchain.FactorWorker
+  -Djuno.main=io.github.jabrena.juno.games.blockchain.BlockchainGame
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
 ```
 
 ### A leaderless, Bitcoin-style chain
 
-[`ChainNode`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/ChainNode.java)
-takes the same idea further. There is no leader: every board runs the same program and mines,
-validates and relays blocks.
+The **MINER** role ([`MinerFlow`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/MinerFlow.java))
+takes the same idea further. There is no leader: every miner mines, validates and relays blocks.
 
 - **Proof-of-work.** A block counts when the SHA-256 hash of its 80-byte, Bitcoin-layout header has
   at least `bits` leading zero bits. The miner absorbs the fixed first 64 header bytes once (the
@@ -520,11 +519,6 @@ validates and relays blocks.
 - **Joining late.** A node that boots late asks for the current tip. It fetches up to four missing
   ancestors; if it still can't connect them to a block it knows, it adopts the oldest as a
   checkpoint, much like a pruned Bitcoin node, and validates everything after it.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.main=io.github.jabrena.juno.games.blockchain.ChainNode
-```
 
 This is phase 1 of the plan in [issue #43](https://github.com/jabrena/juno/issues/43): blocks are
 not signed yet, and block times are not bounded against the future.
