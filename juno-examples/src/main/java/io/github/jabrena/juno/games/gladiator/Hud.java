@@ -59,6 +59,14 @@ final class Hud {
         }
     }
 
+    static void ownProfile(int identity, String name, int color, int health, int wins) {
+        int key = (identity + 16) << 16 | health << 8 | wins;
+        if (key != ownKey) {
+            ownKey = key;
+            side(4, name, color, health, wins);
+        }
+    }
+
     /** The opponent's side of the bar, or that there is none yet. */
     static void opponent(boolean present, int behaviour, int health, int wins) {
         int key = present ? 1 << 24 | behaviour << 16 | health << 8 | wins : 0;
@@ -72,6 +80,14 @@ final class Hud {
             TftTouchShield.fillRect(ViewList.WIDTH - 4 - BAR_WIDTH, TOP + 2, BAR_WIDTH, ViewList.HEIGHT - TOP - 2,
                     PANEL);
             text(ViewList.WIDTH - 4 - BAR_WIDTH, TOP + 5, "NO OPPONENT", TftTouchShield.GRAY, PANEL);
+        }
+    }
+
+    static void opponentProfile(int identity, String name, int color, int health, int wins) {
+        int key = 1 << 28 | identity << 16 | health << 8 | wins;
+        if (key != opponentKey) {
+            opponentKey = key;
+            side(ViewList.WIDTH - 4 - BAR_WIDTH, name, color, health, wins);
         }
     }
 

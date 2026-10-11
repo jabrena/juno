@@ -22,8 +22,17 @@ final class Ambush {
     private Ambush() {
     }
 
+    /** Hiding places an ambusher gives up on before it goes looking for the opponent instead. */
+    private static final int PATIENCE = 1;
+
     static void think(Brain brain, Body body, int now) {
+        if (!brain.sees && brain.restless >= PATIENCE && !brain.recentlyHurt(now)) {
+            // Nobody came to the ambush, so it hunts like the AGGRESSIVE gladiator until it sees the opponent.
+            Aggressive.think(brain, body, now);
+            return;
+        }
         if (brain.sees) {
+            brain.restless = 0;
             brain.threatX = brain.seenX;
             brain.threatY = brain.seenY;
             boolean near = body.distanceTo(brain.seenX, brain.seenY) <= LUNGE;
@@ -70,6 +79,7 @@ final class Ambush {
     private static void lurk(Brain brain, Body body, int now) {
         brain.mode = Brain.LURKING;
         if (now - brain.lurkSince > LURK_MILLIS) {
+            brain.restless = brain.restless + 1;
             int guess = Random.nextInt(GUESS_X.length);
             brain.threatX = GUESS_X[guess] * Coliseum.radiusX / 1000f;
             brain.threatY = GUESS_Y[guess] * Coliseum.radiusY / 1000f;

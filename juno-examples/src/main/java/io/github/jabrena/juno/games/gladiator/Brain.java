@@ -57,6 +57,8 @@ final class Brain {
     float threatX;
     float threatY;
     int lurkSince;
+    /** Hiding places given up on without ever meeting the opponent. */
+    int restless;
 
     Brain(int behaviour) {
         this.behaviour = behaviour;
@@ -76,6 +78,7 @@ final class Brain {
         threatX = Coliseum.spawnX(1 - slot);
         threatY = 0;
         lurkSince = now;
+        restless = 0;
     }
 
     /** What the eyes report this frame: the opponent at ({@code x}, {@code y}) when {@code visible}. */

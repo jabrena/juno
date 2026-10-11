@@ -2,7 +2,7 @@ package io.github.jabrena.juno.games.gladiator;
 
 /**
  * The arena's map: an elliptical wall around a sand floor with a five-by-three grid of round pillars, seen from
- * above like a Roman amphitheatre. Units are about a centimetre: the floor is 12.3 m by 5.5 m and a gladiator's eye
+ * above like a Roman amphitheatre. Units are about a centimetre: the floor is 24 m by 10.4 m and a gladiator's eye
  * is 1.6 m above it. The ARENA board builds it ({@link #build}) and sends it once to every gladiator
  * ({@link GladiatorProtocol#writeMap}), whose board keeps only that copy ({@link GladiatorProtocol#readMap}).
  */
@@ -12,16 +12,18 @@ final class Coliseum {
     static final int WALL_SEGMENTS = 32;
     /** A gladiator's radius. */
     static final int BODY = 22;
-    /** Radius of every pillar. */
-    static final int PILLAR_RADIUS = 32;
+    /** Radius of every pillar: a pillar is two gladiators across. */
+    static final int PILLAR_RADIUS = 2 * BODY;
     /**
-     * Centre-to-centre distance of neighbouring pillars: the gap between two pillars' edges fits two gladiators
-     * side by side, 2 bodies of 2 * {@link #BODY} each, plus a margin of 8.
+     * Centre-to-centre distance of neighbouring pillars: the gap between two pillars' edges is two gladiators wide.
      */
-    static final int SPACING = 2 * PILLAR_RADIUS + 4 * BODY + 8;
+    static final int SPACING = 2 * PILLAR_RADIUS + 4 * BODY;
     static final int EYE = 160;
-    /** Where the left gladiator ({@code slot} 0) starts, facing right; the right one starts mirrored. */
-    static final int SPAWN_X = 470;
+    /**
+     * Where the left gladiator ({@code slot} 0) starts, facing right; the right one starts mirrored. Both stand near
+     * the oval's ends, well clear of the pillars, which reach only to about 400.
+     */
+    static final int SPAWN_X = 1050;
 
     static int radiusX;
     static int radiusY;
@@ -44,8 +46,8 @@ final class Coliseum {
      * than twice as wide as it is deep, the wall wide enough to go round the whole block of pillars.
      */
     static void build() {
-        radiusX = 1100;
-        radiusY = 480;
+        radiusX = 1200;
+        radiusY = 520;
         wallHeight = 300;
         pillarRadius = PILLAR_RADIUS;
         pillarHeight = 420;

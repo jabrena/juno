@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.gladiator;
 
+import io.github.jabrena.juno.api.tft.TftTouchShield;
+
 /**
  * The gladiator's eyes on the screen: the coliseum in wireframe, the way DOOM draws its walls. The pillars are drawn
  * as their outlines, nearest first; then the wall and the stands round it ({@link Rings}); then the opponent
@@ -49,6 +51,12 @@ final class View {
      */
     static void build(short[] lines, Body body, boolean visible, float ox, float oy, float oAngle, int kind,
                       boolean thrusting, int swing, int hurt) {
+        build(lines, body, visible, ox, oy, oAngle, kind, thrusting, swing, hurt, -1);
+    }
+
+    /** The Solo variant also selects the equipment visible in this gladiator's own hands. */
+    static void build(short[] lines, Body body, boolean visible, float ox, float oy, float oAngle, int kind,
+                      boolean thrusting, int swing, int hurt, int ownKind) {
         viewX = body.x;
         viewY = body.y;
         cos = (float) Math.cos(body.angle);
@@ -59,7 +67,7 @@ final class View {
             horizon[x] = (byte) (BOTTOM + 1);
         }
         ViewList.begin();
-        hands(lines, swing);
+        hands(lines, swing, ownKind);
         ViewList.pin();
         pillars(lines);
         Rings.draw(lines);
@@ -100,7 +108,15 @@ final class View {
     }
 
     /** The gladius, at rest or mid-swing, and the shield's rim. */
-    private static void hands(short[] lines, int swing) {
+    private static void hands(short[] lines, int swing, int kind) {
+        if (kind == Opening.RETIARIUS) {
+            retiariusHands(lines, swing);
+            return;
+        }
+        if (kind == Opening.THRAEX) {
+            thraexHands(lines, swing);
+            return;
+        }
         int sword = swing > 0 ? 1 : 0;
         for (int i = Figure.HANDS_START[sword]; i < Figure.HANDS_START[sword + 1]; i += 4) {
             ViewList.add(lines, Figure.HANDS[i], Figure.HANDS[i + 1], Figure.HANDS[i + 2], Figure.HANDS[i + 3],
@@ -110,6 +126,48 @@ final class View {
             ViewList.add(lines, Figure.HANDS[i], Figure.HANDS[i + 1], Figure.HANDS[i + 2], Figure.HANDS[i + 3],
                     Figure.SHIELD_COLOR);
         }
+    }
+
+    /** Trident on the right and the near edge of a cast net on the left. */
+    private static void retiariusHands(short[] lines, int swing) {
+        if (swing > 0) {
+            ViewList.add(lines, 266, 199, 178, 116, Figure.BLADE);
+            ViewList.add(lines, 178, 116, 166, 110, Figure.BLADE);
+            ViewList.add(lines, 178, 116, 174, 102, Figure.BLADE);
+            ViewList.add(lines, 178, 116, 184, 104, Figure.BLADE);
+        } else {
+            ViewList.add(lines, 255, 199, 228, 94, Figure.BLADE);
+            ViewList.add(lines, 228, 94, 219, 80, Figure.BLADE);
+            ViewList.add(lines, 228, 94, 228, 77, Figure.BLADE);
+            ViewList.add(lines, 228, 94, 237, 80, Figure.BLADE);
+        }
+        int net = TftTouchShield.CYAN;
+        ViewList.add(lines, 0, 129, 66, 141, net);
+        ViewList.add(lines, 66, 141, 61, 199, net);
+        ViewList.add(lines, 0, 183, 61, 199, net);
+        ViewList.add(lines, 8, 131, 55, 197, net);
+        ViewList.add(lines, 31, 135, 28, 191, net);
+        ViewList.add(lines, 0, 157, 63, 166, net);
+    }
+
+    /** Curved sica on the right and a smaller upright parmula on the left. */
+    private static void thraexHands(short[] lines, int swing) {
+        if (swing > 0) {
+            ViewList.add(lines, 254, 185, 181, 129, Figure.BLADE);
+            ViewList.add(lines, 181, 129, 169, 112, Figure.BLADE);
+            ViewList.add(lines, 169, 112, 181, 116, Figure.BLADE);
+        } else {
+            ViewList.add(lines, 246, 194, 229, 126, Figure.BLADE);
+            ViewList.add(lines, 229, 126, 238, 101, Figure.BLADE);
+            ViewList.add(lines, 238, 101, 228, 108, Figure.BLADE);
+        }
+        ViewList.add(lines, 229, 174, 259, 178, Figure.BLADE);
+        int shield = TftTouchShield.YELLOW;
+        ViewList.add(lines, 10, 151, 55, 143, shield);
+        ViewList.add(lines, 55, 143, 61, 199, shield);
+        ViewList.add(lines, 10, 151, 9, 193, shield);
+        ViewList.add(lines, 9, 193, 61, 199, shield);
+        ViewList.add(lines, 13, 171, 58, 169, shield);
     }
 
     /** Every pillar in front, nearest first, each hiding what stands behind it. */

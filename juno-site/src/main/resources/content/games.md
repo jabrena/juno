@@ -258,9 +258,13 @@ No-limit Texas Hold'em against three CPU opponents. Play a seat yourself or watc
 
 ### Gladiator
 
+<img src="../images/games/gladiator-opening.gif" alt="Gladiator opening: an animated laurel and Timor mortis morte peior lead into rotating wireframe classes, Solo selection, historical name and class selection, fighting style and the local arena" width="320">
+
 <img src="../images/games/gladiator-cpu.gif" alt="Gladiator in the emulator: the arena's view from above on the left, then the AGGRESSIVE and the AMBUSH gladiator's first-person wireframe views; the ambusher lurks behind a pillar, charges and wins the round" width="720">
 
-Two gladiators fight among the pillars of a Roman arena, while a third board keeps the arena. It takes three boards with the shield on the same Wi-Fi network. Every board runs the same program; pick its role on the menu:
+After the opening, **SOLO** runs an entire CPU-versus-CPU duel locally on one UNO Q: choose a historical name (Spartacus, Crixus, Flamma or Priscus), a class and its authentic paired arms, then an aggressive or ambush fighting style for the player CPU. A versus view rotates that gladiator beside a random opponent CPU with a different historical name and a random class and fighting style; tap **PLAY** there to begin the bout. Murmillo and Secutor carry gladius and scutum, Thraex carries sica and parmula, and Retiarius carries trident and net. The chosen equipment appears in the player's first-person view while its CPU drives it. When one gladiator falls, a result view names the winner for five seconds and the game returns to the laurel title.
+
+**MULTIPLAYER** keeps the original three-board game. Two gladiators fight among the pillars while a third board keeps the arena. Put three boards with the shield on the same Wi-Fi network; every board runs the same program and picks its role:
 
 - **ARENA** (meant for the UNO Q, one per network) keeps the battle and shows the coliseum from above: the sand, the five-by-three grid of red pillars, the wall and the tiers of seats, each gladiator with its field of view, and a dotted line while one sees the other. It sends each gladiator the map once and judges every strike.
 - **AGGRESSIVE** runs at its opponent and strikes as soon as it is in reach, chases to where it saw it last, and otherwise patrols round the pillars.
@@ -268,7 +272,7 @@ Two gladiators fight among the pillars of a Roman arena, while a third board kee
 
 The battle starts when the arena has two gladiators: the first enters by the left gate, the second by the right. Each gladiator's board shows the arena in first-person wireframe, drawn like DOOM. A gladiator sees its opponent only with its own eyes: the arena reports the opponent's position only while it is in front of the gladiator and no pillar is in the way. A blow the victim did not see coming does double damage, which is what the ambusher plays for. Each gladiator has 100 HP and a blow does 10; the first to fall loses the round, and the next round starts from the gates. Tap **CPU/HUMAN** under the view to take over a gladiator: the left and right thirds of the view turn, the upper middle walks and the lower middle swings the gladius.
 
-Build it with a 10 KB arena (the default is 8 KB) for each board:
+Build it with a 10 KB arena (the default is 8 KB) for each board. Solo is enabled only in the UNO Q build; the R4 menu marks it as unavailable:
 
 ```bash
 # Arduino UNO Q, for the ARENA

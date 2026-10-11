@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.games.gladiator;
 
 import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,8 +46,8 @@ class GladiatorTest {
         assertThat(GladiatorProtocol.slot(packet)).isEqualTo(RIGHT);
         assertThat(GladiatorProtocol.nodeId(packet)).isEqualTo(0xCAFEBABE);
         assertThat(GladiatorProtocol.readMap(packet)).isTrue();
-        assertThat(Coliseum.radiusX).isEqualTo(1100);
-        assertThat(Coliseum.radiusY).isEqualTo(480);
+        assertThat(Coliseum.radiusX).isEqualTo(1200);
+        assertThat(Coliseum.radiusY).isEqualTo(520);
         assertThat(Coliseum.pillars).isEqualTo(15);
         assertThat(Coliseum.pillarX).containsExactly(pillarX);
         assertThat(Coliseum.pillarY).as("negative coordinates survive").containsExactly(pillarY);
@@ -200,7 +201,7 @@ class GladiatorTest {
         Body body = new Body();
         body.spawn(RIGHT);
         brain.reset(RIGHT, 0);
-        for (int frame = 0; frame < 200 && brain.mode != Brain.LURKING; frame++) {
+        for (int frame = 0; frame < 400 && brain.mode != Brain.LURKING; frame++) {
             brain.see(false, 0, 0, frame * 40);
             brain.drive(body, frame * 40);
         }
@@ -214,18 +215,18 @@ class GladiatorTest {
 
     @Test
     void gladiatorsThatSeeEachOtherPastAPillarEdgeWalkRoundItAndMeet() {
-        // The line between them clears the pillar at (-320, 0) by 8, so their eyes meet, but their bodies do not pass.
+        // The line between them clears the pillar at (-352, 0) by 8, so their eyes meet, but their bodies do not pass.
         Body[] bodies = {new Body(), new Body()};
         Brain[] brains = {new Brain(Brain.AGGRESSIVE), new Brain(Brain.AMBUSH)};
-        bodies[LEFT].x = -400;
-        bodies[LEFT].y = 40;
+        bodies[LEFT].x = -440;
+        bodies[LEFT].y = 52;
         bodies[LEFT].angle = 0f;
-        bodies[RIGHT].x = -180;
-        bodies[RIGHT].y = 40;
+        bodies[RIGHT].x = -264;
+        bodies[RIGHT].y = 52;
         bodies[RIGHT].angle = (float) Math.PI;
         brains[LEFT].reset(LEFT, 0);
         brains[RIGHT].reset(RIGHT, 0);
-        assertThat(Coliseum.clearSight(-400, 40, -180, 40)).isTrue();
+        assertThat(Coliseum.clearSight(-440, 52, -264, 52)).isTrue();
 
         boolean struck = false;
         for (int frame = 0; frame < 250 && !struck; frame++) {
@@ -305,10 +306,198 @@ class GladiatorTest {
         assertThat(Gladiator.roleAt(5, 90)).as("left of the buttons").isEqualTo(-1);
     }
 
+    @Test
+    void theOpeningCyclesFourClassesAndOnlyItsButtonStartsTheGame() {
+        assertThat(Opening.INTRO_MILLIS).isEqualTo(5000);
+        assertThat(Opening.GALLERY_MILLIS).isEqualTo(10_000);
+        assertThat(Opening.classAt(0)).isEqualTo(Opening.MURMILLO);
+        assertThat(Opening.classAt(2499)).isEqualTo(Opening.MURMILLO);
+        assertThat(Opening.classAt(2500)).isEqualTo(Opening.THRAEX);
+        assertThat(Opening.classAt(5000)).isEqualTo(Opening.RETIARIUS);
+        assertThat(Opening.classAt(7500)).isEqualTo(Opening.SECUTOR);
+        assertThat(Opening.classAt(10_000)).isEqualTo(Opening.MURMILLO);
+        assertThat(Opening.className(Opening.MURMILLO)).isEqualTo("MURMILLO");
+        assertThat(Opening.className(Opening.THRAEX)).isEqualTo("THRAEX");
+        assertThat(Opening.className(Opening.RETIARIUS)).isEqualTo("RETIARIUS");
+        assertThat(Opening.className(Opening.SECUTOR)).isEqualTo("SECUTOR");
+
+        assertThat(Opening.onPlay(20, 206)).isTrue();
+        assertThat(Opening.onPlay(299, 233)).isTrue();
+        assertThat(Opening.onPlay(19, 220)).isFalse();
+        assertThat(Opening.onPlay(300, 220)).isFalse();
+        assertThat(Opening.onPlay(160, 234)).isFalse();
+    }
+
+    @Test
+    void theModeMenuKeepsSoloExclusiveToTheUnoQ() {
+        assertThat(ModeMenu.modeAt(160, 100, true)).isEqualTo(ModeMenu.SOLO);
+        assertThat(ModeMenu.modeAt(160, 100, false)).as("solo on an R4").isEqualTo(-1);
+        assertThat(ModeMenu.modeAt(160, 170, true)).isEqualTo(ModeMenu.MULTIPLAYER);
+        assertThat(ModeMenu.modeAt(160, 170, false)).isEqualTo(ModeMenu.MULTIPLAYER);
+        assertThat(ModeMenu.modeAt(5, 100, true)).isEqualTo(-1);
+        assertThat(ModeMenu.modeAt(160, 140, true)).as("between buttons").isEqualTo(-1);
+    }
+
+    @Test
+    void fighterSetupOffersFourNamesAndClassesThenTwoStyles() {
+        assertThat(FighterSetup.choiceAt(FighterSetup.NAME, 20, 80)).isEqualTo(FighterProfile.SPARTACUS);
+        assertThat(FighterSetup.choiceAt(FighterSetup.NAME, 180, 80)).isEqualTo(FighterProfile.CRIXUS);
+        assertThat(FighterSetup.choiceAt(FighterSetup.NAME, 20, 160)).isEqualTo(FighterProfile.FLAMMA);
+        assertThat(FighterSetup.choiceAt(FighterSetup.NAME, 180, 160)).isEqualTo(FighterProfile.PRISCUS);
+        assertThat(FighterSetup.choiceAt(FighterSetup.CLASS, 20, 80)).isEqualTo(Opening.MURMILLO);
+        assertThat(FighterSetup.choiceAt(FighterSetup.CLASS, 180, 160)).isEqualTo(Opening.SECUTOR);
+        assertThat(FighterSetup.choiceAt(FighterSetup.STYLE, 160, 100)).isZero();
+        assertThat(FighterSetup.choiceAt(FighterSetup.STYLE, 160, 170)).isEqualTo(1);
+        assertThat(FighterSetup.choiceAt(FighterSetup.STYLE, 5, 100)).isEqualTo(-1);
+
+        FighterProfile flamma = new FighterProfile(FighterProfile.FLAMMA, Opening.RETIARIUS, Brain.AMBUSH);
+        assertThat(flamma.displayName()).isEqualTo("FLAMMA");
+        assertThat(flamma.color()).isEqualTo(TftTouchShield.CYAN);
+        assertThat(flamma.behaviour).isEqualTo(Brain.AMBUSH);
+    }
+
+    @Test
+    void soloRunsBothSelectedStylesAsLocalCpuGladiators() {
+        int start = 600_000;
+        SoloDuel duel = new SoloDuel(Brain.AGGRESSIVE, Brain.AGGRESSIVE, start);
+        assertThat(duel.match.present).containsExactly(true, true);
+        assertThat(duel.match.phase).isEqualTo(Match.COUNTDOWN);
+        assertThat(duel.cpuBehaviour).isEqualTo(Brain.AGGRESSIVE);
+        assertThat(duel.playerBrain.behaviour).isEqualTo(Brain.AGGRESSIVE);
+        assertThat(duel.cpuBrain.behaviour).isEqualTo(Brain.AGGRESSIVE);
+
+        int gateX = duel.match.x[0];
+        duel.step(start + Match.COUNTDOWN_MILLIS);
+        assertThat(duel.match.present).containsExactly(true, true);
+        assertThat(duel.match.phase).isEqualTo(Match.FIGHT);
+        duel.step(start + Match.COUNTDOWN_MILLIS + 40);
+        assertThat(duel.match.x[0]).isNotEqualTo(gateX);
+        assertThat(duel.match.human).containsExactly(false, false);
+
+        byte[] world = new byte[GladiatorProtocol.PACKET_SIZE];
+        duel.writeWorld(world, start + Match.COUNTDOWN_MILLIS + 40);
+        Report.clear();
+        Report.read(world);
+        assertThat(Report.health).isEqualTo(Match.HEALTH);
+        assertThat(Report.opponentPresent).isTrue();
+        assertThat(Report.opponentHealth).isEqualTo(Match.HEALTH);
+        assertThat(Report.opponentKind).isEqualTo(Brain.AGGRESSIVE);
+    }
+
+    @Test
+    void soloGladiatorsOfEveryStyleFindEachOtherWithinHalfAMinute() {
+        int[][] pairs = {{Brain.AGGRESSIVE, Brain.AGGRESSIVE}, {Brain.AGGRESSIVE, Brain.AMBUSH},
+                {Brain.AMBUSH, Brain.AMBUSH}};
+        for (int[] pair : pairs) {
+            SoloDuel duel = new SoloDuel(pair[0], pair[1], 1000);
+            int firstSeen = -1;
+            for (int frame = 0; frame < 1000 && firstSeen < 0; frame++) {
+                duel.step(1000 + frame * 40);
+                if (duel.match.sees(0) || duel.match.sees(1)) {
+                    firstSeen = frame * 40;
+                }
+            }
+            assertThat(firstSeen).as("styles %d and %d meet", pair[0], pair[1]).isBetween(0, 40_000);
+        }
+    }
+
+    @Test
+    void soloRandomlyBuildsADifferentCpuOpponent() {
+        FighterProfile player = new FighterProfile(FighterProfile.FLAMMA, Opening.RETIARIUS, Brain.AMBUSH);
+        Random.seed(7);
+
+        for (int selection = 0; selection < 20; selection++) {
+            FighterProfile opponent = FighterProfile.randomOpponent(player);
+            assertThat(opponent.name).isBetween(0, FighterProfile.NAMES - 1).isNotEqualTo(player.name);
+            assertThat(opponent.kind).isBetween(Opening.MURMILLO, Opening.SECUTOR);
+            assertThat(opponent.behaviour).isIn(Brain.AGGRESSIVE, Brain.AMBUSH);
+        }
+        assertThat(SoloPresentation.RESULT_MILLIS).isEqualTo(5000);
+        assertThat(SoloPresentation.onPlay(20, 206)).isTrue();
+        assertThat(SoloPresentation.onPlay(299, 233)).isTrue();
+        assertThat(SoloPresentation.onPlay(19, 220)).isFalse();
+        assertThat(SoloPresentation.onPlay(300, 220)).isFalse();
+    }
+
+    @Test
+    void soloIsAvailableOnlyOnTheUnoQ() {
+        assertThat(Gladiator.soloAvailable()).as("the screenshot emulator models an UNO Q").isTrue();
+    }
+
+    @Test
+    void soloShowsTheArmsOfTheSelectedClassInFirstPerson() {
+        Body body = new Body();
+        body.spawn(0);
+        View.build(ViewList.lines, body, false, 0, 0, 0, Brain.AGGRESSIVE, false, 0, 0, Opening.RETIARIUS);
+        assertThat(linesIn(TftTouchShield.CYAN)).as("retiarius net").isGreaterThanOrEqualTo(6);
+
+        View.build(ViewList.lines, body, false, 0, 0, 0, Brain.AGGRESSIVE, false, 0, 0, Opening.THRAEX);
+        assertThat(linesIn(TftTouchShield.YELLOW)).as("Thraex parmula").isGreaterThanOrEqualTo(5);
+    }
+
+    @Test
+    void everyClassBuildsAThreeDimensionalWireframeInsideTheLeftPanel() {
+        for (int kind = Opening.MURMILLO; kind < Opening.CLASSES; kind++) {
+            ClassWireframe.build(kind, 0f);
+            assertThat(ViewList.size()).as(Opening.className(kind)).isBetween(35, ViewList.MAX_LINES - 1);
+            for (int line = 0; line < ViewList.size(); line++) {
+                assertThat(ViewList.built(ViewList.lines, line, 0)).isBetween(0, 189);
+                assertThat(ViewList.built(ViewList.lines, line, 1)).isBetween(1, ViewList.VIEW_BOTTOM - 1);
+                assertThat(ViewList.built(ViewList.lines, line, 2)).isBetween(0, 189);
+                assertThat(ViewList.built(ViewList.lines, line, 3)).isBetween(1, ViewList.VIEW_BOTTOM - 1);
+            }
+        }
+        ClassWireframe.build(Opening.MURMILLO, 0f);
+        int frontFacingX = ViewList.built(ViewList.lines, 0, 0);
+        ClassWireframe.build(Opening.MURMILLO, (float) (Math.PI / 2));
+        assertThat(ViewList.built(ViewList.lines, 0, 0)).as("the projected model turns around its vertical axis")
+                .isNotEqualTo(frontFacingX);
+    }
+
+    @Test
+    void shieldsAreStandingRatherThanLandscapeRectangles() {
+        assertStandingShield(Opening.MURMILLO, TftTouchShield.ORANGE);
+        assertStandingShield(Opening.THRAEX, TftTouchShield.YELLOW);
+    }
+
+    private static void assertStandingShield(int kind, int color) {
+        ClassWireframe.build(kind, 0f);
+        int minX = ViewList.WIDTH;
+        int minY = ViewList.HEIGHT;
+        int maxX = 0;
+        int maxY = 0;
+        int shieldLines = 0;
+        for (int line = 0; line < ViewList.size(); line++) {
+            if ((ViewList.built(ViewList.lines, line, 4) & 0xFFFF) == color) {
+                minX = Math.min(minX, Math.min(
+                        ViewList.built(ViewList.lines, line, 0), ViewList.built(ViewList.lines, line, 2)));
+                minY = Math.min(minY, Math.min(
+                        ViewList.built(ViewList.lines, line, 1), ViewList.built(ViewList.lines, line, 3)));
+                maxX = Math.max(maxX, Math.max(
+                        ViewList.built(ViewList.lines, line, 0), ViewList.built(ViewList.lines, line, 2)));
+                maxY = Math.max(maxY, Math.max(
+                        ViewList.built(ViewList.lines, line, 1), ViewList.built(ViewList.lines, line, 3)));
+                shieldLines++;
+            }
+        }
+        assertThat(shieldLines).isPositive();
+        assertThat(maxY - minY).as(Opening.className(kind) + " shield height").isGreaterThan(maxX - minX);
+    }
+
     private static int figureLines(short[] lines) {
         int count = 0;
         for (int i = 0; i < ViewList.size(); i++) {
             if ((ViewList.built(lines, i, 4) & 0xFFFF) == Figure.AMBUSH_COLOR) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static int linesIn(int color) {
+        int count = 0;
+        for (int i = 0; i < ViewList.size(); i++) {
+            if ((ViewList.built(ViewList.lines, i, 4) & 0xFFFF) == color) {
                 count++;
             }
         }

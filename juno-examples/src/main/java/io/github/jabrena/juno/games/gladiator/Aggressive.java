@@ -55,7 +55,10 @@ final class Aggressive {
         float tx = PATROL_X[brain.waypoint] * Coliseum.radiusX / 1000f;
         float ty = PATROL_Y[brain.waypoint] * Coliseum.radiusY / 1000f;
         if (body.distanceTo(tx, ty) < ARRIVED || brain.isStuck()) {
-            brain.waypoint = (brain.waypoint + 1) % PATROL_X.length;
+            // The right gate's gladiator patrols the other way round, so the two always meet instead of keeping half
+            // a lap apart.
+            int step = brain.slot == 1 ? PATROL_X.length - 1 : 1;
+            brain.waypoint = (brain.waypoint + step) % PATROL_X.length;
             brain.lookUntil = now + LOOK_MILLIS;
             brain.stuck = 0;
             return;
