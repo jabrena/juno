@@ -592,13 +592,14 @@ final class BigNumberRuntime {
                   return result;
                 }
 
-                extern "C" int32_t juno_big_integer_shift_left(int32_t a, int32_t distance) {
+                // Shifts by distance bits (right when negative) without collecting: callers in the middle of an
+                // operation use this, never the public entry point below, which may collect first.
+                static int32_t juno_big_shift_h(int32_t a, int32_t distance) {
                   if (distance < 0) {
                     // Arithmetic right shift: floor(a / 2^-distance).
                     uint32_t bits = static_cast<uint32_t>(-static_cast<int64_t>(distance));
                     int32_t sign = juno_big_sign_of(a);
                     uint32_t n = juno_big_len_of(a);
-                    juno_big_prepare(4u * (n + 8u) * 3u);
                     uint32_t words = bits / 32u;
                     uint32_t inner = bits % 32u;
                     if (words >= n) return sign < 0 ? juno_big_of_long_h(-1) : juno_big_make(0, nullptr, 0u);
@@ -607,7 +608,7 @@ final class BigNumberRuntime {
                     uint32_t* out = juno_big_scratch(outLength);
                     bool lost = false;
                     for (uint32_t i = 0; i < words; i++) if (limbs[i] != 0u) lost = true;
-                    if (inner != 0u && (limbs[words] & ((1u << inner) - 1u)) != 0u) lost = true;
+                    if (inner != 0u && (limbs[words] & ((static_cast<uint32_t>(1u) << inner) - 1u)) != 0u) lost = true;
                     for (uint32_t i = 0; i < outLength; i++) {
                       uint32_t low = limbs[i + words] >> inner;
                       uint32_t high = (inner != 0u && i + words + 1u < n) ? limbs[i + words + 1u] << (32u - inner) : 0u;
@@ -621,7 +622,6 @@ final class BigNumberRuntime {
                   if (n == 0u || distance == 0) return a;
                   uint32_t words = static_cast<uint32_t>(distance) / 32u;
                   uint32_t inner = static_cast<uint32_t>(distance) % 32u;
-                  juno_big_prepare(4u * (n + words + 4u) * 3u);
                   uint32_t* out = juno_big_scratch(n + words + 1u);
                   const uint32_t* limbs = juno_big_limbs_of(a);
                   for (uint32_t i = 0; i < n; i++) {
@@ -631,9 +631,30 @@ final class BigNumberRuntime {
                   return juno_big_make(juno_big_sign_of(a), out, n + words + 1u);
                 }
 
+                extern "C" int32_t juno_big_integer_shift_left(int32_t a, int32_t distance) {
+                  uint32_t n = juno_big_len_of(a);
+                  uint32_t words = distance < 0 ? 0u : static_cast<uint32_t>(distance) / 32u;
+                  juno_big_prepare(4u * (n + words + 8u) * 3u);
+                  return juno_big_shift_h(a, distance);
+                }
+
                 extern "C" int32_t juno_big_integer_shift_right(int32_t a, int32_t distance) {
                   if (distance == static_cast<int32_t>(0x80000000u)) return juno_big_integer_shift_left(a, 0x7FFFFFFF);
                   return juno_big_integer_shift_left(a, -distance);
+                }
+
+                // floor(sqrt(a)) for a > 0 by Newton's iteration, without collecting (see juno_big_shift_h).
+                static int32_t juno_big_sqrt_h(int32_t a) {
+                  int32_t bits = juno_big_integer_bit_length(a);
+                  int32_t x = juno_big_shift_h(juno_big_one_h(), (bits + 1) / 2);
+                  for (;;) {
+                    int32_t quotient = 0;
+                    int32_t remainder = 0;
+                    juno_big_divrem_h(a, x, &quotient, &remainder);
+                    int32_t y = juno_big_shift_h(juno_big_add_h(x, quotient), -1);
+                    if (juno_big_compare_h(y, x) >= 0) return x;
+                    x = y;
+                  }
                 }
 
                 extern "C" int32_t juno_big_integer_sqrt(int32_t a) {
@@ -641,20 +662,11 @@ final class BigNumberRuntime {
                   if (juno_big_sign_of(a) == 0) return a;
                   uint32_t n = juno_big_len_of(a);
                   juno_big_prepare(4u * (n + 4u) * 8u * (32u * n + 8u));
-                  int32_t bits = juno_big_integer_bit_length(a);
-                  int32_t x = juno_big_integer_shift_left(juno_big_one_h(), (bits + 1) / 2);
-                  for (;;) {
-                    int32_t quotient = 0;
-                    int32_t remainder = 0;
-                    juno_big_divrem_h(a, x, &quotient, &remainder);
-                    int32_t y = juno_big_integer_shift_left(juno_big_add_h(x, quotient), -1);
-                    if (juno_big_compare_h(y, x) >= 0) return x;
-                    x = y;
-                  }
+                  return juno_big_sqrt_h(a);
                 }
 
-                extern "C" int32_t juno_big_integer_gcd(int32_t a, int32_t b) {
-                  juno_big_prepare(4u * juno_big_budget(a, b) * 8u * (32u * (juno_big_len_of(a) + juno_big_len_of(b)) + 8u));
+                // gcd(|a|, |b|) by Euclid's algorithm, without collecting (see juno_big_shift_h).
+                static int32_t juno_big_gcd_h(int32_t a, int32_t b) {
                   int32_t x = juno_big_abs_h(a);
                   int32_t y = juno_big_abs_h(b);
                   while (juno_big_sign_of(y) != 0) {
@@ -665,6 +677,11 @@ final class BigNumberRuntime {
                     y = remainder;
                   }
                   return x;
+                }
+
+                extern "C" int32_t juno_big_integer_gcd(int32_t a, int32_t b) {
+                  juno_big_prepare(4u * juno_big_budget(a, b) * 8u * (32u * (juno_big_len_of(a) + juno_big_len_of(b)) + 8u));
+                  return juno_big_gcd_h(a, b);
                 }
 
                 // Writes |a| in decimal into a fresh arena string; *length gets its character count.
@@ -1158,7 +1175,7 @@ final class BigNumberRuntime {
                   if (precision == 0) {
                     // Exact quotient: it terminates only if the reduced divisor has no prime factor besides 2 and 5.
                     int32_t divisor = juno_big_abs_h(ub);
-                    int32_t g = juno_big_integer_gcd(ua, ub);
+                    int32_t g = juno_big_gcd_h(ua, ub);
                     int32_t reduced = 0;
                     int32_t ignored = 0;
                     juno_big_divrem_h(divisor, g, &reduced, &ignored);
@@ -1241,7 +1258,7 @@ final class BigNumberRuntime {
                   int32_t m = wanted - (digits + 1) / 2;
                   if (m < 0) m = 0;
                   int32_t scaled = juno_big_scale_up_h(radicand, static_cast<uint32_t>(2 * m));
-                  int32_t root = juno_big_integer_sqrt(scaled);
+                  int32_t root = juno_big_sqrt_h(scaled);
                   bool sticky = juno_big_compare_h(juno_big_mul_h(root, root), scaled) != 0;
                   int32_t rootScale = scale / 2 + m;
                   if (precision == 0) {
