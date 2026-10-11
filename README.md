@@ -1,7 +1,6 @@
 # Juno: Java for Arduino One
 
-Juno is an ahead-of-time compiler for running a practical subset of Java on the Arduino UNO R4 WiFi,
-the Arduino UNO Q and the Arduino UNO WiFi Rev2. It keeps `javac` as the Java frontend, performs
+Juno is an ahead-of-time compiler for running a practical subset of Java on the Arduino UNO Q, the Arduino UNO R4 WiFi and the Arduino UNO WiFi Rev2. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly, or
 AVR assembly for the UNO WiFi Rev2's 8-bit ATmega4809.
 
@@ -14,6 +13,10 @@ AVR assembly for the UNO WiFi Rev2's 8-bit ATmega4809.
 **Arduino UNO R4 WiFi**
 
 ![](./juno-site/src/main/resources/public/images/boards/arduino-one-r4-wifi.png)
+
+**Arduino UNO R3 WiFi Rev2**
+
+![](./juno-site/src/main/resources/public/images/boards/arduino-one-r3-wifi-rev2.png)
 
 ## Modules
 
@@ -411,9 +414,9 @@ jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000       # then open http://127
 
 - https://dev.java/
 - https://docs.oracle.com/javase/specs/jls/se25/html/index.html
-- https://store.arduino.cc/products/uno-r4-wifi
-- https://store.arduino.cc/products/arduino-uno-rev3
-- https://store.arduino.cc/products/arduino-uno-wifi-rev2
+- https://docs.arduino.cc/hardware/uno-q/
+- https://docs.arduino.cc/hardware/uno-r4-wifi/
+- https://docs.arduino.cc/hardware/uno-wifi-rev2/
 - https://lejos.sourceforge.io/
 - https://lejos.sourceforge.io/nxt/nxj/api/index.html
 - https://tinyvm.sourceforge.net/
@@ -423,5 +426,4 @@ jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000       # then open http://127
 - https://github.com/dzindra/lcdkeypad
 - https://github.com/arduino-libraries/Mouse
 - https://github.com/arduino-libraries/ArduinoBLE
-- https://lego.github.io/lego-ble-wireless-protocol-docs/
 - https://github.com/mobizt/ESP_SSLClient

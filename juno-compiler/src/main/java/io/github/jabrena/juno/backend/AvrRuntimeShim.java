@@ -27,8 +27,10 @@ final class AvrRuntimeShim {
     static final int SD_OPEN_FILES = 2;
     static final int PROPERTIES_ENTRIES = 8;
     static final int PROPERTIES_KEY_BYTES = 16;
-    static final int PROPERTIES_VALUE_BYTES = 32;
-    static final int PROPERTIES_LINE_BYTES = 48;
+    /** A WPA/WPA2 passphrase may contain 63 characters, plus the terminating null byte. */
+    static final int PROPERTIES_VALUE_BYTES = 64;
+    /** Holds {@code wifi.password=} plus a maximum-length passphrase and its terminator. */
+    static final int PROPERTIES_LINE_BYTES = 96;
 
     /** Shim features this board's runtime does not have; the linker's capability checks normally stop them first. */
     private static final Set<ShimFeature> UNSUPPORTED = EnumSet.of(ShimFeature.LED_MATRIX, ShimFeature.MOUSE,
@@ -348,7 +350,7 @@ final class AvrRuntimeShim {
             shim.append(ShimLibraries.randomHelpers());
         }
         if (uses(ShimFeature.SD)) {
-            shim.append(ShimLibraries.sdHelpers(SD_OPEN_FILES, PROPERTIES_ENTRIES, PROPERTIES_KEY_BYTES,
+            shim.append(core.sdHelpers(SD_OPEN_FILES, PROPERTIES_ENTRIES, PROPERTIES_KEY_BYTES,
                     PROPERTIES_VALUE_BYTES, PROPERTIES_LINE_BYTES));
         }
         if (uses(ShimFeature.LONG)) {

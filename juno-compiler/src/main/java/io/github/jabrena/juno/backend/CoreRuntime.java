@@ -88,6 +88,14 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime, Mega
      */
     String parallelBusHelpers();
 
+    /**
+     * Core-specific SD helper implementation. Most boards use SdFat's default hardware SPI bus; cores whose shield
+     * headers do not expose that bus can override this method without introducing board checks into the backend.
+     */
+    default String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
+        return ShimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
+    }
+
     /** Core-specific header the thread port needs ({@code ""} when the core brings none). */
     String threadIncludes();
 

@@ -50,10 +50,16 @@ public final class TouchPaintTFT {
     }
 
     private static void logTouch(int x, int y) {
-        Serial.println("x=" + x + " y=" + y
-                + " rawX=" + TftTouchShield.touchRawX()
-                + " rawY=" + TftTouchShield.touchRawY()
-                + " z=" + TftTouchShield.touchPressure());
+        Serial.print("x=");
+        Serial.print(x);
+        Serial.print(" y=");
+        Serial.print(y);
+        Serial.print(" rawX=");
+        Serial.print(TftTouchShield.touchRawX());
+        Serial.print(" rawY=");
+        Serial.print(TftTouchShield.touchRawY());
+        Serial.print(" z=");
+        Serial.println(TftTouchShield.touchPressure());
     }
 
     /** Paints every swatch, with the eraser's black center on the last one. */

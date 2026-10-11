@@ -48,6 +48,8 @@ If a different reader or shield routes CS elsewhere, call `SdCard.begin(chipSele
 
 The ELEGOO 2.8" TFT touch screen shield's microSD socket also uses D10, and shares no pins with its
 display: see [`WifiStatusTFT`](../tft-touch-shield#examples) for the same flow shown on the TFT.
+On UNO WiFi Rev2, Juno automatically drives the shield's D11-D13 SD connection with software SPI,
+leaving the board's ICSP-routed hardware SPI bus available to the NINA-W102 Wi-Fi module.
 
 ## Build
 

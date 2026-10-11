@@ -1,10 +1,14 @@
 package io.github.jabrena.juno.maven;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 final class ArduinoCli {
+    private static final String UNO_WIFI_REV2_FQBN = "arduino:megaavr:uno2018";
+    private static final String SDFAT_SOFTWARE_SPI = "compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3";
+
     private final String executable;
     private final CommandExecutor executor;
     private final Consumer<String> output;
@@ -28,8 +32,14 @@ final class ArduinoCli {
     }
 
     void compile(String fqbn, Path sketchDirectory) {
-        runChecked(List.of(executable, "compile", "--fqbn", requireText(fqbn, "FQBN"),
-                sketchDirectory.toAbsolutePath().normalize().toString()), false);
+        String requiredFqbn = requireText(fqbn, "FQBN");
+        List<String> command = new ArrayList<>(List.of(executable, "compile", "--fqbn", requiredFqbn));
+        if (UNO_WIFI_REV2_FQBN.equals(requiredFqbn)) {
+            command.add("--build-property");
+            command.add(SDFAT_SOFTWARE_SPI);
+        }
+        command.add(sketchDirectory.toAbsolutePath().normalize().toString());
+        runChecked(List.copyOf(command), false);
     }
 
     void upload(String fqbn, String port, Path sketchDirectory) {
