@@ -1196,10 +1196,30 @@ final class BigNumberRuntime {
                   return 12u * (juno_bd_budget(a, b) + 4u * static_cast<uint32_t>((shift < 0 ? -shift : shift) / 9 + 4));
                 }
 
+                // The JDK's message for a zero divisor given an explicit scale: its long fast path, taken while the
+                // dividend and its power-of-ten rescale (under 10^19) fit a long, divides by a long zero.
+                static const char* juno_bd_scaled_zero_divide_message(int32_t a, int32_t b, int32_t scale) {
+                  const char* bigPath = "BigInteger divide by zero";
+                  int32_t unscaled = juno_bd_unscaled(a);
+                  uint32_t n = juno_big_len_of(unscaled);
+                  if (n > 2u) return bigPath;
+                  const uint32_t* limbs = juno_big_limbs_of(unscaled);
+                  uint64_t magnitude = (n > 0u ? limbs[0] : 0u) | (static_cast<uint64_t>(n > 1u ? limbs[1] : 0u) << 32);
+                  const uint64_t longMax = 0x7FFFFFFFFFFFFFFFull;
+                  if (magnitude > longMax) return bigPath;
+                  int64_t raise = static_cast<int64_t>(scale) + juno_bd_scale(b) - juno_bd_scale(a);
+                  if (raise <= 0) return -raise < 19 ? "/ by zero" : bigPath;
+                  if (raise >= 19) return bigPath;
+                  for (int64_t i = 0; i < raise; i++) {
+                    if (magnitude > longMax / 10u) return bigPath;
+                    magnitude *= 10u;
+                  }
+                  return "/ by zero";
+                }
+
                 extern "C" int32_t juno_big_decimal_divide_scale(int32_t a, int32_t b, int32_t scale, int32_t mode) {
                   if (juno_big_sign_of(juno_bd_unscaled(b)) == 0) {
-                    return juno_big_arithmetic(juno_big_sign_of(juno_bd_unscaled(a)) == 0 ? "Division undefined"
-                                                                                          : "Division by zero");
+                    return juno_big_arithmetic(juno_bd_scaled_zero_divide_message(a, b, scale));
                   }
                   int64_t shift = static_cast<int64_t>(scale) - juno_bd_scale(a) + juno_bd_scale(b);
                   juno_big_prepare(juno_bd_divide_budget(a, b, shift));
