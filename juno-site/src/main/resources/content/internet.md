@@ -473,6 +473,72 @@ certificate-validated TLS, and
 [`MadridWeather.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/MadridWeather.java), which extracts live API
 data for display on the LED matrix.
 
+## Boards talking to each other over UDP
+
+[`Udp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/Udp.java)
+works on both the UNO R4 WiFi and the UNO Q, and unlike the HTTP client its payloads are runtime
+`byte[]` buffers. That makes it the way for boards to exchange data they compute. The
+[`ledger`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger)
+example builds a small factorization network on it:
+
+- [`FactorLedgerLeader`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/FactorLedgerLeader.java),
+  meant for an UNO Q, hands out 40-bit numbers to factor. It checks each answer by multiplying it
+  back and testing every factor for primality, then adds it to a SHA-256 hash chain printed over
+  serial. Each block hashes the previous block's hash, so changing an accepted result changes every
+  later hash.
+- [`FactorWorker`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/FactorWorker.java),
+  meant for one or more UNO R4 WiFi boards, broadcasts `JOIN` until a leader answers. It then
+  factors each task with trial division and Pollard's rho, and sends back the result.
+
+Both programs build for either board, and no addresses are configured: workers find the leader by
+broadcast and can join at any time. The leader's next task acknowledges a result, so a lost
+datagram only costs a resend. A worker that stays silent for two minutes loses its task to the next
+worker that asks. This is a tamper-evident log with a single writer (the leader), not a
+decentralized blockchain with consensus.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-q \
+  -Djuno.main=io.github.jabrena.juno.api.net.ledger.FactorLedgerLeader
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
+  -Djuno.main=io.github.jabrena.juno.api.net.ledger.FactorWorker
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
+```
+
+### A leaderless, Bitcoin-style chain
+
+[`ChainNode`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/ChainNode.java)
+takes the same idea further. There is no leader: every board runs the same program and mines,
+validates and relays blocks.
+
+- **Proof-of-work.** A block counts when the SHA-256 hash of its 80-byte, Bitcoin-layout header has
+  at least `bits` leading zero bits. The miner absorbs the fixed first 64 header bytes once (the
+  midstate), so each attempt costs one compression.
+- **Useful work.** Each block must also carry the factorization of a 40-bit number derived from its
+  parent's hash, which every node checks. Miners can't choose an easy number.
+- **Consensus.** The branch with the most cumulative work is the chain. Every eight blocks the
+  difficulty moves one bit toward a block every 30 seconds.
+- **Joining late.** A node that boots late asks for the current tip. It fetches up to four missing
+  ancestors; if it still can't connect them to a block it knows, it adopts the oldest as a
+  checkpoint, much like a pruned Bitcoin node, and validates everything after it.
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
+  -Djuno.main=io.github.jabrena.juno.api.net.ledger.ChainNode
+```
+
+This is phase 1 of the plan in [issue #43](https://github.com/jabrena/juno/issues/43): blocks are
+not signed yet, and block times are not bounded against the future.
+
+### Wire format and other boards
+
+The wire formats are
+plain fixed-size bytes on UDP port 4210 (documented in
+[`FactorProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/FactorProtocol.java)
+and
+[`ChainProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/ChainProtocol.java)).
+A board Juno cannot compile for, such as the 8-bit [UNO WiFi Rev2](../arduino-one-r3-wifi), can
+still join with a hand-written sketch that speaks the same packets.
+
 ## Troubleshooting
 
 - **Compilation says an environment variable is not set:** export it in the same shell or CI step
