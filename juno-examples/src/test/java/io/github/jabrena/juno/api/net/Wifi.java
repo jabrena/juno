@@ -24,4 +24,16 @@ public final class Wifi {
         octets[2] = 1;
         octets[3] = 2;
     }
+
+    public static void gatewayIP(int[] octets) {
+        octets[0] = 192;
+        octets[1] = 168;
+        octets[2] = 1;
+        octets[3] = 1;
+    }
+
+    public static void macAddress(int[] octets) {
+        int[] mac = {0x02, 0x00, 0x5e, 0x10, 0x00, 0x02};
+        System.arraycopy(mac, 0, octets, 0, mac.length);
+    }
 }

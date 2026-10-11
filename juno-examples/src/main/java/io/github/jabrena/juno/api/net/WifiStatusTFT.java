@@ -28,10 +28,15 @@ public final class WifiStatusTFT {
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
     private static final int MARGIN = 10;
-    private static final int STATE_Y = 60;
-    private static final int SSID_Y = 110;
-    private static final int STATUS_Y = 140;
-    private static final int HINT_Y = 200;
+    private static final int STATE_Y = 48;
+    private static final int SSID_Y = 90;
+    private static final int STATUS_Y = 112;
+    private static final int IP_Y = 134;
+    private static final int GATEWAY_Y = 156;
+    private static final int MAC_Y = 178;
+    private static final int HINT_Y = 208;
+
+    private static final String HEX = "0123456789ABCDEF";
 
     public static void main(String[] args) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
@@ -110,6 +115,63 @@ public final class WifiStatusTFT {
         TftTouchShield.print("Status: ");
         TftTouchShield.print(status);
         TftTouchShield.print("   ");
+
+        showAddresses();
+    }
+
+    /**
+     * Shows the board's IP address, its gateway and its hardware (MAC) address, on the screen and on serial. They
+     * are what to compare against the router's client list when a board cannot reach its peers: two boards with
+     * the same IP, or a gateway outside the board's subnet, explain a lot.
+     */
+    private static void showAddresses() {
+        int[] address = new int[4];
+        Wifi.localIP(address);
+        showAddress("IP:  ", address, IP_Y);
+        Wifi.gatewayIP(address);
+        showAddress("GW:  ", address, GATEWAY_Y);
+        int[] mac = new int[6];
+        Wifi.macAddress(mac);
+        showMac(mac);
+    }
+
+    private static void showAddress(String label, int[] octets, int y) {
+        Serial.print(label);
+        TftTouchShield.setTextSize(2);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        TftTouchShield.setCursor(MARGIN, y);
+        TftTouchShield.print(label);
+        for (int i = 0; i < 4; i++) {
+            if (i > 0) {
+                Serial.print(".");
+                TftTouchShield.print(".");
+            }
+            Serial.print(octets[i]);
+            TftTouchShield.print("" + octets[i]);
+        }
+        Serial.println("");
+        TftTouchShield.print("   ");
+    }
+
+    private static void showMac(int[] mac) {
+        Serial.print("MAC: ");
+        TftTouchShield.setTextSize(2);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        TftTouchShield.setCursor(MARGIN, MAC_Y);
+        TftTouchShield.print("MAC: ");
+        for (int i = 0; i < 6; i++) {
+            if (i > 0) {
+                Serial.print(":");
+                TftTouchShield.print(":");
+            }
+            Serial.print(hexByte(mac[i]));
+            TftTouchShield.print(hexByte(mac[i]));
+        }
+        Serial.println("");
+    }
+
+    private static String hexByte(int value) {
+        return "" + HEX.charAt(value >>> 4 & 0xf) + HEX.charAt(value & 0xf);
     }
 
     private static void showHint(String hint) {
