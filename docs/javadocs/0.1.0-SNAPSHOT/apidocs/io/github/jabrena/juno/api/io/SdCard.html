@@ -113,7 +113,7 @@ each open the file, write, and close it again rather than keeping a writable han
   <li>A literal <code>line</code> passed to <a href="#appendLine(java.lang.String,java.lang.String)"><code>appendLine(String, String)</code></a> has no length limit either, but a
       <code>line</code> built while the program runs (<code>String.valueOf</code>, concatenation,
       <code>StringBuilder.toString()</code>) lives in a runtime-string slot of
-      <a href="../../RuntimeLimits.html#STRING_SLOT_CAPACITY_BYTES"><code>RuntimeLimits.STRING_SLOT_CAPACITY_BYTES</code></a> bytes including the NUL
+      <code>io.github.jabrena.juno.RuntimeLimits#STRING_SLOT_CAPACITY_BYTES</code> bytes including the NUL
       terminator: 31 characters at most, and a longer value panics rather than truncating. Split longer
       records over several calls; each call ends its line with a newline.</li>
 </ul>

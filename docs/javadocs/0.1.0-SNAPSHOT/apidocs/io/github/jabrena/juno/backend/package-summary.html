@@ -78,7 +78,8 @@ initTheme();
 </div>
 <hr>
 <div class="horizontal-scroll">
-<div class="package-signature">package <span class="element-name">io.github.jabrena.juno.backend</span></div>
+<div class="package-signature"><span class="annotations">@NullMarked
+</span>package <span class="element-name">io.github.jabrena.juno.backend</span></div>
 <section class="package-description" id="package-description">
 <div class="block">Code generation: turns optimized Juno IR into a complete Arduino sketch for any supported board
 (the Cortex-M4 UNO R4 WiFi and the Cortex-M33 UNO Q).
@@ -118,6 +119,17 @@ value types that connect them.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="AvrAsmBackend.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Emits GNU AVR assembly (avrxmega3, the UNO WiFi Rev2's ATmega4809) straight from Juno IR — the 8-bit counterpart of
+<a href="Thumb2AsmBackend.html" title="class in io.github.jabrena.juno.backend"><code>Thumb2AsmBackend</code></a>, with the same storage model: every IR value and JVM local lives in a fixed stack slot
+(see <code>FrameLayout.packed(IrMethod)</code>) and registers are only scratch within one instruction, so a method can never run
+out of registers.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="AvrAsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend.Output</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab4">
+<div class="block">The generated assembly, its runtime shim, and the entry point's symbol.</div>
+</div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="StackFrameSizing.html" title="class in io.github.jabrena.juno.backend">StackFrameSizing</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Authoritative target-backend stack sizing shared with static runtime-risk analysis.</div>

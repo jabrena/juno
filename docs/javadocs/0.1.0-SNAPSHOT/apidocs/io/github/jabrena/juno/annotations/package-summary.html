@@ -78,7 +78,8 @@ initTheme();
 </div>
 <hr>
 <div class="horizontal-scroll">
-<div class="package-signature">package <span class="element-name">io.github.jabrena.juno.annotations</span></div>
+<div class="package-signature"><span class="annotations">@NullMarked
+</span>package <span class="element-name">io.github.jabrena.juno.annotations</span></div>
 <section class="package-description" id="package-description">
 <div class="block">Compile-time-only annotations an entry-point class uses to configure Juno's compilation, read
 directly from the class file rather than at runtime.
@@ -88,9 +89,10 @@ directly from the class file rather than at runtime.
       e.g. <code>@Board(ArduinoUnoR4WiFi.class)</code>. A class with no <code>@Board</code> annotation
       builds for the board the build requests, or the UNO R4 WiFi if it requests none. <a href="ArduinoBoard.html" title="interface in io.github.jabrena.juno.annotations"><code>ArduinoBoard</code></a>
       is the sealed type token <code>@Board</code> accepts, implemented by
-      <a href="ArduinoUnoR4WiFi.html" title="class in io.github.jabrena.juno.annotations"><code>ArduinoUnoR4WiFi</code></a> and
+      <a href="ArduinoUnoR4WiFi.html" title="class in io.github.jabrena.juno.annotations"><code>ArduinoUnoR4WiFi</code></a>,
       <a href="ArduinoUnoQ.html" title="class in io.github.jabrena.juno.annotations"><code>ArduinoUnoQ</code></a> (its STM32U585 microcontroller,
-      under Arduino's Zephyr core); the linker resolves the selection into a
+      under Arduino's Zephyr core) and <a href="ArduinoUnoWiFiRev2.html" title="class in io.github.jabrena.juno.annotations"><code>ArduinoUnoWiFiRev2</code></a>
+      (its 8-bit ATmega4809, under Arduino's megaAVR core); the linker resolves the selection into a
       <code>io.github.jabrena.juno.board.Board</code> compilation target.</li>
   <li><a href="Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Watchdog</code></a> enables the RA4M1's hardware
       watchdog timer, rebooting the board if generated code ever stops kicking it (including on
@@ -134,12 +136,18 @@ microcontroller (Cortex-M33) under Arduino's Zephyr core.</div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Selects the Arduino UNO R4 WiFi as <a href="Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target; has the onboard 12x8 LED matrix.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab6"><a href="Board.html" title="annotation interface in io.github.jabrena.juno.annotations">Board</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab6">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ArduinoUnoWiFiRev2.html" title="class in io.github.jabrena.juno.annotations">ArduinoUnoWiFiRev2</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Selects the Arduino UNO WiFi Rev2 as <a href="Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target: Juno programs run on its ATmega4809, an 8-bit
+megaAVR (6 KB SRAM, 48 KB flash), under Arduino's <code>arduino:megaavr</code> core, with Wi-Fi through the u-blox
+NINA-W102 module and the <code>WiFiNINA</code> library.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab6"><a href="Board.html" title="annotation interface in io.github.jabrena.juno.annotations">Board</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab6">
 <div class="block">Declares which Arduino board(s) a Juno program targets, e.g.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab6"><a href="Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab6">
+<div class="col-first odd-row-color class-summary class-summary-tab6"><a href="Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab6">
 <div class="block">Enables the RA4M1's hardware watchdog timer on <code>@Watchdog</code>'s entry-point class.</div>
 </div>
 </div>

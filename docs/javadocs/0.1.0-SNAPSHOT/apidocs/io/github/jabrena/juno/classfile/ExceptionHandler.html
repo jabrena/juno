@@ -104,7 +104,7 @@ initTheme();
 <section class="class-description" id="class-description">
 <hr>
 <div class="horizontal-scroll">
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">ExceptionHandler</span>(int&nbsp;startPc, int&nbsp;endPc, int&nbsp;handlerPc, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;catchType)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">ExceptionHandler</span>(int&nbsp;startPc, int&nbsp;endPc, int&nbsp;handlerPc, @Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;catchType)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Record.html" title="class in java.lang" class="external-link">Record</a></span></div>
 <div class="block">One <code>Code</code> attribute exception-table entry: instructions in <code>[startPc, endPc)</code> that throw
 a <code>catchType</code> (or any throwable when <code>catchType</code> is <code>null</code>, as <code>finally</code> uses)
@@ -124,7 +124,7 @@ continue at <code>handlerPc</code>. Entries are kept in class-file order, which 
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(int,int,int,java.lang.String)" class="member-name-link">ExceptionHandler</a><wbr>(int&nbsp;startPc,
  int&nbsp;endPc,
  int&nbsp;handlerPc,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;catchType)</code></div>
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;catchType)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>ExceptionHandler</code> record class.</div>
 </div>
@@ -145,7 +145,7 @@ continue at <code>handlerPc</code>. Entries are kept in class-file order, which 
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#catchesAny()" class="member-name-link">catchesAny</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#catchType()" class="member-name-link">catchType</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>catchType</code> record component.</div>
@@ -207,7 +207,7 @@ continue at <code>handlerPc</code>. Entries are kept in class-file order, which 
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ExceptionHandler</span><wbr><span class="parameters">(int&nbsp;startPc,
  int&nbsp;endPc,
  int&nbsp;handlerPc,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;catchType)</span></div>
+ @Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;catchType)</span></div>
 <div class="block">Creates an instance of a <code>ExceptionHandler</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -333,7 +333,7 @@ continue at <code>handlerPc</code>. Entries are kept in class-file order, which 
 <section class="detail" id="catchType()">
 <h3>catchType</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">catchType</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">catchType</span>()</div>
 <div class="block">Returns the value of the <code>catchType</code> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>

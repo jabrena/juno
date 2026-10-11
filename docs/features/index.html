@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -221,7 +221,7 @@ method references to Juno hardware/runtime intrinsics and <code>altMetafactory</
 {@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Juno lowers javac's
 {@code StringConcatFactory.makeConcatWithConstants} protocol for {@code String} and primitive operands;
 concatenation maps a null string to {@code &quot;null&quot;} and panics if the UTF-8 result exceeds the 31-byte
-payload. Runtime values use eight rotating 32-byte UTF-8 slots instead of the arena, so string-heavy
+payload, printing <code>[juno-string] runtime String longer than 31 characters</code> on Serial before <code>[juno-panic]</code>. Runtime values use eight rotating 32-byte UTF-8 slots instead of the arena, so string-heavy
 loops remain allocation-free; a value must be consumed before eight newer results overwrite its slot. APIs documented
 as compile-time-string-only (including networking paths/bodies and LED text unrolling) retain that rule.</li>
 <li>opaque <code>DigitalOutput</code> handles which compile down to integer pin numbers without heap allocation</li>
@@ -264,7 +264,7 @@ by a fixed width; <code>toString()</code> returns an arena string, so print it w
 rather than concatenating it (concatenation uses the 32-byte string slots). <code>ArithmeticException</code> and
 <code>NumberFormatException</code> are raised as in Java. Not supported: <code>new BigDecimal(double)</code>, bit operations beyond
 shifts, <code>modPow</code>/<code>isProbablePrime</code>, <code>divideAndRemainder</code> and the other methods; <code>BigDecimal.valueOf(double)</code>
-goes through Juno's own <code>double</code> formatting. See the board-ready <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java"><code>ScopedValuesPrecision</code> example</a>.</li>
+goes through Juno's own <code>double</code> formatting. See the board-ready <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java"><code>ScopedValuesPrecision</code> example</a>.</li>
 <li>exception handling: <code>throw</code>, <code>try</code>/<code>catch</code> (including multi-catch and catching by a supertype),
 <code>finally</code>, nested handlers, and <code>try</code>-with-resources, including exceptions that propagate out of the
 method that throws them to a <code>catch</code>/<code>finally</code> in any caller (the exception is left pending and each
@@ -281,17 +281,20 @@ fields). <code>getMessage()</code> is supported. An exception no frame up to <co
 <code>Exception in thread &quot;main&quot; &lt;class&gt;: &lt;message&gt;</code> over <code>Serial</code> and panics. An <code>int</code>/<code>long</code> division or remainder by zero inside a <code>try</code> whose handler catches
 <code>ArithmeticException</code> (or a supertype, or <code>finally</code>) raises <code>ArithmeticException(&quot;/ by zero&quot;)</code> there;
 anywhere else it unwinds to the callers' handlers if any <code>catch</code>/<code>finally</code> in the program can receive <code>ArithmeticException</code>, and panics if none can, as do Juno's other runtime failures (array bounds, arena exhaustion).</li>
-<li>Cooperative scheduling under <code>StructuredTaskScope</code>, on both boards: <code>Thread.sleep(long)</code> and <code>Thread.yield()</code> are
-available inside a forked subtask (and in <code>main</code>). Each subtask runs on a stack of its own, and control moves
-between them only where the program already pauses — loop iterations (at most once per millisecond),
-<code>Delay.millis</code>, <code>Thread.sleep</code>, <code>Thread.yield</code> and <code>join</code> — so a statement is never interrupted halfway and the
-arena, the garbage collector and the pending-exception slot need no locking. At most four threads run at once, the
-owner included, each extra one with a 2 KiB stack on the UNO R4 WiFi and 4 KiB on the UNO Q (a stack overflow on
-the UNO R4 panics with <code>[juno-thread] stack overflow</code> when the subtask next switches away). The collector scans
-every live stack. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each subtask is a Zephyr thread that
-waits for a baton, so only one runs at a time. <code>java.lang.Thread</code> itself is not part of the language subset:
-<code>new Thread(...)</code>, <code>start()</code>, <code>join()</code>, <code>setDaemon(boolean)</code> and the rest fail with a <code>CompileException</code> that points
-to <code>StructuredTaskScope</code>, and so do other <code>java.util.concurrent</code> APIs.</li>
+<li>Cooperative virtual threads and subtasks, on both boards: <code>Thread.startVirtualThread(Runnable)</code> (a class
+implementing <code>Runnable</code> or a lambda), <code>join()</code> and <code>isAlive()</code> on the returned <code>Thread</code>, and <code>Thread.sleep(long)</code>
+and <code>Thread.yield()</code>, which are also available inside a forked subtask (and in <code>main</code>). Each virtual thread or
+subtask runs on a stack of its own, and control moves between them only where the program already pauses — loop
+iterations (at most once per millisecond), <code>Delay.millis</code>, <code>Thread.sleep</code>, <code>Thread.yield</code> and <code>join</code> — so a
+statement is never interrupted halfway and the arena, the garbage collector and the pending-exception slot need no
+locking. A virtual thread is a daemon, as on the JVM: when <code>main</code> returns, the program does not wait for it. At most
+four threads run at once, the owner included, each extra one with a 2 KiB stack on the UNO R4 WiFi and 4 KiB on the
+UNO Q (a stack overflow on the UNO R4 panics with <code>[juno-thread] stack overflow</code> when the thread next switches
+away). The collector scans every live stack. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each thread
+is a Zephyr thread that waits for a baton, so only one runs at a time. The rest of <code>java.lang.Thread</code> is not part of
+the language subset: <code>new Thread(...)</code>, <code>start()</code>, <code>setDaemon(boolean)</code>, the <code>Thread.ofVirtual()</code> and
+<code>Thread.ofPlatform()</code> builders and the other members fail with a <code>CompileException</code> that points to
+<code>Thread.startVirtualThread</code>, and so do other <code>java.util.concurrent</code> APIs.</li>
 <li>JDK 27 preview <code>StructuredTaskScope</code>, lowered onto the same cooperative task runtime: <code>open()</code>, <code>open(Joiner)</code>,
 <code>fork(Callable)</code>, <code>fork(Runnable)</code>, <code>join()</code>, <code>isCancelled()</code>, try-with-resources <code>close()</code>, and
 <code>Subtask.state()</code>/<code>get()</code>/<code>exception()</code>. The supported built-in joiners are <code>allSuccessfulOrThrow</code>,
@@ -310,7 +313,7 @@ rebinds only for its extent and the outer binding returns afterwards, even if th
 a <code>StructuredTaskScope</code> inherit the owner's bindings; <code>get()</code> on an unbound
 value throws <code>NoSuchElementException</code>. Not supported: <code>runWhere</code>/<code>callWhere</code>/<code>getWhere</code>, <code>orElseThrow</code>, and
 <code>Carrier.get</code>. See the board-ready
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java"><code>ScopedValuesPrecision</code> example</a>.</li>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java"><code>ScopedValuesPrecision</code> example</a>.</li>
 <li><code>java.util.concurrent.atomic</code> subset: <code>AtomicInteger</code>, <code>AtomicBoolean</code> and <code>AtomicLong</code> with <code>new</code>, <code>get</code>, <code>set</code>,
 <code>getAndSet</code>, <code>compareAndSet</code> and, on the numeric ones, <code>incrementAndGet</code>, <code>decrementAndGet</code>, <code>getAndIncrement</code>,
 <code>getAndDecrement</code>, <code>addAndGet</code> and <code>getAndAdd</code> (plus <code>intValue()</code>/<code>longValue()</code>). Each is a small arena cell, and the
@@ -323,7 +326,7 @@ of eight reentrant intrinsic monitors; and concrete <code>java.util.concurrent.l
 Contended <code>lock()</code>/monitor entry yields cooperatively until ownership is available. Synchronized methods, fair
 locks, timed/interruptible locking, <code>Condition</code>, the <code>Lock</code> interface, and the rest of <code>java.util.concurrent</code>
 remain unsupported. See the board-ready
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java"><code>Synchronization</code> example</a>.</li>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java"><code>Synchronization</code> example</a>.</li>
 <li><code>.class</code> inputs from directories, individual files, or JARs</li>
 </ul>
 <h2 id="runtime-risk-inspection">Runtime-risk inspection</h2>
@@ -370,19 +373,19 @@ programmatically as immutable records with stable diagnostic codes.</p>
 </tr>
 <tr>
 <td><code>JUNO-RISK-008</code></td>
-<td><code>StructuredTaskScope.fork</code> sits in a control-flow loop; only three threads can be active beside the caller.</td>
+<td><code>Thread.startVirtualThread</code> or <code>StructuredTaskScope.fork</code> sits in a control-flow loop; only three threads can be active beside the caller.</td>
 </tr>
 <tr>
 <td><code>JUNO-RISK-009</code></td>
-<td>More than three subtasks are forked with no <code>join</code> in between.</td>
+<td>More than three virtual threads or subtasks are started with no <code>join</code> in between.</td>
 </tr>
 <tr>
 <td><code>JUNO-RISK-010</code></td>
-<td>A subtask body (found where a lambda or object is passed to <code>fork</code> in the same method) opens a task scope, competing for the same four slots.</td>
+<td>A thread body (found where a lambda or object is passed to <code>startVirtualThread</code>/<code>fork</code> in the same method) starts a thread or opens a task scope, competing for the same four slots.</td>
 </tr>
 <tr>
 <td><code>JUNO-RISK-011</code></td>
-<td>A subtask body reaches a recursive cycle, or its estimated stack exceeds the smallest thread stack (2 KiB on the UNO R4 WiFi).</td>
+<td>A thread body reaches a recursive cycle, or its estimated stack exceeds the smallest thread stack (2 KiB on the UNO R4 WiFi).</td>
 </tr>
 <tr>
 <td><code>JUNO-RISK-012</code></td>

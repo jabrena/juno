@@ -78,7 +78,8 @@ initTheme();
 </div>
 <hr>
 <div class="horizontal-scroll">
-<div class="package-signature">package <span class="element-name">io.github.jabrena.juno.board</span></div>
+<div class="package-signature"><span class="annotations">@NullMarked
+</span>package <span class="element-name">io.github.jabrena.juno.board</span></div>
 <section class="package-description" id="package-description">
 <div class="block">Juno's model of a compilation target: <a href="Board.html" title="enum class in io.github.jabrena.juno.board"><code>Board</code></a>, resolved from
 the entry-point class's <code>@Board</code> annotation (see
@@ -116,17 +117,22 @@ value types that connect them.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab3"><a href="ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="Architecture.html" title="enum class in io.github.jabrena.juno.board">Architecture</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="block">The instruction set an <a href="ArduinoCore.html" title="enum class in io.github.jabrena.juno.board"><code>ArduinoCore</code></a> runs generated code on, which picks the code generator: the UNO R4's
+Cortex-M4 and the UNO Q's Cortex-M33 share one Thumb-2 backend, the UNO WiFi Rev2's ATmega4809 has its own AVR one.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab3">
 <div class="block">The Arduino core a <a href="Board.html" title="enum class in io.github.jabrena.juno.board"><code>Board</code></a> is built with.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="Board.html" title="enum class in io.github.jabrena.juno.board">Board</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab3">
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="Board.html" title="enum class in io.github.jabrena.juno.board">Board</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">
 <div class="block">A Juno compilation target, resolved from the entry-point class's <code>@Board</code> annotation (see
 <code>io.github.jabrena.juno.annotations.Board</code>).</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab3"><a href="Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab3">
 <div class="block">An optional on-board feature a Juno program can depend on.</div>
 </div>
 </div>

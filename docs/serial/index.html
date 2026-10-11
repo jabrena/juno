@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -140,7 +140,7 @@
     Reading and writing over USB serial.
   </p>
 </section>    <div class="content-prose">
-<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/serial/Serial.java"><code>Serial</code></a> is a compiler
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/serial/Serial.java"><code>Serial</code></a> is a compiler
 intrinsic that wraps the Arduino core's USB serial port (<code>Serial.begin</code>/<code>print</code>/<code>println</code>). It is
 the primary way a Juno program talks back to the development machine while it runs on real
 hardware.</p>
@@ -193,7 +193,7 @@ Serial.println(e.getMessage());       // runtime String (prints &quot;null&quot;
 <tbody>
 <tr>
 <td><code>begin(BaudRate)</code></td>
-<td>a <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/serial/BaudRate.java"><code>BaudRate</code></a> constant</td>
+<td>a <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/serial/BaudRate.java"><code>BaudRate</code></a> constant</td>
 <td>preferred; keeps the rate and the monitor's config in sync</td>
 </tr>
 <tr>

@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -212,14 +212,16 @@ findings are estimates that ignore garbage collection, so treat them as warnings
 placed in flash instead, which keeps large lookup tables out of RAM. A table that cannot be placed in flash falls back
 to the arena, and the build reports why (<code>JUNO-RISK-012</code>).</p>
 <h2 id="what-tasks-can-observe">What tasks can observe</h2>
-<p>Juno's concurrency is <strong>cooperative</strong>. The public API is <code>StructuredTaskScope</code>; <code>new Thread</code> and the other
-<code>java.lang.Thread</code> members, apart from <code>sleep</code> and <code>yield</code>, are rejected at compile time. There is exactly one running
+<p>Juno's concurrency is <strong>cooperative</strong>. The public API is virtual threads (<code>Thread.startVirtualThread</code>, <code>join</code> and
+<code>isAlive</code>) and <code>StructuredTaskScope</code>; <code>new Thread</code> and the other <code>java.lang.Thread</code> members, apart from <code>sleep</code> and
+<code>yield</code>, are rejected at compile time. There is exactly one running
 task at any moment, and it keeps the processor until it reaches a <strong>switch point</strong>:</p>
 <ul>
 <li>a loop back-edge in compiled Java (a task switch happens at most once per millisecond),</li>
 <li><code>Delay</code>, <code>Thread.sleep</code> and <code>Thread.yield</code>,</li>
-<li>a scope's <code>join</code>,</li>
-<li>entering a monitor that another task holds.</li>
+<li>a scope's or a virtual thread's <code>join</code>,</li>
+<li>entering a monitor that another task holds,</li>
+<li>a Powered Up call waiting for the hub: scanning for it, or waiting for its reply.</li>
 </ul>
 <p>The runtime never switches a task in the middle of an allocation, a collection or a throw. That is why the arena, the
 collector and the pending-exception slot need no locks.</p>
@@ -238,12 +240,19 @@ board. The JVM needs them.</li>
 <li>Share results through <code>join</code>. Reading a subtask's result after the scope has joined is safe on both.</li>
 </ul>
 <p><code>AtomicReference</code> is not supported.</p>
-<h3 id="native-calls-are-atomic">Native calls are atomic</h3>
-<p>A call into the hardware runtime (Bluetooth, Wi-Fi, SD card, the TFT shield) runs to completion before any other task
-gets a turn, however long it takes. This is the main place where behavior differs from the JVM, where a blocking call
-stalls only the thread that made it. For example, a <code>PoweredUpHubRemote.connect</code> that scans for ten seconds holds up
-every other task for those ten seconds. A forked task that draws a progress line while it waits would stay silent
-until the call returns. Keep long hardware calls out of programs that depend on other tasks making progress.</p>
+<h3 id="native-calls-are-atomic-except-the-powered-up-waits">Native calls are atomic, except the Powered Up waits</h3>
+<p>A call into the hardware runtime (Wi-Fi, SD card, the TFT shield) runs to completion before any other task gets a
+turn, however long it takes. This is the main place where behavior differs from the JVM, where a blocking call stalls
+only the thread that made it. Keep long hardware calls out of programs that depend on other tasks making progress.</p>
+<p><code>PoweredUpHubRemote</code> is the exception. While it scans for a hub or waits for the hub's reply, it lets the other tasks
+run, so a forked task can keep drawing a progress line during a <code>connect</code>. Two limits remain:</p>
+<ul>
+<li>The second or so that ArduinoBLE spends connecting to a hub it has found, and discovering its services, cannot be
+interrupted.</li>
+<li>Only one task at a time is inside a <code>PoweredUpHubRemote</code> call. A second task that calls one meanwhile waits its
+turn, like a <code>synchronized</code> method, so the hub never sees two commands interleaved.</li>
+</ul>
+<p>See the <code>PoweredUpHubScanWhileBlinking</code> example.</p>
 <h2 id="how-it-compares-with-the-jvm">How it compares with the JVM</h2>
 <table>
 <thead>
@@ -271,7 +280,7 @@ until the call returns. Keep long hardware calls out of programs that depend on 
 <td>Where a switch can happen</td>
 <td>Anywhere</td>
 <td>Blocking operations</td>
-<td>Loop back-edges, <code>sleep</code>, <code>yield</code>, <code>join</code>, contended monitors</td>
+<td>Loop back-edges, <code>sleep</code>, <code>yield</code>, <code>join</code>, contended monitors, Powered Up waits</td>
 </tr>
 <tr>
 <td>Memory ordering</td>
@@ -283,7 +292,7 @@ until the call returns. Keep long hardware calls out of programs that depend on 
 <td>A long blocking call</td>
 <td>Stalls only its thread</td>
 <td>Pins its carrier thread</td>
-<td>Stalls every task</td>
+<td>Stalls every task (Powered Up waits excepted)</td>
 </tr>
 </tbody>
 </table>

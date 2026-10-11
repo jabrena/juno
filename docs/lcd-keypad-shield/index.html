@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -140,14 +140,14 @@
     Driving a standard Hitachi HD44780 LCD keypad shield.
   </p>
 </section>    <div class="content-prose">
-<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java"><code>LcdKeypadShield</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java"><code>LcdKeypadShield</code></a>
 drives the common &quot;LCD Keypad Shield&quot; — a 16x2 HD44780-compatible character LCD in 4-bit mode,
 plus 5 buttons wired through a single resistor ladder into one analog pin — using its standard
 pinout, as used by e.g. <a href="https://github.com/dzindra/lcdkeypad">dzindra/lcdkeypad</a>.</p>
-<p>Unlike the <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedMatrix.java">LED matrix</a>, this
+<p>Unlike the <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/led/LedMatrix.java">LED matrix</a>, this
 shield needs no new compiler intrinsic: every operation is built entirely from
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/Gpio.java"><code>Gpio</code></a> pin operations and
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java"><code>Delay</code></a>, so it works today on any
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/Gpio.java"><code>Gpio</code></a> pin operations and
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/Delay.java"><code>Delay</code></a>, so it works today on any
 board Juno's ASM backend targets.</p>
 <h2 id="wiring">Wiring</h2>
 <p>The driver assumes the shield's standard pinout and needs no additional configuration:</p>

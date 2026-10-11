@@ -316,7 +316,7 @@ outside Juno's supported subset — before any code generation is attempted.</di
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
 <div class="col-second even-row-color"><code><a href="../../ir/InterfaceTarget.html#%3Cinit%3E(int,io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.linker.LambdaSite)" class="member-name-link">InterfaceTarget</a><wbr>(int&nbsp;typeId,
  <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method,
- <a href="../../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)</code></div>
+ @Nullable <a href="../../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>InterfaceTarget</code> record class.</div>
 </div>
@@ -490,7 +490,7 @@ outside Juno's supported subset — before any code generation is attempted.</di
 <div class="col-last even-row-color">
 <div class="block">Whether <a href="../../linker/ThrowableTypes.html#isBuiltInConstructor(io.github.jabrena.juno.classfile.MethodRef)"><code>ThrowableTypes.isBuiltInConstructor(MethodRef)</code></a> <code>called</code> is one Juno models (no cause).</div>
 </div>
-<div class="col-first odd-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Integer.html" title="class in java.lang" class="external-link">Integer</a></code></div>
+<div class="col-first odd-row-color"><code>static @Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Integer.html" title="class in java.lang" class="external-link">Integer</a></code></div>
 <div class="col-second odd-row-color"><span class="type-name-label">StructuredTaskSupport.</span><code><a href="../../linker/StructuredTaskSupport.html#joinerPolicy(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">joinerPolicy</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
 <div class="col-last odd-row-color">
 <div class="block">Runtime policy token represented by a supported built-in <code>Joiner</code> factory, or <code>null</code>.</div>
@@ -508,40 +508,46 @@ outside Juno's supported subset — before any code generation is attempted.</di
 <div class="col-second even-row-color"><span class="type-name-label">StructuredTaskSupport.</span><code><a href="../../linker/StructuredTaskSupport.html#registerEntry(io.github.jabrena.juno.classfile.MethodRef,java.util.Map)" class="member-name-link">registerEntry</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Map.html" title="interface in java.util" class="external-link">Map</a>&lt;<a href="../../linker/InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>, <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&gt;&nbsp;interfaceCalls)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>static boolean</code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">ThrowableTypes.</span><code><a href="../../linker/ThrowableTypes.html#takesMessage(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">takesMessage</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">ThreadSupport.</span><code><a href="../../linker/ThreadSupport.html#unresolvedMessage(io.github.jabrena.juno.linker.InterfaceCallSite,io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">unresolvedMessage</a><wbr>(<a href="../../linker/InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>&nbsp;site,
+<div class="col-first odd-row-color"><code>static void</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">ThreadSupport.</span><code><a href="../../linker/ThreadSupport.html#registerEntry(io.github.jabrena.juno.classfile.MethodRef,java.util.Map)" class="member-name-link">registerEntry</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Map.html" title="interface in java.util" class="external-link">Map</a>&lt;<a href="../../linker/InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>, <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&gt;&nbsp;interfaceCalls)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Records the synthetic <code>Runnable.run()</code> site when <code>called</code> starts a virtual thread.</div>
+</div>
+<div class="col-first even-row-color"><code>static boolean</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">ThrowableTypes.</span><code><a href="../../linker/ThrowableTypes.html#takesMessage(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">takesMessage</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">ThreadSupport.</span><code><a href="../../linker/ThreadSupport.html#unresolvedMessage(io.github.jabrena.juno.linker.InterfaceCallSite,io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">unresolvedMessage</a><wbr>(<a href="../../linker/InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>&nbsp;site,
  <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;interfaceMethod)</code></div>
-<div class="col-last even-row-color">
+<div class="col-last odd-row-color">
 <div class="block">The diagnostic for an interface call with no reachable implementation.</div>
 </div>
-<div class="col-first odd-row-color"><code>static void</code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">AtomicSupport.</span><code><a href="../../linker/AtomicSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method)</code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static void</code></div>
-<div class="col-second even-row-color"><span class="type-name-label">BigNumberSupport.</span><code><a href="../../linker/BigNumberSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
-<div class="col-last even-row-color">
+<div class="col-second even-row-color"><span class="type-name-label">AtomicSupport.</span><code><a href="../../linker/AtomicSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method)</code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static void</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">BigNumberSupport.</span><code><a href="../../linker/BigNumberSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Rejects a <code>java.math</code> call outside the deliberately small subset with a useful diagnostic.</div>
 </div>
-<div class="col-first odd-row-color"><code>static void</code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">LockSupport.</span><code><a href="../../linker/LockSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method)</code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static void</code></div>
-<div class="col-second even-row-color"><span class="type-name-label">ScopedValueSupport.</span><code><a href="../../linker/ScopedValueSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
-<div class="col-last even-row-color">
+<div class="col-second even-row-color"><span class="type-name-label">LockSupport.</span><code><a href="../../linker/LockSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method)</code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static void</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">ScopedValueSupport.</span><code><a href="../../linker/ScopedValueSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Rejects API calls outside the deliberately small subset with a useful diagnostic.</div>
 </div>
-<div class="col-first odd-row-color"><code>static void</code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">StructuredTaskSupport.</span><code><a href="../../linker/StructuredTaskSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>static void</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">StructuredTaskSupport.</span><code><a href="../../linker/StructuredTaskSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
+<div class="col-last even-row-color">
 <div class="block">Rejects API calls outside the deliberately small JDK 25 subset with a useful diagnostic.</div>
 </div>
-<div class="col-first even-row-color"><code>static void</code></div>
-<div class="col-second even-row-color"><span class="type-name-label">ThreadSupport.</span><code><a href="../../linker/ThreadSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
-<div class="col-last even-row-color">
-<div class="block">Rejects a program that uses <code>java.lang.Thread</code> directly.</div>
+<div class="col-first odd-row-color"><code>static void</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">ThreadSupport.</span><code><a href="../../linker/ThreadSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Rejects a program that uses <code>java.lang.Thread</code> beyond the supported subset.</div>
 </div>
 </div>
 <div class="caption"><span>Method parameters in <a href="../../linker/package-summary.html">io.github.jabrena.juno.linker</a> with type arguments of type <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></span></div>
@@ -559,6 +565,12 @@ outside Juno's supported subset — before any code generation is attempted.</di
 <div class="col-second odd-row-color"><span class="type-name-label">StructuredTaskSupport.</span><code><a href="../../linker/StructuredTaskSupport.html#registerEntry(io.github.jabrena.juno.classfile.MethodRef,java.util.Map)" class="member-name-link">registerEntry</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Map.html" title="interface in java.util" class="external-link">Map</a>&lt;<a href="../../linker/InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>, <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&gt;&nbsp;interfaceCalls)</code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static void</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">ThreadSupport.</span><code><a href="../../linker/ThreadSupport.html#registerEntry(io.github.jabrena.juno.classfile.MethodRef,java.util.Map)" class="member-name-link">registerEntry</a><wbr>(<a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Map.html" title="interface in java.util" class="external-link">Map</a>&lt;<a href="../../linker/InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>, <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&gt;&nbsp;interfaceCalls)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Records the synthetic <code>Runnable.run()</code> site when <code>called</code> starts a virtual thread.</div>
+</div>
 </div>
 <div class="caption"><span>Constructors in <a href="../../linker/package-summary.html">io.github.jabrena.juno.linker</a> with parameters of type <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a></span></div>
 <div class="summary-table three-column-summary">
@@ -618,7 +630,7 @@ outside Juno's supported subset — before any code generation is attempted.</di
 <div class="col-first odd-row-color"><code>&nbsp;</code></div>
 <div class="col-second odd-row-color"><code><a href="../../linker/InterfaceDispatch.Target.html#%3Cinit%3E(java.lang.String,io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.linker.LambdaSite)" class="member-name-link">Target</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;className,
  <a href="../MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method,
- <a href="../../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)</code></div>
+ @Nullable <a href="../../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)</code></div>
 <div class="col-last odd-row-color">
 <div class="block">Creates an instance of a <code>Target</code> record class.</div>
 </div>

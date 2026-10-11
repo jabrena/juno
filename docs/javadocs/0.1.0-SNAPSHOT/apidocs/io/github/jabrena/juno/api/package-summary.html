@@ -78,7 +78,8 @@ initTheme();
 </div>
 <hr>
 <div class="horizontal-scroll">
-<div class="package-signature">package <span class="element-name">io.github.jabrena.juno.api</span></div>
+<div class="package-signature"><span class="annotations">@NullMarked
+</span>package <span class="element-name">io.github.jabrena.juno.api</span></div>
 <section class="package-description" id="package-description">
 <div class="block">The Java-facing hardware API that Juno's compiler recognizes as intrinsics.
 
@@ -180,7 +181,10 @@ protocol: <a href="lego/RcxRemote.html" title="class in io.github.jabrena.juno.a
 <a href="io/ir/Infrared.html" title="class in io.github.jabrena.juno.api.io.ir"><code>Infrared</code></a>.</div>
 </div>
 <div class="col-first odd-row-color"><a href="motors/package-summary.html">io.github.jabrena.juno.api.motors</a></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block">Motor handles: <a href="motors/Servo.html" title="class in io.github.jabrena.juno.api.motors"><code>Servo</code></a> drives a standard 3-wire hobby servo through the
+Arduino <code>Servo</code> library.</div>
+</div>
 <div class="col-first even-row-color"><a href="net/package-summary.html">io.github.jabrena.juno.api.net</a></div>
 <div class="col-last even-row-color">
 <div class="block">WiFi connectivity for the Arduino UNO R4 WiFi and UNO Q:
@@ -204,20 +208,24 @@ on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (rea
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Clock.html" title="class in io.github.jabrena.juno.api">Clock</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="BoardRuntime.html" title="class in io.github.jabrena.juno.api">BoardRuntime</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Which board the program was compiled for, recognized as a compiler intrinsic by Juno.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Clock.html" title="class in io.github.jabrena.juno.api">Clock</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Monotonic clock operations recognized as compiler intrinsics by Juno.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Delay.html" title="class in io.github.jabrena.juno.api">Delay</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Delay.html" title="class in io.github.jabrena.juno.api">Delay</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Timing operations recognized as compiler intrinsics by Juno.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Memory.html" title="class in io.github.jabrena.juno.api">Memory</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Memory.html" title="class in io.github.jabrena.juno.api">Memory</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Read-only introspection into Juno's arena allocator, recognized as a compiler intrinsic.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Random.html" title="class in io.github.jabrena.juno.api">Random</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Random.html" title="class in io.github.jabrena.juno.api">Random</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Pseudorandom-number operations backed by Arduino's random generator.</div>
 </div>
 </div>

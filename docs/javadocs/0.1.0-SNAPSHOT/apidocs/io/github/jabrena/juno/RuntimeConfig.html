@@ -85,6 +85,7 @@ initTheme();
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#of(java.util.Optional,java.util.Optional)" tabindex="0">of(Optional, Optional)</a></li>
+<li><a href="#forBoard(io.github.jabrena.juno.board.Board)" tabindex="0">forBoard(Board)</a></li>
 <li><a href="#threadStackBytes(int)" tabindex="0">threadStackBytes(int)</a></li>
 <li><a href="#toString()" tabindex="0">toString()</a></li>
 <li><a href="#hashCode()" tabindex="0">hashCode()</a></li>
@@ -178,36 +179,41 @@ constants in <a href="RuntimeLimits.html" title="class in io.github.jabrena.juno
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hashCode()" class="member-name-link">hashCode</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#forBoard(io.github.jabrena.juno.board.Board)" class="member-name-link">forBoard</a><wbr>(<a href="board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">This configuration as <code>board</code> runs it.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hashCode()" class="member-name-link">hashCode</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a hash code value for this object.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#maxThreads()" class="member-name-link">maxThreads</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#maxThreads()" class="member-name-link">maxThreads</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <a href="#param-maxThreads"><code>maxThreads</code></a> record component.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#of(java.util.Optional,java.util.Optional)" class="member-name-link">of</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;arenaSize,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#of(java.util.Optional,java.util.Optional)" class="member-name-link">of</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;arenaSize,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;threadStackSize)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The default configuration with the sizes given in the JVM's <code>-Xmx</code>/<code>-Xss</code> syntax (see
 <code>parseBytes(String, String)</code>); an empty or blank size keeps the default.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/OptionalInt.html" title="class in java.util" class="external-link">OptionalInt</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#threadStackBytes()" class="member-name-link">threadStackBytes</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/OptionalInt.html" title="class in java.util" class="external-link">OptionalInt</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#threadStackBytes()" class="member-name-link">threadStackBytes</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <a href="#param-threadStackBytes"><code>threadStackBytes</code></a> record component.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#threadStackBytes(int)" class="member-name-link">threadStackBytes</a><wbr>(int&nbsp;boardDefault)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#threadStackBytes(int)" class="member-name-link">threadStackBytes</a><wbr>(int&nbsp;boardDefault)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The task stack size to use on a board whose own size is <code>boardDefault</code>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns a string representation of this record class.</div>
 </div>
 </div>
@@ -276,6 +282,18 @@ constants in <a href="RuntimeLimits.html" title="class in io.github.jabrena.juno
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;threadStackSize)</span></div>
 <div class="block">The default configuration with the sizes given in the JVM's <code>-Xmx</code>/<code>-Xss</code> syntax (see
 <code>parseBytes(String, String)</code>); an empty or blank size keeps the default.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="forBoard(io.github.jabrena.juno.board.Board)">
+<h3>forBoard</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></span>&nbsp;<span class="element-name">forBoard</span><wbr><span class="parameters">(<a href="board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board)</span></div>
+<div class="block">This configuration as <code>board</code> runs it. An AVR board has a few KB of RAM, so the default arena becomes
+<a href="RuntimeLimits.html#AVR_ARENA_CAPACITY_BYTES"><code>RuntimeLimits.AVR_ARENA_CAPACITY_BYTES</code></a> there and an explicit one above
+<a href="RuntimeLimits.html#AVR_MAX_ARENA_BYTES"><code>RuntimeLimits.AVR_MAX_ARENA_BYTES</code></a> is rejected, as is a task stack above
+<a href="RuntimeLimits.html#AVR_MAX_THREAD_STACK_BYTES"><code>RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES</code></a>; every other board keeps the configuration unchanged.</div>
 </div>
 </section>
 </li>

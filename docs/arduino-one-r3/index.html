@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -304,9 +304,9 @@ availability.</p>
 arduino-cli core install arduino:avr
 </code></pre>
 <p>Generate a Juno sketch, then compile it for the R3:</p>
-<pre><code class="language-bash">java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+<pre><code class="language-bash">java -jar juno-compiler/target/juno-compiler-0.1.0-SNAPSHOT.jar compile \
   --main &lt;ExampleClassName&gt; \
-  --classpath juno-examples/target/classes:juno/target/classes
+  --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile \
   --fqbn arduino:avr:uno \

@@ -76,12 +76,14 @@ initTheme();
 <ol class="toc-list">
 <li><a href="#RENESAS_UNO" tabindex="0">RENESAS_UNO</a></li>
 <li><a href="#ZEPHYR" tabindex="0">ZEPHYR</a></li>
+<li><a href="#MEGAAVR" tabindex="0">MEGAAVR</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#values()" tabindex="0">values()</a></li>
 <li><a href="#valueOf(java.lang.String)" tabindex="0">valueOf(String)</a></li>
+<li><a href="#architecture()" tabindex="0">architecture()</a></li>
 <li><a href="#defaultThreadStackBytes()" tabindex="0">defaultThreadStackBytes()</a></li>
 <li><a href="#displayName()" tabindex="0">displayName()</a></li>
 </ol>
@@ -131,12 +133,16 @@ which bundled libraries exist), so boards sharing a core share that behavior.</d
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Enum Constant</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code><a href="#RENESAS_UNO" class="member-name-link">RENESAS_UNO</a></code></div>
+<div class="col-first even-row-color"><code><a href="#MEGAAVR" class="member-name-link">MEGAAVR</a></code></div>
 <div class="col-last even-row-color">
+<div class="block"><code>arduino:megaavr</code>: the UNO WiFi Rev2's ATmega4809 core, with no RTOS and 6 KB of RAM.</div>
+</div>
+<div class="col-first odd-row-color"><code><a href="#RENESAS_UNO" class="member-name-link">RENESAS_UNO</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block"><code>arduino:renesas_uno</code>: the UNO R4's classic, non-RTOS core.</div>
 </div>
-<div class="col-first odd-row-color"><code><a href="#ZEPHYR" class="member-name-link">ZEPHYR</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code><a href="#ZEPHYR" class="member-name-link">ZEPHYR</a></code></div>
+<div class="col-last even-row-color">
 <div class="block"><code>arduino:zephyr</code>: provides its own <code>yield()</code> and inlines <code>delay()</code>/
 <code>delayMicroseconds()</code>, so generated code must reach those through shim functions.</div>
 </div>
@@ -154,22 +160,27 @@ which bundled libraries exist), so boards sharing a core share that behavior.</d
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#defaultThreadStackBytes()" class="member-name-link">defaultThreadStackBytes</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Architecture.html" title="enum class in io.github.jabrena.juno.board">Architecture</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#architecture()" class="member-name-link">architecture</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The instruction set this core's boards run, which selects the code generator.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#defaultThreadStackBytes()" class="member-name-link">defaultThreadStackBytes</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Stack bytes of each extra task when the runtime configuration does not choose one.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#displayName()" class="member-name-link">displayName</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#valueOf(java.lang.String)" class="member-name-link">valueOf</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#displayName()" class="member-name-link">displayName</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#valueOf(java.lang.String)" class="member-name-link">valueOf</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Returns the enum constant of this class with the specified name.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a>[]</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#values()" class="member-name-link">values</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a>[]</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#values()" class="member-name-link">values</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
 </div>
@@ -209,6 +220,15 @@ the order they are declared.</div>
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></span>&nbsp;<span class="element-name">ZEPHYR</span></div>
 <div class="block"><code>arduino:zephyr</code>: provides its own <code>yield()</code> and inlines <code>delay()</code>/
 <code>delayMicroseconds()</code>, so generated code must reach those through shim functions.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="MEGAAVR">
+<h3>MEGAAVR</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></span>&nbsp;<span class="element-name">MEGAAVR</span></div>
+<div class="block"><code>arduino:megaavr</code>: the UNO WiFi Rev2's ATmega4809 core, with no RTOS and 6 KB of RAM.</div>
 </div>
 </section>
 </li>
@@ -252,6 +272,15 @@ not permitted.)</div>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class in java.lang" class="external-link">IllegalArgumentException</a></code> - if this enum class has no constant with the specified name</dd>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/NullPointerException.html" title="class in java.lang" class="external-link">NullPointerException</a></code> - if the argument is null</dd>
 </dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="architecture()">
+<h3>architecture</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Architecture.html" title="enum class in io.github.jabrena.juno.board">Architecture</a></span>&nbsp;<span class="element-name">architecture</span>()</div>
+<div class="block">The instruction set this core's boards run, which selects the code generator.</div>
 </div>
 </section>
 </li>
