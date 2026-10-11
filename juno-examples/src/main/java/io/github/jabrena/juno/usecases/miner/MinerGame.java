@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games.miner;
+package io.github.jabrena.juno.usecases.miner;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
@@ -37,7 +37,7 @@ import io.github.jabrena.juno.games.blockchain.Sha256;
  * </pre>
  *
  * <p>For the centralized counterpart, where one leader coordinates, see
- * {@code io.github.jabrena.juno.games.ledger.LedgerGame}. Phase 1 of the plan in issue #43: blocks are not signed, so a node can claim another node's id,
+ * {@code io.github.jabrena.juno.usecases.ledger.LedgerGame}. Phase 1 of the plan in issue #43: blocks are not signed, so a node can claim another node's id,
  * and block times are not bounded against the future.
  */
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})

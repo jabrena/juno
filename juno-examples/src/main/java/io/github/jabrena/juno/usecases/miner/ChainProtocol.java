@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games.miner;
+package io.github.jabrena.juno.usecases.miner;
 
 import io.github.jabrena.juno.games.blockchain.Bytes;
 

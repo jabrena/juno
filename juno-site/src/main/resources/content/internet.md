@@ -485,14 +485,14 @@ small factorization network on it, one centralized and one decentralized (see
 ### Centralized: Ledger
 
 Every board runs
-[`LedgerGame`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/ledger/LedgerGame.java)
+[`LedgerGame`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/LedgerGame.java)
 and picks its role on the TFT touch screen:
 
-- **LEADER** ([`LeaderFlow`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/ledger/LeaderFlow.java)),
+- **LEADER** ([`LeaderFlow`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/LeaderFlow.java)),
   meant for an UNO Q, hands out 40-bit numbers to factor. It checks each answer by multiplying it
   back and testing every factor for primality, then adds it to a SHA-256 hash chain. Each block
   hashes the previous block's hash, so changing an accepted result changes every later hash.
-- **WORKER** ([`WorkerFlow`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/ledger/WorkerFlow.java)),
+- **WORKER** ([`WorkerFlow`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/WorkerFlow.java)),
   meant for one or more UNO R4 WiFi boards, broadcasts `JOIN` until a leader answers. It then
   factors each task with trial division and Pollard's rho, and sends back the result.
 
@@ -503,15 +503,15 @@ log with a single writer (the leader), not a decentralized blockchain with conse
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-q \
-  -Djuno.main=io.github.jabrena.juno.games.ledger.LedgerGame
+  -Djuno.main=io.github.jabrena.juno.usecases.ledger.LedgerGame
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.main=io.github.jabrena.juno.games.ledger.LedgerGame
+  -Djuno.main=io.github.jabrena.juno.usecases.ledger.LedgerGame
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
 ```
 
 ### Decentralized: Miner
 
-[`MinerGame`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/miner/MinerGame.java)
+[`MinerGame`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/MinerGame.java)
 removes the leader. Every board is an equal node that mines, validates and relays blocks.
 
 - **Proof-of-work.** A block counts when the SHA-256 hash of its 80-byte, Bitcoin-layout header has
@@ -527,7 +527,7 @@ removes the leader. Every board is an equal node that mines, validates and relay
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.main=io.github.jabrena.juno.games.miner.MinerGame
+  -Djuno.main=io.github.jabrena.juno.usecases.miner.MinerGame
 ```
 
 This is phase 1 of the plan in [issue #43](https://github.com/jabrena/juno/issues/43): blocks are
@@ -537,9 +537,9 @@ not signed yet, and block times are not bounded against the future.
 
 The wire formats are
 plain fixed-size bytes on UDP port 4210 (documented in
-[`FactorProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/ledger/FactorProtocol.java)
+[`FactorProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/FactorProtocol.java)
 and
-[`ChainProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/miner/ChainProtocol.java)).
+[`ChainProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/ChainProtocol.java)).
 A board Juno cannot compile for, such as the 8-bit [UNO WiFi Rev2](../arduino-one-r3-wifi), can
 still join with a hand-written sketch that speaks the same packets.
 

@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games.ledger;
+package io.github.jabrena.juno.usecases.ledger;
 
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
