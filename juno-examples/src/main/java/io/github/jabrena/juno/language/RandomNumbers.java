@@ -1,4 +1,4 @@
-package io.github.jabrena.juno;
+package io.github.jabrena.juno.language;
 
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;

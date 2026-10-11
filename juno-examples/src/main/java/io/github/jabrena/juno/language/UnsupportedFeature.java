@@ -1,4 +1,4 @@
-package io.github.jabrena.juno;
+package io.github.jabrena.juno.language;
 
 /**
  * Deliberately outside Juno's supported subset: a record's generated {@code toString()} uses the
