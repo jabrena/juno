@@ -43,8 +43,9 @@ final class LedgerIo {
         }
     }
 
-    static void printHex(byte[] data, int length) {
-        for (int i = 0; i < length; i = i + 4) {
+    /** Prints {@code data[offset..offset + length)} in hex; {@code length} is a multiple of 4. */
+    static void printHex(byte[] data, int offset, int length) {
+        for (int i = offset; i < offset + length; i = i + 4) {
             Serial.print(hexByte(data[i]) + hexByte(data[i + 1]) + hexByte(data[i + 2]) + hexByte(data[i + 3]));
         }
     }

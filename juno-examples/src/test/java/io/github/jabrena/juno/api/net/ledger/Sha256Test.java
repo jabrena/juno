@@ -38,4 +38,27 @@ class Sha256Test {
                 new int[Sha256.STATE_SIZE]);
         return HexFormat.of().formatHex(digest);
     }
+
+    @Test
+    void finishingFromAMidstateMatchesHashingTheWholeHeader() {
+        byte[] header = new byte[100];
+        for (int i = 0; i < header.length; i++) {
+            header[i] = (byte) (i * 13 + 5);
+        }
+        byte[] block = new byte[Sha256.BLOCK_SIZE];
+        int[] schedule = new int[Sha256.SCHEDULE_SIZE];
+        int[] state = new int[Sha256.STATE_SIZE];
+        byte[] whole = new byte[Sha256.DIGEST_SIZE];
+        byte[] resumed = new byte[Sha256.DIGEST_SIZE];
+
+        Sha256.digest(header, 10, 80, whole, block, schedule, state);
+        Sha256.initialize(state);
+        Sha256.absorb(header, 10, block, schedule, state);
+        Sha256.finish(header, 74, 16, 80, resumed, block, schedule, state);
+
+        assertThat(resumed).isEqualTo(whole);
+        byte[] copy = new byte[80];
+        System.arraycopy(header, 10, copy, 0, 80);
+        assertThat(digest(copy, 80)).isEqualTo(HexFormat.of().formatHex(whole));
+    }
 }

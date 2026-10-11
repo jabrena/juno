@@ -90,10 +90,10 @@ public final class FactorLedgerLeader {
             Serial.println("");
         }
         Serial.print("  prev ");
-        LedgerIo.printHex(ledger.previousHash(), Sha256.DIGEST_SIZE);
+        LedgerIo.printHex(ledger.previousHash(), 0, Sha256.DIGEST_SIZE);
         Serial.println("");
         Serial.print("  hash ");
-        LedgerIo.printHex(ledger.hash(), Sha256.DIGEST_SIZE);
+        LedgerIo.printHex(ledger.hash(), 0, Sha256.DIGEST_SIZE);
         Serial.println("");
     }
 }

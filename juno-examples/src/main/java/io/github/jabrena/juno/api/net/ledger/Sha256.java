@@ -3,7 +3,8 @@ package io.github.jabrena.juno.api.net.ledger;
 /**
  * SHA-256 (FIPS 180-4) written against the subset Juno compiles: int arithmetic, shifts and
  * caller-owned arrays, with the round constants kept in flash as a read-only table. It hashes one
- * message held entirely in a buffer, which is all a ledger block needs.
+ * message held entirely in a buffer, which is all a ledger block needs, and exposes the
+ * absorb/finish steps so a miner can reuse the state of a fixed prefix.
  */
 final class Sha256 {
     static final int DIGEST_SIZE = 32;
@@ -34,6 +35,23 @@ final class Sha256 {
      * and {@link #STATE_SIZE} entries.
      */
     static void digest(byte[] message, int length, byte[] digest, byte[] block, int[] schedule, int[] state) {
+        digest(message, 0, length, digest, block, schedule, state);
+    }
+
+    /** Like {@link #digest(byte[], int, byte[], byte[], int[], int[])} for {@code message[offset..offset + length)}. */
+    static void digest(byte[] message, int offset, int length, byte[] digest, byte[] block, int[] schedule,
+                       int[] state) {
+        initialize(state);
+        int done = 0;
+        while (length - done >= BLOCK_SIZE) {
+            absorb(message, offset + done, block, schedule, state);
+            done = done + BLOCK_SIZE;
+        }
+        finish(message, offset + done, length - done, length, digest, block, schedule, state);
+    }
+
+    /** Loads the initial hash value into {@code state}. */
+    static void initialize(int[] state) {
         state[0] = 0x6a09e667;
         state[1] = 0xbb67ae85;
         state[2] = 0x3c6ef372;
@@ -42,28 +60,36 @@ final class Sha256 {
         state[5] = 0x9b05688c;
         state[6] = 0x1f83d9ab;
         state[7] = 0x5be0cd19;
+    }
 
-        int offset = 0;
-        while (length - offset >= BLOCK_SIZE) {
-            for (int i = 0; i < BLOCK_SIZE; i++) {
-                block[i] = message[offset + i];
-            }
-            compress(block, schedule, state);
-            offset = offset + BLOCK_SIZE;
-        }
-
-        int tail = length - offset;
+    /** Compresses the 64 bytes at {@code message[offset..offset + 64)} into {@code state}. */
+    static void absorb(byte[] message, int offset, byte[] block, int[] schedule, int[] state) {
         for (int i = 0; i < BLOCK_SIZE; i++) {
-            block[i] = i < tail ? message[offset + i] : 0;
+            block[i] = message[offset + i];
         }
-        block[tail] = (byte) 0x80;
-        if (tail >= BLOCK_SIZE - 8) {
+        compress(block, schedule, state);
+    }
+
+    /**
+     * Pads and compresses the last {@code tailLength} (under 64) bytes of a {@code totalLength}-byte
+     * message, found at {@code message[offset..)}, whose earlier bytes are already absorbed into
+     * {@code state}, and writes the digest. Absorbing a fixed prefix once and finishing once per
+     * variation is the "midstate" trick Bitcoin miners use: an 80-byte header whose nonce changes
+     * then costs one compression instead of two.
+     */
+    static void finish(byte[] message, int offset, int tailLength, int totalLength, byte[] digest, byte[] block,
+                       int[] schedule, int[] state) {
+        for (int i = 0; i < BLOCK_SIZE; i++) {
+            block[i] = i < tailLength ? message[offset + i] : 0;
+        }
+        block[tailLength] = (byte) 0x80;
+        if (tailLength >= BLOCK_SIZE - 8) {
             compress(block, schedule, state);
             for (int i = 0; i < BLOCK_SIZE; i++) {
                 block[i] = 0;
             }
         }
-        long bits = (long) length * 8;
+        long bits = (long) totalLength * 8;
         for (int i = 0; i < 8; i++) {
             block[BLOCK_SIZE - 1 - i] = (byte) (bits >>> (8 * i));
         }
