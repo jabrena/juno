@@ -125,6 +125,20 @@ class BlockPoolTest {
     }
 
     @Test
+    void keepsReportingAMissingParentUntilItArrives() {
+        BlockPool a = pool();
+        BlockPool c = pool();
+        List<byte[]> mined = mine(a, 1, 2, 0, 1);
+
+        assertThat(c.waitingForParent()).as("nothing is pending yet").isFalse();
+        deliver(mined.get(1), c);
+        assertThat(c.waitingForParent()).as("the answer may be lost, so the caller keeps asking").isTrue();
+        assertThat(c.waitingForParent()).isTrue();
+        deliver(mined.get(0), c);
+        assertThat(c.waitingForParent()).as("connected").isFalse();
+    }
+
+    @Test
     void joinsALongerChainThroughACheckpointAndValidatesWhatFollows() {
         BlockPool a = pool();
         List<byte[]> mined = mine(a, 1, 8, 0, 1);

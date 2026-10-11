@@ -140,6 +140,14 @@ final class BlockPool {
                 Sha256.DIGEST_SIZE);
     }
 
+    /**
+     * Whether a block is still waiting for the parent that {@link #missingParent} names, so the caller should keep
+     * asking for it (a request or its answer can be lost).
+     */
+    boolean waitingForParent() {
+        return status[needed] == PENDING;
+    }
+
     /** The slot holding the block whose hash is at {@code hash[offset..)}, or -1. */
     int find(byte[] hash, int offset) {
         for (int i = 0; i < CAPACITY; i++) {
