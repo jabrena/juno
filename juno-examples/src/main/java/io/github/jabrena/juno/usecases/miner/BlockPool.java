@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games.miner;
+package io.github.jabrena.juno.usecases.miner;
 
 import io.github.jabrena.juno.games.blockchain.Bytes;
 import io.github.jabrena.juno.games.blockchain.Sha256;
@@ -138,6 +138,14 @@ final class BlockPool {
     void missingParent(byte[] hash, int offset) {
         BlockFormat.copy(blocks, needed * BlockFormat.MAX_SIZE + BlockFormat.PREVIOUS, hash, offset,
                 Sha256.DIGEST_SIZE);
+    }
+
+    /**
+     * Whether a block is still waiting for the parent that {@link #missingParent} names, so the caller should keep
+     * asking for it (a request or its answer can be lost).
+     */
+    boolean waitingForParent() {
+        return status[needed] == PENDING;
     }
 
     /** The slot holding the block whose hash is at {@code hash[offset..)}, or -1. */

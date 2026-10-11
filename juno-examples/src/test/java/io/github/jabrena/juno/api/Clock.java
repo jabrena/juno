@@ -18,7 +18,14 @@ public final class Clock {
     private Clock() {
     }
 
+    /**
+     * The current simulated time. A reading costs {@link #millisPerReading}, except from a virtual thread, whose
+     * readings are free: like its waits (see {@link Delay}), they must not drive the program's single timeline.
+     */
     public static int millis() {
+        if (Thread.currentThread().isVirtual()) {
+            return now;
+        }
         now = now + millisPerReading;
         return now;
     }

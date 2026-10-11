@@ -2,8 +2,9 @@ package io.github.jabrena.juno.linker;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.classfile.MethodRef;
-
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
+
+import java.util.Map;
 
 
 /**
@@ -20,26 +21,38 @@ public final class ThreadSupport {
     public static final InterfaceCallSite ENTRY_SITE = new InterfaceCallSite(ENTRY_METHOD, 0);
     public static final MethodRef RUNNABLE_RUN = new MethodRef("java/lang/Runnable", "run", "()V");
 
+    private static final MethodRef START_VIRTUAL_THREAD =
+            new MethodRef("java/lang/Thread", "startVirtualThread", "(Ljava/lang/Runnable;)Ljava/lang/Thread;");
+
     private ThreadSupport() {
     }
 
+    /** Records the synthetic {@code Runnable.run()} site when {@code called} starts a virtual thread. */
+    public static void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
+        if (called.equals(START_VIRTUAL_THREAD)) {
+            interfaceCalls.put(ENTRY_SITE, RUNNABLE_RUN);
+        }
+    }
+
     /**
-     * Rejects a program that uses {@code java.lang.Thread} directly. The cooperative thread runtime stays, as
-     * {@code StructuredTaskScope} forks its subtasks onto it, but only {@code Thread.sleep} and
-     * {@code Thread.yield} (which a subtask calls) are part of the language subset.
+     * Rejects a program that uses {@code java.lang.Thread} beyond the supported subset. Virtual threads are the only
+     * thread a program creates ({@code Thread.startVirtualThread(Runnable)}), with {@code join()} and
+     * {@code isAlive()} on the handle; platform threads, {@code Thread.ofVirtual()} builders and the other
+     * {@code Thread} members are rejected. {@code Thread.sleep} and {@code Thread.yield} remain available.
      */
     public static void validateCall(MethodRef called) {
         if (called.owner().equals("java/lang/Thread") && !IntrinsicRegistry.isIntrinsic(called)) {
             throw new CompileException("Juno does not support java.lang.Thread (" + called.displayName()
-                    + "); fork the work with StructuredTaskScope instead. Only Thread.sleep and Thread.yield "
-                    + "are available, inside a forked subtask");
+                    + "); create a virtual thread with Thread.startVirtualThread(Runnable) instead. Supported: "
+                    + "startVirtualThread, join, isAlive, Thread.sleep and Thread.yield");
         }
     }
 
     /** The diagnostic for an interface call with no reachable implementation. */
     public static String unresolvedMessage(InterfaceCallSite site, MethodRef interfaceMethod) {
         if (site.equals(ENTRY_SITE)) {
-            return "StructuredTaskScope.fork needs a Runnable: no reachable class or lambda implements java.lang.Runnable";
+            return "Thread.startVirtualThread and StructuredTaskScope.fork need a Runnable: no reachable class or "
+                    + "lambda implements java.lang.Runnable";
         }
         if (StructuredTaskSupport.isEntrySite(site)) {
             return "StructuredTaskScope.fork needs a Callable: no reachable class or lambda implements "

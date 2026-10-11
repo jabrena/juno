@@ -200,8 +200,15 @@ final class IntrinsicLowering {
                 ShimFeature.MEMORY);
     }
 
-    /** {@code java.lang.Thread}: one scheduler call each; sleep and yield alone need no scheduler. */
+    /**
+     * {@code java.lang.Thread}: virtual threads are the only thread the program may create, and each is one scheduler
+     * call; sleep and yield alone need no scheduler.
+     */
     private void registerThreads(boolean usesThreads) {
+        shim(Intrinsic.THREAD_START_VIRTUAL, "juno_thread_start_virtual", Result.WORD, List.of(arg(0)),
+                ShimFeature.THREADS, ShimFeature.THREAD_ENTRY);
+        shim(Intrinsic.THREAD_JOIN, "juno_thread_join", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.THREAD_IS_ALIVE, "juno_thread_is_alive", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS);
         ShimFeature runtime = usesThreads ? ShimFeature.THREADS : ShimFeature.THREAD_BASICS;
         shim(Intrinsic.THREAD_SLEEP, "juno_thread_sleep", Result.NONE, wide(0), runtime);
         shim(Intrinsic.THREAD_YIELD, "juno_thread_yield", Result.NONE, List.of(), runtime);
@@ -481,6 +488,8 @@ final class IntrinsicLowering {
         shim(Intrinsic.WIFI_BEGIN_AP, "juno_wifi_begin_ap", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_STATUS, "juno_wifi_status", Result.WORD, List.of(), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_LOCAL_IP, "juno_wifi_local_ip", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
+        shim(Intrinsic.WIFI_GATEWAY_IP, "juno_wifi_gateway_ip", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
+        shim(Intrinsic.WIFI_MAC_ADDRESS, "juno_wifi_mac_address", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
         shim(Intrinsic.UDP_LISTEN, "juno_udp_listen", Result.WORD, List.of(arg(0)), ShimFeature.UDP);
         shim(Intrinsic.UDP_SEND, "juno_udp_send", Result.WORD,
                 List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.UDP);

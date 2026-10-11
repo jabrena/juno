@@ -52,13 +52,14 @@ to the arena, and the build reports why (`JUNO-RISK-012`).
 
 ## What tasks can observe
 
-Juno's concurrency is **cooperative**. The public API is `StructuredTaskScope`; `new Thread` and the other
-`java.lang.Thread` members, apart from `sleep` and `yield`, are rejected at compile time. There is exactly one running
+Juno's concurrency is **cooperative**. The public API is virtual threads (`Thread.startVirtualThread`, `join` and
+`isAlive`) and `StructuredTaskScope`; `new Thread` and the other `java.lang.Thread` members, apart from `sleep` and
+`yield`, are rejected at compile time. There is exactly one running
 task at any moment, and it keeps the processor until it reaches a **switch point**:
 
 - a loop back-edge in compiled Java (a task switch happens at most once per millisecond),
 - `Delay`, `Thread.sleep` and `Thread.yield`,
-- a scope's `join`,
+- a scope's or a virtual thread's `join`,
 - entering a monitor that another task holds,
 - a Powered Up call waiting for the hub: scanning for it, or waiting for its reply.
 

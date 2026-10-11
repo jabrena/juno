@@ -157,6 +157,7 @@ public final class Linker {
             int opcode = instruction.opcode();
             if (opcode == 182 || opcode == 183 || opcode == 184) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
+                ThreadSupport.registerEntry(called, interfaceCalls);
                 StructuredTaskSupport.registerEntry(called, interfaceCalls);
                 ScopedValueSupport.registerEntry(called, interfaceCalls);
                 enqueueCall(called, caller, declaredBoards, classes, work);
@@ -238,7 +239,7 @@ public final class Linker {
         require(required, Capability.LED_MATRIX, Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME,
                 Intrinsic.LED_MATRIX_COLUMNS, Intrinsic.LED_MATRIX_CLEAR);
         require(required, Capability.WIFI, Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_BEGIN_AP, Intrinsic.WIFI_STATUS, Intrinsic.WIFI_LOCAL_IP,
-                Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
+                Intrinsic.WIFI_GATEWAY_IP, Intrinsic.WIFI_MAC_ADDRESS, Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
                 Intrinsic.UDP_STOP);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
                 Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY);

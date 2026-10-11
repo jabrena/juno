@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games.ledger;
+package io.github.jabrena.juno.usecases.ledger;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
@@ -26,7 +26,7 @@ import io.github.jabrena.juno.games.blockchain.NodeIo;
  * The screen then shows that role's progress, also logged over serial at 115200 baud, and MENU
  * returns to the role menu. Both roles share UDP port {@link NodeIo#PORT}, so a board can change
  * roles without reconnecting. For the decentralized counterpart, where no board is in charge, see
- * {@code io.github.jabrena.juno.games.miner.MinerGame}.
+ * {@code io.github.jabrena.juno.usecases.miner.MinerGame}.
  */
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
 public final class LedgerGame {

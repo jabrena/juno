@@ -16,6 +16,11 @@ public final class WifiUdpApi {
             int[] address = new int[4];
             Wifi.localIP(address);
             Serial.println(address[3]);
+            Wifi.gatewayIP(address);
+            Serial.println(address[3]);
+            int[] mac = new int[6];
+            Wifi.macAddress(mac);
+            Serial.println(mac[5]);
             byte[] payload = new byte[8];
             Udp.listen(4210);
             Udp.broadcast(4210, payload, 4);

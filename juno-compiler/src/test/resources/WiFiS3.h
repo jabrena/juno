@@ -36,6 +36,8 @@ struct JunoWiFi {
   uint8_t beginAP(const char*, const char*) { return 7; }
   int status() { return 3; }
   JunoIPAddress localIP() { return JunoIPAddress(); }
+  JunoIPAddress gatewayIP() { return JunoIPAddress(); }
+  uint8_t* macAddress(uint8_t* mac) { return mac; }
 };
 
 inline JunoWiFi WiFi;

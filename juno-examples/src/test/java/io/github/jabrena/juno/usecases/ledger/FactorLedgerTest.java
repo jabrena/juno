@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games.ledger;
+package io.github.jabrena.juno.usecases.ledger;
 
 import io.github.jabrena.juno.games.blockchain.Factorizer;
 import org.junit.jupiter.api.Test;

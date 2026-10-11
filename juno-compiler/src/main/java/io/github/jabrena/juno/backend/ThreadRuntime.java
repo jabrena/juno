@@ -610,6 +610,14 @@ final class ThreadRuntime {
                   ${JUNO_START_BINDINGS}
                 }
 
+                // Thread.startVirtualThread: a virtual thread is a daemon, so main() does not wait for it at exit.
+                extern "C" int32_t juno_thread_start_virtual(int32_t runnable) {
+                  int32_t handle = juno_thread_new(runnable);
+                  juno_thread_set_daemon(handle, 1);
+                  juno_thread_start(handle);
+                  return handle;
+                }
+
                 extern "C" void juno_thread_join(int32_t handle) {
                   JunoThreadObject* thread = juno_thread_of(handle);
                   if ((thread->flags & JUNO_THREAD_STARTED) == 0u) return;

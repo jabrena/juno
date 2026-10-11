@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games.miner;
+package io.github.jabrena.juno.usecases.miner;
 
 import io.github.jabrena.juno.games.blockchain.Bytes;
 import io.github.jabrena.juno.games.blockchain.Sha256;
@@ -122,6 +122,20 @@ class BlockPoolTest {
         assertThat(wanted).isEqualTo(hashOf(mined.get(0)));
         assertThat(deliver(mined.get(0), c)).isEqualTo(BlockPool.NEW_TIP);
         assertThat(tipHash(c)).isEqualTo(tipHash(a));
+    }
+
+    @Test
+    void keepsReportingAMissingParentUntilItArrives() {
+        BlockPool a = pool();
+        BlockPool c = pool();
+        List<byte[]> mined = mine(a, 1, 2, 0, 1);
+
+        assertThat(c.waitingForParent()).as("nothing is pending yet").isFalse();
+        deliver(mined.get(1), c);
+        assertThat(c.waitingForParent()).as("the answer may be lost, so the caller keeps asking").isTrue();
+        assertThat(c.waitingForParent()).isTrue();
+        deliver(mined.get(0), c);
+        assertThat(c.waitingForParent()).as("connected").isFalse();
     }
 
     @Test
