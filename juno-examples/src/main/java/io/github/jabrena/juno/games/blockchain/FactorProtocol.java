@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.blockchain;
 
 /**
- * Fixed-size UDP wire protocol shared by {@link FactorLedgerLeader} and {@link FactorWorker}.
+ * Fixed-size UDP wire protocol shared by {@link LeaderFlow} and {@link WorkerFlow}.
  *
  * <p>Every packet is {@link #PACKET_SIZE} bytes, big-endian:
  *

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.blockchain;
 
 /**
- * Byte layout of a {@link ChainNode} block: Bitcoin's 80-byte header followed by one payload.
+ * Byte layout of a {@link MinerFlow} block: Bitcoin's 80-byte header followed by one payload.
  *
  * <pre>
  * header   0  version(4)

@@ -1,22 +1,19 @@
 package io.github.jabrena.juno.games.blockchain;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
+import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /**
- * Leader of a small factorization network: hands out numbers to factor and keeps a SHA-256 hash
- * chain of the verified answers.
+ * The LEADER role of {@link BlockchainGame}: hands out numbers to factor and keeps a SHA-256 hash
+ * chain of the verified answers. Meant for an UNO Q, one per network, with {@link WorkerFlow}s on UNO
+ * R4 WiFi boards.
  *
- * <p>Meant for an UNO Q, with {@link FactorWorker} running on one or more UNO R4 WiFi boards (it
- * builds for either board). Workers find the leader by broadcasting {@code JOIN} on UDP port
- * {@link LedgerIo#PORT}, so nothing is configured by address and workers can join at any time.
- * Each verified result becomes a block, printed over serial at 115200 baud:
+ * <p>Workers find the leader by broadcasting {@code JOIN} on UDP port {@link LedgerIo#PORT}, so
+ * nothing is configured by address and workers can join at any time. Each verified result becomes a
+ * block, shown on screen and printed over serial at 115200 baud:
  *
  * <pre>
  * BLOCK #1 task 1 worker 1234567 at 48211 ms
@@ -29,29 +26,26 @@ import io.github.jabrena.juno.api.net.Udp;
  * not a consensus protocol. See {@link FactorLedger} for leases and verification and
  * {@link FactorProtocol} for the wire format.
  */
-@Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
-public final class FactorLedgerLeader {
+final class LeaderFlow {
     /** Bit length of every number handed out; at 40 bits a worker answers in well under a second. */
     private static final int BITS = 40;
     private static final long SEED = 0x2545F4914F6CDD1DL;
 
-    private FactorLedgerLeader() {
+    private LeaderFlow() {
     }
 
-    public static void main(String[] args) {
-        byte[] incoming = new byte[FactorProtocol.PACKET_SIZE];
-        byte[] outgoing = new byte[FactorProtocol.PACKET_SIZE];
-        int[] source = new int[Udp.ENDPOINT_SIZE];
+    /** Leads until the MENU button is tapped; the chain starts again from genesis on the next run. */
+    static void run(byte[] incoming, byte[] outgoing, int[] source) {
 
-        Serial.begin(BaudRate.BAUD_115200);
-        Serial.println("Factor ledger leader");
-        LedgerIo.connect();
-
+        Serial.println("Role: leader");
+        GameScreen.role("LEADER", TftTouchShield.YELLOW);
         FactorLedger ledger = new FactorLedger(BITS, SEED, Clock.millis());
         printBlock(ledger);
+        showBlock(ledger);
+        showWorkers(0);
         int printed = ledger.height();
         int workers = 0;
-        while (true) {
+        while (!GameScreen.menuTapped()) {
             int now = Clock.millis();
             int length = Udp.receive(incoming, FactorProtocol.PACKET_SIZE, source);
             if (length > 0 && ledger.handle(incoming, length, outgoing, now)) {
@@ -60,16 +54,48 @@ public final class FactorLedgerLeader {
             if (ledger.height() != printed) {
                 printed = ledger.height();
                 printBlock(ledger);
+                showBlock(ledger);
             }
             ledger.expire(now);
             if (ledger.workers() != workers) {
                 workers = ledger.workers();
                 Serial.println("Workers: " + workers);
+                showWorkers(workers);
             }
             if (length <= 0) {
                 Delay.millis(5);
             }
         }
+    }
+
+    private static void showWorkers(int workers) {
+        GameScreen.row(1, 2, workers > 0 ? TftTouchShield.GREEN : TftTouchShield.YELLOW);
+        TftTouchShield.print(workers > 0 ? "Workers " + workers : "No workers yet");
+    }
+
+    private static void showBlock(FactorLedger ledger) {
+        GameScreen.row(0, 2, TftTouchShield.WHITE);
+        TftTouchShield.print("Height " + ledger.height());
+        if (ledger.blockTask() == 0) {
+            GameScreen.row(3, 1, TftTouchShield.GRAY);
+            TftTouchShield.print("Genesis block");
+        } else {
+            GameScreen.row(3, 1, TftTouchShield.CYAN);
+            TftTouchShield.print("Task " + ledger.blockTask() + " by " + ledger.blockNode());
+            GameScreen.row(4, 1, TftTouchShield.WHITE);
+            TftTouchShield.print("n = " + ledger.blockNumber());
+            GameScreen.row(5, 1, TftTouchShield.WHITE);
+            TftTouchShield.print("= ");
+            for (int i = 0; i < ledger.blockCount(); i++) {
+                GameScreen.factor(ledger.blockPrime(i), ledger.blockExponent(i), i == 0);
+            }
+        }
+        GameScreen.row(6, 1, TftTouchShield.GRAY);
+        TftTouchShield.print("prev ");
+        GameScreen.hashPrefix(ledger.previousHash(), 0);
+        GameScreen.row(7, 1, TftTouchShield.YELLOW);
+        TftTouchShield.print("hash ");
+        GameScreen.hashPrefix(ledger.hash(), 0);
     }
 
     private static void printBlock(FactorLedger ledger) {

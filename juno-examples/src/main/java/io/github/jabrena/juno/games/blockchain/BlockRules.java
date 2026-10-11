@@ -50,6 +50,11 @@ final class BlockRules {
         return Factorizer.verify(number, primes, exponents, count);
     }
 
+    /** Writes the SHA-256 of the 80-byte header at {@code buffer[base..)} into {@code hash[0..32)}: the block's id. */
+    void headerHash(byte[] buffer, int base, byte[] hash) {
+        Sha256.digest(buffer, base, BlockFormat.HEADER_SIZE, hash, shaBlock, shaSchedule, shaState);
+    }
+
     /** Writes the SHA-256 of the payload of the block at {@code buffer[base..)} into {@code hash[0..32)}. */
     void payloadHash(byte[] buffer, int base, byte[] hash) {
         Sha256.digest(buffer, base + BlockFormat.PAYLOAD, BlockFormat.size(buffer, base) - BlockFormat.PAYLOAD, hash,

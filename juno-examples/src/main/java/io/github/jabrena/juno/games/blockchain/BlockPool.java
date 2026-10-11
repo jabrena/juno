@@ -16,7 +16,7 @@ package io.github.jabrena.juno.games.blockchain;
  * validated in full. That is how a node joins a network whose history it was not there for.
  */
 final class BlockPool {
-    static final int CAPACITY = 12;
+    static final int CAPACITY = 10;
     static final int MAX_FETCH = 4;
 
     static final int INVALID = 0;
@@ -52,9 +52,6 @@ final class BlockPool {
 
     private final BlockRules rules = new BlockRules();
     private final byte[] digest = new byte[Sha256.DIGEST_SIZE];
-    private final byte[] shaBlock = new byte[Sha256.BLOCK_SIZE];
-    private final int[] shaSchedule = new int[Sha256.SCHEDULE_SIZE];
-    private final int[] shaState = new int[Sha256.STATE_SIZE];
 
     /**
      * {@code initialBits} is the genesis difficulty; every {@code retargetInterval} blocks it moves one
@@ -312,6 +309,6 @@ final class BlockPool {
     }
 
     private void hashHeader(byte[] buffer, int offset) {
-        Sha256.digest(buffer, offset, BlockFormat.HEADER_SIZE, digest, shaBlock, shaSchedule, shaState);
+        rules.headerHash(buffer, offset, digest);
     }
 }

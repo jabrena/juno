@@ -44,6 +44,11 @@ class GameScreenshotTest {
         return Stream.of(
                 game("games.battleship.Battleship", "battleship", "35000:120,160 50000:180,170 end:70000"),
                 game("games.blackjack.Blackjack", "blackjack", "35000:120,160 50000:180,170 end:70000"),
+                game("games.blockchain.BlockchainGame", "blockchain-menu", "end:3000"),
+                game("games.blockchain.BlockchainGame", "blockchain-leader", "3000:120,95 end:6000"),
+                game("games.blockchain.BlockchainGame", "blockchain-worker", "3000:120,165 end:6000"),
+                game("games.blockchain.BlockchainGame", "blockchain-miner", "3000:120,240 end:60000"),
+                game("games.blockchain.BlockchainGame", "blockchain-menu-again", "3000:120,240 8000:120,297 end:10000"),
                 game("games.chess.Chess", "chess", "35000:120,160 50000:180,170 end:70000"),
                 game("games.doom.Doom", "doom", "5500:160,130 6000:235,140 end:12000"),
                 game("games.empirestrikesback.EmpireStrikesBack", "empire-strikes-back", "6000:160,130 6500:85,140 10200:200,150 end:10600"),

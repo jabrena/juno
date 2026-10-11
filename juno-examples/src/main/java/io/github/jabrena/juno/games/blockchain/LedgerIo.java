@@ -5,7 +5,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.net.Wifi;
 
-/** Wi-Fi/UDP start-up and serial formatting shared by the leader and the workers. */
+/** Wi-Fi/UDP start-up and serial formatting shared by every role of {@link BlockchainGame}. */
 final class LedgerIo {
     /** UDP port every node listens on and broadcasts to. */
     static final int PORT = 4210;
@@ -46,8 +46,13 @@ final class LedgerIo {
     /** Prints {@code data[offset..offset + length)} in hex; {@code length} is a multiple of 4. */
     static void printHex(byte[] data, int offset, int length) {
         for (int i = offset; i < offset + length; i = i + 4) {
-            Serial.print(hexByte(data[i]) + hexByte(data[i + 1]) + hexByte(data[i + 2]) + hexByte(data[i + 3]));
+            Serial.print(hexWord(data, i));
         }
+    }
+
+    /** The four bytes at {@code data[offset..offset + 4)} as eight hex digits. */
+    static String hexWord(byte[] data, int offset) {
+        return hexByte(data[offset]) + hexByte(data[offset + 1]) + hexByte(data[offset + 2]) + hexByte(data[offset + 3]);
     }
 
     private static String hexByte(byte value) {

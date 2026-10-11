@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.blockchain;
 
 /**
- * Fixed-size UDP packets exchanged by {@link ChainNode}s, big-endian:
+ * Fixed-size UDP packets exchanged by {@link MinerFlow}s, big-endian:
  *
  * <pre>
  *  0..3   "JUNO"
