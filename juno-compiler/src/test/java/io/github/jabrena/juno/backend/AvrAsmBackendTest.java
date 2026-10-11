@@ -130,7 +130,7 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void acceptsPlainHttpAndUdpButNotHttps() throws Exception {
+    void acceptsHttpAndUdp() throws Exception {
         CompilationResult result = compile("demo.AvrNet", """
                         byte[] body = new byte[32];
                         byte[] headers = new byte[32];
@@ -149,14 +149,35 @@ class AvrAsmBackendTest {
                 .contains("#include <WiFiUdp.h>")
                 .contains("static WiFiUDP juno_udp;")
                 .contains("extern \"C\" int32_t juno_avr_thunk_juno_http_get() {");
+    }
 
-        assertThatThrownBy(() -> compile("demo.AvrTls", """
+    @Test
+    void runsHttpsThroughTheNinaModulesTls() throws Exception {
+        CompilationResult result = compile("demo.AvrTls", """
                         byte[] body = new byte[32];
                         int[] status = new int[2];
-                        HttpsClient.get("example.com", 443, "/", body, 32, body, 32, status);
-                """, "import io.github.jabrena.juno.api.net.http.HttpsClient;"))
+                        Serial.println(HttpsClient.get("example.com", 443, "/", body, 32, body, 32, status));
+                """, """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                """);
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFiNINA.h>")
+                .contains("WiFiSSLClient client;")
+                .contains("extern \"C\" int32_t juno_avr_thunk_juno_https_get() {")
+                .doesNotContain("WiFiSSLClient.h");
+    }
+
+    @Test
+    void rejectsTheEmailClientsTheBoardLacks() {
+        assertThatThrownBy(() -> compile("demo.AvrPop3", """
+                        Serial.println(Pop3Client.messageCount("pop.example.com", 995, "user", "secret"));
+                """, """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.net.email.Pop3Client;
+                """))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("does not provide a supported TLS client");
+                .hasMessageContaining("does not provide the TLS email clients");
     }
 
     @Test

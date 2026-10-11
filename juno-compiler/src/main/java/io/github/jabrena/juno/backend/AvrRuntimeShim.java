@@ -32,7 +32,7 @@ final class AvrRuntimeShim {
 
     /** Shim features this board's runtime does not have; the linker's capability checks normally stop them first. */
     private static final Set<ShimFeature> UNSUPPORTED = EnumSet.of(ShimFeature.LED_MATRIX, ShimFeature.MOUSE,
-            ShimFeature.LEGO_POWERED_UP, ShimFeature.HTTPS, ShimFeature.HTTPS_PATH_BUFFER, ShimFeature.HTTP_SERVER,
+            ShimFeature.LEGO_POWERED_UP, ShimFeature.HTTP_SERVER,
             ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3, ShimFeature.THREADS, ShimFeature.THREAD_ENTRY,
             ShimFeature.TASK_CALLABLE_ENTRY, ShimFeature.STRUCTURED_TASKS, ShimFeature.SCOPED_VALUES,
             ShimFeature.SCOPED_CALL_ENTRY);
@@ -109,8 +109,11 @@ final class AvrRuntimeShim {
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
         }
-        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP)) {
+        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS)) {
             shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
+        }
+        if (uses(ShimFeature.HTTPS)) {
+            shim.append(core.httpsInclude());
         }
         if (uses(ShimFeature.SD)) {
             shim.append("#include <SPI.h>\n#include <SdFat.h>\n");
@@ -342,12 +345,6 @@ final class AvrRuntimeShim {
         if (uses(ShimFeature.RANDOM)) {
             shim.append(ShimLibraries.randomHelpers());
         }
-        if (uses(ShimFeature.WIFI)) {
-            shim.append(core.wifiHelpers());
-        }
-        if (uses(ShimFeature.UDP)) {
-            shim.append(NetworkShimLibraries.udpHelpers(core.udpDeclaration()));
-        }
         if (uses(ShimFeature.SD)) {
             shim.append(ShimLibraries.sdHelpers(SD_OPEN_FILES, PROPERTIES_ENTRIES, PROPERTIES_KEY_BYTES,
                     PROPERTIES_VALUE_BYTES, PROPERTIES_LINE_BYTES));
@@ -374,17 +371,7 @@ final class AvrRuntimeShim {
                     throwableClasses.indexOf("java/io/EOFException"),
                     throwableClasses.indexOf("java/lang/IndexOutOfBoundsException")));
         }
-        if (uses(ShimFeature.JSON)) {
-            shim.append(NetworkShimLibraries.jsonScanner())
-                    .append(jsonDouble())
-                    .append(NetworkShimLibraries.jsonValueHelpers());
-        }
-        if (uses(ShimFeature.JSON_STRING_VALUE)) {
-            shim.append(NetworkShimLibraries.jsonStringValueHelpers());
-        }
-        if (uses(ShimFeature.HTTP)) {
-            shim.append(NetworkShimLibraries.httpHelpers(features, ""));
-        }
+        appendNetworkHelpers(shim);
         if (uses(ShimFeature.ATOMICS)) {
             shim.append(AtomicRuntime.helpers());
         }
@@ -481,6 +468,30 @@ final class AvrRuntimeShim {
                   return juno_bd_parse(text);
                 }
                 """ : "");
+    }
+
+    /** Wi-Fi, UDP, JSON and the HTTP/HTTPS client over WiFiNINA. */
+    private void appendNetworkHelpers(StringBuilder shim) {
+        if (uses(ShimFeature.WIFI)) {
+            shim.append(core.wifiHelpers());
+        }
+        if (uses(ShimFeature.UDP)) {
+            shim.append(NetworkShimLibraries.udpHelpers(core.udpDeclaration()));
+        }
+        if (uses(ShimFeature.JSON)) {
+            shim.append(NetworkShimLibraries.jsonScanner())
+                    .append(jsonDouble())
+                    .append(NetworkShimLibraries.jsonValueHelpers());
+        }
+        if (uses(ShimFeature.JSON_STRING_VALUE)) {
+            shim.append(NetworkShimLibraries.jsonStringValueHelpers());
+        }
+        if (uses(ShimFeature.HTTPS)) {
+            shim.append(core.httpsHelpers());
+        }
+        if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
+            shim.append(NetworkShimLibraries.httpHelpers(features, core.httpsClientDeclaration()));
+        }
     }
 
     /** {@code juno_format_double} and {@code String.valueOf(double)}: the Thumb-2 algorithm, step for step, on binary64. */

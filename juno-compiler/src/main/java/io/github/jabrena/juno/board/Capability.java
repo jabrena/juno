@@ -30,6 +30,12 @@ public enum Capability {
             return board.displayName() + " does not provide a supported TLS client";
         }
     },
+    TLS_EMAIL("Smtp.sendTls and Pop3Client") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " does not provide the TLS email clients";
+        }
+    },
     HTTP_SERVER("HttpServer") {
         @Override
         public String unsupportedReason(Board board) {

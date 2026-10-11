@@ -193,8 +193,9 @@ Operations that run out of memory panic loudly; they never return a wrong value.
 | `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | Yes | `Gpio.builtinLed()` is logical pin 25 |
 | `Serial` | Yes | |
 | `Wifi`, `Udp` | Yes | Through WiFiNINA |
-| `HttpClient`, `Json` | Yes | Plain HTTP only |
-| `HttpsClient`, `HttpServer`, `Smtp`, `Pop3Client` | No | Rejected at compile time |
+| `HttpClient`, `Json` | Yes | |
+| `HttpsClient` | Yes | TLS runs on the NINA-W102 module, which trusts the root certificates in its firmware; add others with the Arduino IDE's certificate uploader |
+| `HttpServer`, `Smtp`, `Pop3Client` | No | Rejected at compile time |
 | `SdCard`, `Properties` | Yes | At most 2 open files; `Properties` of 8 entries, 15-character keys, 31-character values |
 | `RandomAccessFile` | Untested | Generated, but not yet run in the simulator |
 | `LcdKeypadShield`, `TftTouchShield` | Yes | |
@@ -216,7 +217,7 @@ install or in Docker:
 ```
 
 The suite covers the language conformance programs (including every primitive type's edge cases
-and `java.math`), plus a peripheral program that exercises HTTP, JSON, UDP, the SD card,
+and `java.math`), plus a peripheral program that exercises HTTP, HTTPS, JSON, UDP, the SD card,
 `Properties` and the LCD and TFT shields against simulated hardware. Generated sketches have not
 yet been run on a physical UNO WiFi Rev2.
 

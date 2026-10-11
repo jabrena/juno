@@ -1,5 +1,7 @@
-// Stand-in for WiFiNINA under simavr: Wi-Fi is always connected, and a WiFiClient connecting to any host receives
-// one canned, chunked HTTP/1.1 response, so the shim's HTTP codec runs end to end on the 8-bit target.
+// Stand-in for WiFiNINA under simavr: Wi-Fi is always connected, and a WiFiClient (or a WiFiSSLClient, whose TLS
+// the real NINA module runs) connecting to any host receives one canned, chunked HTTP/1.1 response, so the shim's
+// HTTP codec runs end to end on the 8-bit target. A WiFiSSLClient only accepts port 443, so a test can tell the
+// two apart.
 #pragma once
 
 #include <stddef.h>
@@ -34,6 +36,11 @@ public:
 private:
   size_t cursor_ = 0;
   bool connected_ = false;
+};
+
+class WiFiSSLClient : public WiFiClient {
+public:
+  int connect(const char* host, uint16_t port) { return port == 443 ? WiFiClient::connect(host, port) : 0; }
 };
 
 class WiFiServer {

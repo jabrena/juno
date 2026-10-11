@@ -8,6 +8,7 @@ import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.net.http.HttpClient;
+import io.github.jabrena.juno.api.net.http.HttpsClient;
 import io.github.jabrena.juno.api.net.http.Json;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import java.util.Properties;
 
 /**
  * The UNO WiFi Rev2's peripheral APIs end to end on the 8-bit target, against the simavr harness's stand-ins: Wi-Fi
- * and a WiFiClient that answers one chunked HTTP response (WiFiNINA.h), a loopback UDP socket (WiFiUdp.h), an SD card
+ * and a WiFiClient/WiFiSSLClient that answers one chunked HTTP response (WiFiNINA.h), a loopback UDP socket (WiFiUdp.h), an SD card
  * in RAM holding config.txt (SdFat.h), and pins that read as zero for the LCD and TFT shields. No JVM can run these
  * APIs, so Peripherals.expected holds the output by hand.
  */
@@ -41,6 +42,10 @@ public final class Peripherals {
         double temp = Json.getDouble(body, length, "temp");
         Serial.println((int) (temp * 10));
         Serial.println("temp=" + temp);
+        int secure = HttpsClient.get("example.com", 443, "/readings", body, body.length, headers, headers.length,
+                status);
+        Serial.println(status[0] + " " + secure + " " + Json.getInt(body, secure, "n"));
+        Serial.println(HttpsClient.get("example.com", 80, "/", body, body.length, headers, headers.length, status));
 
         Serial.println(Udp.listen(4210) ? "listening" : "no socket");
         byte[] payload = new byte[4];

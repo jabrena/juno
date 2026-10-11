@@ -20,19 +20,21 @@ public enum Board {
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi", "arduino-uno-r4-wifi", "UNO R4 WiFi",
             "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO,
             EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
+                    Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.WIFI_S3_NETWORKING, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
                     Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
             ArduinoCore.ZEPHYR, EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTPS_CLIENT,
+                    Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.BLUETOOTH_LE, Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY,
                     Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     /**
-     * The ATmega4809 board: Wi-Fi, UDP and plain HTTP through its NINA-W102 module ({@code WiFiNINA}), and the
+     * The ATmega4809 board: Wi-Fi, UDP, HTTP and HTTPS through its NINA-W102 module ({@code WiFiNINA}), and the
      * GPIO, SPI and analog pins shields such as the SD card, TFT touch and LCD keypad shields use.
      */
     UNO_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoWiFiRev2", "arduino-uno-wifi-rev2", "UNO WiFi Rev2",
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR,
-            EnumSet.of(Capability.WIFI, Capability.HTTP_CLIENT, Capability.BIG_NUMBERS));
+            EnumSet.of(Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.BIG_NUMBERS));
 
     public static final Board DEFAULT = UNO_R4_WIFI;
 

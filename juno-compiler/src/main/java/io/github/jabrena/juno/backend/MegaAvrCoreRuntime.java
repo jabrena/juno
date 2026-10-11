@@ -7,8 +7,8 @@ import io.github.jabrena.juno.RuntimeConfig;
  * The UNO WiFi Rev2's {@code arduino:megaavr} core (ATmega4809). Its {@code delay()} and pin functions take 8- and
  * 16-bit parameters, so the generated code reaches them through the {@code juno_*} wrappers {@link AvrRuntimeShim}
  * defines; its own weak {@code yield()} serves the loop backedges. Networking is the NINA-W102 module through
- * {@code WiFiNINA}: Wi-Fi, UDP and plain HTTP. The board has no LED matrix, no HTTP server or TLS support in Juno, and
- * no thread runtime; the linker's capability checks keep programs needing them from reaching this class.
+ * {@code WiFiNINA}: Wi-Fi, UDP, HTTP and HTTPS (TLS on the module). The board has no LED matrix, no HTTP server or email
+ * clients in Juno, and no thread runtime; the linker's capability checks keep programs needing them from reaching this class.
  */
 record MegaAvrCoreRuntime() implements CoreRuntime {
     @Override
@@ -71,19 +71,24 @@ record MegaAvrCoreRuntime() implements CoreRuntime {
         return "static WiFiUDP juno_udp;";
     }
 
+    /** {@code WiFiNINA.h} already declares {@code WiFiSSLClient}. */
     @Override
     public String httpsInclude() {
-        throw unsupported("HTTPS");
+        return "";
     }
 
     @Override
     public String httpsHelpers() {
-        throw unsupported("HTTPS");
+        return "";
     }
 
+    /**
+     * The NINA-W102 module runs TLS itself, so HTTPS costs the ATmega4809 next to nothing; the module trusts the root
+     * certificates in its firmware (the Arduino IDE's certificate uploader adds more).
+     */
     @Override
     public String httpsClientDeclaration() {
-        throw unsupported("HTTPS");
+        return "WiFiSSLClient client;";
     }
 
     /** The core's weak {@code yield()} stays: the board's USB serial is a separate bridge chip, not serviced here. */

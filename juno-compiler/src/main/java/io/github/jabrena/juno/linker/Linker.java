@@ -241,9 +241,9 @@ public final class Linker {
                 Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
                 Intrinsic.UDP_STOP);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
-                Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY,
-                Intrinsic.SMTP_SEND_TLS, Intrinsic.POP3_MESSAGE_COUNT, Intrinsic.POP3_READ_LATEST,
-                Intrinsic.POP3_READ_SUBJECT);
+                Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY);
+        require(required, Capability.TLS_EMAIL, Intrinsic.SMTP_SEND_TLS, Intrinsic.POP3_MESSAGE_COUNT,
+                Intrinsic.POP3_READ_LATEST, Intrinsic.POP3_READ_SUBJECT);
         require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_GET, Intrinsic.HTTP_POST,
                 Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH, Intrinsic.HTTP_QUERY);
         require(required, Capability.WIFI_S3_NETWORKING, Intrinsic.SMTP_SEND);
