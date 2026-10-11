@@ -2,11 +2,12 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
 /** int arithmetic, shifts, bit operations, branches and loops. */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
 public final class IntMath {
     static int collatz(int start) {
         int steps = 0;
