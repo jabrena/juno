@@ -7,8 +7,8 @@ import io.github.jabrena.juno.RuntimeConfig;
  * The UNO WiFi Rev2's {@code arduino:megaavr} core (ATmega4809). Its {@code delay()} and pin functions take 8- and
  * 16-bit parameters, so the generated code reaches them through the {@code juno_*} wrappers {@link AvrRuntimeShim}
  * defines; its own weak {@code yield()} serves the loop backedges. Networking is the NINA-W102 module through
- * {@code WiFiNINA}: Wi-Fi, UDP, HTTP and HTTPS (TLS on the module). The board has no LED matrix, no HTTP server or email
- * clients in Juno, and no thread runtime; the linker's capability checks keep programs needing them from reaching this class.
+ * {@code WiFiNINA}: Wi-Fi, UDP, HTTP, HTTPS and the implicit-TLS email clients (TLS on the module). The board has no
+ * LED matrix, no HTTP server, no STARTTLS mail submission and no thread runtime; the linker's capability checks keep programs needing them from reaching this class.
  */
 record MegaAvrCoreRuntime() implements CoreRuntime {
     @Override

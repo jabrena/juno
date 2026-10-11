@@ -7,6 +7,8 @@ import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.net.Wifi;
+import io.github.jabrena.juno.api.net.email.Pop3Client;
+import io.github.jabrena.juno.api.net.email.Smtp;
 import io.github.jabrena.juno.api.net.http.HttpClient;
 import io.github.jabrena.juno.api.net.http.HttpsClient;
 import io.github.jabrena.juno.api.net.http.Json;
@@ -17,12 +19,18 @@ import java.util.Properties;
 
 /**
  * The UNO WiFi Rev2's peripheral APIs end to end on the 8-bit target, against the simavr harness's stand-ins: Wi-Fi
- * and a WiFiClient/WiFiSSLClient that answers one chunked HTTP response (WiFiNINA.h), a loopback UDP socket (WiFiUdp.h), an SD card
+ * and a WiFiClient/WiFiSSLClient that answers one chunked HTTP response, or plays an SMTP or POP3 server (WiFiNINA.h), a loopback UDP socket (WiFiUdp.h), an SD card
  * in RAM holding config.txt (SdFat.h), and pins that read as zero for the LCD and TFT shields. No JVM can run these
  * APIs, so Peripherals.expected holds the output by hand.
  */
 @Board(ArduinoUnoWiFiRev2.class)
 public final class Peripherals {
+    static void printBytes(byte[] bytes, int length) {
+        for (int i = 0; i < length; i++) {
+            Serial.print((char) bytes[i] + "");
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         Wifi.begin("juno", "secret");
         Serial.println(Wifi.status() == Wifi.STATUS_CONNECTED ? "wifi up" : "wifi down");
@@ -47,6 +55,19 @@ public final class Peripherals {
         Serial.println(status[0] + " " + secure + " " + Json.getInt(body, secure, "n"));
         Serial.println(HttpsClient.get("example.com", 80, "/", body, body.length, headers, headers.length, status));
 
+        Serial.println(Smtp.sendTls("smtp.example.com", 465, "rev2@example.com", "secret", "rev2@example.com",
+                "you@example.com", "Hello", "Sent from a UNO WiFi Rev2"));
+        Serial.println(Smtp.sendTls("smtp.example.com", 465, "rev2@example.com", "wrong", "rev2@example.com",
+                "you@example.com", "Hello", "Sent from a UNO WiFi Rev2"));
+        Serial.println(Pop3Client.messageCount("pop.example.com", 995, "rev2", "secret"));
+        Serial.println(Pop3Client.messageCount("pop.example.com", 995, "rev2", "wrong"));
+        int mailBody = Pop3Client.readLatest("pop.example.com", 995, "rev2", "secret", headers, headers.length, body,
+                body.length, status);
+        printBytes(headers, status[0]);
+        printBytes(body, mailBody);
+        int subject = Pop3Client.readSubject("pop.example.com", 995, "rev2", "secret", 1, body, body.length);
+        printBytes(body, subject);
+        Serial.println("");
         Serial.println(Udp.listen(4210) ? "listening" : "no socket");
         byte[] payload = new byte[4];
         payload[0] = 'p';

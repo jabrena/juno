@@ -195,7 +195,9 @@ Operations that run out of memory panic loudly; they never return a wrong value.
 | `Wifi`, `Udp` | Yes | Through WiFiNINA |
 | `HttpClient`, `Json` | Yes | |
 | `HttpsClient` | Yes | TLS runs on the NINA-W102 module, which trusts the root certificates in its firmware; add others with the Arduino IDE's certificate uploader |
-| `HttpServer`, `Smtp`, `Pop3Client` | No | Rejected at compile time |
+| `Smtp.sendTls`, `Pop3Client` | Yes | Implicit TLS (usually ports 465 and 995) on the NINA-W102 module, as `WiFiSSLClient` does on the UNO R4 WiFi |
+| `Smtp.send` (STARTTLS, usually port 587) | No | Upgrading a plain connection needs a TLS stack on the board itself (the UNO R4 WiFi runs ESP_SSLClient), far beyond 6 KB of RAM; use `Smtp.sendTls` on port 465 |
+| `HttpServer` | No | Rejected at compile time |
 | `SdCard`, `Properties` | Yes | At most 2 open files; `Properties` of 8 entries, 15-character keys, 31-character values |
 | `RandomAccessFile` | Untested | Generated, but not yet run in the simulator |
 | `LcdKeypadShield`, `TftTouchShield` | Yes | |
@@ -217,7 +219,7 @@ install or in Docker:
 ```
 
 The suite covers the language conformance programs (including every primitive type's edge cases
-and `java.math`), plus a peripheral program that exercises HTTP, HTTPS, JSON, UDP, the SD card,
+and `java.math`), plus a peripheral program that exercises HTTP, HTTPS, SMTP over TLS, POP3, JSON, UDP, the SD card,
 `Properties` and the LCD and TFT shields against simulated hardware. Generated sketches have not
 yet been run on a physical UNO WiFi Rev2.
 

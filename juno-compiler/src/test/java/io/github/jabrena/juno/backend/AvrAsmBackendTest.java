@@ -169,15 +169,35 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void rejectsTheEmailClientsTheBoardLacks() {
-        assertThatThrownBy(() -> compile("demo.AvrPop3", """
+    void sendsAndReadsMailOverImplicitTlsLikeTheUnoR4() throws Exception {
+        CompilationResult result = compile("demo.AvrMail", """
+                        Serial.println(Smtp.sendTls("smtp.example.com", 465, "user", "secret", "a@example.com",
+                                "b@example.com", "Hello", "Body"));
                         Serial.println(Pop3Client.messageCount("pop.example.com", 995, "user", "secret"));
                 """, """
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 import io.github.jabrena.juno.api.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.net.email.Smtp;
+                """);
+        assertThat(result.runtimeShim())
+                .contains("extern \"C\" int32_t juno_avr_thunk_juno_smtp_send_tls() {")
+                .contains("extern \"C\" int32_t juno_avr_thunk_juno_pop3_message_count() {")
+                .contains("WiFiSSLClient client;")
+                .doesNotContain("ESP_SSLClient");
+    }
+
+    @Test
+    void rejectsStartTlsMailSubmission() {
+        assertThatThrownBy(() -> compile("demo.AvrStartTls", """
+                        Serial.println(Smtp.send("smtp.example.com", 587, "user", "secret", "a@example.com",
+                                "b@example.com", "Hello", "Body"));
+                """, """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.net.email.Smtp;
                 """))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("does not provide the TLS email clients");
+                .hasMessageContaining("Smtp.send (STARTTLS) requires @Board(ArduinoUnoR4WiFi.class)")
+                .hasMessageContaining("use Smtp.sendTls with implicit TLS, usually port 465");
     }
 
     @Test

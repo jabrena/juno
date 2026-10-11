@@ -246,7 +246,7 @@ public final class Linker {
                 Intrinsic.POP3_READ_LATEST, Intrinsic.POP3_READ_SUBJECT);
         require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_GET, Intrinsic.HTTP_POST,
                 Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH, Intrinsic.HTTP_QUERY);
-        require(required, Capability.WIFI_S3_NETWORKING, Intrinsic.SMTP_SEND);
+        require(required, Capability.SMTP_STARTTLS, Intrinsic.SMTP_SEND);
         require(required, Capability.USB_HID, Intrinsic.MOUSE_BEGIN, Intrinsic.MOUSE_MOVE);
         require(required, Capability.STRUCTURED_CONCURRENCY, Intrinsic.TASK_JOINER_ALL_SUCCESSFUL,
                 Intrinsic.TASK_JOINER_ANY_SUCCESSFUL, Intrinsic.TASK_JOINER_AWAIT_ALL_SUCCESSFUL,

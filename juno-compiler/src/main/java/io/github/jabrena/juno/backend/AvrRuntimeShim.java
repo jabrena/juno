@@ -33,7 +33,7 @@ final class AvrRuntimeShim {
     /** Shim features this board's runtime does not have; the linker's capability checks normally stop them first. */
     private static final Set<ShimFeature> UNSUPPORTED = EnumSet.of(ShimFeature.LED_MATRIX, ShimFeature.MOUSE,
             ShimFeature.LEGO_POWERED_UP, ShimFeature.HTTP_SERVER,
-            ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3, ShimFeature.THREADS, ShimFeature.THREAD_ENTRY,
+            ShimFeature.SMTP, ShimFeature.THREADS, ShimFeature.THREAD_ENTRY,
             ShimFeature.TASK_CALLABLE_ENTRY, ShimFeature.STRUCTURED_TASKS, ShimFeature.SCOPED_VALUES,
             ShimFeature.SCOPED_CALL_ENTRY);
 
@@ -109,10 +109,11 @@ final class AvrRuntimeShim {
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
         }
-        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS)) {
+        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.SMTP_TLS,
+                ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
         }
-        if (uses(ShimFeature.HTTPS)) {
+        if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsInclude());
         }
         if (uses(ShimFeature.SD)) {
@@ -470,7 +471,7 @@ final class AvrRuntimeShim {
                 """ : "");
     }
 
-    /** Wi-Fi, UDP, JSON and the HTTP/HTTPS client over WiFiNINA. */
+    /** Wi-Fi, UDP, JSON, the HTTP/HTTPS client and the TLS email clients over WiFiNINA. */
     private void appendNetworkHelpers(StringBuilder shim) {
         if (uses(ShimFeature.WIFI)) {
             shim.append(core.wifiHelpers());
@@ -486,11 +487,15 @@ final class AvrRuntimeShim {
         if (uses(ShimFeature.JSON_STRING_VALUE)) {
             shim.append(NetworkShimLibraries.jsonStringValueHelpers());
         }
-        if (uses(ShimFeature.HTTPS)) {
+        if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsHelpers());
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
             shim.append(NetworkShimLibraries.httpHelpers(features, core.httpsClientDeclaration()));
+        }
+        // Smtp.sendTls and Pop3Client, exactly as on the UNO R4 WiFi: the board's TLS client is WiFiSSLClient.
+        if (usesAny(ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
+            shim.append(NetworkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
         }
     }
 

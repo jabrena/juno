@@ -42,10 +42,11 @@ public enum Capability {
             return board.displayName() + " does not provide a TCP server stack";
         }
     },
-    WIFI_S3_NETWORKING("Email networking") {
+    SMTP_STARTTLS("Smtp.send (STARTTLS)") {
         @Override
         public String unsupportedReason(Board board) {
-            return board.displayName() + " does not provide the WiFiS3 networking stack";
+            return board.displayName() + " cannot upgrade a plain connection to TLS in place (its TLS client only "
+                    + "speaks TLS from the first byte); use Smtp.sendTls with implicit TLS, usually port 465";
         }
     },
     BLUETOOTH_LE("PoweredUpHubRemote") {
