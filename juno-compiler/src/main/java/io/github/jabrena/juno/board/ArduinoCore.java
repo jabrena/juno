@@ -9,19 +9,31 @@ import io.github.jabrena.juno.RuntimeLimits;
  */
 public enum ArduinoCore {
     /** {@code arduino:renesas_uno}: the UNO R4's classic, non-RTOS core. */
-    RENESAS_UNO("Renesas", RuntimeLimits.MIN_THREAD_STACK_BYTES),
+    RENESAS_UNO("Renesas", Architecture.THUMB2, RuntimeLimits.MIN_THREAD_STACK_BYTES),
     /**
      * {@code arduino:zephyr}: provides its own {@code yield()} and inlines {@code delay()}/
      * {@code delayMicroseconds()}, so generated code must reach those through shim functions.
      */
-    ZEPHYR("Zephyr", 4096);
+    ZEPHYR("Zephyr", Architecture.THUMB2, 4096),
+    /**
+     * {@code arduino:megaavr}: the UNO WiFi Rev2's ATmega4809 core. It has no RTOS and no thread runtime, so its
+     * thread stack size is never used.
+     */
+    MEGAAVR("megaAVR", Architecture.AVR, 0);
 
     private final String displayName;
+    private final Architecture architecture;
     private final int defaultThreadStackBytes;
 
-    ArduinoCore(String displayName, int defaultThreadStackBytes) {
+    ArduinoCore(String displayName, Architecture architecture, int defaultThreadStackBytes) {
         this.displayName = displayName;
+        this.architecture = architecture;
         this.defaultThreadStackBytes = defaultThreadStackBytes;
+    }
+
+    /** The instruction set this core's boards run, which selects the code generator. */
+    public Architecture architecture() {
+        return architecture;
     }
 
     /** Stack bytes of each extra task when the runtime configuration does not choose one. */

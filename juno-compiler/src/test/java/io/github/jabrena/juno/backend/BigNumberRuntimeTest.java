@@ -79,7 +79,8 @@ class BigNumberRuntimeTest {
      */
     @Test
     void neverCollectsInTheMiddleOfAnOperation() {
-        String source = BigNumberRuntime.handleHelpers() + BigNumberRuntime.helpers(1, 2, 3, true);
+        String source = BigNumberRuntime.handleHelpers() + BigNumberRuntime.helpers(1, 2, 3, true)
+                + BigNumberRuntime.helpersWithoutDoubles(1, 2, 3);
         Map<String, String> bodies = new LinkedHashMap<>();
         Matcher header = Pattern.compile("\\n\\s*(?:extern \"C\" (?:JUNO_ASM_ABI )?|static )[\\w*]+ (juno_\\w+)\\([^)]*\\) \\{")
                 .matcher(source);

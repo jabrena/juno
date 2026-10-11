@@ -59,5 +59,7 @@ enum ShimFeature {
     /** {@code Thread.sleep}/{@code Thread.yield} in a program that creates no thread. */
     THREAD_BASICS,
     /** {@code AtomicInteger}/{@code AtomicBoolean}/{@code AtomicLong} cells in the arena. */
-    ATOMICS
+    ATOMICS,
+    /** AVR only: {@code int} multiply, divide, remainder and variable shifts, which have no 32-bit instruction there. */
+    AVR_INT_HELPERS
 }
