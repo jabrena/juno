@@ -105,7 +105,7 @@ final class IntrinsicLowering {
     private static final Operand STRING_ARGUMENT = new StringArgument();
 
     private final Map<Intrinsic, Lowering> lowerings = new EnumMap<>(Intrinsic.class);
-    private final AsmEmitter asm;
+    private final IntrinsicTarget target;
     private final Set<ShimFeature> features;
     private final Set<Intrinsic> usedMath;
 
@@ -113,9 +113,9 @@ final class IntrinsicLowering {
      * @param features collects every optional shim feature a lowered intrinsic needs
      * @param usedMath collects every {@code java.lang.Math} intrinsic lowered, for {@link MathRuntime#helpers}
      */
-    IntrinsicLowering(AsmEmitter asm, CoreRuntime coreRuntime, Set<ShimFeature> features, Set<Intrinsic> usedMath,
-                      boolean usesThreads) {
-        this.asm = asm;
+    IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Set<ShimFeature> features,
+                      Set<Intrinsic> usedMath, boolean usesThreads) {
+        this.target = target;
         this.features = features;
         this.usedMath = usedMath;
         registerExceptions();
@@ -146,22 +146,16 @@ final class IntrinsicLowering {
         }
         Lowering lowering = lowerings.get(call.intrinsic());
         if (lowering == null) {
-            throw Thumb2AsmBackend.unsupported("intrinsic " + call.intrinsic());
+            throw target.unsupported("intrinsic " + call.intrinsic());
         }
         lowering.emit(output, frame, call);
     }
 
     private void registerExceptions() {
-        lowerings.put(Intrinsic.THROWABLE_SET_MESSAGE, (output, frame, call) -> {
-            asm.load(output, frame, "r0", call.receiver().orElseThrow());
-            asm.load(output, frame, "r1", call.arguments().get(0));
-            output.append("    str r1, [r0, #").append(ThrowableTypes.MESSAGE_OFFSET).append("]\n");
-        });
-        lowerings.put(Intrinsic.THROWABLE_GET_MESSAGE, (output, frame, call) -> {
-            asm.load(output, frame, "r0", call.receiver().orElseThrow());
-            output.append("    ldr r0, [r0, #").append(ThrowableTypes.MESSAGE_OFFSET).append("]\n");
-            call.target().ifPresent(target -> asm.store(output, frame, "r0", target));
-        });
+        lowerings.put(Intrinsic.THROWABLE_SET_MESSAGE, (output, frame, call) -> target.storeObjectWord(output, frame,
+                call.receiver().orElseThrow(), ThrowableTypes.MESSAGE_OFFSET, call.arguments().get(0)));
+        lowerings.put(Intrinsic.THROWABLE_GET_MESSAGE, (output, frame, call) -> target.loadObjectWord(output, frame,
+                call.receiver().orElseThrow(), ThrowableTypes.MESSAGE_OFFSET, call.target()));
         shim(Intrinsic.THROW_DISPATCH, "juno_throw_dispatch", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_RAISE, "juno_throw_raise", Result.NONE, List.of(arg(0)), ShimFeature.EXCEPTIONS);
@@ -193,14 +187,10 @@ final class IntrinsicLowering {
             shim(Intrinsic.DELAY_MILLIS, coreRuntime.delayMillisFunction(), Result.NONE, List.of(arg(0)));
         }
         shim(Intrinsic.DELAY_MICROS, coreRuntime.delayMicrosFunction(), Result.NONE, List.of(arg(0)));
-        lowerings.put(Intrinsic.GPIO_BUILTIN_LED, (output, frame, call) -> {
-            asm.emitLoadImmediate(output, "r0", coreRuntime.builtinLedPin());
-            call.target().ifPresent(target -> asm.store(output, frame, "r0", target));
-        });
-        lowerings.put(Intrinsic.LED_MATRIX_COLUMNS, (output, frame, call) -> {
-            asm.emitLoadImmediate(output, "r0", coreRuntime.ledMatrixColumns());
-            call.target().ifPresent(target -> asm.store(output, frame, "r0", target));
-        });
+        lowerings.put(Intrinsic.GPIO_BUILTIN_LED, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, coreRuntime.builtinLedPin(), value)));
+        lowerings.put(Intrinsic.LED_MATRIX_COLUMNS, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, coreRuntime.ledMatrixColumns(), value)));
         shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of(), ShimFeature.LED_MATRIX);
         shim(Intrinsic.LED_MATRIX_LOAD_FRAME, "juno_led_matrix_load_frame", Result.NONE,
                 List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LED_MATRIX);
@@ -601,15 +591,13 @@ final class IntrinsicLowering {
         for (Operand operand : shimCall.operands()) {
             words.add(operand.resolve(call));
         }
-        asm.emitShimCall(output, frame, shimCall.function(), words);
+        target.emitShimCall(output, frame, shimCall.function(), words);
         switch (shimCall.result()) {
             case NONE -> { }
-            case WORD -> call.target().ifPresent(target -> asm.store(output, frame, "r0", target));
-            case WIDE -> call.target().ifPresent(target -> asm.store64(output, frame, "r0", "r1", target));
-            case FIRST_ARGUMENT -> {
-                asm.load(output, frame, "r0", call.arguments().get(0));
-                call.target().ifPresent(target -> asm.store(output, frame, "r0", target));
-            }
+            case WORD -> call.target().ifPresent(value -> target.storeResult(output, frame, value));
+            case WIDE -> call.target().ifPresent(value -> target.storeWideResult(output, frame, value));
+            case FIRST_ARGUMENT -> call.target().ifPresent(
+                    value -> target.copy(output, frame, call.arguments().get(0), value));
         }
     }
 
@@ -632,14 +620,8 @@ final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
-        asm.emitShimCall(output, frame, MathRuntime.symbol(call.intrinsic()), words);
-        call.target().ifPresent(target -> {
-            if (FrameLayout.isWide(target.type())) {
-                asm.store64(output, frame, "r0", "r1", target);
-            } else {
-                asm.store(output, frame, "r0", target);
-            }
-        });
+        target.emitShimCall(output, frame, MathRuntime.symbol(call.intrinsic()), words);
+        call.target().ifPresent(value -> storeTypedResult(output, frame, value));
     }
 
     /**
@@ -667,13 +649,15 @@ final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
-        asm.emitShimCall(output, frame, BigNumberMethods.shimSymbol(call.intrinsic()), words);
-        call.target().ifPresent(target -> {
-            if (FrameLayout.isWide(target.type())) {
-                asm.store64(output, frame, "r0", "r1", target);
-            } else {
-                asm.store(output, frame, "r0", target);
-            }
-        });
+        target.emitShimCall(output, frame, BigNumberMethods.shimSymbol(call.intrinsic()), words);
+        call.target().ifPresent(value -> storeTypedResult(output, frame, value));
+    }
+
+    private void storeTypedResult(StringBuilder output, FrameLayout frame, Value value) {
+        if (FrameLayout.isWide(value.type())) {
+            target.storeWideResult(output, frame, value);
+        } else {
+            target.storeResult(output, frame, value);
+        }
     }
 }

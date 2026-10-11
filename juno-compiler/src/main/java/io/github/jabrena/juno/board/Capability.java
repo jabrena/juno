@@ -18,10 +18,22 @@ public enum Capability {
             return board.displayName() + " has no onboard WiFi module";
         }
     },
+    HTTP_CLIENT("HttpClient") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " does not provide a supported plain-HTTP client";
+        }
+    },
     HTTPS_CLIENT("HTTPS networking") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " does not provide a supported TLS client";
+        }
+    },
+    TLS_EMAIL("Smtp.sendTls and Pop3Client") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " does not provide the TLS email clients";
         }
     },
     HTTP_SERVER("HttpServer") {
@@ -30,10 +42,11 @@ public enum Capability {
             return board.displayName() + " does not provide a TCP server stack";
         }
     },
-    WIFI_S3_NETWORKING("HTTP client and email networking") {
+    SMTP_STARTTLS("Smtp.send (STARTTLS)") {
         @Override
         public String unsupportedReason(Board board) {
-            return board.displayName() + " does not provide the WiFiS3 networking stack";
+            return board.displayName() + " cannot upgrade a plain connection to TLS in place (its TLS client only "
+                    + "speaks TLS from the first byte); use Smtp.sendTls with implicit TLS, usually port 465";
         }
     },
     BLUETOOTH_LE("PoweredUpHubRemote") {
@@ -46,6 +59,31 @@ public enum Capability {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + "'s " + board.core().displayName() + " core has no WDT library";
+        }
+    },
+    USB_HID("Mouse") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no native USB port to act as a HID device";
+        }
+    },
+    STRUCTURED_CONCURRENCY("StructuredTaskScope, ScopedValue and locks") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no room for per-task stacks and the cooperative scheduler";
+        }
+    },
+    BIG_NUMBERS("java.math") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no room for the arbitrary-precision runtime";
+        }
+    },
+    DOUBLE_MATH("double-precision Math functions (sin, cos, tan, asin, acos, atan, atan2, exp, log, log10, pow, cbrt, hypot)") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + "'s " + board.core().displayName()
+                    + " toolchain only has single-precision libm, which would silently change the results";
         }
     };
 

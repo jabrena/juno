@@ -332,7 +332,7 @@ class BoardTest {
         assertThat(Board.UNO_Q.supports(Capability.HTTPS_CLIENT)).isTrue();
         assertThat(Board.UNO_Q.supports(Capability.LED_MATRIX)).isTrue();
         assertThat(Board.UNO_Q.supports(Capability.HTTP_SERVER)).isTrue();
-        assertThat(Board.UNO_Q.supports(Capability.WIFI_S3_NETWORKING)).isFalse();
+        assertThat(Board.UNO_Q.supports(Capability.SMTP_STARTTLS)).isFalse();
         assertThat(Board.UNO_Q.supports(Capability.WATCHDOG)).isFalse();
     }
 }

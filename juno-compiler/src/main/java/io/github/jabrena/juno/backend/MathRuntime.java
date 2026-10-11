@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.intrinsic.Intrinsic;
+import org.jspecify.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Locale;
@@ -20,7 +21,7 @@ import java.util.Set;
  */
 final class MathRuntime {
     /** Shared helpers several functions build on; {@code static inline}, so unused ones cost nothing. */
-    private static final String PRELUDE = """
+    private static final String FLOATING_PRELUDE = """
             static inline float juno_java_fmin(float a, float b) {
               if (a != a) return a;
               if (a == 0.0f && b == 0.0f && signbit(b)) return b;
@@ -41,6 +42,10 @@ final class MathRuntime {
               if (a == 0.0 && b == 0.0 && signbit(a)) return b;
               return a >= b ? a : b;
             }
+            """;
+
+    /** The {@code long} helpers of the prelude, on integers only (every architecture's C can run them). */
+    static final String LONG_PRELUDE = """
             static inline int64_t juno_java_floor_div_long(int64_t x, int64_t y) {
               if (y == 0) juno_panic();
               if (y == -1) return static_cast<int64_t>(0u - static_cast<uint64_t>(x));
@@ -56,6 +61,8 @@ final class MathRuntime {
               return m;
             }
             """;
+
+    private static final String PRELUDE = FLOATING_PRELUDE + LONG_PRELUDE;
 
     private static final Map<Intrinsic, String> SOURCES = new EnumMap<>(Intrinsic.class);
 
@@ -142,6 +149,15 @@ final class MathRuntime {
     private static void define(Intrinsic intrinsic, String returnType, String parameters, String body) {
         SOURCES.put(intrinsic, "extern \"C\" JUNO_ASM_ABI " + returnType + " " + symbol(intrinsic)
                 + "(" + parameters + ") { " + body + " }\n");
+    }
+
+    /**
+     * The source of {@code intrinsic}'s shim function when it only takes and returns integers ({@code int} and
+     * {@code long}), so it is portable to any C; null for a floating-point overload.
+     */
+    static @Nullable String integerSource(Intrinsic intrinsic) {
+        String source = SOURCES.get(intrinsic);
+        return source == null || source.contains("float") || source.contains("double") ? null : source;
     }
 
     static boolean isMath(Intrinsic intrinsic) {

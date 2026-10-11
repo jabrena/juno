@@ -47,6 +47,18 @@ record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<In
     }
 
     static FrameLayout of(IrMethod method) {
+        return of(method, AsmEmitter.PUSH_BYTES, 8);
+    }
+
+    /**
+     * The same slots with nothing reserved for alignment: for a target whose stack has no alignment rule (AVR),
+     * {@link #frameSize()} is exactly the bytes the values and locals occupy.
+     */
+    static FrameLayout packed(IrMethod method) {
+        return of(method, 0, 1);
+    }
+
+    private static FrameLayout of(IrMethod method, int pushBytes, int alignment) {
         List<Value> values = method.values();
         int numValues = values.size();
         int numLocals = method.maxLocals();
@@ -68,7 +80,7 @@ record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<In
         // PUSH_BYTES (36) isn't itself a multiple of 8; round the *total* prologue adjustment up to
         // the next multiple of 8 so `sp` stays AAPCS-aligned for every `bl`, then subtract PUSH_BYTES
         // back out to get the frame size to actually `sub sp` by.
-        int frameSize = AsmEmitter.roundUp(AsmEmitter.PUSH_BYTES + rawSize, 8) - AsmEmitter.PUSH_BYTES;
+        int frameSize = AsmEmitter.roundUp(pushBytes + rawSize, alignment) - pushBytes;
         return new FrameLayout(frameSize, valueOffsets, localOffsets, constants);
     }
 

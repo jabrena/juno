@@ -1,0 +1,38 @@
+wifi up
+192.168.1.45
+201
+31
+-42
+ok
+215
+temp=21.5
+201 31 -42
+-1
+0
+-5
+2
+-4
+From: Alice <alice@example.com>
+Subject: Hello Rev2
+Line one
+.dot line
+First
+listening
+4
+4
+10.7:4210
+pg
+sd ready
+42
+juno
+8080
+Rev2
+fallback
+10
+log exists
+first
+x=42
+1
+untouched
+done
+[juno-exit]

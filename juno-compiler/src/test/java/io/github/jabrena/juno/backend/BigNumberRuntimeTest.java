@@ -13,9 +13,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -63,6 +69,64 @@ class BigNumberRuntimeTest {
         for (int index = 0; index < CASES; index++) {
             assertThat(normalize(actual.get(index))).as(commands.get(index)).isEqualTo(normalize(expected.get(index)));
         }
+    }
+
+    /**
+     * The runtime's memory rule: an operation collects garbage only in its first {@code juno_big_prepare}, never in the
+     * middle, because intermediate values live only in C locals the conservative collector may not see. So no function
+     * may call one that can collect, except as a tail delegation ({@code return f(...)}) that holds nothing yet. A nested
+     * collecting call once let {@code BigInteger.sqrt} free its own Newton iterate when the arena was tight.
+     */
+    @Test
+    void neverCollectsInTheMiddleOfAnOperation() {
+        String source = BigNumberRuntime.handleHelpers() + BigNumberRuntime.helpers(1, 2, 3, true)
+                + BigNumberRuntime.helpersWithoutDoubles(1, 2, 3);
+        Map<String, String> bodies = new LinkedHashMap<>();
+        Matcher header = Pattern.compile("\\n\\s*(?:extern \"C\" (?:JUNO_ASM_ABI )?|static )[\\w*]+ (juno_\\w+)\\([^)]*\\) \\{")
+                .matcher(source);
+        while (header.find()) {
+            int depth = 1;
+            int end = header.end();
+            while (depth > 0) {
+                char c = source.charAt(end++);
+                depth += c == '{' ? 1 : c == '}' ? -1 : 0;
+            }
+            bodies.put(header.group(1), source.substring(header.end(), end));
+        }
+        Set<String> collecting = new HashSet<>();
+        bodies.forEach((name, body) -> {
+            if (!name.equals("juno_big_prepare") && body.contains("juno_big_prepare(")) {
+                collecting.add(name);
+            }
+        });
+        boolean grew = true;
+        while (grew) {
+            grew = false;
+            for (Map.Entry<String, String> function : bodies.entrySet()) {
+                if (!collecting.contains(function.getKey()) && collecting.stream()
+                        .anyMatch(callee -> function.getValue().matches("(?s).*\\b" + callee + "\\(.*"))) {
+                    collecting.add(function.getKey());
+                    grew = true;
+                }
+            }
+        }
+        List<String> violations = new ArrayList<>();
+        bodies.forEach((name, body) -> {
+            List<String> statements = body.lines().map(String::strip).filter(line -> !line.isEmpty()).toList();
+            for (int index = 0; index < statements.size(); index++) {
+                String statement = statements.get(index);
+                // Safe: the first statement holds nothing yet, and a return ends the operation with the call.
+                if (index == 0 || statement.matches("(if \\(.*\\) )?return .*")) {
+                    continue;
+                }
+                for (String callee : collecting) {
+                    if (!callee.equals(name) && statement.matches(".*\\b" + callee + "\\(.*")) {
+                        violations.add(name + " -> " + callee + ": " + statement);
+                    }
+                }
+            }
+        });
+        assertThat(violations).isEmpty();
     }
 
     /** Exception messages differ between JDK code paths, so only the class is compared. */

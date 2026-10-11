@@ -148,14 +148,6 @@ final class RuntimeShim {
 
     /** Panic handler, yield hook, watchdog, arena allocator and collector, LED matrix and Serial. */
     private String coreRuntime() {
-        // Emitted (or not) once here, at Java-string-generation time — like every other optional
-        // shim feature (ShimFeature.MOUSE, ShimFeature.WIFI, ...) — rather than a C++-level runtime branch, so a
-        // program compiled without --gc-log/juno.gcLog pays zero extra flash/RAM/Serial time for it.
-        String gcLogBefore = gcLoggingEnabled ? "uint32_t junoGcLogUsedBefore = juno_arena_used;" : "";
-        String gcLogAfter = gcLoggingEnabled
-                ? "Serial.print(\"[juno-gc] collect: used \"); Serial.print(junoGcLogUsedBefore); "
-                        + "Serial.print(\" -> \"); Serial.println(juno_arena_used);"
-                : "";
         String watchdogRefresh = usesWatchdog ? "WDT.refresh();" : "";
         String watchdogPanicMessage = usesWatchdog
                 ? "Serial.println(\"[juno-watchdog] panic: board will reset via watchdog in "
@@ -185,6 +177,76 @@ final class RuntimeShim {
                   for (;;) {}
                 }
                 ${JUNO_WATCHDOG_BEGIN_FUNCTION}
+                """.replace("${JUNO_YIELD_FUNCTION}", yieldFunction)
+                .replace("${JUNO_WATCHDOG_REFRESH}", watchdogRefresh)
+                .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogPanicMessage)
+                .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogBeginFunction)
+                + allocator(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcThreadDeclaration)
+                + """
+                ${JUNO_LED_MATRIX_FUNCTIONS}extern "C" void juno_serial_begin(int32_t baud) {
+                  Serial.begin(static_cast<unsigned long>(baud));
+                }
+
+                extern "C" void juno_serial_print(int32_t value) {
+                  Serial.print(value);
+                }
+
+                extern "C" void juno_serial_println(int32_t value) {
+                  Serial.println(value);
+                }
+
+                extern "C" void juno_serial_print_long(int64_t value) {
+                  Serial.print(static_cast<long long>(value));
+                }
+
+                extern "C" void juno_serial_println_long(int64_t value) {
+                  Serial.println(static_cast<long long>(value));
+                }
+
+                extern "C" JUNO_ASM_ABI void juno_serial_print_float(float value) {
+                  Serial.print(static_cast<double>(value));
+                }
+
+                extern "C" JUNO_ASM_ABI void juno_serial_println_float(float value) {
+                  Serial.println(static_cast<double>(value));
+                }
+
+                extern "C" JUNO_ASM_ABI void juno_serial_print_double(double value) {
+                  Serial.print(value);
+                }
+
+                extern "C" JUNO_ASM_ABI void juno_serial_println_double(double value) {
+                  Serial.println(value);
+                }
+
+                // A runtime String (e.g. Throwable.getMessage()) may be null; Java prints "null".
+                extern "C" void juno_serial_print_str(const char* value) {
+                  Serial.print(value != nullptr ? value : "null");
+                }
+
+                extern "C" void juno_serial_println_str(const char* value) {
+                  Serial.println(value != nullptr ? value : "null");
+                }
+                """.replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions);
+    }
+
+    /**
+     * The arena and its conservative mark/sweep collector, {@code juno_alloc}, shared by every architecture: it
+     * scans {@code uintptr_t}-wide words, so it finds 16-bit AVR references as well as 32-bit ARM ones.
+     *
+     * @param gcStackScan the statement scanning the live stack(s) from {@code stackMarker}
+     * @param gcThreadDeclaration declarations that statement needs, or {@code ""}
+     */
+    static String allocator(int arenaBytes, boolean gcLoggingEnabled, String gcStackScan, String gcThreadDeclaration) {
+        // Emitted (or not) once here, at Java-string-generation time — like every other optional
+        // shim feature (ShimFeature.MOUSE, ShimFeature.WIFI, ...) — rather than a C++-level runtime branch, so a
+        // program compiled without --gc-log/juno.gcLog pays zero extra flash/RAM/Serial time for it.
+        String gcLogBefore = gcLoggingEnabled ? "uint32_t junoGcLogUsedBefore = juno_arena_used;" : "";
+        String gcLogAfter = gcLoggingEnabled
+                ? "Serial.print(\"[juno-gc] collect: used \"); Serial.print(junoGcLogUsedBefore); "
+                        + "Serial.print(\" -> \"); Serial.println(juno_arena_used);"
+                : "";
+        return """
                 static uint8_t juno_arena[${JUNO_ARENA_CAPACITY}] __attribute__((aligned(8)));
                 static uint32_t juno_arena_used = 0;
 
@@ -442,60 +504,11 @@ final class RuntimeShim {
                   return memory;
                 }
 
-                ${JUNO_LED_MATRIX_FUNCTIONS}extern "C" void juno_serial_begin(int32_t baud) {
-                  Serial.begin(static_cast<unsigned long>(baud));
-                }
-
-                extern "C" void juno_serial_print(int32_t value) {
-                  Serial.print(value);
-                }
-
-                extern "C" void juno_serial_println(int32_t value) {
-                  Serial.println(value);
-                }
-
-                extern "C" void juno_serial_print_long(int64_t value) {
-                  Serial.print(static_cast<long long>(value));
-                }
-
-                extern "C" void juno_serial_println_long(int64_t value) {
-                  Serial.println(static_cast<long long>(value));
-                }
-
-                extern "C" JUNO_ASM_ABI void juno_serial_print_float(float value) {
-                  Serial.print(static_cast<double>(value));
-                }
-
-                extern "C" JUNO_ASM_ABI void juno_serial_println_float(float value) {
-                  Serial.println(static_cast<double>(value));
-                }
-
-                extern "C" JUNO_ASM_ABI void juno_serial_print_double(double value) {
-                  Serial.print(value);
-                }
-
-                extern "C" JUNO_ASM_ABI void juno_serial_println_double(double value) {
-                  Serial.println(value);
-                }
-
-                // A runtime String (e.g. Throwable.getMessage()) may be null; Java prints "null".
-                extern "C" void juno_serial_print_str(const char* value) {
-                  Serial.print(value != nullptr ? value : "null");
-                }
-
-                extern "C" void juno_serial_println_str(const char* value) {
-                  Serial.println(value != nullptr ? value : "null");
-                }
-                """.replace("${JUNO_YIELD_FUNCTION}", yieldFunction)
-                .replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions)
-                .replace("${JUNO_ARENA_CAPACITY}", Integer.toString(config.arenaBytes()))
+                """.replace("${JUNO_ARENA_CAPACITY}", Integer.toString(arenaBytes))
                 .replace("${JUNO_GC_STACK_SCAN}", gcStackScan)
                 .replace("${JUNO_GC_THREAD_DECLARATION}", gcThreadDeclaration)
                 .replace("${JUNO_GC_LOG_BEFORE}", gcLogBefore)
-                .replace("${JUNO_GC_LOG_AFTER}", gcLogAfter)
-                .replace("${JUNO_WATCHDOG_REFRESH}", watchdogRefresh)
-                .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogPanicMessage)
-                .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogBeginFunction);
+                .replace("${JUNO_GC_LOG_AFTER}", gcLogAfter);
     }
 
     private String ledMatrixFunctions() {
@@ -646,7 +659,8 @@ final class RuntimeShim {
         }
         if (uses(ShimFeature.THREADS)) {
             shim.append(core.threadPort(config));
-            shim.append(ThreadRuntime.scheduler(core.delayMillisFunction(), uses(ShimFeature.EXCEPTIONS),
+            shim.append(ThreadRuntime.scheduler(core.delayMillisFunction(), "juno_gc_scan_range",
+                    uses(ShimFeature.EXCEPTIONS),
                     uses(ShimFeature.THREAD_ENTRY), uses(ShimFeature.TASK_CALLABLE_ENTRY),
                     uses(ShimFeature.STRUCTURED_TASKS), uses(ShimFeature.SCOPED_VALUES),
                     throwableClasses.indexOf("java/util/concurrent/ExecutionException"),

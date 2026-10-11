@@ -1,5 +1,8 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.board.Architecture;
+import io.github.jabrena.juno.board.Board;
+
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -62,6 +65,31 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
         } catch (ArithmeticException | NumberFormatException invalid) {
             throw new CompileException(option + " must be a size such as 49152, 48k or 1m, not '" + size + "'");
         }
+    }
+
+    /**
+     * This configuration as {@code board} runs it. An AVR board has a few KB of RAM, so the default arena becomes
+     * {@link RuntimeLimits#AVR_ARENA_CAPACITY_BYTES} there and an explicit one above
+     * {@link RuntimeLimits#AVR_MAX_ARENA_BYTES} is rejected, as is a task stack above
+     * {@link RuntimeLimits#AVR_MAX_THREAD_STACK_BYTES}; every other board keeps the configuration unchanged.
+     */
+    public RuntimeConfig forBoard(Board board) {
+        if (board.core().architecture() != Architecture.AVR) {
+            return this;
+        }
+        if (threadStackBytes.isPresent() && threadStackBytes.getAsInt() > RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES) {
+            throw new CompileException("The " + board.displayName() + " has too little RAM for "
+                    + threadStackBytes.getAsInt() + "-byte task stacks; juno.Xss can be at most "
+                    + RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES + " bytes there");
+        }
+        if (arenaBytes == DEFAULT.arenaBytes) {
+            return new RuntimeConfig(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES, maxThreads, threadStackBytes);
+        }
+        if (arenaBytes > RuntimeLimits.AVR_MAX_ARENA_BYTES) {
+            throw new CompileException("The " + board.displayName() + " has too little RAM for a " + arenaBytes
+                    + "-byte arena; juno.Xmx can be at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES + " bytes there");
+        }
+        return this;
     }
 
     /** The task stack size to use on a board whose own size is {@code boardDefault}. */

@@ -6,15 +6,16 @@ import io.github.jabrena.juno.board.ArduinoCore;
 /**
  * Everything the generated code needs to know about the {@link ArduinoCore} it links against: the
  * symbols {@code Delay} lowers to and the runtime shim's {@code yield()}/delay glue. The Thumb-2
- * code generator itself is identical for every core; each board-to-core difference lives in exactly
- * one implementation here instead of being branched on across the backend.
+ * code generator itself is identical for every core of an {@link io.github.jabrena.juno.board.Architecture}; each
+ * board-to-core difference lives in exactly one implementation here instead of being branched on across the backend.
  */
-sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime {
+sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime, MegaAvrCoreRuntime {
 
     static CoreRuntime of(ArduinoCore core) {
         return switch (core) {
             case RENESAS_UNO -> new RenesasCoreRuntime();
             case ZEPHYR -> new ZephyrCoreRuntime();
+            case MEGAAVR -> new MegaAvrCoreRuntime();
         };
     }
 

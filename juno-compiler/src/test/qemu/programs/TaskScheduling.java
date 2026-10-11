@@ -2,6 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import java.util.concurrent.StructuredTaskScope;
@@ -11,7 +12,7 @@ import java.util.concurrent.StructuredTaskScope;
  * reuse, and garbage collection while other subtasks are parked with live references on their own stacks. Every
  * printed value is fixed by the joins, so the JVM and the board agree whatever the interleaving.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
 public final class TaskScheduling {
     static int flag;
 

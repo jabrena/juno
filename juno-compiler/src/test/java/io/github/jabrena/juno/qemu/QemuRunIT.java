@@ -3,6 +3,7 @@ package io.github.jabrena.juno.qemu;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -81,7 +82,7 @@ class QemuRunIT {
                 millisSince(start));
     }
 
-    /** Every program under src/test/qemu/programs, once per board. */
+    /** Every program under src/test/qemu/programs, once per Thumb-2 board (SimavrRunIT runs the AVR ones). */
     static Stream<Arguments> programs() throws IOException {
         List<String> mainClasses = new ArrayList<>();
         try (Stream<Path> files = Files.list(QEMU.resolve("programs"))) {
@@ -89,6 +90,7 @@ class QemuRunIT {
                     .forEach(name -> mainClasses.add("demo." + name.substring(0, name.length() - ".java".length())));
         }
         return mainClasses.stream().flatMap(mainClass -> Stream.of(Board.values())
+                .filter(board -> board.core().architecture() == Architecture.THUMB2)
                 .filter(board -> targets(mainClass, board))
                 .map(board -> Arguments.of(mainClass, board)));
     }

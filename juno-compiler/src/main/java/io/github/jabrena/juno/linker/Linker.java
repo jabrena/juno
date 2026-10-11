@@ -11,6 +11,7 @@ import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.BigNumberMethods;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 
@@ -240,11 +241,28 @@ public final class Linker {
                 Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
                 Intrinsic.UDP_STOP);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
-                Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY,
-                Intrinsic.SMTP_SEND_TLS, Intrinsic.POP3_MESSAGE_COUNT, Intrinsic.POP3_READ_LATEST,
-                Intrinsic.POP3_READ_SUBJECT);
-        require(required, Capability.WIFI_S3_NETWORKING, Intrinsic.HTTP_GET, Intrinsic.HTTP_POST,
-                Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH, Intrinsic.HTTP_QUERY, Intrinsic.SMTP_SEND);
+                Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY);
+        require(required, Capability.TLS_EMAIL, Intrinsic.SMTP_SEND_TLS, Intrinsic.POP3_MESSAGE_COUNT,
+                Intrinsic.POP3_READ_LATEST, Intrinsic.POP3_READ_SUBJECT);
+        require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_GET, Intrinsic.HTTP_POST,
+                Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH, Intrinsic.HTTP_QUERY);
+        require(required, Capability.SMTP_STARTTLS, Intrinsic.SMTP_SEND);
+        require(required, Capability.USB_HID, Intrinsic.MOUSE_BEGIN, Intrinsic.MOUSE_MOVE);
+        require(required, Capability.STRUCTURED_CONCURRENCY, Intrinsic.TASK_JOINER_ALL_SUCCESSFUL,
+                Intrinsic.TASK_JOINER_ANY_SUCCESSFUL, Intrinsic.TASK_JOINER_AWAIT_ALL_SUCCESSFUL,
+                Intrinsic.TASK_JOINER_AWAIT_ALL, Intrinsic.TASK_SCOPE_OPEN_DEFAULT, Intrinsic.TASK_SCOPE_OPEN,
+                Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE, Intrinsic.TASK_SCOPE_JOIN,
+                Intrinsic.TASK_SCOPE_IS_CANCELLED, Intrinsic.TASK_GET, Intrinsic.TASK_STATE, Intrinsic.TASK_EXCEPTION,
+                Intrinsic.TASK_SCOPE_CLOSE, Intrinsic.SCOPED_VALUE_NEW, Intrinsic.SCOPED_VALUE_WHERE,
+                Intrinsic.SCOPED_CARRIER_WHERE, Intrinsic.SCOPED_VALUE_GET, Intrinsic.SCOPED_VALUE_IS_BOUND,
+                Intrinsic.SCOPED_VALUE_OR_ELSE, Intrinsic.SCOPED_CARRIER_RUN, Intrinsic.SCOPED_CARRIER_CALL,
+                Intrinsic.MONITOR_ENTER, Intrinsic.MONITOR_EXIT, Intrinsic.REENTRANT_LOCK_NEW,
+                Intrinsic.REENTRANT_LOCK_LOCK, Intrinsic.REENTRANT_LOCK_TRY_LOCK, Intrinsic.REENTRANT_LOCK_UNLOCK);
+        require(required, Capability.BIG_NUMBERS, Arrays.stream(Intrinsic.values())
+                .filter(BigNumberMethods::isBigNumber).toArray(Intrinsic[]::new));
+        require(required, Capability.DOUBLE_MATH, Intrinsic.MATH_SIN, Intrinsic.MATH_COS, Intrinsic.MATH_TAN,
+                Intrinsic.MATH_ASIN, Intrinsic.MATH_ACOS, Intrinsic.MATH_ATAN, Intrinsic.MATH_ATAN2, Intrinsic.MATH_EXP,
+                Intrinsic.MATH_LOG, Intrinsic.MATH_LOG10, Intrinsic.MATH_POW, Intrinsic.MATH_CBRT, Intrinsic.MATH_HYPOT);
         require(required, Capability.HTTP_SERVER, Intrinsic.HTTP_SERVER_BEGIN, Intrinsic.HTTP_SERVER_ACCEPT,
                 Intrinsic.HTTP_SERVER_METHOD, Intrinsic.HTTP_SERVER_PATH, Intrinsic.HTTP_SERVER_RESPOND,
                 Intrinsic.HTTP_SERVER_RESPOND_BUILDER);

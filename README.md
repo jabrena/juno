@@ -1,8 +1,9 @@
 # Juno: Java for Arduino One
 
-Juno is an ahead-of-time compiler for running a practical subset of Java on the Arduino UNO R4 WiFi
-and the Arduino UNO Q. It keeps `javac` as the Java frontend, performs
-closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly.
+Juno is an ahead-of-time compiler for running a practical subset of Java on the Arduino UNO R4 WiFi,
+the Arduino UNO Q and the Arduino UNO WiFi Rev2. It keeps `javac` as the Java frontend, performs
+closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly, or
+AVR assembly for the UNO WiFi Rev2's 8-bit ATmega4809.
 
 [![CI Builds](https://github.com/jabrena/juno/actions/workflows/maven.yaml/badge.svg)](https://github.com/jabrena/juno/actions/workflows/maven.yaml)
 

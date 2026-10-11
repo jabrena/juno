@@ -287,5 +287,37 @@
                 </plugins>
             </build>
         </profile>
+        <!--
+            Run the AVR (UNO WiFi Rev2) programs under simavr and compare them with OpenJDK (src/test/simavr): on a
+            local avr-gcc and libsimavr toolchain when one is installed, otherwise in Docker.
+        -->
+        <profile>
+            <id>simavr</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <groups>simavr</groups>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

@@ -35,7 +35,63 @@ final class BigNumberRuntime {
      */
     static String helpers(int arithmeticClassId, int numberFormatClassId, int illegalArgumentClassId,
                           boolean valueOfDouble) {
-        return ("""
+        return arithmetic(arithmeticClassId, numberFormatClassId, illegalArgumentClassId, 0)
+                + integerDoubleValue()
+                + arithmetic(arithmeticClassId, numberFormatClassId, illegalArgumentClassId, 1)
+                + decimalDoubleValue()
+                + (valueOfDouble ? decimalValueOfDouble() : "");
+    }
+
+    /**
+     * Everything but the conversions from and to the C {@code double}, for an architecture whose C {@code double} is
+     * not binary64 (AVR), which brings its own: {@code juno_big_integer_double_value},
+     * {@code juno_big_decimal_double_value} and, when {@code valueOfDouble}, {@code juno_big_decimal_value_of_double}.
+     */
+    static String helpersWithoutDoubles(int arithmeticClassId, int numberFormatClassId, int illegalArgumentClassId) {
+        return arithmetic(arithmeticClassId, numberFormatClassId, illegalArgumentClassId, 0)
+                + arithmetic(arithmeticClassId, numberFormatClassId, illegalArgumentClassId, 1);
+    }
+
+    /** {@code BigInteger.doubleValue} through the C library's correctly rounded {@code strtod}. */
+    private static String integerDoubleValue() {
+        return """
+                extern "C" JUNO_ASM_ABI double juno_big_integer_double_value(int32_t a) {
+                  juno_big_prepare(4u * (juno_big_len_of(a) + 8u) * 4u);
+                  uint32_t length = 0;
+                  char* digits = juno_big_decimal(a, &length);
+                  double magnitude = strtod(digits, nullptr);
+                  return juno_big_sign_of(a) < 0 ? -magnitude : magnitude;
+                }
+                """;
+    }
+
+    /** {@code BigDecimal.doubleValue} through {@code strtod}. */
+    private static String decimalDoubleValue() {
+        return """
+                extern "C" JUNO_ASM_ABI double juno_big_decimal_double_value(int32_t a) {
+                  int32_t text = juno_bd_text(a, false);
+                  return strtod(juno_big_pointer_chars(text), nullptr);
+                }
+                """;
+    }
+
+    /** {@code BigDecimal.valueOf(double)}, through the runtime-string {@code juno_format_double}. */
+    private static String decimalValueOfDouble() {
+        return """
+
+                extern "C" JUNO_ASM_ABI int32_t juno_big_decimal_value_of_double(double value) {
+                  if (value != value || value - value != 0.0) return juno_big_number_format("Infinite or NaN");
+                  char text[40];
+                  juno_format_double(text, value);
+                  return juno_bd_parse(text);
+                }
+                """;
+    }
+
+    /** The arithmetic runtime in two parts ({@code part} 0 or 1), split where the double conversions sit. */
+    private static String arithmetic(int arithmeticClassId, int numberFormatClassId, int illegalArgumentClassId,
+                                     int part) {
+        String source = part == 0 ? """
 
                 // ---- java.math.BigInteger / BigDecimal / MathContext runtime ------------------------------------------
                 // A BigInteger is one arena block: int32 sign (-1, 0, 1), int32 limb count, then little-endian uint32 limbs
@@ -592,13 +648,14 @@ final class BigNumberRuntime {
                   return result;
                 }
 
-                extern "C" int32_t juno_big_integer_shift_left(int32_t a, int32_t distance) {
+                // Shifts by distance bits (right when negative) without collecting: callers in the middle of an
+                // operation use this, never the public entry point below, which may collect first.
+                static int32_t juno_big_shift_h(int32_t a, int32_t distance) {
                   if (distance < 0) {
                     // Arithmetic right shift: floor(a / 2^-distance).
                     uint32_t bits = static_cast<uint32_t>(-static_cast<int64_t>(distance));
                     int32_t sign = juno_big_sign_of(a);
                     uint32_t n = juno_big_len_of(a);
-                    juno_big_prepare(4u * (n + 8u) * 3u);
                     uint32_t words = bits / 32u;
                     uint32_t inner = bits % 32u;
                     if (words >= n) return sign < 0 ? juno_big_of_long_h(-1) : juno_big_make(0, nullptr, 0u);
@@ -607,7 +664,7 @@ final class BigNumberRuntime {
                     uint32_t* out = juno_big_scratch(outLength);
                     bool lost = false;
                     for (uint32_t i = 0; i < words; i++) if (limbs[i] != 0u) lost = true;
-                    if (inner != 0u && (limbs[words] & ((1u << inner) - 1u)) != 0u) lost = true;
+                    if (inner != 0u && (limbs[words] & ((static_cast<uint32_t>(1u) << inner) - 1u)) != 0u) lost = true;
                     for (uint32_t i = 0; i < outLength; i++) {
                       uint32_t low = limbs[i + words] >> inner;
                       uint32_t high = (inner != 0u && i + words + 1u < n) ? limbs[i + words + 1u] << (32u - inner) : 0u;
@@ -621,7 +678,6 @@ final class BigNumberRuntime {
                   if (n == 0u || distance == 0) return a;
                   uint32_t words = static_cast<uint32_t>(distance) / 32u;
                   uint32_t inner = static_cast<uint32_t>(distance) % 32u;
-                  juno_big_prepare(4u * (n + words + 4u) * 3u);
                   uint32_t* out = juno_big_scratch(n + words + 1u);
                   const uint32_t* limbs = juno_big_limbs_of(a);
                   for (uint32_t i = 0; i < n; i++) {
@@ -631,9 +687,30 @@ final class BigNumberRuntime {
                   return juno_big_make(juno_big_sign_of(a), out, n + words + 1u);
                 }
 
+                extern "C" int32_t juno_big_integer_shift_left(int32_t a, int32_t distance) {
+                  uint32_t n = juno_big_len_of(a);
+                  uint32_t words = distance < 0 ? 0u : static_cast<uint32_t>(distance) / 32u;
+                  juno_big_prepare(4u * (n + words + 8u) * 3u);
+                  return juno_big_shift_h(a, distance);
+                }
+
                 extern "C" int32_t juno_big_integer_shift_right(int32_t a, int32_t distance) {
                   if (distance == static_cast<int32_t>(0x80000000u)) return juno_big_integer_shift_left(a, 0x7FFFFFFF);
                   return juno_big_integer_shift_left(a, -distance);
+                }
+
+                // floor(sqrt(a)) for a > 0 by Newton's iteration, without collecting (see juno_big_shift_h).
+                static int32_t juno_big_sqrt_h(int32_t a) {
+                  int32_t bits = juno_big_integer_bit_length(a);
+                  int32_t x = juno_big_shift_h(juno_big_one_h(), (bits + 1) / 2);
+                  for (;;) {
+                    int32_t quotient = 0;
+                    int32_t remainder = 0;
+                    juno_big_divrem_h(a, x, &quotient, &remainder);
+                    int32_t y = juno_big_shift_h(juno_big_add_h(x, quotient), -1);
+                    if (juno_big_compare_h(y, x) >= 0) return x;
+                    x = y;
+                  }
                 }
 
                 extern "C" int32_t juno_big_integer_sqrt(int32_t a) {
@@ -641,20 +718,11 @@ final class BigNumberRuntime {
                   if (juno_big_sign_of(a) == 0) return a;
                   uint32_t n = juno_big_len_of(a);
                   juno_big_prepare(4u * (n + 4u) * 8u * (32u * n + 8u));
-                  int32_t bits = juno_big_integer_bit_length(a);
-                  int32_t x = juno_big_integer_shift_left(juno_big_one_h(), (bits + 1) / 2);
-                  for (;;) {
-                    int32_t quotient = 0;
-                    int32_t remainder = 0;
-                    juno_big_divrem_h(a, x, &quotient, &remainder);
-                    int32_t y = juno_big_integer_shift_left(juno_big_add_h(x, quotient), -1);
-                    if (juno_big_compare_h(y, x) >= 0) return x;
-                    x = y;
-                  }
+                  return juno_big_sqrt_h(a);
                 }
 
-                extern "C" int32_t juno_big_integer_gcd(int32_t a, int32_t b) {
-                  juno_big_prepare(4u * juno_big_budget(a, b) * 8u * (32u * (juno_big_len_of(a) + juno_big_len_of(b)) + 8u));
+                // gcd(|a|, |b|) by Euclid's algorithm, without collecting (see juno_big_shift_h).
+                static int32_t juno_big_gcd_h(int32_t a, int32_t b) {
                   int32_t x = juno_big_abs_h(a);
                   int32_t y = juno_big_abs_h(b);
                   while (juno_big_sign_of(y) != 0) {
@@ -665,6 +733,11 @@ final class BigNumberRuntime {
                     y = remainder;
                   }
                   return x;
+                }
+
+                extern "C" int32_t juno_big_integer_gcd(int32_t a, int32_t b) {
+                  juno_big_prepare(4u * juno_big_budget(a, b) * 8u * (32u * (juno_big_len_of(a) + juno_big_len_of(b)) + 8u));
+                  return juno_big_gcd_h(a, b);
                 }
 
                 // Writes |a| in decimal into a fresh arena string; *length gets its character count.
@@ -708,13 +781,7 @@ final class BigNumberRuntime {
                   return juno_big_handle_of(text);
                 }
 
-                extern "C" JUNO_ASM_ABI double juno_big_integer_double_value(int32_t a) {
-                  juno_big_prepare(4u * (juno_big_len_of(a) + 8u) * 4u);
-                  uint32_t length = 0;
-                  char* digits = juno_big_decimal(a, &length);
-                  double magnitude = strtod(digits, nullptr);
-                  return juno_big_sign_of(a) < 0 ? -magnitude : magnitude;
-                }
+                """ : """
 
                 static int32_t juno_big_message(const char* prefix, const char* text, const char* suffix) {
                   uint32_t length = 1u;
@@ -1129,10 +1196,30 @@ final class BigNumberRuntime {
                   return 12u * (juno_bd_budget(a, b) + 4u * static_cast<uint32_t>((shift < 0 ? -shift : shift) / 9 + 4));
                 }
 
+                // The JDK's message for a zero divisor given an explicit scale: its long fast path, taken while the
+                // dividend and its power-of-ten rescale (under 10^19) fit a long, divides by a long zero.
+                static const char* juno_bd_scaled_zero_divide_message(int32_t a, int32_t b, int32_t scale) {
+                  const char* bigPath = "BigInteger divide by zero";
+                  int32_t unscaled = juno_bd_unscaled(a);
+                  uint32_t n = juno_big_len_of(unscaled);
+                  if (n > 2u) return bigPath;
+                  const uint32_t* limbs = juno_big_limbs_of(unscaled);
+                  uint64_t magnitude = (n > 0u ? limbs[0] : 0u) | (static_cast<uint64_t>(n > 1u ? limbs[1] : 0u) << 32);
+                  const uint64_t longMax = 0x7FFFFFFFFFFFFFFFull;
+                  if (magnitude > longMax) return bigPath;
+                  int64_t raise = static_cast<int64_t>(scale) + juno_bd_scale(b) - juno_bd_scale(a);
+                  if (raise <= 0) return -raise < 19 ? "/ by zero" : bigPath;
+                  if (raise >= 19) return bigPath;
+                  for (int64_t i = 0; i < raise; i++) {
+                    if (magnitude > longMax / 10u) return bigPath;
+                    magnitude *= 10u;
+                  }
+                  return "/ by zero";
+                }
+
                 extern "C" int32_t juno_big_decimal_divide_scale(int32_t a, int32_t b, int32_t scale, int32_t mode) {
                   if (juno_big_sign_of(juno_bd_unscaled(b)) == 0) {
-                    return juno_big_arithmetic(juno_big_sign_of(juno_bd_unscaled(a)) == 0 ? "Division undefined"
-                                                                                          : "Division by zero");
+                    return juno_big_arithmetic(juno_bd_scaled_zero_divide_message(a, b, scale));
                   }
                   int64_t shift = static_cast<int64_t>(scale) - juno_bd_scale(a) + juno_bd_scale(b);
                   juno_big_prepare(juno_bd_divide_budget(a, b, shift));
@@ -1158,7 +1245,7 @@ final class BigNumberRuntime {
                   if (precision == 0) {
                     // Exact quotient: it terminates only if the reduced divisor has no prime factor besides 2 and 5.
                     int32_t divisor = juno_big_abs_h(ub);
-                    int32_t g = juno_big_integer_gcd(ua, ub);
+                    int32_t g = juno_big_gcd_h(ua, ub);
                     int32_t reduced = 0;
                     int32_t ignored = 0;
                     juno_big_divrem_h(divisor, g, &reduced, &ignored);
@@ -1241,7 +1328,7 @@ final class BigNumberRuntime {
                   int32_t m = wanted - (digits + 1) / 2;
                   if (m < 0) m = 0;
                   int32_t scaled = juno_big_scale_up_h(radicand, static_cast<uint32_t>(2 * m));
-                  int32_t root = juno_big_integer_sqrt(scaled);
+                  int32_t root = juno_big_sqrt_h(scaled);
                   bool sticky = juno_big_compare_h(juno_big_mul_h(root, root), scaled) != 0;
                   int32_t rootScale = scale / 2 + m;
                   if (precision == 0) {
@@ -1340,20 +1427,8 @@ final class BigNumberRuntime {
                   return juno_big_integer_long_value(juno_big_decimal_to_big_integer(a));
                 }
 
-                extern "C" JUNO_ASM_ABI double juno_big_decimal_double_value(int32_t a) {
-                  int32_t text = juno_bd_text(a, false);
-                  return strtod(juno_big_pointer_chars(text), nullptr);
-                }
-                """ + (valueOfDouble ? """
-
-                extern "C" JUNO_ASM_ABI int32_t juno_big_decimal_value_of_double(double value) {
-                  if (value != value || value - value != 0.0) return juno_big_number_format("Infinite or NaN");
-                  char text[40];
-                  juno_format_double(text, value);
-                  return juno_bd_parse(text);
-                }
-                """ : ""))
-                .replace("${JUNO_BIG_ARITHMETIC_CLASS_ID}", Integer.toString(arithmeticClassId))
+                """;
+        return source.replace("${JUNO_BIG_ARITHMETIC_CLASS_ID}", Integer.toString(arithmeticClassId))
                 .replace("${JUNO_BIG_NUMBER_FORMAT_CLASS_ID}", Integer.toString(numberFormatClassId))
                 .replace("${JUNO_BIG_ILLEGAL_ARGUMENT_CLASS_ID}", Integer.toString(illegalArgumentClassId));
     }

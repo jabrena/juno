@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.backend.AvrAsmBackend;
 import io.github.jabrena.juno.backend.Thumb2AsmBackend;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.Program;
@@ -18,10 +19,20 @@ public final class JunoCompiler {
         Program program = pipeline.link(request.classPath(), request.mainClass(), request.requestedBoard());
         IrProgram lowered = pipeline.lower(program);
         IrProgram optimized = pipeline.optimize(lowered);
-        Thumb2AsmBackend.Output output = new Thumb2AsmBackend(request.gcLoggingEnabled(), program.board(), request.runtimeConfig())
-                .generate(optimized);
-        return new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(),
-                CompilationReport.from(program, lowered, optimized, request.runtimeConfig()));
+        RuntimeConfig runtimeConfig = request.runtimeConfig().forBoard(program.board());
+        CompilationReport report = CompilationReport.from(program, lowered, optimized, runtimeConfig);
+        return switch (program.board().core().architecture()) {
+            case THUMB2 -> {
+                Thumb2AsmBackend.Output output = new Thumb2AsmBackend(request.gcLoggingEnabled(), program.board(),
+                        runtimeConfig).generate(optimized);
+                yield new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(), report);
+            }
+            case AVR -> {
+                AvrAsmBackend.Output output = new AvrAsmBackend(request.gcLoggingEnabled(), program.board(),
+                        runtimeConfig).generate(optimized);
+                yield new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(), report);
+            }
+        };
     }
 
     public CompilationResult compile(List<Path> classPath, String mainClass) {

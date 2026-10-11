@@ -148,24 +148,81 @@ Uploading changes the firmware on a connected physical board. Find its port with
 
 ## Juno compatibility
 
-The UNO WiFi Rev2 is not currently a declared or continuously tested Juno target. The Juno backend
-emits standard Arduino calls for its portable APIs, so the basic GPIO, timing and serial subset is
-expected to work with the megaAVR core. It still requires end-to-end compiler and hardware testing
-before being considered officially supported.
+The UNO WiFi Rev2 is a Juno target: select it with `@Board(ArduinoUnoWiFiRev2.class)` (board id
+`arduino-uno-wifi-rev2`). Juno compiles for it with a dedicated **AVR backend**, separate from the
+Thumb-2 one the UNO R4 WiFi and UNO Q share, and links against the `arduino:megaavr` core and the
+`WiFiNINA` library.
+
+### Java types on an 8-bit core
+
+Java's primitive types keep their JVM widths and semantics, even though avr-gcc's own `int` is 16
+bits and its `double` is 32 bits:
+
+- `int` is four bytes in four registers; add, subtract, logic and constant shifts are inline, and
+  multiply, divide, remainder and variable shifts follow Java's wrap-around and masking rules.
+- `long` is eight bytes, computed in the runtime shim.
+- `float` and `double` are IEEE 754 binary32/binary64 computed by Juno's own software
+  floating-point (round-to-nearest-even, subnormals, NaN, signed zero, saturating casts), so results
+  are bit-identical to a JVM's. Printing a `double` with `Serial` uses Arduino's two-decimal format,
+  as on the other boards.
+- References are 16-bit addresses kept in 32-bit words, so objects and arrays have the same layout
+  as on the 32-bit boards.
+
+`Math` supports `abs`, `min`, `max`, `clamp`, `floorDiv`, `floorMod`, `signum`, `round`, `floor`,
+`ceil`, `sqrt`, `toRadians` and `toDegrees`. The transcendental functions (`sin`, `cos`, `exp`,
+`log`, `pow`, ...) are rejected at compile time, because the AVR C library only has single-precision
+versions, which would silently change results.
+
+### `BigInteger` and `BigDecimal`
+
+`java.math` uses the same runtime as the 32-bit boards, with exact JDK results, and
+`BigInteger.doubleValue`/`BigDecimal.doubleValue` correctly rounded on the software `double`.
+The board's memory sets the practical limits:
+
+| Resource | Budget | What it means |
+|---|---|---|
+| Arena (heap) | 1 KB by default, at most 3 KB (`-Djuno.Xmx=3k`) | Counters past `long`, money-style decimals and conversions fit in the default; high-precision `sqrt`, long divisions or values near `double`'s limits need the 3 KB maximum, and anything larger panics with `[juno-big] OOM` |
+| Task stacks | 512 bytes for each of up to three forked tasks, at most 1 KB (`-Djuno.Xss=1k`) | 1.5 KB of RAM once a program forks; the last 128 bytes of each stack are kept for the C calls of its deepest frame, and a task that would recurse past them stops with `[juno-thread] stack overflow` |
+| Flash | 48 KB | The arithmetic runtime alone takes about 20 KB, so a sketch combining `java.math` with Wi-Fi may not fit; `arduino-cli` then reports the sketch as too big |
+
+Operations that run out of memory panic loudly; they never return a wrong value.
+
+### API support
 
 | Juno API or feature | UNO WiFi Rev2 | Notes |
 |---|---:|---|
-| `Gpio` and `DigitalOutput` | Expected | Uses standard Arduino GPIO calls |
-| `Delay` and `Clock` | Expected | Uses Arduino delay and time functions |
-| `Serial` | Expected | Uses the board's USB serial-monitor path |
+| `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | Yes | `Gpio.builtinLed()` is logical pin 25 |
+| `Serial` | Yes | |
+| `Wifi`, `Udp` | Yes | Through WiFiNINA |
+| `HttpClient`, `Json` | Yes | |
+| `HttpsClient` | Yes | TLS runs on the NINA-W102 module, which trusts the root certificates in its firmware; add others with the Arduino IDE's certificate uploader |
+| `Smtp.sendTls`, `Pop3Client` | Yes | Implicit TLS (usually ports 465 and 995) on the NINA-W102 module, as `WiFiSSLClient` does on the UNO R4 WiFi |
+| `Smtp.send` (STARTTLS, usually port 587) | No | Upgrading a plain connection needs a TLS stack on the board itself (the UNO R4 WiFi runs ESP_SSLClient), far beyond 6 KB of RAM; use `Smtp.sendTls` on port 465 |
+| `HttpServer` | No | Rejected at compile time |
+| `SdCard`, `Properties` | Yes | At most 2 open files; `Properties` of 8 entries, 15-character keys, 31-character values |
+| `RandomAccessFile` | Untested | Generated, but not yet run in the simulator |
+| `LcdKeypadShield`, `TftTouchShield` | Yes | |
+| `Servo`, `I2c`, `Infrared` | Untested | Generated, but not yet run in the simulator or on hardware |
+| `BigInteger`, `BigDecimal`, `MathContext` | Yes | See the limits above |
+| `StructuredTaskScope`, `ScopedValue`, `synchronized`, `ReentrantLock`, atomics | Yes | The same cooperative scheduler as the other boards, at most four threads including `main`; see the task stacks above |
 | `Mouse` | No | The application MCU has no native USB HID support |
-| `LedMatrix` | No | There is no onboard 12x8 LED matrix |
-| Wi-Fi and Bluetooth | Not yet exposed | Juno has no WiFiNINA or ArduinoBLE intrinsic API |
-| IMU and secure element | Not yet exposed | Juno has no intrinsic API for these peripherals |
+| `LedMatrix`, `@Watchdog` | No | |
 
-The existing `Blink` example selects pin 13 explicitly and therefore does not address this board's
-onboard LED. A WiFi Rev2-specific example must use logical pin 25 unless Juno gains a board-aware
-`LED_BUILTIN` abstraction.
+### How it is tested
+
+The AVR backend is checked by running programs, not only by compiling them: `SimavrRunIT` builds
+each program with avr-gcc against a stand-in megaavr core and runs it under the simavr simulator,
+then compares its serial output with OpenJDK's. It runs on a local `gcc-avr`/`libsimavr-dev`
+install or in Docker:
+
+```bash
+./mvnw -pl juno-compiler -am -Psimavr verify
+```
+
+The suite covers the language conformance programs (including every primitive type's edge cases,
+`java.math` and structured concurrency, scoped values, locks and atomics), plus a peripheral program that exercises HTTP, HTTPS, SMTP over TLS, POP3, JSON, UDP, the SD card,
+`Properties` and the LCD and TFT shields against simulated hardware. Generated sketches have not
+yet been run on a physical UNO WiFi Rev2.
 
 ## Comparison with the UNO R3 and R4
 

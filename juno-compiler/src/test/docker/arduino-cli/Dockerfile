@@ -16,11 +16,13 @@ RUN case "$(dpkg --print-architecture)" in \
     && curl -fsSL "https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_${asset}.tar.gz" \
         | tar -xz -C /usr/local/bin arduino-cli
 
-# The same platforms juno:install-deps installs, covering both @Board targets (UNO R4 WiFi and UNO Q);
-# pin either with --build-arg CORE=arduino:renesas_uno@<version> / ZEPHYR_CORE=arduino:zephyr@<version>.
+# The platforms of every @Board target (UNO R4 WiFi, UNO Q and UNO WiFi Rev2); pin any with
+# --build-arg CORE=arduino:renesas_uno@<version> / ZEPHYR_CORE=arduino:zephyr@<version> /
+# MEGAAVR_CORE=arduino:megaavr@<version>.
 ARG CORE=arduino:renesas_uno
 ARG ZEPHYR_CORE=arduino:zephyr
-RUN arduino-cli core update-index && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}"
+ARG MEGAAVR_CORE=arduino:megaavr
+RUN arduino-cli core update-index && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${MEGAAVR_CORE}"
 
 # Optional library some TFT programs (e.g. RatonLocoTFT) need; not bundled with either core above,
 # see juno-site/src/main/resources/content/hid.md.
@@ -33,6 +35,10 @@ RUN arduino-cli lib install Arduino_RouterBridge
 
 # Libraries the generated shims include for the Servo and SdCard APIs.
 RUN arduino-cli lib install Servo SdFat
+
+# The UNO WiFi Rev2 reaches its NINA-W102 Wi-Fi module (Wi-Fi, UDP, HTTP, HTTPS, TLS mail) through WiFiNINA,
+# which the megaavr core does not bundle.
+RUN arduino-cli lib install WiFiNINA
 
 WORKDIR /sketches
 CMD ["sleep", "infinity"]

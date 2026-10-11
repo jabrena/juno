@@ -1076,15 +1076,24 @@ final class ShimLibraries {
 
     /** Arduino SD read/append bindings plus a bounded, arena-backed {@code key=value} parser. */
     static String sdHelpers() {
+        return sdHelpers(4, 16, 32, 64, 96);
+    }
+
+    /**
+     * {@link #sdHelpers()} with explicit capacities: {@code openFiles} simultaneously open files, and a
+     * {@code Properties} of {@code entries} entries of at most {@code keyBytes}/{@code valueBytes} (terminator
+     * included), parsed from lines of at most {@code lineBytes}. An 8-bit board with a few KB of RAM uses smaller ones.
+     */
+    static String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
         return """
 
-                static constexpr int32_t JUNO_SD_MAX_OPEN_FILES = 4;
+                static constexpr int32_t JUNO_SD_MAX_OPEN_FILES = ${JUNO_SD_MAX_OPEN_FILES};
                 static constexpr int32_t JUNO_SD_BEGIN_ATTEMPTS = 3;
                 static constexpr uint32_t JUNO_SD_BEGIN_RETRY_DELAY_MS = 250;
-                static constexpr int32_t JUNO_PROPERTIES_MAX_ENTRIES = 16;
-                static constexpr int32_t JUNO_PROPERTIES_KEY_CAPACITY = 32;
-                static constexpr int32_t JUNO_PROPERTIES_VALUE_CAPACITY = 64;
-                static constexpr int32_t JUNO_PROPERTIES_LINE_CAPACITY = 96;
+                static constexpr int32_t JUNO_PROPERTIES_MAX_ENTRIES = ${JUNO_PROPERTIES_MAX_ENTRIES};
+                static constexpr int32_t JUNO_PROPERTIES_KEY_CAPACITY = ${JUNO_PROPERTIES_KEY_CAPACITY};
+                static constexpr int32_t JUNO_PROPERTIES_VALUE_CAPACITY = ${JUNO_PROPERTIES_VALUE_CAPACITY};
+                static constexpr int32_t JUNO_PROPERTIES_LINE_CAPACITY = ${JUNO_PROPERTIES_LINE_CAPACITY};
 
                 static SdFat32 juno_sd;
                 static File32 juno_sd_files[JUNO_SD_MAX_OPEN_FILES];
@@ -1279,7 +1288,11 @@ final class ShimLibraries {
                 extern "C" int32_t juno_properties_size(int32_t handle) {
                   return juno_properties(handle)->count;
                 }
-                """;
+                """.replace("${JUNO_SD_MAX_OPEN_FILES}", Integer.toString(openFiles))
+                .replace("${JUNO_PROPERTIES_MAX_ENTRIES}", Integer.toString(entries))
+                .replace("${JUNO_PROPERTIES_KEY_CAPACITY}", Integer.toString(keyBytes))
+                .replace("${JUNO_PROPERTIES_VALUE_CAPACITY}", Integer.toString(valueBytes))
+                .replace("${JUNO_PROPERTIES_LINE_CAPACITY}", Integer.toString(lineBytes));
     }
 
     /**
@@ -1335,12 +1348,28 @@ final class ShimLibraries {
     }
 
     static String runtimeStringHelpers() {
+        return runtimeStringSlots(8) + runtimeStringDoubleFormatting() + runtimeStringOperations()
+                + runtimeStringFloatingAppends();
+    }
+
+    /**
+     * The rotating pool of {@code slots} runtime-string buffers and {@code String.valueOf(int)}: the first part of
+     * {@link #runtimeStringHelpers()}, which an architecture without a binary64 {@code double} (AVR) combines with
+     * its own floating-point formatting.
+     */
+    static String runtimeStringSlots(int slots) {
         return """
 
-                static constexpr uint32_t JUNO_STRING_SLOT_COUNT = 8;
+                static constexpr uint32_t JUNO_STRING_SLOT_COUNT = ${JUNO_STRING_SLOT_COUNT};
                 static constexpr uint32_t JUNO_STRING_SLOT_SIZE = ${JUNO_STRING_SLOT_SIZE};
                 static char juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE];
                 static uint32_t juno_string_slot_cursor = 0;
+
+                // A runtime String never truncates: one that outgrows its slot stops the program, saying why first.
+                [[noreturn]] static void juno_string_overflow() {
+                  Serial.println("[juno-string] runtime String longer than ${JUNO_STRING_MAX_LENGTH} characters");
+                  juno_panic();
+                }
 
                 static const char* juno_string_pointer(int32_t value) {
                   if (value == 0) juno_panic();
@@ -1366,6 +1395,14 @@ final class ShimLibraries {
                   return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
                 }
 
+                """.replace("${JUNO_STRING_SLOT_SIZE}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
+                .replace("${JUNO_STRING_SLOT_COUNT}", Integer.toString(slots))
+                .replace("${JUNO_STRING_MAX_LENGTH}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES - 1));
+    }
+
+    /** {@code juno_format_double} and {@code String.valueOf(double)} on the C {@code double}. */
+    static String runtimeStringDoubleFormatting() {
+        return """
                 // Fixed-precision formatting, not Java's shortest-round-trip Double.toString: the
                 // fractional part is truncated toward zero at 6 digits (trailing zeros trimmed), so a
                 // value whose exact binary representation sits just below the intended decimal (e.g.
@@ -1417,6 +1454,12 @@ final class ShimLibraries {
                   return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
                 }
 
+                """;
+    }
+
+    /** {@code length}, {@code charAt}, {@code equals} and string concatenation of everything but floating point. */
+    static String runtimeStringOperations() {
+        return """
                 extern "C" int32_t juno_string_length(int32_t value) {
                   return static_cast<int32_t>(strlen(juno_string_pointer(value)));
                 }
@@ -1442,7 +1485,7 @@ final class ShimLibraries {
                 static void juno_string_concat_append_byte(int32_t handle, char value) {
                   char* buffer = reinterpret_cast<char*>(static_cast<intptr_t>(handle));
                   uint32_t length = static_cast<uint32_t>(strlen(buffer));
-                  if (length + 1u >= JUNO_STRING_SLOT_SIZE) juno_panic();
+                  if (length + 1u >= JUNO_STRING_SLOT_SIZE) juno_string_overflow();
                   buffer[length] = value;
                   buffer[length + 1u] = '\\0';
                 }
@@ -1488,6 +1531,12 @@ final class ShimLibraries {
                   while (count > 0u) juno_string_concat_append_byte(handle, reversed[--count]);
                 }
 
+                """;
+    }
+
+    /** String concatenation of {@code float} and {@code double}, through {@code juno_format_double}. */
+    static String runtimeStringFloatingAppends() {
+        return """
                 extern "C" JUNO_ASM_ABI void juno_string_concat_append_float(int32_t handle, float value) {
                   char text[JUNO_STRING_SLOT_SIZE];
                   juno_format_double(text, value);
@@ -1499,7 +1548,7 @@ final class ShimLibraries {
                   juno_format_double(text, value);
                   juno_string_concat_append_string(handle, text);
                 }
-                """.replace("${JUNO_STRING_SLOT_SIZE}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES));
+                """;
     }
 
     /**
@@ -1551,7 +1600,7 @@ final class ShimLibraries {
                 extern "C" int32_t juno_string_builder_to_string(int32_t handle) {
                   auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
                   int32_t length = header[0];
-                  if (static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) juno_panic();
+                  if (static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) juno_string_overflow();
                   char* slot = juno_string_slots[juno_string_slot_cursor];
                   juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
                   const uint8_t* buffer = juno_string_builder_buffer(handle);

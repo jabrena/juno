@@ -2,6 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
@@ -9,7 +10,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
  * static final lookup tables of every element type read from flash, a table indexed by another table, and one
  * passed to a method, which therefore stays in the arena.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
 public final class ConstantTables {
     static final boolean[] FLAGS = {true, false, true};
     static final byte[] BYTES = {-128, -1, 0, 127};
