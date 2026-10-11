@@ -1365,6 +1365,12 @@ final class ShimLibraries {
                 static char juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE];
                 static uint32_t juno_string_slot_cursor = 0;
 
+                // A runtime String never truncates: one that outgrows its slot stops the program, saying why first.
+                [[noreturn]] static void juno_string_overflow() {
+                  Serial.println("[juno-string] runtime String longer than ${JUNO_STRING_MAX_LENGTH} characters");
+                  juno_panic();
+                }
+
                 static const char* juno_string_pointer(int32_t value) {
                   if (value == 0) juno_panic();
                   return reinterpret_cast<const char*>(static_cast<intptr_t>(value));
@@ -1390,7 +1396,8 @@ final class ShimLibraries {
                 }
 
                 """.replace("${JUNO_STRING_SLOT_SIZE}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
-                .replace("${JUNO_STRING_SLOT_COUNT}", Integer.toString(slots));
+                .replace("${JUNO_STRING_SLOT_COUNT}", Integer.toString(slots))
+                .replace("${JUNO_STRING_MAX_LENGTH}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES - 1));
     }
 
     /** {@code juno_format_double} and {@code String.valueOf(double)} on the C {@code double}. */
@@ -1478,7 +1485,7 @@ final class ShimLibraries {
                 static void juno_string_concat_append_byte(int32_t handle, char value) {
                   char* buffer = reinterpret_cast<char*>(static_cast<intptr_t>(handle));
                   uint32_t length = static_cast<uint32_t>(strlen(buffer));
-                  if (length + 1u >= JUNO_STRING_SLOT_SIZE) juno_panic();
+                  if (length + 1u >= JUNO_STRING_SLOT_SIZE) juno_string_overflow();
                   buffer[length] = value;
                   buffer[length + 1u] = '\\0';
                 }
@@ -1593,7 +1600,7 @@ final class ShimLibraries {
                 extern "C" int32_t juno_string_builder_to_string(int32_t handle) {
                   auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
                   int32_t length = header[0];
-                  if (static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) juno_panic();
+                  if (static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) juno_string_overflow();
                   char* slot = juno_string_slots[juno_string_slot_cursor];
                   juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
                   const uint8_t* buffer = juno_string_builder_buffer(handle);

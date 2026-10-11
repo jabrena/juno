@@ -86,7 +86,7 @@ Supported today:
   {@code String.valueOf(int)}, {@code length()}, and {@code charAt(int)}. Juno lowers javac's
   {@code StringConcatFactory.makeConcatWithConstants} protocol for {@code String} and primitive operands;
   concatenation maps a null string to {@code "null"} and panics if the UTF-8 result exceeds the 31-byte
-  payload. Runtime values use eight rotating 32-byte UTF-8 slots instead of the arena, so string-heavy
+  payload, printing `[juno-string] runtime String longer than 31 characters` on Serial before `[juno-panic]`. Runtime values use eight rotating 32-byte UTF-8 slots instead of the arena, so string-heavy
   loops remain allocation-free; a value must be consumed before eight newer results overwrite its slot. APIs documented
   as compile-time-string-only (including networking paths/bodies and LED text unrolling) retain that rule.
 - opaque `DigitalOutput` handles which compile down to integer pin numbers without heap allocation
