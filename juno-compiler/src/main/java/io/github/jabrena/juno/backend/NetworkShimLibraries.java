@@ -101,6 +101,11 @@ final class NetworkShimLibraries {
      * entry points.
      */
     static String jsonHelpers() {
+        return jsonScanner() + jsonDoubleHelpers() + jsonValueHelpers();
+    }
+
+    /** The scanner and its {@code int}/{@code long} accessors: the part of {@link #jsonHelpers()} before {@code double}. */
+    static String jsonScanner() {
         return """
 
                 static constexpr int32_t JUNO_JSON_MISSING = 0;
@@ -388,6 +393,12 @@ final class NetworkShimLibraries {
                   return juno_json_parse_long(start, end, &value) ? value : 0;
                 }
 
+                """;
+    }
+
+    /** {@code Json.getDouble} on the C {@code double}. */
+    static String jsonDoubleHelpers() {
+        return """
                 static bool juno_json_parse_double(const char* start, const char* end, double* result) {
                   const char* parsedEnd;
                   if (!juno_json_parse_number(start, end, &parsedEnd) || parsedEnd != end) return false;
@@ -449,6 +460,12 @@ final class NetworkShimLibraries {
                   return juno_json_parse_double(start, end, &value) ? value : 0.0;
                 }
 
+                """;
+    }
+
+    /** The boolean, string and array accessors after {@code double}. */
+    static String jsonValueHelpers() {
+        return """
                 extern "C" int32_t juno_json_get_bool(const uint8_t* buffer, int32_t length, const char* key) {
                   const char* start;
                   const char* end;

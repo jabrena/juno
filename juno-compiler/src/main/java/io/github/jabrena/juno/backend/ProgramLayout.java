@@ -157,8 +157,26 @@ final class ProgramLayout {
         return Objects.requireNonNull(lambdaFunctionSymbols.get(site), () -> "No function symbol for " + site);
     }
 
+    /**
+     * The assembler directives a data section is written with: {@code word} emits 32-bit values (ARM's
+     * {@code .word}; AVR's {@code .word} is 16-bit, so it uses {@code .long}), {@code align} 4-byte-aligns, and
+     * {@code bss} switches to the zero-initialized section (AVR's assembler has no {@code .bss} shorthand).
+     */
+    record DataDirectives(String word, String align, String bss) {
+        static final DataDirectives THUMB2 = new DataDirectives(".word", ".align 2", ".bss");
+        static final DataDirectives AVR = new DataDirectives(".long", ".balign 4", ".section .bss");
+    }
+
+    private DataDirectives directives = DataDirectives.THUMB2;
+
     /** Emits every data section the program needs, ahead of its {@code .text}. */
     void emitDataSections(StringBuilder output) {
+        emitDataSections(output, DataDirectives.THUMB2);
+    }
+
+    /** Emits every data section with {@code directives}, ahead of the {@code .text}. */
+    void emitDataSections(StringBuilder output, DataDirectives directives) {
+        this.directives = directives;
         emitStaticStorage(output);
         emitGcStackTopStorage(output);
         emitStringLiteralStorage(output);
@@ -168,8 +186,8 @@ final class ProgramLayout {
     }
 
     private void emitStaticStorage(StringBuilder output) {
-        output.append("    .bss\n")
-                .append("    .align 2\n")
+        output.append("    ").append(directives.bss()).append('\n')
+                .append("    ").append(directives.align()).append('\n')
                 .append("    .global juno_gc_static_start\n")
                 .append("    .global juno_gc_static_end\n")
                 .append("juno_gc_static_start:\n");
@@ -185,8 +203,8 @@ final class ProgramLayout {
      * to use static fields.
      */
     private void emitGcStackTopStorage(StringBuilder output) {
-        output.append("    .bss\n")
-                .append("    .align 2\n")
+        output.append("    ").append(directives.bss()).append('\n')
+                .append("    ").append(directives.align()).append('\n')
                 // Unlike juno_static_* fields (only ever referenced within this same .S file), the
                 // runtime shim's C++ juno_gc_mark() references this symbol too — .global is required
                 // for that cross-object-file link to resolve; without it, `as` gives it local linkage
@@ -207,7 +225,7 @@ final class ProgramLayout {
             return;
         }
         output.append("    .section .rodata\n")
-                .append("    .align 2\n");
+                .append("    ").append(directives.align()).append('\n');
         for (Map.Entry<String, String> entry : stringLiteralSymbols.entrySet()) {
             output.append(entry.getValue()).append(":\n")
                     .append("    .asciz \"").append(asmStringLiteral(entry.getKey())).append("\"\n");
@@ -220,10 +238,10 @@ final class ProgramLayout {
             return;
         }
         output.append("    .section .rodata\n")
-                .append("    .align 2\n");
+                .append("    ").append(directives.align()).append('\n');
         for (Map.Entry<IrInstruction.IntArrayConst, String> entry : intArraySymbols.entrySet()) {
             output.append(entry.getValue()).append(":\n")
-                    .append("    .word ");
+                    .append("    ").append(directives.word()).append(' ');
             List<Integer> values = entry.getKey().values();
             for (int index = 0; index < values.size(); index++) {
                 if (index > 0) {
@@ -244,13 +262,13 @@ final class ProgramLayout {
             return;
         }
         output.append("    .section .rodata\n")
-                .append("    .align 2\n");
+                .append("    ").append(directives.align()).append('\n');
         for (ConstantTables.Table table : constantTables.values()) {
             output.append(constantTableSymbol(table.field())).append(":\n");
             String directive = switch (table.elementDescriptor()) {
                 case 'Z', 'B' -> "    .byte ";
                 case 'C', 'S' -> "    .short ";
-                default -> "    .word ";
+                default -> "    " + directives.word() + " ";
             };
             boolean wide = table.elementDescriptor() == 'J' || table.elementDescriptor() == 'D';
             List<Long> values = table.values();
@@ -269,7 +287,7 @@ final class ProgramLayout {
                 }
                 output.append('\n');
             }
-            output.append("    .align 2\n");
+            output.append("    ").append(directives.align()).append('\n');
         }
     }
 
@@ -279,10 +297,10 @@ final class ProgramLayout {
             return;
         }
         output.append("    .section .rodata\n")
-                .append("    .align 2\n");
+                .append("    ").append(directives.align()).append('\n');
         for (Map.Entry<LambdaSite, String> entry : lambdaFunctionSymbols.entrySet()) {
             output.append(entry.getValue()).append(":\n")
-                    .append("    .word ")
+                    .append("    ").append(directives.word()).append(' ')
                     .append(objectTypeIds.getOrDefault(entry.getKey().syntheticClassName(), 0))
                     .append('\n');
         }
