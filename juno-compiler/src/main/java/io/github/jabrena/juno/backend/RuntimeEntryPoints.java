@@ -26,13 +26,16 @@ final class RuntimeEntryPoints {
     private RuntimeEntryPoints() {
     }
 
-    /** Whether the program forks a task or takes a lock, so it needs the cooperative thread runtime. */
+    /**
+     * Whether the program starts a thread, forks a task or takes a lock, so it needs the cooperative thread runtime.
+     */
     static boolean usesThreads(IrProgram program) {
         return program.methods().stream().anyMatch(method -> method.blocks().stream()
                 .flatMap(block -> block.instructions().stream())
                 .anyMatch(instruction -> instruction instanceof IrInstruction.IntrinsicCall call
                         && switch (call.intrinsic()) {
-                            case TASK_SCOPE_OPEN_DEFAULT, TASK_SCOPE_OPEN, TASK_SCOPE_FORK_CALLABLE,
+                            case THREAD_START_VIRTUAL, THREAD_JOIN, THREAD_IS_ALIVE,
+                                    TASK_SCOPE_OPEN_DEFAULT, TASK_SCOPE_OPEN, TASK_SCOPE_FORK_CALLABLE,
                                     TASK_SCOPE_FORK_RUNNABLE, TASK_SCOPE_JOIN, TASK_SCOPE_IS_CANCELLED, TASK_GET,
                                     TASK_STATE, TASK_EXCEPTION, TASK_SCOPE_CLOSE,
                                     MONITOR_ENTER, MONITOR_EXIT, REENTRANT_LOCK_NEW, REENTRANT_LOCK_LOCK,

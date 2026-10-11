@@ -95,6 +95,21 @@ record ZephyrCoreRuntime() implements CoreRuntime {
                   octets[2] = 0;
                   octets[3] = 0;
                 }
+
+                extern "C" void juno_wifi_gateway_ip(int32_t* octets) {
+                  // Likewise not exposed over RPC.
+                  octets[0] = 0;
+                  octets[1] = 0;
+                  octets[2] = 0;
+                  octets[3] = 0;
+                }
+
+                extern "C" void juno_wifi_mac_address(int32_t* octets) {
+                  // Likewise not exposed over RPC.
+                  for (int i = 0; i < 6; i++) {
+                    octets[i] = 0;
+                  }
+                }
                 """;
     }
 

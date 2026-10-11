@@ -138,18 +138,43 @@ class ThreadsTest {
                 .isInstanceOf(CompileException.class).hasMessageContaining("no reachable class or lambda");
     }
 
+    private static final String VIRTUAL_THREAD = """
+            Thread worker = Thread.startVirtualThread(new Job());
+            Thread.yield();
+            worker.join();
+            Serial.println(worker.isAlive() ? 1 : 0);
+            """;
+
+    @Test
+    void virtualThreadsStartAndJoinOnBothBoards() throws Exception {
+        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
+            CompilationResult result = compile(board, VIRTUAL_THREAD);
+
+            assertThat(result.assembly()).as("%s: a virtual thread needs no structured-task runtime", board)
+                    .contains("bl juno_thread_start_virtual", "bl juno_thread_join", "bl juno_thread_is_alive",
+                            ".global juno_thread_entry", "juno_thread_entry:")
+                    .doesNotContain("bl juno_task_scope");
+            assertThat(result.runtimeShim()).as(board)
+                    .contains("extern \"C\" int32_t juno_thread_start_virtual(int32_t runnable)",
+                            "juno_thread_set_daemon(handle, 1);");
+        }
+        assertThat(compile("ArduinoUnoQ", VIRTUAL_THREAD).runtimeShim())
+                .contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create");
+    }
+
     @Test
     void userLevelThreadsAreRejectedAtLinkTime() throws Exception {
         for (String body : new String[]{
                 "Thread job = new Thread(new Job());\njob.start();\njob.join();\n",
                 "Thread job = new Thread(new Job());\njob.setDaemon(true);\n",
+                "Thread job = Thread.ofVirtual().start(new Job());\njob.join();\n",
                 "Thread job = Thread.currentThread();\njob.interrupt();\n"}) {
             CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Worker", program("ArduinoUnoR4WiFi", body));
 
             assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Worker"))
                     .isInstanceOf(CompileException.class)
                     .hasMessageContaining("does not support java.lang.Thread")
-                    .hasMessageContaining("StructuredTaskScope");
+                    .hasMessageContaining("Thread.startVirtualThread");
         }
     }
 
