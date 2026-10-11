@@ -52,6 +52,56 @@ record MegaAvrCoreRuntime() implements CoreRuntime {
                   port->OUTCLR = static_cast<uint8_t>(clear);""");
     }
 
+    /**
+     * The Rev2 routes its hardware SPI bus to the ICSP header, while classic UNO shields wire SD to D11-D13. Keep
+     * WiFiNINA on hardware SPI and bit-bang the shield's SD bus instead.
+     */
+    @Override
+    public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
+        return ShimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes,
+                """
+                class JunoSdSoftSpiDriver : public SdSpiBaseClass {
+                 public:
+                  void begin(SdSpiConfig config) override {
+                    static_cast<void>(config);
+                    pinMode(12, INPUT);
+                    pinMode(11, OUTPUT);
+                    pinMode(13, OUTPUT);
+                    digitalWrite(11, HIGH);
+                    digitalWrite(13, LOW);
+                  }
+
+                  uint8_t receive() override { return transfer(0xFF); }
+
+                  uint8_t receive(uint8_t* buffer, size_t count) override {
+                    for (size_t i = 0; i < count; i++) buffer[i] = receive();
+                    return 0;
+                  }
+
+                  void send(uint8_t value) override { static_cast<void>(transfer(value)); }
+
+                  void send(const uint8_t* buffer, size_t count) override {
+                    for (size_t i = 0; i < count; i++) send(buffer[i]);
+                  }
+
+                 private:
+                  static uint8_t transfer(uint8_t output) {
+                    uint8_t input = 0;
+                    for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
+                      digitalWrite(11, (output & mask) != 0 ? HIGH : LOW);
+                      digitalWrite(13, HIGH);
+                      if (digitalRead(12) != LOW) input |= mask;
+                      digitalWrite(13, LOW);
+                    }
+                    return input;
+                  }
+                };
+
+                static JunoSdSoftSpiDriver juno_sd_spi;
+                """,
+                "juno_sd.begin(SdSpiConfig(chipSelectPin, SHARED_SPI, SD_SCK_MHZ(0), &juno_sd_spi))");
+    }
+
     @Override
     public String wifiIncludes(boolean udp) {
         return "#include <WiFiNINA.h>\n" + (udp ? "#include <WiFiUdp.h>\n" : "");

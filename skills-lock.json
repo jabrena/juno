@@ -1,0 +1,749 @@
+{
+  "version": 1,
+  "skills": {
+    "001-commands-inventory": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/001-commands-inventory/SKILL.md",
+      "computedHash": "71513128f01324d9ae1f53f63e5522d66c3118e7a291f8d31e66e0aac13f5e1b"
+    },
+    "002-agents-inventory": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/002-agents-inventory/SKILL.md",
+      "computedHash": "713b40863b1b55e865b25c8b247817a558f85e60aa59075f8e1b00edbd6d3e6b"
+    },
+    "003-skills-inventory": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/003-skills-inventory/SKILL.md",
+      "computedHash": "f1a045c92d6f2d8038e309db51dcdb4882d7d6e915f1467703e247a256c8c015"
+    },
+    "004-commands-installation": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/004-commands-installation/SKILL.md",
+      "computedHash": "6e0de76a0dea3f05d1e2d8cc3dd08aee162a5d6257525fc2e1238d3860a56e40"
+    },
+    "005-agents-installation": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/005-agents-installation/SKILL.md",
+      "computedHash": "1314098c1405ab8b0a3dd95e99c66899b4147efde9189d1cd404703e2d8f91aa"
+    },
+    "012-agile-epic": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/012-agile-epic/SKILL.md",
+      "computedHash": "42ed4326b685c8de7ca719fe0377685ebc6cd6602f9ccc9b11b8e9f004f5f1bd"
+    },
+    "013-agile-feature": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/013-agile-feature/SKILL.md",
+      "computedHash": "7e20bcc623e8b329480790bdedf9e12413cdeb75ed5f2ad9f21d267c39c02526"
+    },
+    "014-agile-user-story": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/014-agile-user-story/SKILL.md",
+      "computedHash": "90ea3857cde516af201dfabb169ad22010ca7916ea70e35db07a1014b3089c01"
+    },
+    "021-problem-framing": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/021-problem-framing/SKILL.md",
+      "computedHash": "d2c0ac3b717523b49116f43e6b312a8a5d5e2f57148fca3a5a600d408d1941bd"
+    },
+    "022-root-cause-analysis": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/022-root-cause-analysis/SKILL.md",
+      "computedHash": "9bceb65f93699f8bb2513e978939c86d559b91495a64b2731cc5f0c069171b25"
+    },
+    "023-assumption-analysis": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/023-assumption-analysis/SKILL.md",
+      "computedHash": "459c5733d00694f685af8d95598e0dd176b99b79cb2bcdb28f33d4385a1b1086"
+    },
+    "024-context-mapping": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/024-context-mapping/SKILL.md",
+      "computedHash": "f4366c53fd0f2d787214f40037b81be239cad32e4e44c96071c802a70a51489c"
+    },
+    "025-quality-attribute-discovery": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/025-quality-attribute-discovery/SKILL.md",
+      "computedHash": "68df1141406d96cf0377da5aefb6ca6fa1bcec9356db1eaded5e6e40ac034f92"
+    },
+    "030-architecture-adr-general": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/030-architecture-adr-general/SKILL.md",
+      "computedHash": "831d97788ef66c6961099edd8f2c6067a348b4fcaaa954b903d4ea2a37fc7d05"
+    },
+    "033-architecture-diagrams": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/033-architecture-diagrams/SKILL.md",
+      "computedHash": "2b56b26c324ccbd273ed69a4e254acbafad7616b81f4e1a03506cee14bf253d4"
+    },
+    "041-planning-plan-mode": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/041-planning-plan-mode/SKILL.md",
+      "computedHash": "3989a5f86816f1ff3c9c6a549b4de09b22e7ad1a0e3005102b471d12e7cd37f0"
+    },
+    "042-planning-openspec": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/042-planning-openspec/SKILL.md",
+      "computedHash": "8170bd427b60ee1c90268c111befd01c53a5879d91dbe9b723398ebf921ba194"
+    },
+    "043-planning-github-issues": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/043-planning-github-issues/SKILL.md",
+      "computedHash": "52e13a4bb91c06951f123311dd4ab2d9c44e678225daccbd6f077bccfe9f9a77"
+    },
+    "044-planning-jira": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/044-planning-jira/SKILL.md",
+      "computedHash": "80ca5bbdf4f908acc4634052aba4a969ba124c0eee748897ea6a56d4e9a77545"
+    },
+    "045-planning-azure-devops": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/045-planning-azure-devops/SKILL.md",
+      "computedHash": "86fe2cdca77bd44ed8a31dc198edab1d282dbfc462de6113a24a1d0cde667974"
+    },
+    "051-design-two-steps-methods": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/051-design-two-steps-methods/SKILL.md",
+      "computedHash": "6a7af7d302104047b72c6fa23c945a93676ea21e17026fb4716da65a90018a87"
+    },
+    "052-design-hamburger-method": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/052-design-hamburger-method/SKILL.md",
+      "computedHash": "29312307e085be48fa5f839ff86488776f4cd3ac4681931b6a6ca77340abc82d"
+    },
+    "053-design-simple-rules": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/053-design-simple-rules/SKILL.md",
+      "computedHash": "5511c0e7c0d2ce5b49a2b67de41820628a706d460ad766697da838740ea5ad73"
+    },
+    "054-design-tdd": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/054-design-tdd/SKILL.md",
+      "computedHash": "8aa73b6c441a18b86c84e2ff2883923e8aba088b6ee89ee4ac445fdc4662160e"
+    },
+    "055-design-parallel-change": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/055-design-parallel-change/SKILL.md",
+      "computedHash": "a116761f6472390883d57d7ea301e89f55d42b45278c66a00d155f095c2a8500"
+    },
+    "056-design-avoid-breaking-changes": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/056-design-avoid-breaking-changes/SKILL.md",
+      "computedHash": "45492c4d937ff778d29419c88584283db1c3c8fa0b466e85bcfa01d03ae8a58a"
+    },
+    "057-design-feature-toggles": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/057-design-feature-toggles/SKILL.md",
+      "computedHash": "0f45f8f2ceb73d3e36d6238fc6fbbbf4984a0cc99d7768dfe24423d48c4e5bac"
+    },
+    "058-design-bdd": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/058-design-bdd/SKILL.md",
+      "computedHash": "c2574fa7e58efe415226b22b5b1747d4cc6143934d241b0d1e5a69346a706b2a"
+    },
+    "059-design-atdd": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/059-design-atdd/SKILL.md",
+      "computedHash": "c2157d6847ba1dbfb4a97107640a2e782b7923f75d7a52211e807f2834f0e5d8"
+    },
+    "110-java-maven-best-practices": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/110-java-maven-best-practices/SKILL.md",
+      "computedHash": "d952dc21014970483235a30410d38041b06b3cb9154952ad665a20ed8fc3be01"
+    },
+    "111-java-maven-dependencies": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/111-java-maven-dependencies/SKILL.md",
+      "computedHash": "613caa485beec68d8f84bfa504d05977885323a8d1e361de579988d24132822f"
+    },
+    "112-java-maven-plugins": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/112-java-maven-plugins/SKILL.md",
+      "computedHash": "23f68174df08ea2e915b1d4e6cba7d6bd17fc6bbe2156f84e63825208f518fae"
+    },
+    "113-java-maven-documentation": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/113-java-maven-documentation/SKILL.md",
+      "computedHash": "6613b4da26e249780899a116cb961491d3cf3ab52f621b5869f9ea4828dc5d24"
+    },
+    "114-java-maven-search": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/114-java-maven-search/SKILL.md",
+      "computedHash": "092ffde1f65d6890dd9237b3d126f2bfe62837045ab1b8fa212382aa2e17897f"
+    },
+    "121-java-object-oriented-design": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/121-java-object-oriented-design/SKILL.md",
+      "computedHash": "7d4dd3f3a51bd1b349e5bd07e6d4bb3ead744cfd19326df11154419b1b364e59"
+    },
+    "122-java-type-design": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/122-java-type-design/SKILL.md",
+      "computedHash": "2de4c068fa5e754c69266390d7bdc89ac12b6b5a896bb00f38984e722152ca68"
+    },
+    "123-java-design-patterns": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/123-java-design-patterns/SKILL.md",
+      "computedHash": "f53d3460465b4ae4dfb73829c7ec8097b7fc7f2fe16507d9ef8f0842ec3757cd"
+    },
+    "124-java-secure-coding": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/124-java-secure-coding/SKILL.md",
+      "computedHash": "55164dc552f6713a7ac63a8555e9367d2ac6dc20500e191578f10dcdc99cd65d"
+    },
+    "125-java-concurrency": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/125-java-concurrency/SKILL.md",
+      "computedHash": "abf3422093d2e966c4801866f333d329717ab236eafd1e95627dcf4672237810"
+    },
+    "126-java-exception-handling": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/126-java-exception-handling/SKILL.md",
+      "computedHash": "80657ffcc3c1305096cd259e028619f5c8880686df840f0808ae504e5f4a4f1e"
+    },
+    "128-java-generics": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/128-java-generics/SKILL.md",
+      "computedHash": "5773860ddb64ac1b0a16ceffaa682ad21bdbda470d663c124fb01fd643892d78"
+    },
+    "130-java-testing-strategies": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/130-java-testing-strategies/SKILL.md",
+      "computedHash": "0995a715e4716a8b9518d4c7bc5117bd386428ba1d62350519e4d5c8d73e269f"
+    },
+    "131-java-testing-unit-testing": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/131-java-testing-unit-testing/SKILL.md",
+      "computedHash": "3aec5f2f6d926ae0ff2116fef45ecd41d5497a08ddc79980bf21d19a73076e72"
+    },
+    "132-java-testing-integration-testing": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/132-java-testing-integration-testing/SKILL.md",
+      "computedHash": "20fa6c5c4c17d79471f433ee18e1e8e24de75a719bdeee8f8e368e6b968eb1ec"
+    },
+    "133-java-testing-acceptance-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/133-java-testing-acceptance-tests/SKILL.md",
+      "computedHash": "c5e3e87794d563492b0fca8230a24a1ddc690b851bde1b17ffd890f9b78af9c3"
+    },
+    "141-java-refactoring-with-modern-features": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/141-java-refactoring-with-modern-features/SKILL.md",
+      "computedHash": "95a923a672df1cd553d820899a72e691001466ea04c8b30d383bb9919ea22e5d"
+    },
+    "142-java-functional-programming": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/142-java-functional-programming/SKILL.md",
+      "computedHash": "5788606b68156d2e5c0fc3f754e10c83c61f89e70a1eb3be8b10b03f6daac5f3"
+    },
+    "143-java-functional-exception-handling": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/143-java-functional-exception-handling/SKILL.md",
+      "computedHash": "79b659ab16982026382a59202f795360305418f1b5f5065441c8532ac845741c"
+    },
+    "144-java-data-oriented-programming": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/144-java-data-oriented-programming/SKILL.md",
+      "computedHash": "c7b3255c394fe46321a2fb81cde719b1d6406a8df0ce94ba4fa27e4d089d7aa6"
+    },
+    "145-java-refactoring-high-performance": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/145-java-refactoring-high-performance/SKILL.md",
+      "computedHash": "dd6708b41f3bfcc17be6809777b551bbac745544c1a4daef0c4c8c9b41079c6f"
+    },
+    "151-java-performance-jmeter": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/151-java-performance-jmeter/SKILL.md",
+      "computedHash": "f33ebea57a8a47a851ed00a2b824bc9b5a9d12319c6db8b4a9f3a609d346f277"
+    },
+    "152-java-performance-gatling": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/152-java-performance-gatling/SKILL.md",
+      "computedHash": "3bde4ac23aab8ca1c53e5006f19fadb1829db27e1d929613babb7cd7dc99e73c"
+    },
+    "161-java-profiling-detect": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/161-java-profiling-detect/SKILL.md",
+      "computedHash": "fe482a302dd60fbdda60b9ead89019128b244932a75a7f743c4103a3892d71a7"
+    },
+    "162-java-profiling-analyze": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/162-java-profiling-analyze/SKILL.md",
+      "computedHash": "b9cfc506338e7f2816f3d0d42bdf758c1ef896cd50c0c97a76869e4ee300fc02"
+    },
+    "163-java-profiling-refactor": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/163-java-profiling-refactor/SKILL.md",
+      "computedHash": "672d52e9772c837b6c666c871754cd25fe8f9425ce4bcab955a6bf96a0138419"
+    },
+    "164-java-profiling-verify": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/164-java-profiling-verify/SKILL.md",
+      "computedHash": "248385d3bbb08710cd97edb2793c7945ea80d89594cd4a5121f2e76656558963"
+    },
+    "170-java-documentation": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/170-java-documentation/SKILL.md",
+      "computedHash": "64892a5402ce9f649446f921918a9aeb90d168d315d7c7f275282b59c6f7ebeb"
+    },
+    "181-java-observability-logging": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/181-java-observability-logging/SKILL.md",
+      "computedHash": "79f9df15d2033b19e8fa8a1c8cac7022953d58cc40440812ba14996fced4d125"
+    },
+    "182-java-observability-metrics-micrometer": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/182-java-observability-metrics-micrometer/SKILL.md",
+      "computedHash": "c129e065a7a1106fce027bb46162e6a69ffac8ebe01d2b295edbc0cff80d6802"
+    },
+    "183-java-observability-tracing-opentelemetry": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/183-java-observability-tracing-opentelemetry/SKILL.md",
+      "computedHash": "8c601899874393bd211798e502b10563f76c048ad348619142fa1a0b43b0e3ef"
+    },
+    "200-agents-md": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/200-agents-md/SKILL.md",
+      "computedHash": "21c7326e0682974d05e0717b1537195dfd710180528d783803c9fc9b4844cbc9"
+    },
+    "300-frameworks-spring-boot-create-project": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/300-frameworks-spring-boot-create-project/SKILL.md",
+      "computedHash": "64a91a48fff4d9d99bcf7aa1278c8822b49169718038127b13d57cdfb33e72a0"
+    },
+    "301-frameworks-spring-boot-core": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/301-frameworks-spring-boot-core/SKILL.md",
+      "computedHash": "c952baf24b67a80b5ab73d2513d136e77f1185979a27d943ad645862286acd1e"
+    },
+    "302-frameworks-spring-boot-rest": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/302-frameworks-spring-boot-rest/SKILL.md",
+      "computedHash": "8a9924d18cb1d3d3dfb63abef90d06189a4a07afc57d5671dc3488986b59052f"
+    },
+    "303-frameworks-spring-boot-validation": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/303-frameworks-spring-boot-validation/SKILL.md",
+      "computedHash": "f9733a5aac7d6174509cbc6209ce8541a90e42fa8d77d99ad15adedc64ed728e"
+    },
+    "304-frameworks-spring-boot-security": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/304-frameworks-spring-boot-security/SKILL.md",
+      "computedHash": "196d7e6a846f8f135a734eb81eb2db21c012414c0cb8510af194b74bbb5db214"
+    },
+    "305-frameworks-spring-boot-modulith": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/305-frameworks-spring-boot-modulith/SKILL.md",
+      "computedHash": "b7fc6cd808631049177bb4e0582d177a6531d3c94d57f176a1937f5231bac279"
+    },
+    "311-frameworks-spring-jdbc": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/311-frameworks-spring-jdbc/SKILL.md",
+      "computedHash": "cc719caa85f0dc994c76c154307f261491f50073c9c7690d3564eb93d41e80ea"
+    },
+    "312-frameworks-spring-data-jdbc": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/312-frameworks-spring-data-jdbc/SKILL.md",
+      "computedHash": "03fc01584473143adb42ce4eea9d5a3568a2486bd4fc34bb5c84ae587f986335"
+    },
+    "313-frameworks-spring-db-migrations-flyway": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/313-frameworks-spring-db-migrations-flyway/SKILL.md",
+      "computedHash": "9f312801cda62353504c4d261190f66d30e4555a794d02c66a816b8fd7ec97bf"
+    },
+    "314-frameworks-spring-kafka": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/314-frameworks-spring-kafka/SKILL.md",
+      "computedHash": "ac76fd4ba7de93f76321cffcdb17478802a4f431241cfca5addd821247bd610c"
+    },
+    "315-frameworks-spring-mongodb": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/315-frameworks-spring-mongodb/SKILL.md",
+      "computedHash": "97ed4f78505c54a00ba823546a05052ba0e67207187a992d65c8b7ab39ca4ab9"
+    },
+    "316-frameworks-spring-mongodb-migrations-mongock": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/316-frameworks-spring-mongodb-migrations-mongock/SKILL.md",
+      "computedHash": "ca33625e023718bd94c7e44f98ca4dc983c59ccc36dfb126910dc9956c658d17"
+    },
+    "321-frameworks-spring-boot-testing-unit-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/321-frameworks-spring-boot-testing-unit-tests/SKILL.md",
+      "computedHash": "b30807a3b5faeb61062cfc6cb60f2954a31baddb0c972b2c8335549979e400cc"
+    },
+    "322-frameworks-spring-boot-testing-integration-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/322-frameworks-spring-boot-testing-integration-tests/SKILL.md",
+      "computedHash": "0f16e97c72432b0e0adb5e3154260b0db29a6bac7995d3701423b3b0b3d593eb"
+    },
+    "323-frameworks-spring-boot-testing-acceptance-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/323-frameworks-spring-boot-testing-acceptance-tests/SKILL.md",
+      "computedHash": "287e421396059a5201352cfae612368cbe740b7a512a1c222c305f53d4f6d87d"
+    },
+    "400-frameworks-quarkus-create-project": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/400-frameworks-quarkus-create-project/SKILL.md",
+      "computedHash": "36021f69e6d89ae93db5cfe75148dd038a199949f5fe81c5f976c870905f2b09"
+    },
+    "401-frameworks-quarkus-core": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/401-frameworks-quarkus-core/SKILL.md",
+      "computedHash": "734008463484a8a1782c3c5b2435eeab953376b919a6bbe8a95528d117dd8413"
+    },
+    "402-frameworks-quarkus-rest": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/402-frameworks-quarkus-rest/SKILL.md",
+      "computedHash": "597bc08acdd54868148969dd99bdc401f306d26dc1ea21e830058cdfad7085b0"
+    },
+    "403-frameworks-quarkus-validation": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/403-frameworks-quarkus-validation/SKILL.md",
+      "computedHash": "d9d10f15df927fd26b4c451cca6867b3c90356bcaabfda4a0447be75ddae35f8"
+    },
+    "404-frameworks-quarkus-security": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/404-frameworks-quarkus-security/SKILL.md",
+      "computedHash": "56e9b5cda3e40246477470e5f4690c0c4a03a2301300d589777db23b5f063be6"
+    },
+    "411-frameworks-quarkus-jdbc": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/411-frameworks-quarkus-jdbc/SKILL.md",
+      "computedHash": "441c647b2c39d430e5d7ba54e7586f61622877af678b629aab8339c7312f221d"
+    },
+    "412-frameworks-quarkus-panache": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/412-frameworks-quarkus-panache/SKILL.md",
+      "computedHash": "d70899d7cdfedec6a745421f30670b2efca71b3a92b8532cf59625c8b953919e"
+    },
+    "413-frameworks-quarkus-db-migrations-flyway": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/413-frameworks-quarkus-db-migrations-flyway/SKILL.md",
+      "computedHash": "6f0eb84ab14bdc0276e2e200829b6ff8b61c3beae984d501dfeec25e1b2c6053"
+    },
+    "414-frameworks-quarkus-kafka": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/414-frameworks-quarkus-kafka/SKILL.md",
+      "computedHash": "a938883979f4631732cc723683b35d28ea739e274ed78077f949f6c8116cc4b8"
+    },
+    "415-frameworks-quarkus-mongodb": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/415-frameworks-quarkus-mongodb/SKILL.md",
+      "computedHash": "16773378d339a35e3c61493f4cde00bba1483507b460353a0574cef7f18c4913"
+    },
+    "416-frameworks-quarkus-mongodb-migrations-mongock": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/416-frameworks-quarkus-mongodb-migrations-mongock/SKILL.md",
+      "computedHash": "fdb3d3d415a4b5ad2a7b96d1b7566290a6fa9276f1c6473ec033731307f4e313"
+    },
+    "421-frameworks-quarkus-testing-unit-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/421-frameworks-quarkus-testing-unit-tests/SKILL.md",
+      "computedHash": "b7b7759f077fb6fba4c1062e7616f52ce66a94146f506dc6a5946db546f0190e"
+    },
+    "422-frameworks-quarkus-testing-integration-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/422-frameworks-quarkus-testing-integration-tests/SKILL.md",
+      "computedHash": "63a1eb8a4406fe1c6be5f2d6b7898297eaf42c26249f75011aa02b8db6163c54"
+    },
+    "423-frameworks-quarkus-testing-acceptance-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/423-frameworks-quarkus-testing-acceptance-tests/SKILL.md",
+      "computedHash": "85c7c5670141347686d8cfc0c7e2c88561d05d6474a17b7e2d1856500afe8c09"
+    },
+    "500-frameworks-micronaut-create-project": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/500-frameworks-micronaut-create-project/SKILL.md",
+      "computedHash": "c5bae337fa3309bc2f997de45ffb0375ea6e3a569555f5e76c6a874db2e79b58"
+    },
+    "501-frameworks-micronaut-core": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/501-frameworks-micronaut-core/SKILL.md",
+      "computedHash": "cec52f3954dead61a5260fbd56e10677b7eb3636962b59f6e043845e20e836d9"
+    },
+    "502-frameworks-micronaut-rest": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/502-frameworks-micronaut-rest/SKILL.md",
+      "computedHash": "6488eaffafe19d873736b77ca7819db788af80705f1242b3c7ca088e6bc22990"
+    },
+    "503-frameworks-micronaut-validation": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/503-frameworks-micronaut-validation/SKILL.md",
+      "computedHash": "cfe40c34da87590a45ba9bf92248a7ce0effe5486d3fe792724d2aae2e52bc1d"
+    },
+    "504-frameworks-micronaut-security": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/504-frameworks-micronaut-security/SKILL.md",
+      "computedHash": "5709dc4752951f6725e5628379d47949b48c2e7befd0b34d59a5a041ae4c555f"
+    },
+    "511-frameworks-micronaut-jdbc": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/511-frameworks-micronaut-jdbc/SKILL.md",
+      "computedHash": "9fce58038ef0fb4e2dacf8e1abc79a277e9440b7786ec8011998ab81d9f5231f"
+    },
+    "512-frameworks-micronaut-data": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/512-frameworks-micronaut-data/SKILL.md",
+      "computedHash": "744ba5f45b130554c8c25512c307fc957885c1bdbf6b62eaab668c9935586247"
+    },
+    "513-frameworks-micronaut-db-migrations-flyway": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/513-frameworks-micronaut-db-migrations-flyway/SKILL.md",
+      "computedHash": "c362ac299d5de7cb157009b814474e0bbc53a4221f5c9caa8605161aec63848d"
+    },
+    "514-frameworks-micronaut-kafka": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/514-frameworks-micronaut-kafka/SKILL.md",
+      "computedHash": "df90d16fae21318ab621c3d8f4cb76d8fcc1e2bf652093bea75bfb4df6148a38"
+    },
+    "515-frameworks-micronaut-mongodb": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/515-frameworks-micronaut-mongodb/SKILL.md",
+      "computedHash": "49b026a09134c5b7af4dc09b8fd8a7930536c6320514f98bbd04db396fe15620"
+    },
+    "516-frameworks-micronaut-mongodb-migrations-mongock": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/516-frameworks-micronaut-mongodb-migrations-mongock/SKILL.md",
+      "computedHash": "4f54c0e7cf5412a5ca28b596b9a97fa6db720ea4ea924f8c7e3b4f122c6bfd32"
+    },
+    "521-frameworks-micronaut-testing-unit-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/521-frameworks-micronaut-testing-unit-tests/SKILL.md",
+      "computedHash": "8523ff617c72ca6e1e3f0f2c8f394b237dafd3b663271fdb5abbe3ba1e58ff3f"
+    },
+    "522-frameworks-micronaut-testing-integration-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/522-frameworks-micronaut-testing-integration-tests/SKILL.md",
+      "computedHash": "bc4df9a52f449308e2c7c449400068f3a4a6946f7b477f7ff8cb1bb3ca67d8b0"
+    },
+    "523-frameworks-micronaut-testing-acceptance-tests": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/523-frameworks-micronaut-testing-acceptance-tests/SKILL.md",
+      "computedHash": "b9fbda37f1abb5f7276cec4b056432f86cc19ff7c2a6829fb11ff462e05370a3"
+    },
+    "701-technologies-openapi": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/701-technologies-openapi/SKILL.md",
+      "computedHash": "d2c6fef40827942ddce85c5aba9385bea99d2d31fa5644e551346925c6a54a52"
+    },
+    "702-technologies-wiremock": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/702-technologies-wiremock/SKILL.md",
+      "computedHash": "cb63eb3b611b7aee93bd0ce67347a70a91c293efa3b14231ff9033a15324ff51"
+    },
+    "703-technologies-fuzzing-testing": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/703-technologies-fuzzing-testing/SKILL.md",
+      "computedHash": "bedefca1bc6a779cd35581eabac32a4c46cc7e824a7a4012f0e68ad688504089"
+    },
+    "704-technologies-sql": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/704-technologies-sql/SKILL.md",
+      "computedHash": "24021dde33effc97c4ca8e65149461caa809dbcc60b6741595a2bafd0a33d36f"
+    },
+    "705-technologies-nosql-mongodb": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/705-technologies-nosql-mongodb/SKILL.md",
+      "computedHash": "51b43b88e1bd780c41a271f9fda6954c2a16cb75af3e16f9bf16baf07b70e70a"
+    },
+    "706-technologies-containers-docker": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/706-technologies-containers-docker/SKILL.md",
+      "computedHash": "5dfe8b8615e0cdff61a6f665aed511edd0841dbaf7ad032aebc657fc97e22a13"
+    },
+    "707-technologies-hexagonal-architecture": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/707-technologies-hexagonal-architecture/SKILL.md",
+      "computedHash": "48922232243e641732468c289fdec64fb8f6038e2eb551ab434357249630ee42"
+    },
+    "801-regulations-eu-ai-act": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/801-regulations-eu-ai-act/SKILL.md",
+      "computedHash": "e19437ddf24ab8744f71e69c40d151569c7425b0051e4ea74d9996720ef07b60"
+    },
+    "802-regulations-dora": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/802-regulations-dora/SKILL.md",
+      "computedHash": "7ddb32a979678659264b52637a56df715fe0cc41849d2ad0ec616bc3fa6ad4aa"
+    },
+    "803-regulations-gdpr": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/803-regulations-gdpr/SKILL.md",
+      "computedHash": "0282de32495843d396cc715728b3f95bc60bd0e8608a1babf05b896c7e40cb64"
+    },
+    "804-regulations-eu-nis2": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/804-regulations-eu-nis2/SKILL.md",
+      "computedHash": "998b02873d220ca6b62e3d597468661ab0f3357cdc9a876573640ca96e3213fa"
+    },
+    "805-regulations-eu-cyber-resilience-act": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/805-regulations-eu-cyber-resilience-act/SKILL.md",
+      "computedHash": "2486c3f959bec31a553d18b1b5a51edae2fb2952caf249ca953edd355f1e4d8f"
+    },
+    "806-regulations-eu-data-act": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/806-regulations-eu-data-act/SKILL.md",
+      "computedHash": "7ddc7307b4397172912d3f6727309c17a7e2c1d80ebf9aa3d635078733029ee5"
+    },
+    "807-regulations-eu-digital-services-act": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/807-regulations-eu-digital-services-act/SKILL.md",
+      "computedHash": "396165f788f272f46a2c749c5c26ebac13cb082483e7829354047bc83dfe19a0"
+    },
+    "808-regulations-eu-digital-markets-act": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/808-regulations-eu-digital-markets-act/SKILL.md",
+      "computedHash": "1d96fc81b16a2186cec34f6801131ec22f5a65ca572d4812c5426223dc09fb92"
+    },
+    "810-regulations-eu-mifid-ii": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/810-regulations-eu-mifid-ii/SKILL.md",
+      "computedHash": "3f65a9f52a980bec3ccda73b877403a03b740a19e3acf75dd2defe7730e14fee"
+    },
+    "811-regulations-eu-market-abuse-regulation": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/811-regulations-eu-market-abuse-regulation/SKILL.md",
+      "computedHash": "87f4261f02cf9a7854c3deceec00d36422ba16a4b2bccee7cf62a9d4ec2776d6"
+    },
+    "812-regulations-eu-product-liability-directive": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/812-regulations-eu-product-liability-directive/SKILL.md",
+      "computedHash": "6f9cc4e9a4749ffe0bf22925c211fce44ded6c49a176c3ce276fda2fe0d639e3"
+    },
+    "813-regulations-iso-42001": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/813-regulations-iso-42001/SKILL.md",
+      "computedHash": "5f50d10346a0c22cd681b82c8ae4689fa407a6c6399b55357f41cab3f18b4460"
+    },
+    "814-regulations-iso-25010": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/814-regulations-iso-25010/SKILL.md",
+      "computedHash": "100364a2cee10d0a59903a23fd6d95ae0dc931106a22ff5db243fc917c02cc16"
+    }
+  }
+}

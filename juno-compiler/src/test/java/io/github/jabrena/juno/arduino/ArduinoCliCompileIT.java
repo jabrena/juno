@@ -102,7 +102,13 @@ class ArduinoCliCompileIT {
         String target = "/sketches/" + board.id() + "/" + sketch.getFileName();
         ARDUINO_CLI.copyFileToContainer(MountableFile.forHostPath(sketch), target);
 
-        ExecResult result = ARDUINO_CLI.execInContainer("arduino-cli", "compile", "--fqbn", board.fqbn(), target);
+        List<String> command = new ArrayList<>(List.of("arduino-cli", "compile", "--fqbn", board.fqbn()));
+        if (board == Board.UNO_WIFI_REV2) {
+            command.add("--build-property");
+            command.add("compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3");
+        }
+        command.add(target);
+        ExecResult result = ARDUINO_CLI.execInContainer(command.toArray(String[]::new));
 
         assertThat(result.getExitCode()).as("arduino-cli compile %s (%s):%n%s%s", program, board.displayName(),
                 result.getStdout(), result.getStderr()).isZero();

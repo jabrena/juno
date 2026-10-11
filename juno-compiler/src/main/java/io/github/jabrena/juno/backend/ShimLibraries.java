@@ -1085,6 +1085,12 @@ final class ShimLibraries {
      * included), parsed from lines of at most {@code lineBytes}. An 8-bit board with a few KB of RAM uses smaller ones.
      */
     static String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
+        return sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes, "", "juno_sd.begin(chipSelectPin)");
+    }
+
+    /** The SD helpers with a core-specific SPI driver declaration and {@code SdFat32.begin} expression. */
+    static String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes,
+                            String spiDeclaration, String beginExpression) {
         return """
 
                 static constexpr int32_t JUNO_SD_MAX_OPEN_FILES = ${JUNO_SD_MAX_OPEN_FILES};
@@ -1095,6 +1101,7 @@ final class ShimLibraries {
                 static constexpr int32_t JUNO_PROPERTIES_VALUE_CAPACITY = ${JUNO_PROPERTIES_VALUE_CAPACITY};
                 static constexpr int32_t JUNO_PROPERTIES_LINE_CAPACITY = ${JUNO_PROPERTIES_LINE_CAPACITY};
 
+                ${JUNO_SD_SPI_DECLARATION}
                 static SdFat32 juno_sd;
                 static File32 juno_sd_files[JUNO_SD_MAX_OPEN_FILES];
                 static bool juno_sd_file_used[JUNO_SD_MAX_OPEN_FILES];
@@ -1114,7 +1121,7 @@ final class ShimLibraries {
                   }
                   // A card that survived a host reset without losing power can fail its first init.
                   for (int32_t attempt = 0; attempt < JUNO_SD_BEGIN_ATTEMPTS; attempt++) {
-                    if (juno_sd.begin(chipSelectPin)) return 1;
+                    if (${JUNO_SD_BEGIN_EXPRESSION}) return 1;
                     delay(JUNO_SD_BEGIN_RETRY_DELAY_MS);
                   }
                   return 0;
@@ -1289,6 +1296,8 @@ final class ShimLibraries {
                   return juno_properties(handle)->count;
                 }
                 """.replace("${JUNO_SD_MAX_OPEN_FILES}", Integer.toString(openFiles))
+                .replace("${JUNO_SD_SPI_DECLARATION}", spiDeclaration)
+                .replace("${JUNO_SD_BEGIN_EXPRESSION}", beginExpression)
                 .replace("${JUNO_PROPERTIES_MAX_ENTRIES}", Integer.toString(entries))
                 .replace("${JUNO_PROPERTIES_KEY_CAPACITY}", Integer.toString(keyBytes))
                 .replace("${JUNO_PROPERTIES_VALUE_CAPACITY}", Integer.toString(valueBytes))

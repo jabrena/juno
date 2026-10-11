@@ -30,6 +30,20 @@ class ArduinoCliTest {
     }
 
     @Test
+    void enablesSdFatSoftwareSpiForUnoWiFiRev2() {
+        FakeExecutor executor = new FakeExecutor().respond(0, "compiled");
+        ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
+        Path sketch = Path.of("target/juno/WifiStatusTFT");
+
+        cli.compile("arduino:megaavr:uno2018", sketch);
+
+        assertThat(executor.invocations()).containsExactly(new Invocation(List.of(
+                "arduino-cli", "compile", "--fqbn", "arduino:megaavr:uno2018",
+                "--build-property", "compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3",
+                sketch.toAbsolutePath().normalize().toString()), false));
+    }
+
+    @Test
     void installsCoreAndLibraryWithExpectedArguments() {
         FakeExecutor executor = new FakeExecutor().respond(0, "core installed").respond(0, "lib installed");
         List<String> output = new ArrayList<>();

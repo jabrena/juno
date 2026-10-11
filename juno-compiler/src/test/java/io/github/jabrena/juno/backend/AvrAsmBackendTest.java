@@ -81,6 +81,22 @@ class AvrAsmBackendTest {
     }
 
     @Test
+    void usesSoftwareSpiForShieldSdCards() throws Exception {
+        CompilationResult result = compile("demo.AvrSd", "SdCard.begin();",
+                "import io.github.jabrena.juno.api.io.SdCard;");
+
+        assertThat(result.runtimeShim())
+                .contains("class JunoSdSoftSpiDriver : public SdSpiBaseClass")
+                .contains("digitalWrite(11, (output & mask) != 0 ? HIGH : LOW);")
+                .contains("digitalWrite(13, HIGH);")
+                .contains("digitalRead(12)")
+                .contains("JUNO_PROPERTIES_VALUE_CAPACITY = 64")
+                .contains("JUNO_PROPERTIES_LINE_CAPACITY = 96")
+                .contains("SdSpiConfig(chipSelectPin, SHARED_SPI, SD_SCK_MHZ(0), &juno_sd_spi)")
+                .doesNotContain("juno_sd.begin(chipSelectPin)");
+    }
+
+    @Test
     void passesALongArgumentOnAnEvenWordLikeAapcs() {
         String shim = """
                 extern "C" void juno_string_concat_append_long(int32_t handle, int64_t value) {
