@@ -3,6 +3,17 @@ package io.github.jabrena.juno.games.gladiator;
 import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.io.Gpio;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.games.gladiator.arena.Body;
+import io.github.jabrena.juno.games.gladiator.arena.Coliseum;
+import io.github.jabrena.juno.games.gladiator.arena.Match;
+import io.github.jabrena.juno.games.gladiator.arena.Side;
+import io.github.jabrena.juno.games.gladiator.gladiator.Brain;
+import io.github.jabrena.juno.games.gladiator.gladiator.Report;
+import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
+import io.github.jabrena.juno.games.gladiator.view.ArenaView;
+import io.github.jabrena.juno.games.gladiator.view.Hud;
+import io.github.jabrena.juno.games.gladiator.view.View;
+import io.github.jabrena.juno.games.gladiator.view.ViewList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
@@ -16,31 +27,31 @@ import javax.imageio.ImageIO;
 /**
  * Writes the frames of a whole Gladiator match on demand, for documentation media: the arena's screen and both
  * gladiators' first-person screens side by side, as the three boards would show them. One AGGRESSIVE and one AMBUSH
- * gladiator play through the real {@link Match}, {@link Brain}, {@link ArenaView} and {@link View}; the network is
- * replaced by direct calls. ffmpeg turns the frames into a video.
+ * gladiator play through the real {@link Match}, {@link Brain}, {@link Report}, {@link ArenaView} and {@link View};
+ * the network is replaced by direct calls. ffmpeg turns the frames into a video.
  *
  * <p>{@code ./mvnw -pl juno-examples test -Dtest=GladiatorRecordingTest -Djuno.recording.gladiator=true}
  */
 class GladiatorRecordingTest {
     private static final int FRAME_MILLIS = 40;
     private static final int CAPTURE_MILLIS = 80;
-    private static final int[] SOURCE = {192, 168, 1, 20, Gladiator.PORT};
+    private static final int WORLD_MILLIS = 120;
+    private static final int[] SOURCE = {192, 168, 1, 20, GladiatorProtocol.PORT};
 
-    private final Match match = new Match();
-    private final Body[] bodies = {new Body(), new Body()};
+    private final Coliseum coliseum = new Coliseum();
+    private final Match match = new Match(coliseum);
+    private final Body[] bodies = {new Body(coliseum), new Body(coliseum)};
     private final Brain[] brains = {new Brain(Brain.AGGRESSIVE), new Brain(Brain.AMBUSH)};
+    private final Report[] reports = {new Report(coliseum), new Report(coliseum)};
+    private final ViewList list = new ViewList();
+    private final View[] views = {new View(list, coliseum, reports[0]), new View(list, coliseum, reports[1])};
+    private final Hud hud = new Hud(list);
+    private final ArenaView arenaView = new ArenaView(coliseum);
     private final int[] strikes = new int[2];
     private final int[] swungAt = {-10_000, -10_000};
     private final int[] swing = new int[2];
     private final int[] hurt = new int[2];
     private final int[] thrust = new int[2];
-    private final int[] rounds = {-1, -1};
-    private final int[] hits = {-1, -1};
-    private final int[] seenStrikes = {-1, -1};
-    private final boolean[] visible = new boolean[2];
-    private final float[] opponentX = new float[2];
-    private final float[] opponentY = new float[2];
-    private final float[] opponentAngle = new float[2];
     private final byte[] packet = new byte[GladiatorProtocol.PACKET_SIZE];
 
     @Test
@@ -51,8 +62,8 @@ class GladiatorRecordingTest {
         Files.createDirectories(output);
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        Coliseum.build();
         Random.seed(7);
+        coliseum.build();
         match.join(11, Brain.AGGRESSIVE, SOURCE, 0);
         match.join(22, Brain.AMBUSH, SOURCE, 0);
 
@@ -63,8 +74,8 @@ class GladiatorRecordingTest {
                 BufferedImage image = new BufferedImage(3 * ViewList.WIDTH, ViewList.HEIGHT, BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics = image.createGraphics();
                 graphics.drawImage(arena(now), 0, 0, null);
-                graphics.drawImage(fighter(0, now), ViewList.WIDTH, 0, null);
-                graphics.drawImage(fighter(1, now), 2 * ViewList.WIDTH, 0, null);
+                graphics.drawImage(fighter(0), ViewList.WIDTH, 0, null);
+                graphics.drawImage(fighter(1), 2 * ViewList.WIDTH, 0, null);
                 graphics.setColor(Color.DARK_GRAY);
                 graphics.drawLine(ViewList.WIDTH, 0, ViewList.WIDTH, ViewList.HEIGHT);
                 graphics.drawLine(2 * ViewList.WIDTH, 0, 2 * ViewList.WIDTH, ViewList.HEIGHT);
@@ -77,10 +88,10 @@ class GladiatorRecordingTest {
     /** One 40 ms frame of the arena and both boards. */
     private void step(int now) {
         match.tick(now);
-        if (now % 120 == 0) {
+        if (now % WORLD_MILLIS == 0) {
             for (int slot = 0; slot < 2; slot++) {
                 match.writeWorld(packet, slot, now);
-                world(slot, now);
+                react(slot, reports[slot].read(packet), now);
             }
         }
         for (int slot = 0; slot < 2; slot++) {
@@ -88,100 +99,77 @@ class GladiatorRecordingTest {
             hurt[slot] = Math.max(0, hurt[slot] - 1);
             thrust[slot] = Math.max(0, thrust[slot] - 1);
             boolean swung = false;
-            if (match.phase == Match.FIGHT) {
-                Body body = bodies[slot];
-                body.opponentInSight = visible[slot];
-                body.opponentX = opponentX[slot];
-                body.opponentY = opponentY[slot];
-                brains[slot].see(visible[slot], opponentX[slot], opponentY[slot], now);
-                brains[slot].drive(body, now);
-                if (brains[slot].strike && now - swungAt[slot] >= 700) {
+            Report report = reports[slot];
+            if (match.phase() == Match.FIGHT) {
+                bodies[slot].seeOpponent(report.visible(), report.opponentX(), report.opponentY());
+                brains[slot].see(report.visible(), report.opponentX(), report.opponentY(), now);
+                brains[slot].drive(bodies[slot], now);
+                if (brains[slot].strike() && now - swungAt[slot] >= 700) {
                     swungAt[slot] = now;
                     strikes[slot] = (strikes[slot] + 1) & 0xFF;
                     swing[slot] = 6;
                     swung = true;
                 }
             }
-            if (swung || now % 120 == 0) {
-                byte[] state = new byte[GladiatorProtocol.PACKET_SIZE];
-                GladiatorProtocol.begin(state, GladiatorProtocol.STATE, slot, match.node[slot]);
-                state[GladiatorProtocol.STATE_ROUND] = (byte) match.round;
-                state[GladiatorProtocol.STATE_BEHAVIOUR] = (byte) brains[slot].behaviour;
-                GladiatorProtocol.writeShort(state, GladiatorProtocol.X, Math.round(bodies[slot].x));
-                GladiatorProtocol.writeShort(state, GladiatorProtocol.Y, Math.round(bodies[slot].y));
-                GladiatorProtocol.writeShort(state, GladiatorProtocol.ANGLE, GladiatorProtocol.toWire(bodies[slot].angle));
-                state[GladiatorProtocol.STRIKES] = (byte) strikes[slot];
-                state[GladiatorProtocol.MODE] = (byte) brains[slot].mode;
-                match.state(slot, state, now);
+            if (swung || now % WORLD_MILLIS == 0) {
+                sendState(slot, now);
             }
         }
     }
 
-    /** What the gladiator's board does with a {@code WORLD} packet. */
-    private void world(int slot, int now) {
-        int round = GladiatorProtocol.unsigned(packet, GladiatorProtocol.ROUND);
-        if (round != rounds[slot]) {
-            rounds[slot] = round;
+    private void sendState(int slot, int now) {
+        byte[] state = new byte[GladiatorProtocol.PACKET_SIZE];
+        GladiatorProtocol.begin(state, GladiatorProtocol.STATE, slot, match.side(slot).node());
+        state[GladiatorProtocol.STATE_ROUND] = (byte) match.round();
+        state[GladiatorProtocol.STATE_BEHAVIOUR] = (byte) brains[slot].behaviour();
+        GladiatorProtocol.writeShort(state, GladiatorProtocol.X, Math.round(bodies[slot].x()));
+        GladiatorProtocol.writeShort(state, GladiatorProtocol.Y, Math.round(bodies[slot].y()));
+        GladiatorProtocol.writeShort(state, GladiatorProtocol.ANGLE, GladiatorProtocol.toWire(bodies[slot].angle()));
+        state[GladiatorProtocol.STRIKES] = (byte) strikes[slot];
+        state[GladiatorProtocol.MODE] = (byte) brains[slot].mode();
+        match.state(slot, state, now);
+    }
+
+    /** What the gladiator's board does with what its {@code WORLD} packet said. */
+    private void react(int slot, int events, int now) {
+        if ((events & Report.NEW_ROUND) != 0) {
             bodies[slot].spawn(slot);
             brains[slot].reset(slot, now);
-            seenStrikes[slot] = -1;
             swing[slot] = 0;
             hurt[slot] = 0;
         }
-        int hit = GladiatorProtocol.unsigned(packet, GladiatorProtocol.HITS);
-        if (hits[slot] >= 0 && hit != hits[slot]) {
-            boolean unseen = packet[GladiatorProtocol.SURPRISED] != 0;
-            hurt[slot] = unseen ? 8 : 4;
+        if ((events & Report.STRUCK) != 0) {
+            hurt[slot] = reports[slot].surprised() ? 8 : 4;
             brains[slot].hurt(now);
         }
-        hits[slot] = hit;
-        visible[slot] = packet[GladiatorProtocol.VISIBLE] != 0;
-        if (visible[slot]) {
-            opponentX[slot] = GladiatorProtocol.readShort(packet, GladiatorProtocol.OPPONENT_X);
-            opponentY[slot] = GladiatorProtocol.readShort(packet, GladiatorProtocol.OPPONENT_Y);
-            opponentAngle[slot] = GladiatorProtocol.fromWire(
-                    GladiatorProtocol.readWord(packet, GladiatorProtocol.OPPONENT_ANGLE));
-            int swung = GladiatorProtocol.unsigned(packet, GladiatorProtocol.OPPONENT_STRIKES);
-            if (seenStrikes[slot] >= 0 && swung != seenStrikes[slot]) {
-                thrust[slot] = 6;
-            }
-            seenStrikes[slot] = swung;
+        if ((events & Report.OPPONENT_SWUNG) != 0) {
+            thrust[slot] = 6;
         }
     }
 
     private BufferedImage arena(int now) {
-        ArenaView.drawAll();
-        ArenaView.update(match, now);
+        arenaView.drawAll();
+        arenaView.update(match, now);
         return capture();
     }
 
-    private BufferedImage fighter(int slot, int now) {
-        int other = 1 - slot;
-        Hud.bar();
-        Report.phase = match.phase;
-        Report.round = match.round;
-        Report.winner = match.winner;
-        Report.countdown = match.countdown(now);
-        Report.health = match.health[slot];
-        Report.wins = match.wins[slot];
-        Report.surprised = match.surprised[slot];
-        Report.opponentPresent = match.present[other];
-        Report.opponentKind = match.behaviour[other];
-        Report.opponentHealth = match.health[other];
-        Report.opponentWins = match.wins[other];
-        Report.visible = visible[slot];
-        if (match.phase == Match.WAITING) {
-            Hud.status(0, "WAITING", TftTouchShield.GRAY);
+    private BufferedImage fighter(int slot) {
+        Report report = reports[slot];
+        Side own = match.side(slot);
+        Side other = match.side(1 - slot);
+        hud.bar();
+        if (report.phase() == Match.WAITING) {
+            hud.status(0, "WAITING", TftTouchShield.GRAY);
         } else {
-            ViewList.clearView();
-            View.build(ViewList.lines, bodies[slot], visible[slot], opponentX[slot], opponentY[slot],
-                    opponentAngle[slot], match.behaviour[other], thrust[slot] > 0, swing[slot], hurt[slot]);
-            ViewList.present(ViewList.lines, ViewList.changes);
-            Hud.fighterStatus(slot, false, brains[slot].mode, hurt[slot] > 0);
+            list.clearView();
+            views[slot].build(bodies[slot], report.visible(), report.opponentX(), report.opponentY(),
+                    report.opponentAngle(), other.behaviour(), thrust[slot] > 0, swing[slot], hurt[slot]);
+            list.present();
+            hud.fighterStatus(report, slot, false, brains[slot].mode(), hurt[slot] > 0);
         }
-        Hud.own(brains[slot].behaviour, match.health[slot], match.wins[slot]);
-        Hud.opponent(match.present[other], match.behaviour[other], match.health[other], match.wins[other]);
-        Hud.pilot(false);
+        hud.own(brains[slot].behaviour(), own.health(), own.wins());
+        hud.opponent(other.present(), other.behaviour(), other.health(), other.wins());
+        hud.pilot(false);
         return capture();
     }
 

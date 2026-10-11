@@ -258,19 +258,30 @@ No-limit Texas Hold'em against three CPU opponents. Play a seat yourself or watc
 
 ### Gladiator
 
-<img src="../images/games/gladiator-opening.gif" alt="Gladiator opening: an animated laurel and Timor mortis morte peior lead into rotating wireframe classes, Solo selection, historical name and class selection, fighting style and the local arena" width="320">
+<img src="../images/games/gladiator-solo.gif" alt="Gladiator Solo from the title: the laurel, the rotating wireframe classes, name and class selection, the versus view, then a CPU-versus-CPU bout among smoke, javelins and pillars until the result" width="320">
 
-<img src="../images/games/gladiator-cpu.gif" alt="Gladiator in the emulator: the arena's view from above on the left, then the AGGRESSIVE and the AMBUSH gladiator's first-person wireframe views; the ambusher lurks behind a pillar, charges and wins the round" width="720">
+<img src="../images/games/gladiator-multiplayer.gif" alt="Gladiator multiplayer: the arena from above on the left, with the AGGRESSIVE and the AMBUSH gladiators' first-person views on the right, a round of the three-board game" width="640">
 
-After the opening, **SOLO** runs an entire CPU-versus-CPU duel locally on one UNO Q: choose a historical name (Spartacus, Crixus, Flamma or Priscus), a class and its authentic paired arms, then an aggressive or ambush fighting style for the player CPU. A versus view rotates that gladiator beside a random opponent CPU with a different historical name and a random class and fighting style; tap **PLAY** there to begin the bout. Murmillo and Secutor carry gladius and scutum, Thraex carries sica and parmula, and Retiarius carries trident and net. The chosen equipment appears in the player's first-person view while its CPU drives it. When one gladiator falls, a result view names the winner for five seconds and the game returns to the laurel title.
+After the opening, **SOLO** runs an entire CPU-versus-CPU duel locally on one UNO Q: choose a historical name (Spartacus, Crixus, Flamma or Priscus) and a class. A versus view rotates that gladiator beside a random opponent CPU with a different historical name and a random class; tap **PLAY** there to begin the bout. The chosen arms appear in the player's first-person view while its CPU drives it. When one gladiator falls, a result view names the winner for five seconds and the game returns to the laurel title.
+
+Each class fights with its own arms, and its class decides how its CPU fights:
+
+- **Murmillo** (gladius and big scutum) is slow, but the scutum takes a quarter off a blow from in front.
+- **Thraex** (sica and parmula) swings fastest, and the curved sica does half again as much damage into the victim's side.
+- **Retiarius** (trident and net) reaches farthest, and once a round casts its net, which tangles the opponent so it can neither walk nor strike for a second and a half. It fights as an ambusher: it hides behind pillars and in smoke, and throws from cover.
+- **Secutor** (gladius and helmet) takes a tenth off every blow and slips a net in half the time, but its helmet narrows its view, so it is surprised more often.
+
+Every gladiator has stamina: running spends it, walking restores it, and an exhausted gladiator can only walk. Every bout stands five pillars at random places on the sand, an oval in the 87 by 55 proportions of the Colosseum's arena. Two javelins stand in the sand, one at a random place in each half: a gladiator picks one up by walking over it and throws it at an opponent in range, and a missed javelin lies where it fell. Twenty seconds into a fight, and every forty after, a lion leaves its gate in the north wall and hunts the nearest gladiator for twenty seconds: it runs faster than a gladiator walks but slower than one runs, and a gladiator it kills hands the bout to the other.
 
 **MULTIPLAYER** keeps the original three-board game. Two gladiators fight among the pillars while a third board keeps the arena. Put three boards with the shield on the same Wi-Fi network; every board runs the same program and picks its role:
 
-- **ARENA** (meant for the UNO Q, one per network) keeps the battle and shows the coliseum from above: the sand, the five-by-three grid of red pillars, the wall and the tiers of seats, each gladiator with its field of view, and a dotted line while one sees the other. It sends each gladiator the map once and judges every strike.
-- **AGGRESSIVE** runs at its opponent and strikes as soon as it is in reach, chases to where it saw it last, and otherwise patrols round the pillars.
-- **AMBUSH** creeps behind a pillar, out of sight, and lurks there. It charges only an opponent that comes close.
+- **ARENA** (meant for the UNO Q, one per network) keeps the battle and shows the coliseum from above: the sand, the five red pillars, the wall and the tiers of seats, each gladiator with its field of view, and a dotted line while one sees the other. It sends each gladiator the map once and judges every strike, net, javelin and lion bite.
+- **PLAYER 1** fights as an aggressive Secutor: it runs at its opponent and strikes as soon as it is in reach, chases to where it saw it last, and otherwise patrols round the pillars.
+- **PLAYER 2** fights as an ambushing Retiarius: it creeps behind a pillar or into smoke, out of sight, and lurks there. It charges only an opponent that comes close.
 
-The battle starts when the arena has two gladiators: the first enters by the left gate, the second by the right. Each gladiator's board shows the arena in first-person wireframe, drawn like DOOM. A gladiator sees its opponent only with its own eyes: the arena reports the opponent's position only while it is in front of the gladiator and no pillar is in the way. A blow the victim did not see coming does double damage, which is what the ambusher plays for. Each gladiator has 100 HP and a blow does 10; the first to fall loses the round, and the next round starts from the gates. Tap **CPU/HUMAN** under the view to take over a gladiator: the left and right thirds of the view turn, the upper middle walks and the lower middle swings the gladius.
+**RETURN** goes back to the game menu.
+
+The battle starts when the arena has two gladiators: the first enters by the left gate, the second by the right. Each gladiator's board shows the arena in first-person wireframe, drawn like DOOM. A gladiator sees its opponent only with its own eyes: the arena reports the opponent's position only while it is in front of the gladiator and no pillar is in the way. A blow the victim did not see coming does double damage, which is what the ambusher plays for. Each gladiator has 100 HP and a blow does about 10, changed by both classes' arms; the first to fall loses the round, and the next round starts from the gates. Tap **CPU/HUMAN** under the view to take over a gladiator: the left and right thirds of the view turn, the upper middle walks and the lower middle swings the gladius.
 
 Build it with a 10 KB arena (the default is 8 KB) for each board. Solo is enabled only in the UNO Q build; the R4 menu marks it as unavailable:
 
@@ -288,7 +299,14 @@ Build it with a 10 KB arena (the default is 8 KB) for each board. Solo is enable
   -Djuno.board=arduino-uno-r4-wifi -Djuno.Xmx=10k
 ```
 
-The boards talk over UDP port 4211, and the UNO R4 WiFi joins the network named by `JUNO_WIFI_SSID` and `JUNO_WIFI_PASSWORD` (see the [Arduino CLI Workflow](/arduino)). With `juno:monitor` at 115200 baud, the arena logs every join, hit and round, and each gladiator logs the blows it takes.
+The boards talk over UDP port 4211. An UNO R4 WiFi joins the network named in `application.properties` on the shield's microSD card; without the file it says so and goes back to the menu. The UNO Q uses the connection configured on its Linux side.
+
+```properties
+wifi.ssid=MyNetwork
+wifi.password=MyPassword
+```
+
+With `juno:monitor` at 115200 baud, the arena logs every join, hit, lion bite and round, and each gladiator logs the blows it takes.
 
 The emulator runs one board at a time with no network, so the picture above comes from `GladiatorRecordingTest`: it plays a match through the arena's and both gladiators' own code in one program, replacing the network with direct calls. Record it again with `./mvnw -pl juno-examples test -Dtest=GladiatorRecordingTest -Djuno.recording.gladiator=true`.
 
