@@ -8,8 +8,8 @@ import java.util.SplittableRandom;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FactorizerTest {
-    private final long[] primes = new long[FactorProtocol.MAX_FACTORS];
-    private final int[] exponents = new int[FactorProtocol.MAX_FACTORS];
+    private final long[] primes = new long[Factorizer.MAX_FACTORS];
+    private final int[] exponents = new int[Factorizer.MAX_FACTORS];
     private final long[] stack = new long[Factorizer.STACK_SIZE];
 
     @Test

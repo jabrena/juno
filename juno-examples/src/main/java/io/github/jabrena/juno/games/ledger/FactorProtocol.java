@@ -1,4 +1,7 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.ledger;
+
+import io.github.jabrena.juno.games.blockchain.Bytes;
+import io.github.jabrena.juno.games.blockchain.Factorizer;
 
 /**
  * Fixed-size UDP wire protocol shared by {@link LeaderFlow} and {@link WorkerFlow}.
@@ -27,8 +30,7 @@ final class FactorProtocol {
     static final int TASK = 2;
     static final int RESULT = 3;
 
-    /** A number below 2^62 has at most 15 distinct prime factors (the product of the first 16 primes exceeds it). */
-    static final int MAX_FACTORS = 15;
+    static final int MAX_FACTORS = Factorizer.MAX_FACTORS;
     static final int PACKET_SIZE = 24 + MAX_FACTORS * 9;
 
     static final int TYPE = 6;
@@ -55,9 +57,9 @@ final class FactorProtocol {
         packet[4] = VERSION;
         packet[5] = FACTOR_SERVICE;
         packet[TYPE] = (byte) type;
-        writeInt(packet, NODE_ID, nodeId);
-        writeInt(packet, TASK_ID, taskId);
-        writeLong(packet, NUMBER, number);
+        Bytes.writeInt(packet, NODE_ID, nodeId);
+        Bytes.writeInt(packet, TASK_ID, taskId);
+        Bytes.writeLong(packet, NUMBER, number);
     }
 
     /** Appends the factorization to a packet already started with {@link #write}. */
@@ -65,7 +67,7 @@ final class FactorProtocol {
         packet[COUNT] = (byte) count;
         for (int i = 0; i < count; i++) {
             int offset = FACTORS + i * 9;
-            writeLong(packet, offset, primes[i]);
+            Bytes.writeLong(packet, offset, primes[i]);
             packet[offset + 8] = (byte) exponents[i];
         }
     }
@@ -73,63 +75,34 @@ final class FactorProtocol {
     static boolean valid(byte[] packet, int length) {
         return length == PACKET_SIZE
                 && packet[0] == 'J' && packet[1] == 'U' && packet[2] == 'N' && packet[3] == 'O'
-                && unsigned(packet[4]) == VERSION && unsigned(packet[5]) == FACTOR_SERVICE
-                && unsigned(packet[COUNT]) <= MAX_FACTORS;
+                && Bytes.unsigned(packet[4]) == VERSION && Bytes.unsigned(packet[5]) == FACTOR_SERVICE
+                && Bytes.unsigned(packet[COUNT]) <= MAX_FACTORS;
     }
 
     static int type(byte[] packet) {
-        return unsigned(packet[TYPE]);
+        return Bytes.unsigned(packet[TYPE]);
     }
 
     static int nodeId(byte[] packet) {
-        return readInt(packet, NODE_ID);
+        return Bytes.readInt(packet, NODE_ID);
     }
 
     static int taskId(byte[] packet) {
-        return readInt(packet, TASK_ID);
+        return Bytes.readInt(packet, TASK_ID);
     }
 
     static long number(byte[] packet) {
-        return readLong(packet, NUMBER);
+        return Bytes.readLong(packet, NUMBER);
     }
 
     /** Copies a RESULT's factors into the caller's arrays and returns how many there are. */
     static int readFactors(byte[] packet, long[] primes, int[] exponents) {
-        int count = unsigned(packet[COUNT]);
+        int count = Bytes.unsigned(packet[COUNT]);
         for (int i = 0; i < count; i++) {
             int offset = FACTORS + i * 9;
-            primes[i] = readLong(packet, offset);
-            exponents[i] = unsigned(packet[offset + 8]);
+            primes[i] = Bytes.readLong(packet, offset);
+            exponents[i] = Bytes.unsigned(packet[offset + 8]);
         }
         return count;
-    }
-
-    static int unsigned(byte value) {
-        return value & 0xff;
-    }
-
-    static void writeInt(byte[] buffer, int offset, int value) {
-        buffer[offset] = (byte) (value >>> 24);
-        buffer[offset + 1] = (byte) (value >>> 16);
-        buffer[offset + 2] = (byte) (value >>> 8);
-        buffer[offset + 3] = (byte) value;
-    }
-
-    static void writeLong(byte[] buffer, int offset, long value) {
-        writeInt(buffer, offset, (int) (value >>> 32));
-        writeInt(buffer, offset + 4, (int) value);
-    }
-
-    static int readInt(byte[] buffer, int offset) {
-        return unsigned(buffer[offset]) << 24
-                | unsigned(buffer[offset + 1]) << 16
-                | unsigned(buffer[offset + 2]) << 8
-                | unsigned(buffer[offset + 3]);
-    }
-
-    static long readLong(byte[] buffer, int offset) {
-        long high = readInt(buffer, offset);
-        long low = readInt(buffer, offset + 4) & 0xffffffffL;
-        return high << 32 | low;
     }
 }

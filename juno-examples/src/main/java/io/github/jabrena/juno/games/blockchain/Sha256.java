@@ -6,14 +6,14 @@ package io.github.jabrena.juno.games.blockchain;
  * message held entirely in a buffer, which is all a ledger block needs, and exposes the
  * absorb/finish steps so a miner can reuse the state of a fixed prefix.
  */
-final class Sha256 {
-    static final int DIGEST_SIZE = 32;
+public final class Sha256 {
+    public static final int DIGEST_SIZE = 32;
     /** Size of the caller-owned {@code byte[]} block buffer. */
-    static final int BLOCK_SIZE = 64;
+    public static final int BLOCK_SIZE = 64;
     /** Size of the caller-owned {@code int[]} message-schedule buffer. */
-    static final int SCHEDULE_SIZE = 64;
+    public static final int SCHEDULE_SIZE = 64;
     /** Size of the caller-owned {@code int[]} state buffer. */
-    static final int STATE_SIZE = 8;
+    public static final int STATE_SIZE = 8;
 
     private static final int[] K = {
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -34,12 +34,12 @@ final class Sha256 {
      * {@code schedule} and {@code state} are scratch buffers of {@link #BLOCK_SIZE}, {@link #SCHEDULE_SIZE}
      * and {@link #STATE_SIZE} entries.
      */
-    static void digest(byte[] message, int length, byte[] digest, byte[] block, int[] schedule, int[] state) {
+    public static void digest(byte[] message, int length, byte[] digest, byte[] block, int[] schedule, int[] state) {
         digest(message, 0, length, digest, block, schedule, state);
     }
 
     /** Like {@link #digest(byte[], int, byte[], byte[], int[], int[])} for {@code message[offset..offset + length)}. */
-    static void digest(byte[] message, int offset, int length, byte[] digest, byte[] block, int[] schedule,
+    public static void digest(byte[] message, int offset, int length, byte[] digest, byte[] block, int[] schedule,
                        int[] state) {
         initialize(state);
         int done = 0;
@@ -51,7 +51,7 @@ final class Sha256 {
     }
 
     /** Loads the initial hash value into {@code state}. */
-    static void initialize(int[] state) {
+    public static void initialize(int[] state) {
         state[0] = 0x6a09e667;
         state[1] = 0xbb67ae85;
         state[2] = 0x3c6ef372;
@@ -63,7 +63,7 @@ final class Sha256 {
     }
 
     /** Compresses the 64 bytes at {@code message[offset..offset + 64)} into {@code state}. */
-    static void absorb(byte[] message, int offset, byte[] block, int[] schedule, int[] state) {
+    public static void absorb(byte[] message, int offset, byte[] block, int[] schedule, int[] state) {
         for (int i = 0; i < BLOCK_SIZE; i++) {
             block[i] = message[offset + i];
         }
@@ -77,7 +77,7 @@ final class Sha256 {
      * variation is the "midstate" trick Bitcoin miners use: an 80-byte header whose nonce changes
      * then costs one compression instead of two.
      */
-    static void finish(byte[] message, int offset, int tailLength, int totalLength, byte[] digest, byte[] block,
+    public static void finish(byte[] message, int offset, int tailLength, int totalLength, byte[] digest, byte[] block,
                        int[] schedule, int[] state) {
         for (int i = 0; i < BLOCK_SIZE; i++) {
             block[i] = i < tailLength ? message[offset + i] : 0;
@@ -96,13 +96,13 @@ final class Sha256 {
         compress(block, schedule, state);
 
         for (int i = 0; i < STATE_SIZE; i++) {
-            FactorProtocol.writeInt(digest, i * 4, state[i]);
+            Bytes.writeInt(digest, i * 4, state[i]);
         }
     }
 
     private static void compress(byte[] block, int[] w, int[] state) {
         for (int i = 0; i < 16; i++) {
-            w[i] = FactorProtocol.readInt(block, i * 4);
+            w[i] = Bytes.readInt(block, i * 4);
         }
         for (int i = 16; i < 64; i++) {
             int w15 = w[i - 15];

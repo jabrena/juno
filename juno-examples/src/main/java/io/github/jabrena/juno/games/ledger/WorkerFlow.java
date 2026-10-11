@@ -1,13 +1,16 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.ledger;
 
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.games.blockchain.Factorizer;
+import io.github.jabrena.juno.games.blockchain.GameScreen;
+import io.github.jabrena.juno.games.blockchain.NodeIo;
 
 /**
- * The WORKER role of {@link BlockchainGame}: factors numbers for the board playing {@link LeaderFlow}.
+ * The WORKER role of {@link LedgerGame}: factors numbers for the board playing {@link LeaderFlow}.
  * Meant for UNO R4 WiFi boards.
  *
  * <p>Until a leader answers, it broadcasts {@code JOIN} once a second. Each {@code TASK} is
@@ -48,7 +51,7 @@ final class WorkerFlow {
                 if (answered) {
                     Udp.send(leader, leader[Udp.PORT], outgoing, FactorProtocol.PACKET_SIZE);
                 } else {
-                    Udp.broadcast(LedgerIo.PORT, outgoing, FactorProtocol.PACKET_SIZE);
+                    Udp.broadcast(NodeIo.PORT, outgoing, FactorProtocol.PACKET_SIZE);
                 }
                 lastSent = now;
             }
@@ -80,7 +83,7 @@ final class WorkerFlow {
                 FactorProtocol.writeFactors(outgoing, primes, exponents, count);
                 Serial.print("  = ");
                 for (int i = 0; i < count; i++) {
-                    LedgerIo.printFactor(primes[i], exponents[i], i == 0);
+                    NodeIo.printFactor(primes[i], exponents[i], i == 0);
                 }
                 Serial.println(" (" + elapsed + " ms)");
                 answered = true;

@@ -1,5 +1,7 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.miner;
 
+import io.github.jabrena.juno.games.blockchain.Bytes;
+import io.github.jabrena.juno.games.blockchain.Sha256;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -51,27 +53,27 @@ class BlockPoolTest {
         assertThat(deliver(lyingPayload, pool())).as("factors that do not multiply back").isEqualTo(BlockPool.INVALID);
 
         byte[] easyNumber = good.clone();
-        FactorProtocol.writeLong(easyNumber, ChainProtocol.BODY + BlockFormat.NUMBER, 2);
+        Bytes.writeLong(easyNumber, ChainProtocol.BODY + BlockFormat.NUMBER, 2);
         easyNumber[ChainProtocol.BODY + BlockFormat.COUNT] = 1;
-        FactorProtocol.writeLong(easyNumber, ChainProtocol.BODY + BlockFormat.FACTORS, 2);
+        Bytes.writeLong(easyNumber, ChainProtocol.BODY + BlockFormat.FACTORS, 2);
         easyNumber[ChainProtocol.BODY + BlockFormat.FACTORS + 8] = 1;
         rehashPayload(easyNumber);
         assertThat(deliver(easyNumber, pool())).as("a number the miner chose").isEqualTo(BlockPool.INVALID);
 
         byte[] wrongBits = good.clone();
-        FactorProtocol.writeInt(wrongBits, ChainProtocol.BODY + BlockFormat.BITS, BITS + 1);
+        Bytes.writeInt(wrongBits, ChainProtocol.BODY + BlockFormat.BITS, BITS + 1);
         remine(wrongBits);
         assertThat(deliver(wrongBits, pool())).as("difficulty off the retarget rule").isEqualTo(BlockPool.INVALID);
 
         byte[] oldTime = good.clone();
-        FactorProtocol.writeInt(oldTime, ChainProtocol.BODY + BlockFormat.TIME, 0);
+        Bytes.writeInt(oldTime, ChainProtocol.BODY + BlockFormat.TIME, 0);
         remine(oldTime);
         assertThat(deliver(oldTime, pool())).as("not later than its parent").isEqualTo(BlockPool.INVALID);
 
         byte[] noWork = good.clone();
         do {
-            FactorProtocol.writeInt(noWork, ChainProtocol.BODY + BlockFormat.NONCE,
-                    FactorProtocol.readInt(noWork, ChainProtocol.BODY + BlockFormat.NONCE) + 1);
+            Bytes.writeInt(noWork, ChainProtocol.BODY + BlockFormat.NONCE,
+                    Bytes.readInt(noWork, ChainProtocol.BODY + BlockFormat.NONCE) + 1);
         } while (meetsTarget(noWork));
         assertThat(deliver(noWork, pool())).as("hash above the target").isEqualTo(BlockPool.INVALID);
     }
@@ -205,7 +207,7 @@ class BlockPoolTest {
     }
 
     private static int miner(BlockPool pool) {
-        return FactorProtocol.readInt(pool.blocks(), pool.tip() * BlockFormat.MAX_SIZE + BlockFormat.MINER);
+        return Bytes.readInt(pool.blocks(), pool.tip() * BlockFormat.MAX_SIZE + BlockFormat.MINER);
     }
 
     private static byte[] hashOf(byte[] packet) {
@@ -216,14 +218,14 @@ class BlockPoolTest {
     }
 
     private static boolean meetsTarget(byte[] packet) {
-        return BlockFormat.meetsTarget(hashOf(packet), FactorProtocol.readInt(packet, ChainProtocol.BODY + BlockFormat.BITS));
+        return BlockFormat.meetsTarget(hashOf(packet), Bytes.readInt(packet, ChainProtocol.BODY + BlockFormat.BITS));
     }
 
     /** Searches a new nonce so an edited header meets its own (possibly edited) target again. */
     private static void remine(byte[] packet) {
         int nonce = 0;
         do {
-            FactorProtocol.writeInt(packet, ChainProtocol.BODY + BlockFormat.NONCE, nonce);
+            Bytes.writeInt(packet, ChainProtocol.BODY + BlockFormat.NONCE, nonce);
             nonce++;
         } while (!meetsTarget(packet));
     }

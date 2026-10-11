@@ -1,5 +1,6 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.ledger;
 
+import io.github.jabrena.juno.games.blockchain.Factorizer;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;

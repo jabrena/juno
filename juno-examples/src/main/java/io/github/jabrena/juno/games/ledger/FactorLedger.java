@@ -1,4 +1,8 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.ledger;
+
+import io.github.jabrena.juno.games.blockchain.Bytes;
+import io.github.jabrena.juno.games.blockchain.Factorizer;
+import io.github.jabrena.juno.games.blockchain.Sha256;
 
 /**
  * The leader's state: which worker holds which task, and the hash chain of verified results.
@@ -198,17 +202,17 @@ final class FactorLedger {
         blockNumber = number;
         blockCount = count;
 
-        FactorProtocol.writeInt(message, 0, height);
-        FactorProtocol.writeInt(message, 4, now);
+        Bytes.writeInt(message, 0, height);
+        Bytes.writeInt(message, 4, now);
         for (int i = 0; i < Sha256.DIGEST_SIZE; i++) {
             message[8 + i] = previousHash[i];
         }
-        FactorProtocol.writeInt(message, 40, task);
-        FactorProtocol.writeInt(message, 44, node);
-        FactorProtocol.writeLong(message, 48, number);
+        Bytes.writeInt(message, 40, task);
+        Bytes.writeInt(message, 44, node);
+        Bytes.writeLong(message, 48, number);
         message[56] = (byte) count;
         for (int i = 0; i < count; i++) {
-            FactorProtocol.writeLong(message, 57 + i * 9, blockPrimes[i]);
+            Bytes.writeLong(message, 57 + i * 9, blockPrimes[i]);
             message[57 + i * 9 + 8] = (byte) blockExponents[i];
         }
         Sha256.digest(message, 57 + count * 9, hash, shaBlock, shaSchedule, shaState);

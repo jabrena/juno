@@ -1,17 +1,20 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.ledger;
 
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.games.blockchain.GameScreen;
+import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.games.blockchain.Sha256;
 
 /**
- * The LEADER role of {@link BlockchainGame}: hands out numbers to factor and keeps a SHA-256 hash
+ * The LEADER role of {@link LedgerGame}: hands out numbers to factor and keeps a SHA-256 hash
  * chain of the verified answers. Meant for an UNO Q, one per network, with {@link WorkerFlow}s on UNO
  * R4 WiFi boards.
  *
- * <p>Workers find the leader by broadcasting {@code JOIN} on UDP port {@link LedgerIo#PORT}, so
+ * <p>Workers find the leader by broadcasting {@code JOIN} on UDP port {@link NodeIo#PORT}, so
  * nothing is configured by address and workers can join at any time. Each verified result becomes a
  * block, shown on screen and printed over serial at 115200 baud:
  *
@@ -111,15 +114,15 @@ final class LeaderFlow {
             Serial.print(ledger.blockNumber());
             Serial.print(" = ");
             for (int i = 0; i < ledger.blockCount(); i++) {
-                LedgerIo.printFactor(ledger.blockPrime(i), ledger.blockExponent(i), i == 0);
+                NodeIo.printFactor(ledger.blockPrime(i), ledger.blockExponent(i), i == 0);
             }
             Serial.println("");
         }
         Serial.print("  prev ");
-        LedgerIo.printHex(ledger.previousHash(), 0, Sha256.DIGEST_SIZE);
+        NodeIo.printHex(ledger.previousHash(), 0, Sha256.DIGEST_SIZE);
         Serial.println("");
         Serial.print("  hash ");
-        LedgerIo.printHex(ledger.hash(), 0, Sha256.DIGEST_SIZE);
+        NodeIo.printHex(ledger.hash(), 0, Sha256.DIGEST_SIZE);
         Serial.println("");
     }
 }

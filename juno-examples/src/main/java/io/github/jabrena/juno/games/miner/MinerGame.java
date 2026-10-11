@@ -1,13 +1,23 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.miner;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.games.blockchain.Bytes;
+import io.github.jabrena.juno.games.blockchain.GameScreen;
+import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.games.blockchain.Sha256;
 
 /**
- * The MINER role of {@link BlockchainGame}: a node of a leaderless, Bitcoin-style chain. Every miner
- * mines, validates and relays, and nothing marks one board as special.
+ * Miner, a network game about <b>decentralized consensus</b> for boards with the ELEGOO 2.8" TFT touch
+ * shield: a leaderless, Bitcoin-style chain. Every board runs this same program and is an equal node
+ * that mines, validates and relays; nothing marks one board as special, and there is no role to pick.
  *
  * <p>Blocks are secured by proof-of-work: a nonce that gives the 80-byte header a SHA-256 hash with
  * at least {@code bits} leading zero bits. Each block also has to carry the factorization of a
@@ -17,7 +27,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * {@link BlockFormat} for the block layout and {@link ChainProtocol} for the packets.
  *
  * <p>Each pass of the loop serves a few packets, rebuilds the block template when the tip moved,
- * tries {@link #SLICE} nonces and checks the MENU button. A new node broadcasts {@code GET_TIP} and
+ * and tries {@link #SLICE} nonces. A new node broadcasts {@code GET_TIP} and
  * catches up from the answers. The screen shows the tip; serial at 115200 baud logs it:
  *
  * <pre>
@@ -26,10 +36,12 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  *   hash 0003a1f2...
  * </pre>
  *
- * <p>Phase 1 of the plan in issue #43: blocks are not signed, so a node can claim another node's id,
+ * <p>For the centralized counterpart, where one leader coordinates, see
+ * {@code io.github.jabrena.juno.games.ledger.LedgerGame}. Phase 1 of the plan in issue #43: blocks are not signed, so a node can claim another node's id,
  * and block times are not bounded against the future.
  */
-final class MinerFlow {
+@Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
+public final class MinerGame {
     private static final int INITIAL_BITS = 12;
     private static final int RETARGET_INTERVAL = 8;
     private static final int TARGET_SECONDS = 30;
@@ -40,30 +52,39 @@ final class MinerFlow {
 
     private static int clockOffset;
 
-    private MinerFlow() {
+    private MinerGame() {
     }
 
-    /** Mines until the MENU button is tapped. */
-    static void run(byte[] incoming, byte[] outgoing, int[] source) {
+    public static void main(String[] args) {
+        byte[] incoming = new byte[ChainProtocol.PACKET_SIZE];
+        byte[] outgoing = new byte[ChainProtocol.PACKET_SIZE];
+        int[] source = new int[Udp.ENDPOINT_SIZE];
+
+        Serial.begin(BaudRate.BAUD_115200);
+        TftTouchShield.begin();
+        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        GameScreen.message("CONNECTING WIFI", TftTouchShield.CYAN);
+        NodeIo.connect();
+
 
         int nodeId = Clock.micros();
         if (nodeId == 0) {
             nodeId = 1;
         }
-        Serial.println("Role: miner, node " + nodeId);
-        GameScreen.role("MINER", TftTouchShield.GREEN);
+        Serial.println("Miner node " + nodeId);
+        GameScreen.header("MINER", TftTouchShield.GREEN);
 
         BlockPool pool = new BlockPool(INITIAL_BITS, RETARGET_INTERVAL, TARGET_SECONDS);
         Miner miner = new Miner();
         ChainProtocol.writeRequest(outgoing, ChainProtocol.GET_TIP);
-        Udp.broadcast(LedgerIo.PORT, outgoing, ChainProtocol.PACKET_SIZE);
+        Udp.broadcast(NodeIo.PORT, outgoing, ChainProtocol.PACKET_SIZE);
         int lastAsk = Clock.millis();
         int template = -1;
         int printedTip = pool.tipChanges();
         int mined = 0;
         showTip(pool, nodeId, mined);
 
-        while (!GameScreen.menuTapped()) {
+        while (true) {
             for (int i = 0; i < PACKETS_PER_PASS; i++) {
                 int length = Udp.receive(incoming, ChainProtocol.PACKET_SIZE, source);
                 if (length <= 0) {
@@ -86,7 +107,7 @@ final class MinerFlow {
                 int result = pool.add(miner.block(), 0, 0, 0L, 0);
                 if (result == BlockPool.NEW_TIP) {
                     ChainProtocol.writeBlock(outgoing, pool, pool.tip());
-                    Udp.broadcast(LedgerIo.PORT, outgoing, ChainProtocol.PACKET_SIZE);
+                    Udp.broadcast(NodeIo.PORT, outgoing, ChainProtocol.PACKET_SIZE);
                     Serial.println("Mined after " + miner.attempts() + " hashes");
                     mined++;
                 }
@@ -95,9 +116,11 @@ final class MinerFlow {
             int millis = Clock.millis();
             if (pool.height(pool.tip()) == 0 && millis - lastAsk >= ASK_TIP_MILLIS) {
                 ChainProtocol.writeRequest(outgoing, ChainProtocol.GET_TIP);
-                Udp.broadcast(LedgerIo.PORT, outgoing, ChainProtocol.PACKET_SIZE);
+                Udp.broadcast(NodeIo.PORT, outgoing, ChainProtocol.PACKET_SIZE);
                 lastAsk = millis;
             }
+            // A short pause per slice lets other tasks run, such as the UNO Q's bridge to Linux.
+            Delay.millis(1);
         }
     }
 
@@ -144,21 +167,21 @@ final class MinerFlow {
         int tip = pool.tip();
         byte[] blocks = pool.blocks();
         int base = tip * BlockFormat.MAX_SIZE;
-        int miner = FactorProtocol.readInt(blocks, base + BlockFormat.MINER);
+        int miner = Bytes.readInt(blocks, base + BlockFormat.MINER);
         Serial.print("TIP #" + pool.height(tip) + " bits " + pool.bits(tip) + " work ");
         Serial.print(pool.work(tip));
         Serial.println(miner == nodeId ? " miner " + miner + " (mined here)" : " miner " + miner);
         Serial.print("  n = ");
-        Serial.print(FactorProtocol.readLong(blocks, base + BlockFormat.NUMBER));
+        Serial.print(Bytes.readLong(blocks, base + BlockFormat.NUMBER));
         Serial.print(" = ");
-        int count = FactorProtocol.unsigned(blocks[base + BlockFormat.COUNT]);
+        int count = Bytes.unsigned(blocks[base + BlockFormat.COUNT]);
         for (int i = 0; i < count; i++) {
-            LedgerIo.printFactor(FactorProtocol.readLong(blocks, base + BlockFormat.FACTORS + i * 9),
-                    FactorProtocol.unsigned(blocks[base + BlockFormat.FACTORS + i * 9 + 8]), i == 0);
+            NodeIo.printFactor(Bytes.readLong(blocks, base + BlockFormat.FACTORS + i * 9),
+                    Bytes.unsigned(blocks[base + BlockFormat.FACTORS + i * 9 + 8]), i == 0);
         }
         Serial.println("");
         Serial.print("  hash ");
-        LedgerIo.printHex(pool.hashes(), tip * Sha256.DIGEST_SIZE, Sha256.DIGEST_SIZE);
+        NodeIo.printHex(pool.hashes(), tip * Sha256.DIGEST_SIZE, Sha256.DIGEST_SIZE);
         Serial.println("");
     }
 
@@ -175,17 +198,17 @@ final class MinerFlow {
             TftTouchShield.print("Genesis: mining the first block");
             return;
         }
-        int blockMiner = FactorProtocol.readInt(blocks, base + BlockFormat.MINER);
+        int blockMiner = Bytes.readInt(blocks, base + BlockFormat.MINER);
         GameScreen.row(3, 1, blockMiner == nodeId ? TftTouchShield.GREEN : TftTouchShield.CYAN);
         TftTouchShield.print(blockMiner == nodeId ? "Tip mined here" : "Tip mined by " + blockMiner);
         GameScreen.row(4, 1, TftTouchShield.WHITE);
-        TftTouchShield.print("n = " + FactorProtocol.readLong(blocks, base + BlockFormat.NUMBER));
+        TftTouchShield.print("n = " + Bytes.readLong(blocks, base + BlockFormat.NUMBER));
         GameScreen.row(5, 1, TftTouchShield.WHITE);
         TftTouchShield.print("= ");
-        int count = FactorProtocol.unsigned(blocks[base + BlockFormat.COUNT]);
+        int count = Bytes.unsigned(blocks[base + BlockFormat.COUNT]);
         for (int i = 0; i < count; i++) {
-            GameScreen.factor(FactorProtocol.readLong(blocks, base + BlockFormat.FACTORS + i * 9),
-                    FactorProtocol.unsigned(blocks[base + BlockFormat.FACTORS + i * 9 + 8]), i == 0);
+            GameScreen.factor(Bytes.readLong(blocks, base + BlockFormat.FACTORS + i * 9),
+                    Bytes.unsigned(blocks[base + BlockFormat.FACTORS + i * 9 + 8]), i == 0);
         }
         GameScreen.row(6, 1, TftTouchShield.YELLOW);
         TftTouchShield.print("hash ");

@@ -13,11 +13,13 @@ package io.github.jabrena.juno.games.blockchain;
  * factorization (multiply it back, test each part for primality) is far cheaper than finding it,
  * which is what makes it useful work to put in a ledger.
  */
-final class Factorizer {
+public final class Factorizer {
+    /** A number below 2^62 has at most 15 distinct prime factors (the product of the first 16 primes exceeds it). */
+    public static final int MAX_FACTORS = 15;
     /** Exclusive upper bound for every number this class accepts. */
-    static final long LIMIT = 1L << 62;
+    public static final long LIMIT = 1L << 62;
     /** Scratch {@code long[]} size {@link #factorize} needs: one entry per prime factor counted with multiplicity. */
-    static final int STACK_SIZE = 64;
+    public static final int STACK_SIZE = 64;
 
     private static final int TRIAL_LIMIT = 1000;
     private static final int RHO_BATCH = 64;
@@ -31,11 +33,11 @@ final class Factorizer {
 
     /**
      * Writes {@code n}'s prime factorization, primes ascending, into {@code primes}/{@code exponents}
-     * (each with room for {@link FactorProtocol#MAX_FACTORS} entries) and returns how many distinct
+     * (each with room for {@link #MAX_FACTORS} entries) and returns how many distinct
      * primes it has, or {@code -1} when {@code n} is outside {@code [2, LIMIT)}. {@code stack} is
      * caller-owned scratch of {@link #STACK_SIZE} entries.
      */
-    static int factorize(long n, long[] primes, int[] exponents, long[] stack) {
+    public static int factorize(long n, long[] primes, int[] exponents, long[] stack) {
         if (n < 2 || n >= LIMIT) {
             return -1;
         }
@@ -81,8 +83,8 @@ final class Factorizer {
      * Whether {@code primes}/{@code exponents} is exactly {@code n}'s prime factorization, listed
      * with strictly ascending primes.
      */
-    static boolean verify(long n, long[] primes, int[] exponents, int count) {
-        if (n < 2 || n >= LIMIT || count < 1 || count > FactorProtocol.MAX_FACTORS) {
+    public static boolean verify(long n, long[] primes, int[] exponents, int count) {
+        if (n < 2 || n >= LIMIT || count < 1 || count > Factorizer.MAX_FACTORS) {
             return false;
         }
         long product = 1;
@@ -104,7 +106,7 @@ final class Factorizer {
         return product == n;
     }
 
-    static boolean isPrime(long n) {
+    public static boolean isPrime(long n) {
         if (n < 2) {
             return false;
         }
@@ -129,7 +131,7 @@ final class Factorizer {
     }
 
     /** {@code a * b mod m} for {@code 0 <= a, b < m < LIMIT}, without overflow. */
-    static long mulMod(long a, long b, long m) {
+    public static long mulMod(long a, long b, long m) {
         if (m <= SMALL_MODULUS) {
             return a * b % m;
         }
@@ -152,7 +154,7 @@ final class Factorizer {
         return result;
     }
 
-    static long powMod(long base, long exponent, long m) {
+    public static long powMod(long base, long exponent, long m) {
         long result = 1;
         long square = base % m;
         long bits = exponent;
@@ -166,7 +168,7 @@ final class Factorizer {
         return result;
     }
 
-    static long gcd(long a, long b) {
+    public static long gcd(long a, long b) {
         long x = a;
         long y = b;
         while (y != 0) {

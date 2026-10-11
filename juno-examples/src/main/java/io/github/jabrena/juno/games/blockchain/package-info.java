@@ -1,10 +1,9 @@
 /**
- * Blockchain, a network game for several boards with the TFT touch shield: factor numbers together and
- * chain the verified answers.
+ * Building blocks shared by the two blockchain games: SHA-256, integer factorization, big-endian byte
+ * encoding, Wi-Fi/UDP start-up and the TFT screen helpers.
  *
- * <p>Every board runs {@link io.github.jabrena.juno.games.blockchain.BlockchainGame} and picks its role
- * on the touch screen. A LEADER (an UNO Q) hands out numbers to WORKERs (UNO R4 WiFi boards) and keeps a
- * SHA-256 hash chain of their verified answers. MINERs need no leader: each mines a Bitcoin-style
- * proof-of-work chain whose blocks carry a verified factorization, and the branch with the most work wins.
+ * <p>{@link io.github.jabrena.juno.games.ledger.LedgerGame} uses them for centralized coordination: one
+ * leader hands out numbers and keeps the record. {@link io.github.jabrena.juno.games.miner.MinerGame}
+ * uses them for decentralized consensus: equal nodes mine a Bitcoin-style proof-of-work chain.
  */
 package io.github.jabrena.juno.games.blockchain;

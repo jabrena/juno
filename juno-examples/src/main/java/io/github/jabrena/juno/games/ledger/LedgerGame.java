@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.ledger;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
@@ -8,61 +8,58 @@ import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.games.blockchain.GameScreen;
+import io.github.jabrena.juno.games.blockchain.NodeIo;
 
 /**
- * A network game for several boards with the ELEGOO 2.8" TFT touch shield: factor numbers together
- * and chain the verified answers. Every board runs this same program. After joining Wi-Fi, the
- * touch screen asks which role this board plays:
+ * Ledger, a network game about <b>centralized coordination</b> for boards with the ELEGOO 2.8" TFT touch
+ * shield. One board is in charge: it hands out numbers to factor, checks every answer and keeps the
+ * record. Every board runs this same program and picks its role on the touch screen:
  *
  * <ul>
  *   <li><b>LEADER</b> ({@link LeaderFlow}): hands out numbers to factor and keeps a SHA-256 hash chain
  *       of the verified answers. Meant for an UNO Q, one per network.</li>
  *   <li><b>WORKER</b> ({@link WorkerFlow}): finds the leader by broadcast, factors what it is given and
  *       reports back. Meant for UNO R4 WiFi boards, as many as you like.</li>
- *   <li><b>MINER</b> ({@link MinerFlow}): no leader at all. Mines a Bitcoin-style proof-of-work chain
- *       whose blocks each carry a verified factorization; the branch with the most work wins.</li>
  * </ul>
  *
  * The screen then shows that role's progress, also logged over serial at 115200 baud, and MENU
- * returns to the role menu. All roles share UDP port {@link LedgerIo#PORT}, so a board can change
- * roles without reconnecting.
+ * returns to the role menu. Both roles share UDP port {@link NodeIo#PORT}, so a board can change
+ * roles without reconnecting. For the decentralized counterpart, where no board is in charge, see
+ * {@code io.github.jabrena.juno.games.miner.MinerGame}.
  */
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
-public final class BlockchainGame {
+public final class LedgerGame {
     private static final int LEADER = 1;
     private static final int WORKER = 2;
-    private static final int MINER = 3;
 
     private static final int BUTTON_X = 20;
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 62;
-    private static final int LEADER_Y = 66;
-    private static final int WORKER_Y = 138;
-    private static final int MINER_Y = 210;
+    private static final int LEADER_Y = 90;
+    private static final int WORKER_Y = 180;
 
-    private BlockchainGame() {
+    private LedgerGame() {
     }
 
     public static void main(String[] args) {
-        // One set of packet buffers, sized for the largest packet, shared by whichever role is running.
-        byte[] incoming = new byte[ChainProtocol.PACKET_SIZE];
-        byte[] outgoing = new byte[ChainProtocol.PACKET_SIZE];
+        // One set of packet buffers shared by whichever role is running.
+        byte[] incoming = new byte[FactorProtocol.PACKET_SIZE];
+        byte[] outgoing = new byte[FactorProtocol.PACKET_SIZE];
         int[] source = new int[Udp.ENDPOINT_SIZE];
 
         Serial.begin(BaudRate.BAUD_115200);
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         GameScreen.message("CONNECTING WIFI", TftTouchShield.CYAN);
-        LedgerIo.connect();
+        NodeIo.connect();
 
         while (true) {
             int role = chooseRole();
             if (role == LEADER) {
                 LeaderFlow.run(incoming, outgoing, source);
-            } else if (role == WORKER) {
-                WorkerFlow.run(incoming, outgoing, source);
             } else {
-                MinerFlow.run(incoming, outgoing, source);
+                WorkerFlow.run(incoming, outgoing, source);
             }
         }
     }
@@ -82,22 +79,18 @@ public final class BlockchainGame {
             if (y >= WORKER_Y && y < WORKER_Y + BUTTON_HEIGHT) {
                 return WORKER;
             }
-            if (y >= MINER_Y && y < MINER_Y + BUTTON_HEIGHT) {
-                return MINER;
-            }
         }
     }
 
     private static void drawMenu() {
         TftTouchShield.fillScreen(GameScreen.BACKGROUND);
-        GameScreen.title("BLOCKCHAIN", TftTouchShield.WHITE);
+        GameScreen.title("LEDGER", TftTouchShield.WHITE);
         TftTouchShield.setTextSize(1);
         TftTouchShield.setTextColor(TftTouchShield.GRAY, GameScreen.BACKGROUND);
         TftTouchShield.setCursor(20, 52);
-        TftTouchShield.print("Choose this board's role");
+        TftTouchShield.print("Centralized: one leader decides");
         button(LEADER_Y, "LEADER", "Gives out work, keeps chain", TftTouchShield.YELLOW);
         button(WORKER_Y, "WORKER", "Factors numbers for leader", TftTouchShield.CYAN);
-        button(MINER_Y, "MINER", "Mines blocks, no leader", TftTouchShield.GREEN);
     }
 
     private static void button(int y, String label, String detail, int color) {

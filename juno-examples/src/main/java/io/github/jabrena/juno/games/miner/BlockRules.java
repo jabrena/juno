@@ -1,4 +1,8 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.miner;
+
+import io.github.jabrena.juno.games.blockchain.Bytes;
+import io.github.jabrena.juno.games.blockchain.Factorizer;
+import io.github.jabrena.juno.games.blockchain.Sha256;
 
 /**
  * The consensus rules a block can be checked against without the rest of the chain: its payload
@@ -13,8 +17,8 @@ final class BlockRules {
     private final byte[] shaBlock = new byte[Sha256.BLOCK_SIZE];
     private final int[] shaSchedule = new int[Sha256.SCHEDULE_SIZE];
     private final int[] shaState = new int[Sha256.STATE_SIZE];
-    private final long[] primes = new long[FactorProtocol.MAX_FACTORS];
-    private final int[] exponents = new int[FactorProtocol.MAX_FACTORS];
+    private final long[] primes = new long[Factorizer.MAX_FACTORS];
+    private final int[] exponents = new int[Factorizer.MAX_FACTORS];
 
     /**
      * Whether the block at {@code buffer[base..)}, whose header hashes to {@code hash[0..32)}, is well formed
@@ -25,7 +29,7 @@ final class BlockRules {
         if (!BlockFormat.wellFormed(buffer, base)) {
             return false;
         }
-        int bits = FactorProtocol.readInt(buffer, base + BlockFormat.BITS);
+        int bits = Bytes.readInt(buffer, base + BlockFormat.BITS);
         return bits >= MIN_BITS && bits <= MAX_BITS && BlockFormat.meetsTarget(hash, bits);
     }
 
@@ -38,14 +42,14 @@ final class BlockRules {
         if (!BlockFormat.sameHash(digest, 0, buffer, base + BlockFormat.PAYLOAD_HASH)) {
             return false;
         }
-        long number = FactorProtocol.readLong(buffer, base + BlockFormat.NUMBER);
+        long number = Bytes.readLong(buffer, base + BlockFormat.NUMBER);
         if (number != BlockFormat.bounty(buffer, base + BlockFormat.PREVIOUS)) {
             return false;
         }
-        int count = FactorProtocol.unsigned(buffer[base + BlockFormat.COUNT]);
+        int count = Bytes.unsigned(buffer[base + BlockFormat.COUNT]);
         for (int i = 0; i < count; i++) {
-            primes[i] = FactorProtocol.readLong(buffer, base + BlockFormat.FACTORS + i * 9);
-            exponents[i] = FactorProtocol.unsigned(buffer[base + BlockFormat.FACTORS + i * 9 + 8]);
+            primes[i] = Bytes.readLong(buffer, base + BlockFormat.FACTORS + i * 9);
+            exponents[i] = Bytes.unsigned(buffer[base + BlockFormat.FACTORS + i * 9 + 8]);
         }
         return Factorizer.verify(number, primes, exponents, count);
     }

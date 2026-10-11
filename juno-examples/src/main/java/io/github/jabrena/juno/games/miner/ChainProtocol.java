@@ -1,7 +1,9 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.miner;
+
+import io.github.jabrena.juno.games.blockchain.Bytes;
 
 /**
- * Fixed-size UDP packets exchanged by {@link MinerFlow}s, big-endian:
+ * Fixed-size UDP packets exchanged by {@link MinerGame} nodes, big-endian:
  *
  * <pre>
  *  0..3   "JUNO"
@@ -52,9 +54,9 @@ final class ChainProtocol {
     /** A BLOCK packet carrying {@code pool}'s block in {@code slot}. */
     static void writeBlock(byte[] packet, BlockPool pool, int slot) {
         writeRequest(packet, BLOCK);
-        FactorProtocol.writeInt(packet, HEIGHT, pool.height(slot));
-        FactorProtocol.writeLong(packet, WORK, pool.work(slot));
-        FactorProtocol.writeInt(packet, PERIOD_START, pool.periodStart(slot));
+        Bytes.writeInt(packet, HEIGHT, pool.height(slot));
+        Bytes.writeLong(packet, WORK, pool.work(slot));
+        Bytes.writeInt(packet, PERIOD_START, pool.periodStart(slot));
         int base = slot * BlockFormat.MAX_SIZE;
         BlockFormat.copy(pool.blocks(), base, packet, BODY, BlockFormat.size(pool.blocks(), base));
     }
@@ -62,23 +64,23 @@ final class ChainProtocol {
     static boolean valid(byte[] packet, int length) {
         return length == PACKET_SIZE
                 && packet[0] == 'J' && packet[1] == 'U' && packet[2] == 'N' && packet[3] == 'O'
-                && FactorProtocol.unsigned(packet[4]) == VERSION
-                && FactorProtocol.unsigned(packet[5]) == CHAIN_SERVICE;
+                && Bytes.unsigned(packet[4]) == VERSION
+                && Bytes.unsigned(packet[5]) == CHAIN_SERVICE;
     }
 
     static int type(byte[] packet) {
-        return FactorProtocol.unsigned(packet[TYPE]);
+        return Bytes.unsigned(packet[TYPE]);
     }
 
     static int height(byte[] packet) {
-        return FactorProtocol.readInt(packet, HEIGHT);
+        return Bytes.readInt(packet, HEIGHT);
     }
 
     static long work(byte[] packet) {
-        return FactorProtocol.readLong(packet, WORK);
+        return Bytes.readLong(packet, WORK);
     }
 
     static int periodStart(byte[] packet) {
-        return FactorProtocol.readInt(packet, PERIOD_START);
+        return Bytes.readInt(packet, PERIOD_START);
     }
 }

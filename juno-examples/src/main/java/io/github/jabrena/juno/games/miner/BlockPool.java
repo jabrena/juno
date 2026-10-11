@@ -1,4 +1,7 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.miner;
+
+import io.github.jabrena.juno.games.blockchain.Bytes;
+import io.github.jabrena.juno.games.blockchain.Sha256;
 
 /**
  * A node's view of the chain: a small tree of recent blocks from every branch it has seen, and the
@@ -198,8 +201,8 @@ final class BlockPool {
 
     private void createGenesis() {
         int base = 0;
-        FactorProtocol.writeInt(blocks, base, BlockFormat.VERSION);
-        FactorProtocol.writeInt(blocks, base + BlockFormat.BITS, initialBits);
+        Bytes.writeInt(blocks, base, BlockFormat.VERSION);
+        Bytes.writeInt(blocks, base + BlockFormat.BITS, initialBits);
         rules.payloadHash(blocks, base, digest);
         BlockFormat.copy(digest, 0, blocks, base + BlockFormat.PAYLOAD_HASH, Sha256.DIGEST_SIZE);
         hashHeader(blocks, base);
@@ -212,8 +215,8 @@ final class BlockPool {
     private boolean validate(int slot, int parent) {
         int base = slot * BlockFormat.MAX_SIZE;
         int height = heights[parent] + 1;
-        int headerBits = FactorProtocol.readInt(blocks, base + BlockFormat.BITS);
-        int time = FactorProtocol.readInt(blocks, base + BlockFormat.TIME);
+        int headerBits = Bytes.readInt(blocks, base + BlockFormat.BITS);
+        int time = Bytes.readInt(blocks, base + BlockFormat.TIME);
         if (headerBits != expectedBits(parent, height) || time <= times[parent]) {
             return false;
         }
@@ -234,8 +237,8 @@ final class BlockPool {
         int base = slot * BlockFormat.MAX_SIZE;
         heights[slot] = claimedHeights[slot];
         works[slot] = claimedWorks[slot];
-        bits[slot] = FactorProtocol.readInt(blocks, base + BlockFormat.BITS);
-        times[slot] = FactorProtocol.readInt(blocks, base + BlockFormat.TIME);
+        bits[slot] = Bytes.readInt(blocks, base + BlockFormat.BITS);
+        times[slot] = Bytes.readInt(blocks, base + BlockFormat.TIME);
         periodStarts[slot] = claimedPeriodStarts[slot];
         status[slot] = VALID;
         return true;

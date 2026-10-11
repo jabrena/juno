@@ -1,4 +1,8 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.miner;
+
+import io.github.jabrena.juno.games.blockchain.Bytes;
+import io.github.jabrena.juno.games.blockchain.Factorizer;
+import io.github.jabrena.juno.games.blockchain.Sha256;
 
 /**
  * Builds a block on top of a {@link BlockPool}'s tip and searches for a nonce that meets its target,
@@ -16,8 +20,8 @@ final class Miner {
     private final int[] shaSchedule = new int[Sha256.SCHEDULE_SIZE];
     private final int[] midstate = new int[Sha256.STATE_SIZE];
     private final int[] shaState = new int[Sha256.STATE_SIZE];
-    private final long[] primes = new long[FactorProtocol.MAX_FACTORS];
-    private final int[] exponents = new int[FactorProtocol.MAX_FACTORS];
+    private final long[] primes = new long[Factorizer.MAX_FACTORS];
+    private final int[] exponents = new int[Factorizer.MAX_FACTORS];
     private final long[] stack = new long[Factorizer.STACK_SIZE];
 
     private int bits;
@@ -31,16 +35,16 @@ final class Miner {
         for (int i = 0; i < BlockFormat.MAX_SIZE; i++) {
             block[i] = 0;
         }
-        FactorProtocol.writeInt(block, 0, BlockFormat.VERSION);
+        Bytes.writeInt(block, 0, BlockFormat.VERSION);
         BlockFormat.copy(hashes, tip * Sha256.DIGEST_SIZE, block, BlockFormat.PREVIOUS, Sha256.DIGEST_SIZE);
 
         long number = BlockFormat.bounty(block, BlockFormat.PREVIOUS);
         int count = Factorizer.factorize(number, primes, exponents, stack);
-        FactorProtocol.writeInt(block, BlockFormat.MINER, minerId);
-        FactorProtocol.writeLong(block, BlockFormat.NUMBER, number);
+        Bytes.writeInt(block, BlockFormat.MINER, minerId);
+        Bytes.writeLong(block, BlockFormat.NUMBER, number);
         block[BlockFormat.COUNT] = (byte) count;
         for (int i = 0; i < count; i++) {
-            FactorProtocol.writeLong(block, BlockFormat.FACTORS + i * 9, primes[i]);
+            Bytes.writeLong(block, BlockFormat.FACTORS + i * 9, primes[i]);
             block[BlockFormat.FACTORS + i * 9 + 8] = (byte) exponents[i];
         }
         Sha256.digest(block, BlockFormat.PAYLOAD, BlockFormat.size(block, 0) - BlockFormat.PAYLOAD, digest,
@@ -48,9 +52,9 @@ final class Miner {
         BlockFormat.copy(digest, 0, block, BlockFormat.PAYLOAD_HASH, Sha256.DIGEST_SIZE);
 
         int parentTime = pool.time(tip);
-        FactorProtocol.writeInt(block, BlockFormat.TIME, now > parentTime ? now : parentTime + 1);
+        Bytes.writeInt(block, BlockFormat.TIME, now > parentTime ? now : parentTime + 1);
         bits = pool.nextBits();
-        FactorProtocol.writeInt(block, BlockFormat.BITS, bits);
+        Bytes.writeInt(block, BlockFormat.BITS, bits);
         nonce = 0;
         attempts = 0;
 
@@ -64,7 +68,7 @@ final class Miner {
      */
     boolean mine(int tries) {
         for (int i = 0; i < tries; i++) {
-            FactorProtocol.writeInt(block, BlockFormat.NONCE, nonce);
+            Bytes.writeInt(block, BlockFormat.NONCE, nonce);
             for (int s = 0; s < Sha256.STATE_SIZE; s++) {
                 shaState[s] = midstate[s];
             }
@@ -77,7 +81,7 @@ final class Miner {
             nonce++;
             if (nonce == 0) {
                 // Every nonce failed: move the time, which sits after the midstate, and start again.
-                FactorProtocol.writeInt(block, BlockFormat.TIME, FactorProtocol.readInt(block, BlockFormat.TIME) + 1);
+                Bytes.writeInt(block, BlockFormat.TIME, Bytes.readInt(block, BlockFormat.TIME) + 1);
             }
         }
         return false;

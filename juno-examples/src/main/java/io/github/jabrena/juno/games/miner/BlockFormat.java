@@ -1,7 +1,11 @@
-package io.github.jabrena.juno.games.blockchain;
+package io.github.jabrena.juno.games.miner;
+
+import io.github.jabrena.juno.games.blockchain.Bytes;
+import io.github.jabrena.juno.games.blockchain.Factorizer;
+import io.github.jabrena.juno.games.blockchain.Sha256;
 
 /**
- * Byte layout of a {@link MinerFlow} block: Bitcoin's 80-byte header followed by one payload.
+ * Byte layout of a {@link MinerGame} block: Bitcoin's 80-byte header followed by one payload.
  *
  * <pre>
  * header   0  version(4)
@@ -32,7 +36,7 @@ final class BlockFormat {
     static final int NUMBER = PAYLOAD + 4;
     static final int COUNT = PAYLOAD + 12;
     static final int FACTORS = PAYLOAD + 13;
-    static final int MAX_SIZE = FACTORS + FactorProtocol.MAX_FACTORS * 9;
+    static final int MAX_SIZE = FACTORS + Factorizer.MAX_FACTORS * 9;
 
     /** Bit length of every bounty, the number each block has to factor. */
     static final int BOUNTY_BITS = 40;
@@ -42,17 +46,17 @@ final class BlockFormat {
 
     /** Size of the block at {@code offset}; only meaningful once {@link #wellFormed} holds. */
     static int size(byte[] buffer, int offset) {
-        return FACTORS + FactorProtocol.unsigned(buffer[offset + COUNT]) * 9;
+        return FACTORS + Bytes.unsigned(buffer[offset + COUNT]) * 9;
     }
 
     static boolean wellFormed(byte[] buffer, int offset) {
-        return FactorProtocol.readInt(buffer, offset) == VERSION
-                && FactorProtocol.unsigned(buffer[offset + COUNT]) <= FactorProtocol.MAX_FACTORS;
+        return Bytes.readInt(buffer, offset) == VERSION
+                && Bytes.unsigned(buffer[offset + COUNT]) <= Factorizer.MAX_FACTORS;
     }
 
     /** The number a block whose parent hash is at {@code buffer[offset..offset + 32)} must factor. */
     static long bounty(byte[] buffer, int offset) {
-        return (FactorProtocol.readLong(buffer, offset) >>> (64 - BOUNTY_BITS)) | (1L << (BOUNTY_BITS - 1));
+        return (Bytes.readLong(buffer, offset) >>> (64 - BOUNTY_BITS)) | (1L << (BOUNTY_BITS - 1));
     }
 
     /** Whether the 32-byte hash at {@code hash[0..32)} starts with at least {@code bits} zero bits. */
