@@ -1,12 +1,12 @@
-package io.github.jabrena.juno;
+package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.Lambdas.IntOperation;
-import io.github.jabrena.juno.Lambdas.Offset;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.language.Lambdas.IntOperation;
+import io.github.jabrena.juno.language.Lambdas.Offset;
 
 /** Non-capturing/capturing block lambdas and bound method references. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})

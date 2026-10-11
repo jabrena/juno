@@ -129,7 +129,7 @@ Supported today:
   rather than concatenating it (concatenation uses the 32-byte string slots). `ArithmeticException` and
   `NumberFormatException` are raised as in Java. Not supported: `new BigDecimal(double)`, bit operations beyond
   shifts, `modPow`/`isProbablePrime`, `divideAndRemainder` and the other methods; `BigDecimal.valueOf(double)`
-  goes through Juno's own `double` formatting. See the board-ready [`ScopedValuesPrecision` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
+  goes through Juno's own `double` formatting. See the board-ready [`ScopedValuesPrecision` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java).
 - exception handling: `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
   `finally`, nested handlers, and `try`-with-resources, including exceptions that propagate out of the
   method that throws them to a `catch`/`finally` in any caller (the exception is left pending and each
@@ -175,7 +175,7 @@ Supported today:
   a `StructuredTaskScope` inherit the owner's bindings; `get()` on an unbound
   value throws `NoSuchElementException`. Not supported: `runWhere`/`callWhere`/`getWhere`, `orElseThrow`, and
   `Carrier.get`. See the board-ready
-  [`ScopedValuesPrecision` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
+  [`ScopedValuesPrecision` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java).
 - `java.util.concurrent.atomic` subset: `AtomicInteger`, `AtomicBoolean` and `AtomicLong` with `new`, `get`, `set`,
   `getAndSet`, `compareAndSet` and, on the numeric ones, `incrementAndGet`, `decrementAndGet`, `getAndIncrement`,
   `getAndDecrement`, `addAndGet` and `getAndAdd` (plus `intValue()`/`longValue()`). Each is a small arena cell, and the
@@ -188,7 +188,7 @@ Supported today:
   Contended `lock()`/monitor entry yields cooperatively until ownership is available. Synchronized methods, fair
   locks, timed/interruptible locking, `Condition`, the `Lock` interface, and the rest of `java.util.concurrent`
   remain unsupported. See the board-ready
-  [`Synchronization` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java).
+  [`Synchronization` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java).
 - `.class` inputs from directories, individual files, or JARs
 
 ## Runtime-risk inspection

@@ -105,55 +105,55 @@ unsupported operation or bootstrap. The currently supported Java subset includes
 - **Entrypoints and methods:** `static void main(String[])`, the embedded-friendly
   `static void main()`, static methods with primitive arguments and results, direct closed-world
   calls, and removal of unreachable methods. See
-  [`HelloWorld`](juno-examples/src/main/java/io/github/jabrena/juno/HelloWorld.java) and
-  [`Methods`](juno-examples/src/main/java/io/github/jabrena/juno/Methods.java).
+  [`HelloWorld`](juno-examples/src/main/java/io/github/jabrena/juno/language/HelloWorld.java) and
+  [`Methods`](juno-examples/src/main/java/io/github/jabrena/juno/language/Methods.java).
 - **Primitive types:** `boolean`, `byte`, `short`, `char`, `int`, `long`, `float`, and `double`.
   The example prints each type's size and range using `javac`-folded `BYTES`, `MIN_VALUE`, and
   `MAX_VALUE` constants. See
-  [`PrimitiveTypes`](juno-examples/src/main/java/io/github/jabrena/juno/PrimitiveTypes.java).
+  [`PrimitiveTypes`](juno-examples/src/main/java/io/github/jabrena/juno/language/PrimitiveTypes.java).
 - **Values and control flow:** constants, mutable static fields, local variables, arithmetic,
   bitwise and shift operations, comparisons, conditionals, `switch`, and loops. See
-  [`Variables`](juno-examples/src/main/java/io/github/jabrena/juno/Variables.java),
-  [`Operators`](juno-examples/src/main/java/io/github/jabrena/juno/Operators.java), and
-  [`ControlFlow`](juno-examples/src/main/java/io/github/jabrena/juno/ControlFlow.java).
+  [`Variables`](juno-examples/src/main/java/io/github/jabrena/juno/language/Variables.java),
+  [`Operators`](juno-examples/src/main/java/io/github/jabrena/juno/language/Operators.java), and
+  [`ControlFlow`](juno-examples/src/main/java/io/github/jabrena/juno/language/ControlFlow.java).
 - **Arrays:** fixed-size primitive arrays (`boolean` through `double`, including fixed-size
   multidimensional arrays) allocated from the fixed 8 KiB arena, and `static final` read-only lookup
   tables with an all-constant initializer, kept in flash instead of RAM. See
-  [`Arrays`](juno-examples/src/main/java/io/github/jabrena/juno/Arrays.java).
+  [`Arrays`](juno-examples/src/main/java/io/github/jabrena/juno/language/Arrays.java).
 - **Strings:** string literals, `String.valueOf(int)`, `length()`, and `charAt(int)` for runtime
   string references, `equals`, plus `+` concatenation of strings and a `StringBuilder`. See
-  [`Strings`](juno-examples/src/main/java/io/github/jabrena/juno/Strings.java).
+  [`Strings`](juno-examples/src/main/java/io/github/jabrena/juno/language/Strings.java).
 - **BigInteger and BigDecimal:** arbitrary-precision `java.math.BigInteger` and `BigDecimal`, with
   `MathContext` and the `RoundingMode` constants. Arithmetic, `pow`, `sqrt`, division by scale,
   `RoundingMode` or `MathContext`, `setScale`, `round`, comparisons, conversions and `toString` /
   `toPlainString` follow the JDK's results, scales and rounding. Values are immutable blocks in the
   8 KiB arena and are garbage-collected, so precision is limited by memory, not by a fixed width. See
-  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java).
+  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java).
 - **Objects:** simple enums, records, final closed-world classes, constructors, and instance fields.
   Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative
   garbage collection. See
-  [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/Objects.java).
+  [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/language/Objects.java).
 - **Interfaces:** directly implemented interfaces with closed-world dispatch through an interface
   reference. See
-  [`Interfaces`](juno-examples/src/main/java/io/github/jabrena/juno/Interfaces.java).
+  [`Interfaces`](juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java).
 - **Lambdas and method references:** non-capturing and capturing lambdas, plus static, bound,
   unbound, and constructor references emitted through `LambdaMetafactory.metafactory`. See
-  [`Lambdas`](juno-examples/src/main/java/io/github/jabrena/juno/Lambdas.java).
+  [`Lambdas`](juno-examples/src/main/java/io/github/jabrena/juno/language/Lambdas.java).
 - **Math and random numbers:** the documented `java.lang.Math` subset and Arduino-backed bounded
   pseudorandom numbers. See
-  [`MathFunctions`](juno-examples/src/main/java/io/github/jabrena/juno/MathFunctions.java) and
-  [`RandomNumbers`](juno-examples/src/main/java/io/github/jabrena/juno/RandomNumbers.java).
+  [`MathFunctions`](juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctions.java) and
+  [`RandomNumbers`](juno-examples/src/main/java/io/github/jabrena/juno/language/RandomNumbers.java).
 - **Exceptions:** `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
   `finally`, nested handlers, propagation between methods, custom final exception classes, and
   try-with-resources. See
-  [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/Exceptions.java).
+  [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/language/Exceptions.java).
 - **Concurrency:** the supported JDK 27 preview `StructuredTaskScope` subset (up to four threads
   including `main`, with `Thread.sleep` and `Thread.yield` inside subtasks), restricted monitors and
   `ReentrantLock`, and `ScopedValue` bindings inherited by forked subtasks. `java.lang.Thread` itself is
   rejected at compile time; `AtomicInteger`, `AtomicBoolean` and `AtomicLong` are available. See
-  [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/Synchronization.java),
-  [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/StructuredConcurrency.java), and
-  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/ScopedValuesPrecision.java)
+  [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java),
+  [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java), and
+  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java)
   (a scoped `MathContext` shared by three parallel subtasks).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
   HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
@@ -187,14 +187,14 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   and proven-null dereferences.
 
 For example,
-[`UnsupportedFeature`](juno-examples/src/main/java/io/github/jabrena/juno/UnsupportedFeature.java)
+[`UnsupportedFeature`](juno-examples/src/main/java/io/github/jabrena/juno/language/UnsupportedFeature.java)
 compiles with plain `javac`, but it deliberately fails `juno:compile`: its generated record
 `toString()` uses the unsupported `ObjectMethods` bootstrap.
 
 ```bash
 # Expected to fail with an unsupported-bootstrap diagnostic
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.UnsupportedFeature
+  -Djuno.main=io.github.jabrena.juno.language.UnsupportedFeature
 ```
 
 Compile any supported example by passing its fully qualified class name. These examples all come
@@ -204,63 +204,63 @@ from the `io.github.jabrena.juno` package. Examples whose `@Board` lists both bo
 ```bash
 # Entrypoints and methods
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.HelloWorld
+  -Djuno.main=io.github.jabrena.juno.language.HelloWorld
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Methods
+  -Djuno.main=io.github.jabrena.juno.language.Methods
 
 # Values and control flow
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Variables
+  -Djuno.main=io.github.jabrena.juno.language.Variables
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.PrimitiveTypes
+  -Djuno.main=io.github.jabrena.juno.language.PrimitiveTypes
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Operators
+  -Djuno.main=io.github.jabrena.juno.language.Operators
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.ControlFlow
+  -Djuno.main=io.github.jabrena.juno.language.ControlFlow
 
 # Arrays
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Arrays
+  -Djuno.main=io.github.jabrena.juno.language.Arrays
 
 # Objects and interfaces
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Objects
+  -Djuno.main=io.github.jabrena.juno.language.Objects
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Interfaces \
+  -Djuno.main=io.github.jabrena.juno.language.Interfaces \
   -Djuno.board=arduino-uno-r4-wifi
 
 # Lambdas and method references
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Lambdas \
+  -Djuno.main=io.github.jabrena.juno.language.Lambdas \
   -Djuno.board=arduino-uno-r4-wifi
 
 # Math and random numbers
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.MathFunctions
+  -Djuno.main=io.github.jabrena.juno.language.MathFunctions
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.RandomNumbers
+  -Djuno.main=io.github.jabrena.juno.language.RandomNumbers
 
 # Exceptions
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Exceptions
+  -Djuno.main=io.github.jabrena.juno.language.Exceptions
 
 # Concurrency
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.Synchronization \
+  -Djuno.main=io.github.jabrena.juno.language.Synchronization \
   -Djuno.board=arduino-uno-r4-wifi
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.StructuredConcurrency \
+  -Djuno.main=io.github.jabrena.juno.language.StructuredConcurrency \
   -Djuno.board=arduino-uno-r4-wifi
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.ScopedValuesPrecision \
+  -Djuno.main=io.github.jabrena.juno.language.ScopedValuesPrecision \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
