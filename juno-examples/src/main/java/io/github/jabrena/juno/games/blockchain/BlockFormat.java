@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.net.ledger;
+package io.github.jabrena.juno.games.blockchain;
 
 /**
  * Byte layout of a {@link ChainNode} block: Bitcoin's 80-byte header followed by one payload.

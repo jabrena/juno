@@ -478,15 +478,15 @@ data for display on the LED matrix.
 [`Udp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/Udp.java)
 works on both the UNO R4 WiFi and the UNO Q, and unlike the HTTP client its payloads are runtime
 `byte[]` buffers. That makes it the way for boards to exchange data they compute. The
-[`ledger`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger)
+[`blockchain`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain)
 example builds a small factorization network on it:
 
-- [`FactorLedgerLeader`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/FactorLedgerLeader.java),
+- [`FactorLedgerLeader`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/FactorLedgerLeader.java),
   meant for an UNO Q, hands out 40-bit numbers to factor. It checks each answer by multiplying it
   back and testing every factor for primality, then adds it to a SHA-256 hash chain printed over
   serial. Each block hashes the previous block's hash, so changing an accepted result changes every
   later hash.
-- [`FactorWorker`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/FactorWorker.java),
+- [`FactorWorker`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/FactorWorker.java),
   meant for one or more UNO R4 WiFi boards, broadcasts `JOIN` until a leader answers. It then
   factors each task with trial division and Pollard's rho, and sends back the result.
 
@@ -498,15 +498,15 @@ decentralized blockchain with consensus.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-q \
-  -Djuno.main=io.github.jabrena.juno.api.net.ledger.FactorLedgerLeader
+  -Djuno.main=io.github.jabrena.juno.games.blockchain.FactorLedgerLeader
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.main=io.github.jabrena.juno.api.net.ledger.FactorWorker
+  -Djuno.main=io.github.jabrena.juno.games.blockchain.FactorWorker
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
 ```
 
 ### A leaderless, Bitcoin-style chain
 
-[`ChainNode`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/ChainNode.java)
+[`ChainNode`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/ChainNode.java)
 takes the same idea further. There is no leader: every board runs the same program and mines,
 validates and relays blocks.
 
@@ -523,7 +523,7 @@ validates and relays blocks.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.main=io.github.jabrena.juno.api.net.ledger.ChainNode
+  -Djuno.main=io.github.jabrena.juno.games.blockchain.ChainNode
 ```
 
 This is phase 1 of the plan in [issue #43](https://github.com/jabrena/juno/issues/43): blocks are
@@ -533,9 +533,9 @@ not signed yet, and block times are not bounded against the future.
 
 The wire formats are
 plain fixed-size bytes on UDP port 4210 (documented in
-[`FactorProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/FactorProtocol.java)
+[`FactorProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/FactorProtocol.java)
 and
-[`ChainProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/ledger/ChainProtocol.java)).
+[`ChainProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain/ChainProtocol.java)).
 A board Juno cannot compile for, such as the 8-bit [UNO WiFi Rev2](../arduino-one-r3-wifi), can
 still join with a hand-written sketch that speaks the same packets.
 

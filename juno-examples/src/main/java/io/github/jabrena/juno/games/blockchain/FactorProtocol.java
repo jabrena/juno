@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.net.ledger;
+package io.github.jabrena.juno.games.blockchain;
 
 /**
  * Fixed-size UDP wire protocol shared by {@link FactorLedgerLeader} and {@link FactorWorker}.

@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.net.ledger;
+package io.github.jabrena.juno.games.blockchain;
 
 /**
  * Builds a block on top of a {@link BlockPool}'s tip and searches for a nonce that meets its target,

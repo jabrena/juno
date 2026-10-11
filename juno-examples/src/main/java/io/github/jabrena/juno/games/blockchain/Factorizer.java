@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.net.ledger;
+package io.github.jabrena.juno.games.blockchain;
 
 /**
  * Allocation-free integer factorization for numbers below 2^62: trial division by small odd

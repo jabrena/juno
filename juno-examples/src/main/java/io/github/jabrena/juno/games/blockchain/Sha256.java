@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.net.ledger;
+package io.github.jabrena.juno.games.blockchain;
 
 /**
  * SHA-256 (FIPS 180-4) written against the subset Juno compiles: int arithmetic, shifts and

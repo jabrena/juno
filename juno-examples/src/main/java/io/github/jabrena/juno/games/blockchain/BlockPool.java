@@ -1,12 +1,11 @@
-package io.github.jabrena.juno.api.net.ledger;
+package io.github.jabrena.juno.games.blockchain;
 
 /**
  * A node's view of the chain: a small tree of recent blocks from every branch it has seen, and the
  * tip of the branch with the most cumulative work (Nakamoto consensus).
  *
  * <p>Every block is checked against its parent: version, the difficulty the retarget rule expects,
- * the proof-of-work, a time later than the parent's, the payload hash, the bounty derived from the
- * parent hash and its factorization. Blocks carry no balances, so a reorganization never has
+ * the proof-of-work, a time later than the parent's, and the payload rules in {@link BlockRules}. Blocks carry no balances, so a reorganization never has
  * state to undo; it only moves the tip. Each stored block keeps the metadata its children need
  * (height, cumulative work, bits, time, start of the retarget period), which is why old blocks
  * can be pruned without losing the ability to validate new ones.
@@ -19,8 +18,6 @@ package io.github.jabrena.juno.api.net.ledger;
 final class BlockPool {
     static final int CAPACITY = 12;
     static final int MAX_FETCH = 4;
-    static final int MIN_BITS = 4;
-    static final int MAX_BITS = 40;
 
     static final int INVALID = 0;
     static final int DUPLICATE = 1;
@@ -50,15 +47,14 @@ final class BlockPool {
     private final int[] claimedPeriodStarts = new int[CAPACITY];
     private int tip;
     private int tipChanges;
-    private int arrivals;
+    private int arrivals = 1;
     private int needed;
 
+    private final BlockRules rules = new BlockRules();
     private final byte[] digest = new byte[Sha256.DIGEST_SIZE];
     private final byte[] shaBlock = new byte[Sha256.BLOCK_SIZE];
     private final int[] shaSchedule = new int[Sha256.SCHEDULE_SIZE];
     private final int[] shaState = new int[Sha256.STATE_SIZE];
-    private final long[] primes = new long[FactorProtocol.MAX_FACTORS];
-    private final int[] exponents = new int[FactorProtocol.MAX_FACTORS];
 
     /**
      * {@code initialBits} is the genesis difficulty; every {@code retargetInterval} blocks it moves one
@@ -77,23 +73,15 @@ final class BlockPool {
      * should ask the sender for {@link #missingParent}), {@link #DUPLICATE} or {@link #INVALID}.
      */
     int add(byte[] buffer, int offset, int claimedHeight, long claimedWork, int claimedPeriodStart) {
-        if (!BlockFormat.wellFormed(buffer, offset)) {
-            return INVALID;
-        }
         hashHeader(buffer, offset);
         if (find(digest, 0) >= 0) {
             return DUPLICATE;
         }
-        int headerBits = FactorProtocol.readInt(buffer, offset + BlockFormat.BITS);
-        if (headerBits < MIN_BITS || headerBits > MAX_BITS || !BlockFormat.meetsTarget(digest, headerBits)) {
-            return INVALID;
-        }
         // Check the payload before storing: a copy with a valid header but a mutated payload has the same
         // hash, and must never be kept where it would shadow the genuine block (Bitcoin's CVE-2012-2459).
-        if (!payloadValid(buffer, offset)) {
+        if (!rules.headerAcceptable(buffer, offset, digest) || !rules.payloadValid(buffer, offset)) {
             return INVALID;
         }
-        hashHeader(buffer, offset);
 
         int slot = allocate();
         BlockFormat.copy(buffer, offset, blocks, slot * BlockFormat.MAX_SIZE, BlockFormat.size(buffer, offset));
@@ -215,7 +203,7 @@ final class BlockPool {
         int base = 0;
         FactorProtocol.writeInt(blocks, base, BlockFormat.VERSION);
         FactorProtocol.writeInt(blocks, base + BlockFormat.BITS, initialBits);
-        hashPayload(blocks, base);
+        rules.payloadHash(blocks, base, digest);
         BlockFormat.copy(digest, 0, blocks, base + BlockFormat.PAYLOAD_HASH, Sha256.DIGEST_SIZE);
         hashHeader(blocks, base);
         BlockFormat.copy(digest, 0, hashes, 0, Sha256.DIGEST_SIZE);
@@ -256,24 +244,6 @@ final class BlockPool {
         return true;
     }
 
-    /** Context-free checks: payload hash, bounty derived from the parent hash, and its factorization. */
-    private boolean payloadValid(byte[] buffer, int base) {
-        hashPayload(buffer, base);
-        if (!BlockFormat.sameHash(digest, 0, buffer, base + BlockFormat.PAYLOAD_HASH)) {
-            return false;
-        }
-        long number = FactorProtocol.readLong(buffer, base + BlockFormat.NUMBER);
-        if (number != BlockFormat.bounty(buffer, base + BlockFormat.PREVIOUS)) {
-            return false;
-        }
-        int count = FactorProtocol.unsigned(buffer[base + BlockFormat.COUNT]);
-        for (int i = 0; i < count; i++) {
-            primes[i] = FactorProtocol.readLong(buffer, base + BlockFormat.FACTORS + i * 9);
-            exponents[i] = FactorProtocol.unsigned(buffer[base + BlockFormat.FACTORS + i * 9 + 8]);
-        }
-        return Factorizer.verify(number, primes, exponents, count);
-    }
-
     /** Validates every pending block whose parent has become valid, repeating until nothing changes. */
     private void connectPending() {
         boolean changed = true;
@@ -310,18 +280,8 @@ final class BlockPool {
     }
 
     private int expectedBits(int parent, int height) {
-        if (height % retargetInterval != 0) {
-            return bits[parent];
-        }
-        int span = times[parent] - periodStarts[parent];
-        int target = (retargetInterval - 1) * targetSeconds;
-        if (span < target / 2 && bits[parent] < MAX_BITS) {
-            return bits[parent] + 1;
-        }
-        if (span > target * 2 && bits[parent] > MIN_BITS) {
-            return bits[parent] - 1;
-        }
-        return bits[parent];
+        return BlockRules.expectedBits(bits[parent], times[parent], periodStarts[parent], height, retargetInterval,
+                targetSeconds);
     }
 
     private int parentOf(int slot) {
@@ -337,22 +297,14 @@ final class BlockPool {
         return -1;
     }
 
-    /** A free slot, else the oldest pending block, else the lowest valid block that is not the tip. */
+    /** A free slot, else the block that arrived longest ago, never the tip (genesis arrives first of all). */
     private int allocate() {
         int victim = -1;
         for (int i = 0; i < CAPACITY; i++) {
             if (status[i] == EMPTY) {
                 return i;
             }
-            if (status[i] == PENDING && (victim < 0 || arrival[i] < arrival[victim])) {
-                victim = i;
-            }
-        }
-        if (victim >= 0) {
-            return victim;
-        }
-        for (int i = 0; i < CAPACITY; i++) {
-            if (i != tip && (victim < 0 || heights[i] < heights[victim])) {
+            if (i != tip && (victim < 0 || arrival[i] < arrival[victim])) {
                 victim = i;
             }
         }
@@ -361,10 +313,5 @@ final class BlockPool {
 
     private void hashHeader(byte[] buffer, int offset) {
         Sha256.digest(buffer, offset, BlockFormat.HEADER_SIZE, digest, shaBlock, shaSchedule, shaState);
-    }
-
-    private void hashPayload(byte[] buffer, int base) {
-        Sha256.digest(buffer, base + BlockFormat.PAYLOAD, BlockFormat.size(buffer, base) - BlockFormat.PAYLOAD, digest,
-                shaBlock, shaSchedule, shaState);
     }
 }
