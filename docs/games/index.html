@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -160,6 +160,7 @@ when more than one board is declared fails with the list of choices instead of g
 <li><a href="#arcade">Arcade</a>: <a href="#pac-man">Pac-Man</a>, <a href="#missile-command">Missile Command</a>, <a href="#tempest">Tempest</a>, <a href="#star-wars">Star Wars</a>, <a href="#the-empire-strikes-back">The Empire Strikes Back</a>, <a href="#red-baron">Red Baron</a>, <a href="#star-trek">Star Trek</a>, <a href="#space-paranoids">Space Paranoids</a>, <a href="#doom">DOOM</a>, <a href="#lunar-lander">Lunar Lander</a></li>
 <li><a href="#board-and-strategy">Board and strategy</a>: <a href="#chess">Chess</a>, <a href="#battleship">Battleship</a></li>
 <li><a href="#cards-and-casino">Cards and casino</a>: <a href="#blackjack">Blackjack</a>, <a href="#texas-holdem">Texas Hold'em</a></li>
+<li><a href="#network">Network</a>: <a href="#gladiator">Gladiator</a></li>
 </ul>
 <h2 id="arcade">Arcade</h2>
 <p>Real-time games driven by touch.</p>
@@ -289,6 +290,44 @@ when more than one board is declared fails with the list of choices instead of g
   -Djuno.main=io.github.jabrena.juno.games.texasholdem.TexasHoldem \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
+<h2 id="network">Network</h2>
+<h3 id="gladiator">Gladiator</h3>
+<img src="../images/games/gladiator-solo.gif" alt="Gladiator Solo from the title: the laurel, the rotating wireframe classes, name and class selection, the versus view, then a CPU-versus-CPU bout among smoke, javelins and pillars until the result" width="320">
+<img src="../images/games/gladiator-multiplayer.gif" alt="Gladiator multiplayer: the arena from above on the left, with the AGGRESSIVE and the AMBUSH gladiators' first-person views on the right, a round of the three-board game" width="640">
+<p>After the opening, <strong>SOLO</strong> runs an entire CPU-versus-CPU duel locally on one UNO Q: choose a historical name (Spartacus, Crixus, Flamma or Priscus) and a class. A versus view rotates that gladiator beside a random opponent CPU with a different historical name and a random class; tap <strong>PLAY</strong> there to begin the bout. The chosen arms appear in the player's first-person view while its CPU drives it. When one gladiator falls, a result view names the winner for five seconds and the game returns to the laurel title.</p>
+<p>Each class fights with its own arms, and its class decides how its CPU fights:</p>
+<ul>
+<li><strong>Murmillo</strong> (gladius and big scutum) is slow, but the scutum takes a quarter off a blow from in front.</li>
+<li><strong>Thraex</strong> (sica and parmula) swings fastest, and the curved sica does half again as much damage into the victim's side.</li>
+<li><strong>Retiarius</strong> (trident and net) reaches farthest, and once a round casts its net, which tangles the opponent so it can neither walk nor strike for a second and a half. It fights as an ambusher: it hides behind pillars and in smoke, and throws from cover.</li>
+<li><strong>Secutor</strong> (gladius and helmet) takes a tenth off every blow and slips a net in half the time, but its helmet narrows its view, so it is surprised more often.</li>
+</ul>
+<p>Every gladiator has stamina: running spends it, walking restores it, and an exhausted gladiator can only walk. Every bout stands five pillars at random places on the sand, an oval in the 87 by 55 proportions of the Colosseum's arena. Two javelins stand in the sand, one at a random place in each half: a gladiator picks one up by walking over it and throws it at an opponent in range, and a missed javelin lies where it fell. Twenty seconds into a fight, and every forty after, a lion leaves its gate in the north wall and hunts the nearest gladiator for twenty seconds: it runs faster than a gladiator walks but slower than one runs, and a gladiator it kills hands the bout to the other.</p>
+<p><strong>MULTIPLAYER</strong> keeps the original three-board game. Two gladiators fight among the pillars while a third board keeps the arena. Put three boards with the shield on the same Wi-Fi network; every board runs the same program and picks its role:</p>
+<ul>
+<li><strong>ARENA</strong> (meant for the UNO Q, one per network) keeps the battle and shows the coliseum from above: the sand, the five red pillars, the wall and the tiers of seats, each gladiator with its field of view, and a dotted line while one sees the other. It sends each gladiator the map once and judges every strike, net, javelin and lion bite.</li>
+<li><strong>PLAYER 1</strong> fights as an aggressive Secutor: it runs at its opponent and strikes as soon as it is in reach, chases to where it saw it last, and otherwise patrols round the pillars.</li>
+<li><strong>PLAYER 2</strong> fights as an ambushing Retiarius: it creeps behind a pillar or into smoke, out of sight, and lurks there. It charges only an opponent that comes close.</li>
+</ul>
+<p><strong>RETURN</strong> goes back to the game menu.</p>
+<p>The battle starts when the arena has two gladiators: the first enters by the left gate, the second by the right. Each gladiator's board shows the arena in first-person wireframe, drawn like DOOM. A gladiator sees its opponent only with its own eyes: the arena reports the opponent's position only while it is in front of the gladiator and no pillar is in the way. A blow the victim did not see coming does double damage, which is what the ambusher plays for. Each gladiator has 100 HP and a blow does about 10, changed by both classes' arms; the first to fall loses the round, and the next round starts from the gates. Tap <strong>CPU/HUMAN</strong> under the view to take over a gladiator: the left and right thirds of the view turn, the upper middle walks and the lower middle swings the gladius.</p>
+<p>Build it with a 10 KB arena (the default is 8 KB) for each board. Solo is enabled only in the UNO Q build; the R4 menu marks it as unavailable:</p>
+<pre><code class="language-bash"># Arduino UNO Q, for the ARENA
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.gladiator.Gladiator \
+  -Djuno.board=arduino-uno-q -Djuno.Xmx=10k
+</code></pre>
+<pre><code class="language-bash"># Arduino UNO R4 WiFi, for a gladiator
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.gladiator.Gladiator \
+  -Djuno.board=arduino-uno-r4-wifi -Djuno.Xmx=10k
+</code></pre>
+<p>The boards talk over UDP port 4211. An UNO R4 WiFi joins the network named in <code>application.properties</code> on the shield's microSD card; without the file it says so and goes back to the menu. The UNO Q uses the connection configured on its Linux side.</p>
+<pre><code class="language-properties">wifi.ssid=MyNetwork
+wifi.password=MyPassword
+</code></pre>
+<p>With <code>juno:monitor</code> at 115200 baud, the arena logs every join, hit, lion bite and round, and each gladiator logs the blows it takes.</p>
+<p>The emulator runs one board at a time with no network, so the picture above comes from <code>GladiatorRecordingTest</code>: it plays a match through the arena's and both gladiators' own code in one program, replacing the network with direct calls. Record it again with <code>./mvnw -pl juno-examples test -Dtest=GladiatorRecordingTest -Djuno.recording.gladiator=true</code>.</p>
 <h2 id="testing-without-the-board">Testing without the board</h2>
 <p><code>./mvnw test</code> plays every game on an emulated shield, on any machine and in CI. The tests in
 <code>juno-examples/src/test/java</code> replace the handful of <code>native</code> hardware classes with plain Java test
@@ -300,33 +339,36 @@ framebuffer, and answers the touch panel's analog reads, so tests can tap the sc
 <li><code>Clock</code> and <code>Delay</code> run on simulated time: waiting is instant and each clock reading costs a
 millisecond, so frame loops and time-budgeted searches behave the same on every run.</li>
 <li><code>Random</code> is a seeded <code>java.util.Random</code>, and <code>Serial</code> discards its output.</li>
+<li><code>Wifi</code> is always connected, and <code>Udp</code> is a network with no other boards: sends go nowhere and
+nothing arrives.</li>
 </ul>
 <p>On top of these:</p>
 <ul>
 <li><code>GameScreenshotTest</code> plays each game for a few simulated seconds with scripted taps and compares
-the screen with its picture in <a href="https://github.com/jabrena/juno/tree/main/docs/images/games"><code>docs/images/games</code></a>. A mismatch writes the actual
+the screen with its picture in <a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/test/resources/screenshots/games"><code>juno-examples/src/test/resources/screenshots/games</code></a>. A mismatch writes the actual
 screen and a diff to <code>juno-examples/target/screenshots</code>. After an intended visual change,
 regenerate the pictures with
 <code>./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true</code>.</li>
 <li><code>CardGamesTest</code>, <code>PacManTest</code>, <code>MissileCommandTest</code>, <code>TempestTest</code>, <code>StarWarsTest</code>,
-<code>EmpireStrikesBackTest</code>, <code>RedBaronTest</code>, <code>StarTrekTest</code>, <code>SpaceParanoidsTest</code>, <code>DoomTest</code> and
-<code>LunarLanderTest</code> check rules and computer players: the poker hand ranking against a brute-force
+<code>EmpireStrikesBackTest</code>, <code>RedBaronTest</code>, <code>StarTrekTest</code>, <code>SpaceParanoidsTest</code>, <code>DoomTest</code>,
+<code>LunarLanderTest</code> and <code>GladiatorTest</code> check rules and computer players: the poker hand ranking against a brute-force
 reference, no chip lost across all-ins and side pots, and that autopilots clear Missile Command
 waves, Tempest levels, Space Paranoids and Star Trek sectors, whole Red Baron and
-Empire Strikes Back waves, and nearly every dot of a Pac-Man maze.</li>
+Empire Strikes Back waves, nearly every dot of a Pac-Man maze, and a Gladiator duel fought to the end
+through the arena's own rules and packets.</li>
 </ul>
 <p>This runs the games' Java on the JVM, not the code Juno generates for the board.</p>
 <h2 id="compiling-with-the-real-arduino-toolchain-in-docker">Compiling with the real Arduino toolchain in Docker</h2>
 <p><code>juno:verify</code> compiles a game with the real toolchain, and you can run it on any game. The compiler's own
-suite, <code>ArduinoCliCompileIT</code> in the <code>juno</code> module, does the same for small programs that each exercise one
+suite, <code>ArduinoCliCompileIT</code> in the <code>juno-compiler</code> module, does the same for small programs that each exercise one
 API or shield (GPIO, Serial, Servo, I2C, TFT touch, LCD keypad, ...) once per board they declare —
 Juno generates the sketch, then <code>arduino-cli compile</code> builds and links it with the real UNO R4 or UNO Q
 core — inside a Docker container started with <a href="https://testcontainers.com">Testcontainers</a>,
 so you need Docker but no local Arduino installation. It is opt-in:</p>
-<pre><code class="language-bash">./mvnw -f juno/pom.xml -Parduino-cli verify
+<pre><code class="language-bash">./mvnw -pl juno-compiler -am -Parduino-cli verify
 </code></pre>
 <p>The first run builds the image from
-<a href="https://github.com/jabrena/juno/tree/main/juno/src/test/docker/arduino-cli/Dockerfile"><code>juno/src/test/docker/arduino-cli/Dockerfile</code></a>
+<a href="https://github.com/jabrena/juno/tree/main/juno-compiler/src/test/docker/arduino-cli/Dockerfile"><code>juno-compiler/src/test/docker/arduino-cli/Dockerfile</code></a>
 (<code>arduino-cli</code> plus the <code>arduino:renesas_uno</code> and <code>arduino:zephyr</code> cores, several hundred MB) and Docker caches it for
 later runs. To use an image you built or pulled yourself, add
 <code>-Djuno.arduinoCliImage=&lt;image&gt;</code>. Without Docker the test is skipped. If your network blocks

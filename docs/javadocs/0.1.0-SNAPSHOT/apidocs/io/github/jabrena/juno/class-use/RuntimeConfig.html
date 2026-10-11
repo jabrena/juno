@@ -107,16 +107,21 @@ value types that connect them.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>static <a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">RuntimeConfig.</span><code><a href="../RuntimeConfig.html#of(java.util.Optional,java.util.Optional)" class="member-name-link">of</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;arenaSize,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;threadStackSize)</code></div>
+<div class="col-first even-row-color"><code><a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">RuntimeConfig.</span><code><a href="../RuntimeConfig.html#forBoard(io.github.jabrena.juno.board.Board)" class="member-name-link">forBoard</a><wbr>(<a href="../board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board)</code></div>
 <div class="col-last even-row-color">
+<div class="block">This configuration as <code>board</code> runs it.</div>
+</div>
+<div class="col-first odd-row-color"><code>static <a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">RuntimeConfig.</span><code><a href="../RuntimeConfig.html#of(java.util.Optional,java.util.Optional)" class="member-name-link">of</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;arenaSize,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Optional.html" title="class in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&gt;&nbsp;threadStackSize)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">The default configuration with the sizes given in the JVM's <code>-Xmx</code>/<code>-Xss</code> syntax (see
 <code>RuntimeConfig.parseBytes(String, String)</code>); an empty or blank size keeps the default.</div>
 </div>
-<div class="col-first odd-row-color"><code><a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">CompilationRequest.</span><code><a href="../CompilationRequest.html#runtimeConfig()" class="member-name-link">runtimeConfig</a>()</code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code><a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">CompilationRequest.</span><code><a href="../CompilationRequest.html#runtimeConfig()" class="member-name-link">runtimeConfig</a>()</code></div>
+<div class="col-last even-row-color">
 <div class="block">Returns the value of the <a href="../../../../../io/github/jabrena/juno/CompilationRequest.html#param-runtimeConfig"><code>runtimeConfig</code></a> record component.</div>
 </div>
 </div>
@@ -163,10 +168,15 @@ value types that connect them.</div>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../backend/Thumb2AsmBackend.html#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board,io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">Thumb2AsmBackend</a><wbr>(boolean&nbsp;gcLoggingEnabled,
+<div class="col-second even-row-color"><code><a href="../backend/AvrAsmBackend.html#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board,io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">AvrAsmBackend</a><wbr>(boolean&nbsp;gcLoggingEnabled,
  <a href="../board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board,
  <a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a>&nbsp;runtimeConfig)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../backend/Thumb2AsmBackend.html#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board,io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">Thumb2AsmBackend</a><wbr>(boolean&nbsp;gcLoggingEnabled,
+ <a href="../board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a>&nbsp;board,
+ <a href="../RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a>&nbsp;runtimeConfig)</code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
 </li>

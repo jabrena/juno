@@ -74,9 +74,13 @@ initTheme();
 <li><a href="#field-detail" tabindex="0">Field Details</a>
 <ol class="toc-list">
 <li><a href="#ARENA_CAPACITY_BYTES" tabindex="0">ARENA_CAPACITY_BYTES</a></li>
+<li><a href="#AVR_ARENA_CAPACITY_BYTES" tabindex="0">AVR_ARENA_CAPACITY_BYTES</a></li>
+<li><a href="#AVR_MAX_ARENA_BYTES" tabindex="0">AVR_MAX_ARENA_BYTES</a></li>
 <li><a href="#STRING_SLOT_CAPACITY_BYTES" tabindex="0">STRING_SLOT_CAPACITY_BYTES</a></li>
 <li><a href="#PROPERTIES_STORAGE_BYTES" tabindex="0">PROPERTIES_STORAGE_BYTES</a></li>
 <li><a href="#MAX_THREADS" tabindex="0">MAX_THREADS</a></li>
+<li><a href="#AVR_THREAD_STACK_BYTES" tabindex="0">AVR_THREAD_STACK_BYTES</a></li>
+<li><a href="#AVR_MAX_THREAD_STACK_BYTES" tabindex="0">AVR_MAX_THREAD_STACK_BYTES</a></li>
 <li><a href="#MIN_THREAD_STACK_BYTES" tabindex="0">MIN_THREAD_STACK_BYTES</a></li>
 <li><a href="#THREAD_OBJECT_BYTES" tabindex="0">THREAD_OBJECT_BYTES</a></li>
 <li><a href="#STRUCTURED_TASK_SCOPE_BYTES" tabindex="0">STRUCTURED_TASK_SCOPE_BYTES</a></li>
@@ -115,6 +119,24 @@ initTheme();
 <div class="col-first even-row-color"><code>static final int</code></div>
 <div class="col-second even-row-color"><code><a href="#ARENA_CAPACITY_BYTES" class="member-name-link">ARENA_CAPACITY_BYTES</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#AVR_ARENA_CAPACITY_BYTES" class="member-name-link">AVR_ARENA_CAPACITY_BYTES</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The arena of an AVR board (the UNO WiFi Rev2's ATmega4809 has 6 KB of RAM in all) when the build sets none;
+<a href="#AVR_MAX_ARENA_BYTES"><code>AVR_MAX_ARENA_BYTES</code></a> is the most it accepts, leaving the rest for the stack, the core and its libraries.</div>
+</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#AVR_MAX_ARENA_BYTES" class="member-name-link">AVR_MAX_ARENA_BYTES</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#AVR_MAX_THREAD_STACK_BYTES" class="member-name-link">AVR_MAX_THREAD_STACK_BYTES</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#AVR_THREAD_STACK_BYTES" class="member-name-link">AVR_THREAD_STACK_BYTES</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Stack bytes of each extra task on an AVR board (the UNO WiFi Rev2's 6 KB of RAM), and the most
+<code>juno.Xss</code> may ask for there.</div>
+</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="#MAX_MONITORS" class="member-name-link">MAX_MONITORS</a></code></div>
 <div class="col-last odd-row-color">
@@ -190,6 +212,40 @@ runtime <code>String</code> (<code>String.valueOf</code>, <code>Json.getString(b
 </section>
 </li>
 <li>
+<section class="detail" id="AVR_ARENA_CAPACITY_BYTES">
+<h3>AVR_ARENA_CAPACITY_BYTES</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">AVR_ARENA_CAPACITY_BYTES</span></div>
+<div class="block">The arena of an AVR board (the UNO WiFi Rev2's ATmega4809 has 6 KB of RAM in all) when the build sets none;
+<a href="#AVR_MAX_ARENA_BYTES"><code>AVR_MAX_ARENA_BYTES</code></a> is the most it accepts, leaving the rest for the stack, the core and its libraries.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../constant-values.html#io.github.jabrena.juno.RuntimeLimits.AVR_ARENA_CAPACITY_BYTES">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="AVR_MAX_ARENA_BYTES">
+<h3>AVR_MAX_ARENA_BYTES</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">AVR_MAX_ARENA_BYTES</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../constant-values.html#io.github.jabrena.juno.RuntimeLimits.AVR_MAX_ARENA_BYTES">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="STRING_SLOT_CAPACITY_BYTES">
 <h3>STRING_SLOT_CAPACITY_BYTES</h3>
 <div class="horizontal-scroll">
@@ -237,6 +293,40 @@ rather than truncating or overflowing — see the backends' <code>runtimeStringH
 <dd>
 <ul class="tag-list">
 <li><a href="../../../../constant-values.html#io.github.jabrena.juno.RuntimeLimits.MAX_THREADS">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="AVR_THREAD_STACK_BYTES">
+<h3>AVR_THREAD_STACK_BYTES</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">AVR_THREAD_STACK_BYTES</span></div>
+<div class="block">Stack bytes of each extra task on an AVR board (the UNO WiFi Rev2's 6 KB of RAM), and the most
+<code>juno.Xss</code> may ask for there.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../constant-values.html#io.github.jabrena.juno.RuntimeLimits.AVR_THREAD_STACK_BYTES">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="AVR_MAX_THREAD_STACK_BYTES">
+<h3>AVR_MAX_THREAD_STACK_BYTES</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">AVR_MAX_THREAD_STACK_BYTES</span></div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../constant-values.html#io.github.jabrena.juno.RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES">Constant Field Values</a></li>
 </ul>
 </dd>
 </dl>

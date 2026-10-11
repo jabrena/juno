@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -140,14 +140,14 @@
     The ELEGOO 2.8-inch ILI9341 touch shield API: drawing, touch input, and the games/demos built on it.
   </p>
 </section>    <div class="content-prose">
-<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java"><code>TftTouchShield</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java"><code>TftTouchShield</code></a>
 drives the ELEGOO 2.8&quot; TFT touch screen shield for UNO (&quot;Pantalla Táctil TFT de 2,8 pulgadas&quot;): a
 240x320 ILI9341 color display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a
 microSD socket.</p>
 <p>It needs no extra Arduino library. Control lines and the touch panel use
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/Gpio.java"><code>Gpio</code></a> pin operations and
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/Delay.java"><code>Delay</code></a>; the display's bytes go
-through <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/io/ParallelBus.java"><code>ParallelBus</code></a>,
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/Gpio.java"><code>Gpio</code></a> pin operations and
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/Delay.java"><code>Delay</code></a>; the display's bytes go
+through <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/ParallelBus.java"><code>ParallelBus</code></a>,
 a compiler intrinsic that resolves the eight data pins and the write strobe to their GPIO ports once and then
 writes a whole port per store (the UNO R4's port set/reset registers, the UNO Q's Zephyr raw port API). A run of
 one color is a single call, so pixels stream from the runtime instead of costing a <code>digitalWrite</code> per pin. Solid
@@ -230,7 +230,7 @@ if (TftTouchShield.readTouch()) {                      // true while the panel i
 }
 </code></pre>
 <p>Text uses the same 5x7 ASCII font as the LED matrix
-(<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedMatrixFontAscii.java"><code>LedMatrixFontAscii</code></a>).
+(<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/led/LedMatrixFontAscii.java"><code>LedMatrixFontAscii</code></a>).
 Each character paints its whole cell in the background color, so printing over older text
 replaces it; pad shorter strings with spaces to erase leftovers.</p>
 <h3 id="touch-calibration">Touch calibration</h3>

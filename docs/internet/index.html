@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -142,12 +142,12 @@
 </section>    <div class="content-prose">
 <p>Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiFi. Programs can:</p>
 <ul>
-<li>connect to a Wi-Fi network with <a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/Wifi.java"><code>Wifi</code></a>;</li>
+<li>connect to a Wi-Fi network with <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/Wifi.java"><code>Wifi</code></a>;</li>
 <li>send plain HTTP or TLS-protected HTTPS <code>GET</code>, <code>POST</code>, <code>DELETE</code>, <code>PATCH</code>, and <code>QUERY</code> requests with
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java"><code>HttpClient</code></a> and
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/http/HttpsClient.java"><code>HttpsClient</code></a>; and</li>
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java"><code>HttpClient</code></a> and
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/HttpsClient.java"><code>HttpsClient</code></a>; and</li>
 <li>extract typed values directly from JSON response bytes with
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/http/Json.java"><code>Json</code></a>.</li>
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/Json.java"><code>Json</code></a>.</li>
 </ul>
 <p>These APIs are compiler intrinsics, like every Juno API — see <a href="../apis">docs/APIS.md</a> for what
 that means, how they're built, and the general rules (compile-time-only <code>String</code> arguments,
@@ -585,9 +585,9 @@ and monitor it:</p>
 
 JUNO_WIFI_SSID='your-network-name' \
 JUNO_WIFI_PASSWORD='your-network-password' \
-java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+java -jar juno-compiler/target/juno-compiler-0.1.0-SNAPSHOT.jar compile \
   --main InternetExample \
-  --classpath juno-examples/target/classes:juno/target/classes
+  --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile \
   --fqbn arduino:renesas_uno:unor4wifi \
@@ -611,6 +611,81 @@ methods over plain HTTP,
 certificate-validated TLS, and
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/MadridWeather.java"><code>MadridWeather.java</code></a>, which extracts live API
 data for display on the LED matrix.</p>
+<h2 id="boards-talking-to-each-other-over-udp">Boards talking to each other over UDP</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/Udp.java"><code>Udp</code></a>
+works on both the UNO R4 WiFi and the UNO Q, and unlike the HTTP client its payloads are runtime
+<code>byte[]</code> buffers. That makes it the way for boards to exchange data they compute. Two games build a
+small factorization network on it, one centralized and one decentralized (see
+<a href="../games#network">Games</a>). Code they share, such as SHA-256 and the factorizer, lives in
+<a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain"><code>games/blockchain</code></a>.</p>
+<h3 id="centralized-ledger">Centralized: Ledger</h3>
+<p>Every board runs
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/LedgerGame.java"><code>LedgerGame</code></a>
+and picks its role on the TFT touch screen:</p>
+<ul>
+<li><strong>LEADER</strong> (<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/LeaderFlow.java"><code>LeaderFlow</code></a>),
+meant for an UNO Q, hands out 40-bit numbers to factor. It checks each answer by multiplying it
+back and testing every factor for primality, then adds it to a SHA-256 hash chain. Each block
+hashes the previous block's hash, so changing an accepted result changes every later hash.</li>
+<li><strong>WORKER</strong> (<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/WorkerFlow.java"><code>WorkerFlow</code></a>),
+meant for one or more UNO R4 WiFi boards, broadcasts <code>JOIN</code> until a leader answers. It then
+factors each task with trial division and Pollard's rho, and sends back the result.</li>
+</ul>
+<p>No addresses are configured: workers find the leader by broadcast and can join at any time. The
+leader's next task acknowledges a result, so a lost datagram only costs a resend. A worker that
+stays silent for two minutes loses its task to the next worker that asks. This is a tamper-evident
+log with a single writer (the leader), not a decentralized blockchain with consensus.</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-q \
+  -Djuno.main=io.github.jabrena.juno.usecases.ledger.LedgerGame
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
+  -Djuno.main=io.github.jabrena.juno.usecases.ledger.LedgerGame
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
+</code></pre>
+<h3 id="decentralized-miner">Decentralized: Miner</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/MinerGame.java"><code>MinerGame</code></a>
+removes the leader. Every board is an equal node that mines, validates and relays blocks.</p>
+<ul>
+<li><strong>Proof-of-work.</strong> A block counts when the SHA-256 hash of its 80-byte, Bitcoin-layout header has
+at least <code>bits</code> leading zero bits. The miner absorbs the fixed first 64 header bytes once (the
+midstate), so each attempt costs one compression.</li>
+<li><strong>Useful work.</strong> Each block must also carry the factorization of a 40-bit number derived from its
+parent's hash, which every node checks. Miners can't choose an easy number.</li>
+<li><strong>Consensus.</strong> The branch with the most cumulative work is the chain. Every eight blocks the
+difficulty moves one bit toward a block every 30 seconds.</li>
+<li><strong>Joining late.</strong> A node that boots late asks for the current tip, and asks again every 30 seconds.
+It fetches up to four missing ancestors, asking everyone again if an answer is lost; if it still
+can't connect them to a block it knows, it adopts the oldest as a checkpoint, much like a pruned
+Bitcoin node, and validates everything after it.</li>
+<li><strong>Heartbeats.</strong> Every node broadcasts a small <code>HELLO</code> packet every five seconds or so, with its id and
+the height and work of its tip. A node a peer has not heard from for 15 seconds is <em>suspect</em>, and
+after 25 seconds it is declared <em>lost</em> and logged over serial; its next heartbeat brings it back.
+Time is measured on each board's own clock. The screen shows <code>Nodes N  mining M</code>, counting the
+board itself.</li>
+<li><strong>Catching up.</strong> A heartbeat that announces more work than a node's tip holds makes it ask that peer for
+the tip, and pause mining (<code>SYNC</code> on the screen) instead of building a rival branch. The pause is
+limited to 30 seconds, so a stale or lying heartbeat cannot stop a node for good. Nodes that predate
+heartbeats ignore them and keep working.</li>
+<li><strong>Two cooperative threads.</strong> A virtual thread serves the network (it receives and answers packets,
+and sends the heartbeats) while the main thread mines and shows the tip. They share one block pool
+guarded by its monitor and switch only where the program already pauses, so mining never waits for
+the radio.</li>
+</ul>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
+  -Djuno.Xss=1536 -Djuno.main=io.github.jabrena.juno.usecases.miner.MinerGame
+</code></pre>
+<p>The UNO R4 WiFi needs <code>-Djuno.Xss=1536</code>: the default 2 KiB stack for each of the three extra thread slots
+takes RAM that the 8 KiB arena would otherwise need to fit, and the miner's network thread needs about
+1.4 KB of stack. The UNO Q has the room and takes the defaults.</p>
+<p>This is phase 1 of the plan in <a href="https://github.com/jabrena/juno/issues/43">issue #43</a>: blocks are
+not signed yet, and block times are not bounded against the future.</p>
+<h3 id="wire-format-and-other-boards">Wire format and other boards</h3>
+<p>The wire formats are
+plain fixed-size bytes on UDP port 4210 (documented in
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/FactorProtocol.java"><code>FactorProtocol</code></a>
+and
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/ChainProtocol.java"><code>ChainProtocol</code></a>).
+A board Juno cannot compile for, such as the 8-bit <a href="../arduino-one-r3-wifi">UNO WiFi Rev2</a>, can
+still join with a hand-written sketch that speaks the same packets.</p>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
 <li><strong>Compilation says an environment variable is not set:</strong> export it in the same shell or CI step

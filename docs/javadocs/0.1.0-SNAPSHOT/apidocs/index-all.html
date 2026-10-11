@@ -173,6 +173,15 @@ yet: unlike <a href="io/github/jabrena/juno/api/io/SdCard.html#appendLine(java.l
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/optimize/ScalarReplacement.html#apply(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">apply(IrProgram)</a> - Method in class io.github.jabrena.juno.optimize.<a href="io/github/jabrena/juno/optimize/ScalarReplacement.html" title="class in io.github.jabrena.juno.optimize">ScalarReplacement</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/board/ArduinoCore.html#architecture()" class="member-name-link">architecture()</a> - Method in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></dt>
+<dd>
+<div class="block">The instruction set this core's boards run, which selects the code generator.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/board/Architecture.html" class="type-name-link" title="enum class in io.github.jabrena.juno.board">Architecture</a> - Enum Class in <a href="io/github/jabrena/juno/board/package-summary.html">io.github.jabrena.juno.board</a></dt>
+<dd>
+<div class="block">The instruction set an <a href="io/github/jabrena/juno/board/ArduinoCore.html" title="enum class in io.github.jabrena.juno.board"><code>ArduinoCore</code></a> runs generated code on, which picks the code generator: the UNO R4's
+Cortex-M4 and the UNO Q's Cortex-M33 share one Thumb-2 backend, the UNO WiFi Rev2's ATmega4809 has its own AVR one.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/annotations/ArduinoBoard.html" class="type-name-link" title="interface in io.github.jabrena.juno.annotations">ArduinoBoard</a> - Interface in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
 <dd>
 <div class="block">A type token for an Arduino board <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a> can select as a compilation target.</div>
@@ -189,6 +198,12 @@ microcontroller (Cortex-M33) under Arduino's Zephyr core.</div>
 <dt><a href="io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi.html" class="type-name-link" title="class in io.github.jabrena.juno.annotations">ArduinoUnoR4WiFi</a> - Class in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
 <dd>
 <div class="block">Selects the Arduino UNO R4 WiFi as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target; has the onboard 12x8 LED matrix.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/annotations/ArduinoUnoWiFiRev2.html" class="type-name-link" title="class in io.github.jabrena.juno.annotations">ArduinoUnoWiFiRev2</a> - Class in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
+<dd>
+<div class="block">Selects the Arduino UNO WiFi Rev2 as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target: Juno programs run on its ATmega4809, an 8-bit
+megaAVR (6 KB SRAM, 48 KB flash), under Arduino's <code>arduino:megaavr</code> core, with Wi-Fi through the u-blox
+NINA-W102 module and the <code>WiFiNINA</code> library.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/RuntimeLimits.html#ARENA_CAPACITY_BYTES" class="member-name-link">ARENA_CAPACITY_BYTES</a> - Static variable in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></dt>
 <dd>&nbsp;</dd>
@@ -276,6 +291,10 @@ microcontroller (Cortex-M33) under Arduino's Zephyr core.</div>
 <dd>
 <div class="block">Creates an instance of a <code>ArrayStore</code> record class.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html#assembly()" class="member-name-link">assembly()</a> - Method in record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend.Output</a></dt>
+<dd>
+<div class="block">Returns the value of the <code>assembly</code> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html#assembly()" class="member-name-link">assembly()</a> - Method in record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend.Output</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>assembly</code> record component.</div>
@@ -345,6 +364,37 @@ microcontroller (Cortex-M33) under Arduino's Zephyr core.</div>
 <div class="block">The deliberately small <code>java.util.concurrent.atomic</code> subset lowered by Juno: <code>AtomicInteger</code>,
 <code>AtomicBoolean</code> and <code>AtomicLong</code>, each an arena cell the cooperative scheduler can never interrupt
 halfway through an operation.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/board/Architecture.html#AVR" class="member-name-link">AVR</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Architecture.html" title="enum class in io.github.jabrena.juno.board">Architecture</a></dt>
+<dd>
+<div class="block">8-bit AVR (avrxmega3): 16-bit pointers, and a toolchain whose <code>int</code> and <code>double</code> are narrower than Java's.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeLimits.html#AVR_ARENA_CAPACITY_BYTES" class="member-name-link">AVR_ARENA_CAPACITY_BYTES</a> - Static variable in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></dt>
+<dd>
+<div class="block">The arena of an AVR board (the UNO WiFi Rev2's ATmega4809 has 6 KB of RAM in all) when the build sets none;
+<a href="io/github/jabrena/juno/RuntimeLimits.html#AVR_MAX_ARENA_BYTES"><code>RuntimeLimits.AVR_MAX_ARENA_BYTES</code></a> is the most it accepts, leaving the rest for the stack, the core and its libraries.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeLimits.html#AVR_MAX_ARENA_BYTES" class="member-name-link">AVR_MAX_ARENA_BYTES</a> - Static variable in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeLimits.html#AVR_MAX_THREAD_STACK_BYTES" class="member-name-link">AVR_MAX_THREAD_STACK_BYTES</a> - Static variable in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeLimits.html#AVR_THREAD_STACK_BYTES" class="member-name-link">AVR_THREAD_STACK_BYTES</a> - Static variable in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></dt>
+<dd>
+<div class="block">Stack bytes of each extra task on an AVR board (the UNO WiFi Rev2's 6 KB of RAM), and the most
+<code>juno.Xss</code> may ask for there.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.html" class="type-name-link" title="class in io.github.jabrena.juno.backend">AvrAsmBackend</a> - Class in <a href="io/github/jabrena/juno/backend/package-summary.html">io.github.jabrena.juno.backend</a></dt>
+<dd>
+<div class="block">Emits GNU AVR assembly (avrxmega3, the UNO WiFi Rev2's ATmega4809) straight from Juno IR — the 8-bit counterpart of
+<a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html" title="class in io.github.jabrena.juno.backend"><code>Thumb2AsmBackend</code></a>, with the same storage model: every IR value and JVM local lives in a fixed stack slot
+(see <code>FrameLayout.packed(IrMethod)</code>) and registers are only scratch within one instruction, so a method can never run
+out of registers.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.html#%3Cinit%3E(boolean,io.github.jabrena.juno.board.Board,io.github.jabrena.juno.RuntimeConfig)" class="member-name-link">AvrAsmBackend(boolean, Board, RuntimeConfig)</a> - Constructor for class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/AvrAsmBackend.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html" class="type-name-link" title="class in io.github.jabrena.juno.backend">AvrAsmBackend.Output</a> - Record Class in <a href="io/github/jabrena/juno/backend/package-summary.html">io.github.jabrena.juno.backend</a></dt>
+<dd>
+<div class="block">The generated assembly, its runtime shim, and the entry point's symbol.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:B">B</h2>
@@ -642,6 +692,8 @@ a small custom bitmap.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#BIG_MATH_CONTEXT_PRECISION" class="member-name-link">BIG_MATH_CONTEXT_PRECISION</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/board/Capability.html#BIG_NUMBERS" class="member-name-link">BIG_NUMBERS</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/BigNumberMethods.html" class="type-name-link" title="class in io.github.jabrena.juno.intrinsic">BigNumberMethods</a> - Class in <a href="io/github/jabrena/juno/intrinsic/package-summary.html">io.github.jabrena.juno.intrinsic</a></dt>
 <dd>
 <div class="block">The <code>java.math</code> subset: <code>BigInteger</code>, <code>BigDecimal</code> and <code>MathContext</code>.</div>
@@ -711,9 +763,19 @@ code (an inlined body and its continuation, say) is one block with no branch bet
 <dd>
 <div class="block">Declares which Arduino board(s) a Juno program targets, e.g.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#BOARD_IS_Q" class="member-name-link">BOARD_IS_Q</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#BOARD_IS_R3" class="member-name-link">BOARD_IS_R3</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#BOARD_IS_R4" class="member-name-link">BOARD_IS_R4</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/classfile/JavaClass.html#boardApiClassNames()" class="member-name-link">boardApiClassNames()</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/JavaClass.html" title="class in io.github.jabrena.juno.classfile">JavaClass</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>boardApiClassNames</code> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/api/BoardRuntime.html" class="type-name-link" title="class in io.github.jabrena.juno.api">BoardRuntime</a> - Class in <a href="io/github/jabrena/juno/api/package-summary.html">io.github.jabrena.juno.api</a></dt>
+<dd>
+<div class="block">Which board the program was compiled for, recognized as a compiler intrinsic by Juno.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/classfile/JavaClass.html#bootstrapMethod(int)" class="member-name-link">bootstrapMethod(int)</a> - Method in record class io.github.jabrena.juno.classfile.<a href="io/github/jabrena/juno/classfile/JavaClass.html" title="class in io.github.jabrena.juno.classfile">JavaClass</a></dt>
 <dd>&nbsp;</dd>
@@ -863,6 +925,8 @@ y = 319.</div>
 <dd>
 <div class="block">Returns the value of the <code>caller</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.html#calling-convention-heading" class="search-tag-link">Calling convention</a> - Section in class io.github.jabrena.juno.backend.AvrAsmBackend</dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/CompilationMetrics.html#callInstructions()" class="member-name-link">callInstructions()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationMetrics.html#param-callInstructions"><code>callInstructions</code></a> record component.</div>
@@ -1467,6 +1531,8 @@ than division and remainder (which can panic on zero), comparisons and conversio
 </dd>
 <dt><a href="io/github/jabrena/juno/ir/ArrayElementType.html#DOUBLE" class="member-name-link">DOUBLE</a> - Enum constant in enum class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/ArrayElementType.html" title="enum class in io.github.jabrena.juno.ir">ArrayElementType</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/board/Capability.html#DOUBLE_MATH" class="member-name-link">DOUBLE_MATH</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/IrInstruction.DoubleBinary.html#%3Cinit%3E(io.github.jabrena.juno.ir.Value,io.github.jabrena.juno.ir.FloatBinaryOp,io.github.jabrena.juno.ir.Value,io.github.jabrena.juno.ir.Value)" class="member-name-link">DoubleBinary(Value, FloatBinaryOp, Value, Value)</a> - Constructor for record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrInstruction.DoubleBinary.html" title="class in io.github.jabrena.juno.ir">IrInstruction.DoubleBinary</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>DoubleBinary</code> record class.</div>
@@ -1642,6 +1708,10 @@ for <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#readSensor(
 <dd>
 <div class="block">Returns the value of the <code>entryPoint</code> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html#entryPointSymbol()" class="member-name-link">entryPointSymbol()</a> - Method in record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend.Output</a></dt>
+<dd>
+<div class="block">Returns the value of the <code>entryPointSymbol</code> record component.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html#entryPointSymbol()" class="member-name-link">entryPointSymbol()</a> - Method in record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend.Output</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>entryPointSymbol</code> record component.</div>
@@ -1695,6 +1765,10 @@ for <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#readSensor(
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/analysis/Terminator.Throw.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/Terminator.Throw.html" title="class in io.github.jabrena.juno.analysis">Terminator.Throw</a></dt>
+<dd>
+<div class="block">Indicates whether some other object is "equal to" this one.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html#equals(java.lang.Object)" class="member-name-link">equals(Object)</a> - Method in record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend.Output</a></dt>
 <dd>
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </dd>
@@ -2275,6 +2349,10 @@ with <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#versionMaj
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/net/http/HttpStatus.html#FORBIDDEN" class="member-name-link">FORBIDDEN</a> - Static variable in class io.github.jabrena.juno.api.net.http.<a href="io/github/jabrena/juno/api/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.api.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/RuntimeConfig.html#forBoard(io.github.jabrena.juno.board.Board)" class="member-name-link">forBoard(Board)</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeConfig.html" title="class in io.github.jabrena.juno">RuntimeConfig</a></dt>
+<dd>
+<div class="block">This configuration as <code>board</code> runs it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/analysis/RuntimeRiskReportFormatter.html#format(io.github.jabrena.juno.analysis.RuntimeRiskReport)" class="member-name-link">format(RuntimeRiskReport)</a> - Static method in class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/RuntimeRiskReportFormatter.html" title="class in io.github.jabrena.juno.analysis">RuntimeRiskReportFormatter</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/analysis/ConfigSuggestionFormatter.html#format(java.util.List)" class="member-name-link">format(List)</a> - Static method in class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/ConfigSuggestionFormatter.html" title="class in io.github.jabrena.juno.analysis">ConfigSuggestionFormatter</a></dt>
@@ -2316,10 +2394,17 @@ with <a href="io/github/jabrena/juno/api/lego/PoweredUpHubRemote.html#versionMaj
 </dl>
 <h2 class="title" id="I:G">G</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/api/net/Wifi.html#gatewayIP(int%5B%5D)" class="member-name-link">gatewayIP(int[])</a> - Static method in class io.github.jabrena.juno.api.net.<a href="io/github/jabrena/juno/api/net/Wifi.html" title="class in io.github.jabrena.juno.api.net">Wifi</a></dt>
+<dd>
+<div class="block">Writes the IPv4 address of the router the board is connected to (its gateway) into <code>octets</code> (at least 4
+entries), in the same form as <a href="io/github/jabrena/juno/api/net/Wifi.html#localIP(int%5B%5D)"><code>Wifi.localIP(int[])</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/CompilationRequest.html#gcLoggingEnabled()" class="member-name-link">gcLoggingEnabled()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationRequest.html" title="class in io.github.jabrena.juno">CompilationRequest</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./io/github/jabrena/juno/CompilationRequest.html#param-gcLoggingEnabled"><code>gcLoggingEnabled</code></a> record component.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.html#generate(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">generate(IrProgram)</a> - Method in class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/AvrAsmBackend.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html#generate(io.github.jabrena.juno.ir.IrProgram)" class="member-name-link">generate(IrProgram)</a> - Method in class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/CompilationMetrics.html#generatedMethods()" class="member-name-link">generatedMethods()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationMetrics.html" title="class in io.github.jabrena.juno">CompilationMetrics</a></dt>
@@ -2469,6 +2554,10 @@ gyroscope; the derivative of <a href="io/github/jabrena/juno/api/imu/NineAxisMot
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/analysis/Terminator.Throw.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/Terminator.Throw.html" title="class in io.github.jabrena.juno.analysis">Terminator.Throw</a></dt>
+<dd>
+<div class="block">Returns a hash code value for this object.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html#hashCode()" class="member-name-link">hashCode()</a> - Method in record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend.Output</a></dt>
 <dd>
 <div class="block">Returns a hash code value for this object.</div>
 </dd>
@@ -2903,6 +2992,8 @@ letting it coast (<code>setMotorPower(port, 0)</code>) and <a href="io/github/ja
 <dd>
 <div class="block">Returns the cursor to (0, 0) without clearing the display.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/board/Capability.html#HTTP_CLIENT" class="member-name-link">HTTP_CLIENT</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#HTTP_DELETE" class="member-name-link">HTTP_DELETE</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#HTTP_GET" class="member-name-link">HTTP_GET</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
@@ -3283,7 +3374,10 @@ protocol: <a href="io/github/jabrena/juno/api/lego/RcxRemote.html" title="class 
 <a href="io/github/jabrena/juno/api/io/ir/Infrared.html" title="class in io.github.jabrena.juno.api.io.ir"><code>Infrared</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/motors/package-summary.html">io.github.jabrena.juno.api.motors</a> - package io.github.jabrena.juno.api.motors</dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Motor handles: <a href="io/github/jabrena/juno/api/motors/Servo.html" title="class in io.github.jabrena.juno.api.motors"><code>Servo</code></a> drives a standard 3-wire hobby servo through the
+Arduino <code>Servo</code> library.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/net/package-summary.html">io.github.jabrena.juno.api.net</a> - package io.github.jabrena.juno.api.net</dt>
 <dd>
 <div class="block">WiFi connectivity for the Arduino UNO R4 WiFi and UNO Q:
@@ -3689,6 +3783,18 @@ storage that outlives the call — see <a href="io/github/jabrena/juno/lowering/
 <dd>
 <div class="block">Whether the touch sensor on <code>input</code> is pressed; <code>false</code> also when the Scout did not answer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/api/BoardRuntime.html#isQ()" class="member-name-link">isQ()</a> - Static method in class io.github.jabrena.juno.api.<a href="io/github/jabrena/juno/api/BoardRuntime.html" title="class in io.github.jabrena.juno.api">BoardRuntime</a></dt>
+<dd>
+<div class="block">Whether the program runs on the UNO Q, the board with the most memory and the 13-column LED matrix.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/api/BoardRuntime.html#isR3()" class="member-name-link">isR3()</a> - Static method in class io.github.jabrena.juno.api.<a href="io/github/jabrena/juno/api/BoardRuntime.html" title="class in io.github.jabrena.juno.api">BoardRuntime</a></dt>
+<dd>
+<div class="block">Whether the program runs on an R3-format board, the UNO WiFi Rev2 with its MegaAVR core.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/api/BoardRuntime.html#isR4()" class="member-name-link">isR4()</a> - Static method in class io.github.jabrena.juno.api.<a href="io/github/jabrena/juno/api/BoardRuntime.html" title="class in io.github.jabrena.juno.api">BoardRuntime</a></dt>
+<dd>
+<div class="block">Whether the program runs on the UNO R4 WiFi, with its Renesas core and 12-column LED matrix.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/linker/Descriptor.html#isRandomAccessFile(java.lang.String)" class="member-name-link">isRandomAccessFile(String)</a> - Static method in record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/Descriptor.html" title="class in io.github.jabrena.juno.linker">Descriptor</a></dt>
 <dd>
 <div class="block"><code>java.io.RandomAccessFile</code>, an open SD card file's one-word handle, so helpers can share one open file.</div>
@@ -3774,6 +3880,8 @@ a closed-world implementation or lambda), the two JDK reference types a program 
 <dd>
 <div class="block">Creates an instance of a <code>JavaMethod</code> record class.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.html#java-types-on-an-8-bit-core-heading" class="search-tag-link">Java types on an 8-bit core</a> - Section in class io.github.jabrena.juno.backend.AvrAsmBackend</dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html#JOINER" class="member-name-link">JOINER</a> - Static variable in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html" title="class in io.github.jabrena.juno.linker">StructuredTaskSupport</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html#JOINER_ALL_SUCCESSFUL" class="member-name-link">JOINER_ALL_SUCCESSFUL</a> - Static variable in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html" title="class in io.github.jabrena.juno.linker">StructuredTaskSupport</a></dt>
@@ -4189,6 +4297,12 @@ entries), one byte value (0-255) per element, most significant first — e.g.</d
 </dl>
 <h2 class="title" id="I:M">M</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/api/net/Wifi.html#macAddress(int%5B%5D)" class="member-name-link">macAddress(int[])</a> - Static method in class io.github.jabrena.juno.api.net.<a href="io/github/jabrena/juno/api/net/Wifi.html" title="class in io.github.jabrena.juno.api.net">Wifi</a></dt>
+<dd>
+<div class="block">Writes the Wi-Fi interface's six-byte hardware (MAC) address into <code>octets</code> (at least 6 entries), one byte
+value (0-255) per element, most significant first; print them in hex to compare against a router's client
+list.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/api/tft/TftTouchShield.html#MAGENTA" class="member-name-link">MAGENTA</a> - Static variable in class io.github.jabrena.juno.api.tft.<a href="io/github/jabrena/juno/api/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.api.tft">TftTouchShield</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/Main.html#main(java.lang.String%5B%5D)" class="member-name-link">main(String[])</a> - Static method in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/Main.html" title="class in io.github.jabrena.juno">Main</a></dt>
@@ -4346,6 +4460,10 @@ entries), one byte value (0-255) per element, most significant first — e.g.</d
 <dt><a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html#mayThrow(io.github.jabrena.juno.intrinsic.Intrinsic)" class="member-name-link">mayThrow(Intrinsic)</a> - Static method in class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/RandomAccessFileMethods.html" title="class in io.github.jabrena.juno.intrinsic">RandomAccessFileMethods</a></dt>
 <dd>
 <div class="block">Every <code>RandomAccessFile</code> intrinsic can fail: a closed file, a missing one, a short read.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/board/ArduinoCore.html#MEGAAVR" class="member-name-link">MEGAAVR</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></dt>
+<dd>
+<div class="block"><code>arduino:megaavr</code>: the UNO WiFi Rev2's ATmega4809 core, with no RTOS and 6 KB of RAM.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/Memory.html" class="type-name-link" title="class in io.github.jabrena.juno.api">Memory</a> - Class in <a href="io/github/jabrena/juno/api/package-summary.html">io.github.jabrena.juno.api</a></dt>
 <dd>
@@ -4744,6 +4862,10 @@ Java on top of <a href="io/github/jabrena/juno/api/io/i2c/I2c.html" title="class
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/tft/TftTouchShield.html#ORANGE" class="member-name-link">ORANGE</a> - Static variable in class io.github.jabrena.juno.api.tft.<a href="io/github/jabrena/juno/api/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.api.tft">TftTouchShield</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html#%3Cinit%3E(java.lang.String,java.lang.String,java.lang.String)" class="member-name-link">Output(String, String, String)</a> - Constructor for record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend.Output</a></dt>
+<dd>
+<div class="block">Creates an instance of a <code>Output</code> record class.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html#%3Cinit%3E(java.lang.String,java.lang.String,java.lang.String)" class="member-name-link">Output(String, String, String)</a> - Constructor for record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend.Output</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>Output</code> record class.</div>
@@ -5293,6 +5415,10 @@ it ever reaches lowering.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html#registerEntry(io.github.jabrena.juno.classfile.MethodRef,java.util.Map)" class="member-name-link">registerEntry(MethodRef, Map)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/StructuredTaskSupport.html" title="class in io.github.jabrena.juno.linker">StructuredTaskSupport</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/linker/ThreadSupport.html#registerEntry(io.github.jabrena.juno.classfile.MethodRef,java.util.Map)" class="member-name-link">registerEntry(MethodRef, Map)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/ThreadSupport.html" title="class in io.github.jabrena.juno.linker">ThreadSupport</a></dt>
+<dd>
+<div class="block">Records the synthetic <code>Runnable.run()</code> site when <code>called</code> starts a virtual thread.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ir/BinaryOp.html#REMAINDER" class="member-name-link">REMAINDER</a> - Enum constant in enum class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/BinaryOp.html" title="enum class in io.github.jabrena.juno.ir">BinaryOp</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/FloatBinaryOp.html#REMAINDER" class="member-name-link">REMAINDER</a> - Enum constant in enum class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/FloatBinaryOp.html" title="enum class in io.github.jabrena.juno.ir">FloatBinaryOp</a></dt>
@@ -5481,6 +5607,10 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 <dt><a href="io/github/jabrena/juno/CompilationReport.html#runtimeRisks()" class="member-name-link">runtimeRisks()</a> - Method in record class io.github.jabrena.juno.<a href="io/github/jabrena/juno/CompilationReport.html" title="class in io.github.jabrena.juno">CompilationReport</a></dt>
 <dd>
 <div class="block">Returns the value of the <code>runtimeRisks</code> record component.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html#runtimeShim()" class="member-name-link">runtimeShim()</a> - Method in record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend.Output</a></dt>
+<dd>
+<div class="block">Returns the value of the <code>runtimeShim</code> record component.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html#runtimeShim()" class="member-name-link">runtimeShim()</a> - Method in record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend.Output</a></dt>
 <dd>
@@ -5785,6 +5915,8 @@ Scout takes the same commands, which has not been verified), so <a href="io/gith
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#SMTP_SEND_TLS" class="member-name-link">SMTP_SEND_TLS</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/board/Capability.html#SMTP_STARTTLS" class="member-name-link">SMTP_STARTTLS</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/lego/RcxRemote.html#SOUND" class="member-name-link">SOUND</a> - Static variable in class io.github.jabrena.juno.api.lego.<a href="io/github/jabrena/juno/api/lego/RcxRemote.html" title="class in io.github.jabrena.juno.api.lego">RcxRemote</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/api/lego/RcxBrick.html#SOUND_BEEP" class="member-name-link">SOUND_BEEP</a> - Static variable in class io.github.jabrena.juno.api.lego.<a href="io/github/jabrena/juno/api/lego/RcxBrick.html" title="class in io.github.jabrena.juno.api.lego">RcxBrick</a></dt>
@@ -5940,6 +6072,8 @@ runtime <code>String</code> (<code>String.valueOf</code>, <code>Json.getString(b
 <div class="block">Creates an instance of a <code>StringEntry</code> record class.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html#structure-heading" class="search-tag-link">Structure</a> - Section in class io.github.jabrena.juno.backend.Thumb2AsmBackend</dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/board/Capability.html#STRUCTURED_CONCURRENCY" class="member-name-link">STRUCTURED_CONCURRENCY</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/RuntimeLimits.html#STRUCTURED_TASK_SCOPE_BYTES" class="member-name-link">STRUCTURED_TASK_SCOPE_BYTES</a> - Static variable in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></dt>
 <dd>
@@ -6342,11 +6476,17 @@ exception-table ranges cover the throw, in matching order — or leaves the meth
 socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Elegoo_TFTLCD</code> and
 <code>TouchScreen</code> libraries.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#THREAD_IS_ALIVE" class="member-name-link">THREAD_IS_ALIVE</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#THREAD_JOIN" class="member-name-link">THREAD_JOIN</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/RuntimeLimits.html#THREAD_OBJECT_BYTES" class="member-name-link">THREAD_OBJECT_BYTES</a> - Static variable in class io.github.jabrena.juno.<a href="io/github/jabrena/juno/RuntimeLimits.html" title="class in io.github.jabrena.juno">RuntimeLimits</a></dt>
 <dd>
 <div class="block">Arena bytes of one thread/task handle, including structured-task result and failure state.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#THREAD_SLEEP" class="member-name-link">THREAD_SLEEP</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#THREAD_START_VIRTUAL" class="member-name-link">THREAD_START_VIRTUAL</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#THREAD_YIELD" class="member-name-link">THREAD_YIELD</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
@@ -6391,6 +6531,10 @@ and the lowering turns it into the generated <a href="io/github/jabrena/juno/lin
 itself, since their class files are never on the classpath) plus any program class whose superclass
 chain reaches one of them.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/board/Architecture.html#THUMB2" class="member-name-link">THUMB2</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Architecture.html" title="enum class in io.github.jabrena.juno.board">Architecture</a></dt>
+<dd>
+<div class="block">ARMv7-M/ARMv8-M Thumb-2: 32-bit registers and pointers.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/backend/Thumb2AsmBackend.html" class="type-name-link" title="class in io.github.jabrena.juno.backend">Thumb2AsmBackend</a> - Class in <a href="io/github/jabrena/juno/backend/package-summary.html">io.github.jabrena.juno.backend</a></dt>
 <dd>
 <div class="block">Emits GNU ARM Thumb-2 assembly straight from Juno IR, restricted to instructions common to the UNO R4's
@@ -6418,6 +6562,8 @@ differences live in <code>CoreRuntime</code>.</div>
 <dd>
 <div class="block">Milliseconds of silence (no <code>WDT.refresh()</code>) before the watchdog resets the board.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/board/Capability.html#TLS_EMAIL" class="member-name-link">TLS_EMAIL</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/UnaryOp.html#TO_BYTE" class="member-name-link">TO_BYTE</a> - Enum constant in enum class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/UnaryOp.html" title="enum class in io.github.jabrena.juno.ir">UnaryOp</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/ir/UnaryOp.html#TO_CHAR" class="member-name-link">TO_CHAR</a> - Enum constant in enum class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/UnaryOp.html" title="enum class in io.github.jabrena.juno.ir">UnaryOp</a></dt>
@@ -6469,6 +6615,10 @@ differences live in <code>CoreRuntime</code>.</div>
 <div class="block">Returns a string representation of this record class.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/analysis/Terminator.Throw.html#toString()" class="member-name-link">toString()</a> - Method in record class io.github.jabrena.juno.analysis.<a href="io/github/jabrena/juno/analysis/Terminator.Throw.html" title="class in io.github.jabrena.juno.analysis">Terminator.Throw</a></dt>
+<dd>
+<div class="block">Returns a string representation of this record class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html#toString()" class="member-name-link">toString()</a> - Method in record class io.github.jabrena.juno.backend.<a href="io/github/jabrena/juno/backend/AvrAsmBackend.Output.html" title="class in io.github.jabrena.juno.backend">AvrAsmBackend.Output</a></dt>
 <dd>
 <div class="block">Returns a string representation of this record class.</div>
 </dd>
@@ -7000,6 +7150,11 @@ signed angle <code>-180..180</code>: positive clockwise, negative anticlockwise 
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/board/Board.html#UNO_R4_WIFI" class="member-name-link">UNO_R4_WIFI</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/board/Board.html#UNO_WIFI_REV2" class="member-name-link">UNO_WIFI_REV2</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Board.html" title="enum class in io.github.jabrena.juno.board">Board</a></dt>
+<dd>
+<div class="block">The ATmega4809 board: Wi-Fi, UDP, HTTP, HTTPS and TLS email through its NINA-W102 module (<code>WiFiNINA</code>), and the
+GPIO, SPI and analog pins shields such as the SD card, TFT touch and LCD keypad shields use.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ir/IrInstruction.UnpackLong.html#%3Cinit%3E(io.github.jabrena.juno.ir.Value,io.github.jabrena.juno.ir.Value,io.github.jabrena.juno.ir.Value)" class="member-name-link">UnpackLong(Value, Value, Value)</a> - Constructor for record class io.github.jabrena.juno.ir.<a href="io/github/jabrena/juno/ir/IrInstruction.UnpackLong.html" title="class in io.github.jabrena.juno.ir">IrInstruction.UnpackLong</a></dt>
 <dd>
 <div class="block">Creates an instance of a <code>UnpackLong</code> record class.</div>
@@ -7015,6 +7170,8 @@ signed angle <code>-180..180</code>: positive clockwise, negative anticlockwise 
 <div class="block">Why <code>board</code>, which does not support this capability, can't provide it.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/lcd/LcdKeypadShield.html#UP" class="member-name-link">UP</a> - Static variable in class io.github.jabrena.juno.api.lcd.<a href="io/github/jabrena/juno/api/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.api.lcd">LcdKeypadShield</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/board/Capability.html#USB_HID" class="member-name-link">USB_HID</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/linker/Descriptor.html#usesOnlyV01Types()" class="member-name-link">usesOnlyV01Types()</a> - Method in record class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/Descriptor.html" title="class in io.github.jabrena.juno.linker">Descriptor</a></dt>
 <dd>
@@ -7054,7 +7211,7 @@ enum constant purely as its ordinal <code>int</code> and never constructs a real
 </dd>
 <dt><a href="io/github/jabrena/juno/linker/ThreadSupport.html#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall(MethodRef)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/ThreadSupport.html" title="class in io.github.jabrena.juno.linker">ThreadSupport</a></dt>
 <dd>
-<div class="block">Rejects a program that uses <code>java.lang.Thread</code> directly.</div>
+<div class="block">Rejects a program that uses <code>java.lang.Thread</code> beyond the supported subset.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/linker/LockSupport.html#validateMethod(io.github.jabrena.juno.classfile.JavaMethod)" class="member-name-link">validateMethod(JavaMethod)</a> - Static method in class io.github.jabrena.juno.linker.<a href="io/github/jabrena/juno/linker/LockSupport.html" title="class in io.github.jabrena.juno.linker">LockSupport</a></dt>
 <dd>&nbsp;</dd>
@@ -7232,6 +7389,10 @@ enum constant purely as its ordinal <code>int</code> and never constructs a real
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/board/Architecture.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Architecture.html" title="enum class in io.github.jabrena.juno.board">Architecture</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this class with the specified name.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/board/ArduinoCore.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/ArduinoCore.html" title="enum class in io.github.jabrena.juno.board">ArduinoCore</a></dt>
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
@@ -7278,6 +7439,11 @@ enum constant purely as its ordinal <code>int</code> and never constructs a real
 the order they are declared.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/api/io/serial/BaudRate.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.api.io.serial.<a href="io/github/jabrena/juno/api/io/serial/BaudRate.html" title="enum class in io.github.jabrena.juno.api.io.serial">BaudRate</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum class, in
+the order they are declared.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/board/Architecture.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Architecture.html" title="enum class in io.github.jabrena.juno.board">Architecture</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
@@ -7405,9 +7571,11 @@ board networking stack (<code>WiFiS3</code> on UNO R4 WiFi, <code>Arduino_Router
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#WIFI_BEGIN_AP" class="member-name-link">WIFI_BEGIN_AP</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#WIFI_GATEWAY_IP" class="member-name-link">WIFI_GATEWAY_IP</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#WIFI_LOCAL_IP" class="member-name-link">WIFI_LOCAL_IP</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/board/Capability.html#WIFI_S3_NETWORKING" class="member-name-link">WIFI_S3_NETWORKING</a> - Enum constant in enum class io.github.jabrena.juno.board.<a href="io/github/jabrena/juno/board/Capability.html" title="enum class in io.github.jabrena.juno.board">Capability</a></dt>
+<dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#WIFI_MAC_ADDRESS" class="member-name-link">WIFI_MAC_ADDRESS</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/intrinsic/Intrinsic.html#WIFI_STATUS" class="member-name-link">WIFI_STATUS</a> - Enum constant in enum class io.github.jabrena.juno.intrinsic.<a href="io/github/jabrena/juno/intrinsic/Intrinsic.html" title="enum class in io.github.jabrena.juno.intrinsic">Intrinsic</a></dt>
 <dd>&nbsp;</dd>

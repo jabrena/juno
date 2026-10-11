@@ -80,6 +80,7 @@ initTheme();
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
+<li><a href="#registerEntry(io.github.jabrena.juno.classfile.MethodRef,java.util.Map)" tabindex="0">registerEntry(MethodRef, Map)</a></li>
 <li><a href="#validateCall(io.github.jabrena.juno.classfile.MethodRef)" tabindex="0">validateCall(MethodRef)</a></li>
 <li><a href="#unresolvedMessage(io.github.jabrena.juno.linker.InterfaceCallSite,io.github.jabrena.juno.classfile.MethodRef)" tabindex="0">unresolvedMessage(InterfaceCallSite, MethodRef)</a></li>
 <li><a href="#isThreadType(java.lang.String)" tabindex="0">isThreadType(String)</a></li>
@@ -150,16 +151,22 @@ and the lowering turns it into the generated <a href="#ENTRY_METHOD"><code>threa
 <div class="block">Whether <code>descriptor</code> is <code>Thread</code> (an arena-allocated handle) or <code>Runnable</code> (a pointer to
 a closed-world implementation or lambda), the two JDK reference types a program may pass around and store.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#unresolvedMessage(io.github.jabrena.juno.linker.InterfaceCallSite,io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">unresolvedMessage</a><wbr>(<a href="InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>&nbsp;site,
- <a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;interfaceMethod)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#registerEntry(io.github.jabrena.juno.classfile.MethodRef,java.util.Map)" class="member-name-link">registerEntry</a><wbr>(<a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Map.html" title="interface in java.util" class="external-link">Map</a>&lt;<a href="InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>, <a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&gt;&nbsp;interfaceCalls)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Records the synthetic <code>Runnable.run()</code> site when <code>called</code> starts a virtual thread.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#unresolvedMessage(io.github.jabrena.juno.linker.InterfaceCallSite,io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">unresolvedMessage</a><wbr>(<a href="InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>&nbsp;site,
+ <a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;interfaceMethod)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The diagnostic for an interface call with no reachable implementation.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Rejects a program that uses <code>java.lang.Thread</code> directly.</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#validateCall(io.github.jabrena.juno.classfile.MethodRef)" class="member-name-link">validateCall</a><wbr>(<a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Rejects a program that uses <code>java.lang.Thread</code> beyond the supported subset.</div>
 </div>
 </div>
 </div>
@@ -213,13 +220,24 @@ a closed-world implementation or lambda), the two JDK reference types a program 
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="registerEntry(io.github.jabrena.juno.classfile.MethodRef,java.util.Map)">
+<h3>registerEntry</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">registerEntry</span><wbr><span class="parameters">(<a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Map.html" title="interface in java.util" class="external-link">Map</a>&lt;<a href="InterfaceCallSite.html" title="class in io.github.jabrena.juno.linker">InterfaceCallSite</a>, <a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&gt;&nbsp;interfaceCalls)</span></div>
+<div class="block">Records the synthetic <code>Runnable.run()</code> site when <code>called</code> starts a virtual thread.</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="validateCall(io.github.jabrena.juno.classfile.MethodRef)">
 <h3>validateCall</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">validateCall</span><wbr><span class="parameters">(<a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;called)</span></div>
-<div class="block">Rejects a program that uses <code>java.lang.Thread</code> directly. The cooperative thread runtime stays, as
-<code>StructuredTaskScope</code> forks its subtasks onto it, but only <code>Thread.sleep</code> and
-<code>Thread.yield</code> (which a subtask calls) are part of the language subset.</div>
+<div class="block">Rejects a program that uses <code>java.lang.Thread</code> beyond the supported subset. Virtual threads are the only
+thread a program creates (<code>Thread.startVirtualThread(Runnable)</code>), with <code>join()</code> and
+<code>isAlive()</code> on the handle; platform threads, <code>Thread.ofVirtual()</code> builders and the other
+<code>Thread</code> members are rejected. <code>Thread.sleep</code> and <code>Thread.yield</code> remain available.</div>
 </div>
 </section>
 </li>

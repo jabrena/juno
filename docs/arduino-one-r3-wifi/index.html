@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -327,9 +327,9 @@ UNO R3:</p>
 arduino-cli core install arduino:megaavr
 </code></pre>
 <p>Generate a Juno sketch, then compile it for the board:</p>
-<pre><code class="language-bash">java -jar juno/target/juno-0.1.0-SNAPSHOT.jar compile \
+<pre><code class="language-bash">java -jar juno-compiler/target/juno-compiler-0.1.0-SNAPSHOT.jar compile \
   --main &lt;ExampleClassName&gt; \
-  --classpath juno-examples/target/classes:juno/target/classes
+  --classpath juno-examples/target/classes:juno-api/target/classes
 
 arduino-cli compile \
   --fqbn arduino:megaavr:uno2018 \
@@ -338,10 +338,60 @@ arduino-cli compile \
 <p>Uploading changes the firmware on a connected physical board. Find its port with
 <code>arduino-cli board list</code> before using <code>arduino-cli upload</code>.</p>
 <h2 id="juno-compatibility">Juno compatibility</h2>
-<p>The UNO WiFi Rev2 is not currently a declared or continuously tested Juno target. The Juno backend
-emits standard Arduino calls for its portable APIs, so the basic GPIO, timing and serial subset is
-expected to work with the megaAVR core. It still requires end-to-end compiler and hardware testing
-before being considered officially supported.</p>
+<p>The UNO WiFi Rev2 is a Juno target: select it with <code>@Board(ArduinoUnoWiFiRev2.class)</code> (board id
+<code>arduino-uno-wifi-rev2</code>). Juno compiles for it with a dedicated <strong>AVR backend</strong>, separate from the
+Thumb-2 one the UNO R4 WiFi and UNO Q share, and links against the <code>arduino:megaavr</code> core and the
+<code>WiFiNINA</code> library.</p>
+<h3 id="java-types-on-an-8-bit-core">Java types on an 8-bit core</h3>
+<p>Java's primitive types keep their JVM widths and semantics, even though avr-gcc's own <code>int</code> is 16
+bits and its <code>double</code> is 32 bits:</p>
+<ul>
+<li><code>int</code> is four bytes in four registers; add, subtract, logic and constant shifts are inline, and
+multiply, divide, remainder and variable shifts follow Java's wrap-around and masking rules.</li>
+<li><code>long</code> is eight bytes, computed in the runtime shim.</li>
+<li><code>float</code> and <code>double</code> are IEEE 754 binary32/binary64 computed by Juno's own software
+floating-point (round-to-nearest-even, subnormals, NaN, signed zero, saturating casts), so results
+are bit-identical to a JVM's. Printing a <code>double</code> with <code>Serial</code> uses Arduino's two-decimal format,
+as on the other boards.</li>
+<li>References are 16-bit addresses kept in 32-bit words, so objects and arrays have the same layout
+as on the 32-bit boards.</li>
+</ul>
+<p><code>Math</code> supports <code>abs</code>, <code>min</code>, <code>max</code>, <code>clamp</code>, <code>floorDiv</code>, <code>floorMod</code>, <code>signum</code>, <code>round</code>, <code>floor</code>,
+<code>ceil</code>, <code>sqrt</code>, <code>toRadians</code> and <code>toDegrees</code>. The transcendental functions (<code>sin</code>, <code>cos</code>, <code>exp</code>,
+<code>log</code>, <code>pow</code>, ...) are rejected at compile time, because the AVR C library only has single-precision
+versions, which would silently change results.</p>
+<h3 id="biginteger-and-bigdecimal"><code>BigInteger</code> and <code>BigDecimal</code></h3>
+<p><code>java.math</code> uses the same runtime as the 32-bit boards, with exact JDK results, and
+<code>BigInteger.doubleValue</code>/<code>BigDecimal.doubleValue</code> correctly rounded on the software <code>double</code>.
+The board's memory sets the practical limits:</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Budget</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arena (heap)</td>
+<td>1 KB by default, at most 3 KB (<code>-Djuno.Xmx=3k</code>)</td>
+<td>Counters past <code>long</code>, money-style decimals and conversions fit in the default; high-precision <code>sqrt</code>, long divisions or values near <code>double</code>'s limits need the 3 KB maximum, and anything larger panics with <code>[juno-big] OOM</code></td>
+</tr>
+<tr>
+<td>Task stacks</td>
+<td>512 bytes for each of up to three forked tasks, at most 1 KB (<code>-Djuno.Xss=1k</code>)</td>
+<td>1.5 KB of RAM once a program forks; the last 128 bytes of each stack are kept for the C calls of its deepest frame, and a task that would recurse past them stops with <code>[juno-thread] stack overflow</code></td>
+</tr>
+<tr>
+<td>Flash</td>
+<td>48 KB</td>
+<td>The arithmetic runtime alone takes about 20 KB, so a sketch combining <code>java.math</code> with Wi-Fi may not fit; <code>arduino-cli</code> then reports the sketch as too big</td>
+</tr>
+</tbody>
+</table>
+<p>Operations that run out of memory panic loudly; they never return a wrong value.</p>
+<h3 id="api-support">API support</h3>
 <table>
 <thead>
 <tr>
@@ -352,19 +402,74 @@ before being considered officially supported.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>Gpio</code> and <code>DigitalOutput</code></td>
-<td align="right">Expected</td>
-<td>Uses standard Arduino GPIO calls</td>
-</tr>
-<tr>
-<td><code>Delay</code> and <code>Clock</code></td>
-<td align="right">Expected</td>
-<td>Uses Arduino delay and time functions</td>
+<td><code>Gpio</code>, <code>DigitalOutput</code>, <code>Delay</code>, <code>Clock</code>, <code>Random</code></td>
+<td align="right">Yes</td>
+<td><code>Gpio.builtinLed()</code> is logical pin 25</td>
 </tr>
 <tr>
 <td><code>Serial</code></td>
-<td align="right">Expected</td>
-<td>Uses the board's USB serial-monitor path</td>
+<td align="right">Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Wifi</code>, <code>Udp</code></td>
+<td align="right">Yes</td>
+<td>Through WiFiNINA</td>
+</tr>
+<tr>
+<td><code>HttpClient</code>, <code>Json</code></td>
+<td align="right">Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>HttpsClient</code></td>
+<td align="right">Yes</td>
+<td>TLS runs on the NINA-W102 module, which trusts the root certificates in its firmware; add others with the Arduino IDE's certificate uploader</td>
+</tr>
+<tr>
+<td><code>Smtp.sendTls</code>, <code>Pop3Client</code></td>
+<td align="right">Yes</td>
+<td>Implicit TLS (usually ports 465 and 995) on the NINA-W102 module, as <code>WiFiSSLClient</code> does on the UNO R4 WiFi</td>
+</tr>
+<tr>
+<td><code>Smtp.send</code> (STARTTLS, usually port 587)</td>
+<td align="right">No</td>
+<td>Upgrading a plain connection needs a TLS stack on the board itself (the UNO R4 WiFi runs ESP_SSLClient), far beyond 6 KB of RAM; use <code>Smtp.sendTls</code> on port 465</td>
+</tr>
+<tr>
+<td><code>HttpServer</code></td>
+<td align="right">No</td>
+<td>Rejected at compile time</td>
+</tr>
+<tr>
+<td><code>SdCard</code>, <code>Properties</code></td>
+<td align="right">Yes</td>
+<td>At most 2 open files; <code>Properties</code> of 8 entries, 15-character keys, 31-character values</td>
+</tr>
+<tr>
+<td><code>RandomAccessFile</code></td>
+<td align="right">Untested</td>
+<td>Generated, but not yet run in the simulator</td>
+</tr>
+<tr>
+<td><code>LcdKeypadShield</code>, <code>TftTouchShield</code></td>
+<td align="right">Yes</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Servo</code>, <code>I2c</code>, <code>Infrared</code></td>
+<td align="right">Untested</td>
+<td>Generated, but not yet run in the simulator or on hardware</td>
+</tr>
+<tr>
+<td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
+<td align="right">Yes</td>
+<td>See the limits above</td>
+</tr>
+<tr>
+<td><code>StructuredTaskScope</code>, <code>ScopedValue</code>, <code>synchronized</code>, <code>ReentrantLock</code>, atomics</td>
+<td align="right">Yes</td>
+<td>The same cooperative scheduler as the other boards, at most four threads including <code>main</code>; see the task stacks above</td>
 </tr>
 <tr>
 <td><code>Mouse</code></td>
@@ -372,25 +477,23 @@ before being considered officially supported.</p>
 <td>The application MCU has no native USB HID support</td>
 </tr>
 <tr>
-<td><code>LedMatrix</code></td>
+<td><code>LedMatrix</code>, <code>@Watchdog</code></td>
 <td align="right">No</td>
-<td>There is no onboard 12x8 LED matrix</td>
-</tr>
-<tr>
-<td>Wi-Fi and Bluetooth</td>
-<td align="right">Not yet exposed</td>
-<td>Juno has no WiFiNINA or ArduinoBLE intrinsic API</td>
-</tr>
-<tr>
-<td>IMU and secure element</td>
-<td align="right">Not yet exposed</td>
-<td>Juno has no intrinsic API for these peripherals</td>
+<td></td>
 </tr>
 </tbody>
 </table>
-<p>The existing <code>Blink</code> example selects pin 13 explicitly and therefore does not address this board's
-onboard LED. A WiFi Rev2-specific example must use logical pin 25 unless Juno gains a board-aware
-<code>LED_BUILTIN</code> abstraction.</p>
+<h3 id="how-it-is-tested">How it is tested</h3>
+<p>The AVR backend is checked by running programs, not only by compiling them: <code>SimavrRunIT</code> builds
+each program with avr-gcc against a stand-in megaavr core and runs it under the simavr simulator,
+then compares its serial output with OpenJDK's. It runs on a local <code>gcc-avr</code>/<code>libsimavr-dev</code>
+install or in Docker:</p>
+<pre><code class="language-bash">./mvnw -pl juno-compiler -am -Psimavr verify
+</code></pre>
+<p>The suite covers the language conformance programs (including every primitive type's edge cases,
+<code>java.math</code> and structured concurrency, scoped values, locks and atomics), plus a peripheral program that exercises HTTP, HTTPS, SMTP over TLS, POP3, JSON, UDP, the SD card,
+<code>Properties</code> and the LCD and TFT shields against simulated hardware. Generated sketches have not
+yet been run on a physical UNO WiFi Rev2.</p>
 <h2 id="comparison-with-the-uno-r3-and-r4">Comparison with the UNO R3 and R4</h2>
 <table>
 <thead>

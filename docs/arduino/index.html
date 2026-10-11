@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -228,7 +228,7 @@ list) follow the same pattern as <code>Blink</code> above — override <code>jun
 <code>-Djuno.main=io.github.jabrena.juno.api.led.LedMatrixHeart</code>. They all draw on the UNO R4 WiFi's
 built-in 12x8 LED matrix.</p>
 <h3 id="lcd-keypad-shield-examples">LCD Keypad Shield examples</h3>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java"><code>LcdKeypadShield</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java"><code>LcdKeypadShield</code></a>
 drives a common 16x2 HD44780-compatible &quot;LCD Keypad Shield&quot; (LCD on digital pins 4-9, backlight on
 pin 10, 5 buttons on <code>A0</code>) — no new compiler intrinsic, built entirely from <code>Gpio</code>/<code>Delay</code> the same
 way <code>LedCanvas</code> is built from <code>LedMatrix</code>.</p>
@@ -246,7 +246,7 @@ alarm blinks until any button is pressed, then returns to minute selection.</p>
   -Djuno.main=io.github.jabrena.juno.api.lcd.pomodoro.Pomodoro
 </code></pre>
 <h3 id="tft-touch-screen-shield-examples">TFT touch screen shield examples</h3>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java"><code>TftTouchShield</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java"><code>TftTouchShield</code></a>
 drives the ELEGOO 2.8&quot; TFT touch screen shield (ILI9341 on an 8-bit parallel bus on D2-D9/<code>A0</code>-<code>A4</code>,
 resistive touch, microSD on D10-D13), built from <code>Gpio</code>/<code>Delay</code> plus the <code>ParallelBus</code> intrinsic for the
 display's bytes. See <a href="../tft-touch-shield">TFT-TOUCH-SHIELD.md</a>.</p>
@@ -292,7 +292,7 @@ to the plugin with <code>-Djuno.port=...</code>.</p>
 <h3 id="example-servosweep-hobby-servo-control">Example: ServoSweep (hobby servo control)</h3>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/motors/ServoSweep.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/motors/ServoSweep.java</code></a>
 sweeps a 3-wire hobby servo back and forth between 0 and 180 degrees using
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/motors/Servo.java"><code>Servo</code></a> — see its wiring
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/motors/Servo.java"><code>Servo</code></a> — see its wiring
 diagram in the class Javadoc for how to connect the servo's signal/power/ground wires.</p>
 <p>It needs the <code>Servo</code> library (not bundled with the <code>arduino:renesas_uno</code> core, installed by
 <code>juno:install-deps</code> above, or on its own with <code>arduino-cli lib install Servo</code>):</p>
@@ -302,7 +302,7 @@ diagram in the class Javadoc for how to connect the servo's signal/power/ground 
 <h3 id="example-legotrain-lego-powered-up-over-bluetooth-le">Example: LegoTrain (LEGO Powered Up over Bluetooth LE)</h3>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java</code></a>
 connects to a LEGO Powered Up hub and shuttles a train motor on port A back and forth using
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubRemote.java"><code>PoweredUpHubRemote</code></a> —
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubRemote.java"><code>PoweredUpHubRemote</code></a> —
 see <a href="../lego">the LEGO Powered Up guide</a> for the full API. <code>MagicSquarePoweredUpHub</code> in the same package
 drives a two-motor vehicle around a square.</p>
 <p>It needs the <code>ArduinoBLE</code> library (not bundled with the <code>arduino:renesas_uno</code> core, installed by
@@ -312,9 +312,9 @@ drives a two-motor vehicle around a square.</p>
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 </code></pre>
 <h3 id="example-inboxcount-basic-email-support">Example: InboxCount (basic email support)</h3>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Smtp.java"><code>Smtp</code></a> sends a
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/email/Smtp.java"><code>Smtp</code></a> sends a
 plain-text message to one recipient over <code>STARTTLS</code> (mail submission on port 587), and
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/net/email/Pop3Client.java"><code>Pop3Client</code></a>
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/email/Pop3Client.java"><code>Pop3Client</code></a>
 reports the mailbox message count and reads the newest message's <code>From</code>/<code>Subject</code>/body over
 POP3S (port 995) — see that package's Javadoc for the full scope and its deliberate limits (one
 recipient, plain text only, no attachments/HTML/MIME/folders/OAuth2).</p>

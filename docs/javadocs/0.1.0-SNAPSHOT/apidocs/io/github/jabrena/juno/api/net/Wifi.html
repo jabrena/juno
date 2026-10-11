@@ -83,6 +83,8 @@ initTheme();
 <li><a href="#beginAP(java.lang.String,java.lang.String)" tabindex="0">beginAP(String, String)</a></li>
 <li><a href="#status()" tabindex="0">status()</a></li>
 <li><a href="#localIP(int%5B%5D)" tabindex="0">localIP(int[])</a></li>
+<li><a href="#gatewayIP(int%5B%5D)" tabindex="0">gatewayIP(int[])</a></li>
+<li><a href="#macAddress(int%5B%5D)" tabindex="0">macAddress(int[])</a></li>
 </ol>
 </li>
 </ol>
@@ -158,10 +160,23 @@ deployed board to keep credentials on removable storage instead of baking them i
 directly (typically to serve a provisioning page through <a href="http/HttpServer.html" title="class in io.github.jabrena.juno.api.net.http"><code>HttpServer</code></a>).</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#localIP(int%5B%5D)" class="member-name-link">localIP</a><wbr>(int[]&nbsp;octets)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#gatewayIP(int%5B%5D)" class="member-name-link">gatewayIP</a><wbr>(int[]&nbsp;octets)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Writes the IPv4 address of the router the board is connected to (its gateway) into <code>octets</code> (at least 4
+entries), in the same form as <a href="#localIP(int%5B%5D)"><code>localIP(int[])</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#localIP(int%5B%5D)" class="member-name-link">localIP</a><wbr>(int[]&nbsp;octets)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Writes the board's current IPv4 address into <code>octets</code> (caller-owned, at least 4
 entries), one byte value (0-255) per element, most significant first — e.g.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#macAddress(int%5B%5D)" class="member-name-link">macAddress</a><wbr>(int[]&nbsp;octets)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Writes the Wi-Fi interface's six-byte hardware (MAC) address into <code>octets</code> (at least 6 entries), one byte
+value (0-255) per element, most significant first; print them in hex to compare against a router's client
+list.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#status()" class="member-name-link">status</a>()</code></div>
@@ -272,6 +287,28 @@ entries), one byte value (0-255) per element, most significant first — e.g. <c
 1, 45</code>. Only meaningful once <a href="#status()"><code>status()</code></a> reports <a href="#STATUS_CONNECTED"><code>STATUS_CONNECTED</code></a>; UNO Q's
 current router API does not expose this address and writes four zeroes. Juno has no
 heap, so there is no <code>String</code>-returning form here — print each octet with <a href="../io/serial/Serial.html#print(int)"><code>Serial.print(int)</code></a> and a literal <code>"."</code> between them.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="gatewayIP(int[])">
+<h3>gatewayIP</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">gatewayIP</span><wbr><span class="parameters">(int[]&nbsp;octets)</span></div>
+<div class="block">Writes the IPv4 address of the router the board is connected to (its gateway) into <code>octets</code> (at least 4
+entries), in the same form as <a href="#localIP(int%5B%5D)"><code>localIP(int[])</code></a>. Only meaningful once <a href="#status()"><code>status()</code></a> reports <a href="#STATUS_CONNECTED"><code>STATUS_CONNECTED</code></a>; a gateway that does not share the board's subnet usually means a bad DHCP lease. UNO Q's
+router API does not expose it and writes four zeroes.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="macAddress(int[])">
+<h3>macAddress</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">macAddress</span><wbr><span class="parameters">(int[]&nbsp;octets)</span></div>
+<div class="block">Writes the Wi-Fi interface's six-byte hardware (MAC) address into <code>octets</code> (at least 6 entries), one byte
+value (0-255) per element, most significant first; print them in hex to compare against a router's client
+list. UNO Q's router API does not expose it and writes six zeroes.</div>
 </div>
 </section>
 </li>

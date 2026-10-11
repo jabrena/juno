@@ -121,7 +121,7 @@ initTheme();
 <section class="class-description" id="class-description">
 <hr>
 <div class="horizontal-scroll">
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">JavaMethod</span>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;owner, int&nbsp;accessFlags, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;descriptor, int&nbsp;maxStack, int&nbsp;maxLocals, byte[]&nbsp;code, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="ExceptionHandler.html" title="class in io.github.jabrena.juno.classfile">ExceptionHandler</a>&gt;&nbsp;exceptionHandlers)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">JavaMethod</span>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;owner, int&nbsp;accessFlags, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;descriptor, int&nbsp;maxStack, int&nbsp;maxLocals, byte @Nullable []&nbsp;code, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="ExceptionHandler.html" title="class in io.github.jabrena.juno.classfile">ExceptionHandler</a>&gt;&nbsp;exceptionHandlers)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Record.html" title="class in java.lang" class="external-link">Record</a></span></div>
 </div>
 </section>
@@ -165,7 +165,7 @@ initTheme();
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;descriptor,
  int&nbsp;maxStack,
  int&nbsp;maxLocals,
- byte[]&nbsp;code)</code></div>
+ byte @Nullable []&nbsp;code)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(java.lang.String,int,java.lang.String,java.lang.String,int,int,byte%5B%5D,java.util.List)" class="member-name-link">JavaMethod</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;owner,
  int&nbsp;accessFlags,
@@ -173,7 +173,7 @@ initTheme();
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;descriptor,
  int&nbsp;maxStack,
  int&nbsp;maxLocals,
- byte[]&nbsp;code,
+ byte @Nullable []&nbsp;code,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="ExceptionHandler.html" title="class in io.github.jabrena.juno.classfile">ExceptionHandler</a>&gt;&nbsp;exceptionHandlers)</code></div>
 <div class="col-last odd-row-color">
 <div class="block">Creates an instance of a <code>JavaMethod</code> record class.</div>
@@ -197,7 +197,7 @@ initTheme();
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>accessFlags</code> record component.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>byte[]</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>byte @Nullable []</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#code()" class="member-name-link">code</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>code</code> record component.</div>
@@ -361,7 +361,7 @@ initTheme();
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;descriptor,
  int&nbsp;maxStack,
  int&nbsp;maxLocals,
- byte[]&nbsp;code,
+ byte @Nullable []&nbsp;code,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/List.html" title="interface in java.util" class="external-link">List</a>&lt;<a href="ExceptionHandler.html" title="class in io.github.jabrena.juno.classfile">ExceptionHandler</a>&gt;&nbsp;exceptionHandlers)</span></div>
 <div class="block">Creates an instance of a <code>JavaMethod</code> record class.</div>
 <dl class="notes">
@@ -388,7 +388,7 @@ initTheme();
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;descriptor,
  int&nbsp;maxStack,
  int&nbsp;maxLocals,
- byte[]&nbsp;code)</span></div>
+ byte @Nullable []&nbsp;code)</span></div>
 </div>
 </section>
 </li>
@@ -569,7 +569,7 @@ initTheme();
 <section class="detail" id="code()">
 <h3>code</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">byte[]</span>&nbsp;<span class="element-name">code</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">byte @Nullable []</span>&nbsp;<span class="element-name">code</span>()</div>
 <div class="block">Returns the value of the <code>code</code> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>

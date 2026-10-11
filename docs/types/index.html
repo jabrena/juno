@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-I3CDSDAY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
 
 </head>
 <body >
@@ -146,7 +146,7 @@ records an explicit <code>JunoType</code> for every <code>Value</code>; accepted
 and Arduino type systems meet.</p>
 <h2 id="supported-java-types">Supported Java types</h2>
 <p>Method descriptor validation (in
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java"><code>juno/src/main/java/io/github/jabrena/juno/linker/Descriptor.java</code></a>)
+<a href="https://github.com/jabrena/juno/blob/main/juno-compiler/src/main/java/io/github/jabrena/juno/linker/Descriptor.java"><code>juno-compiler/src/main/java/io/github/jabrena/juno/linker/Descriptor.java</code></a>)
 admits eight primitive JVM descriptor types as ordinary scalar method parameters/results:</p>
 <table>
 <thead>
@@ -296,7 +296,7 @@ set of runtime-<code>String</code> operations is supported instead (string liter
 concatenation, <code>String.valueOf(int)</code>/<code>(double)</code>, <code>length()</code>, <code>charAt(int)</code>, and a fixed-capacity
 <code>StringBuilder</code>); see
 <a href="../features">FEATURES.md</a> for the exact list. Multi-character LED matrix display (see
-<a href="https://github.com/jabrena/juno/blob/main/juno/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java"><code>LedCanvas</code></a>) still works
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/led/LedCanvas.java"><code>LedCanvas</code></a>) still works
 character-by-character with hand-encoded font tables rather than string data</li>
 <li>polymorphic objects/inheritance and unbounded allocation. Final closed-world objects and records use
 one-slot handles into a fixed 8 KiB program-lifetime arena with no reclamation</li>

@@ -103,7 +103,7 @@ initTheme();
 <section class="class-description" id="class-description">
 <hr>
 <div class="horizontal-scroll">
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">InterfaceTarget</span>(int&nbsp;typeId, <a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method, <a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">InterfaceTarget</span>(int&nbsp;typeId, <a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method, @Nullable <a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Record.html" title="class in java.lang" class="external-link">Record</a></span></div>
 <div class="block">One object type-id branch and its concrete method in a closed-world interface dispatch.</div>
 </div>
@@ -123,7 +123,7 @@ initTheme();
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(int,io.github.jabrena.juno.classfile.MethodRef,io.github.jabrena.juno.linker.LambdaSite)" class="member-name-link">InterfaceTarget</a><wbr>(int&nbsp;typeId,
  <a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method,
- <a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)</code></div>
+ @Nullable <a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)</code></div>
 <div class="col-last odd-row-color">
 <div class="block">Creates an instance of a <code>InterfaceTarget</code> record class.</div>
 </div>
@@ -154,7 +154,7 @@ initTheme();
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isLambda()" class="member-name-link">isLambda</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a></code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#lambda()" class="member-name-link">lambda</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of the <code>lambda</code> record component.</div>
@@ -206,7 +206,7 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">InterfaceTarget</span><wbr><span class="parameters">(int&nbsp;typeId,
  <a href="../classfile/MethodRef.html" title="class in io.github.jabrena.juno.classfile">MethodRef</a>&nbsp;method,
- <a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)</span></div>
+ @Nullable <a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a>&nbsp;lambda)</span></div>
 <div class="block">Creates an instance of a <code>InterfaceTarget</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -310,7 +310,7 @@ initTheme();
 <section class="detail" id="lambda()">
 <h3>lambda</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a></span>&nbsp;<span class="element-name">lambda</span>()</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="../linker/LambdaSite.html" title="class in io.github.jabrena.juno.linker">LambdaSite</a></span>&nbsp;<span class="element-name">lambda</span>()</div>
 <div class="block">Returns the value of the <code>lambda</code> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>
