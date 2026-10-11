@@ -2,6 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import java.util.concurrent.StructuredTaskScope;
@@ -10,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Every supported atomic operation, plus counters shared by subtasks that yield in the middle of their work. */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
 public final class Atomics {
     static final AtomicInteger SHARED = new AtomicInteger();
     static final AtomicLong WIDE_SHARED = new AtomicLong(1L << 32);

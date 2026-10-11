@@ -6,8 +6,9 @@ package io.github.jabrena.juno.annotations;
  * NINA-W102 module and the {@code WiFiNINA} library. Java's {@code int}, {@code long}, {@code float} and
  * {@code double} keep their JVM widths and IEEE-754 semantics there (the runtime brings its own 64-bit
  * {@code double}, as the AVR toolchain's is 32-bit), and {@code java.math}'s {@code BigInteger}/{@code BigDecimal}
- * work as on the other boards, within its small arena. It has no LED matrix, and threads, structured concurrency and
- * the double-precision transcendental {@code Math} functions are not available.
+ * work as on the other boards, within its small arena, as do {@code StructuredTaskScope}, {@code ScopedValue} and locks,
+ * with a 512-byte stack per forked task. It has no LED matrix, and the double-precision transcendental {@code Math}
+ * functions are not available.
  */
 public final class ArduinoUnoWiFiRev2 implements ArduinoBoard {
     private ArduinoUnoWiFiRev2() {

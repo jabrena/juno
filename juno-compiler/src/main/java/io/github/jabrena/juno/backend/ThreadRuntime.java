@@ -140,6 +140,137 @@ final class ThreadRuntime {
     }
 
     /**
+     * The UNO WiFi Rev2's port: like the UNO R4's, its own stacks and a context switch, here saving avr-gcc's
+     * call-saved registers ({@code r2}-{@code r17} and the frame pointer {@code Y}) before swapping {@code SP}. The
+     * return address a fresh stack starts from is two bytes on the ATmega4809 and three on a part with more than
+     * 128 KB of flash, which the simulator's ATmega2560 is.
+     *
+     * <p>A task's stack is small and sits next to the scheduler's own state, so a deep recursion must stop before it
+     * writes past the stack: every generated function compares its new SP with {@code juno_stack_limit}, which keeps
+     * {@code JUNO_STACK_GUARD_BYTES} free for the C calls of the deepest frame and for reporting the overflow.
+     */
+    static String avrPort(int maxThreads, int stackBytes) {
+        return """
+
+                // ---- Juno threads: AVR port (no RTOS: a stack per thread, switched by swapping SP) ----
+                static constexpr uint32_t JUNO_MAX_THREADS = ${JUNO_MAX_THREADS}u;
+                static constexpr uint16_t JUNO_THREAD_STACK_BYTES = ${JUNO_THREAD_STACK_BYTES}u;
+                static constexpr uint32_t JUNO_STACK_CANARY = 0x4A554E4Fu;
+                static constexpr uint16_t JUNO_SWITCH_FRAME_BYTES = 18u;
+                #if defined(__AVR_3_BYTE_PC__)
+                static constexpr uint16_t JUNO_RETURN_ADDRESS_BYTES = 3u;
+                #else
+                static constexpr uint16_t JUNO_RETURN_ADDRESS_BYTES = 2u;
+                #endif
+
+                static constexpr uint16_t JUNO_STACK_GUARD_BYTES = 128u;
+
+                static uint8_t juno_stacks[JUNO_MAX_THREADS - 1u][JUNO_THREAD_STACK_BYTES];
+                static uint16_t juno_saved_sp[JUNO_MAX_THREADS];
+
+                // The lowest SP a generated function may run at on the current task's stack; 0 on the main thread,
+                // whose stack has nothing of the runtime's below it.
+                extern "C" {
+                uint16_t juno_stack_limit = 0u;
+                }
+
+                static void juno_port_set_limit(uint32_t slot) {
+                  juno_stack_limit = slot == 0u ? 0u
+                      : static_cast<uint16_t>(reinterpret_cast<uintptr_t>(juno_stacks[slot - 1u] + JUNO_STACK_GUARD_BYTES));
+                }
+
+                // Called by a generated function whose frame would cross the limit; the guard bytes are left for this.
+                extern "C" [[noreturn]] void juno_thread_stack_overflow() {
+                  juno_stack_limit = 0u;
+                  Serial.println("[juno-thread] stack overflow");
+                  juno_panic();
+                }
+
+                // Pushes r2-r17 and Y on the current stack, stores SP through r25:r24, then runs on the stack
+                // r23:r22 holds: a thread's first switch finds a frame of zeros whose return address is its
+                // trampoline. SPH and SPL change with interrupts held off, as avr-gcc's own prologues do.
+                extern "C" void juno_context_switch(uint16_t* saveSp, uint16_t newSp);
+                __asm__(
+                    ".section .text.juno_context_switch,\\"ax\\",@progbits\\n"
+                    ".global juno_context_switch\\n"
+                    ".type juno_context_switch, @function\\n"
+                    "juno_context_switch:\\n"
+                    "  push r2\\n  push r3\\n  push r4\\n  push r5\\n  push r6\\n  push r7\\n"
+                    "  push r8\\n  push r9\\n  push r10\\n  push r11\\n  push r12\\n  push r13\\n"
+                    "  push r14\\n  push r15\\n  push r16\\n  push r17\\n  push r28\\n  push r29\\n"
+                    "  movw r30, r24\\n"
+                    "  in r26, 0x3d\\n"
+                    "  in r27, 0x3e\\n"
+                    "  st Z, r26\\n"
+                    "  std Z+1, r27\\n"
+                    "  in r0, 0x3f\\n"
+                    "  cli\\n"
+                    "  out 0x3e, r23\\n"
+                    "  out 0x3f, r0\\n"
+                    "  out 0x3d, r22\\n"
+                    "  pop r29\\n  pop r28\\n  pop r17\\n  pop r16\\n  pop r15\\n  pop r14\\n"
+                    "  pop r13\\n  pop r12\\n  pop r11\\n  pop r10\\n  pop r9\\n  pop r8\\n"
+                    "  pop r7\\n  pop r6\\n  pop r5\\n  pop r4\\n  pop r3\\n  pop r2\\n"
+                    "  ret\\n"
+                    ".text\\n");
+
+                static void juno_thread_body();
+
+                extern "C" void juno_thread_trampoline() {
+                  juno_thread_body();
+                  for (;;) {}
+                }
+
+                static void juno_port_prepare(uint32_t slot) {
+                  uint8_t* stack = juno_stacks[slot - 1u];
+                  memcpy(stack, &JUNO_STACK_CANARY, sizeof JUNO_STACK_CANARY);
+                  // The CPU pushes a return address low byte first, so it reads most significant byte first
+                  // upwards from SP; the stack's last byte stays free, as SP names the next free byte.
+                  uint16_t address = static_cast<uint16_t>(reinterpret_cast<uintptr_t>(&juno_thread_trampoline));
+                  uint8_t* frame = stack + JUNO_THREAD_STACK_BYTES - 1u - JUNO_RETURN_ADDRESS_BYTES
+                      - JUNO_SWITCH_FRAME_BYTES;
+                  memset(frame, 0, JUNO_SWITCH_FRAME_BYTES + JUNO_RETURN_ADDRESS_BYTES + 1u);
+                  frame[JUNO_SWITCH_FRAME_BYTES + JUNO_RETURN_ADDRESS_BYTES - 1u] = static_cast<uint8_t>(address);
+                  frame[JUNO_SWITCH_FRAME_BYTES + JUNO_RETURN_ADDRESS_BYTES - 2u] = static_cast<uint8_t>(address >> 8);
+                  juno_saved_sp[slot] = static_cast<uint16_t>(reinterpret_cast<uintptr_t>(frame) - 1u);
+                }
+
+                // A cancelled cooperative task will never be scheduled again; its private stack can be reused.
+                static void juno_port_cancel(uint32_t slot) {
+                  static_cast<void>(slot);
+                }
+
+                static void juno_port_check_stack(uint32_t slot) {
+                  if (slot == 0u) return;
+                  if (memcmp(juno_stacks[slot - 1u], &JUNO_STACK_CANARY, sizeof JUNO_STACK_CANARY) != 0) {
+                    Serial.println("[juno-thread] stack overflow");
+                    juno_panic();
+                  }
+                }
+
+                static void juno_port_switch(uint32_t from, uint32_t to) {
+                  juno_port_check_stack(from);
+                  juno_port_set_limit(to);
+                  juno_context_switch(&juno_saved_sp[from], juno_saved_sp[to]);
+                }
+
+                static void juno_port_exit(uint32_t from, uint32_t to) {
+                  juno_port_set_limit(to);
+                  juno_context_switch(&juno_saved_sp[from], juno_saved_sp[to]);
+                }
+
+                static uintptr_t juno_port_stack_top(uint32_t slot) {
+                  return reinterpret_cast<uintptr_t>(&juno_stacks[slot - 1u][JUNO_THREAD_STACK_BYTES]);
+                }
+
+                static uintptr_t juno_port_saved_sp(uint32_t slot) {
+                  return juno_saved_sp[slot];
+                }
+                """.replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
+    }
+
+    /**
      * The UNO Q's port: every Juno thread is a Zephyr thread, but each parks on its own semaphore and only the
      * one holding the baton runs, so scheduling stays cooperative and the runtime needs no other locking.
      */
@@ -220,10 +351,15 @@ final class ThreadRuntime {
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
-    /** The cooperative scheduler and the {@code Thread} intrinsics, over a core's port. */
-    static String scheduler(String delayFunction, boolean exceptions, boolean threadEntry, boolean taskCallableEntry,
-                            boolean structuredTasks, boolean scopedValues, int failedExceptionClassId,
-                            int illegalStateExceptionClassId) {
+    /**
+     * The cooperative scheduler and the {@code Thread} intrinsics, over a core's port.
+     *
+     * @param stackScanFunction the collector's scan of one stack range: word-aligned on Thumb-2, byte by byte on AVR,
+     *     whose stack frames are unaligned
+     */
+    static String scheduler(String delayFunction, String stackScanFunction, boolean exceptions, boolean threadEntry,
+                            boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
+                            int failedExceptionClassId, int illegalStateExceptionClassId) {
         String pendingSave = exceptions ? "juno_slots[from].pending = juno_pending_exception;\n"
                 + "  juno_pending_exception = juno_slots[to].pending;" : "";
         // Each thread runs under its own scoped-value bindings, so the switch swaps the binding stack too.
@@ -433,7 +569,7 @@ final class ThreadRuntime {
                     uintptr_t top = index == 0u ? juno_gc_stack_top : juno_port_stack_top(index);
                     const uint8_t* from = index == juno_current_slot
                         ? marker : reinterpret_cast<const uint8_t*>(juno_port_saved_sp(index));
-                    juno_gc_scan_range(from, reinterpret_cast<const uint8_t*>(top));
+                    ${JUNO_STACK_SCAN}(from, reinterpret_cast<const uint8_t*>(top));
                   }
                 }
 
@@ -603,6 +739,7 @@ final class ThreadRuntime {
                 .replace("${JUNO_TASK_RUNTIME}", taskRuntime)
                 .replace("${JUNO_FORK_BINDINGS}", scopedValues ? "task->bindings = juno_scoped_top;" : "")
                 .replace("${JUNO_CORE_DELAY}", delayFunction)
+                .replace("${JUNO_STACK_SCAN}", stackScanFunction)
                 .replace("${JUNO_MAX_MONITORS}", Integer.toString(RuntimeLimits.MAX_MONITORS))
                 .replace("${JUNO_FAILED_EXCEPTION_CLASS_ID}", Integer.toString(failedExceptionClassId))
                 .replace("${JUNO_ILLEGAL_STATE_EXCEPTION_CLASS_ID}", Integer.toString(illegalStateExceptionClassId));

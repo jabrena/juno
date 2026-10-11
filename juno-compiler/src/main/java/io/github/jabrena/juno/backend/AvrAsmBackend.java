@@ -44,12 +44,14 @@ import java.util.stream.Collectors;
  * the area. Results come back in avr-gcc's return registers (r22-r25, or r18-r25 for a {@code long}/{@code double}).
  * Runtime-shim calls use the same area through generated C++ thunks (see {@link AvrShimThunks}), which convert each
  * word to the function's real C parameter type — the AAPCS word layout of {@link IntrinsicLowering}'s table is kept,
- * so the table is shared with Thumb-2. Generated code clobbers any register but Y (r29:r28) and r1; the entry point,
- * the one function C code calls, saves r2-r17 for its caller.
+ * so the table is shared with Thumb-2. Generated code clobbers any register but Y (r29:r28) and r1; the functions C
+ * code calls (the entry point, and the {@link RuntimeEntryPoints} the scheduler enters a forked task through) save
+ * r2-r17 for their caller, and a runtime entry point takes its one argument in r22-r25.
  *
- * <p>Threads, structured concurrency and the double-precision transcendental {@code Math}
- * functions are capabilities the UNO WiFi Rev2 does not have (see {@code Board}), so the linker rejects them before
- * code generation; anything else this backend cannot lower fails with a {@link CompileException}.
+ * <p>Forked tasks run on the shared cooperative scheduler ({@link ThreadRuntime}): every loop backedge offers the
+ * other tasks a turn. The double-precision transcendental {@code Math} functions are a capability the UNO WiFi Rev2
+ * does not have (see {@code Board}), so the linker rejects them before code generation; anything else this backend
+ * cannot lower fails with a {@link CompileException}.
  */
 public final class AvrAsmBackend {
     private static final int A = AvrEmitter.A;
@@ -67,6 +69,7 @@ public final class AvrAsmBackend {
     private final RuntimeConfig runtimeConfig;
     private final List<String> clinitLabels = new ArrayList<>();
     private MethodRef entryPoint;
+    private boolean usesThreads;
     private ProgramLayout layout;
     private AvrEmitter avr;
     private IntrinsicLowering intrinsics;
@@ -92,14 +95,12 @@ public final class AvrAsmBackend {
 
     public Output generate(IrProgram program) {
         entryPoint = program.entryPoint();
+        usesThreads = RuntimeEntryPoints.usesThreads(program);
         for (int index = 0; index < program.methods().size(); index++) {
             IrMethod method = program.methods().get(index);
             MethodRef reference = method.reference();
-            if (!reference.equals(entryPoint) && reference.owner().startsWith("java/lang/")
-                    && reference.name().startsWith("$juno")) {
-                throw unsupported("the runtime entry point " + reference.displayName() + " (threads)");
-            }
-            String label = reference.equals(entryPoint) ? "juno_" + simpleName(reference) + "_asm" : "juno_fn" + index;
+            String label = reference.equals(entryPoint) ? "juno_" + simpleName(reference) + "_asm"
+                    : RuntimeEntryPoints.SYMBOLS.getOrDefault(reference, "juno_fn" + index);
             functionLabels.put(reference, label);
             if (reference.name().equals("<clinit>")) {
                 clinitLabels.add(label);
@@ -112,7 +113,7 @@ public final class AvrAsmBackend {
         memory = new AvrMemoryLowering(avr, layout);
         calls = new AvrCallLowering(avr, layout, memory, functionLabels);
         CoreRuntime coreRuntime = CoreRuntime.of(board.core());
-        intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, features, usedMath, false);
+        intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, features, usedMath, usesThreads);
 
         StringBuilder text = new StringBuilder();
         for (IrMethod method : program.methods()) {
@@ -142,14 +143,17 @@ public final class AvrAsmBackend {
     private void emitMethod(StringBuilder output, IrMethod method) {
         String label = Objects.requireNonNull(functionLabels.get(method.reference()));
         boolean isEntryPoint = method.reference().equals(entryPoint);
+        boolean calledFromC = isEntryPoint || RuntimeEntryPoints.SYMBOLS.containsKey(method.reference());
         FrameLayout frame = FrameLayout.packed(method);
         output.append('\n');
-        if (isEntryPoint) {
+        if (calledFromC) {
             output.append("    .global ").append(label).append('\n');
         }
         output.append("    .type ").append(label).append(", @function\n").append(label).append(":\n");
         if (isEntryPoint) {
             emitEntryPrologue(output);
+        } else if (calledFromC) {
+            emitRuntimeEntryPrologue(output);
         }
         output.append("    push r28\n")
                 .append("    push r29\n")
@@ -157,6 +161,9 @@ public final class AvrAsmBackend {
                 .append("    in r29, 0x3e\n");
         if (frame.frameSize() > 0) {
             adjustFrame(output, -frame.frameSize());
+        }
+        if (usesThreads && !isEntryPoint) {
+            emitStackLimitCheck(output);
         }
         emitParameterSpill(output, frame, method);
         if (isEntryPoint) {
@@ -174,7 +181,7 @@ public final class AvrAsmBackend {
             for (IrInstruction instruction : instructions) {
                 emitInstruction(output, frame, instruction);
             }
-            emitTerminator(output, frame, label, block, fused, isEntryPoint);
+            emitTerminator(output, frame, label, block, fused, isEntryPoint, calledFromC);
         }
     }
 
@@ -203,9 +210,41 @@ public final class AvrAsmBackend {
                 .append("    st X+, r1\n")
                 .append("    rjmp .LjunoZeroStack\n")
                 .append(".LjunoZeroStackDone:\n");
+        pushCallSaved(output);
+    }
+
+    /**
+     * A function the runtime shim calls back (a forked task's body, a scoped-value operation): saves the C
+     * caller's registers, then moves its one argument from avr-gcc's r22-r25 into the first argument word.
+     */
+    private static void emitRuntimeEntryPrologue(StringBuilder output) {
+        pushCallSaved(output);
+        for (int index = 0; index < AvrEmitter.WORD; index++) {
+            output.append("    sts ").append(AvrEmitter.ARGUMENTS).append('+').append(index)
+                    .append(", r").append(22 + index).append('\n');
+        }
+    }
+
+    /** avr-gcc's call-saved r2-r17, which generated code uses freely (it keeps Y itself). */
+    private static void pushCallSaved(StringBuilder output) {
         for (int register = 2; register <= 17; register++) {
             output.append("    push r").append(register).append('\n');
         }
+    }
+
+    /**
+     * With tasks, a frame that would reach into the guard bytes of the running task's stack reports the overflow
+     * instead (see {@link ThreadRuntime#avrPort}); the main thread's limit is 0, so the check never fires there.
+     */
+    private void emitStackLimitCheck(StringBuilder output) {
+        String fits = avr.newLabel(".LstackFits");
+        output.append("    lds r26, juno_stack_limit\n")
+                .append("    lds r27, juno_stack_limit+1\n")
+                .append("    cp r28, r26\n")
+                .append("    cpc r29, r27\n")
+                .append("    brsh ").append(fits).append('\n')
+                .append("    call juno_thread_stack_overflow\n")
+                .append(fits).append(":\n");
     }
 
     /** SP = Y = Y + {@code delta}, with interrupts held off while SPH and SPL disagree. */
@@ -331,7 +370,7 @@ public final class AvrAsmBackend {
     }
 
     private void emitTerminator(StringBuilder output, FrameLayout frame, String label, IrBasicBlock block,
-                                IrInstruction.@Nullable Compare fused, boolean isEntryPoint) {
+                                IrInstruction.@Nullable Compare fused, boolean isEntryPoint, boolean calledFromC) {
         switch (block.terminator()) {
             case IrTerminator.Jump jump -> {
                 emitYieldIfBackedge(output, block.start(), jump.target());
@@ -357,7 +396,7 @@ public final class AvrAsmBackend {
             }
             case IrTerminator.Return returned -> {
                 if (isEntryPoint) {
-                    emitEscapeCheck(output);
+                    emitMainExit(output);
                 }
                 returned.value().ifPresent(value -> {
                     if (FrameLayout.isWide(value.type())) {
@@ -370,7 +409,7 @@ public final class AvrAsmBackend {
                     adjustFrame(output, frame.frameSize());
                 }
                 output.append("    pop r29\n    pop r28\n");
-                if (isEntryPoint) {
+                if (calledFromC) {
                     for (int register = 17; register >= 2; register--) {
                         output.append("    pop r").append(register).append('\n');
                     }
@@ -401,10 +440,25 @@ public final class AvrAsmBackend {
         return ".L" + label + "block" + block;
     }
 
-    /** Lets the core run its background work (serial events) on every loop backedge. */
-    private static void emitYieldIfBackedge(StringBuilder output, int blockStart, int target) {
+    /**
+     * Lets the core run its background work (serial events) on every loop backedge and, with tasks, gives the other
+     * tasks a turn.
+     */
+    private void emitYieldIfBackedge(StringBuilder output, int blockStart, int target) {
         if (target <= blockStart) {
-            output.append("    call yield\n");
+            output.append(usesThreads ? "    call juno_thread_backedge\n" : "    call yield\n");
+        }
+    }
+
+    /**
+     * Where {@code main} returns: report an exception nobody caught, then, as the JVM does, let every other
+     * non-daemon task finish before the program ends.
+     */
+    private void emitMainExit(StringBuilder output) {
+        emitEscapeCheck(output);
+        if (usesThreads) {
+            features.add(ShimFeature.THREADS);
+            output.append("    call juno_thread_main_exit\n");
         }
     }
 

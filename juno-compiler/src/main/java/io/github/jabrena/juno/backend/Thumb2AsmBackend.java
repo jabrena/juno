@@ -13,7 +13,6 @@ import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
-import io.github.jabrena.juno.linker.ThreadSupport;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 
 import java.util.ArrayList;
@@ -110,12 +109,6 @@ public final class Thumb2AsmBackend {
      */
     private static final int STACK_ZERO_BYTES = 4096;
 
-    /** Where the runtime shim's thread bootstrap enters a started thread's {@code Runnable}. */
-    private static final Map<MethodRef, String> RUNTIME_ENTRY_SYMBOLS = Map.of(
-            ThreadSupport.ENTRY_METHOD, "juno_thread_entry",
-            io.github.jabrena.juno.linker.StructuredTaskSupport.ENTRY_METHOD, "juno_task_entry",
-            io.github.jabrena.juno.linker.ScopedValueSupport.ENTRY_METHOD, "juno_scoped_call_entry");
-
     /**
      * {@code runtimeShim} is a small {@code extern "C"} C++ source that must be compiled alongside
      * {@code assembly} in the same sketch — see this class's doc.
@@ -178,12 +171,12 @@ public final class Thumb2AsmBackend {
     public Output generate(IrProgram program) {
         entryPoint = program.entryPoint();
         usesWatchdog = program.watchdogTimeoutMillis().isPresent();
-        usesThreads = usesThreads(program);
+        usesThreads = RuntimeEntryPoints.usesThreads(program);
         for (int index = 0; index < program.methods().size(); index++) {
             IrMethod method = program.methods().get(index);
             String label = method.reference().equals(entryPoint)
                     ? asmFunctionName(method)
-                    : RUNTIME_ENTRY_SYMBOLS.getOrDefault(method.reference(), "juno_fn" + index);
+                    : RuntimeEntryPoints.SYMBOLS.getOrDefault(method.reference(), "juno_fn" + index);
             functionLabels.put(method.reference(), label);
             if (method.reference().name().equals("<clinit>")) {
                 clinitLabels.add(label);
@@ -230,7 +223,7 @@ public final class Thumb2AsmBackend {
         List<String> parameterTypes = Descriptor.parse(method.reference().descriptor()).parameters();
 
         output.append('\n');
-        if (isEntryPoint || RUNTIME_ENTRY_SYMBOLS.containsValue(label)) {
+        if (isEntryPoint || RuntimeEntryPoints.SYMBOLS.containsValue(label)) {
             output.append("    .global ").append(label).append('\n');
         }
         output.append("    .type ").append(label).append(", %function\n")
@@ -580,21 +573,6 @@ public final class Thumb2AsmBackend {
             features.add(ShimFeature.THREADS);
             output.append("    bl juno_thread_main_exit\n");
         }
-    }
-
-    /** Whether the program creates or runs a {@code Thread}, so it needs the cooperative thread runtime. */
-    private static boolean usesThreads(IrProgram program) {
-        return program.methods().stream().anyMatch(method -> method.blocks().stream()
-                .flatMap(block -> block.instructions().stream())
-                .anyMatch(instruction -> instruction instanceof IrInstruction.IntrinsicCall call
-                        && switch (call.intrinsic()) {
-                            case TASK_SCOPE_OPEN_DEFAULT, TASK_SCOPE_OPEN, TASK_SCOPE_FORK_CALLABLE,
-                                    TASK_SCOPE_FORK_RUNNABLE, TASK_SCOPE_JOIN, TASK_SCOPE_IS_CANCELLED, TASK_GET,
-                                    TASK_STATE, TASK_EXCEPTION, TASK_SCOPE_CLOSE,
-                                    MONITOR_ENTER, MONITOR_EXIT, REENTRANT_LOCK_NEW, REENTRANT_LOCK_LOCK,
-                                    REENTRANT_LOCK_TRY_LOCK, REENTRANT_LOCK_UNLOCK -> true;
-                            default -> false;
-                        }));
     }
 
     private String asmFunctionName(IrMethod method) {

@@ -40,7 +40,7 @@ class AvrAsmBackendTest {
                     }
                 }
                 """.formatted(imports, simpleName, body);
-        Path classes = CompilerTestSupport.compileJava(temporaryDirectory, className, source);
+        Path classes = CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, className, source);
         return new JunoCompiler().compile(CompilerTestSupport.classpath(classes), className, false, Optional.of(REV2));
     }
 
@@ -228,6 +228,71 @@ class AvrAsmBackendTest {
         assertThatThrownBy(() -> new RuntimeConfig(4096, 4, OptionalInt.empty()).forBoard(Board.UNO_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES);
+    }
+
+    @Test
+    void forksTasksOnTheCooperativeSchedulerWithAnAvrContextSwitch() throws Exception {
+        CompilationResult result = compile("demo.AvrTasks", """
+                        final int[] sums = new int[2];
+                        try (var scope = StructuredTaskScope.open()) {
+                            scope.fork(() -> {
+                                for (int i = 0; i < 10; i++) {
+                                    sums[0] = sums[0] + i;
+                                }
+                            });
+                            scope.fork(() -> { sums[1] = 7; });
+                            scope.join();
+                        } catch (Exception failure) {
+                            Serial.println("failed");
+                        }
+                        Serial.println(sums[0] + sums[1]);
+                """, """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.util.concurrent.StructuredTaskScope;
+                """);
+        assertThat(result.assembly())
+                // The scheduler enters a task through a global symbol that takes its argument in r22-r25.
+                .contains("    .global juno_thread_entry\n    .type juno_thread_entry, @function\njuno_thread_entry:\n"
+                        + "    push r2\n")
+                .contains("    sts juno_avr_args+0, r22\n    sts juno_avr_args+1, r23\n")
+                .contains("    call juno_thread_backedge\n")
+                .contains("    call juno_thread_main_exit\n")
+                .contains("    lds r26, juno_stack_limit\n")
+                .doesNotContain("call yield\n");
+        assertThat(result.runtimeShim())
+                .contains("---- Juno threads: AVR port")
+                .contains("static constexpr uint16_t JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.AVR_THREAD_STACK_BYTES + "u;")
+                .contains("\"  out 0x3e, r23\\n\"")
+                .contains("juno_gc_scan_bytes(from, reinterpret_cast<const uint8_t*>(top));")
+                .contains("juno_thread_gc_scan(&stackMarker);")
+                .contains("extern \"C\" [[noreturn]] void juno_thread_stack_overflow() {");
+    }
+
+    @Test
+    void keepsTheStackLimitCheckOutOfProgramsWithoutTasks() throws Exception {
+        CompilationResult result = compile("demo.AvrNoTasks", """
+                        for (int i = 0; i < 3; i++) {
+                            Serial.println(i);
+                        }
+                """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+        assertThat(result.assembly())
+                .contains("    call yield\n")
+                .doesNotContain("juno_stack_limit")
+                .doesNotContain("juno_thread_main_exit");
+        assertThat(result.runtimeShim()).doesNotContain("juno_context_switch");
+    }
+
+    @Test
+    void sizesTaskStacksForSixKilobytesOfRam() {
+        assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_WIFI_REV2)
+                .threadStackBytes(Board.UNO_WIFI_REV2.core().defaultThreadStackBytes()))
+                .isEqualTo(RuntimeLimits.AVR_THREAD_STACK_BYTES);
+        RuntimeConfig larger = new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(1024));
+        assertThat(larger.forBoard(Board.UNO_WIFI_REV2).threadStackBytes()).hasValue(1024);
+        assertThatThrownBy(() -> new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(2048))
+                .forBoard(Board.UNO_WIFI_REV2))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("juno.Xss can be at most " + RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES);
     }
 
     @Test

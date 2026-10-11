@@ -32,10 +32,7 @@ final class AvrRuntimeShim {
 
     /** Shim features this board's runtime does not have; the linker's capability checks normally stop them first. */
     private static final Set<ShimFeature> UNSUPPORTED = EnumSet.of(ShimFeature.LED_MATRIX, ShimFeature.MOUSE,
-            ShimFeature.LEGO_POWERED_UP, ShimFeature.HTTP_SERVER,
-            ShimFeature.SMTP, ShimFeature.THREADS, ShimFeature.THREAD_ENTRY,
-            ShimFeature.TASK_CALLABLE_ENTRY, ShimFeature.STRUCTURED_TASKS, ShimFeature.SCOPED_VALUES,
-            ShimFeature.SCOPED_CALL_ENTRY);
+            ShimFeature.LEGO_POWERED_UP, ShimFeature.HTTP_SERVER, ShimFeature.SMTP);
 
     private final CoreRuntime core;
     private final RuntimeConfig config;
@@ -123,6 +120,12 @@ final class AvrRuntimeShim {
 
     /** Panic, the arena and collector, the integer and core-function helpers, and Serial. */
     private String coreRuntime() {
+        // With threads every live thread's stack is a root, not just the one running (see ThreadRuntime).
+        String gcStackScan = uses(ShimFeature.THREADS)
+                ? "juno_thread_gc_scan(&stackMarker);"
+                : "juno_gc_scan_bytes(&stackMarker, reinterpret_cast<const uint8_t*>(juno_gc_stack_top));";
+        String gcDeclarations = "static void juno_gc_scan_bytes(const uint8_t* from, const uint8_t* to);\n"
+                + (uses(ShimFeature.THREADS) ? "static void juno_thread_gc_scan(const uint8_t* marker);\n" : "");
         return """
 
                 typedef uint32_t juno_f32;
@@ -134,9 +137,7 @@ final class AvrRuntimeShim {
                   for (;;) {}
                 }
                 """
-                + RuntimeShim.allocator(config.arenaBytes(), gcLoggingEnabled,
-                        "juno_gc_scan_bytes(&stackMarker, reinterpret_cast<const uint8_t*>(juno_gc_stack_top));",
-                        "static void juno_gc_scan_bytes(const uint8_t* from, const uint8_t* to);\n")
+                + RuntimeShim.allocator(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcDeclarations)
                 + """
                 // AVR stack frames have no alignment, so a reference's two bytes can start at any stack address.
                 static void juno_gc_scan_bytes(const uint8_t* from, const uint8_t* to) {
@@ -376,9 +377,6 @@ final class AvrRuntimeShim {
         if (uses(ShimFeature.ATOMICS)) {
             shim.append(AtomicRuntime.helpers());
         }
-        if (uses(ShimFeature.THREAD_BASICS)) {
-            shim.append(ThreadRuntime.basics(core.delayMillisFunction()));
-        }
         if (uses(ShimFeature.BIG_NUMBERS)) {
             shim.append(BigNumberRuntime.handleHelpers())
                     .append(BigNumberRuntime.helpersWithoutDoubles(
@@ -386,6 +384,27 @@ final class AvrRuntimeShim {
                             throwableClasses.indexOf("java/lang/NumberFormatException"),
                             throwableClasses.indexOf("java/lang/IllegalArgumentException")))
                     .append(bigNumberDoubles(uses(ShimFeature.BIG_DECIMAL_DOUBLE)));
+        }
+        appendConcurrencyHelpers(shim);
+    }
+
+    /** Scoped-value bindings, then the thread scheduler that swaps them (it refers to the binding stack). */
+    private void appendConcurrencyHelpers(StringBuilder shim) {
+        if (uses(ShimFeature.SCOPED_VALUES)) {
+            shim.append(ScopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
+                    uses(ShimFeature.SCOPED_CALL_ENTRY),
+                    throwableClasses.indexOf("java/util/NoSuchElementException")));
+        }
+        if (uses(ShimFeature.THREADS)) {
+            shim.append(core.threadPort(config));
+            shim.append(ThreadRuntime.scheduler(core.delayMillisFunction(), "juno_gc_scan_bytes",
+                    uses(ShimFeature.EXCEPTIONS), uses(ShimFeature.THREAD_ENTRY),
+                    uses(ShimFeature.TASK_CALLABLE_ENTRY), uses(ShimFeature.STRUCTURED_TASKS),
+                    uses(ShimFeature.SCOPED_VALUES),
+                    throwableClasses.indexOf("java/util/concurrent/ExecutionException"),
+                    throwableClasses.indexOf("java/lang/IllegalStateException")));
+        } else if (uses(ShimFeature.THREAD_BASICS)) {
+            shim.append(ThreadRuntime.basics(core.delayMillisFunction()));
         }
     }
 

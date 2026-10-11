@@ -35,7 +35,7 @@ public enum Board {
     UNO_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoWiFiRev2", "arduino-uno-wifi-rev2", "UNO WiFi Rev2",
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR,
             EnumSet.of(Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
-                    Capability.BIG_NUMBERS));
+                    Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS));
 
     public static final Board DEFAULT = UNO_R4_WIFI;
 

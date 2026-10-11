@@ -2,6 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
@@ -9,7 +10,7 @@ import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.locks.ReentrantLock;
 
 /** Deterministic synchronization behavior shared by OpenJDK and Juno's cooperative runtime. */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
 public final class Synchronization {
     static final class Guard {
         private final int marker;

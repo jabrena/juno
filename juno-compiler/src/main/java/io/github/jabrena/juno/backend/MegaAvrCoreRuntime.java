@@ -2,13 +2,15 @@ package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
  * The UNO WiFi Rev2's {@code arduino:megaavr} core (ATmega4809). Its {@code delay()} and pin functions take 8- and
  * 16-bit parameters, so the generated code reaches them through the {@code juno_*} wrappers {@link AvrRuntimeShim}
  * defines; its own weak {@code yield()} serves the loop backedges. Networking is the NINA-W102 module through
- * {@code WiFiNINA}: Wi-Fi, UDP, HTTP, HTTPS and the implicit-TLS email clients (TLS on the module). The board has no
- * LED matrix, no HTTP server, no STARTTLS mail submission and no thread runtime; the linker's capability checks keep programs needing them from reaching this class.
+ * {@code WiFiNINA}: Wi-Fi, UDP, HTTP, HTTPS and the implicit-TLS email clients (TLS on the module). Tasks run on the
+ * cooperative scheduler over {@link ThreadRuntime#avrPort}. The board has no LED matrix, no HTTP server and no
+ * STARTTLS mail submission; the linker's capability checks keep programs needing them from reaching this class.
  */
 record MegaAvrCoreRuntime() implements CoreRuntime {
     @Override
@@ -97,14 +99,16 @@ record MegaAvrCoreRuntime() implements CoreRuntime {
         return "";
     }
 
+    /** The AVR port needs nothing beyond {@code <string.h>}, which every shim includes. */
     @Override
     public String threadIncludes() {
-        throw unsupported("threads");
+        return "";
     }
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        throw unsupported("threads");
+        return ThreadRuntime.avrPort(config.maxThreads(),
+                config.threadStackBytes(ArduinoCore.MEGAAVR.defaultThreadStackBytes()));
     }
 
     private static CompileException unsupported(String feature) {

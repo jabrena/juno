@@ -182,6 +182,7 @@ The board's memory sets the practical limits:
 | Resource | Budget | What it means |
 |---|---|---|
 | Arena (heap) | 1 KB by default, at most 3 KB (`-Djuno.Xmx=3k`) | Counters past `long`, money-style decimals and conversions fit in the default; high-precision `sqrt`, long divisions or values near `double`'s limits need the 3 KB maximum, and anything larger panics with `[juno-big] OOM` |
+| Task stacks | 512 bytes for each of up to three forked tasks, at most 1 KB (`-Djuno.Xss=1k`) | 1.5 KB of RAM once a program forks; the last 128 bytes of each stack are kept for the C calls of its deepest frame, and a task that would recurse past them stops with `[juno-thread] stack overflow` |
 | Flash | 48 KB | The arithmetic runtime alone takes about 20 KB, so a sketch combining `java.math` with Wi-Fi may not fit; `arduino-cli` then reports the sketch as too big |
 
 Operations that run out of memory panic loudly; they never return a wrong value.
@@ -203,7 +204,7 @@ Operations that run out of memory panic loudly; they never return a wrong value.
 | `LcdKeypadShield`, `TftTouchShield` | Yes | |
 | `Servo`, `I2c`, `Infrared` | Untested | Generated, but not yet run in the simulator or on hardware |
 | `BigInteger`, `BigDecimal`, `MathContext` | Yes | See the limits above |
-| `StructuredTaskScope`, `ScopedValue`, locks | No | No room for per-task stacks |
+| `StructuredTaskScope`, `ScopedValue`, `synchronized`, `ReentrantLock`, atomics | Yes | The same cooperative scheduler as the other boards, at most four threads including `main`; see the task stacks above |
 | `Mouse` | No | The application MCU has no native USB HID support |
 | `LedMatrix`, `@Watchdog` | No | |
 
@@ -218,8 +219,8 @@ install or in Docker:
 ./mvnw -pl juno-compiler -am -Psimavr verify
 ```
 
-The suite covers the language conformance programs (including every primitive type's edge cases
-and `java.math`), plus a peripheral program that exercises HTTP, HTTPS, SMTP over TLS, POP3, JSON, UDP, the SD card,
+The suite covers the language conformance programs (including every primitive type's edge cases,
+`java.math` and structured concurrency, scoped values, locks and atomics), plus a peripheral program that exercises HTTP, HTTPS, SMTP over TLS, POP3, JSON, UDP, the SD card,
 `Properties` and the LCD and TFT shields against simulated hardware. Generated sketches have not
 yet been run on a physical UNO WiFi Rev2.
 

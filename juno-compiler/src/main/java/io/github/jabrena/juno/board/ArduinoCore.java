@@ -15,11 +15,8 @@ public enum ArduinoCore {
      * {@code delayMicroseconds()}, so generated code must reach those through shim functions.
      */
     ZEPHYR("Zephyr", Architecture.THUMB2, 4096),
-    /**
-     * {@code arduino:megaavr}: the UNO WiFi Rev2's ATmega4809 core. It has no RTOS and no thread runtime, so its
-     * thread stack size is never used.
-     */
-    MEGAAVR("megaAVR", Architecture.AVR, 0);
+    /** {@code arduino:megaavr}: the UNO WiFi Rev2's ATmega4809 core, with no RTOS and 6 KB of RAM. */
+    MEGAAVR("megaAVR", Architecture.AVR, RuntimeLimits.AVR_THREAD_STACK_BYTES);
 
     private final String displayName;
     private final Architecture architecture;
