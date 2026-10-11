@@ -35,6 +35,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 - [Arcade](#arcade): [Pac-Man](#pac-man), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Space Paranoids](#space-paranoids), [DOOM](#doom), [Lunar Lander](#lunar-lander)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Battleship](#battleship)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem)
+- [Network](#network): [Gladiator](#gladiator)
 
 ## Arcade
 
@@ -253,6 +254,40 @@ No-limit Texas Hold'em against three CPU opponents. Play a seat yourself or watc
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
+## Network
+
+### Gladiator
+
+<img src="../images/games/gladiator-cpu.gif" alt="Gladiator in the emulator: the arena's view from above on the left, then the AGGRESSIVE and the AMBUSH gladiator's first-person wireframe views; the ambusher lurks behind a pillar, charges and wins the round" width="720">
+
+Two gladiators fight among the pillars of a Roman arena, while a third board keeps the arena. It takes three boards with the shield on the same Wi-Fi network. Every board runs the same program; pick its role on the menu:
+
+- **ARENA** (meant for the UNO Q, one per network) keeps the battle and shows the coliseum from above: the sand, the five-by-three grid of red pillars, the wall and the tiers of seats, each gladiator with its field of view, and a dotted line while one sees the other. It sends each gladiator the map once and judges every strike.
+- **AGGRESSIVE** runs at its opponent and strikes as soon as it is in reach, chases to where it saw it last, and otherwise patrols round the pillars.
+- **AMBUSH** creeps behind a pillar, out of sight, and lurks there. It charges only an opponent that comes close.
+
+The battle starts when the arena has two gladiators: the first enters by the left gate, the second by the right. Each gladiator's board shows the arena in first-person wireframe, drawn like DOOM. A gladiator sees its opponent only with its own eyes: the arena reports the opponent's position only while it is in front of the gladiator and no pillar is in the way. A blow the victim did not see coming does double damage, which is what the ambusher plays for. Each gladiator has 100 HP and a blow does 10; the first to fall loses the round, and the next round starts from the gates. Tap **CPU/HUMAN** under the view to take over a gladiator: the left and right thirds of the view turn, the upper middle walks and the lower middle swings the gladius.
+
+Build it with a 10 KB arena (the default is 8 KB) for each board:
+
+```bash
+# Arduino UNO Q, for the ARENA
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.gladiator.Gladiator \
+  -Djuno.board=arduino-uno-q -Djuno.Xmx=10k
+```
+
+```bash
+# Arduino UNO R4 WiFi, for a gladiator
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.games.gladiator.Gladiator \
+  -Djuno.board=arduino-uno-r4-wifi -Djuno.Xmx=10k
+```
+
+The boards talk over UDP port 4211, and the UNO R4 WiFi joins the network named by `JUNO_WIFI_SSID` and `JUNO_WIFI_PASSWORD` (see the [Arduino CLI Workflow](/arduino)). With `juno:monitor` at 115200 baud, the arena logs every join, hit and round, and each gladiator logs the blows it takes.
+
+The emulator runs one board at a time with no network, so the picture above comes from `GladiatorRecordingTest`: it plays a match through the arena's and both gladiators' own code in one program, replacing the network with direct calls. Record it again with `./mvnw -pl juno-examples test -Dtest=GladiatorRecordingTest -Djuno.recording.gladiator=true`.
+
 ## Testing without the board
 
 `./mvnw test` plays every game on an emulated shield, on any machine and in CI. The tests in
@@ -276,11 +311,12 @@ On top of these:
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
 - `CardGamesTest`, `PacManTest`, `MissileCommandTest`, `TempestTest`, `StarWarsTest`,
-  `EmpireStrikesBackTest`, `RedBaronTest`, `StarTrekTest`, `SpaceParanoidsTest`, `DoomTest` and
-  `LunarLanderTest` check rules and computer players: the poker hand ranking against a brute-force
+  `EmpireStrikesBackTest`, `RedBaronTest`, `StarTrekTest`, `SpaceParanoidsTest`, `DoomTest`,
+  `LunarLanderTest` and `GladiatorTest` check rules and computer players: the poker hand ranking against a brute-force
   reference, no chip lost across all-ins and side pots, and that autopilots clear Missile Command
   waves, Tempest levels, Space Paranoids and Star Trek sectors, whole Red Baron and
-  Empire Strikes Back waves, and nearly every dot of a Pac-Man maze.
+  Empire Strikes Back waves, nearly every dot of a Pac-Man maze, and a Gladiator duel fought to the end
+  through the arena's own rules and packets.
 
 This runs the games' Java on the JVM, not the code Juno generates for the board.
 
