@@ -213,6 +213,54 @@ class GladiatorTest {
     }
 
     @Test
+    void gladiatorsThatSeeEachOtherPastAPillarEdgeWalkRoundItAndMeet() {
+        // The line between them clears the pillar at (-290, 0) by 40, so their eyes meet, but their bodies do not pass.
+        Body[] bodies = {new Body(), new Body()};
+        Brain[] brains = {new Brain(Brain.AGGRESSIVE), new Brain(Brain.AMBUSH)};
+        bodies[LEFT].x = -400;
+        bodies[LEFT].y = 40;
+        bodies[LEFT].angle = 0f;
+        bodies[RIGHT].x = -180;
+        bodies[RIGHT].y = 40;
+        bodies[RIGHT].angle = (float) Math.PI;
+        brains[LEFT].reset(LEFT, 0);
+        brains[RIGHT].reset(RIGHT, 0);
+        assertThat(Coliseum.clearSight(-400, 40, -180, 40)).isTrue();
+
+        boolean struck = false;
+        for (int frame = 0; frame < 250 && !struck; frame++) {
+            int now = frame * 40;
+            for (int slot = 0; slot < 2; slot++) {
+                Body body = bodies[slot];
+                Body other = bodies[1 - slot];
+                boolean sees = Eyes.sees(body.x, body.y, body.angle, other.x, other.y);
+                body.opponentInSight = sees;
+                body.opponentX = other.x;
+                body.opponentY = other.y;
+                brains[slot].see(sees, other.x, other.y, now);
+                brains[slot].drive(body, now);
+                struck = struck || brains[slot].strike;
+            }
+        }
+
+        assertThat(struck).as("one of them got within reach and swung, ten seconds at most").isTrue();
+    }
+
+    @Test
+    void aBodyPushingIntoAPillarSlidesRoundIt() {
+        Body body = new Body();
+        // Heading almost straight at the pillar at (-290, 0), a little off its centre.
+        body.x = -360;
+        body.y = 6;
+        body.angle = 0f;
+        float start = body.y;
+        for (int frame = 0; frame < 40; frame++) {
+            body.walk(Brain.WALK);
+        }
+        assertThat(Math.abs(body.y - start)).as("slid along the pillar's side").isGreaterThan(20f);
+    }
+
+    @Test
     void anAggressiveAndAnAmbushGladiatorFightUntilOneFalls() {
         Duel duel = new Duel();
         int winner = duel.play(10 * 60 * 1000);

@@ -26,23 +26,25 @@ final class Body {
         angle = Eyes.wrap(angle + by);
     }
 
-    /** Walks {@code distance} forward (backward when negative); returns how far it got. */
+    /** Headings, as turns off straight ahead, that a blocked walk tries in turn to slide round what is in the way. */
+    private static final float[] SLIDE = {0f, 0.35f, -0.35f, 0.75f, -0.75f, 1.2f, -1.2f};
+
+    /**
+     * Walks {@code distance} forward (backward when negative), sliding round a pillar or along the wall when the way
+     * ahead is blocked: it takes the first heading of {@link #SLIDE} that is free. Returns how far it got along
+     * the way it faces.
+     */
     float walk(float distance) {
-        float dx = (float) Math.cos(angle) * distance;
-        float dy = (float) Math.sin(angle) * distance;
-        if (free(x + dx, y + dy)) {
-            x = x + dx;
-            y = y + dy;
-            return Math.abs(distance);
-        }
-        // Slide along whatever is in the way: try each axis on its own.
-        if (free(x + dx, y)) {
-            x = x + dx;
-            return Math.abs(dx);
-        }
-        if (free(x, y + dy)) {
-            y = y + dy;
-            return Math.abs(dy);
+        for (int i = 0; i < SLIDE.length; i++) {
+            float turn = SLIDE[i];
+            float heading = angle + turn;
+            float dx = (float) Math.cos(heading) * distance;
+            float dy = (float) Math.sin(heading) * distance;
+            if (free(x + dx, y + dy)) {
+                x = x + dx;
+                y = y + dy;
+                return Math.abs(distance) * (float) Math.cos(turn);
+            }
         }
         return 0f;
     }

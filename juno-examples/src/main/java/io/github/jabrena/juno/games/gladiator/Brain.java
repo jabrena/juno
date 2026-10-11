@@ -117,14 +117,19 @@ final class Brain {
         return stuck > STUCK_FRAMES;
     }
 
-    /** Closes in on the opponent in sight and swings when it is in reach and in front. */
+    /**
+     * Closes in on the opponent in sight, round any pillar between them, and swings when it is in reach, in front and
+     * not behind a pillar (the arena counts no blow through one).
+     */
     void fight(Body body) {
-        float off = face(body, seenX, seenY);
         float distance = body.distanceTo(seenX, seenY);
-        if (distance > STRIKE_RANGE - 6 && off < 0.9f) {
-            walk = RUN;
+        if (distance > STRIKE_RANGE - 6) {
+            goTo(body, seenX, seenY, RUN);
+        } else {
+            face(body, seenX, seenY);
         }
-        strike = distance <= STRIKE_RANGE && off < STRIKE_AIM;
+        float off = Math.abs(Eyes.wrap((float) Math.atan2(seenY - body.y, seenX - body.x) - body.angle));
+        strike = distance <= STRIKE_RANGE && off < STRIKE_AIM && Coliseum.clearSight(body.x, body.y, seenX, seenY);
     }
 
     /** Turns toward the point, at most {@link #TURN}; returns how far off it still faces, in radians. */
