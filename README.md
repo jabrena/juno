@@ -147,12 +147,13 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   `finally`, nested handlers, propagation between methods, custom final exception classes, and
   try-with-resources. See
   [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/language/Exceptions.java).
-- **Concurrency:** the supported JDK 27 preview `StructuredTaskScope` subset (up to four threads
-  including `main`, with `Thread.sleep` and `Thread.yield` inside subtasks), restricted monitors and
-  `ReentrantLock`, and `ScopedValue` bindings inherited by forked subtasks. `java.lang.Thread` itself is
+- **Concurrency:** cooperative virtual threads (`Thread.startVirtualThread`, `join`, `isAlive`) and the
+  supported JDK 27 preview `StructuredTaskScope` subset (up to four threads including `main`, with
+  `Thread.sleep` and `Thread.yield`), restricted monitors and `ReentrantLock`, and `ScopedValue` bindings
+  inherited by forked subtasks. Platform threads (`new Thread`) and `Thread.ofVirtual()` builders are
   rejected at compile time; `AtomicInteger`, `AtomicBoolean` and `AtomicLong` are available. See
   [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java),
-  [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java), and
+  [`VirtualThreads`](juno-examples/src/main/java/io/github/jabrena/juno/VirtualThreads.java), and
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java)
   (a scoped `MathContext` shared by three parallel subtasks).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
@@ -256,7 +257,7 @@ from the `io.github.jabrena.juno` package. Examples whose `@Board` lists both bo
   -Djuno.board=arduino-uno-r4-wifi
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.StructuredConcurrency \
+  -Djuno.main=io.github.jabrena.juno.VirtualThreads \
   -Djuno.board=arduino-uno-r4-wifi
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
@@ -414,6 +415,7 @@ jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000       # then open http://127
 
 - https://dev.java/
 - https://docs.oracle.com/javase/specs/jls/se25/html/index.html
+- https://github.com/openjdk/jcstress/tree/master/jcstress-samples
 - https://docs.arduino.cc/hardware/uno-q/
 - https://docs.arduino.cc/hardware/uno-r4-wifi/
 - https://docs.arduino.cc/hardware/uno-wifi-rev2/

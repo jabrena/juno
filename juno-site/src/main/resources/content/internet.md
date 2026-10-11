@@ -521,14 +521,32 @@ removes the leader. Every board is an equal node that mines, validates and relay
   parent's hash, which every node checks. Miners can't choose an easy number.
 - **Consensus.** The branch with the most cumulative work is the chain. Every eight blocks the
   difficulty moves one bit toward a block every 30 seconds.
-- **Joining late.** A node that boots late asks for the current tip. It fetches up to four missing
-  ancestors; if it still can't connect them to a block it knows, it adopts the oldest as a
-  checkpoint, much like a pruned Bitcoin node, and validates everything after it.
+- **Joining late.** A node that boots late asks for the current tip, and asks again every 30 seconds.
+  It fetches up to four missing ancestors, asking everyone again if an answer is lost; if it still
+  can't connect them to a block it knows, it adopts the oldest as a checkpoint, much like a pruned
+  Bitcoin node, and validates everything after it.
+- **Heartbeats.** Every node broadcasts a small `HELLO` packet every five seconds or so, with its id and
+  the height and work of its tip. A node a peer has not heard from for 15 seconds is *suspect*, and
+  after 25 seconds it is declared *lost* and logged over serial; its next heartbeat brings it back.
+  Time is measured on each board's own clock. The screen shows `Nodes N  mining M`, counting the
+  board itself.
+- **Catching up.** A heartbeat that announces more work than a node's tip holds makes it ask that peer for
+  the tip, and pause mining (`SYNC` on the screen) instead of building a rival branch. The pause is
+  limited to 30 seconds, so a stale or lying heartbeat cannot stop a node for good. Nodes that predate
+  heartbeats ignore them and keep working.
+- **Two cooperative threads.** A virtual thread serves the network (it receives and answers packets,
+  and sends the heartbeats) while the main thread mines and shows the tip. They share one block pool
+  guarded by its monitor and switch only where the program already pauses, so mining never waits for
+  the radio.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.main=io.github.jabrena.juno.usecases.miner.MinerGame
+  -Djuno.Xss=1536 -Djuno.main=io.github.jabrena.juno.usecases.miner.MinerGame
 ```
+
+The UNO R4 WiFi needs `-Djuno.Xss=1536`: the default 2 KiB stack for each of the three extra thread slots
+takes RAM that the 8 KiB arena would otherwise need to fit, and the miner's network thread needs about
+1.4 KB of stack. The UNO Q has the room and takes the defaults.
 
 This is phase 1 of the plan in [issue #43](https://github.com/jabrena/juno/issues/43): blocks are
 not signed yet, and block times are not bounded against the future.
