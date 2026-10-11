@@ -37,13 +37,13 @@ final class InstructionRiskScanner {
     }
 
     private static final Set<Intrinsic> LAUNCHES = Set.of(
-            Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
+            Intrinsic.THREAD_START_VIRTUAL, Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
     private static final Set<Intrinsic> SCOPE_OPENS = Set.of(
             Intrinsic.TASK_SCOPE_OPEN_DEFAULT, Intrinsic.TASK_SCOPE_OPEN);
     private static final Set<Intrinsic> THREAD_ENTRY_ARGUMENTS = Set.of(
-            Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
+            Intrinsic.THREAD_START_VIRTUAL, Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
     private static final Set<Intrinsic> JOINS = Set.of(
-            Intrinsic.TASK_SCOPE_JOIN, Intrinsic.TASK_SCOPE_CLOSE);
+            Intrinsic.THREAD_JOIN, Intrinsic.TASK_SCOPE_JOIN, Intrinsic.TASK_SCOPE_CLOSE);
 
     static MethodScan scan(IrMethod method, Map<String, JavaClass> classes, Map<String, Integer> objectTypeIds,
                             Set<Integer> cyclicBlocks, Set<MethodRef> calls, List<MethodRef> callSites,

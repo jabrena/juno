@@ -143,12 +143,12 @@ public final class RuntimeRiskAnalyzer {
         }
         if (scan.launchesInLoops() > 0) {
             findings.add(new RuntimeRisk("JUNO-RISK-008", RiskSeverity.WARNING, method,
-                    scan.launchesInLoops() + " fork call(s) sit in a control-flow loop; at most "
+                    scan.launchesInLoops() + " virtual-thread start or fork call(s) sit in a control-flow loop; at most "
                             + (config.maxThreads() - 1) + " threads can be active beside the caller"));
         }
         if (scan.peakUnjoinedLaunches() > config.maxThreads() - 1) {
             findings.add(new RuntimeRisk("JUNO-RISK-009", RiskSeverity.WARNING, method,
-                    scan.peakUnjoinedLaunches() + " subtasks are forked with no join in between; at most "
+                    scan.peakUnjoinedLaunches() + " threads or subtasks are started with no join in between; at most "
                             + (config.maxThreads() - 1) + " can be active beside the caller"));
         }
         if (scan.oversizedStringBuilders() > 0) {
@@ -169,19 +169,19 @@ public final class RuntimeRiskAnalyzer {
             Set<MethodRef> reachable = CallGraphMetrics.reachableFrom(entry, calls);
             if (reachable.stream().anyMatch(launchers::contains)) {
                 findings.add(new RuntimeRisk("JUNO-RISK-010", RiskSeverity.WARNING, entry,
-                        "subtask body opens a task scope; nested subtasks share the "
+                        "thread body starts a thread or opens a task scope; nested threads share the "
                                 + config.maxThreads() + " scheduler slots with their parent"));
             }
             if (reachable.stream().anyMatch(recursive::contains)) {
                 findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
-                        "subtask body reaches a recursive call cycle; its " + threadStackBytes()
+                        "thread body reaches a recursive call cycle; its " + threadStackBytes()
                                 + " byte stack cannot be proven sufficient"));
                 continue;
             }
             int stack = CallGraphMetrics.maximumStack(entry, calls, frames);
             if (stack > threadStackBytes()) {
                 findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
-                        "estimated subtask stack use of " + stack + " bytes exceeds the smallest thread stack ("
+                        "estimated thread stack use of " + stack + " bytes exceeds the smallest thread stack ("
                                 + threadStackBytes() + " bytes, UNO R4 WiFi)"));
             }
         }

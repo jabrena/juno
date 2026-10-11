@@ -50,4 +50,19 @@ public final class Wifi {
      * io.github.jabrena.juno.api.io.serial.Serial#print(int)} and a literal {@code "."} between them.
      */
     public static native void localIP(int[] octets);
+
+    /**
+     * Writes the IPv4 address of the router the board is connected to (its gateway) into {@code octets} (at least 4
+     * entries), in the same form as {@link #localIP}. Only meaningful once {@link #status} reports {@link
+     * #STATUS_CONNECTED}; a gateway that does not share the board's subnet usually means a bad DHCP lease. UNO Q's
+     * router API does not expose it and writes four zeroes.
+     */
+    public static native void gatewayIP(int[] octets);
+
+    /**
+     * Writes the Wi-Fi interface's six-byte hardware (MAC) address into {@code octets} (at least 6 entries), one byte
+     * value (0-255) per element, most significant first; print them in hex to compare against a router's client
+     * list. UNO Q's router API does not expose it and writes six zeroes.
+     */
+    public static native void macAddress(int[] octets);
 }

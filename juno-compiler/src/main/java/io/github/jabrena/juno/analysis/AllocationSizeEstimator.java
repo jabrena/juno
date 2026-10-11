@@ -14,9 +14,14 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Conservative worst-case byte-size estimates for heap allocations and stack frames. */
 final class AllocationSizeEstimator {
+    /** The intrinsics that start a thread, each allocating one thread object. */
+    private static final Set<Intrinsic> THREAD_LAUNCHES = Set.of(
+            Intrinsic.THREAD_START_VIRTUAL, Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
+
     private AllocationSizeEstimator() {
     }
 
@@ -48,9 +53,7 @@ final class AllocationSizeEstimator {
                 || call.intrinsic() == Intrinsic.TASK_SCOPE_OPEN)) {
             return allocationUpperBound(RuntimeLimits.STRUCTURED_TASK_SCOPE_BYTES, 4);
         }
-        if (instruction instanceof IrInstruction.IntrinsicCall call
-                && (call.intrinsic() == Intrinsic.TASK_SCOPE_FORK_CALLABLE
-                || call.intrinsic() == Intrinsic.TASK_SCOPE_FORK_RUNNABLE)) {
+        if (instruction instanceof IrInstruction.IntrinsicCall call && THREAD_LAUNCHES.contains(call.intrinsic())) {
             return allocationUpperBound(RuntimeLimits.THREAD_OBJECT_BYTES, 4);
         }
         if (instruction instanceof IrInstruction.IntrinsicCall call
