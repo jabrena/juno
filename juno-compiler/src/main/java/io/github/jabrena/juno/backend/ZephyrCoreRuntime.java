@@ -41,6 +41,11 @@ record ZephyrCoreRuntime() implements CoreRuntime {
         return 13;
     }
 
+    @Override
+    public boolean isQ() {
+        return true;
+    }
+
     /**
      * The same devicetree pin table the core's {@code digitalWrite} indexes, written through the GPIO driver's
      * raw port API: one call sets and clears any of a port's bits.

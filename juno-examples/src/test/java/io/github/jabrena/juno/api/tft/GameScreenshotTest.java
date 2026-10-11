@@ -31,8 +31,8 @@ class GameScreenshotTest {
     /** Tolerated share of differing pixels, for last-bit differences in floating-point math. */
     private static final double TOLERANCE = 0.001;
 
-    private static final Path GOLDEN = Path.of(System.getProperty("basedir", "."))
-            .resolve("src/test/resources/screenshots/games")
+    private static final Path SCREENSHOTS = Path.of(System.getProperty("basedir", "."))
+            .resolve("src/test/resources/screenshots")
             .normalize();
     private static final Path ACTUAL = Path.of(System.getProperty("basedir", ".")).resolve("target/screenshots");
 
@@ -47,12 +47,26 @@ class GameScreenshotTest {
                 game("games.chess.Chess", "chess", "35000:120,160 50000:180,170 end:70000"),
                 game("games.doom.Doom", "doom", "5500:160,130 6000:235,140 end:12000"),
                 game("games.empirestrikesback.EmpireStrikesBack", "empire-strikes-back", "6000:160,130 6500:85,140 10200:200,150 end:10600"),
-                game("usecases.ledger.LedgerGame", "ledger-menu", "end:3000"),
-                game("usecases.ledger.LedgerGame", "ledger-leader", "3000:120,120 end:6000"),
-                game("usecases.ledger.LedgerGame", "ledger-worker", "3000:120,210 end:6000"),
-                game("usecases.ledger.LedgerGame", "ledger-menu-again", "3000:120,120 8000:120,297 end:10000"),
+                game("games.gladiator.Gladiator", "gladiator-opening", "end:2200"),
+                game("games.gladiator.Gladiator", "gladiator-classes", "end:6500"),
+                game("games.gladiator.Gladiator", "gladiator-opening-loop", "end:17000"),
+                game("games.gladiator.Gladiator", "gladiator-mode", "4500:160,220 end:5000"),
+                game("games.gladiator.Gladiator", "gladiator-name", "4500:160,220 5000:160,100 end:5500"),
+                game("games.gladiator.Gladiator", "gladiator-class",
+                        "4500:160,220 5000:160,100 5500:20,80 end:6000"),
+                game("games.gladiator.Gladiator", "gladiator-opponent",
+                        "4500:160,220 5000:160,100 5500:20,80 6000:20,160 6500:160,100 end:8000"),
+                game("games.gladiator.Gladiator", "gladiator-solo",
+                        "4500:160,220 5000:160,100 5500:20,80 6000:20,160 6500:160,100 8500:160,220 end:11000"),
+                game("games.gladiator.SoloResultScreenshot", "gladiator-victory", "end:1000"),
+                game("games.gladiator.SoloResultScreenshot", "gladiator-defeat", "end:6000"),
+                game("games.gladiator.Gladiator", "gladiator-menu",
+                        "4500:160,220 5000:160,170 end:5600"),
+                game("games.gladiator.Gladiator", "gladiator-arena",
+                        "4500:160,220 5000:160,170 5700:160,90 end:7000"),
+                game("games.gladiator.Gladiator", "gladiator-finding-arena",
+                        "4500:160,220 5000:160,170 5700:160,124 end:7000"),
                 game("games.lunarlander.LunarLander", "lunar-lander", "500:120,190 1000:180,140 end:9000"),
-                game("usecases.miner.MinerGame", "miner", "end:60000"),
                 game("games.missilecommand.MissileCommand", "missile-command",
                         "1700:120,160 2300:60,180 4100:60,120 4800:180,90 5200:120,150 end:5600"),
                 game("games.pacman.PacMan", "pacman",
@@ -71,10 +85,14 @@ class GameScreenshotTest {
     @MethodSource("games")
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
     void matchesItsScreenshot(String game, String screenshot, String script) throws Exception {
+        assertMatches("games", game, screenshot, script);
+    }
+
+    static void assertMatches(String folder, String game, String screenshot, String script) throws Exception {
         BufferedImage actual = play(game, script);
-        Path golden = GOLDEN.resolve(screenshot + ".png");
+        Path golden = SCREENSHOTS.resolve(folder).resolve(screenshot + ".png");
         if (Boolean.getBoolean("juno.updateScreenshots")) {
-            Files.createDirectories(GOLDEN);
+            Files.createDirectories(golden.getParent());
             ImageIO.write(actual, "png", golden.toFile());
             return;
         }

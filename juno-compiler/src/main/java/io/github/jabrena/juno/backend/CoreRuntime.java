@@ -34,6 +34,21 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime, Mega
     /** How many columns the board's LED matrix has; it always has {@link #LED_MATRIX_ROWS} rows. */
     int ledMatrixColumns();
 
+    /** Whether this core is the UNO Q's, the only board with the Zephyr-based core; see {@code BoardRuntime.isQ}. */
+    default boolean isQ() {
+        return false;
+    }
+
+    /** Whether this core is the UNO R4's Renesas core; see {@code BoardRuntime.isR4}. */
+    default boolean isR4() {
+        return false;
+    }
+
+    /** Whether this core is the R3-format MegaAVR core of the UNO WiFi Rev2; see {@code BoardRuntime.isR3}. */
+    default boolean isR3() {
+        return false;
+    }
+
     /** Rows of every supported board's LED matrix. */
     int LED_MATRIX_ROWS = 8;
 

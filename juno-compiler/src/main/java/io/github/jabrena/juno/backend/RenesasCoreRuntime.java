@@ -36,6 +36,11 @@ record RenesasCoreRuntime() implements CoreRuntime {
         return 12;
     }
 
+    @Override
+    public boolean isR4() {
+        return true;
+    }
+
     /**
      * A pin's {@code g_pin_cfg} entry holds its RA port (high byte) and bit (low byte); each port's {@code PCNTR3}
      * sets its low half's bits and resets its high half's in one store.

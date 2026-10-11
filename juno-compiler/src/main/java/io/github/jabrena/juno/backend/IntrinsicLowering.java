@@ -191,6 +191,12 @@ final class IntrinsicLowering {
                 value -> target.storeImmediate(output, frame, coreRuntime.builtinLedPin(), value)));
         lowerings.put(Intrinsic.LED_MATRIX_COLUMNS, (output, frame, call) -> call.target().ifPresent(
                 value -> target.storeImmediate(output, frame, coreRuntime.ledMatrixColumns(), value)));
+        lowerings.put(Intrinsic.BOARD_IS_Q, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, coreRuntime.isQ() ? 1 : 0, value)));
+        lowerings.put(Intrinsic.BOARD_IS_R4, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, coreRuntime.isR4() ? 1 : 0, value)));
+        lowerings.put(Intrinsic.BOARD_IS_R3, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, coreRuntime.isR3() ? 1 : 0, value)));
         shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of(), ShimFeature.LED_MATRIX);
         shim(Intrinsic.LED_MATRIX_LOAD_FRAME, "juno_led_matrix_load_frame", Result.NONE,
                 List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LED_MATRIX);

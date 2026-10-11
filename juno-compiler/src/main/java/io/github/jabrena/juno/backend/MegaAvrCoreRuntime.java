@@ -39,6 +39,11 @@ record MegaAvrCoreRuntime() implements CoreRuntime {
         throw unsupported("an LED matrix");
     }
 
+    @Override
+    public boolean isR3() {
+        return true;
+    }
+
     /** megaAVR 0-series ports set and clear bits through their own OUTSET/OUTCLR registers. */
     @Override
     public String parallelBusHelpers() {

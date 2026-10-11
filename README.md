@@ -153,7 +153,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   inherited by forked subtasks. Platform threads (`new Thread`) and `Thread.ofVirtual()` builders are
   rejected at compile time; `AtomicInteger`, `AtomicBoolean` and `AtomicLong` are available. See
   [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java),
-  [`VirtualThreads`](juno-examples/src/main/java/io/github/jabrena/juno/VirtualThreads.java), and
+  [`VirtualThreads`](juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), and
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java)
   (a scoped `MathContext` shared by three parallel subtasks).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
@@ -257,7 +257,7 @@ from the `io.github.jabrena.juno` package. Examples whose `@Board` lists both bo
   -Djuno.board=arduino-uno-r4-wifi
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.VirtualThreads \
+  -Djuno.main=io.github.jabrena.juno.language.VirtualThreads \
   -Djuno.board=arduino-uno-r4-wifi
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
