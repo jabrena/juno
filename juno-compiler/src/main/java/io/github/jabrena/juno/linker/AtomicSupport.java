@@ -8,8 +8,8 @@ import java.util.Set;
 
 /**
  * The deliberately small {@code java.util.concurrent.atomic} subset lowered by Juno: {@code AtomicInteger},
- * {@code AtomicBoolean} and {@code AtomicLong}, each an arena cell the cooperative scheduler can never interrupt
- * halfway through an operation.
+ * {@code AtomicBoolean} and {@code AtomicLong}, each an arena cell whose operations run in the runtime, where the
+ * preemptive scheduler never interrupts them halfway.
  */
 public final class AtomicSupport {
     private static final String PACKAGE = "java/util/concurrent/atomic/";

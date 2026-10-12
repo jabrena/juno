@@ -534,10 +534,9 @@ removes the leader. Every board is an equal node that mines, validates and relay
   the tip, and pause mining (`SYNC` on the screen) instead of building a rival branch. The pause is
   limited to 30 seconds, so a stale or lying heartbeat cannot stop a node for good. Nodes that predate
   heartbeats ignore them and keep working.
-- **Two cooperative threads.** A virtual thread serves the network (it receives and answers packets,
+- **Two preemptive threads.** A virtual thread serves the network (it receives and answers packets,
   and sends the heartbeats) while the main thread mines and shows the tip. They share one block pool
-  guarded by its monitor and switch only where the program already pauses, so mining never waits for
-  the radio.
+  guarded by its monitor and take 1 ms turns on the processor, so mining never waits for the radio.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \

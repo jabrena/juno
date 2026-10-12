@@ -1,0 +1,244 @@
+package io.github.jabrena.juno.backend;
+
+import io.github.jabrena.juno.RuntimeLimits;
+
+import java.util.Set;
+
+/**
+ * Hardware calls that wait without holding up the other threads. The runtime is never preempted part-way, so a
+ * library loop that waits on a device ({@code delay(1)} until a response arrives) used to stall every thread for as
+ * long as it waited. Such loops call {@code juno_io_wait} instead: with threads it sleeps the calling thread, so the
+ * others run meanwhile; without threads it is the plain {@code delay} it replaced.
+ *
+ * <p>A thread that sleeps inside a library call can find another thread entering the same library, which none of the
+ * Arduino libraries tolerate halfway through a transaction. So each waiting entry point holds a device guard
+ * ({@code JunoIoGuard}) for its whole call: a second thread waits its turn, like a {@code synchronized} method, while
+ * threads that do not touch the device keep running. A guard records its owner; cancelling a structured subtask that
+ * owns one runs the guard's abort hook (closing a half-used client) and releases it, so the device does not stay
+ * locked by a thread that will never run again.
+ *
+ * <p>Some waits happen inside a vendor library, out of the shim's reach. Where the core has an RTOS (the UNO Q's
+ * Zephyr, whose network calls all wait on Linux through Arduino_RouterBridge), such a call runs on an I/O worker
+ * thread while its caller is parked in the scheduler ({@code juno_io_offload}); elsewhere it still holds every thread.
+ */
+final class IoRuntime {
+    private IoRuntime() {
+    }
+
+    /**
+     * Whether the program reaches a library with waiting entry points, so the shim needs {@link #prelude}; with an
+     * I/O worker, starting Wi-Fi (the UNO Q's bridge to Linux) is one too.
+     */
+    static boolean needed(Set<ShimFeature> features, boolean worker) {
+        return features.contains(ShimFeature.HTTP) || features.contains(ShimFeature.HTTPS)
+                || worker && features.contains(ShimFeature.WIFI)
+                || features.contains(ShimFeature.HTTP_SERVER) || features.contains(ShimFeature.SD)
+                || features.contains(ShimFeature.LEGO_POWERED_UP);
+    }
+
+    /** Whether waiting device calls run on the core's I/O worker: the core has one and the program makes them. */
+    static boolean usesWorker(CoreRuntime core, Set<ShimFeature> features) {
+        return core.ioWorker() && features.contains(ShimFeature.THREADS) && needed(features, true);
+    }
+
+    /** {@link #prelude} when the program needs it, else nothing. */
+    static String preludeFor(CoreRuntime core, Set<ShimFeature> features) {
+        boolean worker = usesWorker(core, features);
+        return needed(features, core.ioWorker()) ? prelude(features.contains(ShimFeature.THREADS), worker) : "";
+    }
+
+    /** The core's I/O worker when the program uses it, else nothing; goes right after the thread port. */
+    static String workerPortFor(CoreRuntime core, Set<ShimFeature> features) {
+        return usesWorker(core, features) ? core.ioWorkerPort() : "";
+    }
+
+    /**
+     * The devices, the wait, the guard and {@code juno_io_offload}, emitted ahead of the libraries that use them.
+     * {@code juno_io_offload(job, argument)} runs a device call: on the I/O worker while the calling thread is parked,
+     * when the core has one and the program has threads, else right here. A job may wait ({@code juno_io_wait}) and
+     * take guards (no-ops on the worker, whose caller already holds them), but never touches the arena.
+     *
+     * @param worker whether the core's port provides the I/O worker ({@link CoreRuntime#ioWorker()})
+     */
+    static String prelude(boolean threads, boolean worker) {
+        String offload = threads && worker ? """
+                extern "C" void juno_io_offload(void (*job)(void*), void* argument);
+                extern "C" bool juno_io_on_worker();
+
+                // Text a job reads after its caller has stopped running: a short runtime String lives in a pool slot
+                // another thread may reuse meanwhile, so it is copied to the caller's stack. Anything longer than a
+                // slot holds is a literal or an arena String, which stays put.
+                static constexpr uint32_t JUNO_IO_TEXT_COPY_BYTES = ${JUNO_SLOT_BYTES}u;
+                static const char* juno_io_stable_text(const char* text, char* copy) {
+                  if (text == nullptr) return nullptr;
+                  for (uint32_t i = 0u; i < JUNO_IO_TEXT_COPY_BYTES; i++) {
+                    copy[i] = text[i];
+                    if (text[i] == '\\0') return copy;
+                  }
+                  return text;
+                }
+                """.replace("${JUNO_SLOT_BYTES}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
+                : """
+                static void juno_io_offload(void (*job)(void*), void* argument) {
+                  job(argument);
+                }
+
+                static bool juno_io_on_worker() {
+                  return false;
+                }
+                """;
+        String implementation = threads ? """
+                extern "C" void juno_thread_sleep(int64_t millis);
+                extern "C" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*));
+                extern "C" void juno_io_release(uint32_t device);
+                """ + offload + """
+
+                static void juno_io_wait(uint32_t millisToWait) {
+                  if (juno_io_on_worker()) {
+                    delay(millisToWait);
+                  } else {
+                    juno_thread_sleep(static_cast<int64_t>(millisToWait));
+                  }
+                }
+                """ : offload + """
+                static void juno_io_wait(uint32_t millisToWait) {
+                  delay(millisToWait);
+                }
+
+                static void juno_io_acquire(uint32_t, void*, void (*)(void*)) {
+                }
+
+                static void juno_io_release(uint32_t) {
+                }
+                """;
+        return """
+
+                // ---- Juno I/O: waits that let the other threads run, one thread per device ----
+                enum : uint32_t { JUNO_IO_NETWORK, JUNO_IO_STORAGE, JUNO_IO_BLE, JUNO_IO_DEVICES };
+
+                """ + implementation + """
+
+                struct JunoIoGuard {
+                  uint32_t device;
+                  JunoIoGuard(uint32_t guarded, void* handle = nullptr, void (*abort)(void*) = nullptr)
+                      : device(guarded) {
+                    juno_io_acquire(guarded, handle, abort);
+                  }
+                  ~JunoIoGuard() {
+                    juno_io_release(device);
+                  }
+                };
+                """;
+    }
+
+    /**
+     * The scheduler's half: who owns each device. A guard is reentrant for its owner (one guarded entry point may call
+     * another), and a contender sleeps a millisecond at a time until the device is free. With an I/O worker, this is
+     * also where a call is handed to it: the caller parks ({@code JUNO_SLOT_WAITING_IO}) until the worker is idle
+     * again, and a caller cancelled meanwhile stays {@code JUNO_SLOT_DRAINING}, its stack still scanned by the
+     * collector since the worker may write into its arrays, until {@code juno_io_reap} frees it.
+     */
+    static String owners(boolean worker) {
+        String workerState = worker ? """
+
+                // The thread whose job the worker is running (slot + 1), and the abort of a device whose owner was
+                // cancelled while its job ran: deferred until the worker is done with the device.
+                static uint32_t juno_io_offloader = 0u;
+                static void (*juno_io_deferred_abort)(void*) = nullptr;
+                static void* juno_io_deferred_handle = nullptr;
+                """ : "";
+        String onWorker = worker ? "\n  if (juno_io_on_worker()) return;" : "";
+        String abort = worker ? """
+                    if (entry.abort == nullptr) {
+                    } else if (offloading) {
+                      juno_io_deferred_abort = entry.abort;
+                      juno_io_deferred_handle = entry.handle;
+                    } else {
+                      entry.abort(entry.handle);
+                    }""" : """
+                    if (entry.abort != nullptr) entry.abort(entry.handle);""";
+        String offloadingFlag = worker ? """
+                  bool offloading = juno_io_offloader == owner && juno_port_io_busy();
+                  if (juno_io_offloader == owner) juno_io_offloader = 0u;""" : "";
+        String offload = worker ? """
+
+                extern "C" void juno_io_offload(void (*job)(void*), void* argument) {
+                  if (juno_live_threads == 0u && !juno_port_io_busy()) {
+                    job(argument);
+                    return;
+                  }
+                  // A cancelled caller's job may still be finishing.
+                  while (juno_port_io_busy()) juno_thread_sleep(1);
+                  juno_io_offloader = juno_current_slot + 1u;
+                  juno_port_io_dispatch(job, argument);
+                  juno_slots[juno_current_slot].state = JUNO_SLOT_WAITING_IO;
+                  juno_sched_block();
+                  juno_io_offloader = 0u;
+                }
+
+                // Once the worker is idle: run a deferred abort, and free the slots of callers cancelled meanwhile.
+                static void juno_io_reap() {
+                  if (juno_port_io_busy()) return;
+                  if (juno_io_deferred_abort != nullptr) {
+                    void (*deferred)(void*) = juno_io_deferred_abort;
+                    juno_io_deferred_abort = nullptr;
+                    deferred(juno_io_deferred_handle);
+                  }
+                  for (uint32_t slot = 1u; slot < JUNO_MAX_THREADS; slot++) {
+                    if (juno_slots[slot].state == JUNO_SLOT_DRAINING) juno_slots[slot].state = JUNO_SLOT_FREE;
+                  }
+                }
+                """ : "";
+        return """
+
+                struct JunoIoOwner {
+                  uint32_t owner;
+                  uint32_t depth;
+                  void* handle;
+                  void (*abort)(void*);
+                };
+                static constexpr uint32_t JUNO_IO_OWNED_DEVICES = 3u;
+                static JunoIoOwner juno_io_owners[JUNO_IO_OWNED_DEVICES];
+                ${WORKER_STATE}
+                extern "C" void juno_thread_sleep(int64_t millis);
+
+                extern "C" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {${ON_WORKER}
+                  // A device call is the deepest the runtime goes on a thread's stack: catch an overflow here, before
+                  // the call's own frames are used.
+                  juno_port_check_stack(juno_current_slot);
+                  uint32_t self = juno_current_slot + 1u;
+                  JunoIoOwner& entry = juno_io_owners[device];
+                  while (entry.owner != 0u && entry.owner != self) juno_thread_sleep(1);
+                  if (entry.owner == self) {
+                    entry.depth++;
+                    if (entry.abort == nullptr) {
+                      entry.handle = handle;
+                      entry.abort = abort;
+                    }
+                    return;
+                  }
+                  entry = {self, 1u, handle, abort};
+                }
+
+                extern "C" void juno_io_release(uint32_t device) {${ON_WORKER}
+                  JunoIoOwner& entry = juno_io_owners[device];
+                  if (entry.owner != juno_current_slot + 1u) return;
+                  if (--entry.depth == 0u) entry = {0u, 0u, nullptr, nullptr};
+                }
+
+                // A cancelled thread never leaves its library call: abort what it left half done and free the device.
+                static void juno_io_release_owned(uint32_t owner) {${OFFLOADING}
+                  for (uint32_t device = 0u; device < JUNO_IO_OWNED_DEVICES; device++) {
+                    JunoIoOwner& entry = juno_io_owners[device];
+                    if (entry.owner != owner) continue;${ABORT}
+                    entry = {0u, 0u, nullptr, nullptr};
+                  }
+                }
+                ${OFFLOAD}
+                """.replace("${WORKER_STATE}", workerState)
+                .replace("${ON_WORKER}", onWorker)
+                .replace("${OFFLOADING}", offloadingFlag)
+                .replace("${ABORT}", abort)
+                .replace("${OFFLOAD}", offload);
+    }
+}

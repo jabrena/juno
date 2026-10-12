@@ -27,11 +27,11 @@ import io.github.jabrena.juno.games.blockchain.Sha256;
  * the most cumulative work is the chain. See {@link BlockPool} for validation and fork choice,
  * {@link BlockFormat} for the block layout and {@link ChainProtocol} for the packets.
  *
- * <p>The node runs two cooperative threads. A virtual thread ({@link Receiver}) serves the network: each pass
+ * <p>The node runs two preemptive threads. A virtual thread ({@link Receiver}) serves the network: each pass
  * it takes a few packets and answers them, and every few seconds it broadcasts a {@code HELLO} heartbeat. The main
  * thread rebuilds the block template when the tip moved and tries {@link #SLICE} nonces. They share one
- * {@link BlockPool} and one {@link PeerTable}, guarded by the pool's monitor, and switch where the program
- * already pauses (loop back-edges and {@code Delay}).
+ * {@link BlockPool} and one {@link PeerTable}, guarded by the pool's monitor; either thread can be preempted
+ * anywhere else.
  *
  * <p>Heartbeats tell each node who else is alive: a peer that misses a few is suspect, then lost (see
  * {@link PeerTable}), and the screen counts the nodes. A new node asks for the tip when it starts and every
@@ -84,8 +84,8 @@ public final class MinerGame {
 
     /**
      * The network side of the node, run on a virtual thread so that mining never waits for the radio: it receives
-     * packets and serves them with buffers of its own. Threads here are cooperative and can switch at any loop
-     * back-edge, so every access to the shared {@link BlockPool} happens inside {@code synchronized (pool)}.
+     * packets and serves them with buffers of its own. Threads here are preemptive and can switch between any two
+     * instructions, so every access to the shared {@link BlockPool} happens inside {@code synchronized (pool)}.
      */
     private static final class Receiver implements Runnable {
         private final BlockPool pool;

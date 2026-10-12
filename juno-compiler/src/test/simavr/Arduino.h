@@ -28,11 +28,20 @@ inline void digitalWrite(uint8_t, PinStatus) {}
 inline PinStatus digitalRead(uint8_t) { return LOW; }
 inline int analogRead(uint8_t) { return 0; }
 inline void analogWrite(uint8_t, int) {}
-// A virtual clock, as in the QEMU harness: delay() advances it, and so does yield() on every loop backedge.
+// A virtual clock, as in the QEMU harness: delay() advances it, and so does yield() on every loop backedge. Like the
+// real core's, millis() also counts Timer0 overflows (about one per millisecond of simulated CPU time, see
+// startup.cpp), so the time slice of a thread that never yields still runs out, deterministically under simavr.
 extern unsigned long juno_harness_clock;
+extern volatile unsigned long juno_harness_ticks;
 inline void delay(unsigned long ms) { juno_harness_clock += ms; }
 inline void delayMicroseconds(unsigned int) {}
-inline unsigned long millis() { return juno_harness_clock; }
+inline unsigned long millis() {
+  uint8_t status = SREG;
+  cli();
+  unsigned long ticks = juno_harness_ticks;
+  SREG = status;
+  return juno_harness_clock + ticks;
+}
 inline unsigned long micros() { return 0; }
 inline void randomSeed(unsigned long) {}
 inline long random(long bound) { return bound > 0 ? bound - 1 : 0; }

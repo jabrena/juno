@@ -48,8 +48,10 @@ import java.util.stream.Collectors;
  * code calls (the entry point, and the {@link RuntimeEntryPoints} the scheduler enters a forked task through) save
  * r2-r17 for their caller, and a runtime entry point takes its one argument in r22-r25.
  *
- * <p>Forked tasks run on the shared cooperative scheduler ({@link ThreadRuntime}): every loop backedge offers the
- * other tasks a turn. The double-precision transcendental {@code Math} functions are a capability the UNO WiFi Rev2
+ * <p>Threads and forked tasks run on the shared preemptive scheduler ({@link ThreadRuntime}). An AVR thread cannot be
+ * interrupted at an arbitrary instruction (a word is stored a byte at a time and calls share one argument area), so
+ * it is preempted at safepoints: every loop backedge and every method entry hands the CPU over once its time slice
+ * is over (a cooperative {@code StructuredTaskScope} subtask only at its backedges). The double-precision transcendental {@code Math} functions are a capability the UNO WiFi Rev2
  * does not have (see {@code Board}), so the linker rejects them before code generation; anything else this backend
  * cannot lower fails with a {@link CompileException}.
  */
@@ -166,6 +168,13 @@ public final class AvrAsmBackend {
             emitStackLimitCheck(output);
         }
         emitParameterSpill(output, frame, method);
+        if (usesThreads && !isEntryPoint) {
+            // A safepoint: the arguments are in the frame now, so the global argument area and every register
+            // are free for another thread, which gets the CPU here once this one's time slice is over. Together
+            // with the backedges this bounds how long a virtual thread can run without being preempted, recursion
+            // included; the runtime ignores it for a cooperative structured subtask.
+            output.append("    call juno_thread_safepoint\n");
+        }
         if (isEntryPoint) {
             for (String clinitLabel : clinitLabels) {
                 output.append("    call ").append(clinitLabel).append('\n');

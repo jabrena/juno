@@ -11,7 +11,7 @@ import java.util.Map;
 
 /**
  * What every backend needs to know about the concurrency runtime: the generated functions the shim calls back into,
- * and whether a program needs the cooperative scheduler at all.
+ * and whether a program needs the preemptive scheduler at all.
  */
 final class RuntimeEntryPoints {
     /**
@@ -27,7 +27,7 @@ final class RuntimeEntryPoints {
     }
 
     /**
-     * Whether the program starts a thread, forks a task or takes a lock, so it needs the cooperative thread runtime.
+     * Whether the program starts a thread, forks a task or takes a lock, so it needs the preemptive thread runtime.
      */
     static boolean usesThreads(IrProgram program) {
         return program.methods().stream().anyMatch(method -> method.blocks().stream()
@@ -42,5 +42,18 @@ final class RuntimeEntryPoints {
                                     REENTRANT_LOCK_TRY_LOCK, REENTRANT_LOCK_UNLOCK -> true;
                             default -> false;
                         }));
+    }
+
+    /**
+     * The generated functions, bracketed by {@code juno_java_code_start}/{@code juno_java_code_end} in a program with
+     * threads: the Thumb-2 preemption tick only interrupts a thread whose pc lies between them, so the runtime and the
+     * core's libraries always run to their next return undisturbed.
+     */
+    static CharSequence preemptibleCode(boolean usesThreads, CharSequence code) {
+        if (!usesThreads) {
+            return code;
+        }
+        return "    .global juno_java_code_start\njuno_java_code_start:\n" + code
+                + "\n    .global juno_java_code_end\njuno_java_code_end:\n";
     }
 }

@@ -8,7 +8,7 @@ import java.util.Optional;
 
 import static io.github.jabrena.juno.lowering.StackValueOps.pop;
 
-/** Lowers {@code monitorenter}/{@code monitorexit} to the cooperative monitor runtime. */
+/** Lowers {@code monitorenter}/{@code monitorexit} to the runtime's monitor table. */
 final class MonitorLowering {
     private MonitorLowering() {
     }

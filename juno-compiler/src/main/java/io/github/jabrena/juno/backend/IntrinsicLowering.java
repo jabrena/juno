@@ -220,7 +220,7 @@ final class IntrinsicLowering {
         shim(Intrinsic.THREAD_YIELD, "juno_thread_yield", Result.NONE, List.of(), runtime);
     }
 
-    /** JDK 27 preview {@code StructuredTaskScope} operations over the cooperative task scheduler. */
+    /** JDK 27 preview {@code StructuredTaskScope} operations; subtasks are cooperative. */
     private void registerStructuredTasks() {
         ShimFeature[] taskRuntime = {ShimFeature.THREADS, ShimFeature.STRUCTURED_TASKS, ShimFeature.EXCEPTIONS};
         shim(Intrinsic.TASK_SCOPE_OPEN_DEFAULT, "juno_task_scope_open_default", Result.WORD, List.of(), taskRuntime);
@@ -259,7 +259,7 @@ final class IntrinsicLowering {
                 ShimFeature.SCOPED_VALUES, ShimFeature.EXCEPTIONS, ShimFeature.SCOPED_CALL_ENTRY);
     }
 
-    /** Intrinsic monitors share the cooperative scheduler's reentrant monitor table. */
+    /** Intrinsic monitors share the scheduler's reentrant monitor table. */
     private void registerMonitors() {
         shim(Intrinsic.MONITOR_ENTER, "juno_monitor_enter", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
         shim(Intrinsic.MONITOR_EXIT, "juno_monitor_exit", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
@@ -273,7 +273,7 @@ final class IntrinsicLowering {
                 ShimFeature.THREADS);
     }
 
-    /** Atomic cells: one shim call each; the scheduler never preempts one, so no monitor is needed. */
+    /** Atomic cells: one shim call each; the scheduler never preempts runtime code, so no monitor is needed. */
     private void registerAtomics() {
         shim(Intrinsic.ATOMIC_INT_NEW_DEFAULT, "juno_atomic_int_new_default", Result.WORD, List.of(), ShimFeature.ATOMICS);
         shim(Intrinsic.ATOMIC_INT_NEW, "juno_atomic_int_new", Result.WORD, List.of(arg(0)), ShimFeature.ATOMICS);

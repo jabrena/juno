@@ -40,7 +40,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * assembled with the shim against a bare-metal harness, executed under QEMU (Cortex-M4, {@code mps2-an386}), and
  * its serial output compared with what the very same source prints on OpenJDK. This catches bugs that only exist
  * in the compiled code (calling convention, frame layout, garbage collection, exception unwinding), which neither
- * the IR tests nor an {@code arduino-cli} compile can see.
+ * the IR tests nor an {@code arduino-cli} compile can see. QEMU runs with {@code -icount}, so the preemption tick of a
+ * threaded program strikes at the same instructions every run and a failure under preemption reproduces exactly.
+ *
+ * <p>Programs whose device APIs no JVM can run live in {@code src/test/qemu/devices}, each with a hand-written
+ * {@code .expected} output.
  *
  * <p>Programs live in {@code src/test/qemu/programs}; the OpenJDK side shadows {@code Serial} with
  * {@code src/test/qemu/openjdk}. The harness (stub {@code Arduino.h}, startup code, {@code run.sh}) is baked into
@@ -55,6 +59,12 @@ class QemuRunIT {
     private static final Path QEMU = BASEDIR.resolve("src/test/qemu");
     private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/qemu/program-classes");
     private static final Path OPENJDK_CLASSES = BASEDIR.resolve("target/qemu/openjdk-classes");
+    /**
+     * Programs whose device APIs no JVM can run (the UNO Q's bridge to Linux, against the harness's stand-in
+     * {@code Arduino_RouterBridge.h}), each compared with the {@code .expected} file next to it.
+     */
+    private static final Path DEVICES = QEMU.resolve("devices");
+    private static final Path DEVICE_CLASSES = BASEDIR.resolve("target/qemu/device-classes");
     /** Programs whose output differs from OpenJDK because of a known compiler bug, with the reason. */
     private static final Map<String, String> KNOWN_GAPS = Map.of();
     private static final String EXIT_MARKER = "[juno-exit]\n";
@@ -78,6 +88,11 @@ class QemuRunIT {
             openJdkSources = files.filter(path -> path.toString().endsWith(".java")).toList();
         }
         compile(openJdkSources, OPENJDK_CLASSES, junoClasspath());
+        List<Path> deviceSources;
+        try (Stream<Path> files = Files.list(DEVICES)) {
+            deviceSources = files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
+        }
+        compile(deviceSources, DEVICE_CLASSES, junoClasspath());
         LOG.info("javac: {} programs + {} OpenJDK-side sources in {} ms", sources.size(), openJdkSources.size(),
                 millisSince(start));
     }
@@ -97,9 +112,10 @@ class QemuRunIT {
 
     /**
      * Whether a program runs on {@code board}: every board unless it declares some in its {@code @Board}, so a
-     * program can opt out of a board the harness cannot model. The UNO Q thread port runs on Zephyr's kernel, which the harness replaces with a small
-     * cooperative stand-in ({@code src/test/qemu/zephyr/kernel.h}), so it covers the port's logic but not Zephyr's
-     * real scheduler.
+     * program can opt out of a board the harness cannot model. The UNO Q thread port runs on Zephyr's kernel, which
+     * the harness replaces with a small stand-in ({@code src/test/qemu/zephyr/kernel.h}: baton semaphores, and a
+     * {@code k_timer} on SysTick for the preemption tick, with threads on the process stack), so it covers the
+     * port's logic but not Zephyr's real scheduler.
      */
     private static boolean targets(String mainClass, Board board) {
         Path source = QEMU.resolve("programs").resolve(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java");
@@ -128,12 +144,49 @@ class QemuRunIT {
                 .isEqualTo(expected + EXIT_MARKER);
     }
 
+    /** Every program under src/test/qemu/devices, once per Thumb-2 board its {@code @Board} names. */
+    static Stream<Arguments> devices() throws IOException {
+        List<String> mainClasses = new ArrayList<>();
+        try (Stream<Path> files = Files.list(DEVICES)) {
+            files.map(path -> path.getFileName().toString()).filter(name -> name.endsWith(".java")).sorted()
+                    .forEach(name -> mainClasses.add("demo." + name.substring(0, name.length() - ".java".length())));
+        }
+        return mainClasses.stream().flatMap(mainClass -> Stream.of(Board.values())
+                .filter(board -> board.core().architecture() == Architecture.THUMB2)
+                .filter(board -> declares(DEVICES, mainClass, board))
+                .map(board -> Arguments.of(mainClass, board)));
+    }
+
+    @ParameterizedTest(name = "{0} ({1})")
+    @MethodSource("devices")
+    void matchesItsExpectedOutputUnderQemu(String mainClass, Board board) throws Exception {
+        String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
+        String expected = Files.readString(DEVICES.resolve(simpleName + ".expected"));
+
+        String actual = runUnderQemu(mainClass, board, DEVICE_CLASSES);
+
+        assertThat(actual).as("%s on %s under QEMU", mainClass, board.displayName()).isEqualTo(expected);
+    }
+
+    private static boolean declares(Path directory, String mainClass, Board board) {
+        Path source = directory.resolve(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java");
+        try {
+            return Files.readString(source).contains(board.annotationArgument());
+        } catch (IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
+    }
+
     private static String runUnderQemu(String mainClass, Board board) throws Exception {
+        return runUnderQemu(mainClass, board, PROGRAM_CLASSES);
+    }
+
+    private static String runUnderQemu(String mainClass, Board board, Path classes) throws Exception {
         String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
         Path directory = BASEDIR.resolve("target/qemu/generated").resolve(board.id()).resolve(simpleName);
         Files.createDirectories(directory);
         long start = System.nanoTime();
-        CompilationResult result = new JunoCompiler().compileTo(junoClasspathWith(PROGRAM_CLASSES), mainClass,
+        CompilationResult result = new JunoCompiler().compileTo(junoClasspathWith(classes), mainClass,
                 directory.resolve("program.S"), directory.resolve("shim.cpp"), false, Optional.of(board.id()));
         LOG.info("[{} / {}] Juno compile done in {} ms", mainClass, board.id(), millisSince(start));
         start = System.nanoTime();

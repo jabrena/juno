@@ -70,7 +70,7 @@ public enum Capability {
     STRUCTURED_CONCURRENCY("StructuredTaskScope, ScopedValue and locks") {
         @Override
         public String unsupportedReason(Board board) {
-            return board.displayName() + " has no room for per-task stacks and the cooperative scheduler";
+            return board.displayName() + " has no room for per-task stacks and the thread scheduler";
         }
     },
     BIG_NUMBERS("java.math") {

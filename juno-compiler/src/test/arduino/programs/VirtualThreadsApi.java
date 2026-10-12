@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
-/** Virtual threads on the cooperative scheduler: start, join, isAlive, sleep and yield on each board's thread port. */
+/** Virtual threads on the preemptive scheduler: start, join, isAlive, sleep and yield on each board's thread port. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class VirtualThreadsApi {
     private static final int[] COUNT = new int[1];

@@ -14,10 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The cooperative thread runtime behind {@code StructuredTaskScope}: the closed-world {@code Runnable.run()} entry
- * function, the runtime in the shim, what a program without subtasks does not pay for, and the rejection of
- * {@code java.lang.Thread} itself. Behavior of the compiled code is covered under QEMU ({@code juno-examples}'
- * {@code TaskScheduling} program); this checks the generated text.
+ * The thread runtime behind preemptive virtual threads and cooperative {@code StructuredTaskScope} subtasks: the closed-world
+ * {@code Runnable.run()} entry function, the runtime in the shim, each board's preemption tick, what a program
+ * without subtasks does not pay for, and the rejection of {@code java.lang.Thread} itself. Behavior of the compiled
+ * code is covered under QEMU and simavr ({@code src/test/qemu/programs}, notably {@code Preemption} and
+ * {@code PreemptionStress}); this checks the generated text.
  */
 class ThreadsTest {
     @TempDir
@@ -72,6 +73,9 @@ class ThreadsTest {
         String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
 
         assertThat(shim).contains("juno_context_switch:", "UNO R4 port").doesNotContain("zephyr/kernel.h");
+        assertThat(shim).as("an overflow is caught by the stack pointer too, and reported from a stack of its own")
+                .contains("bool below = reinterpret_cast<uintptr_t>(&marker) < reinterpret_cast<uintptr_t>(canary + 2);",
+                        "__asm__ volatile(\"mov sp, %0\"");
     }
 
     @Test
@@ -80,6 +84,225 @@ class ThreadsTest {
 
         assertThat(shim).contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create", "k_sem_give")
                 .doesNotContain("juno_context_switch");
+    }
+
+    @Test
+    void generatedCodeIsBracketedSoTheTickKnowsWhatItMayInterrupt() throws Exception {
+        String assembly = compile("ArduinoUnoR4WiFi", START_AND_JOIN).assembly();
+
+        int start = assembly.indexOf("juno_java_code_start:\n");
+        int end = assembly.indexOf("juno_java_code_end:\n");
+        assertThat(assembly).contains(".global juno_java_code_start", ".global juno_java_code_end");
+        assertThat(start).isPositive().isLessThan(assembly.indexOf("juno_thread_entry:\n"));
+        assertThat(end).isGreaterThan(assembly.lastIndexOf("    .type "));
+    }
+
+    @Test
+    void unoR4PreemptsFromSysTickThroughATrampoline() throws Exception {
+        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+
+        assertThat(shim).contains("preemptive scheduler", "SysTick_Handler:\\n", "\"  b juno_preempt_tick\\n\"",
+                        "static void juno_port_preempt_start()", "SystemCoreClock / 1000u * JUNO_TIME_SLICE_MILLIS",
+                        "juno_preempt_trampoline:\\n", "\"  vpush {s0-s15}\\n\"", "\"  pop {pc}\\n\"",
+                        "extern \"C\" void juno_preempt_tick(uint32_t* frame) {",
+                        "extern \"C\" uint32_t juno_thread_preempted() {")
+                // The tick redirects only generated code outside an IT block / continuable LDM-STM.
+                .contains("pc >= static_cast<uint32_t>(reinterpret_cast<uintptr_t>(juno_java_code_start))",
+                        "(frame[7] & 0x0600FC00u) == 0u")
+                .doesNotContain("k_timer", "juno_thread_safepoint");
+    }
+
+    @Test
+    void unoQPreemptsFromAZephyrTimerReadingTheProcessStack() throws Exception {
+        String shim = compile("ArduinoUnoQ", START_AND_JOIN).runtimeShim();
+
+        assertThat(shim).contains("k_timer_init(&juno_preempt_timer, juno_preempt_expiry, nullptr);",
+                        "k_timer_start(&juno_preempt_timer, K_MSEC(JUNO_TIME_SLICE_MILLIS)",
+                        "__asm__ volatile(\"mrs %0, psp\" : \"=r\"(frame));", "juno_preempt_trampoline:\\n")
+                .doesNotContain("SysTick_Handler", "juno_thread_safepoint");
+    }
+
+    @Test
+    void structuredSubtasksAreCooperativeWhileVirtualThreadsArePreemptive() throws Exception {
+        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ", "ArduinoUnoWiFiRev2"}) {
+            String shim = compile(board, START_AND_JOIN).runtimeShim();
+
+            assertThat(shim).as(board).contains("static bool juno_slot_cooperative(uint32_t slot) {",
+                    "return thread != nullptr && (thread->flags & JUNO_THREAD_TASK) != 0u;");
+        }
+        String arm = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        assertThat(arm).as("the tick never redirects a subtask; it switches at the subtask's next backedge")
+                .contains("if (inJava && resumable && !juno_slot_cooperative(slot) && juno_preempt_resume[slot] == 0u) {");
+        String avr = compile("ArduinoUnoWiFiRev2", START_AND_JOIN).runtimeShim();
+        String safepoint = avr.substring(avr.indexOf("extern \"C\" void juno_thread_safepoint() {"));
+        assertThat(safepoint.substring(0, safepoint.indexOf("\n}\n")))
+                .as("a subtask skips the method-entry safepoint").contains("if (juno_slot_cooperative(juno_current_slot)) return;");
+        String backedge = avr.substring(avr.indexOf("extern \"C\" void juno_thread_backedge() {"));
+        assertThat(backedge.substring(0, backedge.indexOf("\n}\n")))
+                .as("but every thread switches at a backedge once its slice is over")
+                .contains("juno_thread_slice_over();").doesNotContain("juno_slot_cooperative");
+    }
+
+    @Test
+    void theTickStartsWithTheFirstThreadAndABackedgeTakesADeferredSwitch() throws Exception {
+        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+
+        String start = shim.substring(shim.indexOf("extern \"C\" void juno_thread_start(int32_t handle) {"));
+        assertThat(start.substring(0, start.indexOf("\n}\n"))).contains("juno_port_preempt_start();");
+        String backedge = shim.substring(shim.indexOf("extern \"C\" void juno_thread_backedge() {"));
+        assertThat(backedge.substring(0, backedge.indexOf("\n}\n")))
+                .contains("yield();", "juno_preempt_due", "juno_sched_block();")
+                .as("no millisecond polling: the tick decides when a slice is over").doesNotContain("millis()");
+    }
+
+    @Test
+    void wideFieldsAreReadAndWrittenWithInterruptsMaskedOnlyWithThreads() throws Exception {
+        String body = START_AND_JOIN + "total = total + 3_000_000_000L;\nSerial.println(total);\n";
+        String threaded = programWithLongField("ArduinoUnoR4WiFi", body);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Wide", threaded);
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Wide").assembly();
+
+        assertThat(assembly).contains("    mrs r12, primask\n    cpsid i\n    ldr r1, [r0, #0]\n    ldr r2, [r0, #4]\n"
+                        + "    msr primask, r12\n")
+                .contains("    mrs r12, primask\n    cpsid i\n    str r2, [r1]\n    str r3, [r1, #4]\n"
+                        + "    msr primask, r12\n");
+
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Wide",
+                programWithLongField("ArduinoUnoR4WiFi", "total = total + 3_000_000_000L;\nSerial.println(total);\n"));
+        assertThat(CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Wide").assembly())
+                .doesNotContain("cpsid", "primask", "juno_java_code_start");
+    }
+
+    private static String programWithLongField(String board, String body) {
+        return program(board, body).replace("public final class Worker {",
+                "public final class Wide {\n    static long total = 1L;").replace("demo.Worker", "demo.Wide");
+    }
+
+    private String httpProgramShim(String board, boolean threads) throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.%s;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
+                @Board(%s.class)
+                public final class Fetch {
+                    public static void main() throws Exception {
+                        byte[] body = new byte[32];
+                        byte[] headers = new byte[32];
+                        int[] status = new int[2];
+                        %s
+                        Serial.println(HttpClient.get("example.com", 80, "/", body, body.length, headers, headers.length,
+                                status));
+                    }
+                }
+                """.formatted(board, board, threads ? "Thread.startVirtualThread(() -> Serial.println(1)).join();" : "");
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Fetch", source);
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Fetch").runtimeShim();
+    }
+
+    @Test
+    void anHttpRequestWaitsWithoutHoldingUpTheOtherThreads() throws Exception {
+        // The UNO Q has no plain-HTTP client; its HTTPS client shares the same request code.
+        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoWiFiRev2"}) {
+            String shim = httpProgramShim(board, true);
+
+            assertThat(shim).as(board)
+                    .contains("juno_thread_sleep(static_cast<int64_t>(millisToWait));",
+                            "JunoIoGuard guard(JUNO_IO_NETWORK, &client,", "juno_io_wait(1);",
+                            "extern \"C\" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {")
+                    .doesNotContain("delay(1);");
+        }
+    }
+
+    @Test
+    void withoutThreadsAWaitIsThePlainDelayAndTheGuardIsFree() throws Exception {
+        String shim = httpProgramShim("ArduinoUnoR4WiFi", false);
+
+        assertThat(shim).contains("static void juno_io_wait(uint32_t millisToWait) {\n  delay(millisToWait);",
+                "static void juno_io_acquire(uint32_t, void*, void (*)(void*)) {")
+                .doesNotContain("juno_thread_sleep", "juno_io_owners");
+    }
+
+    @Test
+    void cancellingASubtaskAbortsAndReleasesTheDevicesItHolds() throws Exception {
+        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+
+        String cancel = shim.substring(shim.indexOf("static void juno_task_cancel(JunoThreadObject* task) {"));
+        assertThat(cancel.substring(0, cancel.indexOf("\n}\n")))
+                .containsSubsequence("juno_task_release_monitors(slot + 1u);", "juno_io_release_owned(slot + 1u);",
+                        "juno_port_cancel(slot);");
+        assertThat(shim).contains("if (entry.abort != nullptr) entry.abort(entry.handle);");
+    }
+
+    private String unoQNetworkShim(boolean threads) throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.net.Wifi;
+                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                @Board(ArduinoUnoQ.class)
+                public final class Fetch {
+                    public static void main() throws Exception {
+                        byte[] body = new byte[32];
+                        byte[] headers = new byte[32];
+                        int[] status = new int[2];
+                        %s
+                        Wifi.begin("juno", "secret");
+                        Serial.println(HttpsClient.get("example.com", 443, "/", body, body.length, headers,
+                                headers.length, status));
+                    }
+                }
+                """.formatted(threads ? """
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(() -> Serial.println(1));
+                            scope.join();
+                        }""" : "");
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Fetch", source);
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Fetch").runtimeShim();
+    }
+
+    @Test
+    void unoQRunsBridgeCallsOnTheIoWorkerWhileTheCallerIsParked() throws Exception {
+        String shim = unoQNetworkShim(true);
+
+        assertThat(shim).contains("K_THREAD_STACK_DEFINE(juno_io_worker_stack, JUNO_IO_WORKER_STACK_BYTES);",
+                        "K_PRIO_PREEMPT(4)", "extern \"C\" void juno_io_offload(void (*job)(void*), void* argument) {",
+                        "juno_slots[juno_current_slot].state = JUNO_SLOT_WAITING_IO;",
+                        "case JUNO_SLOT_WAITING_IO:\n                      return !juno_port_io_busy();",
+                        "juno_io_offload(juno_wifi_bridge_begin, nullptr);",
+                        "juno_io_offload(juno_http_job<Client>, &job);",
+                        "using JunoHttpsClient = JunoBridgeSSLClient;")
+                .as("short text the worker reads later is copied off the rotating string slots")
+                .contains("job.host = juno_io_stable_text(host, hostCopy);",
+                        "job.path = juno_io_stable_text(path, pathCopy);")
+                .as("a caller cancelled during its call keeps its stack scanned until the worker is done")
+                .contains("if (draining) juno_slots[slot].state = JUNO_SLOT_DRAINING;", "static void juno_io_reap() {")
+                .as("on the worker, guards are its caller's").contains("if (juno_io_on_worker()) return;");
+    }
+
+    @Test
+    void theIoWorkerExistsOnlyForAThreadedUnoQProgramWithNetworkCalls() throws Exception {
+        assertThat(unoQNetworkShim(false)).doesNotContain("juno_io_worker", "juno_io_stable_text")
+                .contains("static void juno_io_offload(void (*job)(void*), void* argument) {\n  job(argument);");
+        assertThat(compile("ArduinoUnoQ", START_AND_JOIN).runtimeShim()).doesNotContain("juno_io_worker");
+        assertThat(httpProgramShim("ArduinoUnoR4WiFi", true))
+                .doesNotContain("juno_io_worker", "JUNO_SLOT_WAITING_IO\n");
+    }
+
+    @Test
+    void theUnoQIoWorkerShimCompilesAsCpp() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        Path shim = temporaryDirectory.resolve("UnoQWorker.cpp");
+        Files.writeString(shim, unoQNetworkShim(true), StandardCharsets.UTF_8);
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
+        assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(process.exitValue()).as("UNO Q worker shim:%n%s", diagnostics).isZero();
     }
 
     @Test

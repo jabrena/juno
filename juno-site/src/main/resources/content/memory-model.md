@@ -52,19 +52,39 @@ to the arena, and the build reports why (`JUNO-RISK-012`).
 
 ## What tasks can observe
 
-Juno's concurrency is **cooperative**. The public API is virtual threads (`Thread.startVirtualThread`, `join` and
-`isAlive`) and `StructuredTaskScope`; `new Thread` and the other `java.lang.Thread` members, apart from `sleep` and
-`yield`, are rejected at compile time. There is exactly one running
-task at any moment, and it keeps the processor until it reaches a **switch point**:
+The public API is virtual threads (`Thread.startVirtualThread`, `join` and `isAlive`) and `StructuredTaskScope`;
+`new Thread` and the other `java.lang.Thread` members, apart from `sleep` and `yield`, are rejected at compile time.
+There is exactly one running task at any moment, and each gets the processor in **time slices** of 1 ms. The two
+kinds of task differ in how a slice ends:
 
-- a loop back-edge in compiled Java (a task switch happens at most once per millisecond),
+- **Virtual threads, and `main`, are preemptive.** The scheduler takes the processor away when the slice is over,
+  whatever the thread is doing (see below for each board).
+- **`StructuredTaskScope` subtasks are cooperative.** A subtask is never interrupted part-way through a statement: once
+  its slice is over it gives the processor up at its next loop back-edge, or earlier at one of the blocking points
+  below. A subtask that runs a long stretch without a loop (a deep recursion, say) keeps the processor until it
+  reaches one.
+
+Every task also gives the processor up early when it blocks:
+
 - `Delay`, `Thread.sleep` and `Thread.yield`,
 - a scope's or a virtual thread's `join`,
 - entering a monitor that another task holds,
 - a Powered Up call waiting for the hub: scanning for it, or waiting for its reply.
 
-The runtime never switches a task in the middle of an allocation, a collection or a throw. That is why the arena, the
-collector and the pending-exception slot need no locks.
+How a preemptive thread's slice ends depends on the board:
+
+- **UNO R4 WiFi and UNO Q** (Arm Cortex-M): a periodic tick (`SysTick` on the R4, a Zephyr timer on the Q) interrupts
+  the task. If it was running compiled Java, it is switched out right there, between any two instructions, inside a
+  loop or a recursion or straight-line code alike; every register, the flags and the FPU state are saved and restored
+  around the switch.
+- **UNO WiFi Rev2** (AVR): an 8-bit core stores a reference or an `int` a byte at a time, so a thread cannot be stopped
+  at an arbitrary instruction. It is preempted at **safepoints** instead: every loop back-edge and every method entry.
+  A spinning loop and a loop-free recursion are both preempted once their slice is over.
+
+The runtime itself is never preempted part-way: an allocation, a collection, a throw, a monitor or atomic operation,
+and every hardware call run to completion (a hardware call that waits for a device lets the others run while it
+waits, see below), and a tick that lands in one only marks the switch as due. That is why the
+arena, the collector and the pending-exception slot need no locks.
 
 ### Visibility and ordering
 
@@ -76,27 +96,50 @@ is correct under the Java Memory Model is correct on Juno.
 The converse does not hold. A data race can be invisible on a board and still be a bug on the JVM, where tasks run in
 parallel on separate cores. Write the code as though it ran on the JVM:
 
-- A task can still be switched between any two loop iterations, so `count++` on a shared field is still a lost update
-  across a loop back-edge. Use `AtomicInteger`, `AtomicLong` or `AtomicBoolean`, or `synchronized`.
-- Use `volatile` or an atomic for a flag one task sets and another polls, even though both behave the same on the
-  board. The JVM needs them.
+- A virtual thread can be switched between any two instructions of compiled Java, and a subtask at any loop
+  back-edge, so `count++` on a shared field is a lost update waiting to happen. Do not rely on a subtask being
+  cooperative for atomicity: on the JVM it runs in parallel. Use `AtomicInteger`, `AtomicLong` or `AtomicBoolean`, or
+  `synchronized`/`ReentrantLock`.
+- Use `volatile` or an atomic for a flag one task sets and another polls. The JVM needs it, and on the board it keeps
+  the compiler from caching the field in a local.
+- `long` and `double` fields are always read and written whole on the Arm boards (the JLS only promises that for
+  `volatile` ones), so another task never sees half of a 64-bit store.
 - Share results through `join`. Reading a subtask's result after the scope has joined is safe on both.
 
 `AtomicReference` is not supported.
 
-### Native calls are atomic, except the Powered Up waits
+### Hardware calls let the other tasks run while they wait
 
-A call into the hardware runtime (Wi-Fi, SD card, the TFT shield) runs to completion before any other task gets a
-turn, however long it takes. This is the main place where behavior differs from the JVM, where a blocking call stalls
-only the thread that made it. Keep long hardware calls out of programs that depend on other tasks making progress.
+A call into the hardware runtime is never interrupted part-way, but when it has to **wait** for a device it gives the
+processor to the other tasks meanwhile, as a blocking call on the JVM stalls only the thread that made it:
 
-`PoweredUpHubRemote` is the exception. While it scans for a hub or waits for the hub's reply, it lets the other tasks
-run, so a forked task can keep drawing a progress line during a `connect`. Two limits remain:
+- an HTTP or HTTPS request, while it waits for the response (up to its 5 s deadline);
+- `HttpServer.accept`, while it waits for the request;
+- `SdCard.begin`, between its retries;
+- `PoweredUpHubRemote`, while it scans for a hub or waits for the hub's reply.
 
-- The second or so that ArduinoBLE spends connecting to a hub it has found, and discovering its services, cannot be
-  interrupted.
-- Only one task at a time is inside a `PoweredUpHubRemote` call. A second task that calls one meanwhile waits its
-  turn, like a `synchronized` method, so the hub never sees two commands interleaved.
+So a forked task can keep animating a display or drawing a progress line during a request. Each device is used by
+one task at a time: a second task that calls into the network (or the SD card, or the hub) while another is waiting
+there waits its turn, like a `synchronized` method, while tasks that do not touch that device keep running. If a
+`StructuredTaskScope` cancels a subtask in the middle of such a call, the runtime closes the connection the subtask
+left open and frees the device, so the next request works.
+
+On the **UNO Q** the network is Linux's, reached through Arduino_RouterBridge, and every network call waits inside
+that library for Linux to answer. Such a call runs on an **I/O worker**, a Zephyr thread of the runtime's own, while
+the calling task is parked: `Wifi.begin` (starting the bridge), the whole of an HTTPS request including `connect` and
+the TLS handshake, and `HttpServer.accept` and `respond` all leave the other tasks running. The text a request still
+needs is copied before it is handed over, and a task cancelled meanwhile keeps its arrays alive until the worker is
+done with them.
+
+Some waits still hold every task, because they happen inside a vendor library with no worker to run them:
+
+- on the UNO R4 WiFi and the UNO WiFi Rev2, `Wifi.begin`, opening a connection (`connect`) and the TLS handshake;
+- on the UNO Q, the UDP calls (`Udp`), each a short round trip to Linux;
+- on every board, the email clients (`Smtp`, `Pop3Client`), which keep using their arguments after each reply from the
+  server;
+- the second or so that ArduinoBLE spends connecting to a hub it has found and discovering its services.
+
+Keep those out of the moments when other tasks must make progress.
 
 See the `PoweredUpHubScanWhileBlinking` example.
 
@@ -104,14 +147,13 @@ See the `PoweredUpHubScanWhileBlinking` example.
 
 | | JVM platform threads | JVM virtual threads | Juno |
 |---|---|---|---|
-| Scheduling | The operating system, preemptive | Cooperative at blocking calls, on preemptive carrier threads | Cooperative only |
+| Scheduling | The operating system, preemptive | Cooperative at blocking calls, on preemptive carrier threads | 1 ms time slices: virtual threads preemptive, `StructuredTaskScope` subtasks cooperative |
 | Parallel execution | Yes | Yes | No, one task at a time |
-| Where a switch can happen | Anywhere | Blocking operations | Loop back-edges, `sleep`, `yield`, `join`, contended monitors, Powered Up waits |
+| Where a switch can happen | Anywhere | Blocking operations | Virtual threads: anywhere in compiled Java (AVR: back-edges and method entries). Subtasks: loop back-edges. Both: `sleep`, `yield`, `join`, contended monitors, and a hardware call's wait (HTTP, server, SD, Powered Up); never part-way through runtime code |
 | Memory ordering | Java Memory Model | Java Memory Model | Sequentially consistent |
-| A long blocking call | Stalls only its thread | Pins its carrier thread | Stalls every task (Powered Up waits excepted) |
+| A long blocking call | Stalls only its thread | Pins its carrier thread | Request, server, SD and Powered Up waits stall only their task, and on the UNO Q every bridge call but UDP; elsewhere vendor waits (`Wifi.begin`, `connect`, TLS) stall every task |
 
-Juno behaves like virtual threads running on a single carrier, with an extra switch point at each loop back-edge. That
-is why `StructuredTaskScope`, which uses virtual threads on the JVM, is the supported way to run work concurrently.
+Juno behaves like platform threads time-sliced on a single core, with the runtime's own calls atomic. That is why `StructuredTaskScope`, which uses virtual threads on the JVM, is the supported way to run work concurrently.
 
 ## RAM budget
 

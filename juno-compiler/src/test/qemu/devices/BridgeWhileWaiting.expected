@@ -1,0 +1,5 @@
+bridge up: other threads ran
+200 11: other threads ran
+request cancelled
+200 11
+[juno-exit]

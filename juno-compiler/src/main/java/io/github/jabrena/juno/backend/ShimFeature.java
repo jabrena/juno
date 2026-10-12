@@ -40,13 +40,13 @@ enum ShimFeature {
     MEMORY,
     RANDOM,
     EXCEPTIONS,
-    /** Cooperative {@code java.lang.Thread} runtime: scheduler, per-thread stacks, collector roots. */
+    /** Preemptive {@code java.lang.Thread} runtime: scheduler, preemption tick, per-thread stacks, collector roots. */
     THREADS,
     /** A reachable ordinary {@code Runnable} entry point, as opposed to task-only scheduler use. */
     THREAD_ENTRY,
     /** A reachable structured {@code Callable} entry point. */
     TASK_CALLABLE_ENTRY,
-    /** JDK 27 structured scopes layered on the cooperative thread runtime. */
+    /** JDK 27 structured scopes layered on the thread runtime, as cooperative subtasks. */
     STRUCTURED_TASKS,
     /** {@code java.lang.ScopedValue} bindings: a per-thread binding stack, inherited by forked subtasks. */
     SCOPED_VALUES,

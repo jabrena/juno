@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** Restricted Java synchronization primitives over Juno's cooperative thread scheduler. */
+/** Restricted Java synchronization primitives over Juno's preemptive thread scheduler. */
 class SynchronizationTest {
     @TempDir
     Path temporaryDirectory;
@@ -35,7 +35,7 @@ class SynchronizationTest {
                                 ready = true;
                             });
                             while (!ready) {
-                                // The loop backedge is a cooperative scheduler switch point.
+                                // The thread can be preempted anywhere in this loop.
                             }
                             scope.join();
                         }
@@ -80,7 +80,7 @@ class SynchronizationTest {
     }
 
     @Test
-    void synchronizedBlocksUseAReentrantCooperativeMonitor() throws Exception {
+    void synchronizedBlocksUseAReentrantRuntimeMonitor() throws Exception {
         String source = """
                 package demo;
                 public final class SynchronizedBlock {
@@ -115,7 +115,7 @@ class SynchronizationTest {
     }
 
     @Test
-    void reentrantLockUsesTheSameCooperativeMonitorRuntime() throws Exception {
+    void reentrantLockUsesTheSameMonitorRuntime() throws Exception {
         String source = """
                 package demo;
                 import java.util.concurrent.locks.ReentrantLock;

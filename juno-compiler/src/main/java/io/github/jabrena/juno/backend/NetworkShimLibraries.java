@@ -617,8 +617,12 @@ final class NetworkShimLibraries {
                 """;
     }
 
-    /** Backs the HTTP/HTTPS APIs with a shared HTTP/1.1 codec over plain or TLS WiFi clients. */
-    static String httpHelpers(Set<ShimFeature> features, String httpsClientDeclaration) {
+    /**
+     * Backs the HTTP/HTTPS APIs with a shared HTTP/1.1 codec over plain or TLS WiFi clients. Each request is a job
+     * for {@code juno_io_offload} (see {@link IoRuntime}): run in place, or on the I/O worker while the caller is
+     * parked, in which case the request's text is copied first and the caller holds the network guard.
+     */
+    static String httpHelpers(Set<ShimFeature> features, String httpsClientType, boolean worker) {
         StringBuilder helpers = new StringBuilder("""
 
                 template <typename Client>
@@ -627,6 +631,8 @@ final class NetworkShimLibraries {
                                                   uint8_t* responseBuffer, int32_t responseBufferLength,
                                                   uint8_t* headersBuffer, int32_t headersBufferLength,
                                                   int32_t* statusAndHeadersLength) {
+                  // Waiting for the response lets the other threads run; another HTTP call waits its turn.
+                  JunoIoGuard guard(JUNO_IO_NETWORK, &client, [](void* handle) { static_cast<Client*>(handle)->stop(); });
                   if (!client.connect(host, static_cast<uint16_t>(port))) {
                     statusAndHeadersLength[0] = 0;
                     statusAndHeadersLength[1] = 0;
@@ -682,7 +688,7 @@ final class NetworkShimLibraries {
                   while (millis() < deadline) {
                     if (!client.available()) {
                       if (!client.connected()) break;
-                      delay(1);
+                      juno_io_wait(1);
                       continue;
                     }
                     int value = client.read();
@@ -776,7 +782,48 @@ final class NetworkShimLibraries {
                   return written < responseBufferLength ? written : responseBufferLength;
                 }
 
+                struct JunoHttpJob {
+                  const char* method;
+                  const char* host;
+                  int32_t port;
+                  const char* path;
+                  const char* body;
+                  uint8_t* responseBuffer;
+                  int32_t responseBufferLength;
+                  uint8_t* headersBuffer;
+                  int32_t headersBufferLength;
+                  int32_t* statusAndHeadersLength;
+                  int32_t result;
+                };
+
+                template <typename Client>
+                static void juno_http_job(void* argument) {
+                  JunoHttpJob* job = static_cast<JunoHttpJob*>(argument);
+                  Client client;
+                  job->result = juno_http_request(client, job->method, job->host, job->port, job->path, job->body,
+                                                  job->responseBuffer, job->responseBufferLength, job->headersBuffer,
+                                                  job->headersBufferLength, job->statusAndHeadersLength);
+                }
+
+                template <typename Client>
+                static int32_t juno_http_run(const char* method, const char* host, int32_t port, const char* path,
+                                             const char* body, uint8_t* responseBuffer, int32_t responseBufferLength,
+                                             uint8_t* headersBuffer, int32_t headersBufferLength,
+                                             int32_t* statusAndHeadersLength) {
+                  JunoHttpJob job = {method, host, port, path, body, responseBuffer, responseBufferLength,
+                                     headersBuffer, headersBufferLength, statusAndHeadersLength, 0};
+                  ${JUNO_HTTP_RUN_PREPARE}
+                  juno_io_offload(juno_http_job<Client>, &job);
+                  return job.result;
+                }
+
                 """);
+        if (features.contains(ShimFeature.HTTPS)) {
+            helpers.append("""
+
+                    using JunoHttpsClient = ${JUNO_HTTPS_CLIENT_TYPE};
+                    """);
+        }
         if (features.contains(ShimFeature.HTTP)) {
             helpers.append("""
 
@@ -784,8 +831,7 @@ final class NetworkShimLibraries {
                                                       uint8_t* responseBuffer, int32_t responseBufferLength,
                                                       uint8_t* headersBuffer, int32_t headersBufferLength,
                                                       int32_t* statusAndHeadersLength) {
-                      WiFiClient client;
-                      return juno_http_request(client, "GET", host, port, path, nullptr,
+                      return juno_http_run<WiFiClient>("GET", host, port, path, nullptr,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -794,8 +840,7 @@ final class NetworkShimLibraries {
                                                        uint8_t* responseBuffer, int32_t responseBufferLength,
                                                        uint8_t* headersBuffer, int32_t headersBufferLength,
                                                        int32_t* statusAndHeadersLength) {
-                      WiFiClient client;
-                      return juno_http_request(client, "POST", host, port, path, body,
+                      return juno_http_run<WiFiClient>("POST", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -804,8 +849,7 @@ final class NetworkShimLibraries {
                                                          uint8_t* responseBuffer, int32_t responseBufferLength,
                                                          uint8_t* headersBuffer, int32_t headersBufferLength,
                                                          int32_t* statusAndHeadersLength) {
-                      WiFiClient client;
-                      return juno_http_request(client, "DELETE", host, port, path, nullptr,
+                      return juno_http_run<WiFiClient>("DELETE", host, port, path, nullptr,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -814,8 +858,7 @@ final class NetworkShimLibraries {
                                                         uint8_t* responseBuffer, int32_t responseBufferLength,
                                                         uint8_t* headersBuffer, int32_t headersBufferLength,
                                                         int32_t* statusAndHeadersLength) {
-                      WiFiClient client;
-                      return juno_http_request(client, "PATCH", host, port, path, body,
+                      return juno_http_run<WiFiClient>("PATCH", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -824,8 +867,7 @@ final class NetworkShimLibraries {
                                                         uint8_t* responseBuffer, int32_t responseBufferLength,
                                                         uint8_t* headersBuffer, int32_t headersBufferLength,
                                                         int32_t* statusAndHeadersLength) {
-                      WiFiClient client;
-                      return juno_http_request(client, "QUERY", host, port, path, body,
+                      return juno_http_run<WiFiClient>("QUERY", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -839,8 +881,7 @@ final class NetworkShimLibraries {
                                                        uint8_t* responseBuffer, int32_t responseBufferLength,
                                                        uint8_t* headersBuffer, int32_t headersBufferLength,
                                                        int32_t* statusAndHeadersLength) {
-                      ${JUNO_HTTPS_CLIENT_DECLARATION}
-                      return juno_http_request(client, "GET", host, port, path, nullptr,
+                      return juno_http_run<JunoHttpsClient>("GET", host, port, path, nullptr,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -849,8 +890,7 @@ final class NetworkShimLibraries {
                                                         uint8_t* responseBuffer, int32_t responseBufferLength,
                                                         uint8_t* headersBuffer, int32_t headersBufferLength,
                                                         int32_t* statusAndHeadersLength) {
-                      ${JUNO_HTTPS_CLIENT_DECLARATION}
-                      return juno_http_request(client, "POST", host, port, path, body,
+                      return juno_http_run<JunoHttpsClient>("POST", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -859,8 +899,7 @@ final class NetworkShimLibraries {
                                                           uint8_t* responseBuffer, int32_t responseBufferLength,
                                                           uint8_t* headersBuffer, int32_t headersBufferLength,
                                                           int32_t* statusAndHeadersLength) {
-                      ${JUNO_HTTPS_CLIENT_DECLARATION}
-                      return juno_http_request(client, "DELETE", host, port, path, nullptr,
+                      return juno_http_run<JunoHttpsClient>("DELETE", host, port, path, nullptr,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -869,8 +908,7 @@ final class NetworkShimLibraries {
                                                          uint8_t* responseBuffer, int32_t responseBufferLength,
                                                          uint8_t* headersBuffer, int32_t headersBufferLength,
                                                          int32_t* statusAndHeadersLength) {
-                      ${JUNO_HTTPS_CLIENT_DECLARATION}
-                      return juno_http_request(client, "PATCH", host, port, path, body,
+                      return juno_http_run<JunoHttpsClient>("PATCH", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -879,8 +917,7 @@ final class NetworkShimLibraries {
                                                          uint8_t* responseBuffer, int32_t responseBufferLength,
                                                          uint8_t* headersBuffer, int32_t headersBufferLength,
                                                          int32_t* statusAndHeadersLength) {
-                      ${JUNO_HTTPS_CLIENT_DECLARATION}
-                      return juno_http_request(client, "QUERY", host, port, path, body,
+                      return juno_http_run<JunoHttpsClient>("QUERY", host, port, path, body,
                                                responseBuffer, responseBufferLength,
                                                headersBuffer, headersBufferLength, statusAndHeadersLength);
                     }
@@ -911,7 +948,15 @@ final class NetworkShimLibraries {
 
                     """);
         }
-        return helpers.toString().replace("${JUNO_HTTPS_CLIENT_DECLARATION}", httpsClientDeclaration);
+        return helpers.toString().replace("${JUNO_HTTPS_CLIENT_TYPE}", httpsClientType)
+                .replace("${JUNO_HTTP_RUN_PREPARE}", worker ? """
+                      JunoIoGuard guard(JUNO_IO_NETWORK);
+                      char hostCopy[JUNO_IO_TEXT_COPY_BYTES];
+                      char pathCopy[JUNO_IO_TEXT_COPY_BYTES];
+                      char bodyCopy[JUNO_IO_TEXT_COPY_BYTES];
+                      job.host = juno_io_stable_text(host, hostCopy);
+                      job.path = juno_io_stable_text(path, pathCopy);
+                      job.body = juno_io_stable_text(body, bodyCopy);""" : "");
     }
 
     /**
@@ -924,13 +969,39 @@ final class NetworkShimLibraries {
      * {@code accept()} mirrors {@link #httpHelpers()}'s response-parsing state machine, reversed
      * to parse a request line and headers instead of a status line.
      */
-    static String httpServerHelpers(String transport) {
+    static String httpServerHelpers(String transport, boolean worker) {
         return transport + """
 
                 static char juno_http_server_method_buf[8];
                 static char juno_http_server_path_buf[96];
 
+                // Cancelled while it waits for a request: drop the client, so the next accept() starts afresh.
+                static void juno_http_server_abort(void*) {
+                  juno_http_server_client.stop();
+                  juno_http_server_release();
+                }
+
+                struct JunoHttpServerAcceptJob {
+                  uint8_t* bodyBuffer;
+                  int32_t bodyBufferLength;
+                  int32_t result;
+                };
+
+                static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t bodyBufferLength);
+
+                static void juno_http_server_accept_job(void* argument) {
+                  auto* job = static_cast<JunoHttpServerAcceptJob*>(argument);
+                  job->result = juno_http_server_accept_request(job->bodyBuffer, job->bodyBufferLength);
+                }
+
                 extern "C" int32_t juno_http_server_accept(uint8_t* bodyBuffer, int32_t bodyBufferLength) {
+                  JunoIoGuard guard(JUNO_IO_NETWORK, nullptr, juno_http_server_abort);
+                  JunoHttpServerAcceptJob job = {bodyBuffer, bodyBufferLength, -1};
+                  juno_io_offload(juno_http_server_accept_job, &job);
+                  return job.result;
+                }
+
+                static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t bodyBufferLength) {
                   if (!juno_http_server_next_client()) return -1;
                   JunoHttpClient& client = juno_http_server_client;
 
@@ -951,7 +1022,7 @@ final class NetworkShimLibraries {
                   while (millis() < deadline) {
                     if (!client.available()) {
                       if (!client.connected()) break;
-                      delay(1);
+                      juno_io_wait(1);
                       continue;
                     }
                     int value = client.read();
@@ -1031,8 +1102,19 @@ final class NetworkShimLibraries {
                       static_cast<int32_t>(strlen(juno_http_server_path_buf)));
                 }
 
-                static void juno_http_server_respond_bytes(int32_t status, const char* contentType,
-                                                             const char* body, int32_t bodyLength) {
+                struct JunoHttpServerRespondJob {
+                  int32_t status;
+                  const char* contentType;
+                  const char* body;
+                  int32_t bodyLength;
+                };
+
+                static void juno_http_server_respond_job(void* argument) {
+                  auto* job = static_cast<JunoHttpServerRespondJob*>(argument);
+                  int32_t status = job->status;
+                  const char* contentType = job->contentType;
+                  const char* body = job->body;
+                  int32_t bodyLength = job->bodyLength;
                   JunoHttpClient& client = juno_http_server_client;
                   client.print("HTTP/1.1 ");
                   client.print(status);
@@ -1044,6 +1126,14 @@ final class NetworkShimLibraries {
                   client.write(reinterpret_cast<const uint8_t*>(body), static_cast<size_t>(bodyLength));
                   client.stop();
                   juno_http_server_release();
+                }
+
+                static void juno_http_server_respond_bytes(int32_t status, const char* contentType,
+                                                             const char* body, int32_t bodyLength) {
+                  JunoIoGuard guard(JUNO_IO_NETWORK);
+                  JunoHttpServerRespondJob job = {status, contentType, body, bodyLength};
+                  ${JUNO_HTTP_SERVER_RESPOND_PREPARE}
+                  juno_io_offload(juno_http_server_respond_job, &job);
                 }
 
                 extern "C" void juno_http_server_respond(int32_t status, const char* contentType, const char* body) {
@@ -1058,7 +1148,14 @@ final class NetworkShimLibraries {
                   juno_http_server_respond_bytes(status, contentType, reinterpret_cast<const char*>(buffer), length);
                 }
 
-                """;
+                """.replace("${JUNO_HTTP_SERVER_RESPOND_PREPARE}", worker ? """
+                  char contentTypeCopy[JUNO_IO_TEXT_COPY_BYTES];
+                  char bodyCopy[JUNO_IO_TEXT_COPY_BYTES];
+                  job.contentType = juno_io_stable_text(contentType, contentTypeCopy);
+                  if (bodyLength >= 0 && static_cast<uint32_t>(bodyLength) < JUNO_IO_TEXT_COPY_BYTES) {
+                    memcpy(bodyCopy, body, static_cast<size_t>(bodyLength));
+                    job.body = bodyCopy;
+                  }""" : "");
     }
 
     /**

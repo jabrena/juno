@@ -179,7 +179,7 @@ class AvrAsmBackendTest {
                 """);
         assertThat(result.runtimeShim())
                 .contains("#include <WiFiNINA.h>")
-                .contains("WiFiSSLClient client;")
+                .contains("using JunoHttpsClient = WiFiSSLClient;")
                 .contains("extern \"C\" int32_t juno_avr_thunk_juno_https_get() {")
                 .doesNotContain("WiFiSSLClient.h");
     }
@@ -247,7 +247,7 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void forksTasksOnTheCooperativeSchedulerWithAnAvrContextSwitch() throws Exception {
+    void forksTasksOnThePreemptiveSchedulerWithAnAvrContextSwitch() throws Exception {
         CompilationResult result = compile("demo.AvrTasks", """
                         final int[] sums = new int[2];
                         try (var scope = StructuredTaskScope.open()) {
@@ -272,16 +272,29 @@ class AvrAsmBackendTest {
                         + "    push r2\n")
                 .contains("    sts juno_avr_args+0, r22\n    sts juno_avr_args+1, r23\n")
                 .contains("    call juno_thread_backedge\n")
+                // Every method but the entry point is a safepoint too, right after its arguments are in its frame.
+                .contains("    sts juno_avr_args+0, r22\n    sts juno_avr_args+1, r23\n")
+                .containsPattern("(?s)juno_thread_entry:\n.*?call juno_thread_safepoint\n")
                 .contains("    call juno_thread_main_exit\n")
                 .contains("    lds r26, juno_stack_limit\n")
                 .doesNotContain("call yield\n");
+        String entry = result.assembly().substring(result.assembly().indexOf(result.entryPointSymbol() + ":\n"));
+        assertThat(entry.substring(0, entry.indexOf("    .type ")))
+                .as("main() starts before any thread exists").doesNotContain("juno_thread_safepoint");
         assertThat(result.runtimeShim())
                 .contains("---- Juno threads: AVR port")
                 .contains("static constexpr uint16_t JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.AVR_THREAD_STACK_BYTES + "u;")
                 .contains("\"  out 0x3e, r23\\n\"")
                 .contains("juno_gc_scan_bytes(from, reinterpret_cast<const uint8_t*>(top));")
                 .contains("juno_thread_gc_scan(&stackMarker);")
-                .contains("extern \"C\" [[noreturn]] void juno_thread_stack_overflow() {");
+                .contains("extern \"C\" [[noreturn]] void juno_thread_stack_overflow() {")
+                // An overflow is caught by the stack pointer as well as the canary, and reported from its own stack.
+                .contains("bool below = SP < reinterpret_cast<uintptr_t>(bottom) + sizeof JUNO_STACK_CANARY;",
+                        "static uint8_t juno_overflow_stack[128];", "\"out __SP_H__, %B0\\n\"")
+                // Preemption at safepoints once the time slice is over; no tick, so no interrupt trampoline.
+                .contains("extern \"C\" void juno_thread_safepoint() {",
+                        "if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) return;")
+                .doesNotContain("juno_preempt_trampoline", "SysTick_Handler", "k_timer");
     }
 
     @Test
@@ -294,7 +307,8 @@ class AvrAsmBackendTest {
         assertThat(result.assembly())
                 .contains("    call yield\n")
                 .doesNotContain("juno_stack_limit")
-                .doesNotContain("juno_thread_main_exit");
+                .doesNotContain("juno_thread_main_exit")
+                .doesNotContain("juno_thread_safepoint");
         assertThat(result.runtimeShim()).doesNotContain("juno_context_switch");
     }
 

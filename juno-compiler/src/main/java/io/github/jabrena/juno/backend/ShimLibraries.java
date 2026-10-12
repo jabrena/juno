@@ -462,20 +462,14 @@ final class ShimLibraries {
                 }
 
                 // The wait loops below call juno_lego_wait() so that, in a program with tasks, another task can run while
-                // this one waits on the radio; without tasks it does nothing. juno_lego_hub_* entries take the guard so a
-                // second task cannot re-enter the BLE calls while another is inside one (the cooperative runtime only
-                // switches at a wait, so this never blocks a single-task program).
+                // this one waits on the radio; without tasks it does nothing. juno_lego_hub_* entries take the BLE device
+                // guard (IoRuntime) so a second task cannot re-enter the BLE calls while another is inside one (runtime
+                // code is never preempted, so a task only switches inside one at a wait; this never blocks a single-task
+                // program).
                 ${JUNO_LEGO_WAIT}
-                static bool juno_lego_busy = false;
-                struct JunoLegoGuard {
-                  JunoLegoGuard() {
-                    while (juno_lego_busy) {
-                      juno_lego_wait();
-                    }
-                    juno_lego_busy = true;
-                  }
-                  ~JunoLegoGuard() {
-                    juno_lego_busy = false;
+                // The BLE device guard: owner-tracked, so a cancelled subtask does not leave the hub locked.
+                struct JunoLegoGuard : JunoIoGuard {
+                  JunoLegoGuard() : JunoIoGuard(JUNO_IO_BLE) {
                   }
                 };
 
@@ -1131,6 +1125,7 @@ final class ShimLibraries {
                 }
 
                 extern "C" int32_t juno_sd_begin(int32_t chipSelectPin) {
+                  JunoIoGuard guard(JUNO_IO_STORAGE);
                   for (int32_t i = 0; i < JUNO_SD_MAX_OPEN_FILES; i++) {
                     if (juno_sd_file_used[i]) juno_sd_files[i].close();
                     juno_sd_file_used[i] = false;
@@ -1138,7 +1133,7 @@ final class ShimLibraries {
                   // A card that survived a host reset without losing power can fail its first init.
                   for (int32_t attempt = 0; attempt < JUNO_SD_BEGIN_ATTEMPTS; attempt++) {
                     if (${JUNO_SD_BEGIN_EXPRESSION}) return 1;
-                    delay(JUNO_SD_BEGIN_RETRY_DELAY_MS);
+                    juno_io_wait(JUNO_SD_BEGIN_RETRY_DELAY_MS);
                   }
                   return 0;
                 }

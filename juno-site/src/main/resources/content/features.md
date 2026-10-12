@@ -146,21 +146,31 @@ Supported today:
   `Exception in thread "main" <class>: <message>` over `Serial` and panics. An `int`/`long` division or remainder by zero inside a `try` whose handler catches
   `ArithmeticException` (or a supertype, or `finally`) raises `ArithmeticException("/ by zero")` there;
   anywhere else it unwinds to the callers' handlers if any `catch`/`finally` in the program can receive `ArithmeticException`, and panics if none can, as do Juno's other runtime failures (array bounds, arena exhaustion).
-- Cooperative virtual threads and subtasks, on both boards: `Thread.startVirtualThread(Runnable)` (a class
+- Preemptive virtual threads and cooperative subtasks, on every board: `Thread.startVirtualThread(Runnable)` (a class
   implementing `Runnable` or a lambda), `join()` and `isAlive()` on the returned `Thread`, and `Thread.sleep(long)`
   and `Thread.yield()`, which are also available inside a forked subtask (and in `main`). Each virtual thread or
-  subtask runs on a stack of its own, and control moves between them only where the program already pauses — loop
-  iterations (at most once per millisecond), `Delay.millis`, `Thread.sleep`, `Thread.yield` and `join` — so a
-  statement is never interrupted halfway and the arena, the garbage collector and the pending-exception slot need no
-  locking. A virtual thread is a daemon, as on the JVM: when `main` returns, the program does not wait for it. At most
+  subtask runs on a stack of its own and gets the processor for 1 ms time slices. Virtual threads (and `main`) are
+  preemptive: on the UNO R4 WiFi and UNO Q a periodic tick (`SysTick` on the R4, a Zephyr `k_timer` on the Q)
+  preempts a thread between any two instructions of compiled Java, saving its registers, flags and FPU state; on the
+  UNO WiFi Rev2 a thread is preempted at loop back-edges and method entries once its slice is over.
+  `StructuredTaskScope` subtasks are cooperative: once its slice is over a subtask gives the processor up at its next
+  loop back-edge, never in the middle of a statement. `Delay.millis`, `Thread.sleep`, `Thread.yield`, `join` and a
+  contended monitor hand the processor over early. The runtime itself (allocation, the garbage collector, throws,
+  monitors, atomics and every hardware call) is never interrupted part-way, so the arena, the collector and the
+  pending-exception slot need no locking. A hardware call that waits for its device (an HTTP/HTTPS response, an
+  `HttpServer` request, `SdCard.begin` retries, Powered Up scans) sleeps only its own task meanwhile, holding the
+  device so other tasks take turns on it. On the UNO Q, whose network calls all wait on Linux through
+  Arduino_RouterBridge, `Wifi.begin`, HTTPS requests (`connect` and TLS included) and the HTTP server run on an I/O
+  worker thread while the caller is parked. Elsewhere `Wifi.begin`, `connect` and TLS handshakes still wait inside the
+  vendor libraries and hold every task, as do the email clients and, on the UNO Q, UDP. A virtual thread is a daemon, as on the JVM: when `main` returns, the program does not wait for it. At most
   four threads run at once, the owner included, each extra one with a 2 KiB stack on the UNO R4 WiFi and 4 KiB on the
-  UNO Q (a stack overflow on the UNO R4 panics with `[juno-thread] stack overflow` when the thread next switches
-  away). The collector scans every live stack. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each thread
+  UNO Q. A stack overflow panics with `[juno-thread] stack overflow`, caught by the thread's stack pointer as well as a
+  canary when the thread switches away or calls a device, and reported from a stack of its own. The collector scans every live stack. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each thread
   is a Zephyr thread that waits for a baton, so only one runs at a time. The rest of `java.lang.Thread` is not part of
   the language subset: `new Thread(...)`, `start()`, `setDaemon(boolean)`, the `Thread.ofVirtual()` and
   `Thread.ofPlatform()` builders and the other members fail with a `CompileException` that points to
   `Thread.startVirtualThread`, and so do other `java.util.concurrent` APIs.
-- JDK 27 preview `StructuredTaskScope`, lowered onto the same cooperative task runtime: `open()`, `open(Joiner)`,
+- JDK 27 preview `StructuredTaskScope`, lowered onto the same task runtime, with cooperative subtasks: `open()`, `open(Joiner)`,
   `fork(Callable)`, `fork(Runnable)`, `join()`, `isCancelled()`, try-with-resources `close()`, and
   `Subtask.state()`/`get()`/`exception()`. The supported built-in joiners are `allSuccessfulOrThrow`,
   `anySuccessfulOrThrow`, `awaitAllSuccessfulOrThrow`; fail-fast policies cancel sibling
@@ -182,13 +192,15 @@ Supported today:
 - `java.util.concurrent.atomic` subset: `AtomicInteger`, `AtomicBoolean` and `AtomicLong` with `new`, `get`, `set`,
   `getAndSet`, `compareAndSet` and, on the numeric ones, `incrementAndGet`, `decrementAndGet`, `getAndIncrement`,
   `getAndDecrement`, `addAndGet` and `getAndAdd` (plus `intValue()`/`longValue()`). Each is a small arena cell, and the
-  cooperative scheduler never switches inside an operation, so none needs a monitor. `AtomicReference`, the array
+  scheduler never preempts the runtime in the middle of an operation, so none needs a monitor. `AtomicReference`, the array
   and adder classes, `updateAndGet`/`accumulateAndGet` and `lazySet` are rejected with a `CompileException`.
-- restricted synchronization for cooperative subtasks: `volatile` primitive/reference fields are always loaded from
+- restricted synchronization for threads and subtasks: `volatile` primitive/reference fields are always loaded from
   and stored to memory, including across calls and loop backedges; `synchronized (lock)` blocks use a bounded table
   of eight reentrant intrinsic monitors; and concrete `java.util.concurrent.locks.ReentrantLock` supports only
   `new ReentrantLock()`, `lock()`, zero-argument `tryLock()`, and `unlock()`, backed by the same monitor runtime.
-  Contended `lock()`/monitor entry yields cooperatively until ownership is available. Synchronized methods, fair
+  Contended `lock()`/monitor entry yields until ownership is available. In a program with threads, `long` and
+  `double` fields are read and written with interrupts masked on the Arm boards, so a preempting thread never sees
+  half of a 64-bit store. Synchronized methods, fair
   locks, timed/interruptible locking, `Condition`, the `Lock` interface, and the rest of `java.util.concurrent`
   remain unsupported. See the board-ready
   [`Synchronization` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java).

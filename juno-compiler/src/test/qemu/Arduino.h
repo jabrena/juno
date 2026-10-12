@@ -29,7 +29,13 @@ inline void analogWrite(int32_t, int32_t) {}
 // A virtual clock: delay() advances by its requested duration, and the Serial service hook below advances on
 // yield() so tight loop backedges model hardware time progressing without introducing a host-time dependency.
 inline unsigned long juno_harness_clock = 0;
-inline void delay(unsigned long ms) { juno_harness_clock += ms; }
+// The stand-in Zephyr kernel (zephyr/kernel.h) sets this, so delay() lets its other threads run, as Zephyr's
+// k_sleep does on the UNO Q.
+inline void (*juno_harness_delay_hook)() = nullptr;
+inline void delay(unsigned long ms) {
+  juno_harness_clock += ms;
+  if (juno_harness_delay_hook != nullptr) juno_harness_delay_hook();
+}
 inline void delayMicroseconds(unsigned int) {}
 inline unsigned long millis() { return juno_harness_clock; }
 inline unsigned long micros() { return 0; }

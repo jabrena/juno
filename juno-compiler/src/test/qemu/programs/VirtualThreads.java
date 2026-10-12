@@ -6,7 +6,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
- * Virtual threads on the cooperative scheduler: classes and lambdas as Runnables, join, sleep, yield, a monitor,
+ * Virtual threads on the preemptive scheduler: classes and lambdas as Runnables, join, sleep, yield, a monitor,
  * stack-slot reuse across many short-lived threads, and garbage collection while other virtual threads are parked
  * with live references on their own stacks. Every printed value is fixed by the joins, so the JVM and the board
  * agree whatever the interleaving.

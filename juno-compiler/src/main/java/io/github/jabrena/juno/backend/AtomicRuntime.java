@@ -2,8 +2,9 @@ package io.github.jabrena.juno.backend;
 
 /**
  * The {@code AtomicInteger}/{@code AtomicBoolean}/{@code AtomicLong} cells: a word (or a low/high word pair) in the
- * arena. The cooperative scheduler only switches threads at loop backedges and sleep/yield/join, never inside one
- * of these functions, so a plain read-modify-write is already atomic and needs no monitor. An {@code AtomicBoolean}
+ * arena. These functions are runtime code, which the preemptive scheduler never interrupts part-way (it preempts
+ * only generated code, or waits for a safepoint), so a plain read-modify-write is already atomic and needs no
+ * monitor. An {@code AtomicBoolean}
  * is an {@code AtomicInteger} holding 0 or 1. A {@code long} travels as two {@code uint32_t} words, which keeps the
  * C signatures free of AAPCS 64-bit register alignment.
  */
