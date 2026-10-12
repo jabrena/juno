@@ -28,7 +28,7 @@ arduino-cli core list
 
 Some examples also need an optional Arduino library not bundled with that core (`Mouse` for
 `RatonLoco`, `ArduinoBLE` for `LegoTrain`, `ESP_SSLClient` for `Smtp`'s `STARTTLS` upgrade, `Servo` for `ServoSweep`, and `SdFat`
-for `WifiStatusSD`/`WifiStatusTFT` — see their sections below). Install the core and every one of those libraries in one go instead of hunting
+for `WifiStatusSD`/`WifiStatusSDTFT` — see their sections below). Install the core and every one of those libraries in one go instead of hunting
 them down per example:
 
 ```bash
@@ -183,7 +183,7 @@ display's bytes. See [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.tft.TouchPaintTFT
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.net.WifiStatusTFT
+  -Djuno.main=io.github.jabrena.juno.api.net.wifi.WifiStatusSDTFT
 ```
 
 `WeatherTFT` (`-Djuno.main=io.github.jabrena.juno.api.net.weather.WeatherTFT`) is a desk
@@ -194,7 +194,7 @@ against a small 3-ply engine, and `Blackjack`
 `battleship.Battleship`, `texasholdem.TexasHoldem` and the arcade games (`pacman.PacMan`, `lunarlander.LunarLander`, …) — see
 [TFT-TOUCH-SHIELD.md](../tft-touch-shield#examples) and the illustrated catalogue in [GAMES.md](../games).
 `TouchPaintTFT` is a finger-paint demo that logs raw touch readings for calibration;
-`WifiStatusTFT` is the TFT version of `WifiStatusSD`, reading its credentials from the shield's own
+`WifiStatusSDTFT` is the TFT version of `WifiStatusSD`, reading its credentials from the shield's own
 microSD socket. Both were uploaded to a real UNO R4 WiFi with this shield; `TouchPaintTFT`'s drawing and touch
 mapping are confirmed working.
 
