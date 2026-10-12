@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.avr;
 
 import io.github.jabrena.juno.backend.FrameLayout;
-import io.github.jabrena.juno.backend.runtime.ShimFeature;
+import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrInstruction;

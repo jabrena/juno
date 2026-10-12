@@ -10,9 +10,10 @@ import io.github.jabrena.juno.backend.WordSource;
 import io.github.jabrena.juno.backend.runtime.AvrRuntimeShim;
 import io.github.jabrena.juno.backend.runtime.AvrShimThunks;
 import io.github.jabrena.juno.backend.runtime.RuntimeEntryPoints;
-import io.github.jabrena.juno.backend.runtime.ShimFeature;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
-import io.github.jabrena.juno.backend.runtime.core.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.core.CoreRuntimes;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.backend.thumb2.Thumb2AsmBackend;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
@@ -127,7 +128,7 @@ public final class AvrAsmBackend {
         wides = new AvrWideArithmeticLowering(avr, features);
         memory = new AvrMemoryLowering(avr, layout);
         calls = new AvrCallLowering(avr, layout, memory, functionLabels);
-        CoreRuntime coreRuntime = CoreRuntime.of(board.core());
+        CoreRuntime coreRuntime = CoreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, board.generation(), features,
                 usedMath, usesThreads);
 

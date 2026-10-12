@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.backend.runtime;
 
 import io.github.jabrena.juno.RuntimeLimits;
-import io.github.jabrena.juno.backend.thumb2.AsmEmitter;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 
 import java.util.List;
@@ -67,8 +66,8 @@ public final class ShimLibraries {
                 .replace("${JUNO_RAF_EOF}", Integer.toString(eofClassId))
                 .replace("${JUNO_RAF_INDEX_OUT_OF_BOUNDS}", Integer.toString(indexOutOfBoundsClassId))
                 .replace("${JUNO_THROWABLE_BYTES}", Integer.toString(ThrowableTypes.HEADER_BYTES))
-                .replace("${JUNO_CLASS_ID_WORD}", Integer.toString(ThrowableTypes.CLASS_ID_OFFSET / AsmEmitter.WORD))
-                .replace("${JUNO_MESSAGE_WORD}", Integer.toString(ThrowableTypes.MESSAGE_OFFSET / AsmEmitter.WORD));
+                .replace("${JUNO_CLASS_ID_WORD}", Integer.toString(ThrowableTypes.CLASS_ID_OFFSET / Integer.BYTES))
+                .replace("${JUNO_MESSAGE_WORD}", Integer.toString(ThrowableTypes.MESSAGE_OFFSET / Integer.BYTES));
     }
 
     /** Exposes the arena allocator's current usage and its fixed capacity. */
@@ -178,8 +177,8 @@ public final class ShimLibraries {
             names.append("  \"").append(className.replace('/', '.')).append("\",\n");
         }
         return RuntimeSource.load("common/exceptions.cpp").replace("${JUNO_THROWABLE_NAMES}", names.toString())
-                .replace("${JUNO_CLASS_ID_WORD}", Integer.toString(ThrowableTypes.CLASS_ID_OFFSET / AsmEmitter.WORD))
-                .replace("${JUNO_MESSAGE_WORD}", Integer.toString(ThrowableTypes.MESSAGE_OFFSET / AsmEmitter.WORD));
+                .replace("${JUNO_CLASS_ID_WORD}", Integer.toString(ThrowableTypes.CLASS_ID_OFFSET / Integer.BYTES))
+                .replace("${JUNO_MESSAGE_WORD}", Integer.toString(ThrowableTypes.MESSAGE_OFFSET / Integer.BYTES));
     }
 
     /** {@code extern "C"} float helpers, called from assembly with float values in core registers (see {@code JUNO_ASM_ABI}). */

@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.backend.runtime;
+package io.github.jabrena.juno.backend.runtime.spi;
 
 /**
  * An optional part of the generated runtime shim, recorded while lowering the program's IR and

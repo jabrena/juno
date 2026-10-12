@@ -9,6 +9,8 @@
     </parent>
     <artifactId>juno-site</artifactId>
     <packaging>quarkus</packaging>
+    <name>Juno Site</name>
+    <description>Documentation website for Juno, generated as a static site with Quarkus Roq and published to GitHub Pages</description>
 
     <properties>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>

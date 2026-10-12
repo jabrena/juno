@@ -2,8 +2,8 @@ package io.github.jabrena.juno.backend.thumb2;
 
 import io.github.jabrena.juno.backend.FrameLayout;
 import io.github.jabrena.juno.backend.WordSource;
-import io.github.jabrena.juno.backend.runtime.ShimFeature;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
+import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.FloatBinaryOp;
 import io.github.jabrena.juno.ir.IrInstruction;

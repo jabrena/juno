@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.runtime;
 
 import io.github.jabrena.juno.RuntimeLimits;
-import io.github.jabrena.juno.backend.runtime.core.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 
 /**
  * The C++ source of the {@code java.lang.Thread} runtime in the generated shim: threads, each on a stack of its own,

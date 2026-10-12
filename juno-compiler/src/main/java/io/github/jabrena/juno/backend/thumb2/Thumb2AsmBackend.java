@@ -9,8 +9,9 @@ import io.github.jabrena.juno.backend.ProgramLayout;
 import io.github.jabrena.juno.backend.WordSource;
 import io.github.jabrena.juno.backend.runtime.RuntimeEntryPoints;
 import io.github.jabrena.juno.backend.runtime.RuntimeShim;
-import io.github.jabrena.juno.backend.runtime.ShimFeature;
-import io.github.jabrena.juno.backend.runtime.core.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.core.CoreRuntimes;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.classfile.MethodHandleRef;
@@ -200,7 +201,7 @@ public final class Thumb2AsmBackend {
         terminators = new TerminatorLowering(asm, ints, usesThreads ? "juno_thread_backedge" : "yield");
         convention = new CallConvention(asm);
         fields = new FieldAccessLowering(asm, layout, usesThreads);
-        CoreRuntime coreRuntime = CoreRuntime.of(board.core());
+        CoreRuntime coreRuntime = CoreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new Thumb2IntrinsicTarget(asm), coreRuntime, board.generation(), features,
                 usedMath, usesThreads);
 

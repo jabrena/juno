@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.backend.runtime;
 
 import io.github.jabrena.juno.RuntimeLimits;
-import io.github.jabrena.juno.backend.runtime.core.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 
 import java.util.Set;
 
