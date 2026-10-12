@@ -8,10 +8,13 @@ final class AllocatorRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
 
     /**
+     * @param arrayLengthBytes width of the length word in front of an array's elements, which the collector must
+     *     step over to find the block an array reference points into
      * @param gcStackScan the statement scanning the live stack(s) from {@code stackMarker}
      * @param gcThreadDeclaration declarations that statement needs, or {@code ""}
      */
-    String source(int arenaBytes, boolean gcLoggingEnabled, String gcStackScan, String gcThreadDeclaration) {
+    String source(int arenaBytes, int arrayLengthBytes, boolean gcLoggingEnabled, String gcStackScan,
+                  String gcThreadDeclaration) {
         // Emitted (or not) once here, at Java-string-generation time — like every other optional
         // shim feature (ShimFeature.MOUSE, ShimFeature.WIFI, ...) — rather than a C++-level runtime branch, so a
         // program compiled without --gc-log/juno.gcLog pays zero extra flash/RAM/Serial time for it.
@@ -23,6 +26,7 @@ final class AllocatorRuntime {
                 : "";
         return runtimeSource.load("common/allocator.cpp")
                 .replace("${JUNO_ARENA_CAPACITY}", Integer.toString(arenaBytes))
+                .replace("${JUNO_ARRAY_LENGTH_BYTES}", Integer.toString(arrayLengthBytes))
                 .replace("${JUNO_GC_STACK_SCAN}", gcStackScan)
                 .replace("${JUNO_GC_THREAD_DECLARATION}", gcThreadDeclaration)
                 .replace("${JUNO_GC_LOG_BEFORE}", gcLogBefore)

@@ -143,7 +143,12 @@ See the [Arduino CLI Workflow](https://jabrena.github.io/juno/arduino) for the f
 
 ## Boundaries
 
-- ✅ **Always do:** run `./mvnw test` before proposing a change; when touching `api/`, `linker/`,
+- ✅ **Always do:** whenever you deploy an example to a board to test a feature, always follow `juno:upload`
+  with `juno:monitor` (never raw `arduino-cli`) and check the serial output against the expected result before
+  calling the feature verified — an upload that succeeds proves nothing about behavior; the program must call
+  `Serial.begin` and wait briefly before its first print, and the monitor needs a terminal (e.g.
+  `sleep 12 | script -q log ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=<id>`); run
+  `./mvnw test` before proposing a change; when touching `api/`, `linker/`,
   or `backend/`, add/extend a `JunoCompilerTest`/`GeneratedAsmToolchainTest` case and validate the
   affected example compiles end-to-end with `juno:verify` (`javac` → Juno →
   `arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi`); keep generated assembly/shim output

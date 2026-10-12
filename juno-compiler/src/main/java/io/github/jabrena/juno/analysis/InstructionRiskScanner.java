@@ -142,7 +142,8 @@ final class InstructionRiskScanner {
             staticFields.add(load.field());
         } else if (instruction instanceof IrInstruction.StoreStatic store) {
             staticFields.add(store.field());
-        } else if (instruction instanceof IrInstruction.BoundsCheck) {
+        } else if (instruction instanceof IrInstruction.BoundsCheck
+                || instruction instanceof IrInstruction.ArrayBoundsCheck) {
             counters.boundsChecks++;
         } else if (instruction instanceof IrInstruction.ArrayLoad load) {
             counters.arrayAccesses++;

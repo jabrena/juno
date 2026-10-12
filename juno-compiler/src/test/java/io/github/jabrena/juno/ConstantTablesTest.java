@@ -50,6 +50,7 @@ class ConstantTablesTest {
                 .contains("""
                             .section .rodata
                             .align 2
+                            .word 5
                         juno_table_demo_Lookup_RECIPROCAL__S:
                             .short -32768, -300, 0, 300, 32767
                         """);

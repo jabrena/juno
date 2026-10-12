@@ -169,7 +169,7 @@ public final class RuntimeShim {
                 .replace("${JUNO_WATCHDOG_REFRESH}", watchdogRefresh)
                 .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogPanicMessage)
                 .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogBeginFunction)
-                + allocatorRuntime.source(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcThreadDeclaration)
+                + allocatorRuntime.source(config.arenaBytes(), 4, gcLoggingEnabled, gcStackScan, gcThreadDeclaration)
                 + runtimeSource.load("thumb2/serial.cpp").replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions);
     }
 

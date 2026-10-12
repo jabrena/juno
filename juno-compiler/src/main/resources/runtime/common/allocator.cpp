@@ -108,7 +108,7 @@ static void juno_gc_enqueue(uint32_t offset) {
 // a possible reference: with no type tags, the collector can't tell a real pointer
 // from an int that happens to match a heap address, so it treats anything that lines
 // up with a real, currently-allocated block's start as live.
-static void juno_gc_mark_candidate(uintptr_t word) {
+static void juno_gc_mark_payload(uintptr_t word) {
   uintptr_t base = reinterpret_cast<uintptr_t>(juno_arena);
   if (word < base + 4u || word >= base + juno_arena_used) return;
   uintptr_t relative = word - base;
@@ -119,6 +119,13 @@ static void juno_gc_mark_candidate(uintptr_t word) {
   if ((header & JUNO_GC_FREE_BIT) != 0u || (header & JUNO_GC_MARK_BIT) != 0u) return;
   *juno_gc_header_at(offset) = header | JUNO_GC_MARK_BIT;
   juno_gc_enqueue(offset);
+}
+
+// An array reference points at its first element, JUNO_ARRAY_LENGTH_BYTES past the start of the block payload
+// (the length word sits in between), so a word can name a block either exactly or by that interior offset.
+static void juno_gc_mark_candidate(uintptr_t word) {
+  juno_gc_mark_payload(word);
+  juno_gc_mark_payload(word - ${JUNO_ARRAY_LENGTH_BYTES}u);
 }
 
 // Reads `sizeof(uintptr_t)`-wide, natively-aligned words so this same collector code

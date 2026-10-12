@@ -132,6 +132,35 @@ class AvrAsmBackendTest {
     }
 
     @Test
+    void storesATwoByteLengthInFrontOfEveryArrayAndReadsItBack() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                @Board(ArduinoUnoR3.class)
+                public final class R3Length {
+                    static int length(byte[] values) {
+                        return values.length + values[0];
+                    }
+                    public static void main(String[] args) {
+                        byte[] buffer = new byte[5];
+                        Serial.println(length(buffer));
+                    }
+                }
+                """;
+        Path classes = CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.R3Length", source);
+        CompilationResult result = new JunoCompiler().compile(CompilerTestSupport.classpath(classes),
+                "demo.R3Length", false, Optional.of(R3));
+
+        assertThat(result.assembly())
+                .as("a 5-byte array is allocated with a 2-byte length word, which is stored and skipped")
+                .contains("ldi r22, 7", "std Z+0, r18", "std Z+1, r19", "subi r22, -2", "sbci r23, -1")
+                .as("length and bounds check read the word two bytes in front of the elements")
+                .contains("sbiw r30, 2", "ld r18, Z+", "ld r19, Z");
+    }
+
+    @Test
     void rejectsFeaturesThatDoNotFitTheClassicUnoR3() {
         assertThatThrownBy(() -> compileR3("demo.R3Wifi", "Wifi.status();",
                 "import io.github.jabrena.juno.api.net.Wifi;"))

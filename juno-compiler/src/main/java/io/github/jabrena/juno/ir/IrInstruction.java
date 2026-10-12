@@ -69,6 +69,8 @@ public sealed interface IrInstruction {
             case IrInstruction.ArrayLoad load -> List.of(load.target(), load.array(), load.index());
             case IrInstruction.ArrayStore store -> List.of(store.array(), store.index(), store.value());
             case IrInstruction.BoundsCheck check -> List.of(check.index());
+            case IrInstruction.ArrayBoundsCheck check -> List.of(check.index(), check.array());
+            case IrInstruction.ArrayLength length -> List.of(length.target(), length.array());
             case IrInstruction.LongConst constant -> List.of(constant.targetLow(), constant.targetHigh());
             case IrInstruction.LongBinary binary -> List.of(binary.targetLow(), binary.targetHigh(),
                     binary.leftLow(), binary.leftHigh(), binary.rightLow(), binary.rightHigh());
@@ -221,6 +223,14 @@ public sealed interface IrInstruction {
 
     /** Panics if {@code index} is outside {@code [0, length)}; emitted only when {@code length} is known. */
     record BoundsCheck(Value index, int length) implements IrInstruction {
+    }
+
+    /** Panics if {@code index} is outside {@code [0, array.length)}, read from the array's stored length word. */
+    record ArrayBoundsCheck(Value index, Value array) implements IrInstruction {
+    }
+
+    /** {@code target = array.length}, read from the length word stored in front of the array's elements. */
+    record ArrayLength(Value target, Value array) implements IrInstruction {
     }
 
     /**

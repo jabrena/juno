@@ -53,7 +53,7 @@ class CompilerPerformanceGuardrailTest {
                         Serial.println(run(16));
                     }
                 }
-                """, new Baseline(64, 23, 29, 110, 1));
+                """, new Baseline(64, 23, 30, 113, 1));
     }
 
     @Test

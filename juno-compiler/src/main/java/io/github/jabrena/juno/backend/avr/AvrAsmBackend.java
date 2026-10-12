@@ -378,13 +378,15 @@ public final class AvrAsmBackend implements AsmBackend {
             case IrInstruction.InterfaceCall call -> calls.emitInterfaceCall(output, frame, call);
             case IrInstruction.IntrinsicCall call -> intrinsics.emit(output, frame, call);
             case IrInstruction.NewArray newArray -> {
-                memory.emitAllocate(output, memory.elementSize(newArray.elementType()) * newArray.length());
+                memory.emitAllocateArray(output, newArray.length(), memory.elementSize(newArray.elementType()));
                 avr.store(output, frame, A, newArray.target());
             }
             case IrInstruction.NewMultiArray array -> memory.emitNewMultiArray(output, frame, array);
             case IrInstruction.ArrayLoad load -> memory.emitArrayLoad(output, frame, load);
             case IrInstruction.ArrayStore store -> memory.emitArrayStore(output, frame, store);
             case IrInstruction.BoundsCheck check -> memory.emitBoundsCheck(output, frame, check);
+            case IrInstruction.ArrayBoundsCheck check -> memory.emitArrayBoundsCheck(output, frame, check);
+            case IrInstruction.ArrayLength length -> memory.emitArrayLength(output, frame, length);
             case IrInstruction.Panic ignored -> output.append("    call juno_panic\n");
             case IrInstruction.NullCheck check -> {
                 avr.load(output, frame, A, check.value());

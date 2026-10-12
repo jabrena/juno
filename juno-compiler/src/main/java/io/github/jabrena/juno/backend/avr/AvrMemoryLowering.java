@@ -18,6 +18,8 @@ import java.util.Objects;
 final class AvrMemoryLowering {
     private static final int A = AvrEmitter.A;
     private static final int B = AvrEmitter.B;
+    /** Width of the length word stored in front of an array's elements. */
+    static final int LENGTH_BYTES = 2;
 
     private final AvrEmitter avr;
     private final ProgramLayout layout;
@@ -116,16 +118,50 @@ final class AvrMemoryLowering {
         avr.store(output, frame, A, target);
     }
 
+    /**
+     * {@code count} elements of {@code elementSize} bytes behind a {@link #LENGTH_BYTES}-byte length word; the
+     * reference to the first element comes back in A.
+     */
+    void emitAllocateArray(StringBuilder output, int count, int elementSize) {
+        emitAllocate(output, LENGTH_BYTES + count * elementSize);
+        output.append("    movw r30, r22\n");
+        avr.loadImmediate(output, B, count);
+        avr.storeToZ(output, B, 0, LENGTH_BYTES);
+        output.append("    subi r22, -").append(LENGTH_BYTES).append("\n    sbci r23, -1\n");
+    }
+
+    /** Z = the address of {@code array}'s length word, then B = the length, zero-extended to a quad. */
+    private void loadLength(StringBuilder output, FrameLayout frame, Value array) {
+        avr.loadPointer(output, frame, array);
+        output.append("    sbiw r30, ").append(LENGTH_BYTES).append("\n")
+                .append("    ld r18, Z+\n    ld r19, Z\n    clr r20\n    clr r21\n");
+    }
+
+    void emitArrayLength(StringBuilder output, FrameLayout frame, IrInstruction.ArrayLength length) {
+        loadLength(output, frame, length.array());
+        avr.store(output, frame, B, length.target());
+    }
+
+    void emitArrayBoundsCheck(StringBuilder output, FrameLayout frame, IrInstruction.ArrayBoundsCheck check) {
+        String ok = avr.newLabel(".Lbcok");
+        avr.load(output, frame, A, check.index());
+        loadLength(output, frame, check.array());
+        avr.compareQuads(output, A, B);
+        output.append("    brlo ").append(ok).append('\n')
+                .append("    call juno_panic\n")
+                .append(ok).append(":\n");
+    }
+
     void emitNewMultiArray(StringBuilder output, FrameLayout frame, IrInstruction.NewMultiArray array) {
         if (array.dimensions().size() != 2) {
             throw Architecture.AVR.unsupported("array nesting deeper than 2 dimensions: " + array.dimensions());
         }
         int outerCount = array.dimensions().get(0);
         int innerCount = array.dimensions().get(1);
-        emitAllocate(output, outerCount * AvrEmitter.WORD);
+        emitAllocateArray(output, outerCount, AvrEmitter.WORD);
         avr.store(output, frame, A, array.target());
         for (int index = 0; index < outerCount; index++) {
-            emitAllocate(output, innerCount * elementSize(array.leafType()));
+            emitAllocateArray(output, innerCount, elementSize(array.leafType()));
             avr.loadPointer(output, frame, array.target());
             avr.storeToZ(output, A, index * AvrEmitter.WORD, AvrEmitter.WORD);
         }

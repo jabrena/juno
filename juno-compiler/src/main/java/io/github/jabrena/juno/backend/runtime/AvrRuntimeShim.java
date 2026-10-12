@@ -154,7 +154,7 @@ public final class AvrRuntimeShim {
                 """
                 .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogRuntime.panicMessage())
                 + watchdogRuntime.functions()
-                + allocatorRuntime.source(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcDeclarations)
+                + allocatorRuntime.source(config.arenaBytes(), 2, gcLoggingEnabled, gcStackScan, gcDeclarations)
                 + runtimeSource.load("avr/core-runtime.cpp")
                 .replace("${PIN_MODE_TYPE}", core.avrPinModeType())
                 .replace("${PIN_STATUS_TYPE}", core.avrPinStatusType())
