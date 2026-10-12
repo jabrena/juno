@@ -220,6 +220,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
         for (IrMethod method : program.methods()) {
             emitMethod(code, method);
         }
+        arrays.emitHelpers(code);
         output.append(runtimeEntryPoints.preemptibleCode(usesThreads, code));
         String runtimeShim = new RuntimeShim(board, coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
@@ -310,8 +311,12 @@ public final class Thumb2AsmBackend implements AsmBackend {
             IrInstruction.Compare fused = fusion.fusedCompare(block);
             List<IrInstruction> instructions = fused == null ? block.instructions()
                     : block.instructions().subList(0, block.instructions().size() - 1);
-            for (IrInstruction instruction : instructions) {
-                emitInstruction(output, frame, instruction);
+            for (int index = 0; index < instructions.size(); index++) {
+                if (arrays.emitGuardedAccess(output, frame, instructions, index)) {
+                    index++;
+                } else {
+                    emitInstruction(output, frame, instructions.get(index));
+                }
             }
             terminators.emit(output, frame, label, block, fused,
                     isEntryPoint ? () -> emitMainExit(output) : () -> { });
@@ -361,6 +366,8 @@ public final class Thumb2AsmBackend implements AsmBackend {
             case IrInstruction.ArrayLoad load -> arrays.emitArrayLoad(output, frame, load);
             case IrInstruction.ArrayStore store -> arrays.emitArrayStore(output, frame, store);
             case IrInstruction.BoundsCheck check -> arrays.emitBoundsCheck(output, frame, check);
+            case IrInstruction.ArrayBoundsCheck check -> arrays.emitArrayBoundsCheck(output, frame, check);
+            case IrInstruction.ArrayLength length -> arrays.emitArrayLength(output, frame, length);
             case IrInstruction.Panic ignored -> output.append("    bl juno_panic\n");
             case IrInstruction.NullCheck check -> {
                 asm.load(output, frame, "r0", check.value());

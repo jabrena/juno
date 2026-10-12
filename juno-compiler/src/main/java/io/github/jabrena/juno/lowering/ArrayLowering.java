@@ -13,9 +13,10 @@ import java.util.List;
 import static io.github.jabrena.juno.bytecode.Opcodes.*;
 
 /**
- * Array element loads and stores, array creation and {@code arraylength}. There is no heap for arrays of unknown
- * size: every array is created with a compile-time-constant length, so an access to an array whose length is known
- * here gets a bounds check, and {@code arraylength} resolves at compile time.
+ * Array element loads and stores, array creation and {@code arraylength}. Every array is created with a
+ * compile-time-constant length and carries it in a length word in front of its elements. An access to an array whose
+ * length is known here gets a constant bounds check and {@code arraylength} resolves at compile time; any other array
+ * (a parameter, a field, a returned value) reads the stored length word instead.
  */
 final class ArrayLowering implements OpcodeGroup {
     private final MethodContext context;
@@ -50,12 +51,13 @@ final class ArrayLowering implements OpcodeGroup {
     private void arrayLength(Instruction instruction) {
         Value array = stack.pop();
         Integer knownLength = context.facts().knownLength(array);
-        if (knownLength == null) {
-            throw new CompileException(context.at(instruction) + ": array length is not known at compile time here "
-                    + "(only supported on a local array created once in this method with a compile-time-constant "
-                    + "size)");
+        if (knownLength != null) {
+            stack.pushInt(knownLength);
+            return;
         }
-        stack.pushInt(knownLength);
+        Value length = values.int32();
+        context.emit(new IrInstruction.ArrayLength(length, array));
+        stack.push(length);
     }
 
     private void load(ArrayElementType elementType) {
@@ -79,6 +81,8 @@ final class ArrayLowering implements OpcodeGroup {
         Integer knownLength = context.facts().knownLength(array);
         if (knownLength != null) {
             context.emit(new IrInstruction.BoundsCheck(index, knownLength));
+        } else {
+            context.emit(new IrInstruction.ArrayBoundsCheck(index, array));
         }
     }
 

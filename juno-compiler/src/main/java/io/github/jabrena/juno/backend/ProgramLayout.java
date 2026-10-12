@@ -162,9 +162,9 @@ public final class ProgramLayout {
      * {@code .word}; AVR's {@code .word} is 16-bit, so it uses {@code .long}), {@code align} 4-byte-aligns, and
      * {@code bss} switches to the zero-initialized section (AVR's assembler has no {@code .bss} shorthand).
      */
-    public record DataDirectives(String word, String align, String bss) {
-        public static final DataDirectives THUMB2 = new DataDirectives(".word", ".align 2", ".bss");
-        public static final DataDirectives AVR = new DataDirectives(".long", ".balign 4", ".section .bss");
+    public record DataDirectives(String word, String align, String bss, String lengthWord) {
+        public static final DataDirectives THUMB2 = new DataDirectives(".word", ".align 2", ".bss", ".word");
+        public static final DataDirectives AVR = new DataDirectives(".long", ".balign 4", ".section .bss", ".short");
     }
 
     private DataDirectives directives = DataDirectives.THUMB2;
@@ -244,9 +244,10 @@ public final class ProgramLayout {
         output.append("    .section .rodata\n")
                 .append("    ").append(directives.align()).append('\n');
         for (Map.Entry<IrInstruction.IntArrayConst, String> entry : intArraySymbols.entrySet()) {
-            output.append(entry.getValue()).append(":\n")
-                    .append("    ").append(directives.word()).append(' ');
             List<Integer> values = entry.getKey().values();
+            output.append("    ").append(directives.lengthWord()).append(' ').append(values.size()).append('\n')
+                    .append(entry.getValue()).append(":\n")
+                    .append("    ").append(directives.word()).append(' ');
             for (int index = 0; index < values.size(); index++) {
                 if (index > 0) {
                     output.append(", ");
@@ -268,7 +269,8 @@ public final class ProgramLayout {
         output.append("    .section .rodata\n")
                 .append("    ").append(directives.align()).append('\n');
         for (ConstantTables.Table table : constantTables.values()) {
-            output.append(constantTableSymbol(table.field())).append(":\n");
+            output.append("    ").append(directives.lengthWord()).append(' ').append(table.length()).append('\n')
+                    .append(constantTableSymbol(table.field())).append(":\n");
             String directive = switch (table.elementDescriptor()) {
                 case 'Z', 'B' -> "    .byte ";
                 case 'C', 'S' -> "    .short ";

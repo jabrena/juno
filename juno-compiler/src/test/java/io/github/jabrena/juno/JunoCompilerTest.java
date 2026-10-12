@@ -1757,8 +1757,8 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Objects").assembly();
 
-        // 3 references * 4 bytes = 12, 4-byte aligned: the arena allocation for the array itself.
-        assertThat(generated).contains("movs r0, #12\n    movs r1, #4\n    bl juno_alloc");
+        // 4-byte length word + 3 references * 4 bytes = 16, 4-byte aligned: the arena allocation for the array itself.
+        assertThat(generated).contains("movs r0, #16\n    movs r1, #4\n    bl juno_alloc");
     }
 
     @Test
@@ -1979,15 +1979,44 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ArrayDemo").assembly();
 
-        // 3 ints * 4 bytes, 4-byte aligned: the local array must use arena storage.
-        assertThat(generated).contains("movs r0, #12\n    movs r1, #4\n    bl juno_alloc");
+        // Length word + 3 ints * 4 bytes, 4-byte aligned: the local array must use arena storage.
+        assertThat(generated).contains("movs r0, #16\n    movs r1, #4\n    bl juno_alloc");
         // The 3 writes into the 3-element local array use constant indices 0-2, which the compiler proves in range:
-        // their bounds checks are decided at compile time and emit nothing.
+        // their bounds checks are decided at compile time and emit nothing; the only check left is sum's, which
+        // compares its parameter's index against the stored length word.
         assertThat(countOccurrences(generated, "bl juno_panic")).isZero();
+        assertThat(countOccurrences(generated, "bl juno_array_check")).isEqualTo(1);
         // sum's int[] parameter is a raw pointer (r0) with the explicit count as a second register (r1).
         assertThat(generated).contains("bl juno_fn1");
         // pins.length either folds to a compile-time constant or compileJuno throws (see the negative
         // test below); reaching this point at all already proves it resolved successfully.
+    }
+
+    @Test
+    void storesTheLengthOfMultiDimensionalAndCompilerCreatedArraysInFrontOfTheirElements() throws Exception {
+        String source = """
+                package demo;
+                public final class StoredLengths {
+                    enum Color { RED, GREEN, BLUE }
+                    static int rows(int[][] grid) {
+                        return grid.length + grid[0].length;
+                    }
+                    public static void main(String[] args) {
+                        int total = rows(new int[2][3]) + Color.values().length;
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.StoredLengths", source);
+
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.StoredLengths").assembly();
+
+        // The outer array (2 rows) and each row (3 ints) carry a length word: 4 + 2 * 4 = 12 and 4 + 3 * 4 = 16.
+        assertThat(generated).contains("movs r0, #12\n    movs r1, #4\n    bl juno_alloc\n    movs r1, #2\n"
+                + "    str r1, [r0]\n    adds r0, r0, #4");
+        assertThat(generated).contains("movs r0, #16\n    movs r1, #4\n    bl juno_alloc\n    movs r1, #3\n"
+                + "    str r1, [r0]\n    adds r0, r0, #4");
+        assertThat(generated).as("the loaded length word sits right in front of the elements")
+                .contains("ldr r0, [r0, #-4]");
     }
 
     @Test
@@ -2010,14 +2039,14 @@ class JunoCompilerTest {
     }
 
     @Test
-    void rejectsLengthOnAnArrayReceivedAsAParameter() throws Exception {
-        // .length needs a statically-known size; a parameter's array could have come from any caller
-        // with any length, so this is a clear compile error rather than a silently wrong answer.
+    void readsTheStoredLengthOfAnArrayReceivedAsAParameter() throws Exception {
+        // A parameter's array could have come from any caller with any length, so .length is one load of the
+        // length word stored in front of its elements, and element accesses are checked against it.
         String source = """
                 package demo;
                 public final class LengthOnParam {
                     static int firstLength(int[] values) {
-                        return values.length;
+                        return values.length + values[0];
                     }
                     public static void main(String[] args) {
                         int[] a = new int[2];
@@ -2027,16 +2056,18 @@ class JunoCompilerTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.LengthOnParam", source);
 
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LengthOnParam"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("demo.LengthOnParam.firstLength")
-                .hasMessageContaining("array length is not known at compile time");
+        String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LengthOnParam").assembly();
+
+        assertThat(generated).contains("ldr r0, [r0, #-4]");
+        assertThat(generated).as("values[0] is checked against the stored length by one shared helper")
+                .contains("    bl juno_array_check\n", "juno_array_check:\n    ldr r12, [r0, #-4]\n    cmp r1, r12\n");
+        assertThat(countOccurrences(generated, "juno_array_check:")).isEqualTo(1);
     }
 
     @Test
-    void aReassignedArrayLocalDegradesToUncheckedAccessInsteadOfFailing() throws Exception {
-        // arr is astore'd twice, so it is not "effectively final" and is not tracked: both stores must
-        // still compile (raw pointer semantics), just without a bounds check.
+    void aReassignedArrayLocalIsCheckedAgainstItsStoredLength() throws Exception {
+        // arr is astore'd twice, so it is not "effectively final" and its length is not tracked: both stores
+        // still compile, checked against the length stored with the array instead of a constant.
         String source = """
                 package demo;
                 public final class Reassigned {
@@ -2052,8 +2083,8 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Reassigned").assembly();
 
-        assertThat(generated).as("a reassigned local is not effectively-final and must not be bounds-checked")
-                .doesNotContain("bl juno_panic");
+        assertThat(generated).as("a reassigned local is checked against its stored length, not a constant")
+                .contains("bl juno_array_check");
         // both writes must still compile, as raw pointer stores through a scaled index.
         assertThat(countOccurrences(generated, "lsls r1, r1, #2")).isEqualTo(2);
     }
@@ -2084,11 +2115,11 @@ class JunoCompilerTest {
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ElementTypes").assembly();
 
         assertThat(generated).as("byte[4] must use 1-byte-aligned storage and a byte store")
-                .contains("movs r0, #4\n    movs r1, #1\n    bl juno_alloc", "strb r2, [r0, r1]");
-        assertThat(generated).as("char[3] must use 2-byte-aligned storage (3 * 2 = 6) and a halfword store")
-                .contains("movs r0, #6\n    movs r1, #2\n    bl juno_alloc", "strh r2, [r0, r1]");
-        assertThat(generated).as("short[2] must use 2-byte-aligned storage (2 * 2 = 4)")
-                .contains("movs r0, #4\n    movs r1, #2\n    bl juno_alloc");
+                .contains("movs r0, #8\n    movs r1, #1\n    bl juno_alloc", "strb r2, [r0, r1]");
+        assertThat(generated).as("char[3] must use 2-byte-aligned storage (4 + 3 * 2 = 10) and a halfword store")
+                .contains("movs r0, #10\n    movs r1, #2\n    bl juno_alloc", "strh r2, [r0, r1]");
+        assertThat(generated).as("short[2] must use 2-byte-aligned storage (4 + 2 * 2 = 8)")
+                .contains("movs r0, #8\n    movs r1, #2\n    bl juno_alloc");
         assertThat(generated).as("sumBytes's byte[] parameter must be read with a sign-extending byte load")
                 .contains("ldrsb r2, [r0, r1]");
     }
@@ -2199,7 +2230,7 @@ class JunoCompilerTest {
 
         String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ReturnLocal").assembly();
 
-        assertThat(generated).contains("bl juno_fn1", "movs r0, #12\n    movs r1, #4\n    bl juno_alloc");
+        assertThat(generated).contains("bl juno_fn1", "movs r0, #16\n    movs r1, #4\n    bl juno_alloc");
     }
 
     @Test
