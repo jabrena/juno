@@ -52,24 +52,32 @@ to the arena, and the build reports why (`JUNO-RISK-012`).
 
 ## What tasks can observe
 
-Juno's concurrency is **preemptive**. The public API is virtual threads (`Thread.startVirtualThread`, `join` and
-`isAlive`) and `StructuredTaskScope`; `new Thread` and the other `java.lang.Thread` members, apart from `sleep` and
-`yield`, are rejected at compile time. There is exactly one running task at any moment, and the scheduler takes the
-processor away from it when its **time slice** (1 ms) is over, whatever the task is doing. A task also gives the
-processor up early when it blocks:
+The public API is virtual threads (`Thread.startVirtualThread`, `join` and `isAlive`) and `StructuredTaskScope`;
+`new Thread` and the other `java.lang.Thread` members, apart from `sleep` and `yield`, are rejected at compile time.
+There is exactly one running task at any moment, and each gets the processor in **time slices** of 1 ms. The two
+kinds of task differ in how a slice ends:
+
+- **Virtual threads, and `main`, are preemptive.** The scheduler takes the processor away when the slice is over,
+  whatever the thread is doing (see below for each board).
+- **`StructuredTaskScope` subtasks are cooperative.** A subtask is never interrupted part-way through a statement: once
+  its slice is over it gives the processor up at its next loop back-edge, or earlier at one of the blocking points
+  below. A subtask that runs a long stretch without a loop (a deep recursion, say) keeps the processor until it
+  reaches one.
+
+Every task also gives the processor up early when it blocks:
 
 - `Delay`, `Thread.sleep` and `Thread.yield`,
 - a scope's or a virtual thread's `join`,
 - entering a monitor that another task holds,
 - a Powered Up call waiting for the hub: scanning for it, or waiting for its reply.
 
-How a slice ends depends on the board:
+How a preemptive thread's slice ends depends on the board:
 
 - **UNO R4 WiFi and UNO Q** (Arm Cortex-M): a periodic tick (`SysTick` on the R4, a Zephyr timer on the Q) interrupts
   the task. If it was running compiled Java, it is switched out right there, between any two instructions, inside a
   loop or a recursion or straight-line code alike; every register, the flags and the FPU state are saved and restored
   around the switch.
-- **UNO WiFi Rev2** (AVR): an 8-bit core stores a reference or an `int` a byte at a time, so a task cannot be stopped
+- **UNO WiFi Rev2** (AVR): an 8-bit core stores a reference or an `int` a byte at a time, so a thread cannot be stopped
   at an arbitrary instruction. It is preempted at **safepoints** instead: every loop back-edge and every method entry.
   A spinning loop and a loop-free recursion are both preempted once their slice is over.
 
@@ -87,8 +95,9 @@ is correct under the Java Memory Model is correct on Juno.
 The converse does not hold. A data race can be invisible on a board and still be a bug on the JVM, where tasks run in
 parallel on separate cores. Write the code as though it ran on the JVM:
 
-- A task can be switched between any two instructions of compiled Java, so `count++` on a shared field is a lost
-  update waiting to happen, inside a loop or not. Use `AtomicInteger`, `AtomicLong` or `AtomicBoolean`, or
+- A virtual thread can be switched between any two instructions of compiled Java, and a subtask at any loop
+  back-edge, so `count++` on a shared field is a lost update waiting to happen. Do not rely on a subtask being
+  cooperative for atomicity: on the JVM it runs in parallel. Use `AtomicInteger`, `AtomicLong` or `AtomicBoolean`, or
   `synchronized`/`ReentrantLock`.
 - Use `volatile` or an atomic for a flag one task sets and another polls. The JVM needs it, and on the board it keeps
   the compiler from caching the field in a local.
@@ -118,9 +127,9 @@ See the `PoweredUpHubScanWhileBlinking` example.
 
 | | JVM platform threads | JVM virtual threads | Juno |
 |---|---|---|---|
-| Scheduling | The operating system, preemptive | Cooperative at blocking calls, on preemptive carrier threads | Preemptive, 1 ms time slices |
+| Scheduling | The operating system, preemptive | Cooperative at blocking calls, on preemptive carrier threads | 1 ms time slices: virtual threads preemptive, `StructuredTaskScope` subtasks cooperative |
 | Parallel execution | Yes | Yes | No, one task at a time |
-| Where a switch can happen | Anywhere | Blocking operations | Anywhere in compiled Java (AVR: back-edges and method entries), plus `sleep`, `yield`, `join`, contended monitors, Powered Up waits; never inside a runtime or hardware call |
+| Where a switch can happen | Anywhere | Blocking operations | Virtual threads: anywhere in compiled Java (AVR: back-edges and method entries). Subtasks: loop back-edges. Both: `sleep`, `yield`, `join`, contended monitors, Powered Up waits; never inside a runtime or hardware call |
 | Memory ordering | Java Memory Model | Java Memory Model | Sequentially consistent |
 | A long blocking call | Stalls only its thread | Pins its carrier thread | Stalls every task (Powered Up waits excepted) |
 

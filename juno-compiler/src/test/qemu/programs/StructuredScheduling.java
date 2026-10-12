@@ -9,16 +9,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
- * Structured concurrency is preemptive too: forked subtasks run on the same scheduler as virtual threads. A spinning
- * subtask makes progress while the owner runs a loop-free recursion; two sibling subtasks preempt each other while
- * the owner waits in {@code join} (one recurses without looping, the other spins until the first is done); two
- * computing subtasks interleave; and a fail-fast scope cancels a sibling that
- * was preempted in the middle of its loop. Under a cooperative scheduler the recursions would starve the spinners.
+ * How structured subtasks share the CPU: a subtask is cooperative (it gives the CPU up at its loop backedges once its
+ * time slice is over, and at sleep, yield, join and contended monitors), while the owner, like any virtual thread,
+ * is preemptive. So a spinning subtask still makes progress while the owner runs a loop-free recursion, two computing
+ * subtasks interleave through their loops, and a fail-fast scope cancels a sibling that is spinning.
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
-public final class StructuredPreemption {
+public final class StructuredScheduling {
     static volatile boolean stop;
-    static volatile boolean recursed;
     static volatile int progress;
     static int snapshot;
 
@@ -53,7 +51,7 @@ public final class StructuredPreemption {
     public static void main() throws Exception {
         // The owner recurses while a forked subtask spins.
         try (var scope = StructuredTaskScope.open()) {
-            scope.fork(StructuredPreemption::spin);
+            scope.fork(StructuredScheduling::spin);
             while (progress == 0) {
                 // Wait until the subtask is demonstrably running.
             }
@@ -63,24 +61,7 @@ public final class StructuredPreemption {
             scope.join();
         }
 
-        // Siblings preempt each other while the owner waits in join.
-        stop = false;
-        progress = 0;
-        try (var scope = StructuredTaskScope.open()) {
-            scope.fork(StructuredPreemption::spin);
-            scope.fork(() -> {
-                while (progress == 0) {
-                    // Wait until the sibling is demonstrably running.
-                }
-                snapshot = progress;
-                recursed = search(24) == 1;
-                stop = true;
-            });
-            scope.join();
-        }
-        Serial.println(recursed ? "sibling progressed during sibling recursion" : "sibling starved");
-
-        // Two computing subtasks, each writing its own slot, preempting each other while the owner joins.
+        // Two computing subtasks, each writing its own slot, taking turns at their loop backedges.
         final int[] sums = new int[2];
         try (var scope = StructuredTaskScope.open()) {
             scope.fork(() -> { sums[0] = sumOfRemainders(7); });
@@ -89,11 +70,11 @@ public final class StructuredPreemption {
         }
         Serial.println(sums[0] + sums[1]);
 
-        // Fail-fast: a failing subtask cancels a sibling that is spinning (and so preempted mid-loop).
+        // Fail-fast: a failing subtask cancels a sibling that is spinning.
         stop = false;
         progress = 0;
         try (var scope = StructuredTaskScope.open(StructuredTaskScope.Joiner.awaitAllSuccessfulOrThrow())) {
-            scope.fork(StructuredPreemption::spin);
+            scope.fork(StructuredScheduling::spin);
             Callable<String> failing = () -> {
                 while (progress == 0) {
                     // Wait until the sibling is demonstrably running.

@@ -3,8 +3,12 @@ package io.github.jabrena.juno.backend;
 import io.github.jabrena.juno.RuntimeLimits;
 
 /**
- * The C++ source of the {@code java.lang.Thread} runtime in the generated shim: preemptive threads, each on a stack
- * of its own, time-sliced by the scheduler ({@link #scheduler}) every {@code JUNO_TIME_SLICE_MILLIS}.
+ * The C++ source of the {@code java.lang.Thread} runtime in the generated shim: threads, each on a stack of its own,
+ * time-sliced by the scheduler ({@link #scheduler}) every {@code JUNO_TIME_SLICE_MILLIS}. Virtual threads and
+ * {@code main} are preemptive, as described below. {@code StructuredTaskScope} subtasks are cooperative: the tick never
+ * interrupts one, it gives the CPU up only where the program already pauses (a loop backedge once its slice is over,
+ * {@code sleep}/{@code yield}/{@code Delay}, {@code join}, a contended monitor), so a statement of a subtask is never
+ * interrupted halfway.
  *
  * <p>On the Thumb-2 boards preemption is asynchronous: a periodic tick ({@code SysTick} on the UNO R4, a Zephyr
  * {@code k_timer} on the UNO Q) interrupts whatever runs. When the interrupted instruction belongs to the generated
@@ -13,7 +17,8 @@ import io.github.jabrena.juno.RuntimeLimits;
  * {@code juno_preempt_trampoline}: it saves every register the interrupted code may be using (the caller-saved
  * core registers, the flags, {@code s0}-{@code s15} and {@code FPSCR}), switches to the next runnable thread like
  * {@code Thread.yield}, and later restores all of it and resumes exactly where the tick struck. A thread is
- * therefore preempted between any two instructions of generated code, inside a loop or not.
+ * therefore preempted between any two instructions of generated code, inside a loop or not, unless it is a
+ * cooperative subtask.
  *
  * <p>The runtime itself (the arena, the collector, the pending-exception slot, monitors, atomics, the scheduler and
  * every core library the shim calls) is never preempted part-way: a tick that lands outside generated code only
@@ -25,7 +30,8 @@ import io.github.jabrena.juno.RuntimeLimits;
  * <p>The UNO WiFi Rev2 (AVR) cannot be interrupted at an arbitrary instruction: a reference or {@code int} is
  * loaded and stored a byte at a time, and generated calls pass arguments through one global area. Its threads are
  * preempted at safepoints instead: on every loop backedge and every method entry the running thread hands over the
- * CPU once its time slice has expired, so neither a spinning loop nor a loop-free recursion can starve the others.
+ * CPU once its time slice has expired, so neither a spinning loop nor a loop-free recursion can starve the others. A
+ * cooperative subtask skips the method-entry safepoints.
  *
  * <p>Only how a stack is created, how control moves between two of them and where the tick comes from differ per
  * board; that lives in the {@link CoreRuntime}'s port ({@link #renesasPort}, {@link #zephyrPort},
@@ -470,7 +476,8 @@ final class ThreadRuntime {
                   }""".replace("${JUNO_STRUCTURED_BODY}", structuredBody) : """
                 ${JUNO_ORDINARY_BODY}""";
         String taskRuntime = structuredTasks ? taskRuntime() : "";
-        String preemption = asynchronousPreemption ? asynchronousPreemption() : safepointPreemption();
+        String preemption = COOPERATIVE_TASKS
+                + (asynchronousPreemption ? asynchronousPreemption() : safepointPreemption());
         String startPreemption = asynchronousPreemption ? """
                   static bool juno_preempt_started = false;
                   if (!juno_preempt_started) {
@@ -828,6 +835,20 @@ final class ThreadRuntime {
     }
 
     /**
+     * Which threads are cooperative: a {@code StructuredTaskScope} subtask gives the CPU up only where the program
+     * already pauses (a loop backedge once its time slice is over, {@code sleep}/{@code yield}/{@code Delay},
+     * {@code join}, a contended monitor), never part-way through a statement. Virtual threads and {@code main} are
+     * preemptive.
+     */
+    private static final String COOPERATIVE_TASKS = """
+            static bool juno_slot_cooperative(uint32_t slot) {
+              const JunoThreadObject* thread = juno_slots[slot].thread;
+              return thread != nullptr && (thread->flags & JUNO_THREAD_TASK) != 0u;
+            }
+
+            """;
+
+    /**
      * Thumb-2's asynchronous preemption. The tick runs in handler mode with the interrupted thread's exception frame
      * ({@code r0}-{@code r3}, {@code r12}, {@code lr}, {@code pc}, {@code xPSR}, then any FPU words). It only
      * redirects a thread caught in generated code, and never one inside an IT block or a continuable
@@ -888,7 +909,8 @@ final class ThreadRuntime {
                     "  pop {pc}\\n"
                     ".text\\n");
 
-                // Interrupt context: preempt the running thread now if it is in generated code, else soon.
+                // Interrupt context: preempt the running thread now if it is in generated code, else soon; a
+                // cooperative subtask is never redirected, it takes the due switch at its next backedge.
                 extern "C" void juno_preempt_tick(uint32_t* frame) {
                   if (juno_live_threads == 0u) return;
                   uint32_t pc = frame[6];
@@ -896,7 +918,7 @@ final class ThreadRuntime {
                       && pc < static_cast<uint32_t>(reinterpret_cast<uintptr_t>(juno_java_code_end));
                   bool resumable = (frame[7] & 0x0600FC00u) == 0u;
                   uint32_t slot = juno_current_slot;
-                  if (inJava && resumable && juno_preempt_resume[slot] == 0u) {
+                  if (inJava && resumable && !juno_slot_cooperative(slot) && juno_preempt_resume[slot] == 0u) {
                     juno_preempt_resume[slot] = pc | 1u;
                     frame[6] = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&juno_preempt_trampoline)) & ~1u;
                   } else {
@@ -934,7 +956,7 @@ final class ThreadRuntime {
      */
     private static String safepointPreemption() {
         return """
-                extern "C" void juno_thread_safepoint() {
+                static void juno_thread_slice_over() {
                   if (juno_live_threads == 0u) return;
                   uint32_t now = static_cast<uint32_t>(millis());
                   if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) return;
@@ -942,9 +964,15 @@ final class ThreadRuntime {
                   juno_sched_block();
                 }
 
+                // Method entry: a safepoint for preemptive threads only.
+                extern "C" void juno_thread_safepoint() {
+                  if (juno_slot_cooperative(juno_current_slot)) return;
+                  juno_thread_slice_over();
+                }
+
                 extern "C" void juno_thread_backedge() {
                   yield();
-                  juno_thread_safepoint();
+                  juno_thread_slice_over();
                 }
                 """;
     }

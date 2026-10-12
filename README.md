@@ -148,7 +148,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   try-with-resources. See
   [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/language/Exceptions.java).
 - **Concurrency:** preemptive virtual threads (`Thread.startVirtualThread`, `join`, `isAlive`) and the
-  supported JDK 27 preview `StructuredTaskScope` subset (up to four threads including `main`, with
+  supported JDK 27 preview `StructuredTaskScope` subset with cooperative subtasks (up to four threads including `main`, with
   `Thread.sleep` and `Thread.yield`), restricted monitors and `ReentrantLock`, and `ScopedValue` bindings
   inherited by forked subtasks. Platform threads (`new Thread`) and `Thread.ofVirtual()` builders are
   rejected at compile time; `AtomicInteger`, `AtomicBoolean` and `AtomicLong` are available. See

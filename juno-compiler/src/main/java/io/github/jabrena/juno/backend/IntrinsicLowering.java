@@ -220,7 +220,7 @@ final class IntrinsicLowering {
         shim(Intrinsic.THREAD_YIELD, "juno_thread_yield", Result.NONE, List.of(), runtime);
     }
 
-    /** JDK 27 preview {@code StructuredTaskScope} operations over the preemptive task scheduler. */
+    /** JDK 27 preview {@code StructuredTaskScope} operations; subtasks are cooperative. */
     private void registerStructuredTasks() {
         ShimFeature[] taskRuntime = {ShimFeature.THREADS, ShimFeature.STRUCTURED_TASKS, ShimFeature.EXCEPTIONS};
         shim(Intrinsic.TASK_SCOPE_OPEN_DEFAULT, "juno_task_scope_open_default", Result.WORD, List.of(), taskRuntime);

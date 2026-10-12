@@ -146,13 +146,15 @@ Supported today:
   `Exception in thread "main" <class>: <message>` over `Serial` and panics. An `int`/`long` division or remainder by zero inside a `try` whose handler catches
   `ArithmeticException` (or a supertype, or `finally`) raises `ArithmeticException("/ by zero")` there;
   anywhere else it unwinds to the callers' handlers if any `catch`/`finally` in the program can receive `ArithmeticException`, and panics if none can, as do Juno's other runtime failures (array bounds, arena exhaustion).
-- Preemptive virtual threads and subtasks, on every board: `Thread.startVirtualThread(Runnable)` (a class
+- Preemptive virtual threads and cooperative subtasks, on every board: `Thread.startVirtualThread(Runnable)` (a class
   implementing `Runnable` or a lambda), `join()` and `isAlive()` on the returned `Thread`, and `Thread.sleep(long)`
   and `Thread.yield()`, which are also available inside a forked subtask (and in `main`). Each virtual thread or
-  subtask runs on a stack of its own and gets the processor for 1 ms time slices. On the UNO R4 WiFi and UNO Q a
-  periodic tick (`SysTick` on the R4, a Zephyr `k_timer` on the Q) preempts a thread between any two instructions of
-  compiled Java, saving its registers, flags and FPU state; on the UNO WiFi Rev2 a thread is preempted at loop
-  back-edges and method entries once its slice is over. `Delay.millis`, `Thread.sleep`, `Thread.yield`, `join` and a
+  subtask runs on a stack of its own and gets the processor for 1 ms time slices. Virtual threads (and `main`) are
+  preemptive: on the UNO R4 WiFi and UNO Q a periodic tick (`SysTick` on the R4, a Zephyr `k_timer` on the Q)
+  preempts a thread between any two instructions of compiled Java, saving its registers, flags and FPU state; on the
+  UNO WiFi Rev2 a thread is preempted at loop back-edges and method entries once its slice is over.
+  `StructuredTaskScope` subtasks are cooperative: once its slice is over a subtask gives the processor up at its next
+  loop back-edge, never in the middle of a statement. `Delay.millis`, `Thread.sleep`, `Thread.yield`, `join` and a
   contended monitor hand the processor over early. The runtime itself (allocation, the garbage collector, throws,
   monitors, atomics and every hardware call) is never interrupted part-way, so the arena, the collector and the
   pending-exception slot need no locking. A virtual thread is a daemon, as on the JVM: when `main` returns, the program does not wait for it. At most
@@ -163,7 +165,7 @@ Supported today:
   the language subset: `new Thread(...)`, `start()`, `setDaemon(boolean)`, the `Thread.ofVirtual()` and
   `Thread.ofPlatform()` builders and the other members fail with a `CompileException` that points to
   `Thread.startVirtualThread`, and so do other `java.util.concurrent` APIs.
-- JDK 27 preview `StructuredTaskScope`, lowered onto the same preemptive task runtime: `open()`, `open(Joiner)`,
+- JDK 27 preview `StructuredTaskScope`, lowered onto the same task runtime, with cooperative subtasks: `open()`, `open(Joiner)`,
   `fork(Callable)`, `fork(Runnable)`, `join()`, `isCancelled()`, try-with-resources `close()`, and
   `Subtask.state()`/`get()`/`exception()`. The supported built-in joiners are `allSuccessfulOrThrow`,
   `anySuccessfulOrThrow`, `awaitAllSuccessfulOrThrow`; fail-fast policies cancel sibling
@@ -187,7 +189,7 @@ Supported today:
   `getAndDecrement`, `addAndGet` and `getAndAdd` (plus `intValue()`/`longValue()`). Each is a small arena cell, and the
   scheduler never preempts the runtime in the middle of an operation, so none needs a monitor. `AtomicReference`, the array
   and adder classes, `updateAndGet`/`accumulateAndGet` and `lazySet` are rejected with a `CompileException`.
-- restricted synchronization for preemptive subtasks: `volatile` primitive/reference fields are always loaded from
+- restricted synchronization for threads and subtasks: `volatile` primitive/reference fields are always loaded from
   and stored to memory, including across calls and loop backedges; `synchronized (lock)` blocks use a bounded table
   of eight reentrant intrinsic monitors; and concrete `java.util.concurrent.locks.ReentrantLock` supports only
   `new ReentrantLock()`, `lock()`, zero-argument `tryLock()`, and `unlock()`, backed by the same monitor runtime.

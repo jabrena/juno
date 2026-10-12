@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The preemptive thread runtime behind virtual threads and {@code StructuredTaskScope}: the closed-world
+ * The thread runtime behind preemptive virtual threads and cooperative {@code StructuredTaskScope} subtasks: the closed-world
  * {@code Runnable.run()} entry function, the runtime in the shim, each board's preemption tick, what a program
  * without subtasks does not pay for, and the rejection of {@code java.lang.Thread} itself. Behavior of the compiled
  * code is covered under QEMU and simavr ({@code src/test/qemu/programs}, notably {@code Preemption} and
@@ -106,7 +106,7 @@ class ThreadsTest {
                 // The tick redirects only generated code outside an IT block / continuable LDM-STM.
                 .contains("pc >= static_cast<uint32_t>(reinterpret_cast<uintptr_t>(juno_java_code_start))",
                         "(frame[7] & 0x0600FC00u) == 0u")
-                .doesNotContain("cooperative", "k_timer", "juno_thread_safepoint");
+                .doesNotContain("k_timer", "juno_thread_safepoint");
     }
 
     @Test
@@ -117,6 +117,27 @@ class ThreadsTest {
                         "k_timer_start(&juno_preempt_timer, K_MSEC(JUNO_TIME_SLICE_MILLIS)",
                         "__asm__ volatile(\"mrs %0, psp\" : \"=r\"(frame));", "juno_preempt_trampoline:\\n")
                 .doesNotContain("SysTick_Handler", "juno_thread_safepoint");
+    }
+
+    @Test
+    void structuredSubtasksAreCooperativeWhileVirtualThreadsArePreemptive() throws Exception {
+        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ", "ArduinoUnoWiFiRev2"}) {
+            String shim = compile(board, START_AND_JOIN).runtimeShim();
+
+            assertThat(shim).as(board).contains("static bool juno_slot_cooperative(uint32_t slot) {",
+                    "return thread != nullptr && (thread->flags & JUNO_THREAD_TASK) != 0u;");
+        }
+        String arm = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        assertThat(arm).as("the tick never redirects a subtask; it switches at the subtask's next backedge")
+                .contains("if (inJava && resumable && !juno_slot_cooperative(slot) && juno_preempt_resume[slot] == 0u) {");
+        String avr = compile("ArduinoUnoWiFiRev2", START_AND_JOIN).runtimeShim();
+        String safepoint = avr.substring(avr.indexOf("extern \"C\" void juno_thread_safepoint() {"));
+        assertThat(safepoint.substring(0, safepoint.indexOf("\n}\n")))
+                .as("a subtask skips the method-entry safepoint").contains("if (juno_slot_cooperative(juno_current_slot)) return;");
+        String backedge = avr.substring(avr.indexOf("extern \"C\" void juno_thread_backedge() {"));
+        assertThat(backedge.substring(0, backedge.indexOf("\n}\n")))
+                .as("but every thread switches at a backedge once its slice is over")
+                .contains("juno_thread_slice_over();").doesNotContain("juno_slot_cooperative");
     }
 
     @Test

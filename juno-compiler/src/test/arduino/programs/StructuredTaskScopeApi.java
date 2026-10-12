@@ -4,7 +4,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
 import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.locks.ReentrantLock;
 
-/** Forked subtasks on the preemptive scheduler, with a lock, a scoped value and a sleep: each board's thread port. */
+/** Forked cooperative subtasks, with a lock, a scoped value and a sleep: each board's thread port. */
 public final class StructuredTaskScopeApi {
     private static final ScopedValue<String> NAME = ScopedValue.newInstance();
     private static final ReentrantLock LOCK = new ReentrantLock();
