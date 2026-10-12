@@ -556,19 +556,10 @@ public final class IntrinsicLowering {
                 List.of(literal(0), arg(0), literal(1), literal(2), arg(1), arg(2), arg(3)), ShimFeature.POP3);
     }
 
-    /** {@code Json}: every accessor takes the document buffer, its length, and a path literal. */
+    /** {@code Json}: the scanner is compiled Java; only copying a value's raw text into a runtime String is native. */
     private void registerJson() {
-        List<Operand> query = List.of(arg(0), arg(1), literal(0));
-        shim(Intrinsic.JSON_TYPE, "juno_json_type", Result.WORD, query, ShimFeature.JSON);
-        shim(Intrinsic.JSON_GET_INT, "juno_json_get_int", Result.WORD, query, ShimFeature.JSON);
-        shim(Intrinsic.JSON_GET_BOOL, "juno_json_get_bool", Result.WORD, query, ShimFeature.JSON);
-        shim(Intrinsic.JSON_ARRAY_SIZE, "juno_json_array_size", Result.WORD, query, ShimFeature.JSON);
-        shim(Intrinsic.JSON_GET_LONG, "juno_json_get_long", Result.WIDE, query, ShimFeature.JSON);
-        shim(Intrinsic.JSON_GET_DOUBLE, "juno_json_get_double", Result.WIDE, query, ShimFeature.JSON);
-        shim(Intrinsic.JSON_GET_STRING, "juno_json_get_string", Result.WORD,
-                List.of(arg(0), arg(1), literal(0), arg(2), arg(3)), ShimFeature.JSON);
-        shim(Intrinsic.JSON_GET_STRING_VALUE, "juno_json_get_string_value", Result.WORD, query,
-                ShimFeature.JSON, ShimFeature.RUNTIME_STRINGS, ShimFeature.JSON_STRING_VALUE);
+        shim(Intrinsic.STRING_FROM_BYTES, "juno_string_from_bytes", Result.WORD, List.of(arg(0), arg(1), arg(2)),
+                ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_FROM_BYTES);
     }
 
     private void registerHttpServer() {

@@ -1,9 +1,10 @@
-package io.github.jabrena.juno.api.net;
+package io.github.jabrena.juno.api.net.wifi;
 
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 import java.io.IOException;
@@ -24,7 +25,7 @@ import java.util.Properties;
  * <p>Unlike the LCD Keypad Shield, this shield shares no pins with its SD socket, so no rewiring
  * is needed.
  */
-public final class WifiStatusTFT {
+public final class WifiStatusSDTFT {
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
     private static final int MARGIN = 10;

@@ -114,10 +114,10 @@ calibration. Confirmed working on a real UNO R4 WiFi with this shield.
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:install-deps   # SdFat, once
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.net.WifiStatusTFT
+  -Djuno.main=io.github.jabrena.juno.api.net.wifi.WifiStatusSDTFT
 ```
 
-[`WifiStatusTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatusTFT.java)
+[`WifiStatusSDTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSDTFT.java)
 is the TFT version of [`WifiStatusSD`](../storage): it loads `wifi.ssid`/`wifi.password` from
 `application.properties` on the shield's own microSD card, connects, and shows the connection
 state, SSID, and `Wifi.status()` value in landscape. If loading or connecting fails, tap the

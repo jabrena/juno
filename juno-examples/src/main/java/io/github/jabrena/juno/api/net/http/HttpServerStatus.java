@@ -10,7 +10,7 @@ import io.github.jabrena.juno.api.net.Wifi;
 /**
  * A minimal REST endpoint for the experimental {@code Thumb2AsmBackend}: connects to WiFi with
  * build-time credentials from {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD} (see {@link
- * io.github.jabrena.juno.api.net.WifiStatus}), prints its {@link Wifi#localIP} once connected
+ * io.github.jabrena.juno.api.net.wifi.WifiStatus}), prints its {@link Wifi#localIP} once connected
  * so the endpoint can actually be found on the network, then serves {@code GET /status} as JSON
  * ({@code
  * {"uptime_ms":<Clock.millis()>}}) on port 80, and replies to everything else with an RFC 7807

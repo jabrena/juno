@@ -1,6 +1,6 @@
-# Juno: Java for Arduino One
+# JUno: Java for Arduino One
 
-Juno is an ahead-of-time compiler for running a practical subset of Java on Arduino One Q, Arduino One R4 WiFi, Arduino One WiFi Rev2 and Arduino One R3. It keeps `javac` as the Java frontend, performs
+JUno `/ˈxu.no/` is an ahead-of-time compiler for running a practical subset of Java on Arduino One Q, Arduino One R4 WiFi, Arduino One WiFi Rev2 and Arduino One R3. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly, or
 AVR assembly for the UNO R3's ATmega328P and the UNO WiFi Rev2's ATmega4809.
 
@@ -50,7 +50,7 @@ This is a multi-module Maven build:
 
 ## Quick start
 
-Requirements: JDK 27+ and Maven 3.9+.
+Requirements: JDK 27+ and Maven 3.10+.
 
 ```bash
 ./mvnw clean install
@@ -190,9 +190,9 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`SerialCounter`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/serial/SerialCounter.java) (serial I/O),
   [`HttpServerStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/HttpServerStatus.java) (clocks),
   [`LedMatrixHeart`](juno-examples/src/main/java/io/github/jabrena/juno/api/led/LedMatrixHeart.java) (LED matrix),
-  [`WifiStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatus.java) (Wi-Fi),
-  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatusSD.java) (Wi-Fi credentials loaded from an SD card),
-  [`WifiStatusSDLcd`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatusSDLcd.java) (the same, with an LCD Keypad Shield),
+  [`WifiStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatus.java) (Wi-Fi),
+  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSD.java) (Wi-Fi credentials loaded from an SD card),
+  [`WifiStatusSDLcd`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSDLcd.java) (the same, with an LCD Keypad Shield),
   [`WifiProvisioning`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/WifiProvisioning.java) (access point and HTTP server to provide Wi-Fi credentials),
   [`HttpsMethods`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/HttpsMethods.java) (HTTP/HTTPS and JSON),
   [`LedgerGame`](juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/LedgerGame.java) and
@@ -207,10 +207,10 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   The [ELEGOO 2.8" TFT touch shield](https://jabrena.github.io/juno/tft-touch-shield) (display,
   touch, microSD) is shown in
   [`TouchPaintTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TouchPaintTFT.java) and
-  [`WifiStatusTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatusTFT.java).
+  [`WifiStatusSDTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSDTFT.java).
   The [AZDelivery Data Logger Module Data Recorder Shield](https://jabrena.github.io/juno/storage)
   provides the SD card for
-  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/WifiStatusSD.java).
+  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSD.java).
 - **Compile-time safety checks:** deterministic closed-world linking and runtime-risk warnings for
   loop allocations, arena pressure, recursion, unchecked array access, possible division by zero,
   and proven-null dereferences.

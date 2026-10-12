@@ -1568,7 +1568,7 @@ class JunoCompilerTest {
     }
 
     @Test
-    void lowersJsonFieldExtractionIntrinsics() throws Exception {
+    void compilesJsonFromJavaRatherThanAShimScanner() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.net.http.Json;
@@ -1591,14 +1591,13 @@ class JunoCompilerTest {
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonDemo");
 
         assertThat(result.assembly()).as("JSON parsing alone needs no WiFi").doesNotContain("WiFiS3.h");
-        assertThat(result.assembly()).contains(".asciz \"data.sensor.temp\"",
-                "bl juno_json_type", "bl juno_json_get_int", "bl juno_json_get_long", "bl juno_json_get_double",
-                "bl juno_json_get_bool", "bl juno_json_get_string\n", "bl juno_json_array_size");
-        assertThat(result.runtimeShim()).contains("static int32_t juno_json_locate(");
+        assertThat(result.assembly()).contains(".asciz \"data.sensor.temp\"", "bl juno_fn")
+                .doesNotContain("bl juno_json");
+        assertThat(result.runtimeShim()).doesNotContain("juno_json", "juno_string_from_bytes");
     }
 
     @Test
-    void lowersJsonGetStringValueAsARuntimeString() throws Exception {
+    void lowersJsonGetStringValueThroughTheStringFromBytesIntrinsic() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.net.http.Json;
@@ -1613,20 +1612,14 @@ class JunoCompilerTest {
 
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonStringValueDemo");
 
-        assertThat(result.assembly()).contains("bl juno_json_get_string_value");
-        assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_json_get_string_value(",
+        assertThat(result.assembly()).contains("bl juno_string_from_bytes");
+        assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_string_from_bytes(",
                 "JUNO_STRING_SLOT_SIZE = 32");
     }
 
-    /**
-     * Regression test for a real bug: {@code juno_json_get_string_value} needs the runtime-string
-     * pool, which is only emitted when some intrinsic in {@code RUNTIME_STRING_INTRINSICS} is used
-     * — a program using only {@code Json.getInt} must not pull in that unused helper (it would
-     * reference undeclared symbols if the string pool weren't also unconditionally gated the same
-     * way).
-     */
+    /** {@code Json.getString(byte[], int, String)} is unreachable here, so its native helper is left out. */
     @Test
-    void omitsJsonGetStringValueHelperWhenOnlyOtherJsonIntrinsicsAreUsed() throws Exception {
+    void omitsStringFromBytesHelperWhenOnlyOtherJsonMethodsAreUsed() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.net.http.Json;
@@ -1641,8 +1634,8 @@ class JunoCompilerTest {
 
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonIntOnlyDemo");
 
-        assertThat(result.assembly()).contains("bl juno_json_get_int").doesNotContain("juno_json_get_string_value");
-        assertThat(result.runtimeShim()).doesNotContain("juno_json_get_string_value", "JUNO_STRING_SLOT_SIZE");
+        assertThat(result.assembly()).doesNotContain("juno_string_from_bytes");
+        assertThat(result.runtimeShim()).doesNotContain("juno_string_from_bytes");
     }
 
     @Test
@@ -1660,8 +1653,8 @@ class JunoCompilerTest {
 
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NoNetworking");
 
-        assertThat(result.assembly()).doesNotContain("bl juno_http", "bl juno_json");
-        assertThat(result.runtimeShim()).doesNotContain("juno_http_request", "juno_json_locate", "WiFiS3.h");
+        assertThat(result.assembly()).doesNotContain("bl juno_http", "bl juno_fn");
+        assertThat(result.runtimeShim()).doesNotContain("juno_http_request", "WiFiS3.h");
         assertThat(result.runtimeShim()).doesNotContain("juno_smtp_send", "juno_pop3_message_count", "ESP_SSLClient.h");
     }
 

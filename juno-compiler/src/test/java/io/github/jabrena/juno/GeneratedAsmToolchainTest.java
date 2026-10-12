@@ -1416,7 +1416,7 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
-    void generatedJsonShimParsesStrictBoundedDocumentsAtRuntime() throws Exception {
+    void generatedStringFromBytesShimCopiesABoundedRangeAtRuntime() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1425,14 +1425,7 @@ class GeneratedAsmToolchainTest {
                 public final class JsonRuntime {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[1];
-                        byte[] out = new byte[1];
-                        int reachable = Json.type(buffer, 0, "")
-                                + Json.getInt(buffer, 0, "x")
-                                + (int) Json.getLong(buffer, 0, "x")
-                                + (int) Json.getDouble(buffer, 0, "x")
-                                + (Json.getBool(buffer, 0, "x") ? 1 : 0)
-                                + Json.getString(buffer, 0, "x", out, out.length)
-                                + Json.arraySize(buffer, 0, "x");
+                        String text = Json.getString(buffer, 0, "x");
                     }
                 }
                 """;
@@ -1454,42 +1447,18 @@ class GeneratedAsmToolchainTest {
                 int main() {
                   uint8_t stackTopMarker;
                   juno_gc_stack_top = reinterpret_cast<uintptr_t>(&stackTopMarker);
-                  const char json[] = R"json({"users":[{"id":1},{"id":2147483648,"active":false,
-                      "name":"A\\n\\u00e9\\uD83D\\uDE00"}],"numbers":[-12,1.25e2],"nothing":null,
-                      "minimum":-9223372036854775808,"tooLarge":9223372036854775808})json";
+                  const char json[] = R"json({"temp":"21.5","long":"0123456789012345678901234567890123"})json";
                   const uint8_t* bytes = reinterpret_cast<const uint8_t*>(json);
-                  int32_t length = static_cast<int32_t>(sizeof(json) - 1);
-                  uint8_t out[16] = {};
-                  if (juno_json_type(bytes, length, "users") != JUNO_JSON_ARRAY) return 1;
-                  if (juno_json_array_size(bytes, length, "users") != 2) return 2;
-                  if (juno_json_get_int(bytes, length, "users[0].id") != 1) return 3;
-                  if (juno_json_get_int(bytes, length, "users[1].id") != 0) return 4;
-                  if (juno_json_get_long(bytes, length, "users[1].id") != 2147483648LL) return 5;
-                  if (juno_json_type(bytes, length, "users[1].active") != JUNO_JSON_BOOLEAN) return 6;
-                  if (juno_json_get_bool(bytes, length, "users[1].active")) return 7;
-                  if (juno_json_get_double(bytes, length, "numbers[1]") != 125.0) return 8;
-                  if (juno_json_get_int(bytes, length, "numbers[1]") != 0) return 9;
-                  if (juno_json_type(bytes, length, "nothing") != JUNO_JSON_NULL) return 10;
-                  if (juno_json_type(bytes, length, "missing") != JUNO_JSON_MISSING) return 11;
-                  int32_t written = juno_json_get_string(bytes, length, "users[1].name", out, 16);
-                  const uint8_t expected[] = {'A', '\\n', 0xc3, 0xa9, 0xf0, 0x9f, 0x98, 0x80};
-                  if (written != 8 || memcmp(out, expected, 8) != 0) return 12;
-                  if (juno_json_get_string(bytes, length, "users[1].name", out, 4) != 4) return 13;
-
-                  const char rootArray[] = R"json([true,3])json";
-                  const uint8_t* rootBytes = reinterpret_cast<const uint8_t*>(rootArray);
-                  int32_t rootLength = static_cast<int32_t>(sizeof(rootArray) - 1);
-                  if (juno_json_type(rootBytes, rootLength, "[0]") != JUNO_JSON_BOOLEAN) return 14;
-                  if (juno_json_get_int(rootBytes, rootLength, "[1]") != 3) return 15;
-
-                  const char truncated[] = R"json({"x":[1,2)json";
-                  if (juno_json_type(reinterpret_cast<const uint8_t*>(truncated),
-                                     static_cast<int32_t>(sizeof(truncated) - 1), "x") != JUNO_JSON_INVALID) return 16;
-                  const char malformed[] = R"json({"x":01})json";
-                  if (juno_json_type(reinterpret_cast<const uint8_t*>(malformed),
-                                     static_cast<int32_t>(sizeof(malformed) - 1), "x") != JUNO_JSON_INVALID) return 17;
-                  if (juno_json_get_long(bytes, length, "minimum") != INT64_MIN) return 18;
-                  if (juno_json_get_long(bytes, length, "tooLarge") != 0) return 19;
+                  // A runtime String is a 32-bit handle: on this 64-bit host it is not a usable pointer, so the
+                  // checks read the slots it rotates through instead (first call, first slot).
+                  int32_t text = juno_string_from_bytes(bytes, 9, 13);
+                  if (text != static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_string_slots[0]))) return 1;
+                  if (strcmp(juno_string_slots[0], "21.5") != 0) return 1;
+                  if (juno_string_from_bytes(bytes, 23, 54) == 0) return 2; // 31 bytes: the longest that fits
+                  if (juno_string_from_bytes(bytes, 23, 55) != 0) return 3; // 32 bytes: one too many
+                  if (juno_string_from_bytes(bytes, 5, 4) != 0) return 4;
+                  juno_string_slots[2][0] = 'x';
+                  if (juno_string_from_bytes(bytes, 9, 9) == 0 || juno_string_slots[2][0] != '\\0') return 5;
                   return 0;
                 }
                 """;

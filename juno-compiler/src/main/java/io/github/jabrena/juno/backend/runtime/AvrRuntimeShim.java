@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * Generates the C++ runtime shim of an AVR program, the counterpart of {@link RuntimeShim}. It reuses every shared
  * helper block whose C is width-independent — the arena and its conservative collector, runtime strings, string
- * builders, exceptions, the SD card and {@code Properties}, UDP, the HTTP/1.1 codec, the JSON scanner, atomics — and
+ * builders, exceptions, the SD card and {@code Properties}, UDP, the HTTP/1.1 codec, atomics — and
  * replaces the parts that assume a 32-bit {@code int} or a binary64 {@code double}: AVR's {@code int} is 16 bits and
  * its {@code double} is binary32, so Java's {@code float}/{@code double} run on {@link SoftFloatRuntime} and every
  * Arduino core function is reached through a wrapper taking Java-width parameters. The generated assembly calls all
@@ -279,7 +279,7 @@ public final class AvrRuntimeShim {
                 """ : "");
     }
 
-    /** Wi-Fi, UDP, JSON, the HTTP/HTTPS client and the TLS email clients over WiFiNINA. */
+    /** Wi-Fi, UDP, the HTTP/HTTPS client and the TLS email clients over WiFiNINA. */
     private void appendNetworkHelpers(StringBuilder shim) {
         if (uses(ShimFeature.WIFI)) {
             shim.append(core.wifiHelpers());
@@ -287,13 +287,8 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.UDP)) {
             shim.append(networkShimLibraries.udpHelpers(core.udpDeclaration()));
         }
-        if (uses(ShimFeature.JSON)) {
-            shim.append(networkShimLibraries.jsonScanner())
-                    .append(jsonDouble())
-                    .append(networkShimLibraries.jsonValueHelpers());
-        }
-        if (uses(ShimFeature.JSON_STRING_VALUE)) {
-            shim.append(networkShimLibraries.jsonStringValueHelpers());
+        if (uses(ShimFeature.STRING_FROM_BYTES)) {
+            shim.append(shimLibraries.stringFromBytesHelpers());
         }
         if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsHelpers());
@@ -315,11 +310,6 @@ public final class AvrRuntimeShim {
 
     private String floatingAppends() {
         return runtimeSource.load("avr/floating-appends.cpp");
-    }
-
-    /** {@code Json.getDouble}: the Thumb-2 parser's arithmetic, step for step, on binary64. */
-    private String jsonDouble() {
-        return runtimeSource.load("avr/json-double.cpp").replace("${TEN}", f64(10.0)).replace("${ONE}", f64(1.0));
     }
 
     /** Java {@code float} arithmetic in binary64, rounded once to binary32 (exact; see {@link SoftFloatRuntime}). */

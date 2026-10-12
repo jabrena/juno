@@ -497,33 +497,25 @@ class Thumb2AsmBackendTest {
     }
 
     /**
-     * Mirrors {@code WeatherClient}'s exact {@code (int) Json.getDouble(...)} pattern: a JSON double
-     * field read, immediately truncated to int (see
+     * Mirrors {@code WeatherClient}'s exact {@code (int) Json.getDouble(...)} pattern: a double immediately
+     * truncated to int (see
      * {@code juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/WeatherClient.java}).
      */
     @Test
-    void lowersJsonGetDoubleThroughDoubleToIntLikeMadridWeather() {
+    void lowersDoubleToIntLikeMadridWeather() {
         MethodRef entryPoint = new MethodRef("demo/WeatherAsm", "main", "()I");
-        Value buffer = Value.int32(0);
-        Value length = Value.int32(1);
-        Value doubleResult = Value.float64(2);
-        Value intResult = Value.int32(3);
+        Value doubleResult = Value.float64(0);
+        Value intResult = Value.int32(2);
         IrBasicBlock block = new IrBasicBlock(0, List.of(
-                new IrInstruction.Const(buffer, 0),
-                new IrInstruction.Const(length, 10),
-                new IrInstruction.IntrinsicCall(Optional.of(doubleResult), Intrinsic.JSON_GET_DOUBLE,
-                        Optional.empty(), List.of(buffer, length), List.of("current.temperature_2m")),
+                new IrInstruction.DoubleConst(doubleResult, 21.5),
                 new IrInstruction.DoubleToInt(intResult, doubleResult)),
                 new IrTerminator.Return(Optional.of(intResult)));
-        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
 
         GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
-        assertThat(result.assembly().contains("bl juno_json_get_double")).isTrue();
         assertThat(result.assembly().contains("bl juno_d2i")).isTrue();
-        assertThat(result.runtimeShim().contains("extern \"C\" JUNO_ASM_ABI double juno_json_get_double")).isTrue();
         assertThat(result.runtimeShim().contains("#include <math.h>")).isTrue();
-        assertThat(result.runtimeShim().contains("#include <string.h>")).isTrue();
     }
 
     @Test
@@ -738,19 +730,14 @@ class Thumb2AsmBackendTest {
         assertThat(generated.runtimeShim()).contains("extern \"C\" int32_t juno_string_value_of_int");
     }
 
-    /** Same JSON-double read as {@code WeatherClient}, but formatted with its decimal part kept. */
+    /** A double like {@code WeatherClient}'s temperature, formatted with its decimal part kept. */
     @Test
     void lowersStringValueOfDoubleThroughTheShimAsAWholeDoubleArgument() {
         MethodRef entryPoint = new MethodRef("demo/WeatherDecimalAsm", "main", "()I");
-        Value buffer = Value.int32(0);
-        Value length = Value.int32(1);
-        Value doubleResult = Value.float64(2);
-        Value text = Value.int32(3);
+        Value doubleResult = Value.float64(0);
+        Value text = Value.int32(2);
         IrBasicBlock block = new IrBasicBlock(0, List.of(
-                new IrInstruction.Const(buffer, 0),
-                new IrInstruction.Const(length, 10),
-                new IrInstruction.IntrinsicCall(Optional.of(doubleResult), Intrinsic.JSON_GET_DOUBLE,
-                        Optional.empty(), List.of(buffer, length), List.of("current.temperature_2m")),
+                new IrInstruction.DoubleConst(doubleResult, 21.5),
                 new IrInstruction.IntrinsicCall(Optional.of(text), Intrinsic.STRING_VALUE_OF_DOUBLE,
                         Optional.empty(), List.of(doubleResult), List.of())),
                 new IrTerminator.Return(Optional.of(text)));
@@ -764,48 +751,27 @@ class Thumb2AsmBackendTest {
     }
 
     @Test
-    void lowersJsonGetStringValueThroughTheShimAsARuntimeString() {
-        MethodRef entryPoint = new MethodRef("demo/JsonStringValueAsm", "main", "()I");
+    void lowersStringFromBytesThroughTheShimAsARuntimeString() {
+        MethodRef entryPoint = new MethodRef("demo/JsonRawTextAsm", "main", "()I");
         Value buffer = Value.int32(0);
-        Value length = Value.int32(1);
-        Value text = Value.int32(2);
+        Value start = Value.int32(1);
+        Value end = Value.int32(2);
+        Value text = Value.int32(3);
         IrBasicBlock block = new IrBasicBlock(0, List.of(
                 new IrInstruction.Const(buffer, 0),
-                new IrInstruction.Const(length, 10),
-                new IrInstruction.IntrinsicCall(Optional.of(text), Intrinsic.JSON_GET_STRING_VALUE,
-                        Optional.empty(), List.of(buffer, length), List.of("current.temperature_2m"))),
+                new IrInstruction.Const(start, 1),
+                new IrInstruction.Const(end, 5),
+                new IrInstruction.IntrinsicCall(Optional.of(text), Intrinsic.STRING_FROM_BYTES,
+                        Optional.empty(), List.of(buffer, start, end), List.of())),
                 new IrTerminator.Return(Optional.of(text)));
-        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
 
         GeneratedCode generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
-        assertThat(generated.assembly()).contains("bl juno_json_get_string_value");
-        assertThat(generated.runtimeShim()).contains("extern \"C\" int32_t juno_json_get_string_value(");
-        assertThat(generated.runtimeShim()).contains("JUNO_STRING_SLOT_SIZE = 32");
-    }
-
-    /** Mirrors {@link io.github.jabrena.juno.JunoCompilerTest}'s same-named regression test for the C++ backend. */
-    @Test
-    void omitsJsonGetStringValueHelperWhenOnlyOtherJsonIntrinsicsAreUsed() {
-        MethodRef entryPoint = new MethodRef("demo/JsonIntOnlyAsm", "main", "()I");
-        Value buffer = Value.int32(0);
-        Value length = Value.int32(1);
-        Value temperature = Value.int32(2);
-        IrBasicBlock block = new IrBasicBlock(0, List.of(
-                new IrInstruction.Const(buffer, 0),
-                new IrInstruction.Const(length, 10),
-                new IrInstruction.IntrinsicCall(Optional.of(temperature), Intrinsic.JSON_GET_INT,
-                        Optional.empty(), List.of(buffer, length), List.of("data.sensor.temp"))),
-                new IrTerminator.Return(Optional.of(temperature)));
-        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
-
-        GeneratedCode generated = new Thumb2AsmBackend()
-                .generate(new IrProgram(entryPoint, List.of(method)));
-
-        assertThat(generated.assembly()).contains("bl juno_json_get_int");
-        assertThat(generated.runtimeShim()).doesNotContain("juno_json_get_string_value");
-        assertThat(generated.runtimeShim()).doesNotContain("JUNO_STRING_SLOT_SIZE");
+        assertThat(generated.assembly()).contains("bl juno_string_from_bytes");
+        assertThat(generated.runtimeShim()).contains("extern \"C\" int32_t juno_string_from_bytes(",
+                "JUNO_STRING_SLOT_SIZE = 32");
     }
 
     /**

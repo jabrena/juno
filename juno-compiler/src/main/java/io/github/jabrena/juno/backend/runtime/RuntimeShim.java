@@ -127,12 +127,12 @@ public final class RuntimeShim {
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append("#include <new>\n");
         }
-        if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER, ShimFeature.JSON,
+        if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.RUNTIME_STRINGS, ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3,
                 ShimFeature.SD)) {
             shim.append("#include <string.h>\n");
         }
-        if (usesAny(ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.JSON, ShimFeature.RUNTIME_STRINGS,
+        if (usesAny(ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.RUNTIME_STRINGS,
                 ShimFeature.STRING_BUILDER) || !usedMath.isEmpty()) {
             shim.append("#include <math.h>\n");
         }
@@ -262,11 +262,8 @@ public final class RuntimeShim {
                     throwableClasses.indexOf("java/io/EOFException"),
                     throwableClasses.indexOf("java/lang/IndexOutOfBoundsException")));
         }
-        if (uses(ShimFeature.JSON)) {
-            shim.append(networkShimLibraries.jsonHelpers());
-        }
-        if (uses(ShimFeature.JSON_STRING_VALUE)) {
-            shim.append(networkShimLibraries.jsonStringValueHelpers());
+        if (uses(ShimFeature.STRING_FROM_BYTES)) {
+            shim.append(shimLibraries.stringFromBytesHelpers());
         }
         if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsHelpers());

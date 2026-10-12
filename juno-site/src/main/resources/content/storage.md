@@ -47,7 +47,7 @@ formatted as FAT16 or FAT32; exFAT is not supported by the shield's documented S
 If a different reader or shield routes CS elsewhere, call `SdCard.begin(chipSelectPin)` explicitly.
 
 The ELEGOO 2.8" TFT touch screen shield's microSD socket also uses D10, and shares no pins with its
-display: see [`WifiStatusTFT`](../tft-touch-shield#examples) for the same flow shown on the TFT.
+display: see [`WifiStatusSDTFT`](../tft-touch-shield#examples) for the same flow shown on the TFT.
 On UNO WiFi Rev2, Juno automatically drives the shield's D11-D13 SD connection with software SPI,
 leaving the board's ICSP-routed hardware SPI bus available to the NINA-W102 Wi-Fi module.
 
@@ -58,7 +58,7 @@ Install the Arduino `SdFat` library once, then compile the example through the r
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:install-deps
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.net.WifiStatusSD
+  -Djuno.main=io.github.jabrena.juno.api.net.wifi.WifiStatusSD
 ```
 
 The essential Java flow is:
