@@ -204,7 +204,7 @@ Operations that run out of memory panic loudly; they never return a wrong value.
 | `LcdKeypadShield`, `TftTouchShield` | Yes | |
 | `Servo`, `I2c`, `Infrared` | Untested | Generated, but not yet run in the simulator or on hardware |
 | `BigInteger`, `BigDecimal`, `MathContext` | Yes | See the limits above |
-| `StructuredTaskScope`, `ScopedValue`, `synchronized`, `ReentrantLock`, atomics | Yes | The same cooperative scheduler as the other boards, at most four threads including `main`; see the task stacks above |
+| `StructuredTaskScope`, `ScopedValue`, `synchronized`, `ReentrantLock`, atomics | Yes | The same preemptive scheduler as the other boards, preempted at loop back-edges and method entries (AVR safepoints), at most four threads including `main`; see the task stacks above |
 | `Mouse` | No | The application MCU has no native USB HID support |
 | `LedMatrix`, `@Watchdog` | No | |
 

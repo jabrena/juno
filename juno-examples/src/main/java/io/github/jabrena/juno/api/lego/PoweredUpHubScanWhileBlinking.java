@@ -13,9 +13,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * "Scanning... N s" every half second, so the program shows signs of life while the Arduino looks for the hub. Switch
  * the hub on before the scan starts or during it.
  *
- * <p>On the JVM the two subtasks run in parallel. Under the cooperative runtime the progress line can only appear
- * because the shim's scan loop yields to the scheduler while no hub has answered yet. The one stretch that stays
- * silent is the second or so inside ArduinoBLE's own blocking connect and service discovery, once a hub is found.
+ * <p>On the JVM the two subtasks run in parallel. On the board the runtime never preempts a hardware call, so the
+ * progress line can only appear because the shim's scan loop yields to the scheduler while no hub has answered yet.
+ * The one stretch that stays silent is the second or so inside ArduinoBLE's own blocking connect and service
+ * discovery, once a hub is found.
  *
  * <p>Expected output (one line per 500 ms, then the result):
  * <pre>

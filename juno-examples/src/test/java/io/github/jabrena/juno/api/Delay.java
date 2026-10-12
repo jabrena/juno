@@ -5,8 +5,8 @@ package io.github.jabrena.juno.api;
  * {@link Clock}'s simulated time instantly and then runs {@link #afterAdvance}, which the TFT
  * emulator uses to script touches and to stop a program at a chosen moment.
  *
- * <p>Simulated time belongs to the program's main thread. On the board, virtual threads are cooperative and share one
- * timeline that the owner's waits drive, but on the JVM they run truly in parallel; letting them advance the clock
+ * <p>Simulated time belongs to the program's main thread. On the board, virtual threads take turns on one core and share
+ * one timeline that the owner's waits drive, but on the JVM they run truly in parallel; letting them advance the clock
  * too would make runs unrepeatable and starve the owner of simulated time. A virtual thread's wait therefore sleeps
  * a real millisecond and leaves simulated time alone.
  */

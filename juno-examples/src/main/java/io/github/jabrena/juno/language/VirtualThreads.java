@@ -7,12 +7,12 @@ import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
- * Virtual threads lowered onto Juno's cooperative task runtime: three virtual threads each count the primes in a
+ * Virtual threads lowered onto Juno's preemptive task runtime: three virtual threads each count the primes in a
  * slice of 2..299, the owner joins all of them, and then adds up the partial counts.
  *
- * <p>Virtual threads are cooperative on the board: control moves between them where the program already pauses
- * (loop iterations, {@code Delay}, {@code Thread.sleep}, {@code Thread.yield} and {@code join}), never in the middle
- * of a statement. At most four threads, the owner included, run at once.
+ * <p>Virtual threads are preemptive on the board: each runs for 1 ms time slices and can be switched out in the middle
+ * of a statement, exactly as on the JVM, so each thread writes only its own slot of {@code counts} and the owner reads
+ * them after {@code join}. At most four threads, the owner included, run at once.
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class VirtualThreads {

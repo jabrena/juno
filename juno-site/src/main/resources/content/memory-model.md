@@ -52,19 +52,30 @@ to the arena, and the build reports why (`JUNO-RISK-012`).
 
 ## What tasks can observe
 
-Juno's concurrency is **cooperative**. The public API is virtual threads (`Thread.startVirtualThread`, `join` and
+Juno's concurrency is **preemptive**. The public API is virtual threads (`Thread.startVirtualThread`, `join` and
 `isAlive`) and `StructuredTaskScope`; `new Thread` and the other `java.lang.Thread` members, apart from `sleep` and
-`yield`, are rejected at compile time. There is exactly one running
-task at any moment, and it keeps the processor until it reaches a **switch point**:
+`yield`, are rejected at compile time. There is exactly one running task at any moment, and the scheduler takes the
+processor away from it when its **time slice** (1 ms) is over, whatever the task is doing. A task also gives the
+processor up early when it blocks:
 
-- a loop back-edge in compiled Java (a task switch happens at most once per millisecond),
 - `Delay`, `Thread.sleep` and `Thread.yield`,
 - a scope's or a virtual thread's `join`,
 - entering a monitor that another task holds,
 - a Powered Up call waiting for the hub: scanning for it, or waiting for its reply.
 
-The runtime never switches a task in the middle of an allocation, a collection or a throw. That is why the arena, the
-collector and the pending-exception slot need no locks.
+How a slice ends depends on the board:
+
+- **UNO R4 WiFi and UNO Q** (Arm Cortex-M): a periodic tick (`SysTick` on the R4, a Zephyr timer on the Q) interrupts
+  the task. If it was running compiled Java, it is switched out right there, between any two instructions, inside a
+  loop or a recursion or straight-line code alike; every register, the flags and the FPU state are saved and restored
+  around the switch.
+- **UNO WiFi Rev2** (AVR): an 8-bit core stores a reference or an `int` a byte at a time, so a task cannot be stopped
+  at an arbitrary instruction. It is preempted at **safepoints** instead: every loop back-edge and every method entry.
+  A spinning loop and a loop-free recursion are both preempted once their slice is over.
+
+The runtime itself is never preempted part-way: an allocation, a collection, a throw, a monitor or atomic operation,
+and every hardware call run to completion, and a tick that lands in one only marks the switch as due. That is why the
+arena, the collector and the pending-exception slot need no locks.
 
 ### Visibility and ordering
 
@@ -76,10 +87,13 @@ is correct under the Java Memory Model is correct on Juno.
 The converse does not hold. A data race can be invisible on a board and still be a bug on the JVM, where tasks run in
 parallel on separate cores. Write the code as though it ran on the JVM:
 
-- A task can still be switched between any two loop iterations, so `count++` on a shared field is still a lost update
-  across a loop back-edge. Use `AtomicInteger`, `AtomicLong` or `AtomicBoolean`, or `synchronized`.
-- Use `volatile` or an atomic for a flag one task sets and another polls, even though both behave the same on the
-  board. The JVM needs them.
+- A task can be switched between any two instructions of compiled Java, so `count++` on a shared field is a lost
+  update waiting to happen, inside a loop or not. Use `AtomicInteger`, `AtomicLong` or `AtomicBoolean`, or
+  `synchronized`/`ReentrantLock`.
+- Use `volatile` or an atomic for a flag one task sets and another polls. The JVM needs it, and on the board it keeps
+  the compiler from caching the field in a local.
+- `long` and `double` fields are always read and written whole on the Arm boards (the JLS only promises that for
+  `volatile` ones), so another task never sees half of a 64-bit store.
 - Share results through `join`. Reading a subtask's result after the scope has joined is safe on both.
 
 `AtomicReference` is not supported.
@@ -87,7 +101,7 @@ parallel on separate cores. Write the code as though it ran on the JVM:
 ### Native calls are atomic, except the Powered Up waits
 
 A call into the hardware runtime (Wi-Fi, SD card, the TFT shield) runs to completion before any other task gets a
-turn, however long it takes. This is the main place where behavior differs from the JVM, where a blocking call stalls
+turn, however long it takes: preemption only ever interrupts compiled Java code. This is the main place where behavior differs from the JVM, where a blocking call stalls
 only the thread that made it. Keep long hardware calls out of programs that depend on other tasks making progress.
 
 `PoweredUpHubRemote` is the exception. While it scans for a hub or waits for the hub's reply, it lets the other tasks
@@ -104,14 +118,13 @@ See the `PoweredUpHubScanWhileBlinking` example.
 
 | | JVM platform threads | JVM virtual threads | Juno |
 |---|---|---|---|
-| Scheduling | The operating system, preemptive | Cooperative at blocking calls, on preemptive carrier threads | Cooperative only |
+| Scheduling | The operating system, preemptive | Cooperative at blocking calls, on preemptive carrier threads | Preemptive, 1 ms time slices |
 | Parallel execution | Yes | Yes | No, one task at a time |
-| Where a switch can happen | Anywhere | Blocking operations | Loop back-edges, `sleep`, `yield`, `join`, contended monitors, Powered Up waits |
+| Where a switch can happen | Anywhere | Blocking operations | Anywhere in compiled Java (AVR: back-edges and method entries), plus `sleep`, `yield`, `join`, contended monitors, Powered Up waits; never inside a runtime or hardware call |
 | Memory ordering | Java Memory Model | Java Memory Model | Sequentially consistent |
 | A long blocking call | Stalls only its thread | Pins its carrier thread | Stalls every task (Powered Up waits excepted) |
 
-Juno behaves like virtual threads running on a single carrier, with an extra switch point at each loop back-edge. That
-is why `StructuredTaskScope`, which uses virtual threads on the JVM, is the supported way to run work concurrently.
+Juno behaves like platform threads time-sliced on a single core, with the runtime's own calls atomic. That is why `StructuredTaskScope`, which uses virtual threads on the JVM, is the supported way to run work concurrently.
 
 ## RAM budget
 
