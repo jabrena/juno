@@ -86,6 +86,9 @@ final class IoRuntime {
                 extern "C" void juno_thread_sleep(int64_t millis);
 
                 extern "C" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {
+                  // A device call is the deepest the runtime goes on a thread's stack: catch an overflow here, before
+                  // the call's own frames are used.
+                  juno_port_check_stack(juno_current_slot);
                   uint32_t self = juno_current_slot + 1u;
                   JunoIoOwner& entry = juno_io_owners[device];
                   while (entry.owner != 0u && entry.owner != self) juno_thread_sleep(1);

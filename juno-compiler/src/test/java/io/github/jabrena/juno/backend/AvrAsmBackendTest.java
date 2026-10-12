@@ -288,6 +288,9 @@ class AvrAsmBackendTest {
                 .contains("juno_gc_scan_bytes(from, reinterpret_cast<const uint8_t*>(top));")
                 .contains("juno_thread_gc_scan(&stackMarker);")
                 .contains("extern \"C\" [[noreturn]] void juno_thread_stack_overflow() {")
+                // An overflow is caught by the stack pointer as well as the canary, and reported from its own stack.
+                .contains("bool below = SP < reinterpret_cast<uintptr_t>(bottom) + sizeof JUNO_STACK_CANARY;",
+                        "static uint8_t juno_overflow_stack[128];", "\"out __SP_H__, %B0\\n\"")
                 // Preemption at safepoints once the time slice is over; no tick, so no interrupt trampoline.
                 .contains("extern \"C\" void juno_thread_safepoint() {",
                         "if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) return;")

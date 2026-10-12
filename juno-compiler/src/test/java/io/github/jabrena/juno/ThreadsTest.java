@@ -73,6 +73,9 @@ class ThreadsTest {
         String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
 
         assertThat(shim).contains("juno_context_switch:", "UNO R4 port").doesNotContain("zephyr/kernel.h");
+        assertThat(shim).as("an overflow is caught by the stack pointer too, and reported from a stack of its own")
+                .contains("bool below = reinterpret_cast<uintptr_t>(&marker) < reinterpret_cast<uintptr_t>(canary + 2);",
+                        "__asm__ volatile(\"mov sp, %0\"");
     }
 
     @Test

@@ -134,13 +134,28 @@ final class ThreadRuntime {
                   static_cast<void>(slot);
                 }
 
+                // An overflowed stack may already reach into another thread's stack or the runtime's data, and printing
+                // (USB serial is deep) from it would push further still, so the report runs on a stack of its own.
+                alignas(8) static uint8_t juno_overflow_stack[512];
+
+                [[noreturn]] __attribute__((noinline)) static void juno_stack_overflow_report() {
+                  Serial.println("[juno-thread] stack overflow");
+                  juno_panic();
+                }
+
+                [[noreturn]] static void juno_stack_overflow() {
+                  __asm__ volatile("mov sp, %0" : : "r"(juno_overflow_stack + sizeof juno_overflow_stack) : "memory");
+                  juno_stack_overflow_report();
+                }
+
+                // A large C frame can allocate straight past the canary without writing it, so the stack pointer itself
+                // is checked too. Called from deep inside the runtime (every switch and every guarded I/O call).
                 static void juno_port_check_stack(uint32_t slot) {
                   if (slot == 0u) return;
                   const uint32_t* canary = reinterpret_cast<const uint32_t*>(&juno_stacks[slot - 1u][0]);
-                  if (canary[0] != JUNO_STACK_CANARY || canary[1] != JUNO_STACK_CANARY) {
-                    Serial.println("[juno-thread] stack overflow");
-                    juno_panic();
-                  }
+                  uint8_t marker;
+                  bool below = reinterpret_cast<uintptr_t>(&marker) < reinterpret_cast<uintptr_t>(canary + 2);
+                  if (below || canary[0] != JUNO_STACK_CANARY || canary[1] != JUNO_STACK_CANARY) juno_stack_overflow();
                 }
 
                 static void juno_port_switch(uint32_t from, uint32_t to) {
@@ -235,11 +250,34 @@ final class ThreadRuntime {
                       : static_cast<uint16_t>(reinterpret_cast<uintptr_t>(juno_stacks[slot - 1u] + JUNO_STACK_GUARD_BYTES));
                 }
 
-                // Called by a generated function whose frame would cross the limit; the guard bytes are left for this.
-                extern "C" [[noreturn]] void juno_thread_stack_overflow() {
-                  juno_stack_limit = 0u;
+                // An overflowed stack may already reach into another thread's stack or the runtime's data, and printing
+                // from it would push further still, so the report runs on a small stack of its own.
+                static uint8_t juno_overflow_stack[128];
+
+                [[noreturn]] __attribute__((noinline)) static void juno_stack_overflow_report() {
                   Serial.println("[juno-thread] stack overflow");
                   juno_panic();
+                }
+
+                [[noreturn]] static void juno_stack_overflow() {
+                  juno_stack_limit = 0u;
+                  uint16_t top = static_cast<uint16_t>(
+                      reinterpret_cast<uintptr_t>(juno_overflow_stack + sizeof juno_overflow_stack - 1u));
+                  __asm__ volatile(
+                      "in __tmp_reg__, __SREG__\\n"
+                      "cli\\n"
+                      "out __SP_H__, %B0\\n"
+                      "out __SREG__, __tmp_reg__\\n"
+                      "out __SP_L__, %A0\\n"
+                      :
+                      : "r"(top)
+                      : "memory");
+                  juno_stack_overflow_report();
+                }
+
+                // Called by a generated function whose frame would cross the limit.
+                extern "C" [[noreturn]] void juno_thread_stack_overflow() {
+                  juno_stack_overflow();
                 }
 
                 // Pushes r2-r17 and Y on the current stack, stores SP through r25:r24, then runs on the stack
@@ -296,12 +334,13 @@ final class ThreadRuntime {
                   static_cast<void>(slot);
                 }
 
+                // A large C frame can allocate straight past the canary without writing it, so the stack pointer itself
+                // is checked too. Called from deep inside the runtime (every switch and every guarded I/O call).
                 static void juno_port_check_stack(uint32_t slot) {
                   if (slot == 0u) return;
-                  if (memcmp(juno_stacks[slot - 1u], &JUNO_STACK_CANARY, sizeof JUNO_STACK_CANARY) != 0) {
-                    Serial.println("[juno-thread] stack overflow");
-                    juno_panic();
-                  }
+                  const uint8_t* bottom = juno_stacks[slot - 1u];
+                  bool below = SP < reinterpret_cast<uintptr_t>(bottom) + sizeof JUNO_STACK_CANARY;
+                  if (below || memcmp(bottom, &JUNO_STACK_CANARY, sizeof JUNO_STACK_CANARY) != 0) juno_stack_overflow();
                 }
 
                 static void juno_port_switch(uint32_t from, uint32_t to) {
@@ -405,6 +444,18 @@ final class ThreadRuntime {
 
                 static uintptr_t juno_port_saved_sp(uint32_t slot) {
                   return juno_zephyr_sp[slot];
+                }
+
+                // Zephyr runs this core without an MPU stack guard, so a Juno thread's stack pointer is checked against
+                // its buffer from deep inside the runtime (every guarded I/O call).
+                static void juno_port_check_stack(uint32_t slot) {
+                  if (slot == 0u) return;
+                  uint8_t marker;
+                  uintptr_t bottom = reinterpret_cast<uintptr_t>(K_THREAD_STACK_BUFFER(juno_zephyr_stacks[slot - 1u]));
+                  if (reinterpret_cast<uintptr_t>(&marker) < bottom + 64u) {
+                    Serial.println("[juno-thread] stack overflow");
+                    juno_panic();
+                  }
                 }
 
                 extern "C" void juno_preempt_tick(uint32_t* frame);
