@@ -156,6 +156,20 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`VirtualThreads`](juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), and
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java)
   (a scoped `MathContext` shared by three parallel subtasks).
+- **Concurrency patterns:** JCStress-style examples from the
+  [`concurrency`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/package-info.java) package:
+  lost updates from plain, volatile, monitor, lock and atomic increments
+  ([`LostUpdates`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/LostUpdates.java)),
+  Peterson's algorithm and a compare-and-set spin lock
+  ([`Mutexes`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Mutexes.java)),
+  deadlock avoidance by lock ordering
+  ([`DiningPhilosophers`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/DiningPhilosophers.java)),
+  a producer and consumer over a bounded buffer
+  ([`BoundedBuffer`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/BoundedBuffer.java)),
+  first-success and all-or-nothing `StructuredTaskScope` joiners
+  ([`StructuredRace`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/StructuredRace.java)),
+  and double-checked locking with a volatile field
+  ([`LazyInit`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/LazyInit.java)).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
   HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
   See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) (GPIO and delays),
@@ -262,6 +276,14 @@ from the `io.github.jabrena.juno` package. Examples whose `@Board` lists both bo
 
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.language.ScopedValuesPrecision \
+  -Djuno.board=arduino-uno-r4-wifi
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.language.concurrency.LostUpdates \
+  -Djuno.board=arduino-uno-r4-wifi
+
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.language.concurrency.Mutexes \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
