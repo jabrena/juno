@@ -349,6 +349,9 @@ final class AvrRuntimeShim {
         if (uses(ShimFeature.RANDOM)) {
             shim.append(ShimLibraries.randomHelpers());
         }
+        if (IoRuntime.needed(features)) {
+            shim.append(IoRuntime.prelude(uses(ShimFeature.THREADS)));
+        }
         if (uses(ShimFeature.SD)) {
             shim.append(core.sdHelpers(SD_OPEN_FILES, PROPERTIES_ENTRIES, PROPERTIES_KEY_BYTES,
                     PROPERTIES_VALUE_BYTES, PROPERTIES_LINE_BYTES));

@@ -175,6 +175,63 @@ class ThreadsTest {
                 "public final class Wide {\n    static long total = 1L;").replace("demo.Worker", "demo.Wide");
     }
 
+    private String httpProgramShim(String board, boolean threads) throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.%s;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
+                @Board(%s.class)
+                public final class Fetch {
+                    public static void main() throws Exception {
+                        byte[] body = new byte[32];
+                        byte[] headers = new byte[32];
+                        int[] status = new int[2];
+                        %s
+                        Serial.println(HttpClient.get("example.com", 80, "/", body, body.length, headers, headers.length,
+                                status));
+                    }
+                }
+                """.formatted(board, board, threads ? "Thread.startVirtualThread(() -> Serial.println(1)).join();" : "");
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Fetch", source);
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Fetch").runtimeShim();
+    }
+
+    @Test
+    void anHttpRequestWaitsWithoutHoldingUpTheOtherThreads() throws Exception {
+        // The UNO Q has no plain-HTTP client; its HTTPS client shares the same request code.
+        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoWiFiRev2"}) {
+            String shim = httpProgramShim(board, true);
+
+            assertThat(shim).as(board)
+                    .contains("static void juno_io_wait(uint32_t millisToWait) {\n  juno_thread_sleep(",
+                            "JunoIoGuard guard(JUNO_IO_NETWORK, &client,", "juno_io_wait(1);",
+                            "extern \"C\" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {")
+                    .doesNotContain("delay(1);");
+        }
+    }
+
+    @Test
+    void withoutThreadsAWaitIsThePlainDelayAndTheGuardIsFree() throws Exception {
+        String shim = httpProgramShim("ArduinoUnoR4WiFi", false);
+
+        assertThat(shim).contains("static void juno_io_wait(uint32_t millisToWait) {\n  delay(millisToWait);",
+                "static void juno_io_acquire(uint32_t, void*, void (*)(void*)) {")
+                .doesNotContain("juno_thread_sleep", "juno_io_owners");
+    }
+
+    @Test
+    void cancellingASubtaskAbortsAndReleasesTheDevicesItHolds() throws Exception {
+        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+
+        String cancel = shim.substring(shim.indexOf("static void juno_task_cancel(JunoThreadObject* task) {"));
+        assertThat(cancel.substring(0, cancel.indexOf("\n}\n")))
+                .containsSubsequence("juno_task_release_monitors(slot + 1u);", "juno_io_release_owned(slot + 1u);",
+                        "juno_port_cancel(slot);");
+        assertThat(shim).contains("if (entry.abort != nullptr) entry.abort(entry.handle);");
+    }
+
     @Test
     void delayBecomesASleepThatLetsOtherThreadsRun() throws Exception {
         String body = START_AND_JOIN + "io.github.jabrena.juno.api.Delay.millis(10);\n";

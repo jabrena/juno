@@ -553,6 +553,9 @@ final class RuntimeShim {
     }
 
     private void appendPeripheralHelpers(StringBuilder shim) {
+        if (IoRuntime.needed(features)) {
+            shim.append(IoRuntime.prelude(uses(ShimFeature.THREADS)));
+        }
         if (uses(ShimFeature.MOUSE)) {
             shim.append(ShimLibraries.mouseHelpers());
         }

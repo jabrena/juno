@@ -82,7 +82,8 @@ How a preemptive thread's slice ends depends on the board:
   A spinning loop and a loop-free recursion are both preempted once their slice is over.
 
 The runtime itself is never preempted part-way: an allocation, a collection, a throw, a monitor or atomic operation,
-and every hardware call run to completion, and a tick that lands in one only marks the switch as due. That is why the
+and every hardware call run to completion (a hardware call that waits for a device lets the others run while it
+waits, see below), and a tick that lands in one only marks the switch as due. That is why the
 arena, the collector and the pending-exception slot need no locks.
 
 ### Visibility and ordering
@@ -107,19 +108,29 @@ parallel on separate cores. Write the code as though it ran on the JVM:
 
 `AtomicReference` is not supported.
 
-### Native calls are atomic, except the Powered Up waits
+### Hardware calls let the other tasks run while they wait
 
-A call into the hardware runtime (Wi-Fi, SD card, the TFT shield) runs to completion before any other task gets a
-turn, however long it takes: preemption only ever interrupts compiled Java code. This is the main place where behavior differs from the JVM, where a blocking call stalls
-only the thread that made it. Keep long hardware calls out of programs that depend on other tasks making progress.
+A call into the hardware runtime is never interrupted part-way, but when it has to **wait** for a device it gives the
+processor to the other tasks meanwhile, as a blocking call on the JVM stalls only the thread that made it:
 
-`PoweredUpHubRemote` is the exception. While it scans for a hub or waits for the hub's reply, it lets the other tasks
-run, so a forked task can keep drawing a progress line during a `connect`. Two limits remain:
+- an HTTP or HTTPS request, while it waits for the response (up to its 5 s deadline);
+- `HttpServer.accept`, while it waits for the request;
+- `SdCard.begin`, between its retries;
+- `PoweredUpHubRemote`, while it scans for a hub or waits for the hub's reply.
 
-- The second or so that ArduinoBLE spends connecting to a hub it has found, and discovering its services, cannot be
-  interrupted.
-- Only one task at a time is inside a `PoweredUpHubRemote` call. A second task that calls one meanwhile waits its
-  turn, like a `synchronized` method, so the hub never sees two commands interleaved.
+So a forked task can keep animating a display or drawing a progress line during a request. Each device is used by
+one task at a time: a second task that calls into the network (or the SD card, or the hub) while another is waiting
+there waits its turn, like a `synchronized` method, while tasks that do not touch that device keep running. If a
+`StructuredTaskScope` cancels a subtask in the middle of such a call, the runtime closes the connection the subtask
+left open and frees the device, so the next request works.
+
+Some waits still hold every task, because they happen inside a vendor library rather than in Juno's runtime:
+
+- `Wifi.begin`, opening a connection (`connect`) and the TLS handshake, on every board;
+- the email clients (`Smtp`, `Pop3Client`), which keep using their arguments after each reply from the server;
+- the second or so that ArduinoBLE spends connecting to a hub it has found and discovering its services.
+
+Keep those out of the moments when other tasks must make progress.
 
 See the `PoweredUpHubScanWhileBlinking` example.
 
@@ -129,9 +140,9 @@ See the `PoweredUpHubScanWhileBlinking` example.
 |---|---|---|---|
 | Scheduling | The operating system, preemptive | Cooperative at blocking calls, on preemptive carrier threads | 1 ms time slices: virtual threads preemptive, `StructuredTaskScope` subtasks cooperative |
 | Parallel execution | Yes | Yes | No, one task at a time |
-| Where a switch can happen | Anywhere | Blocking operations | Virtual threads: anywhere in compiled Java (AVR: back-edges and method entries). Subtasks: loop back-edges. Both: `sleep`, `yield`, `join`, contended monitors, Powered Up waits; never inside a runtime or hardware call |
+| Where a switch can happen | Anywhere | Blocking operations | Virtual threads: anywhere in compiled Java (AVR: back-edges and method entries). Subtasks: loop back-edges. Both: `sleep`, `yield`, `join`, contended monitors, and a hardware call's wait (HTTP, server, SD, Powered Up); never part-way through runtime code |
 | Memory ordering | Java Memory Model | Java Memory Model | Sequentially consistent |
-| A long blocking call | Stalls only its thread | Pins its carrier thread | Stalls every task (Powered Up waits excepted) |
+| A long blocking call | Stalls only its thread | Pins its carrier thread | Request, server, SD and Powered Up waits stall only their task; vendor waits (`Wifi.begin`, `connect`, TLS) stall every task |
 
 Juno behaves like platform threads time-sliced on a single core, with the runtime's own calls atomic. That is why `StructuredTaskScope`, which uses virtual threads on the JVM, is the supported way to run work concurrently.
 

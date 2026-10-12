@@ -857,7 +857,7 @@ class JunoCompilerTest {
                 "bl juno_properties_size", "bl juno_wifi_begin");
         assertThat(result.runtimeShim()).contains(
                 "#include <SdFat.h>", "JUNO_PROPERTIES_MAX_ENTRIES = 16",
-                "JUNO_SD_BEGIN_ATTEMPTS = 3", "delay(JUNO_SD_BEGIN_RETRY_DELAY_MS)",
+                "JUNO_SD_BEGIN_ATTEMPTS = 3", "juno_io_wait(JUNO_SD_BEGIN_RETRY_DELAY_MS)", "JunoIoGuard guard(JUNO_IO_STORAGE);",
                 "extern \"C\" int32_t juno_properties_new()",
                 "extern \"C\" void juno_properties_load(int32_t propertiesHandle, int32_t fileHandle)");
         assertThat(result.report().runtimeRisks().estimatedArenaBytes())

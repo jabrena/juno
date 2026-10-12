@@ -717,6 +717,8 @@ final class ThreadRuntime {
                   juno_slots[juno_current_slot].joining = nullptr;
                 }
 
+                ${JUNO_IO_OWNERS}
+
                 ${JUNO_TASK_RUNTIME}
 
                 extern "C" int32_t juno_thread_is_alive(int32_t handle) {
@@ -812,7 +814,8 @@ final class ThreadRuntime {
                   juno_slots[juno_current_slot].state = JUNO_SLOT_JOINING_ALL;
                   juno_sched_block();
                 }
-                """.replace("${JUNO_PREEMPTION}", preemption)
+                """.replace("${JUNO_IO_OWNERS}", IoRuntime.owners())
+                .replace("${JUNO_PREEMPTION}", preemption)
                 .replace("${JUNO_START_PREEMPTION}", startPreemption)
                 .replace("${JUNO_PENDING_SWAP}", pendingSave)
                 .replace("${JUNO_BINDINGS_SWAP}", bindingsSwap)
@@ -1053,6 +1056,7 @@ final class ThreadRuntime {
                     if (juno_slots[slot].thread != task) continue;
                     juno_task_cancel_owned(slot + 1u);
                     juno_task_release_monitors(slot + 1u);
+                    juno_io_release_owned(slot + 1u);
                     juno_port_cancel(slot);
                     juno_slots[slot] = {JUNO_SLOT_FREE, 0u, nullptr, nullptr, nullptr, 0};
                     if (juno_live_threads != 0u) juno_live_threads--;

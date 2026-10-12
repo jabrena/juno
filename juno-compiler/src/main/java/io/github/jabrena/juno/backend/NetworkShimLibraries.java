@@ -627,6 +627,8 @@ final class NetworkShimLibraries {
                                                   uint8_t* responseBuffer, int32_t responseBufferLength,
                                                   uint8_t* headersBuffer, int32_t headersBufferLength,
                                                   int32_t* statusAndHeadersLength) {
+                  // Waiting for the response lets the other threads run; another HTTP call waits its turn.
+                  JunoIoGuard guard(JUNO_IO_NETWORK, &client, [](void* handle) { static_cast<Client*>(handle)->stop(); });
                   if (!client.connect(host, static_cast<uint16_t>(port))) {
                     statusAndHeadersLength[0] = 0;
                     statusAndHeadersLength[1] = 0;
@@ -682,7 +684,7 @@ final class NetworkShimLibraries {
                   while (millis() < deadline) {
                     if (!client.available()) {
                       if (!client.connected()) break;
-                      delay(1);
+                      juno_io_wait(1);
                       continue;
                     }
                     int value = client.read();
@@ -930,7 +932,14 @@ final class NetworkShimLibraries {
                 static char juno_http_server_method_buf[8];
                 static char juno_http_server_path_buf[96];
 
+                // Cancelled while it waits for a request: drop the client, so the next accept() starts afresh.
+                static void juno_http_server_abort(void*) {
+                  juno_http_server_client.stop();
+                  juno_http_server_release();
+                }
+
                 extern "C" int32_t juno_http_server_accept(uint8_t* bodyBuffer, int32_t bodyBufferLength) {
+                  JunoIoGuard guard(JUNO_IO_NETWORK, nullptr, juno_http_server_abort);
                   if (!juno_http_server_next_client()) return -1;
                   JunoHttpClient& client = juno_http_server_client;
 
@@ -951,7 +960,7 @@ final class NetworkShimLibraries {
                   while (millis() < deadline) {
                     if (!client.available()) {
                       if (!client.connected()) break;
-                      delay(1);
+                      juno_io_wait(1);
                       continue;
                     }
                     int value = client.read();

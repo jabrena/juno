@@ -157,7 +157,10 @@ Supported today:
   loop back-edge, never in the middle of a statement. `Delay.millis`, `Thread.sleep`, `Thread.yield`, `join` and a
   contended monitor hand the processor over early. The runtime itself (allocation, the garbage collector, throws,
   monitors, atomics and every hardware call) is never interrupted part-way, so the arena, the collector and the
-  pending-exception slot need no locking. A virtual thread is a daemon, as on the JVM: when `main` returns, the program does not wait for it. At most
+  pending-exception slot need no locking. A hardware call that waits for its device (an HTTP/HTTPS response, an
+  `HttpServer` request, `SdCard.begin` retries, Powered Up scans) sleeps only its own task meanwhile, holding the
+  device so other tasks take turns on it; `Wifi.begin`, `connect`, TLS handshakes and the email clients still wait
+  inside the vendor libraries and hold every task. A virtual thread is a daemon, as on the JVM: when `main` returns, the program does not wait for it. At most
   four threads run at once, the owner included, each extra one with a 2 KiB stack on the UNO R4 WiFi and 4 KiB on the
   UNO Q (a stack overflow on the UNO R4 panics with `[juno-thread] stack overflow` when the thread next switches
   away). The collector scans every live stack. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each thread

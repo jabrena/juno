@@ -1,7 +1,8 @@
 // Stand-in for WiFiNINA under simavr: Wi-Fi is always connected, and the clients talk to small fake servers instead
 // of a network, so the shim's protocol code runs end to end on the 8-bit target:
 // - a WiFiClient (any port), or a WiFiSSLClient on port 443 (the real NINA module runs the TLS), receives one canned,
-//   chunked HTTP/1.1 response;
+//   chunked HTTP/1.1 response; on port 8080 it arrives JUNO_HARNESS_SLOW_MILLIS after connect(), a slow server that
+//   lets a test see whether the other threads run while a request waits;
 // - a WiFiSSLClient on port 465 talks to an SMTP server that accepts AUTH LOGIN only for rev2@example.com / secret,
 //   so a wrong base64 encoding fails the login;
 // - a WiFiSSLClient on port 995 talks to a POP3 server holding two messages.
@@ -11,9 +12,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include "Arduino.h"
 #include "WiFiUdp.h"
 
 #define WL_CONNECTED 3
+
+static constexpr unsigned long JUNO_HARNESS_SLOW_PORT = 8080;
+static constexpr unsigned long JUNO_HARNESS_SLOW_MILLIS = 40;
 
 static const char juno_harness_http_response[] =
     "HTTP/1.1 201 Created\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\n\r\n"
@@ -24,7 +29,8 @@ public:
   int connect(const char* host, uint16_t port) {
     if (host == nullptr || port == 0) return 0;
     connected_ = true;
-    line_[0] = '\0';
+    readyAt_ = millis() + (port == JUNO_HARNESS_SLOW_PORT ? JUNO_HARNESS_SLOW_MILLIS : 0);
+    lineBuffer()[0] = '\0';
     lineLength_ = 0;
     state_ = 0;
     reply(greeting(port));
@@ -55,9 +61,9 @@ public:
   }
   size_t print(int value) { return print(static_cast<long>(value)); }
   size_t write(const uint8_t*, size_t size) { return size; }
-  int available() { return connected_ && cursor_ < length_ ? 1 : 0; }
-  uint8_t connected() { return connected_ && (available() != 0 || stayOpen()) ? 1 : 0; }
-  int read() { return available() != 0 ? static_cast<uint8_t>(reply_[cursor_++]) : -1; }
+  int available() { return connected_ && cursor_ < length_ && static_cast<long>(millis() - readyAt_) >= 0 ? 1 : 0; }
+  uint8_t connected() { return connected_ && (cursor_ < length_ || stayOpen()) ? 1 : 0; }
+  int read() { return available() != 0 ? static_cast<uint8_t>(replyBuffer()[cursor_++]) : -1; }
   void stop() { connected_ = false; }
   operator bool() { return connected_; }
 
@@ -78,28 +84,40 @@ private:
       length_ = 0;
     }
     size_t count = strlen(text);
-    if (length_ + count > sizeof(reply_)) count = sizeof(reply_) - length_;
-    memcpy(reply_ + length_, text, count);
+    if (length_ + count > JUNO_HARNESS_REPLY_BYTES) count = JUNO_HARNESS_REPLY_BYTES - length_;
+    memcpy(replyBuffer() + length_, text, count);
     length_ += count;
   }
   void receive(char c) {
     if (c == '\r') return;
     if (c != '\n') {
-      if (lineLength_ + 1 < sizeof(line_)) line_[lineLength_++] = c;
+      if (lineLength_ + 1 < JUNO_HARNESS_LINE_BYTES) lineBuffer()[lineLength_++] = c;
       return;
     }
-    line_[lineLength_] = '\0';
+    lineBuffer()[lineLength_] = '\0';
     lineLength_ = 0;
-    const char* text = answer(line_);
+    const char* text = answer(lineBuffer());
     if (text != nullptr) reply(text);
   }
 
-  char reply_[200];
+  // One connection talks at a time (the shim's network guard serializes requests), so every client shares these
+  // buffers: a client stays as small as WiFiNINA's real one and fits a 512-byte task stack.
+  static constexpr size_t JUNO_HARNESS_REPLY_BYTES = 200;
+  static constexpr size_t JUNO_HARNESS_LINE_BYTES = 64;
+  static char* replyBuffer() {
+    static char buffer[JUNO_HARNESS_REPLY_BYTES];
+    return buffer;
+  }
+  static char* lineBuffer() {
+    static char buffer[JUNO_HARNESS_LINE_BYTES];
+    return buffer;
+  }
+
   size_t length_ = 0;
   size_t cursor_ = 0;
-  char line_[64];
   size_t lineLength_ = 0;
   bool connected_ = false;
+  unsigned long readyAt_ = 0;
 };
 
 class WiFiSSLClient : public WiFiClient {
@@ -184,6 +202,12 @@ struct JunoHarnessWiFi {
   uint8_t beginAP(const char*, const char*) { return 7; }
   uint8_t status() { return WL_CONNECTED; }
   IPAddress localIP() { return IPAddress(192, 168, 1, 45); }
+  IPAddress gatewayIP() { return IPAddress(192, 168, 1, 1); }
+  uint8_t* macAddress(uint8_t* mac) {
+    static const uint8_t address[6] = {0x02, 0x4A, 0x55, 0x4E, 0x4F, 0x02};
+    memcpy(mac, address, sizeof address);
+    return mac;
+  }
 };
 
 extern JunoHarnessWiFi WiFi;
