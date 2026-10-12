@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend;
 
+
 import io.github.jabrena.juno.ir.IrMethod;
 
 /** Authoritative target-backend stack sizing shared with static runtime-risk analysis. */
@@ -14,6 +15,6 @@ public final class StackFrameSizing {
 
     /** Total fixed per-invocation stack cost, including registers saved by the prologue. */
     public static int methodStackBytes(IrMethod method) {
-        return AsmEmitter.PUSH_BYTES + reservedFrameBytes(method);
+        return FrameLayout.PUSH_BYTES + reservedFrameBytes(method);
     }
 }

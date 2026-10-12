@@ -22,12 +22,21 @@ import java.util.Set;
  * exactly one {@link IrInstruction.Const} is rematerialized instead: it has no slot, and every use loads its
  * immediate (or folds it into the instruction), so the constant is never stored and reloaded.
  */
-record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<Integer, Integer> constants) {
-    FrameLayout {
+public record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<Integer, Integer> constants) {
+    /** Bytes of one Java word on every target: an {@code int}, a reference, half a {@code long}/{@code double}. */
+    public static final int WORD = 4;
+    /** Bytes the Thumb-2 prologue's {@code push {r4-r11, lr}} reserves above the frame {@link #of} lays out. */
+    public static final int PUSH_BYTES = 9 * WORD;
+
+    public FrameLayout {
         constants = Map.copyOf(constants);
     }
 
-    int valueOffset(Value value) {
+    public static int roundUp(int value, int multiple) {
+        return ((value + multiple - 1) / multiple) * multiple;
+    }
+
+    public int valueOffset(Value value) {
         if (constants.containsKey(value.id())) {
             throw new IllegalStateException("constant " + value + " is rematerialized and has no stack slot");
         }
@@ -35,26 +44,27 @@ record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<In
     }
 
     /** The value's constant, when it is a rematerialized {@code Const}; otherwise null. */
-    @Nullable Integer constant(Value value) {
+    @Nullable
+    public Integer constant(Value value) {
         return constants.get(value.id());
     }
 
-    int localOffset(int local) {
+    public int localOffset(int local) {
         if (localOffsets[local] < 0) {
             throw new IllegalStateException("local slot " + local + " is never loaded or stored and has no stack word");
         }
         return localOffsets[local];
     }
 
-    static FrameLayout of(IrMethod method) {
-        return of(method, AsmEmitter.PUSH_BYTES, 8);
+    public static FrameLayout of(IrMethod method) {
+        return of(method, PUSH_BYTES, 8);
     }
 
     /**
      * The same slots with nothing reserved for alignment: for a target whose stack has no alignment rule (AVR),
      * {@link #frameSize()} is exactly the bytes the values and locals occupy.
      */
-    static FrameLayout packed(IrMethod method) {
+    public static FrameLayout packed(IrMethod method) {
         return of(method, 0, 1);
     }
 
@@ -74,13 +84,13 @@ record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<In
         boolean[] used = usedLocals(method, numLocals);
         int localWords = 0;
         for (int i = 0; i < numLocals; i++) {
-            localOffsets[i] = used[i] ? valueBytes + localWords++ * AsmEmitter.WORD : -1;
+            localOffsets[i] = used[i] ? valueBytes + localWords++ * WORD : -1;
         }
-        int rawSize = valueBytes + localWords * AsmEmitter.WORD;
+        int rawSize = valueBytes + localWords * WORD;
         // PUSH_BYTES (36) isn't itself a multiple of 8; round the *total* prologue adjustment up to
         // the next multiple of 8 so `sp` stays AAPCS-aligned for every `bl`, then subtract PUSH_BYTES
         // back out to get the frame size to actually `sub sp` by.
-        int frameSize = AsmEmitter.roundUp(pushBytes + rawSize, alignment) - pushBytes;
+        int frameSize = roundUp(pushBytes + rawSize, alignment) - pushBytes;
         return new FrameLayout(frameSize, valueOffsets, localOffsets, constants);
     }
 
@@ -182,16 +192,16 @@ record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<In
                         iterator.remove();
                     }
                 }
-                int widthWords = valueWidth(interval.value().type()) / AsmEmitter.WORD;
+                int widthWords = valueWidth(interval.value().type()) / WORD;
                 int word = firstFreeRun(occupied, widthWords);
                 Arrays.fill(occupied, word, word + widthWords, true);
-                offsets[interval.value().id()] = dedicatedBytes + word * AsmEmitter.WORD;
+                offsets[interval.value().id()] = dedicatedBytes + word * WORD;
                 active.add(new ActiveInterval(interval.last(), word, widthWords));
                 blockWords = Math.max(blockWords, word + widthWords);
             }
             sharedWords = Math.max(sharedWords, blockWords);
         }
-        return new ValueStorage(offsets, dedicatedBytes + sharedWords * AsmEmitter.WORD);
+        return new ValueStorage(offsets, dedicatedBytes + sharedWords * WORD);
     }
 
     private static void recordOccurrences(List<Value> values, int position, int[] first, int[] last) {
@@ -226,10 +236,10 @@ record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<In
      * need 8 bytes; everything else (including {@link JunoType#FLOAT32}, a raw bit pattern) fits in 4.
      */
     private static int valueWidth(JunoType type) {
-        return isWide(type) ? 8 : AsmEmitter.WORD;
+        return isWide(type) ? 8 : WORD;
     }
 
-    static boolean isWide(JunoType type) {
+    public static boolean isWide(JunoType type) {
         return type == JunoType.INT64 || type == JunoType.FLOAT64;
     }
 

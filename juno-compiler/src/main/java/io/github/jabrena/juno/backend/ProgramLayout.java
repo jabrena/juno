@@ -23,7 +23,7 @@ import java.util.TreeMap;
  * offsets, mutable static fields' {@code .bss} symbols, and the {@code .rodata} symbols of string
  * literals and compiler-generated constant {@code int} arrays — plus the data sections holding them.
  */
-final class ProgramLayout {
+public final class ProgramLayout {
     private static final int TABLE_VALUES_PER_LINE = 16;
     private final Map<String, Integer> objectSizes = new LinkedHashMap<>();
     private final Map<FieldRef, Integer> fieldOffsets = new LinkedHashMap<>();
@@ -43,7 +43,7 @@ final class ProgramLayout {
      * order — sequential 4-byte {@code int} slots, since every field this backend has seen is one.
      * Also assigns each {@code LoadStatic}/{@code StoreStatic} field a stable {@code .bss} symbol.
      */
-    ProgramLayout(IrProgram program) {
+    public ProgramLayout(IrProgram program) {
         throwableClasses = program.throwableClasses();
         objectTypeIds = program.objectTypeIds();
         Map<String, TreeMap<String, FieldRef>> layouts = new TreeMap<>();
@@ -58,19 +58,19 @@ final class ProgramLayout {
             // A throwable's own fields follow its class-id/message header (see ThrowableTypes).
             int header = throwableClasses.contains(layout.getKey())
                     ? ThrowableTypes.HEADER_BYTES
-                    : objectTypeIds.containsKey(layout.getKey()) ? AsmEmitter.WORD : 0;
+                    : objectTypeIds.containsKey(layout.getKey()) ? FrameLayout.WORD : 0;
             int offset = header;
             for (FieldRef field : layout.getValue().values()) {
                 fieldOffsets.put(field, offset);
                 offset += fieldWidth(field);
             }
-            objectSizes.put(layout.getKey(), Math.max(offset, AsmEmitter.WORD));
+            objectSizes.put(layout.getKey(), Math.max(offset, FrameLayout.WORD));
         }
     }
 
     /** Bytes a field occupies: a {@code long}/{@code double} takes two words, everything else one. */
     static int fieldWidth(FieldRef field) {
-        return field.descriptor().equals("J") || field.descriptor().equals("D") ? 2 * AsmEmitter.WORD : AsmEmitter.WORD;
+        return field.descriptor().equals("J") || field.descriptor().equals("D") ? 2 * FrameLayout.WORD : FrameLayout.WORD;
     }
 
     private void collect(Map<String, TreeMap<String, FieldRef>> layouts, IrInstruction instruction) {
@@ -80,7 +80,7 @@ final class ProgramLayout {
             case IrInstruction.LambdaCreate lambda -> {
                 if (lambda.site().isCapturing()) {
                     objectSizes.put(lambda.site().syntheticClassName(),
-                            (lambda.captures().size() + 1) * AsmEmitter.WORD);
+                            (lambda.captures().size() + 1) * FrameLayout.WORD);
                 } else {
                     lambdaFunctionSymbols.computeIfAbsent(lambda.site(),
                             unused -> "juno_lambda_" + lambdaFunctionSymbols.size());
@@ -121,39 +121,39 @@ final class ProgramLayout {
     }
 
     /** Every throwable class, in class-id order (see {@link ThrowableTypes}). */
-    List<String> throwableClasses() {
+    public List<String> throwableClasses() {
         return throwableClasses;
     }
 
-    @Nullable Integer objectTypeId(String className) {
+    public @Nullable Integer objectTypeId(String className) {
         return objectTypeIds.get(className);
     }
 
-    Map<String, String> stringLiteralSymbols() {
+    public Map<String, String> stringLiteralSymbols() {
         return stringLiteralSymbols;
     }
 
-    int objectSize(String className) {
+    public int objectSize(String className) {
         return Objects.requireNonNull(objectSizes.get(className), () -> "No object size for " + className);
     }
 
-    int fieldOffset(FieldRef field) {
+    public int fieldOffset(FieldRef field) {
         return Objects.requireNonNull(fieldOffsets.get(field), () -> "No field offset for " + field.displayName());
     }
 
-    String staticSymbol(FieldRef field) {
+    public String staticSymbol(FieldRef field) {
         return Objects.requireNonNull(staticSymbols.get(field), () -> "No static symbol for " + field.displayName());
     }
 
-    String intArraySymbol(IrInstruction.IntArrayConst array) {
+    public String intArraySymbol(IrInstruction.IntArrayConst array) {
         return Objects.requireNonNull(intArraySymbols.get(array), "No symbol for an int array constant");
     }
 
-    String constantTableSymbol(FieldRef field) {
+    public String constantTableSymbol(FieldRef field) {
         return "juno_table_" + sanitize(field.displayName());
     }
 
-    String lambdaFunctionSymbol(LambdaSite site) {
+    public String lambdaFunctionSymbol(LambdaSite site) {
         return Objects.requireNonNull(lambdaFunctionSymbols.get(site), () -> "No function symbol for " + site);
     }
 
@@ -162,20 +162,20 @@ final class ProgramLayout {
      * {@code .word}; AVR's {@code .word} is 16-bit, so it uses {@code .long}), {@code align} 4-byte-aligns, and
      * {@code bss} switches to the zero-initialized section (AVR's assembler has no {@code .bss} shorthand).
      */
-    record DataDirectives(String word, String align, String bss) {
-        static final DataDirectives THUMB2 = new DataDirectives(".word", ".align 2", ".bss");
-        static final DataDirectives AVR = new DataDirectives(".long", ".balign 4", ".section .bss");
+    public record DataDirectives(String word, String align, String bss) {
+        public static final DataDirectives THUMB2 = new DataDirectives(".word", ".align 2", ".bss");
+        public static final DataDirectives AVR = new DataDirectives(".long", ".balign 4", ".section .bss");
     }
 
     private DataDirectives directives = DataDirectives.THUMB2;
 
     /** Emits every data section the program needs, ahead of its {@code .text}. */
-    void emitDataSections(StringBuilder output) {
+    public void emitDataSections(StringBuilder output) {
         emitDataSections(output, DataDirectives.THUMB2);
     }
 
     /** Emits every data section with {@code directives}, ahead of the {@code .text}. */
-    void emitDataSections(StringBuilder output, DataDirectives directives) {
+    public void emitDataSections(StringBuilder output, DataDirectives directives) {
         this.directives = directives;
         emitStaticStorage(output);
         emitGcStackTopStorage(output);

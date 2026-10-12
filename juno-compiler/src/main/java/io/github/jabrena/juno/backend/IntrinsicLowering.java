@@ -1,5 +1,9 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.backend.runtime.MathRuntime;
+import io.github.jabrena.juno.backend.runtime.ShimFeature;
+import io.github.jabrena.juno.backend.runtime.core.CoreRuntime;
+import io.github.jabrena.juno.board.UnoGeneration;
 import io.github.jabrena.juno.intrinsic.BigNumberMethods;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -21,11 +25,11 @@ import java.util.Set;
  * then include). The few that touch memory directly register a bespoke {@link Lowering}.
  * {@code java.lang.Math} intrinsics are lowered generically from their IR argument types instead.
  */
-final class IntrinsicLowering {
+public final class IntrinsicLowering {
     /** Emits the code for one intrinsic call. */
     @FunctionalInterface
     private interface Lowering {
-        void emit(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call);
+        public void emit(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call);
     }
 
     /** Where one AAPCS argument word of a {@link ShimCall} comes from, relative to the call. */
@@ -101,6 +105,12 @@ final class IntrinsicLowering {
     private record ShimCall(String function, Result result, List<Operand> operands, Set<ShimFeature> features) {
     }
 
+    /** The {@code BoardRuntime} queries, each true only on boards of its generation. */
+    private static final Map<Intrinsic, UnoGeneration> GENERATION_QUERIES = Map.of(
+            Intrinsic.BOARD_IS_R3, UnoGeneration.R3,
+            Intrinsic.BOARD_IS_R4, UnoGeneration.R4,
+            Intrinsic.BOARD_IS_Q, UnoGeneration.Q);
+
     private static final Operand RECEIVER = new Receiver();
     private static final Operand STRING_ARGUMENT = new StringArgument();
 
@@ -110,16 +120,17 @@ final class IntrinsicLowering {
     private final Set<Intrinsic> usedMath;
 
     /**
+     * @param generation the target board's {@link io.github.jabrena.juno.board.Board#generation() UNO generation}
      * @param features collects every optional shim feature a lowered intrinsic needs
      * @param usedMath collects every {@code java.lang.Math} intrinsic lowered, for {@link MathRuntime#helpers}
      */
-    IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Set<ShimFeature> features,
-                      Set<Intrinsic> usedMath, boolean usesThreads) {
+    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, UnoGeneration generation,
+                      Set<ShimFeature> features, Set<Intrinsic> usedMath, boolean usesThreads) {
         this.target = target;
         this.features = features;
         this.usedMath = usedMath;
         registerExceptions();
-        registerGpio(coreRuntime, usesThreads);
+        registerGpio(coreRuntime, generation, usesThreads);
         registerThreads(usesThreads);
         registerAtomics();
         registerStructuredTasks();
@@ -135,7 +146,7 @@ final class IntrinsicLowering {
         registerHttpServer();
     }
 
-    void emit(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call) {
+    public void emit(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call) {
         if (MathRuntime.isMath(call.intrinsic())) {
             emitMathCall(output, frame, call);
             return;
@@ -164,7 +175,7 @@ final class IntrinsicLowering {
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */
-    private void registerGpio(CoreRuntime coreRuntime, boolean usesThreads) {
+    private void registerGpio(CoreRuntime coreRuntime, UnoGeneration generation, boolean usesThreads) {
         shim(Intrinsic.DIGITAL_OUTPUT_OF, "pinMode", Result.FIRST_ARGUMENT, List.of(arg(0), immediate(1))); // OUTPUT
         shim(Intrinsic.GPIO_PIN_MODE, "pinMode", Result.NONE, List.of(arg(0), arg(1)));
         shim(Intrinsic.DIGITAL_OUTPUT_HIGH, "digitalWrite", Result.NONE, List.of(RECEIVER, immediate(1)));
@@ -191,12 +202,8 @@ final class IntrinsicLowering {
                 value -> target.storeImmediate(output, frame, coreRuntime.builtinLedPin(), value)));
         lowerings.put(Intrinsic.LED_MATRIX_COLUMNS, (output, frame, call) -> call.target().ifPresent(
                 value -> target.storeImmediate(output, frame, coreRuntime.ledMatrixColumns(), value)));
-        lowerings.put(Intrinsic.BOARD_IS_Q, (output, frame, call) -> call.target().ifPresent(
-                value -> target.storeImmediate(output, frame, coreRuntime.isQ() ? 1 : 0, value)));
-        lowerings.put(Intrinsic.BOARD_IS_R4, (output, frame, call) -> call.target().ifPresent(
-                value -> target.storeImmediate(output, frame, coreRuntime.isR4() ? 1 : 0, value)));
-        lowerings.put(Intrinsic.BOARD_IS_R3, (output, frame, call) -> call.target().ifPresent(
-                value -> target.storeImmediate(output, frame, coreRuntime.isR3() ? 1 : 0, value)));
+        GENERATION_QUERIES.forEach((query, queried) -> lowerings.put(query, (output, frame, call) -> call.target()
+                .ifPresent(value -> target.storeImmediate(output, frame, generation == queried ? 1 : 0, value))));
         shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of(), ShimFeature.LED_MATRIX);
         shim(Intrinsic.LED_MATRIX_LOAD_FRAME, "juno_led_matrix_load_frame", Result.NONE,
                 List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LED_MATRIX);

@@ -2,6 +2,7 @@ package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.ir.IrInstruction.Compare;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.IrValues;
@@ -13,13 +14,13 @@ import java.util.Map;
 
 /**
  * Decides which comparisons a branch can test directly. When a block ends in a {@code Compare} whose result only its
- * own {@code Branch} reads, {@link TerminatorLowering} sets the flags and branches on them, and the 0/1 result is
+ * own {@code Branch} reads, {@code TerminatorLowering} sets the flags and branches on them, and the 0/1 result is
  * never materialized, stored or reloaded.
  */
-final class CompareFusion {
+public final class CompareFusion {
     private final Map<Value, Integer> occurrences = new HashMap<>();
 
-    CompareFusion(IrMethod method) {
+    public CompareFusion(IrMethod method) {
         for (IrBasicBlock block : method.blocks()) {
             for (IrInstruction instruction : block.instructions()) {
                 IrValues.of(instruction).forEach(value -> occurrences.merge(value, 1, Integer::sum));
@@ -33,7 +34,8 @@ final class CompareFusion {
      * definition plus that one use), or null. Only the last instruction qualifies: nothing runs between the
      * comparison and the branch, so the operands' frame slots cannot have been reused in between.
      */
-    IrInstruction.@Nullable Compare fusedCompare(IrBasicBlock block) {
+    @Nullable
+    public Compare fusedCompare(IrBasicBlock block) {
         if (block.instructions().isEmpty()
                 || !(block.instructions().getLast() instanceof IrInstruction.Compare compare)
                 || !(block.terminator() instanceof IrTerminator.Branch branch)

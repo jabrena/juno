@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +9,7 @@ import java.util.Optional;
  * What to compile: a closed-world classpath plus the entry point's fully qualified class name.
  *
  * @param gcLoggingEnabled when {@code true}, the generated runtime shim's garbage collector prints
- *     one {@code Serial} line per collection (see {@link io.github.jabrena.juno.backend.Thumb2AsmBackend}).
+ *     one {@code Serial} line per collection (see {@link io.github.jabrena.juno.backend.thumb2.Thumb2AsmBackend}).
  * @param requestedBoard the target board (see {@code io.github.jabrena.juno.board.Board#fromId}), required
  *     only when the entry point's {@code @Board} annotation declares more than one board.
  * @param runtimeConfig the arena and task-stack capacities of the generated runtime; {@link RuntimeConfig#DEFAULT}
