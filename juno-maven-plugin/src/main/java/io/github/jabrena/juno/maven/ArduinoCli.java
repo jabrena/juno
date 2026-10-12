@@ -1,10 +1,14 @@
 package io.github.jabrena.juno.maven;
 
+import org.jspecify.annotations.Nullable;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
+/** The {@code arduino-cli} commands the Maven goals run, behind a {@link CommandExecutor}. */
 final class ArduinoCli {
     private static final String UNO_WIFI_REV2_FQBN = "arduino:megaavr:uno2018";
     private static final String SDFAT_SOFTWARE_SPI = "compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3";
@@ -12,6 +16,7 @@ final class ArduinoCli {
     private final String executable;
     private final CommandExecutor executor;
     private final Consumer<String> output;
+    private final BoardListJsonParser boardListParser = new BoardListJsonParser();
 
     ArduinoCli(String executable, Consumer<String> output) {
         this(executable, new SystemCommandExecutor(), output);
@@ -24,28 +29,26 @@ final class ArduinoCli {
     }
 
     void installCore(String platform) {
-        runChecked(List.of(executable, "core", "install", requireText(platform, "platform")), false);
+        run(captured("core", "install", requireText(platform, "platform")));
     }
 
     void installLibrary(String library) {
-        runChecked(List.of(executable, "lib", "install", requireText(library, "library")), false);
+        run(captured("lib", "install", requireText(library, "library")));
     }
 
     void compile(String fqbn, Path sketchDirectory) {
         String requiredFqbn = requireText(fqbn, "FQBN");
-        List<String> command = new ArrayList<>(List.of(executable, "compile", "--fqbn", requiredFqbn));
+        List<String> arguments = new ArrayList<>(List.of("compile", "--fqbn", requiredFqbn));
         if (UNO_WIFI_REV2_FQBN.equals(requiredFqbn)) {
-            command.add("--build-property");
-            command.add(SDFAT_SOFTWARE_SPI);
+            arguments.addAll(List.of("--build-property", SDFAT_SOFTWARE_SPI));
         }
-        command.add(sketchDirectory.toAbsolutePath().normalize().toString());
-        runChecked(List.copyOf(command), false);
+        arguments.add(absolute(sketchDirectory));
+        run(captured(arguments.toArray(String[]::new)));
     }
 
     void upload(String fqbn, String port, Path sketchDirectory) {
-        runChecked(List.of(executable, "upload", "--port", requireText(port, "port"),
-                "--fqbn", requireText(fqbn, "FQBN"),
-                sketchDirectory.toAbsolutePath().normalize().toString()), false);
+        run(captured("upload", "--port", requireText(port, "port"), "--fqbn", requireText(fqbn, "FQBN"),
+                absolute(sketchDirectory)));
     }
 
     /**
@@ -59,64 +62,82 @@ final class ArduinoCli {
         if (baudRate <= 0) {
             throw new ArduinoCliException("Monitor baud rate must be greater than zero");
         }
-        runChecked(List.of(executable, "monitor", "--port", requireText(port, "port"),
-                "--config", "baudrate=" + baudRate), true);
+        run(command(Command.Mode.INTERACTIVE, "monitor", "--port", requireText(port, "port"),
+                "--config", "baudrate=" + baudRate));
     }
 
-    String resolvePort(String fqbn, String configuredPort) {
+    /**
+     * The port of the one connected board with {@code fqbn}, or {@code configuredPort} after checking such a board
+     * is really connected there.
+     */
+    String resolvePort(String fqbn, Optional<String> configuredPort) {
         String requiredFqbn = requireText(fqbn, "FQBN");
-        List<BoardListJsonParser.DetectedPort> ports = boardList();
-        List<String> matching = ports.stream()
-                .filter(port -> port.fqbns().contains(requiredFqbn))
-                .map(BoardListJsonParser.DetectedPort::address)
+        List<String> matching = boardList().stream()
+                .filter(port -> port.hosts(requiredFqbn))
+                .map(DetectedPort::address)
                 .toList();
+        return configuredPort.map(String::trim).filter(port -> !port.isBlank())
+                .map(requested -> requireConnected(requested, requiredFqbn, matching))
+                .orElseGet(() -> onlyMatching(requiredFqbn, matching));
+    }
 
-        if (configuredPort != null && !configuredPort.isBlank()) {
-            String requested = configuredPort.trim();
-            if (!matching.contains(requested)) {
-                throw new ArduinoCliException("Configured port '" + requested + "' is not a connected "
-                        + requiredFqbn + " board. Matching ports: " + display(matching));
-            }
-            return requested;
+    List<DetectedPort> boardList() {
+        Command command = captured("board", "list", "--json");
+        CommandResult result = executor.execute(command);
+        checkExit(command, result);
+        return boardListParser.parse(result.output());
+    }
+
+    private String requireConnected(String requested, String fqbn, List<String> matching) {
+        if (!matching.contains(requested)) {
+            throw new ArduinoCliException("Configured port '" + requested + "' is not a connected " + fqbn
+                    + " board. Matching ports: " + (matching.isEmpty() ? "(none)" : String.join(", ", matching)));
         }
-        if (matching.isEmpty()) {
-            throw new ArduinoCliException("No connected board matching " + requiredFqbn
+        return requested;
+    }
+
+    private String onlyMatching(String fqbn, List<String> matching) {
+        return switch (matching.size()) {
+            case 0 -> throw new ArduinoCliException("No connected board matching " + fqbn
                     + " was found. Connect the board or set -Djuno.port=<port> after checking juno:boards.");
-        }
-        if (matching.size() > 1) {
-            throw new ArduinoCliException("Multiple boards matching " + requiredFqbn + " were found: "
+            case 1 -> matching.getFirst();
+            default -> throw new ArduinoCliException("Multiple boards matching " + fqbn + " were found: "
                     + String.join(", ", matching) + ". Select one with -Djuno.port=<port>.");
-        }
-        return matching.getFirst();
+        };
     }
 
-    List<BoardListJsonParser.DetectedPort> boardList() {
-        CommandResult result = executor.execute(List.of(executable, "board", "list", "--json"), false);
-        checkExit(List.of(executable, "board", "list", "--json"), result);
-        return BoardListJsonParser.parse(result.output());
+    private Command captured(String... arguments) {
+        return command(Command.Mode.CAPTURED, arguments);
     }
 
-    private void runChecked(List<String> command, boolean interactive) {
-        CommandResult result = executor.execute(command, interactive);
-        if (!interactive && !result.output().isBlank()) {
+    private Command command(Command.Mode mode, String... arguments) {
+        List<String> commandLine = new ArrayList<>();
+        commandLine.add(executable);
+        commandLine.addAll(List.of(arguments));
+        return new Command(commandLine, mode);
+    }
+
+    private void run(Command command) {
+        CommandResult result = executor.execute(command);
+        if (!command.isInteractive() && result.hasOutput()) {
             output.accept(result.output().stripTrailing());
         }
         checkExit(command, result);
     }
 
-    private static void checkExit(List<String> command, CommandResult result) {
-        if (result.exitCode() != 0) {
-            String detail = result.output().isBlank() ? "" : ": " + result.output().strip();
+    private void checkExit(Command command, CommandResult result) {
+        if (!result.succeeded()) {
+            String detail = result.hasOutput() ? ": " + result.output().strip() : "";
             throw new ArduinoCliException("Command failed with exit code " + result.exitCode() + ": "
-                    + String.join(" ", command) + detail);
+                    + command.display() + detail);
         }
     }
 
-    private static String display(List<String> values) {
-        return values.isEmpty() ? "(none)" : String.join(", ", values);
+    private String absolute(Path directory) {
+        return directory.toAbsolutePath().normalize().toString();
     }
 
-    private static String requireText(String value, String label) {
+    private String requireText(@Nullable String value, String label) {
         if (value == null || value.isBlank()) {
             throw new ArduinoCliException(label + " must not be blank");
         }

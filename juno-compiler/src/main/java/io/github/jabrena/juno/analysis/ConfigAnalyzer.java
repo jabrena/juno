@@ -80,7 +80,7 @@ public final class ConfigAnalyzer {
                         + " byte arena; " + suggested + " bytes would cover it"));
     }
 
-    private static int forkSites(IrProgram program) {
+    private int forkSites(IrProgram program) {
         int sites = 0;
         for (IrMethod method : program.methods()) {
             for (IrBasicBlock block : method.blocks()) {

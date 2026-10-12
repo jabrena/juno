@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.thumb2;
 
 import io.github.jabrena.juno.backend.FrameLayout;
-
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction.Compare;
 import io.github.jabrena.juno.ir.IrTerminator;
@@ -37,7 +37,7 @@ final class TerminatorLowering {
                 String toFalse;
                 if (fused != null) {
                     ints.emitFlags(output, frame, fused.left(), fused.right());
-                    toFalse = "b" + IntArithmeticLowering.suffix(IntArithmeticLowering.inverse(fused.condition()));
+                    toFalse = "b" + ints.suffix(ints.inverse(fused.condition()));
                 } else {
                     asm.load(output, frame, "r0", branch.condition());
                     output.append("    cmp r0, #0\n");
@@ -55,7 +55,7 @@ final class TerminatorLowering {
             }
             case IrTerminator.Return returned -> {
                 returned.value().ifPresent(value -> {
-                    if (FrameLayout.isWide(value.type())) {
+                    if (value.type().isWide()) {
                         asm.load64(output, frame, "r0", "r1", value);
                     } else {
                         asm.load(output, frame, "r0", value);
@@ -80,7 +80,7 @@ final class TerminatorLowering {
                     // to the next case's check.
                     String nextCheckLabel = asm.newLabel(".Lswitchnext");
                     int key = switched.keys().get(i);
-                    if (AsmEmitter.isModifiedImmediate(key)) {
+                    if (asm.isModifiedImmediate(key)) {
                         output.append("    cmp r0, #").append(key).append('\n');
                     } else {
                         asm.emitLoadImmediate(output, "r1", key);
@@ -94,7 +94,7 @@ final class TerminatorLowering {
                 output.append("    b .L").append(label).append("block")
                         .append(switched.defaultTarget()).append('\n');
             }
-            default -> throw Thumb2AsmBackend.unsupported(block.terminator().getClass().getSimpleName());
+            default -> throw Architecture.THUMB2.unsupported(block.terminator().getClass().getSimpleName());
         }
     }
 

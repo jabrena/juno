@@ -3,6 +3,7 @@ package io.github.jabrena.juno.backend.avr;
 import io.github.jabrena.juno.backend.FrameLayout;
 import io.github.jabrena.juno.backend.ProgramLayout;
 import io.github.jabrena.juno.backend.WordSource;
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.classfile.MethodHandleRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -51,7 +52,7 @@ final class AvrCallLowering {
                 case ArgumentWord.Plain plain -> avr.loadWord(output, frame, plain.source(), A);
                 case ArgumentWord.Capture capture -> {
                     avr.loadPointer(output, frame, capture.lambda());
-                    AvrEmitter.loadFromZ(output, A, (capture.index() + 1) * AvrEmitter.WORD, AvrEmitter.WORD);
+                    avr.loadFromZ(output, A, (capture.index() + 1) * AvrEmitter.WORD, AvrEmitter.WORD);
                 }
             }
             avr.storeArgument(output, A, index);
@@ -62,7 +63,7 @@ final class AvrCallLowering {
                                   Optional<Value> target) {
         String label = functionLabels.get(method);
         if (label == null) {
-            throw AvrAsmBackend.unsupported("call to unresolved method " + method.displayName());
+            throw Architecture.AVR.unsupported("call to unresolved method " + method.displayName());
         }
         storeArgumentWords(output, frame, words.stream().map(ArgumentWord.Plain::new)
                 .map(ArgumentWord.class::cast).toList());
@@ -71,7 +72,7 @@ final class AvrCallLowering {
     }
 
     private void storeReturn(StringBuilder output, FrameLayout frame, Value value) {
-        if (FrameLayout.isWide(value.type())) {
+        if (value.type().isWide()) {
             avr.store64(output, frame, B, A, value);
         } else {
             avr.store(output, frame, A, value);
@@ -89,7 +90,7 @@ final class AvrCallLowering {
         avr.loadImmediate(output, B,
                 Objects.requireNonNullElse(layout.objectTypeId(lambda.site().syntheticClassName()), 0));
         output.append("    movw r30, r22\n");
-        AvrEmitter.storeToZ(output, B, 0, AvrEmitter.WORD);
+        avr.storeToZ(output, B, 0, AvrEmitter.WORD);
         for (int index = 0; index < lambda.captures().size(); index++) {
             final int capture = index;
             memory.storeValueToZ(output, frame, lambda.captures().get(index),
@@ -102,7 +103,7 @@ final class AvrCallLowering {
         boolean constructor = implementation.referenceKind() == MethodHandleRef.REF_NEW_INVOKE_SPECIAL;
         List<ArgumentWord> words = new ArrayList<>();
         if (constructor) {
-            Value result = call.target().orElseThrow(() -> AvrAsmBackend.unsupported("constructor reference without a result"));
+            Value result = call.target().orElseThrow(() -> Architecture.AVR.unsupported("constructor reference without a result"));
             memory.emitNewObject(output, frame, implementation.method().owner(), result);
             words.add(new ArgumentWord.Plain(new WordSource.FromValue(result)));
         }
@@ -112,7 +113,7 @@ final class AvrCallLowering {
             words.add(new ArgumentWord.Capture(lambdaReference, index));
         }
         for (Value argument : call.arguments().subList(1, call.arguments().size())) {
-            if (FrameLayout.isWide(argument.type())) {
+            if (argument.type().isWide()) {
                 words.add(new ArgumentWord.Plain(new WordSource.FromValueLow(argument)));
                 words.add(new ArgumentWord.Plain(new WordSource.FromValueHigh(argument)));
             } else {
@@ -121,7 +122,7 @@ final class AvrCallLowering {
         }
         String label = functionLabels.get(implementation.method());
         if (label == null) {
-            throw AvrAsmBackend.unsupported("lambda call to unresolved method " + implementation.method().displayName());
+            throw Architecture.AVR.unsupported("lambda call to unresolved method " + implementation.method().displayName());
         }
         storeArgumentWords(output, frame, words);
         output.append("    call ").append(label).append('\n');
@@ -136,9 +137,9 @@ final class AvrCallLowering {
             String next = avr.newLabel(".LinterfaceNext");
             // Reloaded per target: the previous candidate's compare only ever falls through here.
             avr.loadPointer(output, frame, call.arguments().getFirst());
-            AvrEmitter.loadFromZ(output, A, 0, AvrEmitter.WORD);
+            avr.loadFromZ(output, A, 0, AvrEmitter.WORD);
             avr.loadImmediate(output, B, target.typeId());
-            AvrEmitter.compareQuads(output, A, B);
+            avr.compareQuads(output, A, B);
             output.append("    breq 1f\n")
                     .append("    jmp ").append(next).append('\n')
                     .append("1:\n");

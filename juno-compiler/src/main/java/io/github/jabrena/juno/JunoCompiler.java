@@ -1,17 +1,21 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.backend.AsmBackend;
+import io.github.jabrena.juno.backend.GeneratedCode;
 import io.github.jabrena.juno.backend.avr.AvrAsmBackend;
 import io.github.jabrena.juno.backend.thumb2.Thumb2AsmBackend;
+import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.Program;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Compiles a Java program to assembly plus its runtime shim. Every overload builds a {@link CompilationRequest}
+ * and delegates to {@link #compile(CompilationRequest)}.
+ */
 public final class JunoCompiler {
     private final CompilationPipeline pipeline = new CompilationPipeline();
 
@@ -21,18 +25,16 @@ public final class JunoCompiler {
         IrProgram optimized = pipeline.optimize(lowered);
         RuntimeConfig runtimeConfig = request.runtimeConfig().forBoard(program.board());
         CompilationReport report = CompilationReport.from(program, lowered, optimized, runtimeConfig);
-        return switch (program.board().core().architecture()) {
-            case THUMB2 -> {
-                Thumb2AsmBackend.Output output = new Thumb2AsmBackend(request.gcLoggingEnabled(), program.board(),
-                        runtimeConfig).generate(optimized);
-                yield new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(), report);
-            }
-            case AVR -> {
-                AvrAsmBackend.Output output = new AvrAsmBackend(request.gcLoggingEnabled(), program.board(),
-                        runtimeConfig).generate(optimized);
-                yield new CompilationResult(output.assembly(), output.runtimeShim(), output.entryPointSymbol(), report);
-            }
-        };
+        GeneratedCode code = backendFor(program.board(), request.gcLoggingEnabled(), runtimeConfig)
+                .generate(optimized);
+        return new CompilationResult(code.assembly(), code.runtimeShim(), code.entryPointSymbol(), report);
+    }
+
+    /** Compiles {@code request} and writes the generated assembly and runtime shim. */
+    public CompilationResult compileTo(CompilationRequest request, Path assemblyOutput, Path runtimeShimOutput) {
+        CompilationResult result = compile(request);
+        result.writeTo(assemblyOutput, runtimeShimOutput);
+        return result;
     }
 
     public CompilationResult compile(List<Path> classPath, String mainClass) {
@@ -50,40 +52,27 @@ public final class JunoCompiler {
 
     public CompilationResult compileTo(List<Path> classPath, String mainClass, Path assemblyOutput,
                                        Path runtimeShimOutput) {
-        return compileTo(classPath, mainClass, assemblyOutput, runtimeShimOutput, false);
+        return compileTo(new CompilationRequest(classPath, mainClass), assemblyOutput, runtimeShimOutput);
     }
 
     public CompilationResult compileTo(List<Path> classPath, String mainClass, Path assemblyOutput,
                                        Path runtimeShimOutput, boolean gcLoggingEnabled) {
-        return compileTo(classPath, mainClass, assemblyOutput, runtimeShimOutput, gcLoggingEnabled, Optional.empty());
+        return compileTo(new CompilationRequest(classPath, mainClass, gcLoggingEnabled), assemblyOutput,
+                runtimeShimOutput);
     }
 
     public CompilationResult compileTo(List<Path> classPath, String mainClass, Path assemblyOutput,
                                        Path runtimeShimOutput, boolean gcLoggingEnabled,
                                        Optional<String> requestedBoard) {
-        CompilationResult result = compile(classPath, mainClass, gcLoggingEnabled, requestedBoard);
-        write(assemblyOutput, result.assembly(), "assembly");
-        write(runtimeShimOutput, result.runtimeShim(), "runtime shim");
-        return result;
+        return compileTo(new CompilationRequest(classPath, mainClass, gcLoggingEnabled, requestedBoard),
+                assemblyOutput, runtimeShimOutput);
     }
 
-    /** Compiles {@code request} and writes the generated assembly and runtime shim. */
-    public CompilationResult compileTo(CompilationRequest request, Path assemblyOutput, Path runtimeShimOutput) {
-        CompilationResult result = compile(request);
-        write(assemblyOutput, result.assembly(), "assembly");
-        write(runtimeShimOutput, result.runtimeShim(), "runtime shim");
-        return result;
-    }
-
-    private static void write(Path output, String source, String description) {
-        try {
-            Path parent = output.toAbsolutePath().getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            Files.writeString(output, source, StandardCharsets.UTF_8);
-        } catch (IOException exception) {
-            throw new CompileException("Cannot write generated " + description + " to " + output, exception);
-        }
+    /** A fresh backend for {@code board}'s instruction-set architecture. */
+    private AsmBackend backendFor(Board board, boolean gcLoggingEnabled, RuntimeConfig runtimeConfig) {
+        return switch (board.core().architecture()) {
+            case THUMB2 -> new Thumb2AsmBackend(gcLoggingEnabled, board, runtimeConfig);
+            case AVR -> new AvrAsmBackend(gcLoggingEnabled, board, runtimeConfig);
+        };
     }
 }

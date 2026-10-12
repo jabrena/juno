@@ -7,19 +7,19 @@ package io.github.jabrena.juno.backend.runtime;
  * and under QEMU by the {@code BigNumbers} programs.
  */
 final class BigNumberRuntime {
-    private BigNumberRuntime() {
-    }
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+
 
     /** How a handle maps to an address. A native test build substitutes its own. */
-    static String handleHelpers() {
-        return RuntimeSource.load("common/big-number-handles.cpp");
+    String handleHelpers() {
+        return runtimeSource.load("common/big-number-handles.cpp");
     }
 
     /**
      * @param valueOfDouble whether {@code BigDecimal.valueOf(double)} is used; it formats the double with the
      *                      runtime-string helpers, which must then be present
      */
-    static String helpers(int arithmeticClassId, int numberFormatClassId, int illegalArgumentClassId,
+    String helpers(int arithmeticClassId, int numberFormatClassId, int illegalArgumentClassId,
                           boolean valueOfDouble) {
         return arithmetic(arithmeticClassId, numberFormatClassId, illegalArgumentClassId, 0)
                 + integerDoubleValue()
@@ -33,13 +33,13 @@ final class BigNumberRuntime {
      * not binary64 (AVR), which brings its own: {@code juno_big_integer_double_value},
      * {@code juno_big_decimal_double_value} and, when {@code valueOfDouble}, {@code juno_big_decimal_value_of_double}.
      */
-    static String helpersWithoutDoubles(int arithmeticClassId, int numberFormatClassId, int illegalArgumentClassId) {
+    String helpersWithoutDoubles(int arithmeticClassId, int numberFormatClassId, int illegalArgumentClassId) {
         return arithmetic(arithmeticClassId, numberFormatClassId, illegalArgumentClassId, 0)
                 + arithmetic(arithmeticClassId, numberFormatClassId, illegalArgumentClassId, 1);
     }
 
     /** {@code BigInteger.doubleValue} through the C library's correctly rounded {@code strtod}. */
-    private static String integerDoubleValue() {
+    private String integerDoubleValue() {
         return """
                 extern "C" JUNO_ASM_ABI double juno_big_integer_double_value(int32_t a) {
                   juno_big_prepare(4u * (juno_big_len_of(a) + 8u) * 4u);
@@ -52,7 +52,7 @@ final class BigNumberRuntime {
     }
 
     /** {@code BigDecimal.doubleValue} through {@code strtod}. */
-    private static String decimalDoubleValue() {
+    private String decimalDoubleValue() {
         return """
                 extern "C" JUNO_ASM_ABI double juno_big_decimal_double_value(int32_t a) {
                   int32_t text = juno_bd_text(a, false);
@@ -62,7 +62,7 @@ final class BigNumberRuntime {
     }
 
     /** {@code BigDecimal.valueOf(double)}, through the runtime-string {@code juno_format_double}. */
-    private static String decimalValueOfDouble() {
+    private String decimalValueOfDouble() {
         return """
 
                 extern "C" JUNO_ASM_ABI int32_t juno_big_decimal_value_of_double(double value) {
@@ -75,9 +75,9 @@ final class BigNumberRuntime {
     }
 
     /** The arithmetic runtime in two parts ({@code part} 0 or 1), split where the double conversions sit. */
-    private static String arithmetic(int arithmeticClassId, int numberFormatClassId, int illegalArgumentClassId,
+    private String arithmetic(int arithmeticClassId, int numberFormatClassId, int illegalArgumentClassId,
                                      int part) {
-        String source = part == 0 ? RuntimeSource.load("common/big-number-arithmetic-1.cpp") : RuntimeSource.load("common/big-number-arithmetic-2.cpp");
+        String source = part == 0 ? runtimeSource.load("common/big-number-arithmetic-1.cpp") : runtimeSource.load("common/big-number-arithmetic-2.cpp");
         return source.replace("${JUNO_BIG_ARITHMETIC_CLASS_ID}", Integer.toString(arithmeticClassId))
                 .replace("${JUNO_BIG_NUMBER_FORMAT_CLASS_ID}", Integer.toString(numberFormatClassId))
                 .replace("${JUNO_BIG_ILLEGAL_ARGUMENT_CLASS_ID}", Integer.toString(illegalArgumentClassId));

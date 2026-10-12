@@ -25,6 +25,19 @@ import java.util.Set;
  * runtime-string slots, two open SD files and {@code Properties} of eight short entries.
  */
 public final class AvrRuntimeShim {
+    private final SoftFloatRuntime softFloatRuntime = new SoftFloatRuntime();
+    private final ScopedValueRuntime scopedValueRuntime = new ScopedValueRuntime();
+    private final AtomicRuntime atomicRuntime = new AtomicRuntime();
+    private final AvrShimThunks avrShimThunks = new AvrShimThunks();
+    private final MathRuntime mathRuntime = new MathRuntime();
+    private final BigNumberRuntime bigNumberRuntime = new BigNumberRuntime();
+    private final ThreadRuntime threadRuntime = new ThreadRuntime();
+    private final IoRuntime ioRuntime = new IoRuntime();
+    private final NetworkShimLibraries networkShimLibraries = new NetworkShimLibraries();
+    private final ShimLibraries shimLibraries = new ShimLibraries();
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+    private final AllocatorRuntime allocatorRuntime = new AllocatorRuntime();
+
     /** Runtime-string slots; each is {@code RuntimeLimits.STRING_SLOT_CAPACITY_BYTES} bytes. */
     static final int STRING_SLOTS = 4;
     static final int SD_OPEN_FILES = 2;
@@ -54,6 +67,7 @@ public final class AvrRuntimeShim {
     public AvrRuntimeShim(CoreRuntime core, RuntimeConfig config, boolean gcLoggingEnabled, Set<ShimFeature> features,
                    Set<Intrinsic> usedMath, List<String> throwableClasses, Set<String> thunkFunctions,
                    int argumentWords) {
+        defineFloatingMath();
         this.core = core;
         this.config = config;
         this.gcLoggingEnabled = gcLoggingEnabled;
@@ -72,14 +86,14 @@ public final class AvrRuntimeShim {
                 throw Architecture.AVR.unsupported("the " + feature + " runtime");
             }
         }
-        StringBuilder shim = new StringBuilder(RuntimeSource.load("avr/shim-header.cpp"));
+        StringBuilder shim = new StringBuilder(runtimeSource.load("avr/shim-header.cpp"));
         appendIncludes(shim);
-        shim.append(AvrShimThunks.prelude());
-        shim.append(SoftFloatRuntime.helpers());
+        shim.append(avrShimThunks.prelude());
+        shim.append(softFloatRuntime.helpers());
         shim.append(coreRuntime());
         appendHelpers(shim);
         String source = shim.toString();
-        return source + AvrShimThunks.generate(source, thunkFunctions);
+        return source + avrShimThunks.generate(source, thunkFunctions);
     }
 
     private boolean uses(ShimFeature feature) {
@@ -133,53 +147,53 @@ public final class AvrRuntimeShim {
                   for (;;) {}
                 }
                 """
-                + RuntimeShim.allocator(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcDeclarations)
-                + RuntimeSource.load("avr/core-runtime.cpp").replace("${OVERFLOW}", f64(4294967040.0))
+                + allocatorRuntime.source(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcDeclarations)
+                + runtimeSource.load("avr/core-runtime.cpp").replace("${OVERFLOW}", f64(4294967040.0))
                 .replace("${NEGATIVE_OVERFLOW}", f64(-4294967040.0))
                 .replace("${HALF}", f64(0.5))
                 .replace("${TEN}", f64(10.0));
     }
 
     /** A binary64 constant as its bit pattern in a C++ literal. */
-    static String f64(double value) {
+    private String f64(double value) {
         return "0x" + Long.toHexString(Double.doubleToRawLongBits(value)).toUpperCase(java.util.Locale.ROOT) + "ull";
     }
 
     private void appendHelpers(StringBuilder shim) {
         if (usesAny(ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER)) {
-            shim.append(ShimLibraries.runtimeStringSlots(STRING_SLOTS))
+            shim.append(shimLibraries.runtimeStringSlots(STRING_SLOTS))
                     .append(doubleFormatting())
-                    .append(ShimLibraries.runtimeStringOperations())
+                    .append(shimLibraries.runtimeStringOperations())
                     .append(floatingAppends());
         }
         if (uses(ShimFeature.STRING_BUILDER)) {
-            shim.append(ShimLibraries.stringBuilderHelpers());
+            shim.append(shimLibraries.stringBuilderHelpers());
         }
         if (uses(ShimFeature.SERVO)) {
-            shim.append(ShimLibraries.servoHelpers());
+            shim.append(shimLibraries.servoHelpers());
         }
         if (uses(ShimFeature.PARALLEL_BUS)) {
             shim.append(core.parallelBusHelpers());
         }
         if (uses(ShimFeature.INFRARED)) {
-            shim.append(ShimLibraries.infraredHelpers());
+            shim.append(shimLibraries.infraredHelpers());
         }
         if (uses(ShimFeature.I2C)) {
-            shim.append(ShimLibraries.i2cHelpers());
+            shim.append(shimLibraries.i2cHelpers());
         }
         if (uses(ShimFeature.MEMORY)) {
-            shim.append(ShimLibraries.memoryHelpers());
+            shim.append(shimLibraries.memoryHelpers());
         }
         if (uses(ShimFeature.RANDOM)) {
-            shim.append(ShimLibraries.randomHelpers());
+            shim.append(shimLibraries.randomHelpers());
         }
-        shim.append(IoRuntime.preludeFor(core, features));
+        shim.append(ioRuntime.preludeFor(core, features));
         if (uses(ShimFeature.SD)) {
             shim.append(core.sdHelpers(SD_OPEN_FILES, PROPERTIES_ENTRIES, PROPERTIES_KEY_BYTES,
                     PROPERTIES_VALUE_BYTES, PROPERTIES_LINE_BYTES));
         }
         if (uses(ShimFeature.LONG)) {
-            shim.append(ShimLibraries.longHelpers());
+            shim.append(shimLibraries.longHelpers());
         }
         if (uses(ShimFeature.FLOAT)) {
             shim.append(floatHelpers());
@@ -191,10 +205,10 @@ public final class AvrRuntimeShim {
             shim.append(mathHelpers());
         }
         if (uses(ShimFeature.EXCEPTIONS)) {
-            shim.append(ShimLibraries.exceptionHelpers(throwableClasses));
+            shim.append(shimLibraries.exceptionHelpers(throwableClasses));
         }
         if (uses(ShimFeature.RANDOM_ACCESS_FILE)) {
-            shim.append(ShimLibraries.randomAccessFileHelpers(
+            shim.append(shimLibraries.randomAccessFileHelpers(
                     throwableClasses.indexOf("java/io/IOException"),
                     throwableClasses.indexOf("java/io/FileNotFoundException"),
                     throwableClasses.indexOf("java/io/EOFException"),
@@ -202,11 +216,11 @@ public final class AvrRuntimeShim {
         }
         appendNetworkHelpers(shim);
         if (uses(ShimFeature.ATOMICS)) {
-            shim.append(AtomicRuntime.helpers());
+            shim.append(atomicRuntime.helpers());
         }
         if (uses(ShimFeature.BIG_NUMBERS)) {
-            shim.append(BigNumberRuntime.handleHelpers())
-                    .append(BigNumberRuntime.helpersWithoutDoubles(
+            shim.append(bigNumberRuntime.handleHelpers())
+                    .append(bigNumberRuntime.helpersWithoutDoubles(
                             throwableClasses.indexOf("java/lang/ArithmeticException"),
                             throwableClasses.indexOf("java/lang/NumberFormatException"),
                             throwableClasses.indexOf("java/lang/IllegalArgumentException")))
@@ -218,14 +232,14 @@ public final class AvrRuntimeShim {
     /** Scoped-value bindings, then the thread scheduler that swaps them (it refers to the binding stack). */
     private void appendConcurrencyHelpers(StringBuilder shim) {
         if (uses(ShimFeature.SCOPED_VALUES)) {
-            shim.append(ScopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
+            shim.append(scopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.SCOPED_CALL_ENTRY),
                     throwableClasses.indexOf("java/util/NoSuchElementException")));
         }
         if (uses(ShimFeature.THREADS)) {
             shim.append(core.threadPort(config));
-            shim.append(IoRuntime.workerPortFor(core, features));
-            shim.append(ThreadRuntime.scheduler(false, IoRuntime.usesWorker(core, features),
+            shim.append(ioRuntime.workerPortFor(core, features));
+            shim.append(threadRuntime.scheduler(false, ioRuntime.usesWorker(core, features),
                     core.delayMillisFunction(), "juno_gc_scan_bytes",
                     uses(ShimFeature.EXCEPTIONS), uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.TASK_CALLABLE_ENTRY), uses(ShimFeature.STRUCTURED_TASKS),
@@ -233,7 +247,7 @@ public final class AvrRuntimeShim {
                     throwableClasses.indexOf("java/util/concurrent/ExecutionException"),
                     throwableClasses.indexOf("java/lang/IllegalStateException")));
         } else if (uses(ShimFeature.THREAD_BASICS)) {
-            shim.append(ThreadRuntime.basics(core.delayMillisFunction()));
+            shim.append(threadRuntime.basics(core.delayMillisFunction()));
         }
     }
 
@@ -243,8 +257,8 @@ public final class AvrRuntimeShim {
      * {@code strtod} does, so these take the value's limbs straight to binary64: a BigDecimal with a positive scale is
      * divided by its power of ten with enough extra quotient bits and a sticky bit for the remainder first.
      */
-    private static String bigNumberDoubles(boolean valueOfDouble) {
-        return RuntimeSource.load("avr/big-number-doubles.cpp") + (valueOfDouble ? """
+    private String bigNumberDoubles(boolean valueOfDouble) {
+        return runtimeSource.load("avr/big-number-doubles.cpp") + (valueOfDouble ? """
 
                 extern "C" int32_t juno_big_decimal_value_of_double(juno_f64 value) {
                   if (juno_f64_exp(value) == 0x7FF) return juno_big_number_format("Infinite or NaN");
@@ -261,55 +275,55 @@ public final class AvrRuntimeShim {
             shim.append(core.wifiHelpers());
         }
         if (uses(ShimFeature.UDP)) {
-            shim.append(NetworkShimLibraries.udpHelpers(core.udpDeclaration()));
+            shim.append(networkShimLibraries.udpHelpers(core.udpDeclaration()));
         }
         if (uses(ShimFeature.JSON)) {
-            shim.append(NetworkShimLibraries.jsonScanner())
+            shim.append(networkShimLibraries.jsonScanner())
                     .append(jsonDouble())
-                    .append(NetworkShimLibraries.jsonValueHelpers());
+                    .append(networkShimLibraries.jsonValueHelpers());
         }
         if (uses(ShimFeature.JSON_STRING_VALUE)) {
-            shim.append(NetworkShimLibraries.jsonStringValueHelpers());
+            shim.append(networkShimLibraries.jsonStringValueHelpers());
         }
         if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsHelpers());
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
-            shim.append(NetworkShimLibraries.httpHelpers(features, core.httpsClientType(),
-                    IoRuntime.usesWorker(core, features)));
+            shim.append(networkShimLibraries.httpHelpers(features, core.httpsClientType(),
+                    ioRuntime.usesWorker(core, features)));
         }
         // Smtp.sendTls and Pop3Client, exactly as on the UNO R4 WiFi: the board's TLS client is WiFiSSLClient.
         if (usesAny(ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
-            shim.append(NetworkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
+            shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
         }
     }
 
     /** {@code juno_format_double} and {@code String.valueOf(double)}: the Thumb-2 algorithm, step for step, on binary64. */
-    private static String doubleFormatting() {
-        return RuntimeSource.load("avr/double-formatting.cpp").replace("${BILLION}", f64(1.0e9)).replace("${MILLION}", f64(1000000.0));
+    private String doubleFormatting() {
+        return runtimeSource.load("avr/double-formatting.cpp").replace("${BILLION}", f64(1.0e9)).replace("${MILLION}", f64(1000000.0));
     }
 
-    private static String floatingAppends() {
-        return RuntimeSource.load("avr/floating-appends.cpp");
+    private String floatingAppends() {
+        return runtimeSource.load("avr/floating-appends.cpp");
     }
 
     /** {@code Json.getDouble}: the Thumb-2 parser's arithmetic, step for step, on binary64. */
-    private static String jsonDouble() {
-        return RuntimeSource.load("avr/json-double.cpp").replace("${TEN}", f64(10.0)).replace("${ONE}", f64(1.0));
+    private String jsonDouble() {
+        return runtimeSource.load("avr/json-double.cpp").replace("${TEN}", f64(10.0)).replace("${ONE}", f64(1.0));
     }
 
     /** Java {@code float} arithmetic in binary64, rounded once to binary32 (exact; see {@link SoftFloatRuntime}). */
-    private static String floatHelpers() {
-        return RuntimeSource.load("avr/float.cpp");
+    private String floatHelpers() {
+        return runtimeSource.load("avr/float.cpp");
     }
 
-    private static String doubleHelpers() {
-        return RuntimeSource.load("avr/double.cpp");
+    private String doubleHelpers() {
+        return runtimeSource.load("avr/double.cpp");
     }
 
-    private static final Map<Intrinsic, String> FLOATING_MATH = new EnumMap<>(Intrinsic.class);
+    private final Map<Intrinsic, String> floatingMath = new EnumMap<>(Intrinsic.class);
 
-    static {
+    private void defineFloatingMath() {
         mathFunction(Intrinsic.MATH_ABS_FLOAT, "juno_f32", "juno_f32 a", "return a & 0x7FFFFFFFul;");
         mathFunction(Intrinsic.MATH_ABS_DOUBLE, "juno_f64", "juno_f64 a", "return a & 0x7FFFFFFFFFFFFFFFull;");
         mathFunction(Intrinsic.MATH_MIN_FLOAT, "juno_f32", "juno_f32 a, juno_f32 b",
@@ -347,8 +361,8 @@ public final class AvrRuntimeShim {
         mathFunction(Intrinsic.MATH_TO_DEGREES, "juno_f64", "juno_f64 a", "return juno_f64_mul(a, ${DEGREES});");
     }
 
-    private static void mathFunction(Intrinsic intrinsic, String returnType, String parameters, String body) {
-        FLOATING_MATH.put(intrinsic, "extern \"C\" " + returnType + " " + MathRuntime.symbol(intrinsic) + "("
+    private void mathFunction(Intrinsic intrinsic, String returnType, String parameters, String body) {
+        floatingMath.put(intrinsic, "extern \"C\" " + returnType + " " + mathRuntime.symbol(intrinsic) + "("
                 + parameters + ") { " + body + " }\n");
     }
 
@@ -357,14 +371,14 @@ public final class AvrRuntimeShim {
      * transcendental functions need {@code Capability.DOUBLE_MATH}, which this board lacks.
      */
     private String mathHelpers() {
-        StringBuilder math = new StringBuilder(RuntimeSource.load("avr/math.cpp")).append(MathRuntime.LONG_PRELUDE);
+        StringBuilder math = new StringBuilder(runtimeSource.load("avr/math.cpp")).append(mathRuntime.longPrelude());
         for (Intrinsic intrinsic : Intrinsic.values()) {
             if (!usedMath.contains(intrinsic)) {
                 continue;
             }
-            String source = MathRuntime.integerSource(intrinsic);
+            String source = mathRuntime.integerSource(intrinsic);
             if (source == null) {
-                source = FLOATING_MATH.get(intrinsic);
+                source = floatingMath.get(intrinsic);
             }
             if (source == null) {
                 throw Architecture.AVR.unsupported(intrinsic + " (no double-precision libm)");

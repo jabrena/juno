@@ -59,14 +59,14 @@ public final class BlockMerging implements CompilerPass {
                 method.arrayDeclarations(), List.copyOf(blocks.values()));
     }
 
-    private static boolean canMerge(IrBasicBlock block, int target, int entry, ControlFlowGraph graph,
+    private boolean canMerge(IrBasicBlock block, int target, int entry, ControlFlowGraph graph,
                                     Map<Integer, IrBasicBlock> blocks) {
         IrBasicBlock next = blocks.get(target);
         if (next == null || target == entry || target <= block.start()
                 || graph.predecessorsOf(target).size() != 1) {
             return false;
         }
-        for (int successor : ControlFlowGraph.successors(next.terminator())) {
+        for (int successor : next.terminator().successors()) {
             if ((successor <= block.start()) != (successor <= next.start())) {
                 return false;
             }

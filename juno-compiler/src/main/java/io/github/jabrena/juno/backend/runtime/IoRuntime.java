@@ -24,14 +24,14 @@ import java.util.Set;
  * thread while its caller is parked in the scheduler ({@code juno_io_offload}); elsewhere it still holds every thread.
  */
 public final class IoRuntime {
-    private IoRuntime() {
-    }
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+
 
     /**
      * Whether the program reaches a library with waiting entry points, so the shim needs {@link #prelude}; with an
      * I/O worker, starting Wi-Fi (the UNO Q's bridge to Linux) is one too.
      */
-    static boolean needed(Set<ShimFeature> features, boolean worker) {
+    boolean needed(Set<ShimFeature> features, boolean worker) {
         return features.contains(ShimFeature.HTTP) || features.contains(ShimFeature.HTTPS)
                 || worker && features.contains(ShimFeature.WIFI)
                 || features.contains(ShimFeature.HTTP_SERVER) || features.contains(ShimFeature.SD)
@@ -39,18 +39,18 @@ public final class IoRuntime {
     }
 
     /** Whether waiting device calls run on the core's I/O worker: the core has one and the program makes them. */
-    static boolean usesWorker(CoreRuntime core, Set<ShimFeature> features) {
+    boolean usesWorker(CoreRuntime core, Set<ShimFeature> features) {
         return core.ioWorker() && features.contains(ShimFeature.THREADS) && needed(features, true);
     }
 
     /** {@link #prelude} when the program needs it, else nothing. */
-    static String preludeFor(CoreRuntime core, Set<ShimFeature> features) {
+    String preludeFor(CoreRuntime core, Set<ShimFeature> features) {
         boolean worker = usesWorker(core, features);
         return needed(features, core.ioWorker()) ? prelude(features.contains(ShimFeature.THREADS), worker) : "";
     }
 
     /** The core's I/O worker when the program uses it, else nothing; goes right after the thread port. */
-    static String workerPortFor(CoreRuntime core, Set<ShimFeature> features) {
+    String workerPortFor(CoreRuntime core, Set<ShimFeature> features) {
         return usesWorker(core, features) ? core.ioWorkerPort() : "";
     }
 
@@ -62,8 +62,8 @@ public final class IoRuntime {
      *
      * @param worker whether the core's port provides the I/O worker ({@link CoreRuntime#ioWorker()})
      */
-    static String prelude(boolean threads, boolean worker) {
-        String offload = threads && worker ? RuntimeSource.load("common/io-stable-text.cpp").replace("${JUNO_SLOT_BYTES}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
+    String prelude(boolean threads, boolean worker) {
+        String offload = threads && worker ? runtimeSource.load("common/io-stable-text.cpp").replace("${JUNO_SLOT_BYTES}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
                 : """
                 static void juno_io_offload(void (*job)(void*), void* argument) {
                   job(argument);
@@ -124,7 +124,7 @@ public final class IoRuntime {
      * again, and a caller cancelled meanwhile stays {@code JUNO_SLOT_DRAINING}, its stack still scanned by the
      * collector since the worker may write into its arrays, until {@code juno_io_reap} frees it.
      */
-    static String owners(boolean worker) {
+    String owners(boolean worker) {
         String workerState = worker ? """
 
                 // The thread whose job the worker is running (slot + 1), and the abort of a device whose owner was
@@ -146,8 +146,8 @@ public final class IoRuntime {
         String offloadingFlag = worker ? """
                   bool offloading = juno_io_offloader == owner && juno_port_io_busy();
                   if (juno_io_offloader == owner) juno_io_offloader = 0u;""" : "";
-        String offload = worker ? RuntimeSource.load("common/io-worker-offload.cpp") : "";
-        return RuntimeSource.load("common/io-owners.cpp").replace("${WORKER_STATE}", workerState)
+        String offload = worker ? runtimeSource.load("common/io-worker-offload.cpp") : "";
+        return runtimeSource.load("common/io-owners.cpp").replace("${WORKER_STATE}", workerState)
                 .replace("${ON_WORKER}", onWorker)
                 .replace("${OFFLOADING}", offloadingFlag)
                 .replace("${ABORT}", abort)

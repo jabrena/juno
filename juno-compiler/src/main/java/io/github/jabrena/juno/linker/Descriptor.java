@@ -49,7 +49,7 @@ public record Descriptor(List<String> parameters, String returnType) {
                         || isDouble(returnType)
                         || isString(returnType)
                         || isStringBuilder(returnType)
-                        || BigNumberSupport.isBigNumberType(returnType)
+                        || new BigNumberSupport().isBigNumberType(returnType)
                         || isSupportedArrayType(returnType, referenceClassNames)
                         || isReferenceType(returnType, referenceClassNames));
     }
@@ -116,10 +116,10 @@ public record Descriptor(List<String> parameters, String returnType) {
         return isIntegerLike(type) || isLong(type) || isFloat(type) || isDouble(type)
                 || isString(type)
                 || isStringBuilder(type)
-                || ThreadSupport.isThreadType(type)
-                || ScopedValueSupport.isScopedValueType(type)
-                || BigNumberSupport.isBigNumberType(type)
-                || AtomicSupport.isAtomicType(type)
+                || new ThreadSupport().isThreadType(type)
+                || new ScopedValueSupport().isScopedValueType(type)
+                || new BigNumberSupport().isBigNumberType(type)
+                || new AtomicSupport().isAtomicType(type)
                 || isRandomAccessFile(type)
                 || isSupportedArrayType(type, referenceClassNames)
                 || isReferenceType(type, referenceClassNames);

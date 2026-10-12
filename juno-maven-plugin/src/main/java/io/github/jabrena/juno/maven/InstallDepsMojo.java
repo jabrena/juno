@@ -1,9 +1,10 @@
 package io.github.jabrena.juno.maven;
 
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,37 +32,45 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
     private static final String CORE_PLATFORM = "arduino:renesas_uno";
 
     @Override
-    public void execute() throws MojoFailureException {
-        int totalSteps = OPTIONAL_LIBRARIES.size() + 1;
-        long installationStarted = System.nanoTime();
-        getLog().info("Installing Arduino dependencies (" + totalSteps + " steps)");
+    void run() {
+        List<InstallStep> steps = installSteps(arduinoCli());
+        Stopwatch installation = new Stopwatch();
+        getLog().info("Installing Arduino dependencies (" + steps.size() + " steps)");
         try {
-            ArduinoCli cli = arduinoCli();
-            installStep(1, totalSteps, "Arduino core " + CORE_PLATFORM,
-                    () -> cli.installCore(CORE_PLATFORM));
-            for (int index = 0; index < OPTIONAL_LIBRARIES.size(); index++) {
-                String library = OPTIONAL_LIBRARIES.get(index);
-                installStep(index + 2, totalSteps, "Arduino library " + library,
-                        () -> cli.installLibrary(library));
+            for (int index = 0; index < steps.size(); index++) {
+                install(steps.get(index), "[" + (index + 1) + "/" + steps.size() + "] ");
             }
-            getLog().info("Arduino dependency installation completed in "
-                    + elapsedMillis(installationStarted) + " ms");
+            getLog().info("Arduino dependency installation completed in " + installation.elapsedMillis() + " ms");
         } catch (ArduinoCliException exception) {
-            getLog().error("Arduino dependency installation failed after "
-                    + elapsedMillis(installationStarted) + " ms");
-            throw failure(exception);
+            getLog().error("Arduino dependency installation failed after " + installation.elapsedMillis() + " ms");
+            throw exception;
         }
     }
 
-    private void installStep(int step, int totalSteps, String description, Runnable installation) {
-        long started = System.nanoTime();
-        String prefix = "[" + step + "/" + totalSteps + "] ";
-        getLog().info(prefix + "Installing " + description);
-        installation.run();
-        getLog().info(prefix + "Installed " + description + " in " + elapsedMillis(started) + " ms");
+    private List<InstallStep> installSteps(ArduinoCli cli) {
+        List<InstallStep> steps = new ArrayList<>();
+        steps.add(new InstallStep("Arduino core " + CORE_PLATFORM, () -> cli.installCore(CORE_PLATFORM)));
+        OPTIONAL_LIBRARIES.forEach(library ->
+                steps.add(new InstallStep("Arduino library " + library, () -> cli.installLibrary(library))));
+        return steps;
     }
 
-    private static long elapsedMillis(long startedNanos) {
-        return (System.nanoTime() - startedNanos) / 1_000_000;
+    private void install(InstallStep step, String prefix) {
+        Stopwatch stopwatch = new Stopwatch();
+        getLog().info(prefix + "Installing " + step.description());
+        step.installation().run();
+        getLog().info(prefix + "Installed " + step.description() + " in " + stopwatch.elapsedMillis() + " ms");
+    }
+
+    private record InstallStep(String description, Runnable installation) {
+    }
+
+    /** Measures wall-clock time from its creation. */
+    private static final class Stopwatch {
+        private final long startedNanos = System.nanoTime();
+
+        long elapsedMillis() {
+            return Duration.ofNanos(System.nanoTime() - startedNanos).toMillis();
+        }
     }
 }

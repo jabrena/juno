@@ -19,6 +19,8 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FrameLayoutTest {
+    private final StackFrameSizing stackFrameSizing = new StackFrameSizing();
+
     private static final MethodRef METHOD = new MethodRef("demo.Frame", "work", "()I");
 
     @Test
@@ -39,7 +41,7 @@ class FrameLayoutTest {
         // Slots 0 and 2 are used; slot 1 is never loaded or stored, so it gets no word.
         assertThat(frame.localOffsets()).containsExactly(4, -1, 8);
         assertThat(frame.frameSize()).isEqualTo(12);
-        assertThat(StackFrameSizing.methodStackBytes(method)).isEqualTo(48);
+        assertThat(stackFrameSizing.methodStackBytes(method)).isEqualTo(48);
     }
 
     @Test

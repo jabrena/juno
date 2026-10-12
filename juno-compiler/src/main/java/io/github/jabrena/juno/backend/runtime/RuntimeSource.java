@@ -17,15 +17,13 @@ public final class RuntimeSource {
     private static final String ROOT = "/runtime/";
     private static final Map<String, String> CACHE = new ConcurrentHashMap<>();
 
-    private RuntimeSource() {
-    }
 
     /** The fragment at {@code path}, relative to the runtime root, with {@code \n} line endings whatever the checkout's. */
-    public static String load(String path) {
-        return CACHE.computeIfAbsent(path, RuntimeSource::read);
+    public String load(String path) {
+        return CACHE.computeIfAbsent(path, this::read);
     }
 
-    private static String read(String path) {
+    private String read(String path) {
         try (InputStream input = RuntimeSource.class.getResourceAsStream(ROOT + path)) {
             if (input == null) {
                 throw new IllegalStateException("Missing runtime fragment " + ROOT + path);

@@ -6,49 +6,46 @@ import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
-import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.StringConcatSite;
 
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.storeToStack;
-
-/** Lowers a validated StringConcatFactory recipe into bounded runtime-string append calls. */
+/** Lowers a validated {@code StringConcatFactory} recipe into bounded runtime-string append calls. */
 final class StringConcatLowering {
     private static final String STRING = "Ljava/lang/String;";
     private static final MethodRef CONCAT = new MethodRef("java/lang/invoke/StringConcatFactory",
             "makeConcatWithConstants", "()Ljava/lang/String;");
 
-    private StringConcatLowering() {
+    private final MethodContext context;
+    private final CallLowering calls;
+
+    StringConcatLowering(MethodContext context, CallLowering calls) {
+        this.context = context;
+        this.calls = calls;
     }
 
-    static Lowered lower(LinkedMethod linked, Instruction instruction, StringConcatSite site,
-                         List<IrInstruction> instructions, int stackBase, int depth,
-                         int nextValueId, ValueTracking tracking) {
-        Descriptor descriptor = new Descriptor(site.argumentTypes(), STRING);
-        CallArguments popped = InvokeLowering.popCallArguments(linked, instruction, CONCAT, descriptor,
-                Optional.empty(), instructions, stackBase, depth, nextValueId, tracking);
-        nextValueId = popped.nextValueId();
-        depth = popped.depth();
-
-        Value handle = Value.int32(nextValueId++);
-        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.STRING_CONCAT_NEW,
+    void concat(Instruction instruction, StringConcatSite site) {
+        CallArguments arguments = calls.popArguments(instruction, CONCAT,
+                new Descriptor(site.argumentTypes(), STRING), Optional.empty());
+        Value builder = context.values().int32();
+        context.emit(new IrInstruction.IntrinsicCall(Optional.of(builder), Intrinsic.STRING_CONCAT_NEW,
                 Optional.empty(), List.of(), List.of()));
         for (StringConcatSite.Part part : site.parts()) {
-            if (part instanceof StringConcatSite.LiteralPart literal) {
-                Value text = Value.int32(nextValueId++);
-                instructions.add(new IrInstruction.StringConst(text, literal.value()));
-                append(instructions, handle, Intrinsic.STRING_CONCAT_APPEND_STRING, text);
-            } else if (part instanceof StringConcatSite.ArgumentPart argument) {
-                append(instructions, handle, appendIntrinsic(argument.type()), popped.arguments()[argument.index()]);
+            switch (part) {
+                case StringConcatSite.LiteralPart literal -> {
+                    Value text = context.values().int32();
+                    context.emit(new IrInstruction.StringConst(text, literal.value()));
+                    append(builder, Intrinsic.STRING_CONCAT_APPEND_STRING, text);
+                }
+                case StringConcatSite.ArgumentPart argument ->
+                        append(builder, appendIntrinsic(argument.type()), arguments.value(argument.index()));
             }
         }
-        storeToStack(instructions, stackBase, depth, handle, tracking);
-        return new Lowered(nextValueId, depth + 1);
+        context.stack().push(builder);
     }
 
-    private static Intrinsic appendIntrinsic(String type) {
+    private Intrinsic appendIntrinsic(String type) {
         return switch (type) {
             case STRING -> Intrinsic.STRING_CONCAT_APPEND_STRING;
             case "Z" -> Intrinsic.STRING_CONCAT_APPEND_BOOLEAN;
@@ -61,8 +58,8 @@ final class StringConcatLowering {
         };
     }
 
-    private static void append(List<IrInstruction> instructions, Value handle, Intrinsic intrinsic, Value value) {
-        instructions.add(new IrInstruction.IntrinsicCall(Optional.empty(), intrinsic, Optional.of(handle),
+    private void append(Value builder, Intrinsic intrinsic, Value value) {
+        context.emit(new IrInstruction.IntrinsicCall(Optional.empty(), intrinsic, Optional.of(builder),
                 List.of(value), List.of()));
     }
 }

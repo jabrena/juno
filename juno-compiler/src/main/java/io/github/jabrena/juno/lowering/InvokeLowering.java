@@ -9,359 +9,188 @@ import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.ir.InterfaceTarget;
 import io.github.jabrena.juno.ir.IrInstruction;
-import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
+import io.github.jabrena.juno.linker.InterfaceCallSite;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
-import io.github.jabrena.juno.linker.LinkedMethod;
+import io.github.jabrena.juno.linker.StructuredTaskSupport;
 import io.github.jabrena.juno.linker.SupportedJdkMethods;
 import io.github.jabrena.juno.linker.ThrowableTypes;
-import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEINTERFACE;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESPECIAL;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESTATIC;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEVIRTUAL;
 
-/** {@code invokevirtual}/{@code invokespecial}/{@code invokestatic} opcode lowering, split out of {@link BytecodeToIr}. */
-final class InvokeLowering {
-    private InvokeLowering() {
+/**
+ * {@code invokevirtual}/{@code invokespecial}/{@code invokestatic}/{@code invokeinterface}. Most calls become an
+ * intrinsic or a direct call (see {@link CallLowering}); the JDK methods Juno resolves itself are recognized first.
+ */
+final class InvokeLowering implements InstructionLowering {
+    private final RandomAccessFileMethods randomAccessFileMethods = new RandomAccessFileMethods();
+
+    private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
+
+    private final SupportedJdkMethods supportedJdkMethods = new SupportedJdkMethods();
+
+    private final ThrowableTypes throwableTypes = new ThrowableTypes();
+
+    private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
+
+    private final MethodContext context;
+    private final OperandStack stack;
+    private final CallLowering calls;
+    private final ObjectCreationLowering objects;
+    private final LambdaLowering lambdas;
+    private final CompileTimeCalls compileTime;
+    private final RandomAccessFileReads fileReads;
+
+    InvokeLowering(MethodContext context, CallLowering calls, ObjectCreationLowering objects, LambdaLowering lambdas) {
+        this.context = context;
+        this.stack = context.stack();
+        this.calls = calls;
+        this.objects = objects;
+        this.lambdas = lambdas;
+        this.compileTime = new CompileTimeCalls(context);
+        this.fileReads = new RandomAccessFileReads(context);
     }
 
-    static Lowered lowerInvokeVirtual(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,
-                                      int stackBase, int depth, int nextValueId, ValueTracking tracking,
-                                      Map<String, JavaClass> classes) {
-        MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-        if (RandomAccessFileMethods.isBufferRead(called)) {
-            return RandomAccessFileLowering.lowerBufferRead(linked, instruction, called, instructions, stackBase,
-                    depth, nextValueId, tracking);
+    @Override
+    public void lower(Instruction instruction) {
+        int opcode = instruction.opcode();
+        MethodRef called = context.constantPool().methodRef(instruction.operandA());
+        if (opcode == INVOKESTATIC && structuredTaskSupport.joinerPolicy(called) != null) {
+            pushJoiner(called);
+            return;
         }
-        return isEnumOrdinal(classes, called)
-                ? lowerEnumOrdinal(instructions, stackBase, depth, nextValueId, tracking)
-                : ThrowableTypes.isGetMessage(called, classes)
-                        ? lowerGetMessage(instructions, stackBase, depth, nextValueId, tracking)
-                        : ThrowableTypes.isAddSuppressed(called, classes)
-                                ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId, tracking)
-                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId, tracking);
+        if (opcode == INVOKEINTERFACE && intrinsicRegistry.isIntrinsic(called)) {
+            calls.call(instruction, called, true, List.of());
+            return;
+        }
+        switch (opcode) {
+            case INVOKEVIRTUAL -> invokeVirtual(instruction, called);
+            case INVOKESPECIAL -> invokeSpecial(instruction, called);
+            case INVOKESTATIC -> invokeStatic(instruction, called);
+            case INVOKEINTERFACE -> invokeInterface(instruction);
+            default -> throw new IllegalStateException("Not an invoke opcode: " + opcode);
+        }
     }
 
-    static Lowered lowerInvokeSpecial(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,
-                                      int stackBase, int depth, int nextValueId, ValueTracking tracking,
-                                      Map<String, JavaClass> classes) {
-        MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-        return ObjectConstructionLowering.handles(called)
-                ? ObjectConstructionLowering.lower(linked, instruction, called, instructions, stackBase, depth,
-                        nextValueId, tracking)
-                : ThrowableTypes.isBuiltInConstructor(called)
-                        ? lowerThrowableConstructor(linked, instruction, called, instructions, stackBase,
-                                depth, nextValueId, tracking)
-                        : isRuntimeBaseConstructor(called)
-                                ? discardInstanceCall(called, instructions, stackBase, depth, nextValueId,
-                                        tracking)
-                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId,
-                                        tracking);
+    private void invokeVirtual(Instruction instruction, MethodRef called) {
+        if (randomAccessFileMethods.isBufferRead(called)) {
+            fileReads.read(instruction, called);
+        } else if (isEnumOrdinal(called)) {
+            // An enum constant is its ordinal already.
+            stack.push(stack.pop());
+        } else if (throwableTypes.isGetMessage(called, context.classes())) {
+            Value receiver = stack.pop();
+            Value message = context.values().int32();
+            context.emit(new IrInstruction.IntrinsicCall(Optional.of(message), Intrinsic.THROWABLE_GET_MESSAGE,
+                    Optional.of(receiver), List.of(), List.of()));
+            stack.push(message);
+        } else if (throwableTypes.isAddSuppressed(called, context.classes())) {
+            discardCall(called);
+        } else {
+            calls.call(instruction, called, true, List.of());
+        }
     }
 
-    static Lowered lowerInvokeStatic(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,
-                                     int stackBase, int depth, int nextValueId, ValueTracking tracking,
-                                     Map<String, JavaClass> classes) {
-        MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-        return isEnumValues(classes, called)
-                ? lowerEnumValues(called, instructions, stackBase, depth, nextValueId, tracking, classes)
-                        : SupportedJdkMethods.isRequireNonNull(called)
-                        ? JdkInvokeLowering.lowerRequireNonNull(instructions, stackBase, depth, nextValueId, tracking)
-                        : MiscIntrinsicLowering.isCompileTimeGetenv(called)
-                        ? MiscIntrinsicLowering.lowerCompileTimeGetenv(linked, instruction, instructions, stackBase,
-                                depth, nextValueId, tracking)
-                        : MiscIntrinsicLowering.isDrawTextCall(called)
-                                ? MiscIntrinsicLowering.lowerDrawText(linked, instruction, instructions, stackBase,
-                                        depth, nextValueId, tracking)
-                                : lowerCall(linked, instruction, instructions, stackBase, depth, nextValueId,
-                                        tracking);
+    private void invokeSpecial(Instruction instruction, MethodRef called) {
+        if (objects.buildsHandle(called)) {
+            objects.construct(instruction, called);
+        } else if (throwableTypes.isBuiltInConstructor(called)) {
+            objects.constructThrowable(instruction, called);
+        } else if (called.name().equals("<init>") && called.owner().startsWith("java/lang/")) {
+            // A JDK base constructor such as Object.<init> has nothing to initialize in Juno's runtime.
+            discardCall(called);
+        } else {
+            calls.call(instruction, called, true, List.of());
+        }
     }
 
-    static Lowered lowerInvokeInterface(LinkedMethod linked, Instruction instruction,
-                                        List<IrInstruction> instructions, int stackBase, int depth,
-                                        int nextValueId, ValueTracking tracking, InterfaceDispatch dispatch,
-                                        Map<String, Integer> objectTypeIds) {
+    private void invokeStatic(Instruction instruction, MethodRef called) {
+        if (isEnumValues(called)) {
+            pushEnumValues(called);
+        } else if (supportedJdkMethods.isRequireNonNull(called)) {
+            Value reference = stack.pop();
+            context.emit(new IrInstruction.NullCheck(reference));
+            stack.push(reference);
+        } else if (compileTime.isGetenv(called)) {
+            compileTime.getenv(instruction);
+        } else if (compileTime.isDrawText(called)) {
+            compileTime.drawText(instruction);
+        } else {
+            calls.call(instruction, called, false, List.of());
+        }
+    }
+
+    /** Calls through the implementations the linker found for this call site; a single one is called directly. */
+    private void invokeInterface(Instruction instruction) {
+        InterfaceCallSite site = new InterfaceCallSite(context.method().method().reference(), instruction.offset());
+        InterfaceDispatch dispatch = context.program().interfaceDispatches().get(site);
+        if (dispatch == null) {
+            throw new CompileException("Missing linked interface dispatch for " + context.at(instruction));
+        }
         if (dispatch.targets().size() == 1) {
             InterfaceDispatch.Target target = dispatch.targets().getFirst();
-            return target.isLambda()
-                    ? LambdaLowering.lowerCall(linked, instruction, Objects.requireNonNull(target.lambda()), instructions, stackBase, depth,
-                            nextValueId, tracking)
-                    : lowerResolvedCall(linked, instruction, target.method(), true, List.of(),
-                            instructions, stackBase, depth, nextValueId, tracking);
+            if (target.isLambda()) {
+                lambdas.call(instruction, Objects.requireNonNull(target.lambda()));
+            } else {
+                calls.call(instruction, target.method(), true, List.of());
+            }
+            return;
         }
         List<InterfaceTarget> targets = dispatch.targets().stream()
-                .map(target -> new InterfaceTarget(Objects.requireNonNull(objectTypeIds.get(target.className())), target.method(),
-                        target.lambda()))
+                .map(target -> new InterfaceTarget(
+                        Objects.requireNonNull(context.program().objectTypeIds().get(target.className())),
+                        target.method(), target.lambda()))
                 .toList();
-        return lowerResolvedCall(linked, instruction, dispatch.interfaceMethod(), true, targets, instructions,
-                stackBase, depth, nextValueId, tracking);
+        calls.call(instruction, dispatch.interfaceMethod(), true, targets);
     }
 
-    static CallArguments popCallArguments(LinkedMethod linked, Instruction instruction, MethodRef called,
-                                          Descriptor descriptor, Optional<Intrinsic> intrinsic,
-                                          List<IrInstruction> instructions, int stackBase, int depth,
-                                          int nextValueId, ValueTracking tracking) {
-        Value[] arguments = new Value[descriptor.parameters().size()];
-        @Nullable String[] literalStrings = new String[descriptor.parameters().size()];
-        for (int index = arguments.length - 1; index >= 0; index--) {
-            String parameterType = descriptor.parameters().get(index);
-            depth -= Descriptor.jvmSlots(parameterType);
-            if (Descriptor.isLong(parameterType)) {
-                WidePopped popped = popWide(instructions, stackBase, depth, nextValueId, tracking);
-                nextValueId = popped.nextValueId();
-                Value packed = Value.int64(nextValueId++);
-                instructions.add(new IrInstruction.PackLong(packed, popped.low(), popped.high()));
-                arguments[index] = packed;
-            } else if (Descriptor.isString(parameterType)) {
-                Popped popped = pop(instructions, stackBase, depth, nextValueId, tracking);
-                nextValueId = popped.nextValueId();
-                if (intrinsic.isPresent() && IntrinsicRegistry.requiresLiteralStringArgument(intrinsic.get(), index)) {
-                    String literal = tracking.knownString(popped.value());
-                    if (literal == null) {
-                        throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
-                                + instruction.offset() + ": " + called.displayName() + " requires a compile-time "
-                                + "string literal argument");
-                    }
-                    literalStrings[index] = literal;
-                } else if (intrinsic.isPresent()
-                        && IntrinsicRegistry.prefersLiteralStringArgument(intrinsic.get(), index)
-                        && tracking.knownString(popped.value()) instanceof String literal) {
-                    literalStrings[index] = literal;
-                } else {
-                    arguments[index] = popped.value();
-                }
+    /** Materializes a built-in {@code Joiner} as a small runtime policy token. */
+    private void pushJoiner(MethodRef called) {
+        Value joiner = context.values().int32();
+        context.emit(new IrInstruction.Const(joiner, Objects.requireNonNull(structuredTaskSupport.joinerPolicy(called))));
+        stack.push(joiner);
+    }
+
+    /** {@code values()} of an enum is the constant array of its ordinals. */
+    private void pushEnumValues(MethodRef called) {
+        JavaClass enumClass = Objects.requireNonNull(context.classes().get(called.owner()), called.owner());
+        List<Integer> ordinals = IntStream.range(0, enumClass.enumConstantNames().size()).boxed().toList();
+        Value array = context.values().int32();
+        context.emit(new IrInstruction.IntArrayConst(array, ordinals));
+        context.facts().markKnownArray(array, ordinals.size());
+        stack.push(array);
+    }
+
+    /** Pops a call's arguments and receiver without calling anything. */
+    private void discardCall(MethodRef called) {
+        List<String> parameters = Descriptor.parse(called.descriptor()).parameters();
+        for (String parameter : parameters.reversed()) {
+            if (Descriptor.jvmSlots(parameter) == 2) {
+                stack.popHalves();
             } else {
-                Popped popped = Descriptor.isDouble(parameterType)
-                        ? popDouble(instructions, stackBase, depth, nextValueId, tracking)
-                        : Descriptor.isFloat(parameterType)
-                                ? popFloat(instructions, stackBase, depth, nextValueId, tracking)
-                                : pop(instructions, stackBase, depth, nextValueId, tracking);
-                nextValueId = popped.nextValueId();
-                arguments[index] = popped.value();
+                stack.pop();
             }
         }
-        return new CallArguments(arguments, literalStrings, nextValueId, depth);
+        stack.pop();
     }
 
-    static Lowered lowerCall(LinkedMethod linked, Instruction instruction, List<IrInstruction> instructions,
-                             int stackBase, int depth, int nextValueId, ValueTracking tracking) {
-        MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-        boolean hasReceiver = instruction.opcode() == 182 || instruction.opcode() == 183;
-        return lowerResolvedCall(linked, instruction, called, hasReceiver, List.of(), instructions, stackBase,
-                depth, nextValueId, tracking);
-    }
-
-    static Lowered lowerResolvedCall(LinkedMethod linked, Instruction instruction, MethodRef called,
-                                             boolean hasReceiver, List<InterfaceTarget> interfaceTargets,
-                                             List<IrInstruction> instructions, int stackBase, int depth,
-                                             int nextValueId, ValueTracking tracking) {
-        Descriptor descriptor = Descriptor.parse(called.descriptor());
-        Optional<Intrinsic> intrinsic = IntrinsicRegistry.resolve(called);
-        CallArguments popped = popCallArguments(linked, instruction, called, descriptor, intrinsic, instructions,
-                stackBase, depth, nextValueId, tracking);
-        Value[] arguments = popped.arguments();
-        @Nullable String[] literalStrings = popped.literalStrings();
-        nextValueId = popped.nextValueId();
-        depth = popped.depth();
-        List<Value> numericArguments = new ArrayList<>();
-        List<String> literalArguments = new ArrayList<>();
-        for (int index = 0; index < arguments.length; index++) {
-            if (literalStrings[index] != null) {
-                literalArguments.add(literalStrings[index]);
-            } else {
-                numericArguments.add(arguments[index]);
-            }
-        }
-        Optional<Value> receiver = Optional.empty();
-        if (hasReceiver) {
-            Popped poppedReceiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-            nextValueId = poppedReceiver.nextValueId();
-            receiver = Optional.of(poppedReceiver.value());
-        }
-
-        Value target = null;
-        if (!descriptor.returnsVoid()) {
-            target = Descriptor.isLong(descriptor.returnType())
-                    ? Value.int64(nextValueId++)
-                    : Descriptor.isDouble(descriptor.returnType())
-                    ? Value.float64(nextValueId++)
-                    : Descriptor.isFloat(descriptor.returnType())
-                            ? Value.float32(nextValueId++)
-                            : Value.int32(nextValueId++);
-        }
-
-        if (!interfaceTargets.isEmpty()) {
-            List<Value> callArguments = new ArrayList<>();
-            receiver.ifPresent(callArguments::add);
-            callArguments.addAll(numericArguments);
-            instructions.add(new IrInstruction.InterfaceCall(Optional.ofNullable(target),
-                    List.copyOf(callArguments), interfaceTargets));
-        } else if (intrinsic.isPresent()) {
-            instructions.add(new IrInstruction.IntrinsicCall(
-                    Optional.ofNullable(target), intrinsic.get(), receiver, numericArguments, literalArguments));
-        } else {
-            List<Value> callArguments = new ArrayList<>();
-            receiver.ifPresent(callArguments::add);
-            callArguments.addAll(numericArguments);
-            instructions.add(new IrInstruction.Call(Optional.ofNullable(target), called, List.copyOf(callArguments)));
-        }
-        if (target != null) {
-            if (target.type() == JunoType.INT64) {
-                Value low = Value.int32(nextValueId++);
-                Value high = Value.int32(nextValueId++);
-                instructions.add(new IrInstruction.UnpackLong(low, high, target));
-                storeWideToStack(instructions, stackBase, depth, low, high, tracking);
-            } else if (target.type() == JunoType.FLOAT64) {
-                storeDoubleToStack(instructions, stackBase, depth, target, tracking);
-            } else {
-                storeToStack(instructions, stackBase, depth, target, tracking);
-            }
-            depth += target.type().jvmSlots();
-        }
-        return new Lowered(nextValueId, depth);
-    }
-
-    static Lowered lowerEnumOrdinal(List<IrInstruction> instructions, int stackBase, int depth,
-                                    int nextValueId, ValueTracking tracking) {
-        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = receiver.nextValueId();
-        storeToStack(instructions, stackBase, depth, receiver.value(), tracking);
-        return new Lowered(nextValueId, depth + 1);
-    }
-
-    static Lowered lowerEnumValues(MethodRef called, List<IrInstruction> instructions, int stackBase, int depth,
-                                   int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes) {
-        JavaClass enumClass = Objects.requireNonNull(classes.get(called.owner()), called.owner());
-        List<Integer> ordinals = new ArrayList<>();
-        for (int index = 0; index < enumClass.enumConstantNames().size(); index++) {
-            ordinals.add(index);
-        }
-        Value target = Value.int32(nextValueId++);
-        instructions.add(new IrInstruction.IntArrayConst(target, List.copyOf(ordinals)));
-        tracking.markKnownArray(target, ordinals.size());
-        storeToStack(instructions, stackBase, depth, target, tracking);
-        return new Lowered(nextValueId, depth + 1);
-    }
-
-    static Lowered lowerThrowableConstructor(LinkedMethod linked, Instruction instruction, MethodRef called,
-                                             List<IrInstruction> instructions, int stackBase, int depth,
-                                             int nextValueId, ValueTracking tracking) {
-        if (!ThrowableTypes.isSupportedConstructor(called)) {
-            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
-                    + instruction.offset() + ": " + called.displayName() + " is not supported yet "
-                    + "(Juno exceptions carry a message only; use the () or (String) constructor)");
-        }
-        Value message = null;
-        if (ThrowableTypes.takesMessage(called)) {
-            Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
-            nextValueId = popped.nextValueId();
-            message = popped.value();
-        }
-        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = receiver.nextValueId();
-        if (message != null) {
-            instructions.add(new IrInstruction.IntrinsicCall(Optional.empty(), Intrinsic.THROWABLE_SET_MESSAGE,
-                    Optional.of(receiver.value()), List.of(message), List.of()));
-        }
-        return new Lowered(nextValueId, depth);
-    }
-
-    static Lowered lowerGetMessage(List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
-                                   ValueTracking tracking) {
-        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = receiver.nextValueId();
-        Value message = Value.int32(nextValueId++);
-        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(message), Intrinsic.THROWABLE_GET_MESSAGE,
-                Optional.of(receiver.value()), List.of(), List.of()));
-        storeToStack(instructions, stackBase, depth, message, tracking);
-        return new Lowered(nextValueId, depth + 1);
-    }
-
-    static Lowered discardInstanceCall(MethodRef called, List<IrInstruction> instructions, int stackBase,
-                                       int depth, int nextValueId, ValueTracking tracking) {
-        Descriptor descriptor = Descriptor.parse(called.descriptor());
-        for (int index = descriptor.parameters().size() - 1; index >= 0; index--) {
-            int slots = Descriptor.jvmSlots(descriptor.parameters().get(index));
-            depth -= slots;
-            if (slots == 2) {
-                WidePopped ignored = popWide(instructions, stackBase, depth, nextValueId, tracking);
-                nextValueId = ignored.nextValueId();
-            } else {
-                Popped ignored = pop(instructions, stackBase, depth, nextValueId, tracking);
-                nextValueId = ignored.nextValueId();
-            }
-        }
-        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        return new Lowered(receiver.nextValueId(), depth);
-    }
-
-    static boolean isRuntimeBaseConstructor(MethodRef called) {
-        return called.name().equals("<init>")
-                && called.owner().startsWith("java/lang/");
-    }
-
-    static boolean isStringBuilderConstruction(MethodRef called) {
-        return called.owner().equals("java/lang/StringBuilder") && called.name().equals("<init>")
-                && called.descriptor().equals("(I)V");
-    }
-
-    static boolean isPropertiesConstruction(MethodRef called) {
-        return called.owner().equals("java/util/Properties") && called.name().equals("<init>")
-                && called.descriptor().equals("()V");
-    }
-
-    static Lowered lowerStringBuilderConstruction(List<IrInstruction> instructions, int stackBase, int depth,
-                                                   int nextValueId, ValueTracking tracking) {
-        depth -= 1;
-        Popped capacity = pop(instructions, stackBase, depth, nextValueId, tracking);
-        nextValueId = capacity.nextValueId();
-        depth -= 1;
-        Popped discardedReceiver = pop(instructions, stackBase, depth, nextValueId, tracking);
-        nextValueId = discardedReceiver.nextValueId();
-        Value handle = Value.int32(nextValueId++);
-        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.STRING_BUILDER_NEW,
-                Optional.empty(), List.of(capacity.value()), List.of()));
-        storeToStack(instructions, stackBase, depth - 1, handle, tracking);
-        return new Lowered(nextValueId, depth);
-    }
-
-    static Lowered lowerPropertiesConstruction(List<IrInstruction> instructions, int stackBase, int depth,
-                                               int nextValueId, ValueTracking tracking) {
-        Popped discardedReceiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = discardedReceiver.nextValueId();
-        Value handle = Value.int32(nextValueId++);
-        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.PROPERTIES_NEW,
-                Optional.empty(), List.of(), List.of()));
-        storeToStack(instructions, stackBase, depth - 1, handle, tracking);
-        return new Lowered(nextValueId, depth);
-    }
-
-    /** {@code new ReentrantLock()}: replaces javac's uninitialized placeholder with an arena identity handle. */
-    static Lowered lowerReentrantLockConstruction(List<IrInstruction> instructions, int stackBase, int depth,
-                                                   int nextValueId, ValueTracking tracking) {
-        Popped discardedReceiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = discardedReceiver.nextValueId();
-        Value handle = Value.int32(nextValueId++);
-        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle), Intrinsic.REENTRANT_LOCK_NEW,
-                Optional.empty(), List.of(), List.of()));
-        storeToStack(instructions, stackBase, depth - 1, handle, tracking);
-        return new Lowered(nextValueId, depth);
-    }
-
-    static boolean isEnumOrdinal(Map<String, JavaClass> classes, MethodRef called) {
-        JavaClass owner = classes.get(called.owner());
+    private boolean isEnumOrdinal(MethodRef called) {
+        JavaClass owner = context.classes().get(called.owner());
         return called.name().equals("ordinal") && called.descriptor().equals("()I")
                 && ((owner != null && owner.isEnum()) || called.owner().equals("java/lang/Enum"));
     }
 
-    static boolean isEnumValues(Map<String, JavaClass> classes, MethodRef called) {
-        JavaClass owner = classes.get(called.owner());
+    private boolean isEnumValues(MethodRef called) {
+        JavaClass owner = context.classes().get(called.owner());
         return owner != null && owner.isEnum() && called.name().equals("values")
                 && called.descriptor().startsWith("()[L");
     }

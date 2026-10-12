@@ -26,6 +26,8 @@ import java.util.TreeSet;
  * {@code juno_avr_thunk_<function>}, a C++ thunk that reads them back with the function's real parameter types.
  */
 final class AvrEmitter {
+    private final AvrShimThunks avrShimThunks = new AvrShimThunks();
+
     static final int WORD = 4;
     /** The global argument area every generated function and shim thunk reads its incoming words from. */
     static final String ARGUMENTS = "juno_avr_args";
@@ -59,7 +61,7 @@ final class AvrEmitter {
         return prefix + (labelCounter++);
     }
 
-    static String r(int register) {
+    String r(int register) {
         return "r" + register;
     }
 
@@ -79,7 +81,7 @@ final class AvrEmitter {
     }
 
     /** Fills the upper two bytes of {@code quad} with bit 15. */
-    static void signExtend16(StringBuilder output, int quad) {
+    void signExtend16(StringBuilder output, int quad) {
         output.append("    mov ").append(r(quad + 2)).append(", ").append(r(quad + 1)).append('\n')
                 .append("    lsl ").append(r(quad + 2)).append('\n')
                 .append("    sbc ").append(r(quad + 2)).append(", ").append(r(quad + 2)).append('\n')
@@ -156,28 +158,28 @@ final class AvrEmitter {
     }
 
     /** X = Y + {@code base}: the frame starts one byte above the stack pointer the prologue copied into Y. */
-    private static void pointX(StringBuilder output, int base) {
+    private void pointX(StringBuilder output, int base) {
         output.append("    movw r26, r28\n")
                 .append("    subi r26, lo8(-(").append(base).append("))\n")
                 .append("    sbci r27, hi8(-(").append(base).append("))\n");
     }
 
     /** {@code bytes} bytes at Z+{@code offset} into {@code first}, ...; moves Z itself when the offset is out of reach. */
-    static void loadFromZ(StringBuilder output, int first, int offset, int bytes) {
+    void loadFromZ(StringBuilder output, int first, int offset, int bytes) {
         int base = reachZ(output, offset, bytes);
         for (int index = 0; index < bytes; index++) {
             output.append("    ldd ").append(r(first + index)).append(", Z+").append(base + index).append('\n');
         }
     }
 
-    static void storeToZ(StringBuilder output, int first, int offset, int bytes) {
+    void storeToZ(StringBuilder output, int first, int offset, int bytes) {
         int base = reachZ(output, offset, bytes);
         for (int index = 0; index < bytes; index++) {
             output.append("    std Z+").append(base + index).append(", ").append(r(first + index)).append('\n');
         }
     }
 
-    private static int reachZ(StringBuilder output, int offset, int bytes) {
+    private int reachZ(StringBuilder output, int offset, int bytes) {
         if (offset + bytes - 1 <= MAX_DISPLACEMENT) {
             return offset;
         }
@@ -229,11 +231,11 @@ final class AvrEmitter {
     void emitThunkCall(StringBuilder output, FrameLayout frame, String function, List<WordSource> words) {
         thunkFunctions.add(function);
         storeArguments(output, frame, words);
-        output.append("    call ").append(AvrShimThunks.thunkName(function)).append('\n');
+        output.append("    call ").append(avrShimThunks.thunkName(function)).append('\n');
     }
 
     /** Sets the flags as {@code cp} of quad {@code left} against quad {@code right}, all four bytes. */
-    static void compareQuads(StringBuilder output, int left, int right) {
+    void compareQuads(StringBuilder output, int left, int right) {
         output.append("    cp ").append(r(left)).append(", ").append(r(right)).append('\n');
         for (int index = 1; index < WORD; index++) {
             output.append("    cpc ").append(r(left + index)).append(", ").append(r(right + index)).append('\n');
@@ -241,7 +243,7 @@ final class AvrEmitter {
     }
 
     /** Sets Z (the zero flag) when quad {@code quad} is zero. */
-    static void testZero(StringBuilder output, int quad) {
+    void testZero(StringBuilder output, int quad) {
         output.append("    cp ").append(r(quad)).append(", r1\n");
         for (int index = 1; index < WORD; index++) {
             output.append("    cpc ").append(r(quad + index)).append(", r1\n");

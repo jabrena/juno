@@ -9,6 +9,7 @@ import java.util.Set;
 
 /** The single place that resolves a Java {@link MethodRef} to the {@link Intrinsic} it implements. */
 public final class IntrinsicRegistry {
+
     /**
      * (intrinsic, declared-parameter-index) pairs exempt from the default rule that every
      * intrinsic {@code String} parameter must be a compile-time literal. {@link
@@ -489,8 +490,6 @@ public final class IntrinsicRegistry {
 
     private static final Map<MethodRef, Intrinsic> METHODS = withBigNumbers();
 
-    private IntrinsicRegistry() {
-    }
 
     private static Map<MethodRef, Intrinsic> withBigNumbers() {
         Map<MethodRef, Intrinsic> methods = new HashMap<>(CORE_METHODS);
@@ -498,22 +497,22 @@ public final class IntrinsicRegistry {
         return Map.copyOf(methods);
     }
 
-    public static Optional<Intrinsic> resolve(MethodRef method) {
+    public Optional<Intrinsic> resolve(MethodRef method) {
         return Optional.ofNullable(METHODS.get(method));
     }
 
-    public static boolean isIntrinsic(MethodRef method) {
+    public boolean isIntrinsic(MethodRef method) {
         return METHODS.containsKey(method);
     }
 
     /** Whether {@code intrinsic}'s {@code String} parameter at {@code parameterIndex} must be a compile-time literal. */
-    public static boolean requiresLiteralStringArgument(Intrinsic intrinsic, int parameterIndex) {
+    public boolean requiresLiteralStringArgument(Intrinsic intrinsic, int parameterIndex) {
         IntrinsicParameter parameter = new IntrinsicParameter(intrinsic, parameterIndex);
         return !RUNTIME_STRING_PARAMETERS.contains(parameter) && !LITERAL_WHEN_KNOWN_PARAMETERS.contains(parameter);
     }
 
     /** Whether a known-literal argument for this runtime-capable parameter should still be passed as a literal. */
-    public static boolean prefersLiteralStringArgument(Intrinsic intrinsic, int parameterIndex) {
+    public boolean prefersLiteralStringArgument(Intrinsic intrinsic, int parameterIndex) {
         return LITERAL_WHEN_KNOWN_PARAMETERS.contains(new IntrinsicParameter(intrinsic, parameterIndex));
     }
 }

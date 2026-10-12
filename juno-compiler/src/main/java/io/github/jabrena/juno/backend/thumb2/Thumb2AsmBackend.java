@@ -2,8 +2,10 @@ package io.github.jabrena.juno.backend.thumb2;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.backend.AsmBackend;
 import io.github.jabrena.juno.backend.CompareFusion;
 import io.github.jabrena.juno.backend.FrameLayout;
+import io.github.jabrena.juno.backend.GeneratedCode;
 import io.github.jabrena.juno.backend.IntrinsicLowering;
 import io.github.jabrena.juno.backend.ProgramLayout;
 import io.github.jabrena.juno.backend.WordSource;
@@ -102,7 +104,12 @@ import java.util.stream.Collectors;
  * {@code IntrinsicLowering} (a table of intrinsic-to-shim-call lowerings), and {@code RuntimeShim}
  * (the C++ shim, assembled from the {@code ShimFeature}s the lowerings recorded).
  */
-public final class Thumb2AsmBackend {
+public final class Thumb2AsmBackend implements AsmBackend {
+    private final AssemblyPeepholeOptimizer assemblyPeepholeOptimizer = new AssemblyPeepholeOptimizer();
+
+    private final CoreRuntimes coreRuntimes = new CoreRuntimes();
+    private final RuntimeEntryPoints runtimeEntryPoints = new RuntimeEntryPoints();
+
     /**
      * Bytes of stack the entry-point prologue zeroes below the captured {@code juno_gc_stack_top}
      * before anything else runs. A reset (watchdog, reset-button, or otherwise) reloads {@code sp}
@@ -119,13 +126,6 @@ public final class Thumb2AsmBackend {
      * estimate), without depending on linker-script details this backend doesn't otherwise use.
      */
     private static final int STACK_ZERO_BYTES = 4096;
-
-    /**
-     * {@code runtimeShim} is a small {@code extern "C"} C++ source that must be compiled alongside
-     * {@code assembly} in the same sketch — see this class's doc.
-     */
-    public record Output(String assembly, String runtimeShim, String entryPointSymbol) {
-    }
 
     private final Map<MethodRef, String> functionLabels = new LinkedHashMap<>();
     private final Set<ShimFeature> features = EnumSet.noneOf(ShimFeature.class);
@@ -179,10 +179,11 @@ public final class Thumb2AsmBackend {
         this.runtimeConfig = runtimeConfig;
     }
 
-    public Output generate(IrProgram program) {
+    @Override
+    public GeneratedCode generate(IrProgram program) {
         entryPoint = program.entryPoint();
         usesWatchdog = program.watchdogTimeoutMillis().isPresent();
-        usesThreads = RuntimeEntryPoints.usesThreads(program);
+        usesThreads = runtimeEntryPoints.usesThreads(program);
         for (int index = 0; index < program.methods().size(); index++) {
             IrMethod method = program.methods().get(index);
             String label = method.reference().equals(entryPoint)
@@ -201,7 +202,7 @@ public final class Thumb2AsmBackend {
         terminators = new TerminatorLowering(asm, ints, usesThreads ? "juno_thread_backedge" : "yield");
         convention = new CallConvention(asm);
         fields = new FieldAccessLowering(asm, layout, usesThreads);
-        CoreRuntime coreRuntime = CoreRuntimes.of(board.core());
+        CoreRuntime coreRuntime = coreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new Thumb2IntrinsicTarget(asm), coreRuntime, board.generation(), features,
                 usedMath, usesThreads);
 
@@ -219,10 +220,10 @@ public final class Thumb2AsmBackend {
         for (IrMethod method : program.methods()) {
             emitMethod(code, method);
         }
-        output.append(RuntimeEntryPoints.preemptibleCode(usesThreads, code));
+        output.append(runtimeEntryPoints.preemptibleCode(usesThreads, code));
         String runtimeShim = new RuntimeShim(board, coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
-        return new Output(AssemblyPeepholeOptimizer.optimize(output.toString()), runtimeShim,
+        return new GeneratedCode(assemblyPeepholeOptimizer.optimize(output.toString()), runtimeShim,
                 java.util.Objects.requireNonNull(functionLabels.get(entryPoint)));
     }
 
@@ -246,9 +247,11 @@ public final class Thumb2AsmBackend {
             // Captured before this function's own prologue touches sp at all: everything the
             // program ever runs happens in frames below this point, so this is a sound upper bound
             // for the conservative GC's stack scan (see runtimeShim's juno_gc_stack_top/juno_gc_mark).
-            output.append("    ldr r0, =juno_gc_stack_top\n")
-                    .append("    mov r1, sp\n")
-                    .append("    str r1, [r0]\n");
+            output.append("""
+                        ldr r0, =juno_gc_stack_top
+                        mov r1, sp
+                        str r1, [r0]
+                    """);
             // Zero STACK_ZERO_BYTES below the captured top before anything else runs (see that
             // constant's doc): a reset doesn't clear the stack the way it clears .bss/.data, so
             // stale pointer-shaped bytes from a PREVIOUS run could otherwise be misread as live
@@ -256,16 +259,20 @@ public final class Thumb2AsmBackend {
             // push below, since a called C++ helper couldn't safely zero this region without first
             // spilling lr into it.
             asm.emitLoadImmediate(output, "r2", STACK_ZERO_BYTES);
-            output.append("    sub r2, r1, r2\n")
-                    .append("    movs r3, #0\n")
-                    .append(".LjunoZeroStack:\n")
-                    .append("    cmp r2, r1\n")
+            output.append("""
+                        sub r2, r1, r2
+                        movs r3, #0
+                    .LjunoZeroStack:
+                        cmp r2, r1
+                    """)
                     // Addresses are unsigned: bhs (unsigned >=), not bge (signed >=).
-                    .append("    bhs .LjunoZeroStackDone\n")
-                    .append("    str r3, [r2]\n")
-                    .append("    add r2, r2, #4\n")
-                    .append("    b .LjunoZeroStack\n")
-                    .append(".LjunoZeroStackDone:\n");
+                    .append("""
+                                bhs .LjunoZeroStackDone
+                                str r3, [r2]
+                                add r2, r2, #4
+                                b .LjunoZeroStack
+                            .LjunoZeroStackDone:
+                            """);
         }
         output.append("    push {r4-r11, lr}\n");
         if (frame.frameSize() > 0) {
@@ -446,7 +453,7 @@ public final class Thumb2AsmBackend {
         MethodHandleRef implementation = call.site().implementation();
         boolean constructor = implementation.referenceKind() == MethodHandleRef.REF_NEW_INVOKE_SPECIAL;
         if (constructor) {
-            Value result = call.target().orElseThrow(() -> unsupported("constructor reference without a result"));
+            Value result = call.target().orElseThrow(() -> Architecture.THUMB2.unsupported("constructor reference without a result"));
             String className = implementation.method().owner();
             asm.emitLoadImmediate(output, "r0", layout.objectSize(className));
             asm.emitLoadImmediate(output, "r1", AsmEmitter.WORD);
@@ -462,7 +469,7 @@ public final class Thumb2AsmBackend {
         int combinedCount = call.site().captureTypes().size() + call.arguments().size() - 1;
         int argumentCount = combinedCount + (constructor ? 1 : 0);
         int extra = Math.max(0, argumentCount - 4);
-        int reserved = FrameLayout.roundUp(extra * AsmEmitter.WORD, 8);
+        int reserved = asm.alignStack(extra * AsmEmitter.WORD);
         if (reserved > 0) {
             output.append("    sub sp, sp, #").append(reserved).append('\n');
             for (int index = 4; index < argumentCount; index++) {
@@ -475,7 +482,7 @@ public final class Thumb2AsmBackend {
         }
         String label = functionLabels.get(implementation.method());
         if (label == null) {
-            throw unsupported("lambda call to unresolved method " + implementation.method().displayName());
+            throw Architecture.THUMB2.unsupported("lambda call to unresolved method " + implementation.method().displayName());
         }
         output.append("    bl ").append(label).append('\n');
         if (reserved > 0) {
@@ -483,7 +490,7 @@ public final class Thumb2AsmBackend {
         }
         if (!constructor) {
             call.target().ifPresent(target -> {
-                if (FrameLayout.isWide(target.type())) {
+                if (target.type().isWide()) {
                     asm.store64(output, frame, "r0", "r1", target);
                 } else {
                     asm.store(output, frame, "r0", target);
@@ -538,11 +545,11 @@ public final class Thumb2AsmBackend {
                                   List<Value> arguments, Optional<Value> target) {
         String label = functionLabels.get(method);
         if (label == null) {
-            throw unsupported("call to unresolved method " + method.displayName());
+            throw Architecture.THUMB2.unsupported("call to unresolved method " + method.displayName());
         }
         List<WordSource> words = WordSource.argumentWords(arguments);
         int extra = Math.max(0, words.size() - 4);
-        int reserved = FrameLayout.roundUp(extra * AsmEmitter.WORD, 8);
+        int reserved = asm.alignStack(extra * AsmEmitter.WORD);
         if (reserved > 0) {
             output.append("    sub sp, sp, #").append(reserved).append('\n');
             for (int i = 4; i < words.size(); i++) {
@@ -558,7 +565,7 @@ public final class Thumb2AsmBackend {
             output.append("    add sp, sp, #").append(reserved).append('\n');
         }
         target.ifPresent(value -> {
-            if (FrameLayout.isWide(value.type())) {
+            if (value.type().isWide()) {
                 asm.store64(output, frame, "r0", "r1", value);
             } else {
                 asm.store(output, frame, "r0", value);
@@ -595,7 +602,4 @@ public final class Thumb2AsmBackend {
         return "juno_" + simpleName + "_asm";
     }
 
-    static CompileException unsupported(String detail) {
-        return Architecture.THUMB2.unsupported(detail);
-    }
 }

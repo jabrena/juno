@@ -12,28 +12,28 @@ import java.util.Set;
  * preemptive scheduler never interrupts them halfway.
  */
 public final class AtomicSupport {
+    private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
+
     private static final String PACKAGE = "java/util/concurrent/atomic/";
     private static final Set<String> CLASSES = Set.of(
             PACKAGE + "AtomicInteger", PACKAGE + "AtomicBoolean", PACKAGE + "AtomicLong");
 
-    private AtomicSupport() {
-    }
 
-    public static boolean isAtomicClass(String className) {
+    public boolean isAtomicClass(String className) {
         return CLASSES.contains(className);
     }
 
-    public static boolean isAtomicType(String descriptor) {
+    public boolean isAtomicType(String descriptor) {
         return descriptor.length() > 2 && descriptor.charAt(0) == 'L' && descriptor.endsWith(";")
                 && isAtomicClass(descriptor.substring(1, descriptor.length() - 1));
     }
 
-    public static boolean isConstruction(MethodRef called) {
+    public boolean isConstruction(MethodRef called) {
         return isAtomicClass(called.owner()) && called.name().equals("<init>");
     }
 
-    public static void validateCall(MethodRef method) {
-        if (method.owner().startsWith(PACKAGE) && !IntrinsicRegistry.isIntrinsic(method)) {
+    public void validateCall(MethodRef method) {
+        if (method.owner().startsWith(PACKAGE) && !intrinsicRegistry.isIntrinsic(method)) {
             throw new CompileException("Juno's restricted atomic subset supports only AtomicInteger, AtomicBoolean "
                     + "and AtomicLong with get, set, getAndSet, compareAndSet and, on the numeric ones, "
                     + "increment/decrement/add: " + method.displayName());

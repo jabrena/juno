@@ -51,19 +51,17 @@ public final class ThrowableTypes {
             Map.entry("java/io/FileNotFoundException", "java/io/IOException"),
             Map.entry("java/io/EOFException", "java/io/IOException"));
 
-    private ThrowableTypes() {
-    }
 
-    public static boolean isBuiltIn(String className) {
+    public boolean isBuiltIn(String className) {
         return BUILT_IN.containsKey(className);
     }
 
-    public static boolean isThrowable(String className, Map<String, JavaClass> classes) {
+    public boolean isThrowable(String className, Map<String, JavaClass> classes) {
         return isSubtype(className, "java/lang/Throwable", classes);
     }
 
     /** Whether {@code className} is {@code ancestor} or inherits from it. */
-    public static boolean isSubtype(String className, @Nullable String ancestor, Map<String, JavaClass> classes) {
+    public boolean isSubtype(String className, @Nullable String ancestor, Map<String, JavaClass> classes) {
         String current = className;
         while (current != null && !current.isEmpty()) {
             if (current.equals(ancestor)) {
@@ -76,21 +74,21 @@ public final class ThrowableTypes {
     }
 
     /** A built-in throwable's constructor, called directly or as a program exception's {@code super(...)}. */
-    public static boolean isBuiltInConstructor(MethodRef called) {
+    public boolean isBuiltInConstructor(MethodRef called) {
         return called.name().equals("<init>") && isBuiltIn(called.owner());
     }
 
     /** Whether {@link #isBuiltInConstructor} {@code called} is one Juno models (no cause). */
-    public static boolean isSupportedConstructor(MethodRef called) {
+    public boolean isSupportedConstructor(MethodRef called) {
         return called.descriptor().equals(NO_ARGUMENTS) || called.descriptor().equals(MESSAGE_ONLY);
     }
 
-    public static boolean takesMessage(MethodRef called) {
+    public boolean takesMessage(MethodRef called) {
         return called.descriptor().equals(MESSAGE_ONLY);
     }
 
     /** {@code getMessage()} on any throwable static type, unless a program class overrides it. */
-    public static boolean isGetMessage(MethodRef called, Map<String, JavaClass> classes) {
+    public boolean isGetMessage(MethodRef called, Map<String, JavaClass> classes) {
         if (!called.name().equals("getMessage") || !called.descriptor().equals(GET_MESSAGE)
                 || !isThrowable(called.owner(), classes)) {
             return false;
@@ -108,7 +106,7 @@ public final class ThrowableTypes {
      * {@code addSuppressed(Throwable)}, which javac emits in try-with-resources when {@code close()} also throws.
      * Juno keeps no suppressed list, so the call is dropped and the primary exception propagates unchanged.
      */
-    public static boolean isAddSuppressed(MethodRef called, Map<String, JavaClass> classes) {
+    public boolean isAddSuppressed(MethodRef called, Map<String, JavaClass> classes) {
         return called.name().equals("addSuppressed") && called.descriptor().equals("(Ljava/lang/Throwable;)V")
                 && isThrowable(called.owner(), classes);
     }

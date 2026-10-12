@@ -5,6 +5,7 @@ import io.github.jabrena.juno.backend.FrameLayout;
 import io.github.jabrena.juno.backend.IntrinsicTarget;
 import io.github.jabrena.juno.backend.WordSource;
 import io.github.jabrena.juno.backend.runtime.AvrShimThunks;
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.ir.Value;
 
 import java.util.List;
@@ -58,19 +59,19 @@ record AvrIntrinsicTarget(AvrEmitter avr) implements IntrinsicTarget {
     public void storeObjectWord(StringBuilder output, FrameLayout frame, Value object, int offset, Value value) {
         avr.load(output, frame, AvrEmitter.A, value);
         avr.loadPointer(output, frame, object);
-        AvrEmitter.storeToZ(output, AvrEmitter.A, offset, AvrEmitter.WORD);
+        avr.storeToZ(output, AvrEmitter.A, offset, AvrEmitter.WORD);
     }
 
     @Override
     public void loadObjectWord(StringBuilder output, FrameLayout frame, Value object, int offset,
                                Optional<Value> target) {
         avr.loadPointer(output, frame, object);
-        AvrEmitter.loadFromZ(output, AvrEmitter.A, offset, AvrEmitter.WORD);
+        avr.loadFromZ(output, AvrEmitter.A, offset, AvrEmitter.WORD);
         target.ifPresent(value -> avr.store(output, frame, AvrEmitter.A, value));
     }
 
     @Override
     public CompileException unsupported(String detail) {
-        return AvrAsmBackend.unsupported(detail);
+        return Architecture.AVR.unsupported(detail);
     }
 }

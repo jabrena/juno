@@ -5,7 +5,6 @@ import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
-import io.github.jabrena.juno.ir.IrValues;
 import io.github.jabrena.juno.ir.Value;
 import org.jspecify.annotations.Nullable;
 
@@ -21,6 +20,7 @@ import java.util.Set;
  * leave such orphans behind; removing one can orphan its operands, so this repeats until nothing changes.
  */
 public final class DeadValueElimination implements CompilerPass {
+
     @Override
     public IrProgram apply(IrProgram program) {
         List<IrMethod> methods = new ArrayList<>(program.methods().size());
@@ -56,24 +56,24 @@ public final class DeadValueElimination implements CompilerPass {
     }
 
     /** Every value some instruction or terminator reads (a pure instruction's own result is not a read). */
-    private static Set<Value> readValues(List<IrBasicBlock> blocks) {
+    private Set<Value> readValues(List<IrBasicBlock> blocks) {
         Set<Value> read = new HashSet<>();
         for (IrBasicBlock block : blocks) {
             for (IrInstruction instruction : block.instructions()) {
                 Value target = pureTarget(instruction);
-                for (Value value : IrValues.of(instruction)) {
+                for (Value value : instruction.referencedValues()) {
                     if (!value.equals(target)) {
                         read.add(value);
                     }
                 }
             }
-            read.addAll(IrValues.of(block.terminator()));
+            read.addAll(block.terminator().referencedValues());
         }
         return read;
     }
 
     /** The single value a side-effect-free instruction defines, or null when the instruction must stay. */
-    private static @Nullable Value pureTarget(IrInstruction instruction) {
+    private @Nullable Value pureTarget(IrInstruction instruction) {
         return switch (instruction) {
             case IrInstruction.Const node -> node.target();
             case IrInstruction.StringConst node -> node.target();

@@ -5,10 +5,8 @@ import io.github.jabrena.juno.board.ArduinoCore;
 
 /** The one place that names a {@link CoreRuntime} implementation: each {@link ArduinoCore} maps to exactly one. */
 public final class CoreRuntimes {
-    private CoreRuntimes() {
-    }
 
-    public static CoreRuntime of(ArduinoCore core) {
+    public CoreRuntime of(ArduinoCore core) {
         return switch (core) {
             case RENESAS_UNO -> new RenesasCoreRuntime();
             case ZEPHYR -> new ZephyrCoreRuntime();

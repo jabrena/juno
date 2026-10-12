@@ -4,6 +4,7 @@ import io.github.jabrena.juno.backend.FrameLayout;
 import io.github.jabrena.juno.backend.WordSource;
 import io.github.jabrena.juno.backend.runtime.SoftFloatRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.FloatBinaryOp;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -162,19 +163,19 @@ final class AvrWideArithmeticLowering {
                 avr.store(output, frame, B, conversion.targetLow());
                 avr.store(output, frame, A, conversion.targetHigh());
             }
-            default -> throw AvrAsmBackend.unsupported(instruction.getClass().getSimpleName());
+            default -> throw Architecture.AVR.unsupported(instruction.getClass().getSimpleName());
         }
     }
 
-    private static WordSource word(Value value) {
+    private WordSource word(Value value) {
         return new WordSource.FromValue(value);
     }
 
-    private static WordSource low(Value value) {
+    private WordSource low(Value value) {
         return new WordSource.FromValueLow(value);
     }
 
-    private static WordSource high(Value value) {
+    private WordSource high(Value value) {
         return new WordSource.FromValueHigh(value);
     }
 
@@ -196,7 +197,7 @@ final class AvrWideArithmeticLowering {
         avr.store64(output, frame, B, A, target);
     }
 
-    private static String longHelper(BinaryOp operation) {
+    private String longHelper(BinaryOp operation) {
         return switch (operation) {
             case ADD -> "juno_ladd";
             case SUBTRACT -> "juno_lsub";
@@ -211,7 +212,7 @@ final class AvrWideArithmeticLowering {
         };
     }
 
-    private static String floatHelper(String prefix, FloatBinaryOp operation) {
+    private String floatHelper(String prefix, FloatBinaryOp operation) {
         return prefix + switch (operation) {
             case ADD -> "add";
             case SUBTRACT -> "sub";

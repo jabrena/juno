@@ -14,6 +14,12 @@ import java.util.Map;
  * and the lowering turns it into the generated {@link #ENTRY_METHOD thread entry} function.
  */
 public final class ThreadSupport {
+    private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
+
+    private final ScopedValueSupport scopedValueSupport = new ScopedValueSupport();
+
+    private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
+
     /** The synthetic function the shim's thread bootstrap calls with the thread's {@code Runnable}. */
     public static final MethodRef ENTRY_METHOD =
             new MethodRef("java/lang/Thread", "$junoEntry", "(Ljava/lang/Runnable;)V");
@@ -24,11 +30,9 @@ public final class ThreadSupport {
     private static final MethodRef START_VIRTUAL_THREAD =
             new MethodRef("java/lang/Thread", "startVirtualThread", "(Ljava/lang/Runnable;)Ljava/lang/Thread;");
 
-    private ThreadSupport() {
-    }
 
     /** Records the synthetic {@code Runnable.run()} site when {@code called} starts a virtual thread. */
-    public static void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
+    public void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
         if (called.equals(START_VIRTUAL_THREAD)) {
             interfaceCalls.put(ENTRY_SITE, RUNNABLE_RUN);
         }
@@ -40,8 +44,8 @@ public final class ThreadSupport {
      * {@code isAlive()} on the handle; platform threads, {@code Thread.ofVirtual()} builders and the other
      * {@code Thread} members are rejected. {@code Thread.sleep} and {@code Thread.yield} remain available.
      */
-    public static void validateCall(MethodRef called) {
-        if (called.owner().equals("java/lang/Thread") && !IntrinsicRegistry.isIntrinsic(called)) {
+    public void validateCall(MethodRef called) {
+        if (called.owner().equals("java/lang/Thread") && !intrinsicRegistry.isIntrinsic(called)) {
             throw new CompileException("Juno does not support java.lang.Thread (" + called.displayName()
                     + "); create a virtual thread with Thread.startVirtualThread(Runnable) instead. Supported: "
                     + "startVirtualThread, join, isAlive, Thread.sleep and Thread.yield");
@@ -49,16 +53,16 @@ public final class ThreadSupport {
     }
 
     /** The diagnostic for an interface call with no reachable implementation. */
-    public static String unresolvedMessage(InterfaceCallSite site, MethodRef interfaceMethod) {
+    public String unresolvedMessage(InterfaceCallSite site, MethodRef interfaceMethod) {
         if (site.equals(ENTRY_SITE)) {
             return "Thread.startVirtualThread and StructuredTaskScope.fork need a Runnable: no reachable class or "
                     + "lambda implements java.lang.Runnable";
         }
-        if (StructuredTaskSupport.isEntrySite(site)) {
+        if (structuredTaskSupport.isEntrySite(site)) {
             return "StructuredTaskScope.fork needs a Callable: no reachable class or lambda implements "
                     + "java.util.concurrent.Callable";
         }
-        if (ScopedValueSupport.isEntrySite(site)) {
+        if (scopedValueSupport.isEntrySite(site)) {
             return "ScopedValue.Carrier.call needs a CallableOp: no reachable lambda or class implements "
                     + "java.lang.ScopedValue.CallableOp";
         }
@@ -70,7 +74,7 @@ public final class ThreadSupport {
      * Whether {@code descriptor} is {@code Thread} (an arena-allocated handle) or {@code Runnable} (a pointer to
      * a closed-world implementation or lambda), the two JDK reference types a program may pass around and store.
      */
-    public static boolean isThreadType(String descriptor) {
+    public boolean isThreadType(String descriptor) {
         return descriptor.equals("Ljava/lang/Thread;") || descriptor.equals("Ljava/lang/Runnable;");
     }
 }

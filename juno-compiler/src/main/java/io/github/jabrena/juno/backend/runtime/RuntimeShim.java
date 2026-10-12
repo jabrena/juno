@@ -22,6 +22,17 @@ import java.util.stream.IntStream;
  * Java-string-generation time, so an unused feature costs no flash, RAM or build dependency.
  */
 public final class RuntimeShim {
+    private final ScopedValueRuntime scopedValueRuntime = new ScopedValueRuntime();
+    private final AtomicRuntime atomicRuntime = new AtomicRuntime();
+    private final MathRuntime mathRuntime = new MathRuntime();
+    private final BigNumberRuntime bigNumberRuntime = new BigNumberRuntime();
+    private final ThreadRuntime threadRuntime = new ThreadRuntime();
+    private final IoRuntime ioRuntime = new IoRuntime();
+    private final NetworkShimLibraries networkShimLibraries = new NetworkShimLibraries();
+    private final ShimLibraries shimLibraries = new ShimLibraries();
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+    private final AllocatorRuntime allocatorRuntime = new AllocatorRuntime();
+
     private final Board board;
     private final CoreRuntime core;
     private final boolean gcLoggingEnabled;
@@ -55,7 +66,7 @@ public final class RuntimeShim {
 
     public String generate() {
         StringBuilder shim = new StringBuilder();
-        shim.append(RuntimeSource.load("thumb2/shim-header.cpp").replace("${JUNO_LED_MATRIX_INCLUDE}",
+        shim.append(runtimeSource.load("thumb2/shim-header.cpp").replace("${JUNO_LED_MATRIX_INCLUDE}",
                 uses(ShimFeature.LED_MATRIX) ? "#include \"Arduino_LED_Matrix.h\"\n" : ""));
         appendIncludes(shim);
         shim.append(coreRuntime());
@@ -154,35 +165,12 @@ public final class RuntimeShim {
                 : "";
         String ledMatrixFunctions = ledMatrixFunctions();
         String yieldFunction = core.yieldFunction();
-        return RuntimeSource.load("thumb2/panic.cpp").replace("${JUNO_YIELD_FUNCTION}", yieldFunction)
+        return runtimeSource.load("thumb2/panic.cpp").replace("${JUNO_YIELD_FUNCTION}", yieldFunction)
                 .replace("${JUNO_WATCHDOG_REFRESH}", watchdogRefresh)
                 .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogPanicMessage)
                 .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogBeginFunction)
-                + allocator(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcThreadDeclaration)
-                + RuntimeSource.load("thumb2/serial.cpp").replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions);
-    }
-
-    /**
-     * The arena and its conservative mark/sweep collector, {@code juno_alloc}, shared by every architecture: it
-     * scans {@code uintptr_t}-wide words, so it finds 16-bit AVR references as well as 32-bit ARM ones.
-     *
-     * @param gcStackScan the statement scanning the live stack(s) from {@code stackMarker}
-     * @param gcThreadDeclaration declarations that statement needs, or {@code ""}
-     */
-    static String allocator(int arenaBytes, boolean gcLoggingEnabled, String gcStackScan, String gcThreadDeclaration) {
-        // Emitted (or not) once here, at Java-string-generation time — like every other optional
-        // shim feature (ShimFeature.MOUSE, ShimFeature.WIFI, ...) — rather than a C++-level runtime branch, so a
-        // program compiled without --gc-log/juno.gcLog pays zero extra flash/RAM/Serial time for it.
-        String gcLogBefore = gcLoggingEnabled ? "uint32_t junoGcLogUsedBefore = juno_arena_used;" : "";
-        String gcLogAfter = gcLoggingEnabled
-                ? "Serial.print(\"[juno-gc] collect: used \"); Serial.print(junoGcLogUsedBefore); "
-                        + "Serial.print(\" -> \"); Serial.println(juno_arena_used);"
-                : "";
-        return RuntimeSource.load("common/allocator.cpp").replace("${JUNO_ARENA_CAPACITY}", Integer.toString(arenaBytes))
-                .replace("${JUNO_GC_STACK_SCAN}", gcStackScan)
-                .replace("${JUNO_GC_THREAD_DECLARATION}", gcThreadDeclaration)
-                .replace("${JUNO_GC_LOG_BEFORE}", gcLogBefore)
-                .replace("${JUNO_GC_LOG_AFTER}", gcLogAfter);
+                + allocatorRuntime.source(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcThreadDeclaration)
+                + runtimeSource.load("thumb2/serial.cpp").replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions);
     }
 
     private String ledMatrixFunctions() {
@@ -200,7 +188,7 @@ public final class RuntimeShim {
         String unused = IntStream.range(words, 4)
                 .mapToObj(index -> "  static_cast<void>(word" + index + ");\n")
                 .collect(Collectors.joining());
-        return RuntimeSource.load("common/led-matrix.cpp").replace("${JUNO_LED_MATRIX_TYPE}", core.ledMatrixType())
+        return runtimeSource.load("common/led-matrix.cpp").replace("${JUNO_LED_MATRIX_TYPE}", core.ledMatrixType())
                 .replace("${JUNO_LED_MATRIX_PARAMETERS}", parameters)
                 .replace("${JUNO_LED_MATRIX_UNUSED}", unused)
                 .replace("${JUNO_LED_MATRIX_VALUES}", values)
@@ -208,94 +196,94 @@ public final class RuntimeShim {
     }
 
     private void appendPeripheralHelpers(StringBuilder shim) {
-        shim.append(IoRuntime.preludeFor(core, features));
+        shim.append(ioRuntime.preludeFor(core, features));
         if (uses(ShimFeature.MOUSE)) {
-            shim.append(ShimLibraries.mouseHelpers());
+            shim.append(shimLibraries.mouseHelpers());
         }
         if (uses(ShimFeature.SERVO)) {
-            shim.append(ShimLibraries.servoHelpers());
+            shim.append(shimLibraries.servoHelpers());
         }
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
-            shim.append(ShimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS)));
+            shim.append(shimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS)));
         }
         if (uses(ShimFeature.PARALLEL_BUS)) {
             shim.append(core.parallelBusHelpers());
         }
         if (uses(ShimFeature.INFRARED)) {
-            shim.append(ShimLibraries.infraredHelpers());
+            shim.append(shimLibraries.infraredHelpers());
         }
         if (uses(ShimFeature.I2C)) {
-            shim.append(ShimLibraries.i2cHelpers());
+            shim.append(shimLibraries.i2cHelpers());
         }
     }
 
     private void appendHelpers(StringBuilder shim) {
         if (usesAny(ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER)) {
-            shim.append(ShimLibraries.runtimeStringHelpers());
+            shim.append(shimLibraries.runtimeStringHelpers());
         }
         if (uses(ShimFeature.STRING_BUILDER)) {
-            shim.append(ShimLibraries.stringBuilderHelpers());
+            shim.append(shimLibraries.stringBuilderHelpers());
         }
         appendPeripheralHelpers(shim);
         if (uses(ShimFeature.MEMORY)) {
-            shim.append(ShimLibraries.memoryHelpers());
+            shim.append(shimLibraries.memoryHelpers());
         }
         if (uses(ShimFeature.RANDOM)) {
-            shim.append(ShimLibraries.randomHelpers());
+            shim.append(shimLibraries.randomHelpers());
         }
         if (uses(ShimFeature.WIFI)) {
             shim.append(core.wifiHelpers());
         }
         if (uses(ShimFeature.UDP)) {
-            shim.append(NetworkShimLibraries.udpHelpers(core.udpDeclaration()));
+            shim.append(networkShimLibraries.udpHelpers(core.udpDeclaration()));
         }
         if (uses(ShimFeature.SD)) {
-            shim.append(ShimLibraries.sdHelpers());
+            shim.append(shimLibraries.sdHelpers());
         }
         if (uses(ShimFeature.LONG)) {
-            shim.append(ShimLibraries.longHelpers());
+            shim.append(shimLibraries.longHelpers());
         }
         if (uses(ShimFeature.FLOAT)) {
-            shim.append(ShimLibraries.floatHelpers());
+            shim.append(shimLibraries.floatHelpers());
         }
         if (uses(ShimFeature.DOUBLE)) {
-            shim.append(ShimLibraries.doubleHelpers());
+            shim.append(shimLibraries.doubleHelpers());
         }
         if (!usedMath.isEmpty()) {
-            shim.append(MathRuntime.helpers(usedMath));
+            shim.append(mathRuntime.helpers(usedMath));
         }
         if (uses(ShimFeature.EXCEPTIONS)) {
-            shim.append(ShimLibraries.exceptionHelpers(throwableClasses));
+            shim.append(shimLibraries.exceptionHelpers(throwableClasses));
         }
         if (uses(ShimFeature.RANDOM_ACCESS_FILE)) {
-            shim.append(ShimLibraries.randomAccessFileHelpers(
+            shim.append(shimLibraries.randomAccessFileHelpers(
                     throwableClasses.indexOf("java/io/IOException"),
                     throwableClasses.indexOf("java/io/FileNotFoundException"),
                     throwableClasses.indexOf("java/io/EOFException"),
                     throwableClasses.indexOf("java/lang/IndexOutOfBoundsException")));
         }
         if (uses(ShimFeature.JSON)) {
-            shim.append(NetworkShimLibraries.jsonHelpers());
+            shim.append(networkShimLibraries.jsonHelpers());
         }
         if (uses(ShimFeature.JSON_STRING_VALUE)) {
-            shim.append(NetworkShimLibraries.jsonStringValueHelpers());
+            shim.append(networkShimLibraries.jsonStringValueHelpers());
         }
         if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsHelpers());
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
-            shim.append(NetworkShimLibraries.httpHelpers(features, core.httpsClientType(),
-                    IoRuntime.usesWorker(core, features)));
+            shim.append(networkShimLibraries.httpHelpers(features, core.httpsClientType(),
+                    ioRuntime.usesWorker(core, features)));
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
-            shim.append(NetworkShimLibraries.httpServerHelpers(core.httpServerTransport(),
-                    IoRuntime.usesWorker(core, features)));
+            shim.append(networkShimLibraries.httpServerHelpers(core.httpServerTransport(),
+                    ioRuntime.usesWorker(core, features)));
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
-            shim.append(NetworkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
+            shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
         }
         if (uses(ShimFeature.ATOMICS)) {
-            shim.append(AtomicRuntime.helpers());
+            shim.append(atomicRuntime.helpers());
         }
         appendConcurrencyHelpers(shim);
     }
@@ -303,22 +291,22 @@ public final class RuntimeShim {
     /** Scoped-value bindings, then the thread scheduler that swaps them (it refers to the binding stack). */
     private void appendConcurrencyHelpers(StringBuilder shim) {
         if (uses(ShimFeature.BIG_NUMBERS)) {
-            shim.append(BigNumberRuntime.handleHelpers());
-            shim.append(BigNumberRuntime.helpers(
+            shim.append(bigNumberRuntime.handleHelpers());
+            shim.append(bigNumberRuntime.helpers(
                     throwableClasses.indexOf("java/lang/ArithmeticException"),
                     throwableClasses.indexOf("java/lang/NumberFormatException"),
                     throwableClasses.indexOf("java/lang/IllegalArgumentException"),
                     uses(ShimFeature.BIG_DECIMAL_DOUBLE)));
         }
         if (uses(ShimFeature.SCOPED_VALUES)) {
-            shim.append(ScopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
+            shim.append(scopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.SCOPED_CALL_ENTRY),
                     throwableClasses.indexOf("java/util/NoSuchElementException")));
         }
         if (uses(ShimFeature.THREADS)) {
             shim.append(core.threadPort(config));
-            shim.append(IoRuntime.workerPortFor(core, features));
-            shim.append(ThreadRuntime.scheduler(true, IoRuntime.usesWorker(core, features),
+            shim.append(ioRuntime.workerPortFor(core, features));
+            shim.append(threadRuntime.scheduler(true, ioRuntime.usesWorker(core, features),
                     core.delayMillisFunction(), "juno_gc_scan_range",
                     uses(ShimFeature.EXCEPTIONS),
                     uses(ShimFeature.THREAD_ENTRY), uses(ShimFeature.TASK_CALLABLE_ENTRY),
@@ -326,7 +314,7 @@ public final class RuntimeShim {
                     throwableClasses.indexOf("java/util/concurrent/ExecutionException"),
                     throwableClasses.indexOf("java/lang/IllegalStateException")));
         } else if (uses(ShimFeature.THREAD_BASICS)) {
-            shim.append(ThreadRuntime.basics(core.delayMillisFunction()));
+            shim.append(threadRuntime.basics(core.delayMillisFunction()));
         }
     }
 }

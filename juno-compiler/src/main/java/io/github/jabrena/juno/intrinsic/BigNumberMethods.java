@@ -110,19 +110,17 @@ public final class BigNumberMethods {
             Intrinsic.BIG_DECIMAL_SET_SCALE_EXACT,
             Intrinsic.BIG_DECIMAL_POW);
 
-    private BigNumberMethods() {
-    }
 
-    public static boolean isBigNumber(Intrinsic intrinsic) {
+    public boolean isBigNumber(Intrinsic intrinsic) {
         return intrinsic.name().startsWith("BIG_");
     }
 
-    public static boolean mayThrow(Intrinsic intrinsic) {
+    public boolean mayThrow(Intrinsic intrinsic) {
         return MAY_THROW.contains(intrinsic);
     }
 
     /** The runtime-shim function that implements {@code intrinsic}. */
-    public static String shimSymbol(Intrinsic intrinsic) {
+    public String shimSymbol(Intrinsic intrinsic) {
         return "juno_" + intrinsic.name().toLowerCase(Locale.ROOT);
     }
 }

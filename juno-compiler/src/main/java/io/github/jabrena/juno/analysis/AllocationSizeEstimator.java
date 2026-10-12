@@ -18,14 +18,16 @@ import java.util.Set;
 
 /** Conservative worst-case byte-size estimates for heap allocations and stack frames. */
 final class AllocationSizeEstimator {
+    private final StackFrameSizing stackFrameSizing = new StackFrameSizing();
+
+    private final ThrowableTypes throwableTypes = new ThrowableTypes();
+
     /** The intrinsics that start a thread, each allocating one thread object. */
     private static final Set<Intrinsic> THREAD_LAUNCHES = Set.of(
             Intrinsic.THREAD_START_VIRTUAL, Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
 
-    private AllocationSizeEstimator() {
-    }
 
-    static int allocationBytes(IrInstruction instruction, Map<String, JavaClass> classes,
+    int allocationBytes(IrInstruction instruction, Map<String, JavaClass> classes,
                                Map<String, Integer> objectTypeIds) {
         if (instruction instanceof IrInstruction.NewArray array) {
             int alignment = elementSize(array.elementType());
@@ -33,7 +35,7 @@ final class AllocationSizeEstimator {
         }
         if (instruction instanceof IrInstruction.NewObject object) {
             int size = objectSize(classes.get(object.className()))
-                    + (ThrowableTypes.isThrowable(object.className(), classes) ? ThrowableTypes.HEADER_BYTES
+                    + (throwableTypes.isThrowable(object.className(), classes) ? ThrowableTypes.HEADER_BYTES
                     : objectTypeIds.containsKey(object.className()) ? Integer.BYTES : 0);
             int alignment = objectAlignment(classes.get(object.className()));
             return allocationUpperBound(size, alignment);
@@ -73,16 +75,16 @@ final class AllocationSizeEstimator {
         return 0;
     }
 
-    static int descriptorSize(String descriptor) {
+    int descriptorSize(String descriptor) {
         if (Descriptor.isLong(descriptor) || Descriptor.isDouble(descriptor)) return 8;
         return 4;
     }
 
-    static int estimatedFrameBytes(IrMethod method) {
-        return StackFrameSizing.methodStackBytes(method) + maximumTemporaryBytes(method);
+    int estimatedFrameBytes(IrMethod method) {
+        return stackFrameSizing.methodStackBytes(method) + maximumTemporaryBytes(method);
     }
 
-    private static int maximumTemporaryBytes(IrMethod method) {
+    private int maximumTemporaryBytes(IrMethod method) {
         int maximum = 0;
         for (var block : method.blocks()) {
             for (IrInstruction instruction : block.instructions()) {
@@ -108,7 +110,7 @@ final class AllocationSizeEstimator {
         return maximum;
     }
 
-    private static int multiArrayBytes(ArrayElementType leafType, List<Integer> dimensions) {
+    private int multiArrayBytes(ArrayElementType leafType, List<Integer> dimensions) {
         int total = 0;
         int arraysAtLevel = 1;
         for (int level = 0; level < dimensions.size(); level++) {
@@ -119,11 +121,11 @@ final class AllocationSizeEstimator {
         return total;
     }
 
-    private static int allocationUpperBound(int size, int alignment) {
+    private int allocationUpperBound(int size, int alignment) {
         return Math.addExact(size, alignment - 1);
     }
 
-    private static int objectSize(@Nullable JavaClass javaClass) {
+    private int objectSize(@Nullable JavaClass javaClass) {
         if (javaClass == null) {
             return 1;
         }
@@ -139,7 +141,7 @@ final class AllocationSizeEstimator {
         return Math.max(1, align(offset, maximumAlignment));
     }
 
-    private static int objectAlignment(@Nullable JavaClass javaClass) {
+    private int objectAlignment(@Nullable JavaClass javaClass) {
         if (javaClass == null) return 1;
         return javaClass.fields().stream()
                 .filter(field -> !field.isStatic())
@@ -147,7 +149,7 @@ final class AllocationSizeEstimator {
                 .max().orElse(1);
     }
 
-    private static int elementSize(ArrayElementType type) {
+    private int elementSize(ArrayElementType type) {
         return switch (type) {
             case BYTE -> 1;
             case CHAR, SHORT -> 2;
@@ -156,7 +158,7 @@ final class AllocationSizeEstimator {
         };
     }
 
-    private static int align(int value, int alignment) {
+    private int align(int value, int alignment) {
         return (value + alignment - 1) & -alignment;
     }
 }

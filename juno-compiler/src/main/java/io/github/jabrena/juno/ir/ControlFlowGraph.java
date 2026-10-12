@@ -32,7 +32,7 @@ public final class ControlFlowGraph {
             predecessors.put(block.start(), new LinkedHashSet<>());
         }
         for (IrBasicBlock block : blocks) {
-            List<Integer> targets = successors(block.terminator()).stream()
+            List<Integer> targets = block.terminator().successors().stream()
                     .filter(blocksByStart::containsKey).distinct().toList();
             successors.put(block.start(), targets);
             for (int target : targets) {
@@ -47,19 +47,6 @@ public final class ControlFlowGraph {
         return new ControlFlowGraph(method);
     }
 
-    /** Where control may go after {@code terminator}, in the order its targets are listed. */
-    public static List<Integer> successors(IrTerminator terminator) {
-        return switch (terminator) {
-            case IrTerminator.Jump jump -> List.of(jump.target());
-            case IrTerminator.Branch branch -> List.of(branch.trueTarget(), branch.falseTarget());
-            case IrTerminator.Return ignored -> List.of();
-            case IrTerminator.Switch switched -> {
-                List<Integer> targets = new ArrayList<>(switched.targets());
-                targets.add(switched.defaultTarget());
-                yield List.copyOf(targets);
-            }
-        };
-    }
 
     public List<IrBasicBlock> blocks() {
         return blocks;
@@ -157,7 +144,7 @@ public final class ControlFlowGraph {
         return Map.copyOf(dominators);
     }
 
-    private static int intersect(int first, int second, Map<Integer, Integer> dominators, Map<Integer, Integer> order) {
+    private int intersect(int first, int second, Map<Integer, Integer> dominators, Map<Integer, Integer> order) {
         int left = first;
         int right = second;
         while (left != right) {

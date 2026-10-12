@@ -5,11 +5,9 @@ import java.util.List;
 
 /** Renders {@link ConfigSuggestion}s as human-readable lines, shared by the CLI and the Maven plugin. */
 public final class ConfigSuggestionFormatter {
-    private ConfigSuggestionFormatter() {
-    }
 
     /** One line per suggestion, or none when the configuration already suits the program. */
-    public static List<String> format(List<ConfigSuggestion> suggestions) {
+    public List<String> format(List<ConfigSuggestion> suggestions) {
         List<String> lines = new ArrayList<>();
         if (suggestions.isEmpty()) {
             return lines;

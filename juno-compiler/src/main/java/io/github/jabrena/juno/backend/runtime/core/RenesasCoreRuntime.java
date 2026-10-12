@@ -13,7 +13,12 @@ import io.github.jabrena.juno.board.ArduinoCore;
  * symbols the assembly calls directly, and the shim overrides the core's weak {@code yield()} to keep
  * USB serviced.
  */
-record RenesasCoreRuntime() implements CoreRuntime {
+final class RenesasCoreRuntime implements CoreRuntime {
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+    private final ParallelBusRuntime parallelBusRuntime = new ParallelBusRuntime();
+    private final ThreadRuntime threadRuntime = new ThreadRuntime();
+    private final ShimLibraries shimLibraries = new ShimLibraries();
+
 
     @Override
     public String delayMillisFunction() {
@@ -47,7 +52,7 @@ record RenesasCoreRuntime() implements CoreRuntime {
      */
     @Override
     public String parallelBusHelpers() {
-        return ParallelBusRuntime.helpers("",
+        return parallelBusRuntime.helpers("",
                 "R_PORT0_Type*",
                 """
                 uint32_t io = static_cast<uint32_t>(g_pin_cfg[pin].pin);
@@ -65,17 +70,17 @@ record RenesasCoreRuntime() implements CoreRuntime {
     /** SdFat on the core's default hardware SPI bus. */
     @Override
     public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
-        return ShimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
+        return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
     }
 
     @Override
     public String wifiHelpers() {
-        return ShimLibraries.wifiHelpers();
+        return shimLibraries.wifiHelpers();
     }
 
     @Override
     public String httpServerTransport() {
-        return RuntimeSource.load("renesas/http-server-transport.cpp");
+        return runtimeSource.load("renesas/http-server-transport.cpp");
     }
 
     @Override
@@ -100,7 +105,7 @@ record RenesasCoreRuntime() implements CoreRuntime {
 
     @Override
     public String yieldFunction() {
-        return RuntimeSource.load("renesas/yield.cpp");
+        return runtimeSource.load("renesas/yield.cpp");
     }
 
     @Override
@@ -110,7 +115,7 @@ record RenesasCoreRuntime() implements CoreRuntime {
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        return ThreadRuntime.renesasPort(config.maxThreads(),
+        return threadRuntime.renesasPort(config.maxThreads(),
                 config.threadStackBytes(ArduinoCore.RENESAS_UNO.defaultThreadStackBytes()));
     }
 }

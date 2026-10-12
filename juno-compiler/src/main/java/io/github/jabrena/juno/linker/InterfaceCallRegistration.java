@@ -10,14 +10,14 @@ import java.util.Map;
 
 /** Keeps intrinsic interface calls out of ordinary closed-world dispatch resolution. */
 final class InterfaceCallRegistration {
-    private InterfaceCallRegistration() {
-    }
+    private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
 
-    static void register(LinkedMethod linked, Instruction instruction, MethodRef called,
+
+    void register(LinkedMethod linked, Instruction instruction, MethodRef called,
                          Map<String, JavaClass> classes, Collection<LambdaSite> lambdaSites,
                          Map<InterfaceCallSite, MethodRef> interfaceCalls,
                          InterfaceDispatchResolver resolver) {
-        if (IntrinsicRegistry.isIntrinsic(called)) return;
+        if (intrinsicRegistry.isIntrinsic(called)) return;
         resolver.validateCall(linked, instruction, called, classes, lambdaSites);
         interfaceCalls.put(new InterfaceCallSite(linked.method().reference(), instruction.offset()), called);
     }

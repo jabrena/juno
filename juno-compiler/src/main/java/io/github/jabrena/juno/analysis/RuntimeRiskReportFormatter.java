@@ -5,10 +5,8 @@ import java.util.List;
 
 /** Renders a {@link RuntimeRiskReport} as human-readable lines, shared by the CLI and the Maven plugin. */
 public final class RuntimeRiskReportFormatter {
-    private RuntimeRiskReportFormatter() {
-    }
 
-    public static List<String> format(RuntimeRiskReport report) {
+    public List<String> format(RuntimeRiskReport report) {
         List<String> lines = new ArrayList<>();
         lines.add("Runtime risk analysis:");
         String arenaQualifier = report.unboundedArenaAllocation()
@@ -36,7 +34,7 @@ public final class RuntimeRiskReportFormatter {
         return lines;
     }
 
-    private static String formatBound(int value, String unit) {
+    private String formatBound(int value, String unit) {
         return value < 0 ? "unbounded (recursion)" : value + " " + unit;
     }
 }

@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** Array initializers as compilers emit them: javac stores every element, the Eclipse compiler only non-zero ones. */
 class TableBytecodeTest {
+    private final TableBytecode tableBytecode = new TableBytecode();
+
     private static final int BIPUSH = 16;
     private static final int NEWARRAY = 188;
     private static final int T_SHORT = 9;
@@ -19,7 +21,7 @@ class TableBytecodeTest {
     @Test
     void readsAnInitializerThatLeavesOutItsZeroElements() {
         // static final short[] T = {0, 7, 0, 9}; as the Eclipse compiler emits it: no stores for the zeros.
-        TableBytecode.Initializer initializer = TableBytecode.initializer(List.of(
+        TableBytecode.Initializer initializer = tableBytecode.initializer(List.of(
                 instruction(BIPUSH, 4), instruction(NEWARRAY, T_SHORT),
                 instruction(DUP, 0), instruction(BIPUSH, 1), instruction(BIPUSH, 7), instruction(SASTORE, 0),
                 instruction(DUP, 0), instruction(BIPUSH, 3), instruction(BIPUSH, 9), instruction(SASTORE, 0),
@@ -32,7 +34,7 @@ class TableBytecodeTest {
 
     @Test
     void rejectsAnInitializerThatStoresOneIndexTwice() {
-        assertThat(TableBytecode.initializer(List.of(
+        assertThat(tableBytecode.initializer(List.of(
                 instruction(BIPUSH, 2), instruction(NEWARRAY, T_SHORT),
                 instruction(DUP, 0), instruction(BIPUSH, 1), instruction(BIPUSH, 7), instruction(SASTORE, 0),
                 instruction(DUP, 0), instruction(BIPUSH, 1), instruction(BIPUSH, 8), instruction(SASTORE, 0),

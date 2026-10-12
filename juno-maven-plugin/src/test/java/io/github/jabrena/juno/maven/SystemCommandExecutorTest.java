@@ -19,7 +19,7 @@ class SystemCommandExecutorTest {
 
     @Test
     void nonInteractiveCommandCapturesOutputAndExitCode() {
-        CommandResult result = executor.execute(List.of("sh", "-c", "echo hello; exit 3"), false);
+        CommandResult result = executor.execute(new Command(List.of("sh", "-c", "echo hello; exit 3"), Command.Mode.CAPTURED));
 
         assertThat(result.exitCode()).isEqualTo(3);
         assertThat(result.output()).contains("hello");
@@ -27,7 +27,7 @@ class SystemCommandExecutorTest {
 
     @Test
     void interactiveCommandThatExitsImplausiblyFastFailsWithADiagnosticMessage() {
-        assertThatThrownBy(() -> executor.execute(List.of("sh", "-c", "exit 0"), true))
+        assertThatThrownBy(() -> executor.execute(new Command(List.of("sh", "-c", "exit 0"), Command.Mode.INTERACTIVE)))
                 .isInstanceOf(ArduinoCliException.class)
                 .hasMessageContaining("exited after just")
                 .hasMessageContaining("no real interactive terminal");
@@ -35,7 +35,7 @@ class SystemCommandExecutorTest {
 
     @Test
     void interactiveCommandThatRunsLongEnoughSucceeds() {
-        CommandResult result = executor.execute(List.of("sh", "-c", "sleep 3.2; exit 0"), true);
+        CommandResult result = executor.execute(new Command(List.of("sh", "-c", "sleep 3.2; exit 0"), Command.Mode.INTERACTIVE));
 
         assertThat(result.exitCode()).isEqualTo(0);
     }

@@ -7,6 +7,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,9 +24,9 @@ class ArduinoCliTest {
 
         cli.compile(FQBN, sketch);
 
-        assertThat(executor.invocations()).containsExactly(new Invocation(List.of(
+        assertThat(executor.invocations()).containsExactly(captured(List.of(
                 "arduino-cli", "compile", "--fqbn", FQBN,
-                sketch.toAbsolutePath().normalize().toString()), false));
+                sketch.toAbsolutePath().normalize().toString())));
         assertThat(output).containsExactly("compiled");
     }
 
@@ -37,10 +38,10 @@ class ArduinoCliTest {
 
         cli.compile("arduino:megaavr:uno2018", sketch);
 
-        assertThat(executor.invocations()).containsExactly(new Invocation(List.of(
+        assertThat(executor.invocations()).containsExactly(captured(List.of(
                 "arduino-cli", "compile", "--fqbn", "arduino:megaavr:uno2018",
                 "--build-property", "compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3",
-                sketch.toAbsolutePath().normalize().toString()), false));
+                sketch.toAbsolutePath().normalize().toString())));
     }
 
     @Test
@@ -53,8 +54,8 @@ class ArduinoCliTest {
         cli.installLibrary("ESP_SSLClient");
 
         assertThat(executor.invocations()).containsExactly(
-                new Invocation(List.of("arduino-cli", "core", "install", "arduino:renesas_uno"), false),
-                new Invocation(List.of("arduino-cli", "lib", "install", "ESP_SSLClient"), false));
+                captured(List.of("arduino-cli", "core", "install", "arduino:renesas_uno")),
+                captured(List.of("arduino-cli", "lib", "install", "ESP_SSLClient")));
         assertThat(output).containsExactly("core installed", "lib installed");
     }
 
@@ -65,9 +66,9 @@ class ArduinoCliTest {
                 detected("/dev/cu.usbmodem123", FQBN)));
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
 
-        assertThat(cli.resolvePort(FQBN, null)).isEqualTo("/dev/cu.usbmodem123");
-        assertThat(executor.invocations()).containsExactly(new Invocation(
-                List.of("arduino-cli", "board", "list", "--json"), false));
+        assertThat(cli.resolvePort(FQBN, Optional.empty())).isEqualTo("/dev/cu.usbmodem123");
+        assertThat(executor.invocations()).containsExactly(
+                captured(List.of("arduino-cli", "board", "list", "--json")));
     }
 
     @Test
@@ -76,7 +77,7 @@ class ArduinoCliTest {
                 detected("COM3", FQBN), detected("COM4", "arduino:avr:uno")));
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
 
-        assertThat(cli.resolvePort(FQBN, " COM3 ")).isEqualTo("COM3");
+        assertThat(cli.resolvePort(FQBN, Optional.of(" COM3 "))).isEqualTo("COM3");
     }
 
     @Test
@@ -85,7 +86,7 @@ class ArduinoCliTest {
                 detected("COM3", FQBN), detected("COM4", "arduino:avr:uno")));
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
 
-        assertThatThrownBy(() -> cli.resolvePort(FQBN, "COM4"))
+        assertThatThrownBy(() -> cli.resolvePort(FQBN, Optional.of("COM4")))
                 .isInstanceOf(ArduinoCliException.class)
                 .hasMessageContaining("Configured port 'COM4'")
                 .hasMessageContaining("Matching ports: COM3");
@@ -97,7 +98,7 @@ class ArduinoCliTest {
                 detected("COM3", FQBN), detected("COM4", FQBN)));
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
 
-        assertThatThrownBy(() -> cli.resolvePort(FQBN, null))
+        assertThatThrownBy(() -> cli.resolvePort(FQBN, Optional.empty()))
                 .isInstanceOf(ArduinoCliException.class)
                 .hasMessageContaining("Multiple boards")
                 .hasMessageContaining("-Djuno.port=<port>");
@@ -109,7 +110,7 @@ class ArduinoCliTest {
                 detected("COM4", "arduino:avr:uno")));
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
 
-        assertThatThrownBy(() -> cli.resolvePort(FQBN, null))
+        assertThatThrownBy(() -> cli.resolvePort(FQBN, Optional.empty()))
                 .isInstanceOf(ArduinoCliException.class)
                 .hasMessageContaining("No connected board matching " + FQBN);
     }
@@ -124,12 +125,12 @@ class ArduinoCliTest {
         cli.monitor("COM3", 115200);
 
         assertThat(executor.invocations()).containsExactly(
-                new Invocation(List.of("/opt/arduino-cli", "upload", "--port", "COM3",
-                        "--fqbn", FQBN, sketch.toAbsolutePath().normalize().toString()), false),
+                captured(List.of("/opt/arduino-cli", "upload", "--port", "COM3",
+                        "--fqbn", FQBN, sketch.toAbsolutePath().normalize().toString())),
                 // Deliberately no --fqbn here: arduino-cli monitor 1.5.1 exits immediately with no
                 // diagnostic output when --fqbn is passed alongside --port (see ArduinoCli.monitor).
-                new Invocation(List.of("/opt/arduino-cli", "monitor", "--port", "COM3",
-                        "--config", "baudrate=115200"), true));
+                interactive(List.of("/opt/arduino-cli", "monitor", "--port", "COM3",
+                        "--config", "baudrate=115200")));
     }
 
     @Test
@@ -154,12 +155,17 @@ class ArduinoCliTest {
         return "{" + matchingBoards + "\"port\":{\"address\":\"" + address + "\"}}";
     }
 
-    private record Invocation(List<String> command, boolean interactive) {
+    private static Command captured(List<String> arguments) {
+        return new Command(arguments, Command.Mode.CAPTURED);
+    }
+
+    private static Command interactive(List<String> arguments) {
+        return new Command(arguments, Command.Mode.INTERACTIVE);
     }
 
     private static final class FakeExecutor implements CommandExecutor {
         private final Deque<CommandResult> responses = new ArrayDeque<>();
-        private final List<Invocation> invocations = new ArrayList<>();
+        private final List<Command> invocations = new ArrayList<>();
 
         FakeExecutor respond(int exitCode, String output) {
             responses.addLast(new CommandResult(exitCode, output));
@@ -167,12 +173,12 @@ class ArduinoCliTest {
         }
 
         @Override
-        public CommandResult execute(List<String> command, boolean interactive) {
-            invocations.add(new Invocation(List.copyOf(command), interactive));
+        public CommandResult execute(Command command) {
+            invocations.add(command);
             return responses.removeFirst();
         }
 
-        List<Invocation> invocations() {
+        List<Command> invocations() {
             return List.copyOf(invocations);
         }
     }

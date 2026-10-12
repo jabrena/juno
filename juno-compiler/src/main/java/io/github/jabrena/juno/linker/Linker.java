@@ -27,6 +27,28 @@ import java.util.stream.Collectors;
 
 /** Performs closed-world reachability and resolves every static call before code generation. */
 public final class Linker {
+    private final BigNumberMethods bigNumberMethods = new BigNumberMethods();
+
+    private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
+
+    private final SupportedJdkMethods supportedJdkMethods = new SupportedJdkMethods();
+
+    private final InterfaceCallRegistration interfaceCallRegistration = new InterfaceCallRegistration();
+
+    private final ThreadSupport threadSupport = new ThreadSupport();
+
+    private final AtomicSupport atomicSupport = new AtomicSupport();
+
+    private final LockSupport lockSupport = new LockSupport();
+
+    private final ScopedValueSupport scopedValueSupport = new ScopedValueSupport();
+
+    private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
+
+    private final ThrowableTypes throwableTypes = new ThrowableTypes();
+
+    private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
+
     /** The on-board {@link Capability} each capability-dependent intrinsic needs; every other intrinsic is portable. */
     private static final Map<Intrinsic, Capability> REQUIRED_CAPABILITIES = requiredCapabilities();
     private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
@@ -75,11 +97,11 @@ public final class Linker {
                         work, calls, instantiated, lambdas), interfaceDispatchResolver,
                 method -> hasReachableBody(method, classes),
                 (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
-        StructuredTaskSupport.validateNoCustomJoiners(reachability.instantiatedClasses(),
+        structuredTaskSupport.validateNoCustomJoiners(reachability.instantiatedClasses(),
                 reachability.lambdaSites().values(), classes);
         for (Map.Entry<InterfaceCallSite, MethodRef> call : reachability.interfaceCalls().entrySet()) {
             if (!reachability.interfaceDispatches().containsKey(call.getKey())) {
-                throw new CompileException(ThreadSupport.unresolvedMessage(call.getKey(), call.getValue()));
+                throw new CompileException(threadSupport.unresolvedMessage(call.getKey(), call.getValue()));
             }
         }
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
@@ -91,7 +113,7 @@ public final class Linker {
 
     private void validateInterfaceTargetCapability(InterfaceDispatch dispatch, MethodRef method,
                                                    List<Board> declaredBoards) {
-        IntrinsicRegistry.resolve(method).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
+        intrinsicRegistry.resolve(method).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
                 requireCapability(declaredBoards, capability,
                         " (used through " + dispatch.interfaceMethod().displayName() + ")"));
     }
@@ -127,7 +149,7 @@ public final class Linker {
         return declaredBoards.get(0);
     }
 
-    private static String displayNames(List<Board> boards) {
+    private String displayNames(List<Board> boards) {
         return boards.stream().map(Board::displayName).collect(Collectors.joining(", "));
     }
 
@@ -157,15 +179,15 @@ public final class Linker {
             int opcode = instruction.opcode();
             if (opcode == 182 || opcode == 183 || opcode == 184) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                ThreadSupport.registerEntry(called, interfaceCalls);
-                StructuredTaskSupport.registerEntry(called, interfaceCalls);
-                ScopedValueSupport.registerEntry(called, interfaceCalls);
+                threadSupport.registerEntry(called, interfaceCalls);
+                structuredTaskSupport.registerEntry(called, interfaceCalls);
+                scopedValueSupport.registerEntry(called, interfaceCalls);
                 enqueueCall(called, caller, declaredBoards, classes, work);
             }
             if (opcode == 185) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
-                StructuredTaskSupport.registerEntry(called, interfaceCalls);
-                InterfaceCallRegistration.register(linked, instruction, called, classes, lambdaSites.values(),
+                structuredTaskSupport.registerEntry(called, interfaceCalls);
+                interfaceCallRegistration.register(linked, instruction, called, classes, lambdaSites.values(),
                         interfaceCalls, interfaceDispatchResolver);
             }
             if (opcode == 186) {
@@ -183,14 +205,14 @@ public final class Linker {
 
     private void enqueueCall(MethodRef called, MethodRef caller, List<Board> declaredBoards,
             Map<String, JavaClass> classes, Deque<MethodRef> work) {
-        IntrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
+        intrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
                 requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
-        ThreadSupport.validateCall(called);
-        LockSupport.validateCall(called);
-        AtomicSupport.validateCall(called);
-        StructuredTaskSupport.validateCall(called);
-        ScopedValueSupport.validateCall(called);
-        BigNumberSupport.validateCall(called);
+        threadSupport.validateCall(called);
+        lockSupport.validateCall(called);
+        atomicSupport.validateCall(called);
+        structuredTaskSupport.validateCall(called);
+        scopedValueSupport.validateCall(called);
+        bigNumberSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {
@@ -200,14 +222,14 @@ public final class Linker {
 
     /** Whether {@code called} is an ordinary method whose bytecode must be linked, not one Juno lowers itself. */
     private boolean hasReachableBody(MethodRef called, Map<String, JavaClass> classes) {
-        return !IntrinsicRegistry.isIntrinsic(called)
+        return !intrinsicRegistry.isIntrinsic(called)
                 && !isRuntimeBaseConstructor(called)
-                && !ThrowableTypes.isBuiltInConstructor(called)
-                && !ThrowableTypes.isGetMessage(called, classes)
-                && !ThrowableTypes.isAddSuppressed(called, classes)
+                && !throwableTypes.isBuiltInConstructor(called)
+                && !throwableTypes.isGetMessage(called, classes)
+                && !throwableTypes.isAddSuppressed(called, classes)
                 && !isEnumOperation(classes, called)
                 && !isCompileTimeGetenv(called)
-                && !SupportedJdkMethods.isRequireNonNull(called);
+                && !supportedJdkMethods.isRequireNonNull(called);
     }
 
     private void enqueueStaticInitializer(FieldRef field, Map<String, JavaClass> classes, Deque<MethodRef> work) {
@@ -260,7 +282,7 @@ public final class Linker {
                 Intrinsic.MONITOR_ENTER, Intrinsic.MONITOR_EXIT, Intrinsic.REENTRANT_LOCK_NEW,
                 Intrinsic.REENTRANT_LOCK_LOCK, Intrinsic.REENTRANT_LOCK_TRY_LOCK, Intrinsic.REENTRANT_LOCK_UNLOCK);
         require(required, Capability.BIG_NUMBERS, Arrays.stream(Intrinsic.values())
-                .filter(BigNumberMethods::isBigNumber).toArray(Intrinsic[]::new));
+                .filter(new BigNumberMethods()::isBigNumber).toArray(Intrinsic[]::new));
         require(required, Capability.DOUBLE_MATH, Intrinsic.MATH_SIN, Intrinsic.MATH_COS, Intrinsic.MATH_TAN,
                 Intrinsic.MATH_ASIN, Intrinsic.MATH_ACOS, Intrinsic.MATH_ATAN, Intrinsic.MATH_ATAN2, Intrinsic.MATH_EXP,
                 Intrinsic.MATH_LOG, Intrinsic.MATH_LOG10, Intrinsic.MATH_POW, Intrinsic.MATH_CBRT, Intrinsic.MATH_HYPOT);
@@ -314,7 +336,7 @@ public final class Linker {
         if (method.isNative() || method.code() == null) {
             throw new CompileException("Native method has no Juno intrinsic: " + method.reference().displayName());
         }
-        LockSupport.validateMethod(method);
+        lockSupport.validateMethod(method);
         Descriptor descriptor = Descriptor.parse(method.descriptor());
         boolean conventionalMain = entryPoint
                 && descriptor.parameters().equals(List.of("[Ljava/lang/String;"))

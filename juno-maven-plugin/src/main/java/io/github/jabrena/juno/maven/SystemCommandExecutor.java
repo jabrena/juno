@@ -2,7 +2,7 @@ package io.github.jabrena.juno.maven;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.time.Duration;
 
 final class SystemCommandExecutor implements CommandExecutor {
     /**
@@ -13,40 +13,39 @@ final class SystemCommandExecutor implements CommandExecutor {
      * exactly that: exits with status 0 and no diagnostic output at all, silently doing nothing
      * instead of opening the monitor. Left unchecked, that reads as a normal, successful build.
      */
-    private static final long MIN_INTERACTIVE_MILLIS = 3000;
+    private static final Duration MIN_INTERACTIVE_RUN = Duration.ofSeconds(3);
 
     @Override
-    public CommandResult execute(List<String> command, boolean interactive) {
-        ProcessBuilder builder = new ProcessBuilder(command);
-        if (interactive) {
+    public CommandResult execute(Command command) {
+        ProcessBuilder builder = new ProcessBuilder(command.arguments());
+        if (command.isInteractive()) {
             builder.inheritIO();
         } else {
             builder.redirectErrorStream(true);
         }
-
         try {
-            long startNanos = System.nanoTime();
+            long started = System.nanoTime();
             Process process = builder.start();
-            String output = interactive
+            String output = command.isInteractive()
                     ? ""
                     : new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             int exitCode = process.waitFor();
-            long elapsedMillis = (System.nanoTime() - startNanos) / 1_000_000;
-            if (interactive && elapsedMillis < MIN_INTERACTIVE_MILLIS) {
-                throw new ArduinoCliException("'" + String.join(" ", command) + "' exited after just "
-                        + elapsedMillis + " ms (exit code " + exitCode + ") instead of staying open "
-                        + "until interrupted. This usually means the current environment has no real "
-                        + "interactive terminal for Arduino CLI to attach to (e.g. launched from a "
-                        + "non-interactive process or session). Try running that exact command "
-                        + "directly from a real terminal instead of through this Maven goal.");
+            Duration elapsed = Duration.ofNanos(System.nanoTime() - started);
+            if (command.isInteractive() && elapsed.compareTo(MIN_INTERACTIVE_RUN) < 0) {
+                throw new ArduinoCliException("""
+                        '%s' exited after just %d ms (exit code %d) instead of staying open until interrupted. \
+                        This usually means the current environment has no real interactive terminal for Arduino \
+                        CLI to attach to (e.g. launched from a non-interactive process or session). Try running \
+                        that exact command directly from a real terminal instead of through this Maven goal."""
+                        .formatted(command.display(), elapsed.toMillis(), exitCode));
             }
             return new CommandResult(exitCode, output);
         } catch (IOException exception) {
-            throw new ArduinoCliException("Cannot run '" + command.getFirst()
+            throw new ArduinoCliException("Cannot run '" + command.program()
                     + "'. Install Arduino CLI or configure -Djuno.arduinoCli=/path/to/arduino-cli.", exception);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new ArduinoCliException("Interrupted while running " + String.join(" ", command), exception);
+            throw new ArduinoCliException("Interrupted while running " + command.display(), exception);
         }
     }
 }

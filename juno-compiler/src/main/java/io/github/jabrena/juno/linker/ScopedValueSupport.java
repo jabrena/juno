@@ -13,6 +13,8 @@ import java.util.Map;
  * generated entry functions, which this class registers as synthetic interface-call sites.
  */
 public final class ScopedValueSupport {
+    private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
+
     public static final String SCOPED_VALUE = "java/lang/ScopedValue";
     public static final String CARRIER = SCOPED_VALUE + "$Carrier";
     public static final String CALLABLE_OP = SCOPED_VALUE + "$CallableOp";
@@ -26,11 +28,9 @@ public final class ScopedValueSupport {
     private static final MethodRef CARRIER_CALL =
             new MethodRef(CARRIER, "call", "(L" + CALLABLE_OP + ";)Ljava/lang/Object;");
 
-    private ScopedValueSupport() {
-    }
 
     /** Registers the synthetic {@code Runnable.run()} / {@code CallableOp.call()} site a carrier call needs. */
-    public static void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
+    public void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
         if (called.equals(CARRIER_RUN)) {
             interfaceCalls.put(ThreadSupport.ENTRY_SITE, ThreadSupport.RUNNABLE_RUN);
         } else if (called.equals(CARRIER_CALL)) {
@@ -38,26 +38,26 @@ public final class ScopedValueSupport {
         }
     }
 
-    public static boolean isEntrySite(InterfaceCallSite site) {
+    public boolean isEntrySite(InterfaceCallSite site) {
         return site.equals(ENTRY_SITE);
     }
 
-    public static boolean isCallableOpCall(MethodRef called) {
+    public boolean isCallableOpCall(MethodRef called) {
         return called.equals(CALLABLE_OP_CALL);
     }
 
     /** Whether {@code descriptor} is a {@code ScopedValue} or {@code Carrier}: one word, like a thread handle. */
-    public static boolean isScopedValueType(String descriptor) {
+    public boolean isScopedValueType(String descriptor) {
         return descriptor.equals("L" + SCOPED_VALUE + ";") || descriptor.equals("L" + CARRIER + ";");
     }
 
-    public static boolean isScopedValueOwner(String owner) {
+    public boolean isScopedValueOwner(String owner) {
         return owner.equals(SCOPED_VALUE) || owner.equals(CARRIER) || owner.equals(CALLABLE_OP);
     }
 
     /** Rejects API calls outside the deliberately small subset with a useful diagnostic. */
-    public static void validateCall(MethodRef called) {
-        if (isScopedValueOwner(called.owner()) && !IntrinsicRegistry.isIntrinsic(called)) {
+    public void validateCall(MethodRef called) {
+        if (isScopedValueOwner(called.owner()) && !intrinsicRegistry.isIntrinsic(called)) {
             throw new CompileException("Juno's ScopedValue subset supports only ScopedValue.newInstance(), "
                     + "ScopedValue.where(key, value), Carrier.where(key, value), Carrier.run(Runnable), "
                     + "Carrier.call(CallableOp), get(), isBound(), and orElse(value); the other ScopedValue "

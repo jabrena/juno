@@ -12,7 +12,12 @@ import io.github.jabrena.juno.board.ArduinoCore;
  * The UNO Q's {@code arduino:zephyr} core: it provides {@code yield()} itself but inlines
  * {@code delay()}/{@code delayMicroseconds()}, so they are reached through shim wrappers.
  */
-record ZephyrCoreRuntime() implements CoreRuntime {
+final class ZephyrCoreRuntime implements CoreRuntime {
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+    private final ParallelBusRuntime parallelBusRuntime = new ParallelBusRuntime();
+    private final ThreadRuntime threadRuntime = new ThreadRuntime();
+    private final ShimLibraries shimLibraries = new ShimLibraries();
+
 
     @Override
     public String delayMillisFunction() {
@@ -52,7 +57,7 @@ record ZephyrCoreRuntime() implements CoreRuntime {
      */
     @Override
     public String parallelBusHelpers() {
-        return ParallelBusRuntime.helpers("""
+        return parallelBusRuntime.helpers("""
                 #include <zephyr/drivers/gpio.h>
                 static const struct gpio_dt_spec juno_bus_pin_table[] = {
                     DT_FOREACH_PROP_ELEM_SEP(DT_PATH(zephyr_user), digital_pin_gpios, GPIO_DT_SPEC_GET_BY_IDX, (, ))};""",
@@ -73,12 +78,12 @@ record ZephyrCoreRuntime() implements CoreRuntime {
     /** SdFat on the core's default hardware SPI bus. */
     @Override
     public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
-        return ShimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
+        return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
     }
 
     @Override
     public String wifiHelpers() {
-        return RuntimeSource.load("zephyr/wifi.cpp");
+        return runtimeSource.load("zephyr/wifi.cpp");
     }
 
     @Override
@@ -86,7 +91,7 @@ record ZephyrCoreRuntime() implements CoreRuntime {
         // The listener lives in arduino-router on Linux (tcp/listen, tcp/accept). BridgeTCPServer
         // keeps returning the same connection from accept() until disconnect() is called, so
         // release() must run once the response has been sent.
-        return RuntimeSource.load("zephyr/http-server-transport.cpp");
+        return runtimeSource.load("zephyr/http-server-transport.cpp");
     }
 
     @Override
@@ -102,7 +107,7 @@ record ZephyrCoreRuntime() implements CoreRuntime {
 
     @Override
     public String httpsHelpers() {
-        return RuntimeSource.load("zephyr/https.cpp");
+        return runtimeSource.load("zephyr/https.cpp");
     }
 
     @Override
@@ -112,7 +117,7 @@ record ZephyrCoreRuntime() implements CoreRuntime {
 
     @Override
     public String yieldFunction() {
-        return RuntimeSource.load("zephyr/yield.cpp");
+        return runtimeSource.load("zephyr/yield.cpp");
     }
 
     @Override
@@ -122,7 +127,7 @@ record ZephyrCoreRuntime() implements CoreRuntime {
 
     @Override
     public String ioWorkerPort() {
-        return ThreadRuntime.zephyrIoWorker();
+        return threadRuntime.zephyrIoWorker();
     }
 
     @Override
@@ -132,6 +137,6 @@ record ZephyrCoreRuntime() implements CoreRuntime {
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        return ThreadRuntime.zephyrPort(config.maxThreads(), config.threadStackBytes(ArduinoCore.ZEPHYR.defaultThreadStackBytes()));
+        return threadRuntime.zephyrPort(config.maxThreads(), config.threadStackBytes(ArduinoCore.ZEPHYR.defaultThreadStackBytes()));
     }
 }

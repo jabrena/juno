@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 public final class ClassFileReader {
+    private final ClassHeaderReader classHeaderReader = new ClassHeaderReader();
+
+    private final BootstrapMethodsReader bootstrapMethodsReader = new BootstrapMethodsReader();
+
     private static final int CLASS_FILE_MAGIC = 0xCAFEBABE;
     private static final String BOARD_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Board;";
     private static final String WATCHDOG_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Watchdog;";
@@ -55,7 +59,7 @@ public final class ClassFileReader {
             String className = pool.className(input.readUnsignedShort());
             int superClassIndex = input.readUnsignedShort();
             String superClassName = superClassIndex == 0 ? null : pool.className(superClassIndex);
-            List<String> interfaces = ClassHeaderReader.readInterfaces(input, pool);
+            List<String> interfaces = classHeaderReader.readInterfaces(input, pool);
             List<FieldInfo> fields = readFields(input, pool);
             List<JavaMethod> methods = readMethods(input, pool, className);
             ClassAttributes attributes = readClassAttributes(input, pool);
@@ -187,7 +191,7 @@ public final class ClassFileReader {
             if (attributeName.equals("RuntimeVisibleAnnotations")) {
                 annotations = readAnnotations(input, pool, annotations);
             } else if (attributeName.equals("BootstrapMethods")) {
-                bootstrapMethods = BootstrapMethodsReader.read(input);
+                bootstrapMethods = bootstrapMethodsReader.read(input);
             } else {
                 input.skipNBytes(Integer.toUnsignedLong(length));
             }

@@ -14,7 +14,7 @@ public sealed interface WordSource {
     static List<WordSource> argumentWords(List<Value> arguments) {
         List<WordSource> words = new ArrayList<>();
         for (Value argument : arguments) {
-            if (FrameLayout.isWide(argument.type())) {
+            if (argument.type().isWide()) {
                 words.add(new WordSource.FromValueLow(argument));
                 words.add(new WordSource.FromValueHigh(argument));
             } else {

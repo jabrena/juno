@@ -1,6 +1,7 @@
 package io.github.jabrena.juno;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -32,6 +33,21 @@ public record CompilationMetrics(int assemblyBytes, int runtimeShimBytes, int ge
     private static final Set<String> BRANCH_OPCODES = Set.of(
             "b", "beq", "bne", "bhs", "blo", "bmi", "bpl", "bvs", "bvc", "bhi", "bls",
             "bge", "blt", "bgt", "ble", "bx", "cbz", "cbnz");
+
+    /** These measurements as the human-readable lines {@code juno compile --metrics} prints. */
+    public List<String> summary() {
+        return List.of(
+                "Compilation metrics:",
+                "  Generated methods: " + generatedMethods,
+                "  Assembly instructions: " + assemblyInstructions,
+                "  Loads / stores: " + loadInstructions + " / " + storeInstructions,
+                "  Branches / calls: " + branchInstructions + " / " + callInstructions,
+                "  Direct allocation calls: " + directAllocationCalls,
+                "  Maximum fixed frame: " + maximumFixedFrameBytes + " bytes",
+                "  Total fixed frames: " + totalFixedFrameBytes + " bytes",
+                "  Assembly / runtime-shim source: " + assemblyBytes + " / " + runtimeShimBytes + " bytes",
+                "  Note: use the final ELF for flash/RAM size and target hardware for cycle counts.");
+    }
 
     /** Measures the generated sources in {@code result}. */
     public static CompilationMetrics from(CompilationResult result) {

@@ -1,24 +1,28 @@
 package io.github.jabrena.juno.lowering;
 
+import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.ir.Value;
 
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.pop;
+import static io.github.jabrena.juno.bytecode.Opcodes.MONITORENTER;
 
-/** Lowers {@code monitorenter}/{@code monitorexit} to the runtime's monitor table. */
-final class MonitorLowering {
-    private MonitorLowering() {
+/** {@code monitorenter}/{@code monitorexit}, backed by the runtime's monitor table. */
+final class MonitorLowering implements InstructionLowering {
+    private final MethodContext context;
+
+    MonitorLowering(MethodContext context) {
+        this.context = context;
     }
 
-    static Lowered lower(int opcode, List<IrInstruction> instructions, int stackBase, int depth,
-                         int nextValueId, ValueTracking tracking) {
-        Popped monitor = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        Intrinsic intrinsic = opcode == 194 ? Intrinsic.MONITOR_ENTER : Intrinsic.MONITOR_EXIT;
-        instructions.add(new IrInstruction.IntrinsicCall(Optional.empty(), intrinsic,
-                Optional.of(monitor.value()), List.of(), List.of()));
-        return new Lowered(monitor.nextValueId(), depth);
+    @Override
+    public void lower(Instruction instruction) {
+        Value monitor = context.stack().pop();
+        Intrinsic intrinsic = instruction.opcode() == MONITORENTER ? Intrinsic.MONITOR_ENTER : Intrinsic.MONITOR_EXIT;
+        context.emit(new IrInstruction.IntrinsicCall(Optional.empty(), intrinsic, Optional.of(monitor), List.of(),
+                List.of()));
     }
 }

@@ -4,6 +4,7 @@ import io.github.jabrena.juno.backend.FrameLayout;
 import io.github.jabrena.juno.backend.WordSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.FloatBinaryOp;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -209,7 +210,7 @@ final class WideArithmeticLowering {
                 asm.store(output, frame, "r0", conversion.targetLow());
                 asm.store(output, frame, "r1", conversion.targetHigh());
             }
-            default -> throw Thumb2AsmBackend.unsupported(instruction.getClass().getSimpleName());
+            default -> throw Architecture.THUMB2.unsupported(instruction.getClass().getSimpleName());
         }
     }
 

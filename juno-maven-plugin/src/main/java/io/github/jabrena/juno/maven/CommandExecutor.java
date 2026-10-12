@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.maven;
 
-import java.util.List;
-
+/** Runs external commands; tests substitute a fake so no real process (or board) is ever touched. */
 interface CommandExecutor {
-    CommandResult execute(List<String> command, boolean interactive);
+    CommandResult execute(Command command);
 }

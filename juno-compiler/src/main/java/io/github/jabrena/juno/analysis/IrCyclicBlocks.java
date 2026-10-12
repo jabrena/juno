@@ -14,10 +14,8 @@ import java.util.Set;
 
 /** Detects which of an {@link IrMethod}'s basic blocks are reachable from a back-edge (i.e. sit in a loop). */
 final class IrCyclicBlocks {
-    private IrCyclicBlocks() {
-    }
 
-    static Set<Integer> cyclicBlocks(IrMethod method) {
+    Set<Integer> cyclicBlocks(IrMethod method) {
         Map<Integer, List<Integer>> edges = new HashMap<>();
         for (IrBasicBlock block : method.blocks()) {
             // A panic never returns; the self-jump after it only terminates the block.
@@ -36,7 +34,7 @@ final class IrCyclicBlocks {
         return cyclic;
     }
 
-    private static boolean endsInNoReturnCall(IrBasicBlock block) {
+    private boolean endsInNoReturnCall(IrBasicBlock block) {
         List<IrInstruction> instructions = block.instructions();
         if (instructions.isEmpty()) {
             return false;
@@ -45,7 +43,7 @@ final class IrCyclicBlocks {
         return last instanceof IrInstruction.Panic;
     }
 
-    private static List<Integer> successors(IrTerminator terminator) {
+    private List<Integer> successors(IrTerminator terminator) {
         return switch (terminator) {
             case IrTerminator.Jump jump -> List.of(jump.target());
             case IrTerminator.Branch branch -> List.of(branch.trueTarget(), branch.falseTarget());
@@ -58,7 +56,7 @@ final class IrCyclicBlocks {
         };
     }
 
-    private static boolean reaches(int start, int target, Map<Integer, List<Integer>> edges, Set<Integer> visited) {
+    private boolean reaches(int start, int target, Map<Integer, List<Integer>> edges, Set<Integer> visited) {
         if (start == target) return true;
         if (!visited.add(start)) return false;
         for (int successor : edges.getOrDefault(start, List.of())) {
