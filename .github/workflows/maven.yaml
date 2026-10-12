@@ -29,7 +29,12 @@ jobs:
           # The Testcontainers profiles live in the juno-compiler module and are opt-in locally (see AGENTS.md);
           # Docker is preinstalled on the runner.
           - name: Compile API and shield fixtures with arduino-cli (Testcontainers)
-            command: ./mvnw --batch-mode --no-transfer-progress -Parduino-cli verify -pl juno-compiler -am
+            # Uses the image the steps below build from the GitHub Actions cache, instead of letting the test
+            # download the Arduino cores and libraries again on every run.
+            arduino-cli-image: juno-arduino-cli:ci
+            command: >-
+              ./mvnw --batch-mode --no-transfer-progress -Parduino-cli verify -pl juno-compiler -am
+              -Djuno.arduinoCliImage=juno-arduino-cli:ci
           - name: Run programs under QEMU (Testcontainers)
             command: ./mvnw --batch-mode --no-transfer-progress -Pqemu verify -pl juno-compiler -am
     steps:
@@ -43,5 +48,19 @@ jobs:
           distribution: 'temurin'
           java-version: '27'
           cache: 'maven'
+      # The arduino-cli image only changes with its Dockerfile, so its layers come from the GitHub Actions cache
+      # and Docker rebuilds only the layers after a change. `load` puts it in the runner's Docker for the test.
+      - name: Set up Docker Buildx
+        if: matrix.arduino-cli-image
+        uses: docker/setup-buildx-action@v3
+      - name: Build arduino-cli image (cached)
+        if: matrix.arduino-cli-image
+        uses: docker/build-push-action@v6
+        with:
+          context: juno-compiler/src/test/docker/arduino-cli
+          tags: ${{ matrix.arduino-cli-image }}
+          load: true
+          cache-from: type=gha,scope=arduino-cli
+          cache-to: type=gha,mode=max,scope=arduino-cli
       - name: ${{ matrix.name }}
         run: ${{ matrix.command }}
