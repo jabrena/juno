@@ -2,6 +2,7 @@ package io.github.jabrena.juno.backend.avr;
 
 import io.github.jabrena.juno.backend.FrameLayout;
 import io.github.jabrena.juno.backend.ProgramLayout;
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
@@ -39,7 +40,7 @@ final class AvrMemoryLowering {
     void emitLoadStatic(StringBuilder output, FrameLayout frame, IrInstruction.LoadStatic load) {
         String symbol = layout.staticSymbol(load.field());
         loadStatic(output, A, symbol, 0);
-        if (FrameLayout.isWide(load.target().type())) {
+        if (load.target().type().isWide()) {
             loadStatic(output, B, symbol, AvrEmitter.WORD);
             avr.store64(output, frame, A, B, load.target());
         } else {
@@ -49,7 +50,7 @@ final class AvrMemoryLowering {
 
     void emitStoreStatic(StringBuilder output, FrameLayout frame, IrInstruction.StoreStatic store) {
         String symbol = layout.staticSymbol(store.field());
-        if (FrameLayout.isWide(store.value().type())) {
+        if (store.value().type().isWide()) {
             avr.load64(output, frame, A, B, store.value());
             storeStatic(output, A, symbol, 0);
             storeStatic(output, B, symbol, AvrEmitter.WORD);
@@ -59,41 +60,41 @@ final class AvrMemoryLowering {
         }
     }
 
-    private static void loadStatic(StringBuilder output, int quad, String symbol, int offset) {
+    private void loadStatic(StringBuilder output, int quad, String symbol, int offset) {
         for (int index = 0; index < AvrEmitter.WORD; index++) {
-            output.append("    lds ").append(AvrEmitter.r(quad + index)).append(", ").append(symbol).append('+')
+            output.append("    lds ").append(avr.r(quad + index)).append(", ").append(symbol).append('+')
                     .append(offset + index).append('\n');
         }
     }
 
-    private static void storeStatic(StringBuilder output, int quad, String symbol, int offset) {
+    private void storeStatic(StringBuilder output, int quad, String symbol, int offset) {
         for (int index = 0; index < AvrEmitter.WORD; index++) {
             output.append("    sts ").append(symbol).append('+').append(offset + index).append(", ")
-                    .append(AvrEmitter.r(quad + index)).append('\n');
+                    .append(avr.r(quad + index)).append('\n');
         }
     }
 
     /** Loads {@code target} (one or two words) from Z+{@code offset}. */
     private void loadFromZ(StringBuilder output, FrameLayout frame, int offset, Value target) {
-        if (FrameLayout.isWide(target.type())) {
-            AvrEmitter.loadFromZ(output, B, offset, 2 * AvrEmitter.WORD);
+        if (target.type().isWide()) {
+            avr.loadFromZ(output, B, offset, 2 * AvrEmitter.WORD);
             avr.store64(output, frame, B, A, target);
         } else {
-            AvrEmitter.loadFromZ(output, A, offset, AvrEmitter.WORD);
+            avr.loadFromZ(output, A, offset, AvrEmitter.WORD);
             avr.store(output, frame, A, target);
         }
     }
 
     /** Loads {@code value} first, since reaching a far frame slot can go through X but never Z, then sets Z. */
     void storeValueToZ(StringBuilder output, FrameLayout frame, Value value, Runnable pointZ, int offset) {
-        if (FrameLayout.isWide(value.type())) {
+        if (value.type().isWide()) {
             avr.load64(output, frame, B, A, value);
             pointZ.run();
-            AvrEmitter.storeToZ(output, B, offset, 2 * AvrEmitter.WORD);
+            avr.storeToZ(output, B, offset, 2 * AvrEmitter.WORD);
         } else {
             avr.load(output, frame, A, value);
             pointZ.run();
-            AvrEmitter.storeToZ(output, A, offset, AvrEmitter.WORD);
+            avr.storeToZ(output, A, offset, AvrEmitter.WORD);
         }
     }
 
@@ -110,14 +111,14 @@ final class AvrMemoryLowering {
         if (classId >= 0 || typeId != null) {
             output.append("    movw r30, r22\n");
             avr.loadImmediate(output, B, classId >= 0 ? classId : Objects.requireNonNull(typeId));
-            AvrEmitter.storeToZ(output, B, classId >= 0 ? ThrowableTypes.CLASS_ID_OFFSET : 0, AvrEmitter.WORD);
+            avr.storeToZ(output, B, classId >= 0 ? ThrowableTypes.CLASS_ID_OFFSET : 0, AvrEmitter.WORD);
         }
         avr.store(output, frame, A, target);
     }
 
     void emitNewMultiArray(StringBuilder output, FrameLayout frame, IrInstruction.NewMultiArray array) {
         if (array.dimensions().size() != 2) {
-            throw AvrAsmBackend.unsupported("array nesting deeper than 2 dimensions: " + array.dimensions());
+            throw Architecture.AVR.unsupported("array nesting deeper than 2 dimensions: " + array.dimensions());
         }
         int outerCount = array.dimensions().get(0);
         int innerCount = array.dimensions().get(1);
@@ -126,7 +127,7 @@ final class AvrMemoryLowering {
         for (int index = 0; index < outerCount; index++) {
             emitAllocate(output, innerCount * elementSize(array.leafType()));
             avr.loadPointer(output, frame, array.target());
-            AvrEmitter.storeToZ(output, A, index * AvrEmitter.WORD, AvrEmitter.WORD);
+            avr.storeToZ(output, A, index * AvrEmitter.WORD, AvrEmitter.WORD);
         }
     }
 
@@ -149,9 +150,9 @@ final class AvrMemoryLowering {
             case CHAR -> output.append("    ld r22, Z\n    ldd r23, Z+1\n    ldi r24, 0\n    ldi r25, 0\n");
             case SHORT -> output.append("    ld r22, Z\n    ldd r23, Z+1\n")
                     .append("    mov r24, r23\n    lsl r24\n    sbc r24, r24\n    mov r25, r24\n");
-            case INT, REFERENCE, FLOAT -> AvrEmitter.loadFromZ(output, A, 0, AvrEmitter.WORD);
+            case INT, REFERENCE, FLOAT -> avr.loadFromZ(output, A, 0, AvrEmitter.WORD);
             case LONG, DOUBLE -> {
-                AvrEmitter.loadFromZ(output, B, 0, 2 * AvrEmitter.WORD);
+                avr.loadFromZ(output, B, 0, 2 * AvrEmitter.WORD);
                 avr.store64(output, frame, B, A, load.target());
                 return;
             }
@@ -164,15 +165,15 @@ final class AvrMemoryLowering {
         // The element address goes to the stack slot-free registers first, then the value is loaded around it.
         pointAtElement(output, frame, store.array(), store.index(), size);
         output.append("    movw r20, r30\n");
-        if (FrameLayout.isWide(store.value().type())) {
+        if (store.value().type().isWide()) {
             avr.load64(output, frame, 10, 14, store.value());
             output.append("    movw r30, r20\n");
-            AvrEmitter.storeToZ(output, 10, 0, 2 * AvrEmitter.WORD);
+            avr.storeToZ(output, 10, 0, 2 * AvrEmitter.WORD);
             return;
         }
         avr.load(output, frame, A, store.value());
         output.append("    movw r30, r20\n");
-        AvrEmitter.storeToZ(output, A, 0, size);
+        avr.storeToZ(output, A, 0, size);
     }
 
     /** Panics unless {@code 0 <= index < length}: one unsigned comparison covers both ends. */
@@ -187,13 +188,13 @@ final class AvrMemoryLowering {
         String ok = avr.newLabel(".Lbcok");
         avr.load(output, frame, A, check.index());
         avr.loadImmediate(output, B, check.length());
-        AvrEmitter.compareQuads(output, A, B);
+        avr.compareQuads(output, A, B);
         output.append("    brlo ").append(ok).append('\n')
                 .append("    call juno_panic\n")
                 .append(ok).append(":\n");
     }
 
-    static int elementSize(ArrayElementType type) {
+    int elementSize(ArrayElementType type) {
         return switch (type) {
             case BYTE -> 1;
             case CHAR, SHORT -> 2;

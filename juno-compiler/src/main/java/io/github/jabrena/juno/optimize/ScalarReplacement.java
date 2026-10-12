@@ -5,7 +5,6 @@ import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
-import io.github.jabrena.juno.ir.IrValues;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 
@@ -30,6 +29,7 @@ import java.util.Set;
  * iteration a fresh object. Objects with a {@code long} field (kept as split words in the IR) are left alone.
  */
 public final class ScalarReplacement implements CompilerPass {
+
     @Override
     public IrProgram apply(IrProgram program) {
         List<IrMethod> methods = new ArrayList<>(program.methods().size());
@@ -68,11 +68,11 @@ public final class ScalarReplacement implements CompilerPass {
     }
 
     /** The local slot holding {@code field} of a scalar-replaced {@code receiver}; every candidate field has one. */
-    private static int slot(Map<Value, Map<FieldRef, Integer>> slots, Value receiver, FieldRef field) {
+    private int slot(Map<Value, Map<FieldRef, Integer>> slots, Value receiver, FieldRef field) {
         return Objects.requireNonNull(Objects.requireNonNull(slots.get(receiver)).get(field));
     }
 
-    private static void rewrite(IrInstruction instruction, Map<Value, Map<FieldRef, JunoType>> candidates,
+    private void rewrite(IrInstruction instruction, Map<Value, Map<FieldRef, JunoType>> candidates,
                                 Map<Value, Map<FieldRef, Integer>> slots, List<Value> values,
                                 List<IrInstruction> out) {
         switch (instruction) {
@@ -100,7 +100,7 @@ public final class ScalarReplacement implements CompilerPass {
     }
 
     /** Each non-escaping allocation in the method, with the fields it uses and their value types. */
-    private static Map<Value, Map<FieldRef, JunoType>> candidates(IrMethod method) {
+    private Map<Value, Map<FieldRef, JunoType>> candidates(IrMethod method) {
         Map<Value, Map<FieldRef, JunoType>> fields = new LinkedHashMap<>();
         for (IrBasicBlock block : method.blocks()) {
             for (IrInstruction instruction : block.instructions()) {
@@ -117,15 +117,15 @@ public final class ScalarReplacement implements CompilerPass {
             for (IrInstruction instruction : block.instructions()) {
                 note(instruction, fields, escaped);
             }
-            IrValues.of(block.terminator()).stream().filter(fields::containsKey).forEach(escaped::add);
+            block.terminator().referencedValues().stream().filter(fields::containsKey).forEach(escaped::add);
         }
         fields.keySet().removeAll(escaped);
-        fields.values().removeIf(ScalarReplacement::hidesAField);
+        fields.values().removeIf(this::hidesAField);
         return fields;
     }
 
     /** Records how one instruction uses the allocations: as a receiver it adds a field, anything else escapes. */
-    private static void note(IrInstruction instruction, Map<Value, Map<FieldRef, JunoType>> fields, Set<Value> escaped) {
+    private void note(IrInstruction instruction, Map<Value, Map<FieldRef, JunoType>> fields, Set<Value> escaped) {
         switch (instruction) {
             case IrInstruction.NewObject ignored -> {
             }
@@ -139,11 +139,11 @@ public final class ScalarReplacement implements CompilerPass {
             }
             case IrInstruction.NullCheck ignored -> {
             }
-            default -> IrValues.of(instruction).stream().filter(fields::containsKey).forEach(escaped::add);
+            default -> instruction.referencedValues().stream().filter(fields::containsKey).forEach(escaped::add);
         }
     }
 
-    private static void addField(Map<FieldRef, JunoType> fields, FieldRef field, JunoType type, Value object,
+    private void addField(Map<FieldRef, JunoType> fields, FieldRef field, JunoType type, Value object,
                                  Set<Value> escaped) {
         JunoType previous = fields.putIfAbsent(field, type);
         if (type == JunoType.INT64 || previous != null && previous != type) {
@@ -152,7 +152,7 @@ public final class ScalarReplacement implements CompilerPass {
     }
 
     /** Two fields of one name from different classes: a subclass hiding a superclass field. Left alone. */
-    private static boolean hidesAField(Map<FieldRef, JunoType> fields) {
+    private boolean hidesAField(Map<FieldRef, JunoType> fields) {
         Set<String> names = new HashSet<>();
         for (FieldRef field : fields.keySet()) {
             if (!names.add(field.name())) {

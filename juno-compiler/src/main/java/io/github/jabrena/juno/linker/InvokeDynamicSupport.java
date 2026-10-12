@@ -13,6 +13,8 @@ import java.util.function.Consumer;
 
 /** Validates reachable invokedynamic sites and registers the dependencies of lambda sites. */
 final class InvokeDynamicSupport {
+    private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
+
     private final LambdaResolver lambdaResolver = new LambdaResolver();
     private final StringConcatResolver stringConcatResolver = new StringConcatResolver();
 
@@ -35,7 +37,7 @@ final class InvokeDynamicSupport {
         if (lambda.implementation().referenceKind() == MethodHandleRef.REF_NEW_INVOKE_SPECIAL) {
             instantiatedClasses.add(implementation.owner());
         }
-        if (IntrinsicRegistry.isIntrinsic(implementation)) {
+        if (intrinsicRegistry.isIntrinsic(implementation)) {
             throw new CompileException(caller.displayName() + " at bytecode offset "
                     + instruction.offset() + ": method references to Juno intrinsics are not supported yet: "
                     + implementation.displayName());

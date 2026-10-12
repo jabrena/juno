@@ -47,8 +47,12 @@ class ConstantTablesTest {
         String assembly = result.assembly();
 
         assertThat(assembly).as("the table is read-only data, its values at their native 16-bit width")
-                .contains("    .section .rodata\n    .align 2\njuno_table_demo_Lookup_RECIPROCAL__S:\n"
-                        + "    .short -32768, -300, 0, 300, 32767\n");
+                .contains("""
+                            .section .rodata
+                            .align 2
+                        juno_table_demo_Lookup_RECIPROCAL__S:
+                            .short -32768, -300, 0, 300, 32767
+                        """);
         assertThat(assembly).as("a read loads the table's flash address")
                 .contains("ldr r0, =juno_table_demo_Lookup_RECIPROCAL__S");
         assertThat(assembly).as("<clinit> no longer allocates or fills it, and no .bss word holds it")

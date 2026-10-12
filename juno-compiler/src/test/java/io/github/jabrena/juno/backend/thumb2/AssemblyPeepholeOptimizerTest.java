@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AssemblyPeepholeOptimizerTest {
+    private final AssemblyPeepholeOptimizer assemblyPeepholeOptimizer = new AssemblyPeepholeOptimizer();
+
     @Test
     void forwardsResidentStackWordsAndRemovesRedundantTraffic() {
         String assembly = """
@@ -17,7 +19,7 @@ class AssemblyPeepholeOptimizerTest {
                     str r1, [sp, #8]
                 """;
 
-        assertThat(AssemblyPeepholeOptimizer.optimize(assembly)).isEqualTo("""
+        assertThat(assemblyPeepholeOptimizer.optimize(assembly)).isEqualTo("""
                     movs r0, #7
                     str r0, [sp, #0]
                     str r0, [sp, #4]
@@ -40,6 +42,6 @@ class AssemblyPeepholeOptimizerTest {
                     ldr r0, [sp, #8]
                 """;
 
-        assertThat(AssemblyPeepholeOptimizer.optimize(assembly)).isEqualTo(assembly);
+        assertThat(assemblyPeepholeOptimizer.optimize(assembly)).isEqualTo(assembly);
     }
 }

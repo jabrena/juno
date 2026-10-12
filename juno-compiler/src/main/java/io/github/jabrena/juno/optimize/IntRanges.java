@@ -11,8 +11,6 @@ import io.github.jabrena.juno.ir.UnaryOp;
  * because the JVM operation itself would wrap.
  */
 final class IntRanges {
-    private IntRanges() {
-    }
 
     record Range(long low, long high) {
         static final Range TOP = new Range(Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -49,7 +47,7 @@ final class IntRanges {
         }
     }
 
-    static Range binary(BinaryOp operation, Range left, Range right) {
+    Range binary(BinaryOp operation, Range left, Range right) {
         return switch (operation) {
             case ADD -> Range.of(left.low() + right.low(), left.high() + right.high());
             case SUBTRACT -> Range.of(left.low() - right.high(), left.high() - right.low());
@@ -63,14 +61,14 @@ final class IntRanges {
     }
 
     /** Java's remainder takes the dividend's sign and is smaller in magnitude than the divisor. */
-    private static Range remainder(Range left, Range right) {
+    private Range remainder(Range left, Range right) {
         if (right.low() <= 0) {
             return Range.TOP;
         }
         return left.low() >= 0 ? new Range(0, right.high() - 1) : new Range(-(right.high() - 1), right.high() - 1);
     }
 
-    static Range unary(UnaryOp operation, Range operand) {
+    Range unary(UnaryOp operation, Range operand) {
         return switch (operation) {
             case NEGATE -> Range.of(-operand.high(), -operand.low());
             case TO_BYTE -> new Range(Byte.MIN_VALUE, Byte.MAX_VALUE);
@@ -79,7 +77,7 @@ final class IntRanges {
         };
     }
 
-    static Range element(ArrayElementType type) {
+    Range element(ArrayElementType type) {
         return switch (type) {
             case BYTE -> new Range(Byte.MIN_VALUE, Byte.MAX_VALUE);
             case CHAR -> new Range(Character.MIN_VALUE, Character.MAX_VALUE);
@@ -89,7 +87,7 @@ final class IntRanges {
     }
 
     /** Both operands narrowed to where {@code left <condition> right} holds. */
-    static Narrowed narrow(Condition condition, Range left, Range right) {
+    Narrowed narrow(Condition condition, Range left, Range right) {
         return switch (condition) {
             case LESS_THAN -> new Narrowed(left.intersect(new Range(Integer.MIN_VALUE, right.high() - 1)),
                     right.intersect(new Range(left.low() + 1, Integer.MAX_VALUE)));
@@ -105,7 +103,7 @@ final class IntRanges {
     }
 
     /** {@code range} without {@code excluded}'s single value, where that value is one of its ends. */
-    private static Range excluding(Range range, Range excluded) {
+    private Range excluding(Range range, Range excluded) {
         if (excluded.low() != excluded.high()) {
             return range;
         }
@@ -116,7 +114,7 @@ final class IntRanges {
         return range.high() == point ? new Range(range.low(), point - 1) : range;
     }
 
-    static Condition inverse(Condition condition) {
+    Condition inverse(Condition condition) {
         return switch (condition) {
             case EQUAL -> Condition.NOT_EQUAL;
             case NOT_EQUAL -> Condition.EQUAL;

@@ -236,6 +236,10 @@
         <!-- Compile the API and shield fixtures (src/test/arduino/programs) with the real arduino-cli in Docker. -->
         <profile>
             <id>arduino-cli</id>
+            <properties>
+                <!-- How many sketches ArduinoCliCompileIT compiles at once; override with -Djuno.arduinoCliParallelism. -->
+                <juno.arduinoCliParallelism>4</juno.arduinoCliParallelism>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -243,6 +247,13 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <groups>arduino-cli</groups>
+                            <properties>
+                                <configurationParameters>
+                                    junit.jupiter.execution.parallel.enabled = true
+                                    junit.jupiter.execution.parallel.config.strategy = fixed
+                                    junit.jupiter.execution.parallel.config.fixed.parallelism = ${juno.arduinoCliParallelism}
+                                </configurationParameters>
+                            </properties>
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>

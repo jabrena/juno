@@ -12,21 +12,27 @@ import java.util.List;
  * program: a program calling into that class needs their class ids even if it never names them.
  */
 final class RuntimeRaisedExceptions {
-    private RuntimeRaisedExceptions() {
-    }
+    private final RandomAccessFileMethods randomAccessFileMethods = new RandomAccessFileMethods();
 
-    static List<String> of(String owner) {
-        if (StructuredTaskSupport.isStructuredTaskOwner(owner)) {
+    private final ScopedValueSupport scopedValueSupport = new ScopedValueSupport();
+
+    private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
+
+    private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
+
+    /** The exceptions the runtime may raise while running a method of {@code owner}. */
+    List<String> raisedBy(String owner) {
+        if (structuredTaskSupport.isStructuredTaskOwner(owner)) {
             return List.of("java/lang/IllegalStateException", "java/util/concurrent/ExecutionException");
         }
-        if (ScopedValueSupport.isScopedValueOwner(owner)) {
+        if (scopedValueSupport.isScopedValueOwner(owner)) {
             return List.of("java/util/NoSuchElementException");
         }
-        if (BigNumberSupport.isBigNumberOwner(owner)) {
-            return List.of(ControlFlowLowering.ARITHMETIC_EXCEPTION, "java/lang/NumberFormatException",
+        if (bigNumberSupport.isBigNumberOwner(owner)) {
+            return List.of(ExceptionRouting.ARITHMETIC_EXCEPTION, "java/lang/NumberFormatException",
                     "java/lang/IllegalArgumentException");
         }
-        if (RandomAccessFileMethods.isOwner(owner)) {
+        if (randomAccessFileMethods.isOwner(owner)) {
             return RandomAccessFileMethods.EXCEPTIONS;
         }
         return List.of();

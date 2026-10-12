@@ -5,7 +5,6 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrInstruction.Compare;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrTerminator;
-import io.github.jabrena.juno.ir.IrValues;
 import io.github.jabrena.juno.ir.Value;
 import org.jspecify.annotations.Nullable;
 
@@ -18,14 +17,15 @@ import java.util.Map;
  * never materialized, stored or reloaded.
  */
 public final class CompareFusion {
+
     private final Map<Value, Integer> occurrences = new HashMap<>();
 
     public CompareFusion(IrMethod method) {
         for (IrBasicBlock block : method.blocks()) {
             for (IrInstruction instruction : block.instructions()) {
-                IrValues.of(instruction).forEach(value -> occurrences.merge(value, 1, Integer::sum));
+                instruction.referencedValues().forEach(value -> occurrences.merge(value, 1, Integer::sum));
             }
-            IrValues.of(block.terminator()).forEach(value -> occurrences.merge(value, 1, Integer::sum));
+            block.terminator().referencedValues().forEach(value -> occurrences.merge(value, 1, Integer::sum));
         }
     }
 

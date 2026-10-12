@@ -71,7 +71,7 @@ public final class ClassPath {
      * modules may legitimately each declare the same package's {@code package-info} — reading them
      * would only turn a harmless split-package Javadoc into a duplicate-class error.
      */
-    private static boolean isCodeClassFile(String name) {
+    private boolean isCodeClassFile(String name) {
         return name.endsWith(".class") && !name.endsWith("module-info.class") && !name.endsWith("package-info.class");
     }
 

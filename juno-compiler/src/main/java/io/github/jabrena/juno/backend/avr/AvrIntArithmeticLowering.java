@@ -55,10 +55,10 @@ final class AvrIntArithmeticLowering {
         avr.store(output, frame, A, binary.target());
     }
 
-    private static void byteWise(StringBuilder output, String first, String rest) {
+    private void byteWise(StringBuilder output, String first, String rest) {
         for (int index = 0; index < AvrEmitter.WORD; index++) {
-            output.append("    ").append(index == 0 ? first : rest).append(' ').append(AvrEmitter.r(A + index))
-                    .append(", ").append(AvrEmitter.r(B + index)).append('\n');
+            output.append("    ").append(index == 0 ? first : rest).append(' ').append(avr.r(A + index))
+                    .append(", ").append(avr.r(B + index)).append('\n');
         }
     }
 
@@ -69,7 +69,7 @@ final class AvrIntArithmeticLowering {
                 // subi/sbci subtract with borrow; adding c is subtracting -c.
                 int subtrahend = operation == BinaryOp.ADD ? -constant : constant;
                 for (int index = 0; index < AvrEmitter.WORD; index++) {
-                    output.append("    ").append(index == 0 ? "subi " : "sbci ").append(AvrEmitter.r(A + index))
+                    output.append("    ").append(index == 0 ? "subi " : "sbci ").append(avr.r(A + index))
                             .append(", ").append((subtrahend >>> (8 * index)) & 0xFF).append('\n');
                 }
                 return true;
@@ -78,9 +78,9 @@ final class AvrIntArithmeticLowering {
                 for (int index = 0; index < AvrEmitter.WORD; index++) {
                     int part = (constant >>> (8 * index)) & 0xFF;
                     if (operation == BinaryOp.AND && part != 0xFF) {
-                        output.append("    andi ").append(AvrEmitter.r(A + index)).append(", ").append(part).append('\n');
+                        output.append("    andi ").append(avr.r(A + index)).append(", ").append(part).append('\n');
                     } else if (operation == BinaryOp.OR && part != 0) {
-                        output.append("    ori ").append(AvrEmitter.r(A + index)).append(", ").append(part).append('\n');
+                        output.append("    ori ").append(avr.r(A + index)).append(", ").append(part).append('\n');
                     }
                 }
                 return true;
@@ -103,17 +103,17 @@ final class AvrIntArithmeticLowering {
     }
 
     /** Shifts A by a constant {@code amount} (0-31): whole bytes by moves, the rest bit by bit. */
-    private static void emitConstantShift(StringBuilder output, BinaryOp operation, int amount) {
+    private void emitConstantShift(StringBuilder output, BinaryOp operation, int amount) {
         int bytes = amount / 8;
         int bits = amount % 8;
         if (operation == BinaryOp.SHIFT_LEFT) {
             if (bytes > 0) {
                 for (int index = AvrEmitter.WORD - 1; index >= 0; index--) {
                     if (index >= bytes) {
-                        output.append("    mov ").append(AvrEmitter.r(A + index)).append(", ")
-                                .append(AvrEmitter.r(A + index - bytes)).append('\n');
+                        output.append("    mov ").append(avr.r(A + index)).append(", ")
+                                .append(avr.r(A + index - bytes)).append('\n');
                     } else {
-                        output.append("    ldi ").append(AvrEmitter.r(A + index)).append(", 0\n");
+                        output.append("    ldi ").append(avr.r(A + index)).append(", 0\n");
                     }
                 }
             }
@@ -129,12 +129,12 @@ final class AvrIntArithmeticLowering {
             }
             for (int index = 0; index < AvrEmitter.WORD; index++) {
                 if (index + bytes < AvrEmitter.WORD) {
-                    output.append("    mov ").append(AvrEmitter.r(A + index)).append(", ")
-                            .append(AvrEmitter.r(A + index + bytes)).append('\n');
+                    output.append("    mov ").append(avr.r(A + index)).append(", ")
+                            .append(avr.r(A + index + bytes)).append('\n');
                 } else if (arithmetic) {
-                    output.append("    mov ").append(AvrEmitter.r(A + index)).append(", r0\n");
+                    output.append("    mov ").append(avr.r(A + index)).append(", r0\n");
                 } else {
-                    output.append("    ldi ").append(AvrEmitter.r(A + index)).append(", 0\n");
+                    output.append("    ldi ").append(avr.r(A + index)).append(", 0\n");
                 }
             }
         }
@@ -165,7 +165,7 @@ final class AvrIntArithmeticLowering {
         avr.load(output, frame, A, left);
         avr.load(output, frame, B, right);
         boolean swapped = condition == Condition.GREATER_THAN || condition == Condition.LESS_EQUAL;
-        AvrEmitter.compareQuads(output, swapped ? B : A, swapped ? A : B);
+        avr.compareQuads(output, swapped ? B : A, swapped ? A : B);
         return switch (condition) {
             case EQUAL -> "breq";
             case NOT_EQUAL -> "brne";
@@ -174,7 +174,7 @@ final class AvrIntArithmeticLowering {
         };
     }
 
-    static String inverse(String branch) {
+    String inverse(String branch) {
         return switch (branch) {
             case "breq" -> "brne";
             case "brne" -> "breq";

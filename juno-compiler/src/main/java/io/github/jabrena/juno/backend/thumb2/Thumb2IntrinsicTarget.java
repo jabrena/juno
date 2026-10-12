@@ -4,6 +4,7 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.backend.FrameLayout;
 import io.github.jabrena.juno.backend.IntrinsicTarget;
 import io.github.jabrena.juno.backend.WordSource;
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.ir.Value;
 
 import java.util.List;
@@ -55,6 +56,6 @@ record Thumb2IntrinsicTarget(AsmEmitter asm) implements IntrinsicTarget {
 
     @Override
     public CompileException unsupported(String detail) {
-        return Thumb2AsmBackend.unsupported(detail);
+        return Architecture.THUMB2.unsupported(detail);
     }
 }

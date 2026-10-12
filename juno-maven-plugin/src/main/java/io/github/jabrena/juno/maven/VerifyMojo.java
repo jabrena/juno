@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.maven;
 
-import io.github.jabrena.juno.CompileException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -11,12 +9,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
         requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public final class VerifyMojo extends AbstractJunoMojo {
     @Override
-    public void execute() throws MojoFailureException {
-        try {
-            CompiledSketch sketch = compileSketch();
-            verifySketch(arduinoCli(), sketch);
-        } catch (CompileException | ArduinoCliException exception) {
-            throw failure(exception);
-        }
+    void run() {
+        verifySketch(arduinoCli(), compileSketch());
     }
 }

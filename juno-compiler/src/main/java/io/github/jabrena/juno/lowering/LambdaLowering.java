@@ -2,89 +2,48 @@ package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.ir.IrInstruction;
-import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LambdaSite;
-import io.github.jabrena.juno.linker.LinkedMethod;
-import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.pop;
-import static io.github.jabrena.juno.lowering.StackValueOps.storeDoubleToStack;
-import static io.github.jabrena.juno.lowering.StackValueOps.storeToStack;
-import static io.github.jabrena.juno.lowering.StackValueOps.storeWideToStack;
-
-/** Materializes lambda references/closures and adapts their interface calls to implementation calls. */
+/** Materializes lambdas and method references, and adapts their interface calls to implementation calls. */
 final class LambdaLowering {
-    private LambdaLowering() {
+    private final MethodContext context;
+    private final OperandStack stack;
+    private final CallLowering calls;
+
+    LambdaLowering(MethodContext context, CallLowering calls) {
+        this.context = context;
+        this.stack = context.stack();
+        this.calls = calls;
     }
 
-    static Lowered lowerFactory(LambdaSite site, List<IrInstruction> instructions, int stackBase, int depth,
-                                int nextValueId, ValueTracking tracking) {
+    /** The {@code invokedynamic} that creates the lambda: pops its captured values, last first. */
+    void create(LambdaSite site) {
         Value[] captures = new Value[site.captureTypes().size()];
         for (int index = captures.length - 1; index >= 0; index--) {
-            Popped popped = pop(instructions, stackBase, --depth, nextValueId, tracking);
-            nextValueId = popped.nextValueId();
-            captures[index] = popped.value();
+            captures[index] = stack.pop();
         }
-        Value target = Value.int32(nextValueId++);
-        instructions.add(new IrInstruction.LambdaCreate(target, site, List.of(captures)));
-        storeToStack(instructions, stackBase, depth, target, tracking);
-        return new Lowered(nextValueId, depth + 1);
+        Value lambda = context.values().int32();
+        context.emit(new IrInstruction.LambdaCreate(lambda, site, List.of(captures)));
+        stack.push(lambda);
     }
 
-    static Lowered lowerCall(LinkedMethod linked, Instruction instruction, LambdaSite site,
-                             List<IrInstruction> instructions, int stackBase, int depth,
-                             int nextValueId, ValueTracking tracking) {
+    /** An interface call whose only target is {@code site}'s lambda. */
+    void call(Instruction instruction, LambdaSite site) {
         Descriptor descriptor = Descriptor.parse(site.interfaceMethod().descriptor());
-        CallArguments popped = InvokeLowering.popCallArguments(linked, instruction, site.interfaceMethod(),
-                descriptor, Optional.empty(), instructions, stackBase, depth, nextValueId, tracking);
-        nextValueId = popped.nextValueId();
-        depth = popped.depth();
-        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = receiver.nextValueId();
-
-        Value target = resultValue(descriptor, nextValueId);
-        if (target != null) {
-            nextValueId++;
-        }
-        List<Value> arguments = new ArrayList<>();
-        arguments.add(receiver.value());
-        for (Value argument : popped.arguments()) {
-            arguments.add(argument);
-        }
-        instructions.add(new IrInstruction.LambdaCall(Optional.ofNullable(target), site, arguments));
-        if (target == null) {
-            return new Lowered(nextValueId, depth);
-        }
-        if (target.type() == JunoType.INT64) {
-            Value low = Value.int32(nextValueId++);
-            Value high = Value.int32(nextValueId++);
-            instructions.add(new IrInstruction.UnpackLong(low, high, target));
-            storeWideToStack(instructions, stackBase, depth, low, high, tracking);
-        } else if (target.type() == JunoType.FLOAT64) {
-            storeDoubleToStack(instructions, stackBase, depth, target, tracking);
-        } else {
-            storeToStack(instructions, stackBase, depth, target, tracking);
-        }
-        return new Lowered(nextValueId, depth + target.type().jvmSlots());
-    }
-
-    private static @Nullable Value resultValue(Descriptor descriptor, int nextValueId) {
-        if (descriptor.returnsVoid()) {
-            return null;
-        }
-        if (Descriptor.isLong(descriptor.returnType())) {
-            return Value.int64(nextValueId);
-        }
-        if (Descriptor.isDouble(descriptor.returnType())) {
-            return Value.float64(nextValueId);
-        }
-        return Descriptor.isFloat(descriptor.returnType())
-                ? Value.float32(nextValueId) : Value.int32(nextValueId);
+        CallArguments arguments = calls.popArguments(instruction, site.interfaceMethod(), descriptor,
+                Optional.empty());
+        Value receiver = stack.pop();
+        Optional<Value> result = Optional.ofNullable(calls.result(descriptor));
+        List<Value> callArguments = new ArrayList<>();
+        callArguments.add(receiver);
+        callArguments.addAll(arguments.values());
+        context.emit(new IrInstruction.LambdaCall(result, site, callArguments));
+        result.ifPresent(stack::push);
     }
 }

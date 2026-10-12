@@ -9,10 +9,10 @@ package io.github.jabrena.juno.backend.runtime;
  * C signatures free of AAPCS 64-bit register alignment.
  */
 final class AtomicRuntime {
-    private AtomicRuntime() {
-    }
+    private final RuntimeSource runtimeSource = new RuntimeSource();
 
-    static String helpers() {
-        return RuntimeSource.load("common/atomics.cpp");
+
+    String helpers() {
+        return runtimeSource.load("common/atomics.cpp");
     }
 }

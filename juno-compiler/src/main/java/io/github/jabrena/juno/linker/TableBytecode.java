@@ -16,8 +16,6 @@ final class TableBytecode {
     record Initializer(long[] values, int putstatic) {
     }
 
-    private TableBytecode() {
-    }
 
     /**
      * javac's array-initializer shape starting at {@code start}:
@@ -25,7 +23,7 @@ final class TableBytecode {
      * javac stores every element of an {@code {...}} initializer, zeros included; fewer stores is a
      * {@code new T[n]} buffer, which is meant to be written and stays in the arena.
      */
-    static @Nullable Initializer initializer(List<Instruction> instructions, ConstantPool pool, int start) {
+    @Nullable Initializer initializer(List<Instruction> instructions, ConstantPool pool, int start) {
         if (start + 2 >= instructions.size() || instructions.get(start + 1).opcode() != NEWARRAY) {
             return null;
         }
@@ -61,17 +59,17 @@ final class TableBytecode {
     }
 
     /** {@code newarray}'s atype (4..11) as its element descriptor; boolean and byte share {@code bastore}. */
-    static char elementOfAtype(int atype) {
+    char elementOfAtype(int atype) {
         return atype >= 4 && atype <= 11 ? "BCFDBSIJ".charAt(atype - 4) : 0;
     }
 
     /** {@code iastore} (79) through {@code sastore} (86), with {@code aastore} (83) never matching. */
-    private static int storeOpcode(char element) {
+    private int storeOpcode(char element) {
         return 79 + "IJFD-BCS".indexOf(element);
     }
 
     /** The constant {@code instruction} pushes, narrowed as storing it into an {@code element} array would. */
-    private static @Nullable Long constant(ConstantPool pool, Instruction instruction, char element) {
+    private @Nullable Long constant(ConstantPool pool, Instruction instruction, char element) {
         return switch (element) {
             case 'J' -> longConstant(pool, instruction);
             case 'F' -> floatConstant(pool, instruction);
@@ -88,7 +86,7 @@ final class TableBytecode {
         };
     }
 
-    private static @Nullable Integer intConstant(ConstantPool pool, Instruction instruction) {
+    private @Nullable Integer intConstant(ConstantPool pool, Instruction instruction) {
         int opcode = instruction.opcode();
         if (opcode >= 2 && opcode <= 8) {
             return opcode - 3;
@@ -101,7 +99,7 @@ final class TableBytecode {
                 ? pool.integer(instruction.operandA()) : null;
     }
 
-    private static @Nullable Long longConstant(ConstantPool pool, Instruction instruction) {
+    private @Nullable Long longConstant(ConstantPool pool, Instruction instruction) {
         int opcode = instruction.opcode();
         if (opcode == 9 || opcode == 10) {
             return (long) (opcode - 9);
@@ -109,7 +107,7 @@ final class TableBytecode {
         return opcode == 20 && !pool.isDouble(instruction.operandA()) ? pool.longValue(instruction.operandA()) : null;
     }
 
-    private static @Nullable Long floatConstant(ConstantPool pool, Instruction instruction) {
+    private @Nullable Long floatConstant(ConstantPool pool, Instruction instruction) {
         int opcode = instruction.opcode();
         if (opcode >= 11 && opcode <= 13) {
             return (long) Float.floatToRawIntBits(opcode - 11);
@@ -119,7 +117,7 @@ final class TableBytecode {
                 ? (long) Float.floatToRawIntBits(pool.floatValue(instruction.operandA())) : null;
     }
 
-    private static @Nullable Long doubleConstant(ConstantPool pool, Instruction instruction) {
+    private @Nullable Long doubleConstant(ConstantPool pool, Instruction instruction) {
         int opcode = instruction.opcode();
         if (opcode == 14 || opcode == 15) {
             return Double.doubleToRawLongBits(opcode - 14);

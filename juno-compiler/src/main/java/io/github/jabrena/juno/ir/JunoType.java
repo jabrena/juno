@@ -22,4 +22,9 @@ public enum JunoType {
     public int jvmSlots() {
         return jvmSlots;
     }
+
+    /** Whether a value of this type is 64 bits wide: a {@code long} or a {@code double}. */
+    public boolean isWide() {
+        return this == INT64 || this == FLOAT64;
+    }
 }

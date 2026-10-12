@@ -10,6 +10,8 @@ import java.util.Map;
 
 /** Decodes the intentionally small JVM bytecode subset supported by Juno v0.1. */
 public final class BytecodeDecoder {
+    private final SwitchInstructionDecoder switchInstructionDecoder = new SwitchInstructionDecoder();
+
     // Opcodes grouped by encoding shape (operand count/width), not by what they do: every opcode in
     // a group decodes identically, so classifying by group collapses what would otherwise be a huge
     // number of switch case labels (one per opcode) into a single set-membership check.
@@ -142,7 +144,7 @@ public final class BytecodeDecoder {
             return DecodedInstruction.of(opcode, 5, unsignedShort(code, offset + 1), 0);
         }
         if (opcode == 170 || opcode == 171) {
-            return SwitchInstructionDecoder.decode(code, offset, opcode, method, this);
+            return switchInstructionDecoder.decode(code, offset, opcode, method, this);
         }
         if (opcode == 196) {
             return decodeWide(code, offset, method);
@@ -171,7 +173,7 @@ public final class BytecodeDecoder {
                 + " (" + opcodeName(widened) + ")");
     }
 
-    public static String opcodeName(int opcode) {
+    private String opcodeName(int opcode) {
         return OPCODE_NAMES.getOrDefault(opcode, "unknown");
     }
 
@@ -197,7 +199,7 @@ public final class BytecodeDecoder {
         return (short) unsignedShort(bytes, offset);
     }
 
-    static int signedInt(byte[] bytes, int offset) {
+    int signedInt(byte[] bytes, int offset) {
         return Byte.toUnsignedInt(bytes[offset]) << 24 | Byte.toUnsignedInt(bytes[offset + 1]) << 16
                 | Byte.toUnsignedInt(bytes[offset + 2]) << 8 | Byte.toUnsignedInt(bytes[offset + 3]);
     }

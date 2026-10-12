@@ -15,10 +15,10 @@ import java.util.Set;
 
 /** Call-graph analyses over the direct-call edges collected by {@link RuntimeRiskAnalyzer}. */
 final class CallGraphMetrics {
-    private CallGraphMetrics() {
-    }
+    private final IrCyclicBlocks irCyclicBlocks = new IrCyclicBlocks();
 
-    static Set<MethodRef> recursiveMethods(Map<MethodRef, Set<MethodRef>> calls) {
+
+    Set<MethodRef> recursiveMethods(Map<MethodRef, Set<MethodRef>> calls) {
         Set<MethodRef> recursive = new HashSet<>();
         for (MethodRef method : calls.keySet()) {
             for (MethodRef callee : calls.get(method)) {
@@ -31,7 +31,7 @@ final class CallGraphMetrics {
         return recursive;
     }
 
-    static Set<MethodRef> transitiveAllocators(Map<MethodRef, Set<MethodRef>> calls,
+    Set<MethodRef> transitiveAllocators(Map<MethodRef, Set<MethodRef>> calls,
                                                 Map<MethodRef, Integer> allocations) {
         Set<MethodRef> allocators = new HashSet<>();
         for (MethodRef method : calls.keySet()) {
@@ -43,10 +43,10 @@ final class CallGraphMetrics {
     }
 
     /** Methods whose loop body calls a (possibly indirect) allocator, in addition to allocating directly. */
-    static Set<MethodRef> loopAllocatorsCallingAllocator(IrProgram program, Set<MethodRef> transitiveAllocators) {
+    Set<MethodRef> loopAllocatorsCallingAllocator(IrProgram program, Set<MethodRef> transitiveAllocators) {
         Set<MethodRef> loopAllocators = new LinkedHashSet<>();
         for (IrMethod method : program.methods()) {
-            Set<Integer> cyclicBlocks = IrCyclicBlocks.cyclicBlocks(method);
+            Set<Integer> cyclicBlocks = irCyclicBlocks.cyclicBlocks(method);
             for (IrBasicBlock block : method.blocks()) {
                 if (!cyclicBlocks.contains(block.start())) {
                     continue;
@@ -66,7 +66,7 @@ final class CallGraphMetrics {
         return loopAllocators;
     }
 
-    static int maximumStartupCallDepth(IrProgram program, Map<MethodRef, Set<MethodRef>> calls) {
+    int maximumStartupCallDepth(IrProgram program, Map<MethodRef, Set<MethodRef>> calls) {
         Map<MethodRef, Integer> memo = new HashMap<>();
         int maximum = longestCallDepth(program.entryPoint(), calls, memo);
         for (IrMethod method : program.methods()) {
@@ -77,7 +77,7 @@ final class CallGraphMetrics {
         return maximum;
     }
 
-    static int maximumStartupStack(IrProgram program, Map<MethodRef, Set<MethodRef>> calls,
+    int maximumStartupStack(IrProgram program, Map<MethodRef, Set<MethodRef>> calls,
                                     Map<MethodRef, Integer> frames) {
         Map<MethodRef, Integer> memo = new HashMap<>();
         int maximum = longestStackPath(program.entryPoint(), calls, frames, memo);
@@ -90,7 +90,7 @@ final class CallGraphMetrics {
     }
 
     /** Every method reachable from {@code start} through direct calls, {@code start} included. */
-    static Set<MethodRef> reachableFrom(MethodRef start, Map<MethodRef, Set<MethodRef>> calls) {
+    Set<MethodRef> reachableFrom(MethodRef start, Map<MethodRef, Set<MethodRef>> calls) {
         Set<MethodRef> reached = new LinkedHashSet<>();
         java.util.ArrayDeque<MethodRef> pending = new java.util.ArrayDeque<>(List.of(start));
         while (!pending.isEmpty()) {
@@ -103,11 +103,11 @@ final class CallGraphMetrics {
     }
 
     /** Largest summed frame size along any call path from {@code start}; the graph must be acyclic from there. */
-    static int maximumStack(MethodRef start, Map<MethodRef, Set<MethodRef>> calls, Map<MethodRef, Integer> frames) {
+    int maximumStack(MethodRef start, Map<MethodRef, Set<MethodRef>> calls, Map<MethodRef, Integer> frames) {
         return longestStackPath(start, calls, frames, new HashMap<>());
     }
 
-    static int startupAllocationEstimate(IrProgram program, Map<MethodRef, List<MethodRef>> callSites,
+    int startupAllocationEstimate(IrProgram program, Map<MethodRef, List<MethodRef>> callSites,
                                          Map<MethodRef, Integer> directAllocation) {
         int estimate = allocationPerInvocation(program.entryPoint(), callSites, directAllocation, new HashSet<>());
         for (IrMethod method : program.methods()) {
@@ -119,7 +119,7 @@ final class CallGraphMetrics {
         return estimate;
     }
 
-    private static boolean reaches(MethodRef start, MethodRef target, Map<MethodRef, Set<MethodRef>> edges,
+    private boolean reaches(MethodRef start, MethodRef target, Map<MethodRef, Set<MethodRef>> edges,
                                    Set<MethodRef> visited) {
         if (start.equals(target)) return true;
         if (!visited.add(start)) return false;
@@ -129,7 +129,7 @@ final class CallGraphMetrics {
         return false;
     }
 
-    private static boolean reachesAllocator(MethodRef method, Map<MethodRef, Set<MethodRef>> calls,
+    private boolean reachesAllocator(MethodRef method, Map<MethodRef, Set<MethodRef>> calls,
                                             Map<MethodRef, Integer> allocations, Set<MethodRef> visited) {
         if (!visited.add(method)) return false;
         for (MethodRef callee : calls.getOrDefault(method, Set.of())) {
@@ -139,7 +139,7 @@ final class CallGraphMetrics {
         return false;
     }
 
-    private static int longestCallDepth(MethodRef method, Map<MethodRef, Set<MethodRef>> calls,
+    private int longestCallDepth(MethodRef method, Map<MethodRef, Set<MethodRef>> calls,
                                         Map<MethodRef, Integer> memo) {
         Integer cached = memo.get(method);
         if (cached != null) return cached;
@@ -151,7 +151,7 @@ final class CallGraphMetrics {
         return depth;
     }
 
-    private static int longestStackPath(MethodRef method, Map<MethodRef, Set<MethodRef>> calls,
+    private int longestStackPath(MethodRef method, Map<MethodRef, Set<MethodRef>> calls,
                                         Map<MethodRef, Integer> frames, Map<MethodRef, Integer> memo) {
         Integer cached = memo.get(method);
         if (cached != null) return cached;
@@ -164,7 +164,7 @@ final class CallGraphMetrics {
         return bytes;
     }
 
-    private static int allocationPerInvocation(MethodRef method, Map<MethodRef, List<MethodRef>> callSites,
+    private int allocationPerInvocation(MethodRef method, Map<MethodRef, List<MethodRef>> callSites,
                                                Map<MethodRef, Integer> directAllocation, Set<MethodRef> active) {
         if (!active.add(method)) return 0;
         int estimate = directAllocation.getOrDefault(method, 0);

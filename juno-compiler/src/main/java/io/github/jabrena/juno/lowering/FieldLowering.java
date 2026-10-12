@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.FieldInfo;
 import io.github.jabrena.juno.classfile.FieldRef;
@@ -14,210 +13,168 @@ import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.Descriptor;
-import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.LockSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.ThreadSupport;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.GETFIELD;
+import static io.github.jabrena.juno.bytecode.Opcodes.GETSTATIC;
+import static io.github.jabrena.juno.bytecode.Opcodes.PUTFIELD;
+import static io.github.jabrena.juno.bytecode.Opcodes.PUTSTATIC;
 
-/** {@code getstatic}/{@code putstatic}/{@code getfield}/{@code putfield} opcode lowering, split out of {@link BytecodeToIr}. */
-final class FieldLowering {
-    private FieldLowering() {
+/**
+ * {@code getstatic}/{@code putstatic}/{@code getfield}/{@code putfield}. A static read may resolve at compile time
+ * instead: to a flash table, a {@code BigInteger}/{@code BigDecimal} constant, an enum ordinal or an enum switch map.
+ */
+final class FieldLowering implements InstructionLowering {
+    private final ThreadSupport threadSupport = new ThreadSupport();
+
+    private final AtomicSupport atomicSupport = new AtomicSupport();
+
+    private final LockSupport lockSupport = new LockSupport();
+
+    private final ScopedValueSupport scopedValueSupport = new ScopedValueSupport();
+
+    private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
+
+    private final MethodContext context;
+    private final OperandStack stack;
+    private final FreshValues values;
+    private final EnumResolver enums;
+
+    FieldLowering(MethodContext context) {
+        this.context = context;
+        this.stack = context.stack();
+        this.values = context.values();
+        this.enums = new EnumResolver(context.classes(), context.program().decoder());
     }
 
-    static Lowered lowerStaticField(LinkedMethod linked, Instruction instruction, int opcode,
-                                     List<IrInstruction> instructions, int stackBase, int depth, int nextValueId,
-                                     ValueTracking tracking, Map<String, JavaClass> classes, BytecodeDecoder decoder,
-                                     ConstantTables constantTables) {
-        switch (opcode) {
-
-                    case 178 -> {
-                        FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
-                        Integer ordinal = EnumFieldSupport.resolveEnumOrdinal(field, classes);
-                        Optional<BigNumberSupport.Constant> bigConstant = BigNumberSupport.constant(field);
-                        ConstantTables.Table table = constantTables.table(field);
-                        if (table != null) {
-                            Value target = Value.int32(nextValueId++);
-                            instructions.add(new IrInstruction.ConstantTableRef(target, table));
-                            tracking.markKnownArray(target, table.length());
-                            storeToStack(instructions, stackBase, depth, target, tracking);
-                            depth++;
-                        } else if (bigConstant.isPresent()) {
-                            BigNumberSupport.Constant constant = bigConstant.get();
-                            if (constant.intrinsic().isEmpty()) {
-                                nextValueId = pushConst(instructions, stackBase, depth, nextValueId,
-                                        constant.value(), tracking);
-                            } else {
-                                Value which = Value.int32(nextValueId++);
-                                instructions.add(new IrInstruction.Const(which, constant.value()));
-                                Value handle = Value.int32(nextValueId++);
-                                instructions.add(new IrInstruction.IntrinsicCall(Optional.of(handle),
-                                        constant.intrinsic().get(), Optional.empty(), List.of(which), List.of()));
-                                storeToStack(instructions, stackBase, depth, handle, tracking);
-                            }
-                            depth++;
-                        } else if (ordinal != null) {
-                            nextValueId = pushConst(instructions, stackBase, depth, nextValueId, ordinal, tracking);
-                            depth++;
-                        } else if (field.name().startsWith("$SwitchMap$")) {
-                            List<Integer> mapping = EnumSwitchSupport.resolveEnumSwitchMap(field, classes, decoder);
-                            Value target = Value.int32(nextValueId++);
-                            instructions.add(new IrInstruction.IntArrayConst(target, mapping));
-                            tracking.markKnownArray(target, mapping.size());
-                            storeToStack(instructions, stackBase, depth, target, tracking);
-                            depth++;
-                        } else {
-                            JunoType type = validateStaticField(linked, instruction, field, classes);
-                            Value target = new Value(nextValueId++, type);
-                            instructions.add(new IrInstruction.LoadStatic(target, field));
-                            if (type == JunoType.INT64) {
-                                Value low = Value.int32(nextValueId++);
-                                Value high = Value.int32(nextValueId++);
-                                instructions.add(new IrInstruction.UnpackLong(low, high, target));
-                                storeWideToStack(instructions, stackBase, depth, low, high, tracking);
-                            } else if (type == JunoType.FLOAT64) {
-                                storeDoubleToStack(instructions, stackBase, depth, target, tracking);
-                            } else {
-                                storeToStack(instructions, stackBase, depth, target, tracking);
-                            }
-                            depth += type.jvmSlots();
-                        }
-                    }
-
-                    case 179 -> {
-                        FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
-                        JunoType type = validateStaticField(linked, instruction, field, classes);
-                        depth -= type.jvmSlots();
-                        if (type == JunoType.INT64) {
-                            WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
-                            nextValueId = value.nextValueId();
-                            Value packed = Value.int64(nextValueId++);
-                            instructions.add(new IrInstruction.PackLong(packed, value.low(), value.high()));
-                            instructions.add(new IrInstruction.StoreStatic(field, packed));
-                        } else {
-                            Popped value = switch (type) {
-                                case INT32 -> pop(instructions, stackBase, depth, nextValueId, tracking);
-                                case FLOAT32 -> popFloat(instructions, stackBase, depth, nextValueId, tracking);
-                                case FLOAT64 -> popDouble(instructions, stackBase, depth, nextValueId, tracking);
-                                case INT64 -> throw new IllegalStateException("handled above");
-                            };
-                            nextValueId = value.nextValueId();
-                            instructions.add(new IrInstruction.StoreStatic(field, value.value()));
-                        }
-                    }
-            default -> throw new IllegalStateException("unreachable static-field opcode " + opcode);
+    @Override
+    public void lower(Instruction instruction) {
+        FieldRef field = context.constantPool().fieldRef(instruction.operandA());
+        switch (instruction.opcode()) {
+            case GETSTATIC -> getStatic(instruction, field);
+            case PUTSTATIC -> {
+                Value value = stack.pop(staticFieldType(instruction, field));
+                context.emit(new IrInstruction.StoreStatic(field, value));
+            }
+            case GETFIELD -> getField(instruction, field);
+            case PUTFIELD -> {
+                Value value = stack.pop(instanceFieldType(instruction, field));
+                Value receiver = stack.pop();
+                context.emit(new IrInstruction.StoreField(field, receiver, value));
+            }
+            default -> throw new IllegalStateException("Not a field opcode: " + instruction.opcode());
         }
-        return new Lowered(nextValueId, depth);
     }
 
-    static Lowered lowerFieldLoad(LinkedMethod linked, Instruction instruction,
-                                   List<IrInstruction> instructions, int stackBase, int depth,
-                                   int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes,
-                                   BytecodeDecoder decoder) {
-        FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
-        JunoType type = validateInstanceField(linked, instruction, field, classes);
-        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = receiver.nextValueId();
-        Value target = new Value(nextValueId++, type);
-        List<Integer> enumFieldValues = EnumFieldSupport.resolveEnumIntegerFieldValues(field, classes, decoder);
+    private void getStatic(Instruction instruction, FieldRef field) {
+        Integer ordinal = enums.ordinal(field);
+        Optional<BigNumberSupport.Constant> bigConstant = bigNumberSupport.constant(field);
+        ConstantTables.Table table = context.program().constantTables().table(field);
+        if (table != null) {
+            Value target = values.int32();
+            context.emit(new IrInstruction.ConstantTableRef(target, table));
+            context.facts().markKnownArray(target, table.length());
+            stack.push(target);
+        } else if (bigConstant.isPresent()) {
+            pushBigConstant(bigConstant.get());
+        } else if (ordinal != null) {
+            stack.pushInt(ordinal);
+        } else if (field.name().startsWith("$SwitchMap$")) {
+            List<Integer> mapping = enums.switchMap(field);
+            Value target = values.int32();
+            context.emit(new IrInstruction.IntArrayConst(target, mapping));
+            context.facts().markKnownArray(target, mapping.size());
+            stack.push(target);
+        } else {
+            Value target = values.of(staticFieldType(instruction, field));
+            context.emit(new IrInstruction.LoadStatic(target, field));
+            stack.push(target);
+        }
+    }
+
+    private void pushBigConstant(BigNumberSupport.Constant constant) {
+        if (constant.intrinsic().isEmpty()) {
+            stack.pushInt(constant.value());
+            return;
+        }
+        Value which = values.int32();
+        context.emit(new IrInstruction.Const(which, constant.value()));
+        Value handle = values.int32();
+        context.emit(new IrInstruction.IntrinsicCall(Optional.of(handle), constant.intrinsic().get(),
+                Optional.empty(), List.of(which), List.of()));
+        stack.push(handle);
+    }
+
+    /** An enum's integer field reads from a per-ordinal table, since the "object" is just its ordinal. */
+    private void getField(Instruction instruction, FieldRef field) {
+        JunoType type = instanceFieldType(instruction, field);
+        Value receiver = stack.pop();
+        Value target = values.of(type);
+        List<Integer> enumFieldValues = enums.integerFieldValues(field);
         if (enumFieldValues != null) {
-            Value values = Value.int32(nextValueId++);
-            instructions.add(new IrInstruction.IntArrayConst(values, enumFieldValues));
-            instructions.add(new IrInstruction.BoundsCheck(receiver.value(), enumFieldValues.size()));
-            instructions.add(new IrInstruction.ArrayLoad(target, ArrayElementType.INT, values, receiver.value()));
+            Value table = values.int32();
+            context.emit(new IrInstruction.IntArrayConst(table, enumFieldValues));
+            context.emit(new IrInstruction.BoundsCheck(receiver, enumFieldValues.size()));
+            context.emit(new IrInstruction.ArrayLoad(target, ArrayElementType.INT, table, receiver));
         } else {
-            instructions.add(new IrInstruction.LoadField(target, field, receiver.value()));
+            context.emit(new IrInstruction.LoadField(target, field, receiver));
         }
-        if (type == JunoType.INT64) {
-            Value low = Value.int32(nextValueId++);
-            Value high = Value.int32(nextValueId++);
-            instructions.add(new IrInstruction.UnpackLong(low, high, target));
-            storeWideToStack(instructions, stackBase, depth, low, high, tracking);
-        } else if (type == JunoType.FLOAT64) {
-            storeDoubleToStack(instructions, stackBase, depth, target, tracking);
-        } else {
-            storeToStack(instructions, stackBase, depth, target, tracking);
-        }
-        return new Lowered(nextValueId, depth + type.jvmSlots());
+        stack.push(target);
     }
 
-    static Lowered lowerFieldStore(LinkedMethod linked, Instruction instruction,
-                                    List<IrInstruction> instructions, int stackBase, int depth,
-                                    int nextValueId, ValueTracking tracking, Map<String, JavaClass> classes) {
-        FieldRef field = linked.owner().constantPool().fieldRef(instruction.operandA());
-        JunoType type = validateInstanceField(linked, instruction, field, classes);
-        depth -= type.jvmSlots();
-        Value stored;
-        if (type == JunoType.INT64) {
-            WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
-            nextValueId = value.nextValueId();
-            stored = Value.int64(nextValueId++);
-            instructions.add(new IrInstruction.PackLong(stored, value.low(), value.high()));
-        } else {
-            Popped value = type == JunoType.FLOAT64
-                    ? popDouble(instructions, stackBase, depth, nextValueId, tracking)
-                    : type == JunoType.FLOAT32
-                            ? popFloat(instructions, stackBase, depth, nextValueId, tracking)
-                            : pop(instructions, stackBase, depth, nextValueId, tracking);
-            nextValueId = value.nextValueId();
-            stored = value.value();
-        }
-        Popped receiver = pop(instructions, stackBase, --depth, nextValueId, tracking);
-        nextValueId = receiver.nextValueId();
-        instructions.add(new IrInstruction.StoreField(field, receiver.value(), stored));
-        return new Lowered(nextValueId, depth);
-    }
-
-    static JunoType validateStaticField(LinkedMethod linked, Instruction instruction, FieldRef field,
-                                         Map<String, JavaClass> classes) {
-        JavaClass owner = classes.get(field.owner());
-        FieldInfo declaration = owner == null ? null : owner.findField(field.name(), field.descriptor());
-        String location = linked.method().reference().displayName() + " at bytecode offset " + instruction.offset();
+    private JunoType staticFieldType(Instruction instruction, FieldRef field) {
+        FieldInfo declaration = declaration(field);
         if (declaration == null || !declaration.isStatic()) {
-            throw new CompileException(location + ": static field not found: " + field.displayName());
+            throw new CompileException(context.at(instruction) + ": static field not found: " + field.displayName());
         }
-        return typeOfDescriptor(location, field, classes);
+        return typeOf(instruction, field);
     }
 
-    static JunoType validateInstanceField(LinkedMethod linked, Instruction instruction, FieldRef field,
-                                           Map<String, JavaClass> classes) {
-        JavaClass owner = classes.get(field.owner());
-        FieldInfo declaration = owner == null ? null : owner.findField(field.name(), field.descriptor());
-        String location = linked.method().reference().displayName() + " at bytecode offset " + instruction.offset();
+    private JunoType instanceFieldType(Instruction instruction, FieldRef field) {
+        FieldInfo declaration = declaration(field);
         if (declaration == null || declaration.isStatic()) {
-            throw new CompileException(location + ": instance field not found: " + field.displayName());
+            throw new CompileException(context.at(instruction) + ": instance field not found: "
+                    + field.displayName());
         }
-        return typeOfDescriptor(location, field, classes);
+        return typeOf(instruction, field);
     }
 
-    static JunoType typeOfDescriptor(String location, FieldRef field, Map<String, JavaClass> classes) {
-        if (Descriptor.isIntegerLike(field.descriptor())) {
+    private @Nullable FieldInfo declaration(FieldRef field) {
+        JavaClass owner = context.classes().get(field.owner());
+        return owner == null ? null : owner.findField(field.name(), field.descriptor());
+    }
+
+    /** Every reference Juno supports (strings, arrays, handles, program objects) is a 32-bit word. */
+    private JunoType typeOf(Instruction instruction, FieldRef field) {
+        String descriptor = field.descriptor();
+        if (Descriptor.isIntegerLike(descriptor)) {
             return JunoType.INT32;
         }
-        if (Descriptor.isLong(field.descriptor())) {
+        if (Descriptor.isLong(descriptor)) {
             return JunoType.INT64;
         }
-        if (Descriptor.isFloat(field.descriptor())) {
+        if (Descriptor.isFloat(descriptor)) {
             return JunoType.FLOAT32;
         }
-        if (Descriptor.isDouble(field.descriptor())) {
+        if (Descriptor.isDouble(descriptor)) {
             return JunoType.FLOAT64;
         }
-        if (Descriptor.isString(field.descriptor())
-                || ThreadSupport.isThreadType(field.descriptor())
-                || ScopedValueSupport.isScopedValueType(field.descriptor())
-                || BigNumberSupport.isBigNumberType(field.descriptor())
-                || LockSupport.isReentrantLockType(field.descriptor())
-                || AtomicSupport.isAtomicType(field.descriptor())
-                || Descriptor.isArrayType(field.descriptor())
-                || Descriptor.isReferenceType(field.descriptor(), classes.keySet())) {
+        if (Descriptor.isString(descriptor)
+                || threadSupport.isThreadType(descriptor)
+                || scopedValueSupport.isScopedValueType(descriptor)
+                || bigNumberSupport.isBigNumberType(descriptor)
+                || lockSupport.isReentrantLockType(descriptor)
+                || atomicSupport.isAtomicType(descriptor)
+                || Descriptor.isArrayType(descriptor)
+                || Descriptor.isReferenceType(descriptor, context.classes().keySet())) {
             return JunoType.INT32;
         }
-        throw new CompileException(location + ": unsupported field type: " + field.displayName());
+        throw new CompileException(context.at(instruction) + ": unsupported field type: " + field.displayName());
     }
 }

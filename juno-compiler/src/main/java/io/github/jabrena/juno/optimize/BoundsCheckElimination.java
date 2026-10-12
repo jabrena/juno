@@ -30,6 +30,7 @@ import java.util.Map;
  * Calls cannot change a caller's local slots, so they need no special handling.
  */
 public final class BoundsCheckElimination implements CompilerPass {
+
     private static final int ROUNDS_BEFORE_WIDENING = 3;
 
     @Override
@@ -41,7 +42,7 @@ public final class BoundsCheckElimination implements CompilerPass {
         return program.withMethods(methods);
     }
 
-    private static boolean hasChecks(IrMethod method) {
+    private boolean hasChecks(IrMethod method) {
         return method.blocks().stream().flatMap(block -> block.instructions().stream())
                 .anyMatch(IrInstruction.BoundsCheck.class::isInstance);
     }
@@ -83,6 +84,7 @@ public final class BoundsCheckElimination implements CompilerPass {
     }
 
     private static final class Analysis {
+        private final IntRanges intRanges = new IntRanges();
         private final IrMethod method;
         private final ControlFlowGraph graph;
         /** Each value's range where it is defined; values are defined once, so this holds wherever it is used. */
@@ -164,19 +166,19 @@ public final class BoundsCheckElimination implements CompilerPass {
                 State whenFalse = state.copy();
                 if (compare != null) {
                     whenTrue = refine(whenTrue, compare.condition(), compare, loadedFrom);
-                    whenFalse = refine(whenFalse, IntRanges.inverse(compare.condition()), compare, loadedFrom);
+                    whenFalse = refine(whenFalse, intRanges.inverse(compare.condition()), compare, loadedFrom);
                 }
                 put(out, branch.trueTarget(), whenTrue);
                 put(out, branch.falseTarget(), whenFalse);
             } else {
-                for (int target : ControlFlowGraph.successors(block.terminator())) {
+                for (int target : block.terminator().successors()) {
                     put(out, target, state.copy());
                 }
             }
             edges.put(block.start(), out);
         }
 
-        private static void put(Map<Integer, State> out, int target, @Nullable State state) {
+        private void put(Map<Integer, State> out, int target, @Nullable State state) {
             if (state == null) {
                 return;
             }
@@ -220,11 +222,11 @@ public final class BoundsCheckElimination implements CompilerPass {
                         loadedFrom.values().removeIf(slot -> slot == store.local() + 1);
                     }
                 }
-                case IrInstruction.Binary binary -> define(state, binary.target(), IntRanges.binary(binary.operation(),
+                case IrInstruction.Binary binary -> define(state, binary.target(), intRanges.binary(binary.operation(),
                         range(binary.left(), state), range(binary.right(), state)));
                 case IrInstruction.Unary unary ->
-                        define(state, unary.target(), IntRanges.unary(unary.operation(), range(unary.value(), state)));
-                case IrInstruction.ArrayLoad load -> define(state, load.target(), IntRanges.element(load.elementType()));
+                        define(state, unary.target(), intRanges.unary(unary.operation(), range(unary.value(), state)));
+                case IrInstruction.ArrayLoad load -> define(state, load.target(), intRanges.element(load.elementType()));
                 case IrInstruction.Compare compare -> define(state, compare.target(), new Range(0, 1));
                 case IrInstruction.BoundsCheck check ->
                         narrow(state, check.index(), new Range(0, check.length() - 1L), loadedFrom);
@@ -250,7 +252,7 @@ public final class BoundsCheckElimination implements CompilerPass {
 
         /** The {@code Compare} in this block that defines {@code condition}, or null. */
         @Nullable
-        private static Compare definingCompare(IrBasicBlock block, Value condition) {
+        private Compare definingCompare(IrBasicBlock block, Value condition) {
             for (IrInstruction instruction : block.instructions()) {
                 if (instruction instanceof IrInstruction.Compare compare && compare.target().equals(condition)) {
                     return compare;
@@ -262,7 +264,7 @@ public final class BoundsCheckElimination implements CompilerPass {
         /** {@code state} on the edge where {@code left <condition> right} holds, or null when it never can. */
         private @Nullable State refine(State state, Condition condition, IrInstruction.Compare compare,
                              Map<Value, Integer> loadedFrom) {
-            IntRanges.Narrowed narrowed = IntRanges.narrow(condition, range(compare.left(), state),
+            IntRanges.Narrowed narrowed = intRanges.narrow(condition, range(compare.left(), state),
                     range(compare.right(), state));
             if (!narrowed.feasible()) {
                 return null;

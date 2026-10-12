@@ -21,24 +21,22 @@ public final class RandomAccessFileMethods {
     public static final List<String> EXCEPTIONS = List.of("java/io/IOException", "java/io/FileNotFoundException",
             "java/io/EOFException", "java/lang/IndexOutOfBoundsException");
 
-    private RandomAccessFileMethods() {
-    }
 
     public static MethodRef method(String name, String descriptor) {
         return new MethodRef(OWNER, name, descriptor);
     }
 
-    public static boolean isOwner(String className) {
+    public boolean isOwner(String className) {
         return OWNER.equals(className);
     }
 
     /** Every {@code RandomAccessFile} intrinsic can fail: a closed file, a missing one, a short read. */
-    public static boolean mayThrow(Intrinsic intrinsic) {
+    public boolean mayThrow(Intrinsic intrinsic) {
         return intrinsic.name().startsWith("RAF_");
     }
 
     /** {@code read(byte[]...)}/{@code readFully(byte[]...)}: the front end adds the buffer's known capacity. */
-    public static boolean isBufferRead(MethodRef called) {
+    public boolean isBufferRead(MethodRef called) {
         return isOwner(called.owner()) && (called.name().equals("read") || called.name().equals("readFully"))
                 && called.descriptor().startsWith("([B");
     }

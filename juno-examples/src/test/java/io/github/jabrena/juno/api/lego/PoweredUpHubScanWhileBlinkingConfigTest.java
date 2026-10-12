@@ -35,7 +35,7 @@ class PoweredUpHubScanWhileBlinkingConfigTest {
         assertThat(suggestion.current()).isEqualTo(4);
         assertThat(suggestion.suggested()).isEqualTo(3);
         assertThat(suggestion.bytesDelta()).isEqualTo(-2048);
-        assertThat(ConfigSuggestionFormatter.format(suggestions)).anyMatch(line ->
+        assertThat(new ConfigSuggestionFormatter().format(suggestions)).anyMatch(line ->
                 line.contains("JUNO-CONFIG-001") && line.contains("maxThreads 4 -> 3")
                         && line.contains("2048"));
     }

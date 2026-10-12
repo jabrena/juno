@@ -13,6 +13,8 @@ import java.util.TreeSet;
 
 /** Closed-world plumbing for Juno's JDK 27 preview {@code StructuredTaskScope} subset. */
 public final class StructuredTaskSupport {
+    private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
+
     public static final String SCOPE = "java/util/concurrent/StructuredTaskScope";
     public static final String JOINER = SCOPE + "$Joiner";
     public static final String CONFIGURATION = SCOPE + "$Configuration";
@@ -32,16 +34,14 @@ public final class StructuredTaskSupport {
     public static final InterfaceCallSite ENTRY_SITE = new InterfaceCallSite(ENTRY_METHOD, 0);
     public static final MethodRef CALLABLE_CALL = new MethodRef(CALLABLE, "call", "()Ljava/lang/Object;");
 
-    private StructuredTaskSupport() {
-    }
 
-    public static boolean needsEntry(MethodRef called) {
+    public boolean needsEntry(MethodRef called) {
         return called.owner().equals(SCOPE) && called.name().equals("fork")
                 && (called.descriptor().equals("(Ljava/util/concurrent/Callable;)L" + SUBTASK + ";")
                 || called.descriptor().equals("(Ljava/lang/Runnable;)L" + SUBTASK + ";"));
     }
 
-    public static void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
+    public void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
         if (needsEntry(called) && called.descriptor().startsWith("(Ljava/util/concurrent/Callable;")) {
             interfaceCalls.put(ENTRY_SITE, CALLABLE_CALL);
         } else if (needsEntry(called)) {
@@ -49,26 +49,26 @@ public final class StructuredTaskSupport {
         }
     }
 
-    public static boolean isCallableCall(MethodRef called) {
+    public boolean isCallableCall(MethodRef called) {
         return called.equals(CALLABLE_CALL);
     }
 
-    public static boolean isEntrySite(InterfaceCallSite site) {
+    public boolean isEntrySite(InterfaceCallSite site) {
         return site.equals(ENTRY_SITE);
     }
 
-    public static boolean isScopeOwner(String owner) {
+    public boolean isScopeOwner(String owner) {
         return owner.equals(SCOPE);
     }
 
-    public static boolean isStructuredTaskOwner(String owner) {
+    public boolean isStructuredTaskOwner(String owner) {
         return isScopeOwner(owner) || owner.equals(JOINER) || owner.equals(CONFIGURATION)
                 || owner.equals(SUBTASK) || owner.equals(STATE)
                 || owner.equals(LEGACY_SHUTDOWN_ON_FAILURE) || owner.equals(LEGACY_SHUTDOWN_ON_SUCCESS);
     }
 
     /** Runtime policy token represented by a supported built-in {@code Joiner} factory, or {@code null}. */
-    public static @Nullable Integer joinerPolicy(MethodRef called) {
+    public @Nullable Integer joinerPolicy(MethodRef called) {
         if (!called.owner().equals(JOINER) || !called.descriptor().equals("()L" + JOINER + ";")) {
             return null;
         }
@@ -81,7 +81,7 @@ public final class StructuredTaskSupport {
     }
 
     /** Rejects user implementations because Juno lowers only the four built-in policy tokens. */
-    public static void validateNoCustomJoiners(Set<String> instantiatedClasses, Collection<LambdaSite> lambdaSites,
+    public void validateNoCustomJoiners(Set<String> instantiatedClasses, Collection<LambdaSite> lambdaSites,
                                                Map<String, JavaClass> classes) {
         for (String className : instantiatedClasses) {
             if (implementsInterface(className, JOINER, classes, new TreeSet<>())) {
@@ -96,7 +96,7 @@ public final class StructuredTaskSupport {
                 });
     }
 
-    private static boolean implementsInterface(String typeName, String interfaceName,
+    private boolean implementsInterface(String typeName, String interfaceName,
                                                 Map<String, JavaClass> classes,
                                                 Set<String> visited) {
         if (!visited.add(typeName)) return false;
@@ -112,8 +112,8 @@ public final class StructuredTaskSupport {
     }
 
     /** Rejects API calls outside the deliberately small JDK 25 subset with a useful diagnostic. */
-    public static void validateCall(MethodRef called) {
-        if (isStructuredTaskOwner(called.owner()) && !IntrinsicRegistry.isIntrinsic(called)) {
+    public void validateCall(MethodRef called) {
+        if (isStructuredTaskOwner(called.owner()) && !intrinsicRegistry.isIntrinsic(called)) {
             throw new CompileException("Juno's JDK 27 StructuredTaskScope subset supports only open(), "
                     + "open(Joiner), the four built-in non-predicate Joiner factories, fork(Callable), "
                     + "fork(Runnable), join(), isCancelled(), close(), and Subtask.state()/get()/exception(); "

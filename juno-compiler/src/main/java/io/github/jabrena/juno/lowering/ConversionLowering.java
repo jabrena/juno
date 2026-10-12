@@ -1,212 +1,107 @@
 package io.github.jabrena.juno.lowering;
 
-import io.github.jabrena.juno.bytecode.Instruction;
-import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.UnaryOp;
 import io.github.jabrena.juno.ir.Value;
 
-import java.util.BitSet;
-import java.util.List;
+import java.util.function.BiFunction;
 
-import static io.github.jabrena.juno.lowering.BytecodeToIr.*;
-import static io.github.jabrena.juno.lowering.StackValueOps.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.*;
 
-/** Numeric conversion, {@code iinc}, and compare-to-int opcode lowering (132-152), split out of {@link BytecodeToIr}. */
-final class ConversionLowering {
-    private ConversionLowering() {
+/** Numeric conversions ({@code i2l}..{@code i2s}) and the {@code long}/{@code float}/{@code double} comparisons. */
+final class ConversionLowering implements OpcodeGroup {
+    private final MethodContext context;
+    private final OperandStack stack;
+    private final FreshValues values;
+
+    ConversionLowering(MethodContext context) {
+        this.context = context;
+        this.stack = context.stack();
+        this.values = context.values();
     }
-    static final BitSet WIDENING_CONVERSION_OPCODES = bitSetOf(133, 134, 135, 136, 137, 138, 139, 140, 141);    static Lowered lowerConversionOrCompare(Instruction instruction, int opcode, List<IrInstruction> instructions,
-                                             int stackBase, int depth, int nextValueId, ValueTracking tracking) {
-        if (WIDENING_CONVERSION_OPCODES.get(opcode)) {
-            return lowerWideningConversion(opcode, instructions, stackBase, depth, nextValueId, tracking);
-        }
-        return lowerNarrowConversionOrCompare(instruction, opcode, instructions, stackBase, depth, nextValueId,
-                tracking);
-    }    static Lowered lowerWideningConversion(int opcode, List<IrInstruction> instructions, int stackBase, int depth,
-                                            int nextValueId, ValueTracking tracking) {
-        switch (opcode) {
 
-                    case 133 -> {
-                        Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value targetLow = Value.int32(nextValueId++);
-                        Value targetHigh = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.IntToLong(targetLow, targetHigh, value.value()));
-                        storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
-                        depth += 2;
-                    }
+    @Override
+    public void registerOn(OpcodeTable table) {
+        table.on(I2L, instruction -> pushLong(stack.pop(), IrInstruction.IntToLong::new));
+        table.on(I2F, instruction -> push(stack.pop(), values.float32(), IrInstruction.IntToFloat::new));
+        table.on(I2D, instruction -> push(stack.pop(), values.float64(), IrInstruction.IntToDouble::new));
+        table.on(L2I, instruction -> pushFromLong(JunoType.INT32, IrInstruction.LongToInt::new));
+        table.on(L2F, instruction -> pushFromLong(JunoType.FLOAT32, IrInstruction.LongToFloat::new));
+        table.on(L2D, instruction -> pushFromLong(JunoType.FLOAT64, IrInstruction.LongToDouble::new));
+        table.on(F2I, instruction -> push(stack.popFloat(), values.int32(), IrInstruction.FloatToInt::new));
+        table.on(F2L, instruction -> pushLong(stack.popFloat(), IrInstruction.FloatToLong::new));
+        table.on(F2D, instruction -> push(stack.popFloat(), values.float64(), IrInstruction.FloatToDouble::new));
+        table.on(D2I, instruction -> push(stack.popDouble(), values.int32(), IrInstruction.DoubleToInt::new));
+        table.on(D2L, instruction -> pushLong(stack.popDouble(), IrInstruction.DoubleToLong::new));
+        table.on(D2F, instruction -> push(stack.popDouble(), values.float32(), IrInstruction.DoubleToFloat::new));
+        table.on(I2B, instruction -> narrow(UnaryOp.TO_BYTE));
+        table.on(I2C, instruction -> narrow(UnaryOp.TO_CHAR));
+        table.on(I2S, instruction -> narrow(UnaryOp.TO_SHORT));
+        table.on(LCMP, instruction -> compareLongs());
+        table.on(FCMPL, FCMPG, instruction -> {
+            Value right = stack.popFloat();
+            Value left = stack.popFloat();
+            int nanResult = instruction.opcode() == FCMPL ? -1 : 1;
+            Value result = values.int32();
+            context.emit(new IrInstruction.FloatCompare(result, left, right, nanResult));
+            stack.push(result);
+        });
+        table.on(DCMPL, DCMPG, instruction -> {
+            Value right = stack.popDouble();
+            Value left = stack.popDouble();
+            int nanResult = instruction.opcode() == DCMPL ? -1 : 1;
+            Value result = values.int32();
+            context.emit(new IrInstruction.DoubleCompare(result, left, right, nanResult));
+            stack.push(result);
+        });
+    }
 
-                    case 134 -> {
-                        Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value target = Value.float32(nextValueId++);
-                        instructions.add(new IrInstruction.IntToFloat(target, value.value()));
-                        storeToStack(instructions, stackBase, depth, target, tracking);
-                        depth++;
-                    }
+    /** A conversion from one value: {@code operand} is popped before {@code result} is allocated. */
+    private void push(Value operand, Value result, BiFunction<Value, Value, IrInstruction> conversion) {
+        context.emit(conversion.apply(result, operand));
+        stack.push(result);
+    }
 
-                    case 135 -> {
-                        Popped value = pop(instructions, stackBase, --depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value target = Value.float64(nextValueId++);
-                        instructions.add(new IrInstruction.IntToDouble(target, value.value()));
-                        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
-                        depth += 2;
-                    }
+    /** A conversion from {@code long}: the operand's halves are popped before the result is allocated. */
+    private void pushFromLong(JunoType resultType, LongConversion conversion) {
+        OperandStack.LongHalves operand = stack.popHalves();
+        Value result = values.of(resultType);
+        context.emit(conversion.apply(result, operand.low(), operand.high()));
+        stack.push(result);
+    }
 
-                    case 136 -> {
-                        depth -= 2;
-                        WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value target = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.LongToInt(target, value.low(), value.high()));
-                        storeToStack(instructions, stackBase, depth, target, tracking);
-                        depth++;
-                    }
+    /** A conversion to {@code long}, whose result is two 32-bit halves. */
+    private void pushLong(Value operand, ToLongConversion conversion) {
+        Value low = values.int32();
+        Value high = values.int32();
+        context.emit(conversion.apply(low, high, operand));
+        stack.pushHalves(low, high);
+    }
 
-                    case 137 -> {
-                        depth -= 2;
-                        WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value target = Value.float32(nextValueId++);
-                        instructions.add(new IrInstruction.LongToFloat(target, value.low(), value.high()));
-                        storeToStack(instructions, stackBase, depth, target, tracking);
-                        depth++;
-                    }
+    private void compareLongs() {
+        OperandStack.LongHalves right = stack.popHalves();
+        OperandStack.LongHalves left = stack.popHalves();
+        Value result = values.int32();
+        context.emit(new IrInstruction.LongCompare(result, left.low(), left.high(), right.low(), right.high()));
+        stack.push(result);
+    }
 
-                    case 138 -> {
-                        depth -= 2;
-                        WidePopped value = popWide(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value target = Value.float64(nextValueId++);
-                        instructions.add(new IrInstruction.LongToDouble(target, value.low(), value.high()));
-                        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
-                        depth += 2;
-                    }
+    @FunctionalInterface
+    private interface LongConversion {
+        IrInstruction apply(Value result, Value low, Value high);
+    }
 
-                    case 139 -> {
-                        Popped value = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value target = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.FloatToInt(target, value.value()));
-                        storeToStack(instructions, stackBase, depth, target, tracking);
-                        depth++;
-                    }
+    @FunctionalInterface
+    private interface ToLongConversion {
+        IrInstruction apply(Value low, Value high, Value operand);
+    }
 
-                    case 140 -> {
-                        Popped value = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value targetLow = Value.int32(nextValueId++);
-                        Value targetHigh = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.FloatToLong(targetLow, targetHigh, value.value()));
-                        storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
-                        depth += 2;
-                    }
+    private void narrow(UnaryOp operation) {
+        Value operand = stack.pop();
+        Value result = values.int32();
+        context.emit(new IrInstruction.Unary(result, operation, operand));
+        stack.push(result);
+    }
 
-                    case 141 -> {
-                        Popped value = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value target = Value.float64(nextValueId++);
-                        instructions.add(new IrInstruction.FloatToDouble(target, value.value()));
-                        storeDoubleToStack(instructions, stackBase, depth, target, tracking);
-                        depth += 2;
-                    }
-            default -> throw new IllegalStateException("unreachable widening-conversion opcode " + opcode);
-        }
-        return new Lowered(nextValueId, depth);
-    }    static Lowered lowerNarrowConversionOrCompare(Instruction instruction, int opcode,
-                                                   List<IrInstruction> instructions, int stackBase, int depth,
-                                                   int nextValueId, ValueTracking tracking) {
-        switch (opcode) {
-
-                    case 142 -> {
-                        depth -= 2;
-                        Popped value = popDouble(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value target = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.DoubleToInt(target, value.value()));
-                        storeToStack(instructions, stackBase, depth, target, tracking);
-                        depth++;
-                    }
-
-                    case 143 -> {
-                        depth -= 2;
-                        Popped value = popDouble(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value targetLow = Value.int32(nextValueId++);
-                        Value targetHigh = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.DoubleToLong(targetLow, targetHigh, value.value()));
-                        storeWideToStack(instructions, stackBase, depth, targetLow, targetHigh, tracking);
-                        depth += 2;
-                    }
-
-                    case 144 -> {
-                        depth -= 2;
-                        Popped value = popDouble(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = value.nextValueId();
-                        Value target = Value.float32(nextValueId++);
-                        instructions.add(new IrInstruction.DoubleToFloat(target, value.value()));
-                        storeToStack(instructions, stackBase, depth, target, tracking);
-                        depth++;
-                    }
-
-                    case 148 -> {
-                        depth -= 2;
-                        WidePopped right = popWide(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = right.nextValueId();
-                        depth -= 2;
-                        WidePopped left = popWide(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = left.nextValueId();
-                        Value result = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.LongCompare(
-                                result, left.low(), left.high(), right.low(), right.high()));
-                        storeToStack(instructions, stackBase, depth, result, tracking);
-                        depth++;
-                    }
-
-                    case 149, 150 -> {
-                        Popped right = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
-                        nextValueId = right.nextValueId();
-                        Popped left = popFloat(instructions, stackBase, --depth, nextValueId, tracking);
-                        nextValueId = left.nextValueId();
-                        Value result = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.FloatCompare(
-                                result, left.value(), right.value(), opcode == 149 ? -1 : 1));
-                        storeToStack(instructions, stackBase, depth, result, tracking);
-                        depth++;
-                    }
-
-                    case 151, 152 -> {
-                        depth -= 2;
-                        Popped right = popDouble(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = right.nextValueId();
-                        depth -= 2;
-                        Popped left = popDouble(instructions, stackBase, depth, nextValueId, tracking);
-                        nextValueId = left.nextValueId();
-                        Value result = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.DoubleCompare(
-                                result, left.value(), right.value(), opcode == 151 ? -1 : 1));
-                        storeToStack(instructions, stackBase, depth, result, tracking);
-                        depth++;
-                    }
-
-                    case 132 -> {
-                        Value loaded = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.LoadLocal(loaded, instruction.operandA()));
-                        Value amount = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.Const(amount, instruction.operandB()));
-                        Value sum = Value.int32(nextValueId++);
-                        instructions.add(new IrInstruction.Binary(sum, BinaryOp.ADD, loaded, amount));
-                        instructions.add(new IrInstruction.StoreLocal(instruction.operandA(), sum));
-                    }
-
-                    case 145 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_BYTE, tracking);
-
-                    case 146 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_CHAR, tracking);
-
-                    case 147 -> nextValueId = pushUnary(instructions, stackBase, depth, nextValueId, UnaryOp.TO_SHORT, tracking);
-            default -> throw new IllegalStateException("unreachable conversion/compare opcode " + opcode);
-        }
-        return new Lowered(nextValueId, depth);
-    }}
+}

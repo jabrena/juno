@@ -11,8 +11,6 @@ final class AssemblyPeepholeOptimizer {
     private static final Pattern STACK_LOAD = Pattern.compile("\\s*ldr (r(?:1[0-2]|[0-9])), \\[sp, #(\\d+)]");
     private static final Pattern STACK_STORE = Pattern.compile("\\s*str (r(?:1[0-2]|[0-9])), \\[sp, #(\\d+)]");
 
-    private AssemblyPeepholeOptimizer() {
-    }
 
     /**
      * Tracks only exact {@code [sp, #offset]} words and only across stores, blank lines and comments.
@@ -20,7 +18,7 @@ final class AssemblyPeepholeOptimizer {
      * captures Juno's common store/load round trips without making assumptions about flags, calls,
      * control-flow joins, indirect memory aliases or scratch-register lifetimes.
      */
-    static String optimize(String assembly) {
+    String optimize(String assembly) {
         StringBuilder optimized = new StringBuilder(assembly.length());
         Map<Integer, String> residentWords = new HashMap<>();
         String[] lines = assembly.split("\\n", -1);
@@ -62,7 +60,7 @@ final class AssemblyPeepholeOptimizer {
         return optimized.toString();
     }
 
-    private static void forgetRegister(Map<Integer, String> residentWords, String register) {
+    private void forgetRegister(Map<Integer, String> residentWords, String register) {
         for (Iterator<Map.Entry<Integer, String>> iterator = residentWords.entrySet().iterator(); iterator.hasNext();) {
             if (iterator.next().getValue().equals(register)) {
                 iterator.remove();
@@ -70,7 +68,7 @@ final class AssemblyPeepholeOptimizer {
         }
     }
 
-    private static void appendLine(StringBuilder output, String line, int index, int lineCount) {
+    private void appendLine(StringBuilder output, String line, int index, int lineCount) {
         output.append(line);
         if (index < lineCount - 1) {
             output.append('\n');

@@ -17,6 +17,8 @@ import java.util.Set;
  * everything else is rejected here with a pointer at what is supported.
  */
 public final class BigNumberSupport {
+    private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
+
     public static final String BIG_INTEGER = "java/math/BigInteger";
     public static final String BIG_DECIMAL = "java/math/BigDecimal";
     public static final String MATH_CONTEXT = "java/math/MathContext";
@@ -30,8 +32,6 @@ public final class BigNumberSupport {
 
     private static final Map<FieldRef, Constant> CONSTANTS = constants();
 
-    private BigNumberSupport() {
-    }
 
     private static Map<FieldRef, Constant> constants() {
         Map<FieldRef, Constant> constants = new java.util.HashMap<>();
@@ -57,29 +57,29 @@ public final class BigNumberSupport {
     }
 
     /** Whether {@code descriptor} is one of the four {@code java.math} types: one word, like a thread handle. */
-    public static boolean isBigNumberType(String descriptor) {
+    public boolean isBigNumberType(String descriptor) {
         return descriptor.length() > 2 && descriptor.charAt(0) == 'L' && descriptor.endsWith(";")
                 && OWNERS.contains(descriptor.substring(1, descriptor.length() - 1));
     }
 
-    public static boolean isBigNumberOwner(String owner) {
+    public boolean isBigNumberOwner(String owner) {
         return OWNERS.contains(owner);
     }
 
     /** The constant a {@code getstatic} of {@code field} stands for, if it is one of the supported ones. */
-    public static Optional<Constant> constant(FieldRef field) {
+    public Optional<Constant> constant(FieldRef field) {
         return Optional.ofNullable(CONSTANTS.get(field));
     }
 
     /** Whether {@code called} is a supported {@code new BigInteger(...)}/{@code new BigDecimal(...)}/{@code new MathContext(...)}. */
-    public static boolean isConstruction(MethodRef called) {
+    public boolean isConstruction(MethodRef called) {
         return called.name().equals("<init>") && isBigNumberOwner(called.owner())
-                && IntrinsicRegistry.isIntrinsic(called);
+                && intrinsicRegistry.isIntrinsic(called);
     }
 
     /** Rejects a {@code java.math} call outside the deliberately small subset with a useful diagnostic. */
-    public static void validateCall(MethodRef called) {
-        if (isBigNumberOwner(called.owner()) && !IntrinsicRegistry.isIntrinsic(called)) {
+    public void validateCall(MethodRef called) {
+        if (isBigNumberOwner(called.owner()) && !intrinsicRegistry.isIntrinsic(called)) {
             throw new CompileException("Juno's java.math subset supports BigInteger (valueOf, new BigInteger(String), "
                     + "add, subtract, multiply, divide, remainder, mod, pow, sqrt, gcd, negate, abs, min, max, "
                     + "shiftLeft, shiftRight, signum, bitLength, compareTo, equals, intValue, longValue, doubleValue, "

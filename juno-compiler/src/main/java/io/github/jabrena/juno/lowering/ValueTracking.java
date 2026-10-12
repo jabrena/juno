@@ -5,144 +5,83 @@ import io.github.jabrena.juno.ir.Value;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * Per-method dataflow tracking used while lowering: which values are known-length arrays, forwarded
- * parameters, record instances, or string literals, and which stack slot currently holds which of
- * those (reset at the start of each block, since stack slots are reused as depth rises and falls).
+ * Per-method facts about values that a real type system would normally carry: whether a value is a known-length
+ * local array (safe to bounds-check) or a compile-time string literal. Facts about a {@link Value} are never reset,
+ * since values are single-assignment. The stack-slot views record which slot currently holds which of those, and are
+ * reset at the start of every block: stack slots are reused as depth rises and falls, and two branches could leave
+ * different values in the same slot before a merge.
  */
 final class ValueTracking {
-        private boolean divisionByZeroUnwinds;
-        private final Map<Value, Integer> arrayLength = new HashMap<>();
-        private final Set<Value> parameterForwarded = new HashSet<>();
-        private final Map<Value, RecordInstance> recordOf = new HashMap<>();
-        private final Map<Value, String> stringOf = new HashMap<>();
-        private Map<Integer, Integer> currentStackSlotLength = new HashMap<>();
-        private Set<Integer> currentStackSlotIsParameterForward = new HashSet<>();
-        private Map<Integer, RecordInstance> currentStackSlotRecord = new HashMap<>();
-        private Map<Integer, String> currentStackSlotString = new HashMap<>();
-        private Map<Integer, JunoType> currentStackSlotType = new HashMap<>();
+    private final Map<Value, Integer> arrayLength = new HashMap<>();
+    private final Map<Value, String> stringOf = new HashMap<>();
+    private Map<Integer, Integer> slotLength = new HashMap<>();
+    private Map<Integer, String> slotString = new HashMap<>();
+    private Map<Integer, JunoType> slotType = new HashMap<>();
 
-        /** Whether an integer division by zero with no local handler raises an exception for callers to catch. */
-        void unwindDivisionByZero(boolean unwinds) {
-            divisionByZeroUnwinds = unwinds;
-        }
+    void startBlock() {
+        slotLength = new HashMap<>();
+        slotString = new HashMap<>();
+        slotType = new HashMap<>();
+    }
 
-        boolean divisionByZeroUnwinds() {
-            return divisionByZeroUnwinds;
-        }
+    void markKnownArray(Value value, int length) {
+        arrayLength.put(value, length);
+    }
 
-        void startBlock() {
-            currentStackSlotLength = new HashMap<>();
-            currentStackSlotIsParameterForward = new HashSet<>();
-            currentStackSlotRecord = new HashMap<>();
-            currentStackSlotString = new HashMap<>();
-            currentStackSlotType = new HashMap<>();
-        }
+    @Nullable Integer knownLength(Value value) {
+        return arrayLength.get(value);
+    }
 
-        void markKnownArray(Value value, int length) {
+    void markKnownString(Value value, String literal) {
+        stringOf.put(value, literal);
+    }
+
+    @Nullable String knownString(Value value) {
+        return stringOf.get(value);
+    }
+
+    /** Tags the value occupying {@code slot} as a compile-time string literal, without a {@link Value} in hand. */
+    void markSlotString(int slot, String literal) {
+        slotString.put(slot, literal);
+    }
+
+    void clearSlot(int slot) {
+        slotLength.remove(slot);
+        slotString.remove(slot);
+        slotType.remove(slot);
+    }
+
+    @Nullable JunoType slotType(int slot) {
+        return slotType.get(slot);
+    }
+
+    /** {@code value} was stored to {@code slot}: the slot now carries the value's facts. */
+    void recordPush(int slot, Value value) {
+        slotType.put(slot, value.type());
+        putOrRemove(slotLength, slot, arrayLength.get(value));
+        putOrRemove(slotString, slot, stringOf.get(value));
+    }
+
+    /** {@code value} was loaded from {@code slot}: the value inherits the slot's facts. */
+    void recordPop(int slot, Value value) {
+        Integer length = slotLength.get(slot);
+        if (length != null) {
             arrayLength.put(value, length);
         }
-
-        void markParameterForward(Value value) {
-            parameterForwarded.add(value);
-        }
-
-        @Nullable Integer knownLength(Value value) {
-            return arrayLength.get(value);
-        }
-
-        boolean isParameterForward(Value value) {
-            return parameterForwarded.contains(value);
-        }
-
-        void markKnownRecord(Value value, RecordInstance instance) {
-            recordOf.put(value, instance);
-        }
-
-        @Nullable RecordInstance knownRecord(Value value) {
-            return recordOf.get(value);
-        }
-
-        /**
-         * Tags the value currently occupying {@code slot} (whichever it turns out to be once popped) as a
-         * record instance, without needing a {@link Value} in hand — used right after {@code invokespecial
-         * <init>} finishes, where the surviving {@code dup}'d reference is still on the stack, never re-read.
-         */
-        void markStackSlotRecord(int slot, RecordInstance instance) {
-            currentStackSlotRecord.put(slot, instance);
-        }
-
-        void markKnownString(Value value, String literal) {
-            stringOf.put(value, literal);
-        }
-
-        @Nullable String knownString(Value value) {
-            return stringOf.get(value);
-        }
-
-        /** Same reasoning as {@link #markStackSlotRecord}, but for a compile-time string literal. */
-        void markStackSlotString(int slot, String literal) {
-            currentStackSlotString.put(slot, literal);
-        }
-
-        void clearStackSlot(int slot) {
-            currentStackSlotLength.remove(slot);
-            currentStackSlotIsParameterForward.remove(slot);
-            currentStackSlotRecord.remove(slot);
-            currentStackSlotString.remove(slot);
-            currentStackSlotType.remove(slot);
-        }
-
-        @Nullable JunoType stackSlotType(int slot) {
-            return currentStackSlotType.get(slot);
-        }
-
-        void recordPush(int slot, Value value) {
-            currentStackSlotType.put(slot, value.type());
-            Integer length = arrayLength.get(value);
-            if (length != null) {
-                currentStackSlotLength.put(slot, length);
-            } else {
-                currentStackSlotLength.remove(slot);
-            }
-            if (parameterForwarded.contains(value)) {
-                currentStackSlotIsParameterForward.add(slot);
-            } else {
-                currentStackSlotIsParameterForward.remove(slot);
-            }
-            RecordInstance instance = recordOf.get(value);
-            if (instance != null) {
-                currentStackSlotRecord.put(slot, instance);
-            } else {
-                currentStackSlotRecord.remove(slot);
-            }
-            String string = stringOf.get(value);
-            if (string != null) {
-                currentStackSlotString.put(slot, string);
-            } else {
-                currentStackSlotString.remove(slot);
-            }
-        }
-
-        void recordPop(int slot, Value value) {
-            Integer length = currentStackSlotLength.get(slot);
-            if (length != null) {
-                arrayLength.put(value, length);
-            }
-            if (currentStackSlotIsParameterForward.contains(slot)) {
-                parameterForwarded.add(value);
-            }
-            RecordInstance instance = currentStackSlotRecord.get(slot);
-            if (instance != null) {
-                recordOf.put(value, instance);
-            }
-            String string = currentStackSlotString.get(slot);
-            if (string != null) {
-                stringOf.put(value, string);
-            }
+        String string = slotString.get(slot);
+        if (string != null) {
+            stringOf.put(value, string);
         }
     }
+
+    private <T> void putOrRemove(Map<Integer, T> slots, int slot, @Nullable T fact) {
+        if (fact == null) {
+            slots.remove(slot);
+        } else {
+            slots.put(slot, fact);
+        }
+    }
+}

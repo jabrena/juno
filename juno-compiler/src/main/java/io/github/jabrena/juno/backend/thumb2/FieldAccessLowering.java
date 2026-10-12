@@ -45,7 +45,7 @@ final class FieldAccessLowering {
 
     void emitStoreStatic(StringBuilder output, FrameLayout frame, IrInstruction.StoreStatic store) {
         String symbol = layout.staticSymbol(store.field());
-        if (FrameLayout.isWide(store.value().type())) {
+        if (store.value().type().isWide()) {
             asm.load64(output, frame, "r2", "r3", store.value());
             output.append("    ldr r1, =").append(symbol).append('\n')
                     .append(maskInterrupts)
@@ -60,7 +60,7 @@ final class FieldAccessLowering {
     }
 
     private void loadFrom(StringBuilder output, FrameLayout frame, String base, int offset, Value target) {
-        if (FrameLayout.isWide(target.type())) {
+        if (target.type().isWide()) {
             output.append(maskInterrupts)
                     .append("    ldr r1, [").append(base).append(", #").append(offset).append("]\n")
                     .append("    ldr r2, [").append(base).append(", #").append(offset + AsmEmitter.WORD).append("]\n")
@@ -74,7 +74,7 @@ final class FieldAccessLowering {
 
     /** {@code base} must not be r1/r2, which carry the value. */
     private void storeTo(StringBuilder output, FrameLayout frame, String base, int offset, Value value) {
-        if (FrameLayout.isWide(value.type())) {
+        if (value.type().isWide()) {
             asm.load64(output, frame, "r1", "r2", value);
             output.append(maskInterrupts)
                     .append("    str r1, [").append(base).append(", #").append(offset).append("]\n")

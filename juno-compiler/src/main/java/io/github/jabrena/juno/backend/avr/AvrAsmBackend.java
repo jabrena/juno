@@ -2,8 +2,10 @@ package io.github.jabrena.juno.backend.avr;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.backend.AsmBackend;
 import io.github.jabrena.juno.backend.CompareFusion;
 import io.github.jabrena.juno.backend.FrameLayout;
+import io.github.jabrena.juno.backend.GeneratedCode;
 import io.github.jabrena.juno.backend.IntrinsicLowering;
 import io.github.jabrena.juno.backend.ProgramLayout;
 import io.github.jabrena.juno.backend.WordSource;
@@ -69,13 +71,12 @@ import java.util.stream.Collectors;
  * does not have (see {@code Board}), so the linker rejects them before code generation; anything else this backend
  * cannot lower fails with a {@link CompileException}.
  */
-public final class AvrAsmBackend {
+public final class AvrAsmBackend implements AsmBackend {
+    private final CoreRuntimes coreRuntimes = new CoreRuntimes();
+    private final RuntimeEntryPoints runtimeEntryPoints = new RuntimeEntryPoints();
+
     private static final int A = AvrEmitter.A;
     private static final int B = AvrEmitter.B;
-
-    /** The generated assembly, its runtime shim, and the entry point's symbol. */
-    public record Output(String assembly, String runtimeShim, String entryPointSymbol) {
-    }
 
     private final Map<MethodRef, String> functionLabels = new LinkedHashMap<>();
     private final Set<ShimFeature> features = EnumSet.noneOf(ShimFeature.class);
@@ -109,9 +110,10 @@ public final class AvrAsmBackend {
         this.runtimeConfig = runtimeConfig;
     }
 
-    public Output generate(IrProgram program) {
+    @Override
+    public GeneratedCode generate(IrProgram program) {
         entryPoint = program.entryPoint();
-        usesThreads = RuntimeEntryPoints.usesThreads(program);
+        usesThreads = runtimeEntryPoints.usesThreads(program);
         for (int index = 0; index < program.methods().size(); index++) {
             IrMethod method = program.methods().get(index);
             MethodRef reference = method.reference();
@@ -128,7 +130,7 @@ public final class AvrAsmBackend {
         wides = new AvrWideArithmeticLowering(avr, features);
         memory = new AvrMemoryLowering(avr, layout);
         calls = new AvrCallLowering(avr, layout, memory, functionLabels);
-        CoreRuntime coreRuntime = CoreRuntimes.of(board.core());
+        CoreRuntime coreRuntime = coreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, board.generation(), features,
                 usedMath, usesThreads);
 
@@ -149,10 +151,10 @@ public final class AvrAsmBackend {
                 .append(text);
         String runtimeShim = new AvrRuntimeShim(coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), avr.thunkFunctions(), avr.argumentWords()).generate();
-        return new Output(output.toString(), runtimeShim, Objects.requireNonNull(functionLabels.get(entryPoint)));
+        return new GeneratedCode(output.toString(), runtimeShim, Objects.requireNonNull(functionLabels.get(entryPoint)));
     }
 
-    private static String simpleName(MethodRef method) {
+    private String simpleName(MethodRef method) {
         String owner = method.owner();
         return owner.substring(owner.lastIndexOf('/') + 1);
     }
@@ -172,10 +174,12 @@ public final class AvrAsmBackend {
         } else if (calledFromC) {
             emitRuntimeEntryPrologue(output);
         }
-        output.append("    push r28\n")
-                .append("    push r29\n")
-                .append("    in r28, 0x3d\n")
-                .append("    in r29, 0x3e\n");
+        output.append("""
+                    push r28
+                    push r29
+                    in r28, 0x3d
+                    in r29, 0x3e
+                """);
         if (frame.frameSize() > 0) {
             adjustFrame(output, -frame.frameSize());
         }
@@ -215,25 +219,29 @@ public final class AvrAsmBackend {
      * like live references), and saves the call-saved registers of the C caller.
      */
     private void emitEntryPrologue(StringBuilder output) {
-        output.append("    in r24, 0x3d\n")
-                .append("    in r25, 0x3e\n")
-                .append("    sts juno_gc_stack_top, r24\n")
-                .append("    sts juno_gc_stack_top+1, r25\n")
+        output.append("""
+                    in r24, 0x3d
+                    in r25, 0x3e
+                    sts juno_gc_stack_top, r24
+                    sts juno_gc_stack_top+1, r25
+                """)
                 // From malloc's break when a library already used the heap, else from the heap's start.
-                .append("    lds r26, __brkval\n")
-                .append("    lds r27, __brkval+1\n")
-                .append("    mov r0, r26\n")
-                .append("    or r0, r27\n")
-                .append("    brne .LjunoZeroStack\n")
-                .append("    ldi r26, lo8(__heap_start)\n")
-                .append("    ldi r27, hi8(__heap_start)\n")
-                .append(".LjunoZeroStack:\n")
-                .append("    cp r26, r24\n")
-                .append("    cpc r27, r25\n")
-                .append("    brsh .LjunoZeroStackDone\n")
-                .append("    st X+, r1\n")
-                .append("    rjmp .LjunoZeroStack\n")
-                .append(".LjunoZeroStackDone:\n");
+                .append("""
+                            lds r26, __brkval
+                            lds r27, __brkval+1
+                            mov r0, r26
+                            or r0, r27
+                            brne .LjunoZeroStack
+                            ldi r26, lo8(__heap_start)
+                            ldi r27, hi8(__heap_start)
+                        .LjunoZeroStack:
+                            cp r26, r24
+                            cpc r27, r25
+                            brsh .LjunoZeroStackDone
+                            st X+, r1
+                            rjmp .LjunoZeroStack
+                        .LjunoZeroStackDone:
+                        """);
         pushCallSaved(output);
     }
 
@@ -241,7 +249,7 @@ public final class AvrAsmBackend {
      * A function the runtime shim calls back (a forked task's body, a scoped-value operation): saves the C
      * caller's registers, then moves its one argument from avr-gcc's r22-r25 into the first argument word.
      */
-    private static void emitRuntimeEntryPrologue(StringBuilder output) {
+    private void emitRuntimeEntryPrologue(StringBuilder output) {
         pushCallSaved(output);
         for (int index = 0; index < AvrEmitter.WORD; index++) {
             output.append("    sts ").append(AvrEmitter.ARGUMENTS).append('+').append(index)
@@ -250,7 +258,7 @@ public final class AvrAsmBackend {
     }
 
     /** avr-gcc's call-saved r2-r17, which generated code uses freely (it keeps Y itself). */
-    private static void pushCallSaved(StringBuilder output) {
+    private void pushCallSaved(StringBuilder output) {
         for (int register = 2; register <= 17; register++) {
             output.append("    push r").append(register).append('\n');
         }
@@ -262,24 +270,28 @@ public final class AvrAsmBackend {
      */
     private void emitStackLimitCheck(StringBuilder output) {
         String fits = avr.newLabel(".LstackFits");
-        output.append("    lds r26, juno_stack_limit\n")
-                .append("    lds r27, juno_stack_limit+1\n")
-                .append("    cp r28, r26\n")
-                .append("    cpc r29, r27\n")
+        output.append("""
+                    lds r26, juno_stack_limit
+                    lds r27, juno_stack_limit+1
+                    cp r28, r26
+                    cpc r29, r27
+                """)
                 .append("    brsh ").append(fits).append('\n')
                 .append("    call juno_thread_stack_overflow\n")
                 .append(fits).append(":\n");
     }
 
     /** SP = Y = Y + {@code delta}, with interrupts held off while SPH and SPL disagree. */
-    private static void adjustFrame(StringBuilder output, int delta) {
+    private void adjustFrame(StringBuilder output, int delta) {
         output.append("    subi r28, lo8(").append(-delta).append(")\n")
                 .append("    sbci r29, hi8(").append(-delta).append(")\n")
-                .append("    in r0, 0x3f\n")
-                .append("    cli\n")
-                .append("    out 0x3e, r29\n")
-                .append("    out 0x3f, r0\n")
-                .append("    out 0x3d, r28\n");
+                .append("""
+                            in r0, 0x3f
+                            cli
+                            out 0x3e, r29
+                            out 0x3f, r0
+                            out 0x3d, r28
+                        """);
     }
 
     /** Copies the incoming argument words this method reads (JVMS 2.6.1 slot order) into their local slots. */
@@ -333,7 +345,7 @@ public final class AvrAsmBackend {
             }
             case IrInstruction.LoadLocal load -> {
                 avr.loadSlot(output, A, frame.localOffset(load.local()), AvrEmitter.WORD);
-                if (FrameLayout.isWide(load.target().type())) {
+                if (load.target().type().isWide()) {
                     avr.loadSlot(output, B, frame.localOffset(load.local()) + AvrEmitter.WORD, AvrEmitter.WORD);
                     avr.store64(output, frame, A, B, load.target());
                 } else {
@@ -341,7 +353,7 @@ public final class AvrAsmBackend {
                 }
             }
             case IrInstruction.StoreLocal store -> {
-                if (FrameLayout.isWide(store.value().type())) {
+                if (store.value().type().isWide()) {
                     avr.load64(output, frame, A, B, store.value());
                     avr.storeSlot(output, A, frame.localOffset(store.local()), AvrEmitter.WORD);
                     avr.storeSlot(output, B, frame.localOffset(store.local()) + AvrEmitter.WORD, AvrEmitter.WORD);
@@ -360,7 +372,7 @@ public final class AvrAsmBackend {
             case IrInstruction.InterfaceCall call -> calls.emitInterfaceCall(output, frame, call);
             case IrInstruction.IntrinsicCall call -> intrinsics.emit(output, frame, call);
             case IrInstruction.NewArray newArray -> {
-                memory.emitAllocate(output, AvrMemoryLowering.elementSize(newArray.elementType()) * newArray.length());
+                memory.emitAllocate(output, memory.elementSize(newArray.elementType()) * newArray.length());
                 avr.store(output, frame, A, newArray.target());
             }
             case IrInstruction.NewMultiArray array -> memory.emitNewMultiArray(output, frame, array);
@@ -370,7 +382,7 @@ public final class AvrAsmBackend {
             case IrInstruction.Panic ignored -> output.append("    call juno_panic\n");
             case IrInstruction.NullCheck check -> {
                 avr.load(output, frame, A, check.value());
-                AvrEmitter.testZero(output, A);
+                avr.testZero(output, A);
                 String nonNull = avr.newLabel(".LnonNull");
                 output.append("    brne ").append(nonNull).append('\n')
                         .append("    call juno_panic\n")
@@ -405,10 +417,10 @@ public final class AvrAsmBackend {
                 emitYieldIfBackedge(output, block.start(), branch.falseTarget());
                 String toFalse;
                 if (fused != null) {
-                    toFalse = AvrIntArithmeticLowering.inverse(ints.emitFlags(output, frame, fused.condition(), fused.left(), fused.right()));
+                    toFalse = ints.inverse(ints.emitFlags(output, frame, fused.condition(), fused.left(), fused.right()));
                 } else {
                     avr.load(output, frame, A, branch.condition());
-                    AvrEmitter.testZero(output, A);
+                    avr.testZero(output, A);
                     toFalse = "breq";
                 }
                 // Conditional branches reach only 63 words: hop locally, jump far.
@@ -423,7 +435,7 @@ public final class AvrAsmBackend {
                     emitMainExit(output);
                 }
                 returned.value().ifPresent(value -> {
-                    if (FrameLayout.isWide(value.type())) {
+                    if (value.type().isWide()) {
                         avr.load64(output, frame, B, A, value);
                     } else {
                         avr.load(output, frame, A, value);
@@ -449,18 +461,18 @@ public final class AvrAsmBackend {
                 for (int index = 0; index < switched.keys().size(); index++) {
                     String next = avr.newLabel(".Lswitchnext");
                     avr.loadImmediate(output, B, switched.keys().get(index));
-                    AvrEmitter.compareQuads(output, A, B);
+                    avr.compareQuads(output, A, B);
                     output.append("    brne ").append(next).append('\n')
                             .append("    jmp ").append(blockLabel(label, switched.targets().get(index))).append('\n')
                             .append(next).append(":\n");
                 }
                 output.append("    jmp ").append(blockLabel(label, switched.defaultTarget())).append('\n');
             }
-            default -> throw unsupported(block.terminator().getClass().getSimpleName());
+            default -> throw Architecture.AVR.unsupported(block.terminator().getClass().getSimpleName());
         }
     }
 
-    private static String blockLabel(String label, int block) {
+    private String blockLabel(String label, int block) {
         return ".L" + label + "block" + block;
     }
 
@@ -493,7 +505,4 @@ public final class AvrAsmBackend {
         }
     }
 
-    static CompileException unsupported(String detail) {
-        return Architecture.AVR.unsupported(detail);
-    }
 }

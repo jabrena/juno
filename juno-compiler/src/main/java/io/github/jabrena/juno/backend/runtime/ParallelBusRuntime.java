@@ -9,8 +9,8 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
  * and bit mask, and the write that sets some bits of a port and clears others in one go.
  */
 public final class ParallelBusRuntime {
-    private ParallelBusRuntime() {
-    }
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+
 
     /**
      * @param prelude   includes and declarations the core's snippets need
@@ -18,8 +18,8 @@ public final class ParallelBusRuntime {
      * @param resolve   statements setting {@code port} and {@code mask} from the Arduino pin number {@code pin}
      * @param write     a statement setting bits {@code set} and clearing bits {@code clear} of {@code port}
      */
-    public static String helpers(String prelude, String portType, String resolve, String write) {
-        return RuntimeSource.load("common/parallel-bus.cpp")
+    public String helpers(String prelude, String portType, String resolve, String write) {
+        return runtimeSource.load("common/parallel-bus.cpp")
                 .replace("${PRELUDE}", prelude)
                 .replace("${PORT_TYPE}", portType)
                 .replace("${RESOLVE}", resolve)

@@ -51,15 +51,15 @@ final class IntArithmeticLowering {
      * JVM's masked amount; a multiplication by a power of two is a left shift; an operation that leaves {@code r0}
      * unchanged emits nothing.
      */
-    static @Nullable String immediateForm(BinaryOp operation, int constant) {
+    @Nullable String immediateForm(BinaryOp operation, int constant) {
         return switch (operation) {
             case ADD -> addImmediate("add", "sub", constant);
             case SUBTRACT -> addImmediate("sub", "add", constant);
-            case AND -> AsmEmitter.isModifiedImmediate(constant) ? "    and r0, r0, #" + constant + "\n"
-                    : AsmEmitter.isModifiedImmediate(~constant) ? "    bic r0, r0, #" + ~constant + "\n" : null;
-            case OR -> AsmEmitter.isModifiedImmediate(constant) ? "    orr r0, r0, #" + constant + "\n"
-                    : AsmEmitter.isModifiedImmediate(~constant) ? "    orn r0, r0, #" + ~constant + "\n" : null;
-            case XOR -> AsmEmitter.isModifiedImmediate(constant) ? "    eor r0, r0, #" + constant + "\n" : null;
+            case AND -> asm.isModifiedImmediate(constant) ? "    and r0, r0, #" + constant + "\n"
+                    : asm.isModifiedImmediate(~constant) ? "    bic r0, r0, #" + ~constant + "\n" : null;
+            case OR -> asm.isModifiedImmediate(constant) ? "    orr r0, r0, #" + constant + "\n"
+                    : asm.isModifiedImmediate(~constant) ? "    orn r0, r0, #" + ~constant + "\n" : null;
+            case XOR -> asm.isModifiedImmediate(constant) ? "    eor r0, r0, #" + constant + "\n" : null;
             case SHIFT_LEFT -> shift("lsl", constant & 31);
             case SHIFT_RIGHT -> shift("asr", constant & 31);
             case UNSIGNED_SHIFT_RIGHT -> shift("lsr", constant & 31);
@@ -69,8 +69,8 @@ final class IntArithmeticLowering {
         };
     }
 
-    private static @Nullable String addImmediate(String operation, String inverse, int constant) {
-        if (AsmEmitter.isModifiedImmediate(constant)) {
+    private @Nullable String addImmediate(String operation, String inverse, int constant) {
+        if (asm.isModifiedImmediate(constant)) {
             return "    " + operation + " r0, r0, #" + constant + "\n";
         }
         if (constant >= 0 && constant <= 4095) {
@@ -82,7 +82,7 @@ final class IntArithmeticLowering {
         return null;
     }
 
-    private static String shift(String operation, int amount) {
+    private String shift(String operation, int amount) {
         return amount == 0 ? "" : "    " + operation + " r0, r0, #" + amount + "\n";
     }
 
@@ -101,9 +101,9 @@ final class IntArithmeticLowering {
     void emitFlags(StringBuilder output, FrameLayout frame, Value left, Value right) {
         asm.load(output, frame, "r0", left);
         Integer constant = frame.constant(right);
-        if (constant != null && AsmEmitter.isModifiedImmediate(constant)) {
+        if (constant != null && asm.isModifiedImmediate(constant)) {
             output.append("    cmp r0, #").append(constant).append('\n');
-        } else if (constant != null && constant != Integer.MIN_VALUE && AsmEmitter.isModifiedImmediate(-constant)) {
+        } else if (constant != null && constant != Integer.MIN_VALUE && asm.isModifiedImmediate(-constant)) {
             output.append("    cmn r0, #").append(-constant).append('\n');
         } else {
             asm.load(output, frame, "r1", right);
@@ -121,7 +121,7 @@ final class IntArithmeticLowering {
         asm.store(output, frame, "r0", compare.target());
     }
 
-    static String suffix(Condition condition) {
+    String suffix(Condition condition) {
         return switch (condition) {
             case EQUAL -> "eq";
             case NOT_EQUAL -> "ne";
@@ -132,7 +132,7 @@ final class IntArithmeticLowering {
         };
     }
 
-    static Condition inverse(Condition condition) {
+    Condition inverse(Condition condition) {
         return switch (condition) {
             case EQUAL -> Condition.NOT_EQUAL;
             case NOT_EQUAL -> Condition.EQUAL;

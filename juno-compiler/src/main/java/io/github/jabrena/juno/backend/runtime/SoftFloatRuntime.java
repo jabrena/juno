@@ -12,10 +12,10 @@ package io.github.jabrena.juno.backend.runtime;
  * drops whatever a program does not reach.
  */
 public final class SoftFloatRuntime {
-    private SoftFloatRuntime() {
-    }
+    private final RuntimeSource runtimeSource = new RuntimeSource();
 
-    static String helpers() {
-        return RuntimeSource.load("avr/soft-float.cpp");
+
+    String helpers() {
+        return runtimeSource.load("avr/soft-float.cpp");
     }
 }

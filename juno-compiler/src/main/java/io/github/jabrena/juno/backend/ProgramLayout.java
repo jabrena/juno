@@ -69,7 +69,7 @@ public final class ProgramLayout {
     }
 
     /** Bytes a field occupies: a {@code long}/{@code double} takes two words, everything else one. */
-    static int fieldWidth(FieldRef field) {
+    private int fieldWidth(FieldRef field) {
         return field.descriptor().equals("J") || field.descriptor().equals("D") ? 2 * FrameLayout.WORD : FrameLayout.WORD;
     }
 
@@ -116,7 +116,7 @@ public final class ProgramLayout {
         }
     }
 
-    private static String sanitize(String name) {
+    private String sanitize(String name) {
         return name.replaceAll("[^A-Za-z0-9_]", "_");
     }
 
@@ -188,9 +188,11 @@ public final class ProgramLayout {
     private void emitStaticStorage(StringBuilder output) {
         output.append("    ").append(directives.bss()).append('\n')
                 .append("    ").append(directives.align()).append('\n')
-                .append("    .global juno_gc_static_start\n")
-                .append("    .global juno_gc_static_end\n")
-                .append("juno_gc_static_start:\n");
+                .append("""
+                            .global juno_gc_static_start
+                            .global juno_gc_static_end
+                        juno_gc_static_start:
+                        """);
         for (Map.Entry<FieldRef, String> entry : staticSymbols.entrySet()) {
             output.append(entry.getValue()).append(":\n")
                     .append("    .space ").append(fieldWidth(entry.getKey())).append('\n');
@@ -211,9 +213,11 @@ public final class ProgramLayout {
                 // and only a program that actually calls juno_alloc surfaces the failure (a program
                 // that never allocates has this whole path stripped by the linker's --gc-sections
                 // before the missing symbol would matter).
-                .append("    .global juno_gc_stack_top\n")
-                .append("juno_gc_stack_top:\n")
-                .append("    .space 4\n");
+                .append("""
+                            .global juno_gc_stack_top
+                        juno_gc_stack_top:
+                            .space 4
+                        """);
     }
 
     /**
@@ -307,7 +311,7 @@ public final class ProgramLayout {
     }
 
     /** Escapes {@code value} for a GNU {@code as} {@code .asciz} directive. */
-    private static String asmStringLiteral(String value) {
+    private String asmStringLiteral(String value) {
         StringBuilder escaped = new StringBuilder();
         for (int index = 0; index < value.length(); index++) {
             char character = value.charAt(index);

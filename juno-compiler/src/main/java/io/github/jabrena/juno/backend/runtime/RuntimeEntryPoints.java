@@ -23,13 +23,11 @@ public final class RuntimeEntryPoints {
             StructuredTaskSupport.ENTRY_METHOD, "juno_task_entry",
             ScopedValueSupport.ENTRY_METHOD, "juno_scoped_call_entry");
 
-    private RuntimeEntryPoints() {
-    }
 
     /**
      * Whether the program starts a thread, forks a task or takes a lock, so it needs the preemptive thread runtime.
      */
-    public static boolean usesThreads(IrProgram program) {
+    public boolean usesThreads(IrProgram program) {
         return program.methods().stream().anyMatch(method -> method.blocks().stream()
                 .flatMap(block -> block.instructions().stream())
                 .anyMatch(instruction -> instruction instanceof IrInstruction.IntrinsicCall call
@@ -49,7 +47,7 @@ public final class RuntimeEntryPoints {
      * threads: the Thumb-2 preemption tick only interrupts a thread whose pc lies between them, so the runtime and the
      * core's libraries always run to their next return undisturbed.
      */
-    public static CharSequence preemptibleCode(boolean usesThreads, CharSequence code) {
+    public CharSequence preemptibleCode(boolean usesThreads, CharSequence code) {
         if (!usesThreads) {
             return code;
         }

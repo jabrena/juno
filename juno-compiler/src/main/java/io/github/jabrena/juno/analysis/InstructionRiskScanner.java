@@ -22,13 +22,13 @@ import java.util.Set;
  * signals ({@code JUNO-RISK-005}..{@code 007}), and records its call edges and touched static fields.
  */
 final class InstructionRiskScanner {
+    private final AllocationSizeEstimator allocationSizeEstimator = new AllocationSizeEstimator();
+
     /** {@code Math.floorDiv}/{@code floorMod} panic on a zero divisor exactly like {@code /} and {@code %}. */
     private static final Set<Intrinsic> FLOOR_DIVISIONS = Set.of(
             Intrinsic.MATH_FLOOR_DIV_INT, Intrinsic.MATH_FLOOR_DIV_LONG, Intrinsic.MATH_FLOOR_DIV_LONG_INT,
             Intrinsic.MATH_FLOOR_MOD_INT, Intrinsic.MATH_FLOOR_MOD_LONG, Intrinsic.MATH_FLOOR_MOD_LONG_INT);
 
-    private InstructionRiskScanner() {
-    }
 
     record MethodScan(int allocatedBytes, int possibleDivisionByZero, int definiteNullDereferences,
                        int oversizedStringBuilders, int boundsChecks, int arrayAccesses,
@@ -45,7 +45,7 @@ final class InstructionRiskScanner {
     private static final Set<Intrinsic> JOINS = Set.of(
             Intrinsic.THREAD_JOIN, Intrinsic.TASK_SCOPE_JOIN, Intrinsic.TASK_SCOPE_CLOSE);
 
-    static MethodScan scan(IrMethod method, Map<String, JavaClass> classes, Map<String, Integer> objectTypeIds,
+    MethodScan scan(IrMethod method, Map<String, JavaClass> classes, Map<String, Integer> objectTypeIds,
                             Set<Integer> cyclicBlocks, Set<MethodRef> calls, List<MethodRef> callSites,
                             Set<FieldRef> staticFields, Set<MethodRef> threadEntries) {
         Map<Value, Integer> integerConstants = new HashMap<>();
@@ -81,7 +81,7 @@ final class InstructionRiskScanner {
                         unjoinedLaunches = 0;
                     }
                 }
-                int bytes = AllocationSizeEstimator.allocationBytes(instruction, classes, objectTypeIds);
+                int bytes = allocationSizeEstimator.allocationBytes(instruction, classes, objectTypeIds);
                 allocated += bytes;
                 blockAllocation += bytes;
                 if (instruction instanceof IrInstruction.IntrinsicCall call
@@ -113,7 +113,7 @@ final class InstructionRiskScanner {
      * implementation, or the {@code run}/{@code call} of a freshly created object. A value passed in as a
      * parameter stays unresolved, so thread-body checks only see launches written in the same method.
      */
-    private static void recordEntryCandidate(IrInstruction instruction, Map<Value, List<MethodRef>> candidates) {
+    private void recordEntryCandidate(IrInstruction instruction, Map<Value, List<MethodRef>> candidates) {
         if (instruction instanceof IrInstruction.LambdaCreate lambda) {
             candidates.put(lambda.target(), List.of(lambda.site().implementation().method()));
         } else if (instruction instanceof IrInstruction.NewObject object) {
@@ -124,7 +124,7 @@ final class InstructionRiskScanner {
     }
 
     /** Handles the instruction kinds that record call edges, static-field touches or a definite null dereference. */
-    private static void classifyInstruction(IrInstruction instruction, Map<Value, Integer> integerConstants,
+    private void classifyInstruction(IrInstruction instruction, Map<Value, Integer> integerConstants,
                                             Set<MethodRef> calls, List<MethodRef> callSites,
                                             Set<FieldRef> staticFields, Counters counters) {
         if (classifyDirectCall(instruction, integerConstants, calls, callSites, counters)) {
@@ -177,7 +177,7 @@ final class InstructionRiskScanner {
         }
     }
 
-    private static boolean classifyDirectCall(IrInstruction instruction, Map<Value, Integer> integerConstants,
+    private boolean classifyDirectCall(IrInstruction instruction, Map<Value, Integer> integerConstants,
                                               Set<MethodRef> calls, List<MethodRef> callSites, Counters counters) {
         MethodRef target;
         boolean nullReceiver;
@@ -208,7 +208,7 @@ final class InstructionRiskScanner {
         int arrayAccesses;
     }
 
-    private static boolean mayDivideByZero(IrInstruction instruction, Map<Value, Integer> constants) {
+    private boolean mayDivideByZero(IrInstruction instruction, Map<Value, Integer> constants) {
         if (instruction instanceof IrInstruction.Binary binary
                 && (binary.operation() == BinaryOp.DIVIDE || binary.operation() == BinaryOp.REMAINDER)) {
             return constants.getOrDefault(binary.right(), 0) == 0;
@@ -225,7 +225,7 @@ final class InstructionRiskScanner {
         return false;
     }
 
-    private static boolean isDefinitelyNull(Value value, Map<Value, Integer> constants) {
+    private boolean isDefinitelyNull(Value value, Map<Value, Integer> constants) {
         return constants.getOrDefault(value, 1) == 0;
     }
 }

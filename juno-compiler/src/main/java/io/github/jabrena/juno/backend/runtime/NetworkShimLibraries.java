@@ -10,35 +10,35 @@ import java.util.Set;
  * server, and SMTP/POP3 — each appended by {@link RuntimeShim} only when the lowered program uses it.
  */
 final class NetworkShimLibraries {
-    private NetworkShimLibraries() {
-    }
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+
 
     /** One bounded UDP transport shared by the program's UDP intrinsics. */
-    static String udpHelpers(String declaration) {
-        return RuntimeSource.load("common/udp.cpp").replace("${JUNO_UDP_DECLARATION}", declaration);
+    String udpHelpers(String declaration) {
+        return runtimeSource.load("common/udp.cpp").replace("${JUNO_UDP_DECLARATION}", declaration);
     }
 
     /**
      * A bounded, non-allocating JSON scanner, exposed to the generated assembly as {@code extern "C"}
      * entry points.
      */
-    static String jsonHelpers() {
+    String jsonHelpers() {
         return jsonScanner() + jsonDoubleHelpers() + jsonValueHelpers();
     }
 
     /** The scanner and its {@code int}/{@code long} accessors: the part of {@link #jsonHelpers()} before {@code double}. */
-    static String jsonScanner() {
-        return RuntimeSource.load("common/json-scanner.cpp");
+    String jsonScanner() {
+        return runtimeSource.load("common/json-scanner.cpp");
     }
 
     /** {@code Json.getDouble} on the C {@code double}. */
-    static String jsonDoubleHelpers() {
-        return RuntimeSource.load("thumb2/json-double.cpp");
+    String jsonDoubleHelpers() {
+        return runtimeSource.load("thumb2/json-double.cpp");
     }
 
     /** The boolean, string and array accessors after {@code double}. */
-    static String jsonValueHelpers() {
-        return RuntimeSource.load("common/json-value.cpp");
+    String jsonValueHelpers() {
+        return runtimeSource.load("common/json-value.cpp");
     }
 
     /**
@@ -47,8 +47,8 @@ final class NetworkShimLibraries {
      * present when {@code JSON_GET_STRING_VALUE} is itself the reason {@link ShimFeature#RUNTIME_STRINGS} is
      * true (a program using only e.g. {@code Json.getInt} never gets that pool at all).
      */
-    static String jsonStringValueHelpers() {
-        return RuntimeSource.load("common/json-string-value.cpp");
+    String jsonStringValueHelpers() {
+        return runtimeSource.load("common/json-string-value.cpp");
     }
 
     /**
@@ -56,8 +56,8 @@ final class NetworkShimLibraries {
      * for {@code juno_io_offload} (see {@link IoRuntime}): run in place, or on the I/O worker while the caller is
      * parked, in which case the request's text is copied first and the caller holds the network guard.
      */
-    static String httpHelpers(Set<ShimFeature> features, String httpsClientType, boolean worker) {
-        StringBuilder helpers = new StringBuilder(RuntimeSource.load("common/http-client.cpp"));
+    String httpHelpers(Set<ShimFeature> features, String httpsClientType, boolean worker) {
+        StringBuilder helpers = new StringBuilder(runtimeSource.load("common/http-client.cpp"));
         if (features.contains(ShimFeature.HTTPS)) {
             helpers.append("""
 
@@ -65,13 +65,13 @@ final class NetworkShimLibraries {
                     """);
         }
         if (features.contains(ShimFeature.HTTP)) {
-            helpers.append(RuntimeSource.load("common/http-get.cpp"));
+            helpers.append(runtimeSource.load("common/http-get.cpp"));
         }
         if (features.contains(ShimFeature.HTTPS)) {
-            helpers.append(RuntimeSource.load("common/https-get.cpp"));
+            helpers.append(runtimeSource.load("common/https-get.cpp"));
         }
         if (features.contains(ShimFeature.HTTPS_PATH_BUFFER)) {
-            helpers.append(RuntimeSource.load("common/https-path-buffer.cpp"));
+            helpers.append(runtimeSource.load("common/https-path-buffer.cpp"));
         }
         return helpers.toString().replace("${JUNO_HTTPS_CLIENT_TYPE}", httpsClientType)
                 .replace("${JUNO_HTTP_RUN_PREPARE}", worker ? """
@@ -94,8 +94,8 @@ final class NetworkShimLibraries {
      * {@code accept()} mirrors {@link #httpHelpers()}'s response-parsing state machine, reversed
      * to parse a request line and headers instead of a status line.
      */
-    static String httpServerHelpers(String transport, boolean worker) {
-        return transport + RuntimeSource.load("common/http-server.cpp").replace("${JUNO_HTTP_SERVER_RESPOND_PREPARE}", worker ? """
+    String httpServerHelpers(String transport, boolean worker) {
+        return transport + runtimeSource.load("common/http-server.cpp").replace("${JUNO_HTTP_SERVER_RESPOND_PREPARE}", worker ? """
                   char contentTypeCopy[JUNO_IO_TEXT_COPY_BYTES];
                   char bodyCopy[JUNO_IO_TEXT_COPY_BYTES];
                   job.contentType = juno_io_stable_text(contentType, contentTypeCopy);
@@ -113,20 +113,20 @@ final class NetworkShimLibraries {
      * {@link #httpHelpers()}'s {@code juno_http_request}, reused here because there is no common
      * base class between the two client types worth naming.
      */
-    static String emailHelpers(Set<ShimFeature> features, String tlsClientDeclaration) {
+    String emailHelpers(Set<ShimFeature> features, String tlsClientDeclaration) {
         StringBuilder helpers = new StringBuilder();
-        helpers.append(RuntimeSource.load("common/email-read-line.cpp"));
+        helpers.append(runtimeSource.load("common/email-read-line.cpp"));
         if (features.contains(ShimFeature.SMTP) || features.contains(ShimFeature.SMTP_TLS)) {
-            helpers.append(RuntimeSource.load("common/email-base64.cpp"));
+            helpers.append(runtimeSource.load("common/email-base64.cpp"));
         }
         if (features.contains(ShimFeature.SMTP)) {
-            helpers.append(RuntimeSource.load("common/smtp-starttls.cpp"));
+            helpers.append(runtimeSource.load("common/smtp-starttls.cpp"));
         }
         if (features.contains(ShimFeature.SMTP_TLS)) {
-            helpers.append(RuntimeSource.load("common/smtp-tls.cpp"));
+            helpers.append(runtimeSource.load("common/smtp-tls.cpp"));
         }
         if (features.contains(ShimFeature.POP3)) {
-            helpers.append(RuntimeSource.load("common/pop3.cpp"));
+            helpers.append(runtimeSource.load("common/pop3.cpp"));
         }
         return helpers.toString().replace("${JUNO_TLS_CLIENT_DECLARATION}", tlsClientDeclaration);
     }

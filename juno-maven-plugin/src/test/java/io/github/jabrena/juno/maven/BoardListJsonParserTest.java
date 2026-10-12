@@ -2,15 +2,27 @@ package io.github.jabrena.juno.maven;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class BoardListJsonParserTest {
+    private final BoardListJsonParser parser = new BoardListJsonParser();
+
     @Test
     void rejectsMalformedBoardListJson() {
-        assertThatThrownBy(() -> BoardListJsonParser.parse("{}"))
+        assertThatThrownBy(() -> parser.parse("{}"))
                 .isInstanceOf(ArduinoCliException.class)
                 .hasMessageContaining("missing detected_ports array");
+    }
+
+    @Test
+    void rejectsUnterminatedPortArray() {
+        assertThatThrownBy(() -> parser.parse("""
+                {"detected_ports": [{"port": {"address": "COM3"}}"""))
+                .isInstanceOf(ArduinoCliException.class)
+                .hasMessageContaining("unterminated detected_ports array");
     }
 
     @Test
@@ -31,15 +43,20 @@ class BoardListJsonParserTest {
                 }
                 """;
 
-        var ports = BoardListJsonParser.parse(json);
+        List<DetectedPort> ports = parser.parse(json);
 
         assertThat(ports).containsExactly(
-                new BoardListJsonParser.DetectedPort("/dev/cu.usbmodem1", "serial",
-                        java.util.List.of("Arduino UNO R4 WiFi"), java.util.List.of("arduino:renesas_uno:unor4wifi")),
-                new BoardListJsonParser.DetectedPort("/dev/cu.Bluetooth", "serial",
-                        java.util.List.of(), java.util.List.of()));
-        assertThat(BoardsMojo.describe(ports.getFirst()))
-                .isEqualTo("  /dev/cu.usbmodem1 [serial] - Arduino UNO R4 WiFi (arduino:renesas_uno:unor4wifi)");
-        assertThat(BoardsMojo.describe(ports.getLast())).isEqualTo("  /dev/cu.Bluetooth [serial] - unknown board");
+                new DetectedPort("/dev/cu.usbmodem1", "serial",
+                        List.of("Arduino UNO R4 WiFi"), List.of("arduino:renesas_uno:unor4wifi")),
+                new DetectedPort("/dev/cu.Bluetooth", "serial", List.of(), List.of()));
+    }
+
+    @Test
+    void unescapesJsonStrings() {
+        List<DetectedPort> ports = parser.parse("""
+                {"detected_ports": [{"port": {"address": "C:\\\\COM3 \\u00e9"}}]}
+                """);
+
+        assertThat(ports).extracting(DetectedPort::address).containsExactly("C:\\COM3 é");
     }
 }

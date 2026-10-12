@@ -11,10 +11,8 @@ import java.util.function.UnaryOperator;
  * {@code blocks}. Passes that rename (inlining) or substitute (copy propagation) share this one exhaustive walk.
  */
 public final class IrRewriting {
-    private IrRewriting() {
-    }
 
-    public static IrInstruction map(IrInstruction instruction, UnaryOperator<Value> values, IntUnaryOperator locals) {
+    public IrInstruction map(IrInstruction instruction, UnaryOperator<Value> values, IntUnaryOperator locals) {
         return switch (instruction) {
             case IrInstruction.Const node -> new IrInstruction.Const(values.apply(node.target()), node.value());
             case IrInstruction.StringConst node -> new IrInstruction.StringConst(values.apply(node.target()), node.value());
@@ -68,7 +66,7 @@ public final class IrRewriting {
     }
 
     /** The {@code long}/{@code double}/{@code float} instructions, split out to keep each switch readable. */
-    private static IrInstruction mapWide(IrInstruction instruction, UnaryOperator<Value> values) {
+    private IrInstruction mapWide(IrInstruction instruction, UnaryOperator<Value> values) {
         return switch (instruction) {
             case IrInstruction.LongConst node -> new IrInstruction.LongConst(values.apply(node.targetLow()),
                     values.apply(node.targetHigh()), node.value());
@@ -127,7 +125,7 @@ public final class IrRewriting {
         };
     }
 
-    public static IrTerminator map(IrTerminator terminator, UnaryOperator<Value> values, IntUnaryOperator blocks) {
+    public IrTerminator map(IrTerminator terminator, UnaryOperator<Value> values, IntUnaryOperator blocks) {
         return switch (terminator) {
             case IrTerminator.Jump jump -> new IrTerminator.Jump(blocks.applyAsInt(jump.target()));
             case IrTerminator.Branch branch -> new IrTerminator.Branch(values.apply(branch.condition()),
@@ -139,11 +137,11 @@ public final class IrRewriting {
         };
     }
 
-    private static List<Value> all(List<Value> values, UnaryOperator<Value> mapping) {
+    private List<Value> all(List<Value> values, UnaryOperator<Value> mapping) {
         return values.stream().map(mapping).toList();
     }
 
-    private static Optional<Value> optional(Optional<Value> value, UnaryOperator<Value> mapping) {
+    private Optional<Value> optional(Optional<Value> value, UnaryOperator<Value> mapping) {
         return value.map(mapping);
     }
 }

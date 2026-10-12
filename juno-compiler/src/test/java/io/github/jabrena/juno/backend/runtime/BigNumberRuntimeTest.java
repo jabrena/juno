@@ -31,6 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * handle helpers are replaced by index-based ones so 64-bit hosts work.
  */
 class BigNumberRuntimeTest {
+    private final BigNumberRuntime bigNumberRuntime = new BigNumberRuntime();
+
     private static final int CASES = 6000;
 
     @TempDir
@@ -40,7 +42,7 @@ class BigNumberRuntimeTest {
     void matchesTheJdkOnRandomOperations() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        Files.writeString(directory.resolve("runtime.inc"), BigNumberRuntime.helpers(1, 2, 3, false),
+        Files.writeString(directory.resolve("runtime.inc"), bigNumberRuntime.helpers(1, 2, 3, false),
                 StandardCharsets.UTF_8);
         Files.copy(Path.of("src/test/resources/bignumber/driver.cpp"), directory.resolve("driver.cpp"));
         Process build = new ProcessBuilder(compiler, "-std=c++17", "-O1", "-w", "-o", "driver", "driver.cpp")
@@ -79,8 +81,8 @@ class BigNumberRuntimeTest {
      */
     @Test
     void neverCollectsInTheMiddleOfAnOperation() {
-        String source = BigNumberRuntime.handleHelpers() + BigNumberRuntime.helpers(1, 2, 3, true)
-                + BigNumberRuntime.helpersWithoutDoubles(1, 2, 3);
+        String source = bigNumberRuntime.handleHelpers() + bigNumberRuntime.helpers(1, 2, 3, true)
+                + bigNumberRuntime.helpersWithoutDoubles(1, 2, 3);
         Map<String, String> bodies = new LinkedHashMap<>();
         Matcher header = Pattern.compile("\\n\\s*(?:extern \"C\" (?:JUNO_ASM_ABI )?|static )[\\w*]+ (juno_\\w+)\\([^)]*\\) \\{")
                 .matcher(source);

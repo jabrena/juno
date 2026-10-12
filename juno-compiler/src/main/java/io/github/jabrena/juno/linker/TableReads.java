@@ -15,8 +15,6 @@ final class TableReads {
     private static final int ARRAYLENGTH = 190;
     private static final int[][] SIMPLE_EFFECTS = simpleEffects();
 
-    private TableReads() {
-    }
 
     /**
      * Whether the array {@code getstatic} at {@code index} pushes is consumed only as the array operand of an
@@ -24,7 +22,7 @@ final class TableReads {
      * (loads, constants, arithmetic, conversions, field reads, nested array loads and calls) while tracking
      * how many stack slots sit above the table; any other instruction, or one that would pop the table, fails.
      */
-    static boolean readOnly(LinkedMethod linked, int index) {
+    boolean readOnly(LinkedMethod linked, int index) {
         List<Instruction> instructions = linked.instructions();
         int above = 0;
         for (int cursor = index + 1; cursor < instructions.size(); cursor++) {
@@ -46,7 +44,7 @@ final class TableReads {
      * {@code {popped, pushed}} slots for an instruction an index expression may contain (loads, constants,
      * arithmetic, conversions, comparisons, field reads, array loads and calls), else {@code null}.
      */
-    private static int[] stackEffect(LinkedMethod linked, Instruction instruction) {
+    private int[] stackEffect(LinkedMethod linked, Instruction instruction) {
         ConstantPool pool = linked.owner().constantPool();
         return switch (instruction.opcode()) {
             case GETSTATIC -> new int[] {0, Descriptor.jvmSlots(pool.fieldRef(instruction.operandA()).descriptor())};

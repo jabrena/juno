@@ -65,7 +65,7 @@ public final class DeadLocalStoreElimination implements CompilerPass {
                 method.arrayDeclarations(), List.copyOf(blocks));
     }
 
-    private static Set<Integer> liveOut(IrBasicBlock block, ControlFlowGraph graph, Map<Integer, Set<Integer>> liveIn) {
+    private Set<Integer> liveOut(IrBasicBlock block, ControlFlowGraph graph, Map<Integer, Set<Integer>> liveIn) {
         Set<Integer> live = new HashSet<>();
         for (int successor : graph.successorsOf(block.start())) {
             live.addAll(liveIn.getOrDefault(successor, Set.of()));
@@ -74,7 +74,7 @@ public final class DeadLocalStoreElimination implements CompilerPass {
     }
 
     /** Steps {@code live} backward over one instruction: a store kills its slots, a load revives them. */
-    private static void transfer(IrInstruction instruction, Set<Integer> live) {
+    private void transfer(IrInstruction instruction, Set<Integer> live) {
         if (instruction instanceof IrInstruction.StoreLocal store) {
             live.removeAll(slots(store.local(), store.value().type()));
         } else if (instruction instanceof IrInstruction.LoadLocal load) {
@@ -82,11 +82,11 @@ public final class DeadLocalStoreElimination implements CompilerPass {
         }
     }
 
-    private static boolean isRead(IrInstruction.StoreLocal store, Set<Integer> live) {
+    private boolean isRead(IrInstruction.StoreLocal store, Set<Integer> live) {
         return slots(store.local(), store.value().type()).stream().anyMatch(live::contains);
     }
 
-    private static List<Integer> slots(int local, JunoType type) {
+    private List<Integer> slots(int local, JunoType type) {
         return type == JunoType.FLOAT64 ? List.of(local, local + 1) : List.of(local);
     }
 }

@@ -7,7 +7,6 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrRewriting;
 import io.github.jabrena.juno.ir.IrTerminator;
-import io.github.jabrena.juno.ir.IrValues;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import org.jspecify.annotations.Nullable;
@@ -34,6 +33,9 @@ import java.util.function.IntUnaryOperator;
  * {@code volatile} field read remains an actual read across calls and loop backedges.
  */
 public final class CopyPropagation implements CompilerPass {
+
+    private final IrRewriting irRewriting = new IrRewriting();
+
     @Override
     public IrProgram apply(IrProgram program) {
         IrProgram current = program;
@@ -88,8 +90,8 @@ public final class CopyPropagation implements CompilerPass {
         Map<Value, Integer> blocksSeen = new HashMap<>();
         for (IrBasicBlock block : method.blocks()) {
             Set<Value> values = new LinkedHashSet<>();
-            block.instructions().forEach(instruction -> values.addAll(IrValues.of(instruction)));
-            values.addAll(IrValues.of(block.terminator()));
+            block.instructions().forEach(instruction -> values.addAll(instruction.referencedValues()));
+            values.addAll(block.terminator().referencedValues());
             values.forEach(value -> blocksSeen.merge(value, 1, Integer::sum));
         }
         Set<Value> result = new LinkedHashSet<>();
@@ -102,7 +104,7 @@ public final class CopyPropagation implements CompilerPass {
     }
 
     /** Every value a {@code Const} defines, with its number. */
-    private static Map<Value, Integer> constants(IrMethod method) {
+    private Map<Value, Integer> constants(IrMethod method) {
         Map<Value, Integer> constants = new HashMap<>();
         for (IrBasicBlock block : method.blocks()) {
             for (IrInstruction instruction : block.instructions()) {
@@ -156,7 +158,7 @@ public final class CopyPropagation implements CompilerPass {
     }
 
     /** The int constant {@code slot} holds in {@code state}, or null. */
-    private static @Nullable Integer numberIn(Facts state, int slot, Map<Value, Integer> constants) {
+    private @Nullable Integer numberIn(Facts state, int slot, Map<Value, Integer> constants) {
         Integer agreed = state.constants().get(slot);
         if (agreed != null) {
             return agreed;
@@ -211,11 +213,11 @@ public final class CopyPropagation implements CompilerPass {
     }
 
     private IrInstruction rewriteInstruction(IrInstruction instruction, Map<Value, Value> replacements) {
-        return IrRewriting.map(instruction, value -> resolve(replacements, value), IntUnaryOperator.identity());
+        return irRewriting.map(instruction, value -> resolve(replacements, value), IntUnaryOperator.identity());
     }
 
     private IrTerminator rewriteTerminator(IrTerminator terminator, Map<Value, Value> replacements) {
-        return IrRewriting.map(terminator, value -> resolve(replacements, value), IntUnaryOperator.identity());
+        return irRewriting.map(terminator, value -> resolve(replacements, value), IntUnaryOperator.identity());
     }
 
     private Value resolve(Map<Value, Value> replacements, Value value) {

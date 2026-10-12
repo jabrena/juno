@@ -26,6 +26,10 @@ import java.util.Set;
  * {@code java.lang.Math} intrinsics are lowered generically from their IR argument types instead.
  */
 public final class IntrinsicLowering {
+    private final BigNumberMethods bigNumberMethods = new BigNumberMethods();
+
+    private final MathRuntime mathRuntime = new MathRuntime();
+
     /** Emits the code for one intrinsic call. */
     @FunctionalInterface
     private interface Lowering {
@@ -147,11 +151,11 @@ public final class IntrinsicLowering {
     }
 
     public void emit(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call) {
-        if (MathRuntime.isMath(call.intrinsic())) {
+        if (mathRuntime.isMath(call.intrinsic())) {
             emitMathCall(output, frame, call);
             return;
         }
-        if (BigNumberMethods.isBigNumber(call.intrinsic())) {
+        if (bigNumberMethods.isBigNumber(call.intrinsic())) {
             emitBigNumberCall(output, frame, call);
             return;
         }
@@ -315,7 +319,7 @@ public final class IntrinsicLowering {
 
     /** {@code receiver} followed by every operand in {@code groups}, each a list of words. */
     @SafeVarargs
-    private static List<Operand> withReceiver(List<Operand>... groups) {
+    private List<Operand> withReceiver(List<Operand>... groups) {
         List<Operand> operands = new ArrayList<>();
         operands.add(RECEIVER);
         for (List<Operand> group : groups) {
@@ -582,20 +586,20 @@ public final class IntrinsicLowering {
                 List.of(arg(0), literal(0), arg(1)), server);
     }
 
-    private static Operand arg(int index) {
+    private Operand arg(int index) {
         return new Argument(index);
     }
 
-    private static Operand literal(int index) {
+    private Operand literal(int index) {
         return new Literal(index);
     }
 
-    private static Operand immediate(int value) {
+    private Operand immediate(int value) {
         return new Immediate(value);
     }
 
     /** A {@code long}/{@code double} argument's two words, low first. */
-    private static List<Operand> wide(int index) {
+    private List<Operand> wide(int index) {
         return List.of(new ArgumentLow(index), new ArgumentHigh(index));
     }
 
@@ -632,7 +636,7 @@ public final class IntrinsicLowering {
         usedMath.add(call.intrinsic());
         List<WordSource> words = new ArrayList<>();
         for (Value argument : call.arguments()) {
-            if (FrameLayout.isWide(argument.type())) {
+            if (argument.type().isWide()) {
                 if (words.size() % 2 != 0) {
                     words.add(new WordSource.Immediate(0));
                 }
@@ -642,7 +646,7 @@ public final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
-        target.emitShimCall(output, frame, MathRuntime.symbol(call.intrinsic()), words);
+        target.emitShimCall(output, frame, mathRuntime.symbol(call.intrinsic()), words);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
     }
 
@@ -661,7 +665,7 @@ public final class IntrinsicLowering {
         List<WordSource> words = new ArrayList<>();
         call.receiver().ifPresent(receiver -> words.add(new WordSource.FromValue(receiver)));
         for (Value argument : call.arguments()) {
-            if (FrameLayout.isWide(argument.type())) {
+            if (argument.type().isWide()) {
                 if (words.size() % 2 != 0) {
                     words.add(new WordSource.Immediate(0));
                 }
@@ -671,12 +675,12 @@ public final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
-        target.emitShimCall(output, frame, BigNumberMethods.shimSymbol(call.intrinsic()), words);
+        target.emitShimCall(output, frame, bigNumberMethods.shimSymbol(call.intrinsic()), words);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
     }
 
     private void storeTypedResult(StringBuilder output, FrameLayout frame, Value value) {
-        if (FrameLayout.isWide(value.type())) {
+        if (value.type().isWide()) {
             target.storeWideResult(output, frame, value);
         } else {
             target.storeResult(output, frame, value);

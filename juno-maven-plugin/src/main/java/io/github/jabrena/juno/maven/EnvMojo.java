@@ -9,9 +9,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -36,31 +33,19 @@ public final class EnvMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        if (!envFile.isFile()) {
+        EnvFile file = new EnvFile(envFile.toPath());
+        if (!file.exists()) {
             getLog().info("No .env file at " + envFile + "; nothing exported");
             return;
         }
-
-        Map<String, String> values = readEnvFile();
-        exportToProcessEnvironment(values);
-        getLog().info("Exported " + values.size() + " variable(s) from " + envFile + " into the process environment");
-    }
-
-    private Map<String, String> readEnvFile() throws MojoFailureException {
-        Map<String, String> values = new LinkedHashMap<>();
+        Map<String, String> values;
         try {
-            for (String line : Files.readAllLines(envFile.toPath(), StandardCharsets.UTF_8)) {
-                String trimmed = line.trim();
-                int separator = trimmed.indexOf('=');
-                if (trimmed.isEmpty() || trimmed.startsWith("#") || separator < 0) {
-                    continue;
-                }
-                values.put(trimmed.substring(0, separator).trim(), trimmed.substring(separator + 1).trim());
-            }
+            values = file.entries();
         } catch (IOException exception) {
             throw new MojoFailureException("Failed to read " + envFile, exception);
         }
-        return values;
+        exportToProcessEnvironment(values);
+        getLog().info("Exported " + values.size() + " variable(s) from " + envFile + " into the process environment");
     }
 
     /**
@@ -84,11 +69,10 @@ public final class EnvMojo extends AbstractMojo {
 
             backingMap.putAll(values);
         } catch (ReflectiveOperationException | ClassCastException exception) {
-            throw new MojoFailureException(
-                    "Failed to export " + envFile + " into the process environment; this goal needs the Maven JVM "
-                            + "launched with --add-opens java.base/java.lang=ALL-UNNAMED --add-opens "
-                            + "java.base/java.util=ALL-UNNAMED (see .mvn/jvm.config)",
-                    exception);
+            throw new MojoFailureException("""
+                    Failed to export %s into the process environment; this goal needs the Maven JVM launched with \
+                    --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED \
+                    (see .mvn/jvm.config)""".formatted(envFile), exception);
         }
     }
 }

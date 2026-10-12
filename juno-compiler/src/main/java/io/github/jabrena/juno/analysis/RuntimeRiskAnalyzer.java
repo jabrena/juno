@@ -20,6 +20,14 @@ import java.util.Set;
 
 /** Conservative resource and runtime-risk analysis over the optimized closed-world IR. */
 public final class RuntimeRiskAnalyzer {
+    private final IrCyclicBlocks irCyclicBlocks = new IrCyclicBlocks();
+
+    private final InstructionRiskScanner instructionRiskScanner = new InstructionRiskScanner();
+
+    private final AllocationSizeEstimator allocationSizeEstimator = new AllocationSizeEstimator();
+
+    private final CallGraphMetrics callGraphMetrics = new CallGraphMetrics();
+
     private final RuntimeConfig config;
 
     public RuntimeRiskAnalyzer() {
@@ -56,10 +64,10 @@ public final class RuntimeRiskAnalyzer {
         for (IrMethod method : program.methods()) {
             calls.put(method.reference(), new LinkedHashSet<>());
             callSites.put(method.reference(), new ArrayList<>());
-            frames.put(method.reference(), AllocationSizeEstimator.estimatedFrameBytes(method));
+            frames.put(method.reference(), allocationSizeEstimator.estimatedFrameBytes(method));
 
-            InstructionRiskScanner.MethodScan scan = InstructionRiskScanner.scan(method, linked.classes(),
-                    program.objectTypeIds(), IrCyclicBlocks.cyclicBlocks(method), calls.get(method.reference()),
+            InstructionRiskScanner.MethodScan scan = instructionRiskScanner.scan(method, linked.classes(),
+                    program.objectTypeIds(), irCyclicBlocks.cyclicBlocks(method), calls.get(method.reference()),
                     callSites.get(method.reference()), staticFields, threadEntries);
 
             directAllocation.put(method.reference(), scan.allocatedBytes());
@@ -75,7 +83,7 @@ public final class RuntimeRiskAnalyzer {
             }
         }
 
-        Set<MethodRef> recursive = CallGraphMetrics.recursiveMethods(calls);
+        Set<MethodRef> recursive = callGraphMetrics.recursiveMethods(calls);
         for (MethodRef method : recursive.stream()
                 .sorted((left, right) -> left.displayName().compareTo(right.displayName())).toList()) {
             findings.add(new RuntimeRisk("JUNO-RISK-003", RiskSeverity.WARNING, method,
@@ -84,8 +92,8 @@ public final class RuntimeRiskAnalyzer {
 
         addThreadBodyFindings(findings, threadEntries, launchers, recursive, calls, frames);
 
-        Set<MethodRef> transitiveAllocators = CallGraphMetrics.transitiveAllocators(calls, directAllocation);
-        loopAllocators.addAll(CallGraphMetrics.loopAllocatorsCallingAllocator(program, transitiveAllocators));
+        Set<MethodRef> transitiveAllocators = callGraphMetrics.transitiveAllocators(calls, directAllocation);
+        loopAllocators.addAll(callGraphMetrics.loopAllocatorsCallingAllocator(program, transitiveAllocators));
 
         boolean unboundedArena = !loopAllocators.isEmpty()
                 || recursive.stream().anyMatch(transitiveAllocators::contains);
@@ -96,7 +104,7 @@ public final class RuntimeRiskAnalyzer {
                             + "(the runtime does collect, but this is a static, GC-oblivious estimate)"));
         }
 
-        int arenaBytes = CallGraphMetrics.startupAllocationEstimate(program, callSites, directAllocation);
+        int arenaBytes = callGraphMetrics.startupAllocationEstimate(program, callSites, directAllocation);
         if (arenaBytes > config.arenaBytes()) {
             findings.add(new RuntimeRisk("JUNO-RISK-002", RiskSeverity.WARNING, program.entryPoint(),
                     "conservative startup arena estimate (assuming no intermediate garbage collection "
@@ -121,11 +129,11 @@ public final class RuntimeRiskAnalyzer {
         }
 
         int staticFieldBytes = staticFields.stream()
-                .mapToInt(field -> AllocationSizeEstimator.descriptorSize(field.descriptor())).sum();
+                .mapToInt(field -> allocationSizeEstimator.descriptorSize(field.descriptor())).sum();
         int estimatedStaticRam = config.arenaBytes() + staticFieldBytes + constantArrayBytes + 4;
-        int maxDepth = recursive.isEmpty() ? CallGraphMetrics.maximumStartupCallDepth(program, calls) : -1;
-        int maxStack = recursive.isEmpty() ? CallGraphMetrics.maximumStartupStack(program, calls, frames) : -1;
-        findings.sort(RuntimeRiskAnalyzer::compareFindings);
+        int maxDepth = recursive.isEmpty() ? callGraphMetrics.maximumStartupCallDepth(program, calls) : -1;
+        int maxStack = recursive.isEmpty() ? callGraphMetrics.maximumStartupStack(program, calls, frames) : -1;
+        findings.sort(this::compareFindings);
 
         return new RuntimeRiskReport(config.arenaBytes(), arenaBytes, unboundedArena,
                 estimatedStaticRam, maxStack, maxDepth, boundsChecks, uncheckedArrayAccesses, findings);
@@ -166,7 +174,7 @@ public final class RuntimeRiskAnalyzer {
                                               Map<MethodRef, Integer> frames) {
         for (MethodRef entry : threadEntries.stream().filter(calls::containsKey)
                 .sorted((left, right) -> left.displayName().compareTo(right.displayName())).toList()) {
-            Set<MethodRef> reachable = CallGraphMetrics.reachableFrom(entry, calls);
+            Set<MethodRef> reachable = callGraphMetrics.reachableFrom(entry, calls);
             if (reachable.stream().anyMatch(launchers::contains)) {
                 findings.add(new RuntimeRisk("JUNO-RISK-010", RiskSeverity.WARNING, entry,
                         "thread body starts a thread or opens a task scope; nested threads share the "
@@ -178,7 +186,7 @@ public final class RuntimeRiskAnalyzer {
                                 + " byte stack cannot be proven sufficient"));
                 continue;
             }
-            int stack = CallGraphMetrics.maximumStack(entry, calls, frames);
+            int stack = callGraphMetrics.maximumStack(entry, calls, frames);
             if (stack > threadStackBytes()) {
                 findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
                         "estimated thread stack use of " + stack + " bytes exceeds the smallest thread stack ("
@@ -192,7 +200,7 @@ public final class RuntimeRiskAnalyzer {
         return config.threadStackBytes(RuntimeLimits.MIN_THREAD_STACK_BYTES);
     }
 
-    private static int compareFindings(RuntimeRisk left, RuntimeRisk right) {
+    private int compareFindings(RuntimeRisk left, RuntimeRisk right) {
         int severity = right.severity().compareTo(left.severity());
         if (severity != 0) return severity;
         int code = left.code().compareTo(right.code());
@@ -200,7 +208,7 @@ public final class RuntimeRiskAnalyzer {
         return left.method().displayName().compareTo(right.method().displayName());
     }
 
-    private static int count(IrProgram program, Class<? extends IrInstruction> kind) {
+    private int count(IrProgram program, Class<? extends IrInstruction> kind) {
         return (int) program.methods().stream().flatMap(method -> method.blocks().stream())
                 .flatMap(block -> block.instructions().stream()).filter(kind::isInstance).count();
     }

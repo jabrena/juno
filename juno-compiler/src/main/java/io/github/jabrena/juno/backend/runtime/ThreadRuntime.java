@@ -40,23 +40,24 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
  * on Zephyr, whose own threads carry the stacks while a baton semaphore keeps exactly one of them running Java code.
  */
 public final class ThreadRuntime {
-    private ThreadRuntime() {
-    }
+    private final IoRuntime ioRuntime = new IoRuntime();
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+
 
     /**
      * {@code Thread.sleep}/{@code Thread.yield} in a program that never creates a thread: plain delay and yield,
      * with none of the scheduler.
      */
-    static String basics(String delayFunction) {
-        return RuntimeSource.load("common/thread-basics.cpp").replace("${JUNO_CORE_DELAY}", delayFunction);
+    String basics(String delayFunction) {
+        return runtimeSource.load("common/thread-basics.cpp").replace("${JUNO_CORE_DELAY}", delayFunction);
     }
 
     /**
      * The UNO R4's port: its own stacks and a context switch that saves the AAPCS callee-saved registers
      * (and, with an FPU, {@code s16}-{@code s31}) on the outgoing stack before swapping {@code sp}.
      */
-    public static String renesasPort(int maxThreads, int stackBytes) {
-        return RuntimeSource.load("renesas/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+    public String renesasPort(int maxThreads, int stackBytes) {
+        return runtimeSource.load("renesas/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -70,8 +71,8 @@ public final class ThreadRuntime {
      * writes past the stack: every generated function compares its new SP with {@code juno_stack_limit}, which keeps
      * {@code JUNO_STACK_GUARD_BYTES} free for the C calls of the deepest frame and for reporting the overflow.
      */
-    public static String avrPort(int maxThreads, int stackBytes) {
-        return RuntimeSource.load("avr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+    public String avrPort(int maxThreads, int stackBytes) {
+        return runtimeSource.load("avr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -81,8 +82,8 @@ public final class ThreadRuntime {
      * {@code k_timer}, whose expiry runs in the system clock's interrupt: Zephyr threads run on the process stack, so
      * {@code psp} holds the interrupted thread's exception frame.
      */
-    public static String zephyrPort(int maxThreads, int stackBytes) {
-        return RuntimeSource.load("zephyr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+    public String zephyrPort(int maxThreads, int stackBytes) {
+        return runtimeSource.load("zephyr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -90,8 +91,8 @@ public final class ThreadRuntime {
      * The UNO Q's I/O worker ({@link CoreRuntime#ioWorker()}), emitted after its thread port when the program makes
      * waiting device calls.
      */
-    public static String zephyrIoWorker() {
-        return RuntimeSource.load("zephyr/io-worker.cpp");
+    public String zephyrIoWorker() {
+        return runtimeSource.load("zephyr/io-worker.cpp");
     }
 
     /**
@@ -104,16 +105,18 @@ public final class ThreadRuntime {
      * @param stackScanFunction the collector's scan of one stack range: word-aligned on Thumb-2, byte by byte on AVR,
      *     whose stack frames are unaligned
      */
-    static String scheduler(boolean asynchronousPreemption, boolean ioWorker, String delayFunction,
+    String scheduler(boolean asynchronousPreemption, boolean ioWorker, String delayFunction,
                             String stackScanFunction,
                             boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
                             int failedExceptionClassId, int illegalStateExceptionClassId) {
-        String pendingSave = exceptions ? "juno_slots[from].pending = juno_pending_exception;\n"
-                + "  juno_pending_exception = juno_slots[to].pending;" : "";
+        String pendingSave = exceptions ? """
+                juno_slots[from].pending = juno_pending_exception;
+                  juno_pending_exception = juno_slots[to].pending;""" : "";
         // Each thread runs under its own scoped-value bindings, so the switch swaps the binding stack too.
-        String bindingsSwap = scopedValues ? "juno_slots[from].bindings = juno_scoped_top;\n"
-                + "  juno_scoped_top = juno_slots[to].bindings;" : "";
+        String bindingsSwap = scopedValues ? """
+                juno_slots[from].bindings = juno_scoped_top;
+                  juno_scoped_top = juno_slots[to].bindings;""" : "";
         String report = exceptions ? """
                   if (juno_pending_exception != 0) {
                     juno_throw_report(juno_pending_exception, static_cast<int32_t>(thread->id));
@@ -155,7 +158,7 @@ public final class ThreadRuntime {
                     juno_preempt_started = true;
                     juno_port_preempt_start();
                   }""" : "";
-        return RuntimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", IoRuntime.owners(ioWorker))
+        return runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker))
                 .replace("${JUNO_WAITING_IO_CASE}", ioWorker
                         ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_port_io_busy();" : "")
                 .replace("${JUNO_IO_REAP_DECLARATION}", ioWorker ? "static void juno_io_reap();" : "")
@@ -209,8 +212,8 @@ public final class ThreadRuntime {
      * switch on their own), aligns the stack for the call, and ends with a {@code pop {pc}} that leaves {@code sp}
      * exactly where the interrupted code had it.
      */
-    private static String asynchronousPreemption() {
-        return RuntimeSource.load("thumb2/preemption.cpp");
+    private String asynchronousPreemption() {
+        return runtimeSource.load("thumb2/preemption.cpp");
     }
 
     /**
@@ -218,12 +221,12 @@ public final class ThreadRuntime {
      * {@code juno_thread_safepoint} on every method entry, and either switches once the running thread's time slice
      * is over.
      */
-    private static String safepointPreemption() {
-        return RuntimeSource.load("avr/preemption.cpp");
+    private String safepointPreemption() {
+        return runtimeSource.load("avr/preemption.cpp");
     }
 
     /** Joiner-based scopes and subtask operations inserted only when the program reaches that API. */
-    private static String taskRuntime() {
-        return RuntimeSource.load("common/structured-tasks.cpp");
+    private String taskRuntime() {
+        return runtimeSource.load("common/structured-tasks.cpp");
     }
 }

@@ -36,6 +36,24 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`. Images
   live once, in `src/main/resources/public/images/`; the README links to them there.
 
+## Code style
+
+- **`juno-compiler` and `juno-maven-plugin` run on the build machine: write them object-oriented.** Behavior lives
+  on objects that hold their collaborators as `final` fields, not in static utility classes (`lowering` is the
+  reference: `MethodContext`, `OperandStack`, one lowerer per opcode group registered on an `OpcodeTable`). Prefer
+  records and sealed interfaces for data, behavior on the type that owns the data (`IrInstruction.referencedValues()`),
+  and patterns only where they remove real duplication (Strategy for `AsmBackend`, Template Method for the Mojos'
+  `run()`, Command for the CLI). Keep `static` for `main`, constants, constant tables built at class initialization,
+  and factory methods on value types (`Value.int32`, `Board.fromId`); use text blocks for multi-line strings. A
+  refactoring must keep every example's generated `.S`, `Shim.cpp` and report byte-identical (see
+  `skills/juno-debugging`). Skills `121`, `122`, `123`, `128`, `141` and `142` under `.claude/skills` hold the
+  detailed guidance.
+- **`juno-api` and `juno-examples` run on the board: write them for zero allocation.** The board has one fixed
+  arena (8 KiB, 1 KiB on AVR) and no `OutOfMemoryError`, so the API stays `final` classes of static intrinsics over
+  primitives and caller-owned buffers, and an example allocates its buffers and objects once at startup and never
+  inside its main loop. Follow `skills/juno-zero-allocation` when adding an API entry or an example, and
+  `skills/juno-debugging` when a program misbehaves between the source and the board.
+
 ## Commands
 
 ```bash

@@ -9,10 +9,10 @@ package io.github.jabrena.juno.backend.runtime;
  * its owner's top frame (still alive: the owner cannot leave the binding before the scope closes).
  */
 final class ScopedValueRuntime {
-    private ScopedValueRuntime() {
-    }
+    private final RuntimeSource runtimeSource = new RuntimeSource();
 
-    static String bindings(boolean runEntry, boolean callEntry, int noSuchElementClassId) {
+
+    String bindings(boolean runEntry, boolean callEntry, int noSuchElementClassId) {
         String runDeclaration = runEntry ? "extern \"C\" void juno_thread_entry(int32_t runnable);" : "";
         String run = runEntry ? """
                 extern "C" void juno_scoped_run(int32_t carrier, int32_t runnable) {
@@ -32,7 +32,7 @@ final class ScopedValueRuntime {
                   return result;
                 }
                 """ : "";
-        return RuntimeSource.load("common/scoped-values.cpp").replace("${JUNO_SCOPED_RUN_DECLARATION}", runDeclaration)
+        return runtimeSource.load("common/scoped-values.cpp").replace("${JUNO_SCOPED_RUN_DECLARATION}", runDeclaration)
                 .replace("${JUNO_SCOPED_CALL_DECLARATION}", callDeclaration)
                 .replace("${JUNO_SCOPED_RUN}", run)
                 .replace("${JUNO_SCOPED_CALL}", call)

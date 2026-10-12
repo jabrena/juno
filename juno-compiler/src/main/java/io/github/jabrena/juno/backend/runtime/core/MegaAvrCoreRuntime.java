@@ -19,7 +19,12 @@ import io.github.jabrena.juno.board.ArduinoCore;
  * preemptive scheduler over {@link ThreadRuntime#avrPort}, preempted at safepoints. The board has no LED matrix, no HTTP server and no
  * STARTTLS mail submission; the linker's capability checks keep programs needing them from reaching this class.
  */
-record MegaAvrCoreRuntime() implements CoreRuntime {
+final class MegaAvrCoreRuntime implements CoreRuntime {
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+    private final ParallelBusRuntime parallelBusRuntime = new ParallelBusRuntime();
+    private final ThreadRuntime threadRuntime = new ThreadRuntime();
+    private final ShimLibraries shimLibraries = new ShimLibraries();
+
     @Override
     public String delayMillisFunction() {
         return "juno_delay_millis";
@@ -49,7 +54,7 @@ record MegaAvrCoreRuntime() implements CoreRuntime {
     /** megaAVR 0-series ports set and clear bits through their own OUTSET/OUTCLR registers. */
     @Override
     public String parallelBusHelpers() {
-        return ParallelBusRuntime.helpers("",
+        return parallelBusRuntime.helpers("",
                 "PORT_t*",
                 """
                 port = digitalPinToPortStruct(pin);
@@ -65,8 +70,8 @@ record MegaAvrCoreRuntime() implements CoreRuntime {
      */
     @Override
     public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
-        return ShimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes,
-                RuntimeSource.load("megaavr/sd-soft-spi.cpp"),
+        return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes,
+                runtimeSource.load("megaavr/sd-soft-spi.cpp"),
                 "juno_sd.begin(SdSpiConfig(chipSelectPin, SHARED_SPI, SD_SCK_MHZ(0), &juno_sd_spi))");
     }
 
@@ -78,7 +83,7 @@ record MegaAvrCoreRuntime() implements CoreRuntime {
     /** {@code WiFiNINA} has the same {@code WiFi.begin}/{@code beginAP}/{@code status}/{@code localIP} as WiFiS3. */
     @Override
     public String wifiHelpers() {
-        return ShimLibraries.wifiHelpers();
+        return shimLibraries.wifiHelpers();
     }
 
     @Override
@@ -125,11 +130,11 @@ record MegaAvrCoreRuntime() implements CoreRuntime {
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        return ThreadRuntime.avrPort(config.maxThreads(),
+        return threadRuntime.avrPort(config.maxThreads(),
                 config.threadStackBytes(ArduinoCore.MEGAAVR.defaultThreadStackBytes()));
     }
 
-    private static CompileException unsupported(String feature) {
+    private CompileException unsupported(String feature) {
         return Architecture.AVR.unsupported(feature + " on the megaAVR core");
     }
 }

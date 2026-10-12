@@ -37,6 +37,7 @@ import java.util.Set;
  * it was one before. A method inlined everywhere and referenced nowhere else is dropped.
  */
 public final class Inliner implements CompilerPass {
+
     /** The most real work a callee may do: its instructions other than local moves and constants. */
     static final int MAX_COST = 8;
     /** A cap on every instruction, moves included, so the inlined copy stays small before copy propagation runs. */
@@ -80,17 +81,17 @@ public final class Inliner implements CompilerPass {
         if (!inlined) {
             return program;
         }
-        Set<MethodRef> referenced = References.of(program.entryPoint(), methods);
+        Set<MethodRef> referenced = new References().of(program.entryPoint(), methods);
         return program.withMethods(methods.stream()
                 .filter(method -> !inlinable.containsKey(method.reference()) || referenced.contains(method.reference()))
                 .toList());
     }
 
-    private static boolean qualifies(IrMethod method, IrProgram program) {
+    private boolean qualifies(IrMethod method, IrProgram program) {
         if (method.reference().equals(program.entryPoint()) || method.reference().name().equals("<clinit>")
                 || RUNTIME_ENTRIES.contains(method.reference())
                 || !method.arrayDeclarations().isEmpty() || method.blocks().size() > MAX_BLOCKS
-                || !Descriptors.oneSlotOnly(method.reference().descriptor())) {
+                || !new Descriptors().oneSlotOnly(method.reference().descriptor())) {
             return false;
         }
         int instructions = 0;
@@ -109,14 +110,14 @@ public final class Inliner implements CompilerPass {
         return true;
     }
 
-    private static boolean isLeafInstruction(IrInstruction instruction) {
+    private boolean isLeafInstruction(IrInstruction instruction) {
         return !(instruction instanceof IrInstruction.Call || instruction instanceof IrInstruction.LambdaCall
                 || instruction instanceof IrInstruction.InterfaceCall || instruction instanceof IrInstruction.IntrinsicCall
                 || instruction instanceof IrInstruction.NewObject || instruction instanceof IrInstruction.NewArray
                 || instruction instanceof IrInstruction.NewMultiArray || instruction instanceof IrInstruction.LambdaCreate);
     }
 
-    private static boolean callsAny(IrMethod method, Map<MethodRef, IrMethod> inlinable) {
+    private boolean callsAny(IrMethod method, Map<MethodRef, IrMethod> inlinable) {
         return method.blocks().stream().flatMap(block -> block.instructions().stream())
                 .anyMatch(instruction -> instruction instanceof IrInstruction.Call call
                         && inlinable.containsKey(call.method()) && !call.method().equals(method.reference()));
@@ -124,6 +125,7 @@ public final class Inliner implements CompilerPass {
 
     /** Inlines every qualifying call in one caller. */
     private static final class Site {
+        private final IrRewriting irRewriting = new IrRewriting();
         private final IrMethod caller;
         private final Map<MethodRef, IrMethod> inlinable;
         private final List<Value> values;
@@ -186,7 +188,7 @@ public final class Inliner implements CompilerPass {
                 start = continuation;
             }
             blocks.add(new IrBasicBlock(start, List.copyOf(segment),
-                    IrRewriting.map(block.terminator(), value -> value, this::scaled)));
+                    irRewriting.map(block.terminator(), value -> value, this::scaled)));
         }
 
         /** The callee's blocks, renumbered, with fresh values and locals in the window; returns jump onward. */
@@ -197,7 +199,7 @@ public final class Inliner implements CompilerPass {
             for (IrBasicBlock block : callee.blocks()) {
                 List<IrInstruction> instructions = new ArrayList<>();
                 for (IrInstruction instruction : block.instructions()) {
-                    instructions.add(IrRewriting.map(instruction, value -> rename(renamed, value),
+                    instructions.add(irRewriting.map(instruction, value -> rename(renamed, value),
                             local -> window + local));
                 }
                 IrTerminator terminator;
@@ -206,7 +208,7 @@ public final class Inliner implements CompilerPass {
                             instructions.add(new IrInstruction.StoreLocal(resultSlot, rename(renamed, value))));
                     terminator = new IrTerminator.Jump(continuation);
                 } else {
-                    terminator = IrRewriting.map(block.terminator(), value -> rename(renamed, value),
+                    terminator = irRewriting.map(block.terminator(), value -> rename(renamed, value),
                             calleeBlocks::get);
                 }
                 blocks.add(new IrBasicBlock(Objects.requireNonNull(calleeBlocks.get(block.start())), List.copyOf(instructions), terminator));
@@ -224,15 +226,12 @@ public final class Inliner implements CompilerPass {
 
     /** Parameter shapes the inliner handles: one JVM slot each, in and out. */
     static final class Descriptors {
-        private Descriptors() {
-        }
-
-        static boolean oneSlotOnly(String descriptor) {
+        boolean oneSlotOnly(String descriptor) {
             return !containsWide(descriptor);
         }
 
         /** Whether a {@code long} or {@code double} appears as a parameter or the result, not inside a class name. */
-        private static boolean containsWide(String descriptor) {
+        private boolean containsWide(String descriptor) {
             int index = 0;
             while (index < descriptor.length()) {
                 char type = descriptor.charAt(index);
@@ -254,10 +253,7 @@ public final class Inliner implements CompilerPass {
 
     /** Every method the program can still reach without going through an inlined call. */
     static final class References {
-        private References() {
-        }
-
-        static Set<MethodRef> of(MethodRef entryPoint, List<IrMethod> methods) {
+        Set<MethodRef> of(MethodRef entryPoint, List<IrMethod> methods) {
             Set<MethodRef> referenced = new HashSet<>(RUNTIME_ENTRIES);
             referenced.add(entryPoint);
             for (IrMethod method : methods) {
@@ -273,7 +269,7 @@ public final class Inliner implements CompilerPass {
             return referenced;
         }
 
-        private static void collect(IrInstruction instruction, Set<MethodRef> referenced) {
+        private void collect(IrInstruction instruction, Set<MethodRef> referenced) {
             switch (instruction) {
                 case IrInstruction.Call call -> referenced.add(call.method());
                 case IrInstruction.InterfaceCall call -> call.targets().forEach(target -> {

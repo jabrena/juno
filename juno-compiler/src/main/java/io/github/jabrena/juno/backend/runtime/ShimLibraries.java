@@ -11,22 +11,22 @@ import java.util.List;
  * {@link RuntimeShim} only when the lowered program actually calls into it.
  */
 public final class ShimLibraries {
-    private ShimLibraries() {
-    }
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+
 
     /** USB HID mouse bindings; {@code Mouse.h} is an optional library, included only on use. */
-    static String mouseHelpers() {
-        return RuntimeSource.load("common/mouse.cpp");
+    String mouseHelpers() {
+        return runtimeSource.load("common/mouse.cpp");
     }
 
     /** One {@code Servo} per digital pin, attached on first use. */
-    static String servoHelpers() {
-        return RuntimeSource.load("common/servo.cpp");
+    String servoHelpers() {
+        return runtimeSource.load("common/servo.cpp");
     }
 
     /** Register reads and writes on the primary {@code Wire} bus, with the core-bundled {@code Wire} library. */
-    static String i2cHelpers() {
-        return RuntimeSource.load("common/i2c.cpp");
+    String i2cHelpers() {
+        return runtimeSource.load("common/i2c.cpp");
     }
 
     /**
@@ -34,8 +34,8 @@ public final class ShimLibraries {
      * and one stop bit at the configured baud rate, with a software carrier for a 0 bit when transmitting.
      * The receive pin is an IR demodulator module's output, which idles high and goes low in a burst.
      */
-    static String infraredHelpers() {
-        return RuntimeSource.load("common/infrared.cpp");
+    String infraredHelpers() {
+        return runtimeSource.load("common/infrared.cpp");
     }
 
     /**
@@ -44,23 +44,30 @@ public final class ShimLibraries {
      * characteristic, framed as {@code [length, hub id 0, message type, payload...]}, and the hub's
      * notifications on that characteristic carry the sensor values {@code enableSensor} asked for.
      */
-    static String legoPoweredUpHelpers(boolean threads) {
-        return RuntimeSource.load("common/lego-powered-up.cpp").replace("${JUNO_LEGO_WAIT}", threads
-                ? "extern \"C\" void juno_thread_yield();\n"
-                        + "                static void juno_lego_wait() {\n"
-                        + "                  juno_thread_yield();\n"
-                        + "                }"
-                : "static void juno_lego_wait() {\n                }");
+    String legoPoweredUpHelpers(boolean threads) {
+        String wait = threads
+                ? """
+                  extern "C" void juno_thread_yield();
+                  static void juno_lego_wait() {
+                    juno_thread_yield();
+                  }"""
+                : """
+                  static void juno_lego_wait() {
+                  }""";
+        // Continuation lines line up with the ${JUNO_LEGO_WAIT} placeholder's column in the template.
+        return runtimeSource.load("common/lego-powered-up.cpp")
+                .replace("${JUNO_LEGO_WAIT}", wait.replace("\n", "\n                "));
     }
+
 
     /**
      * Read-only {@code java.io.RandomAccessFile}: a handle into the same open-file table as {@code SdCard.open}.
      * Every failure leaves the JDK's own exception pending (the caller's call guard routes it to a handler) and
      * returns a value the program never reads. Needs {@link #sdHelpers()} and {@link #exceptionHelpers} first.
      */
-    static String randomAccessFileHelpers(int ioClassId, int fileNotFoundClassId, int eofClassId,
+    String randomAccessFileHelpers(int ioClassId, int fileNotFoundClassId, int eofClassId,
                                           int indexOutOfBoundsClassId) {
-        return RuntimeSource.load("common/random-access-file.cpp")
+        return runtimeSource.load("common/random-access-file.cpp")
                 .replace("${JUNO_RAF_IO}", Integer.toString(ioClassId))
                 .replace("${JUNO_RAF_FILE_NOT_FOUND}", Integer.toString(fileNotFoundClassId))
                 .replace("${JUNO_RAF_EOF}", Integer.toString(eofClassId))
@@ -71,22 +78,22 @@ public final class ShimLibraries {
     }
 
     /** Exposes the arena allocator's current usage and its fixed capacity. */
-    static String memoryHelpers() {
-        return RuntimeSource.load("common/memory.cpp");
+    String memoryHelpers() {
+        return runtimeSource.load("common/memory.cpp");
     }
 
     /** Arduino core {@code random()}/{@code randomSeed()} bindings. */
-    static String randomHelpers() {
-        return RuntimeSource.load("common/random.cpp");
+    String randomHelpers() {
+        return runtimeSource.load("common/random.cpp");
     }
 
     /** {@code WiFiS3} station-mode bindings. */
-    public static String wifiHelpers() {
-        return RuntimeSource.load("common/wifi.cpp");
+    public String wifiHelpers() {
+        return runtimeSource.load("common/wifi.cpp");
     }
 
     /** Arduino SD read/append bindings plus a bounded, arena-backed {@code key=value} parser. */
-    public static String sdHelpers() {
+    public String sdHelpers() {
         return sdHelpers(4, 16, 32, 64, 96);
     }
 
@@ -95,14 +102,14 @@ public final class ShimLibraries {
      * {@code Properties} of {@code entries} entries of at most {@code keyBytes}/{@code valueBytes} (terminator
      * included), parsed from lines of at most {@code lineBytes}. An 8-bit board with a few KB of RAM uses smaller ones.
      */
-    public static String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
+    public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
         return sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes, "", "juno_sd.begin(chipSelectPin)");
     }
 
     /** The SD helpers with a core-specific SPI driver declaration and {@code SdFat32.begin} expression. */
-    public static String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes,
+    public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes,
                             String spiDeclaration, String beginExpression) {
-        return RuntimeSource.load("common/sd.cpp").replace("${JUNO_SD_MAX_OPEN_FILES}", Integer.toString(openFiles))
+        return runtimeSource.load("common/sd.cpp").replace("${JUNO_SD_MAX_OPEN_FILES}", Integer.toString(openFiles))
                 .replace("${JUNO_SD_SPI_DECLARATION}", spiDeclaration)
                 .replace("${JUNO_SD_BEGIN_EXPRESSION}", beginExpression)
                 .replace("${JUNO_PROPERTIES_MAX_ENTRIES}", Integer.toString(entries))
@@ -116,11 +123,11 @@ public final class ShimLibraries {
      * than hand-rolled 64-bit assembly, consistent with this backend's existing shim-delegation
      * philosophy for anything nontrivial (see this class's doc).
      */
-    static String longHelpers() {
-        return RuntimeSource.load("common/long.cpp");
+    String longHelpers() {
+        return runtimeSource.load("common/long.cpp");
     }
 
-    static String runtimeStringHelpers() {
+    String runtimeStringHelpers() {
         return runtimeStringSlots(8) + runtimeStringDoubleFormatting() + runtimeStringOperations()
                 + runtimeStringFloatingAppends();
     }
@@ -130,25 +137,25 @@ public final class ShimLibraries {
      * {@link #runtimeStringHelpers()}, which an architecture without a binary64 {@code double} (AVR) combines with
      * its own floating-point formatting.
      */
-    static String runtimeStringSlots(int slots) {
-        return RuntimeSource.load("common/runtime-string-slots.cpp").replace("${JUNO_STRING_SLOT_SIZE}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
+    String runtimeStringSlots(int slots) {
+        return runtimeSource.load("common/runtime-string-slots.cpp").replace("${JUNO_STRING_SLOT_SIZE}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
                 .replace("${JUNO_STRING_SLOT_COUNT}", Integer.toString(slots))
                 .replace("${JUNO_STRING_MAX_LENGTH}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES - 1));
     }
 
     /** {@code juno_format_double} and {@code String.valueOf(double)} on the C {@code double}. */
-    static String runtimeStringDoubleFormatting() {
-        return RuntimeSource.load("thumb2/runtime-string-double-formatting.cpp");
+    String runtimeStringDoubleFormatting() {
+        return runtimeSource.load("thumb2/runtime-string-double-formatting.cpp");
     }
 
     /** {@code length}, {@code charAt}, {@code equals} and string concatenation of everything but floating point. */
-    static String runtimeStringOperations() {
-        return RuntimeSource.load("common/runtime-string-operations.cpp");
+    String runtimeStringOperations() {
+        return runtimeSource.load("common/runtime-string-operations.cpp");
     }
 
     /** String concatenation of {@code float} and {@code double}, through {@code juno_format_double}. */
-    static String runtimeStringFloatingAppends() {
-        return RuntimeSource.load("thumb2/runtime-string-floating-appends.cpp");
+    String runtimeStringFloatingAppends() {
+        return runtimeSource.load("thumb2/runtime-string-floating-appends.cpp");
     }
 
     /**
@@ -159,8 +166,8 @@ public final class ShimLibraries {
      * the written bytes into the same rotating string-slot pool {@link #runtimeStringHelpers()}
      * uses for every other runtime string, so it needs that pool already declared.
      */
-    static String stringBuilderHelpers() {
-        return RuntimeSource.load("common/string-builder.cpp");
+    String stringBuilderHelpers() {
+        return runtimeSource.load("common/string-builder.cpp");
     }
 
     /**
@@ -168,7 +175,7 @@ public final class ShimLibraries {
      * method catches that class ({@code caughtMask} bit set); otherwise it reports the exception the
      * way the JVM does and panics. {@code throw null} reports a {@code NullPointerException}.
      */
-    static String exceptionHelpers(List<String> throwableClasses) {
+    String exceptionHelpers(List<String> throwableClasses) {
         StringBuilder names = new StringBuilder();
         if (throwableClasses.isEmpty()) {
             names.append("  \"\",\n"); // only `throw null` reaches the runtime; C++ forbids an empty array
@@ -176,18 +183,18 @@ public final class ShimLibraries {
         for (String className : throwableClasses) {
             names.append("  \"").append(className.replace('/', '.')).append("\",\n");
         }
-        return RuntimeSource.load("common/exceptions.cpp").replace("${JUNO_THROWABLE_NAMES}", names.toString())
+        return runtimeSource.load("common/exceptions.cpp").replace("${JUNO_THROWABLE_NAMES}", names.toString())
                 .replace("${JUNO_CLASS_ID_WORD}", Integer.toString(ThrowableTypes.CLASS_ID_OFFSET / Integer.BYTES))
                 .replace("${JUNO_MESSAGE_WORD}", Integer.toString(ThrowableTypes.MESSAGE_OFFSET / Integer.BYTES));
     }
 
     /** {@code extern "C"} float helpers, called from assembly with float values in core registers (see {@code JUNO_ASM_ABI}). */
-    static String floatHelpers() {
-        return RuntimeSource.load("thumb2/float.cpp");
+    String floatHelpers() {
+        return runtimeSource.load("thumb2/float.cpp");
     }
 
     /** {@code extern "C"} soft-float helpers for {@code double}; see {@link #floatHelpers}. */
-    static String doubleHelpers() {
-        return RuntimeSource.load("thumb2/double.cpp");
+    String doubleHelpers() {
+        return runtimeSource.load("thumb2/double.cpp");
     }
 }

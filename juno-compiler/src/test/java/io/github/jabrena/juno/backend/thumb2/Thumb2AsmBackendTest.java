@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend.thumb2;
 
+import io.github.jabrena.juno.backend.GeneratedCode;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
@@ -59,7 +60,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Jump(6));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 3, 11, List.of(), List.of(setupBlock, loopBlock));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(result.entryPointSymbol()).isEqualTo("juno_Blink_asm");
@@ -93,28 +94,30 @@ class Thumb2AsmBackendTest {
         IrMethod helperMethod = IrMethod.withInferredValues(helper, 0, 0, List.of(),
                 List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty()))));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend()
+        GeneratedCode result = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(entryMethod, helperMethod)));
         String assembly = result.assembly();
 
-        String capture = "ldr r0, =juno_gc_stack_top\n"
-                + "    mov r1, sp\n"
-                + "    str r1, [r0]\n"
-                + "    movw r2, #4096\n"
-                + "    sub r2, r1, r2\n"
-                + "    movs r3, #0\n"
-                + ".LjunoZeroStack:\n"
-                + "    cmp r2, r1\n"
-                + "    bhs .LjunoZeroStackDone\n"
-                + "    str r3, [r2]\n"
-                + "    add r2, r2, #4\n"
-                + "    b .LjunoZeroStack\n"
-                + ".LjunoZeroStackDone:\n"
-                + "    push {r4-r11, lr}\n";
-        assertThat(assembly).contains("juno_GcStackTop_asm:\n    " + capture);
+        String capture = """
+                    ldr r0, =juno_gc_stack_top
+                    mov r1, sp
+                    str r1, [r0]
+                    movw r2, #4096
+                    sub r2, r1, r2
+                    movs r3, #0
+                .LjunoZeroStack:
+                    cmp r2, r1
+                    bhs .LjunoZeroStackDone
+                    str r3, [r2]
+                    add r2, r2, #4
+                    b .LjunoZeroStack
+                .LjunoZeroStackDone:
+                    push {r4-r11, lr}
+                """;
+        assertThat(assembly).contains("juno_GcStackTop_asm:\n" + capture);
         // Exactly once: the helper's own prologue must not repeat it.
         assertThat(countOccurrences(assembly, "ldr r0, =juno_gc_stack_top")).isEqualTo(1);
-        assertThat(assembly).doesNotContain("juno_fn1:\n    " + capture);
+        assertThat(assembly).doesNotContain("juno_fn1:\n" + capture);
     }
 
     private static int countOccurrences(String haystack, String needle) {
@@ -163,7 +166,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Jump(3));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 4, 9, List.of(), List.of(setupBlock, loopBlock));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains("bl juno_led_matrix_begin")).isTrue();
@@ -214,7 +217,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Jump(8));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 4, 13, List.of(), List.of(setupBlock, loopBlock));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains("bl juno_serial_begin")).isTrue();
@@ -240,7 +243,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 0, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains(".section .rodata")).isTrue();
@@ -270,7 +273,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 3, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains("juno_str0:\n    .asciz \"network\"")).isTrue();
@@ -328,7 +331,7 @@ class Thumb2AsmBackendTest {
         IrMethod main = IrMethod.withInferredValues(mainRef, 1, 11, List.of(),
                 List.of(entryBlock, caseZero, caseOne, defaultCase, join));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend()
+        GeneratedCode result = new Thumb2AsmBackend()
                 .generate(new IrProgram(mainRef, List.of(clinit, main)));
         String assembly = result.assembly();
 
@@ -394,7 +397,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 2, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(result.assembly().contains("bl juno_mouse_begin")).isTrue();
         assertThat(result.assembly().contains("bl juno_mouse_move")).isTrue();
@@ -403,7 +406,7 @@ class Thumb2AsmBackendTest {
 
         // A program that never touches Mouse must not require that library to compile.
         MethodRef noArgsEntry = new MethodRef("RatonLoco", "main", "()V");
-        Thumb2AsmBackend.Output withoutMouse = new Thumb2AsmBackend().generate(
+        GeneratedCode withoutMouse = new Thumb2AsmBackend().generate(
                 new IrProgram(noArgsEntry, List.of(IrMethod.withInferredValues(noArgsEntry, 0, 0, List.of(),
                         List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty())))))));
         assertThat(withoutMouse.runtimeShim().contains("Mouse")).isFalse();
@@ -455,7 +458,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(Value.int32(1))));
         IrMethod main = IrMethod.withInferredValues(mainRef, 0, 2, List.of(), List.of(mainEntry));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend()
+        GeneratedCode result = new Thumb2AsmBackend()
                 .generate(new IrProgram(mainRef, List.of(main, classify)));
         String assembly = result.assembly();
 
@@ -481,13 +484,13 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(Value.int32(6))));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(result.assembly().contains("bl juno_ladd")).isTrue();
         assertThat(result.runtimeShim().contains("extern \"C\" int64_t juno_ladd")).isTrue();
         // A program that never touches long must not pull the helper block in at all.
         MethodRef intOnlyEntry = new MethodRef("demo/IntOnly", "main", "()V");
-        Thumb2AsmBackend.Output withoutLong = new Thumb2AsmBackend().generate(new IrProgram(intOnlyEntry,
+        GeneratedCode withoutLong = new Thumb2AsmBackend().generate(new IrProgram(intOnlyEntry,
                 List.of(IrMethod.withInferredValues(intOnlyEntry, 0, 0, List.of(),
                         List.of(new IrBasicBlock(0, List.of(), new IrTerminator.Return(Optional.empty())))))));
         assertThat(withoutLong.runtimeShim().contains("juno_ladd")).isFalse();
@@ -514,7 +517,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(intResult)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(result.assembly().contains("bl juno_json_get_double")).isTrue();
         assertThat(result.assembly().contains("bl juno_d2i")).isTrue();
@@ -549,7 +552,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(result)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output result2 = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result2 = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(result2.assembly().contains("bl juno_https_get")).isTrue();
         assertThat(result2.assembly().contains("sub sp, sp, #16")).isTrue(); // 8 words spills 4, rounded to 16
@@ -574,7 +577,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(result)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 2, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output output = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode output = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(output.assembly()).contains("bl juno_smtp_send");
         assertThat(output.runtimeShim()).contains(
@@ -612,7 +615,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(result)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output output = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode output = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(output.assembly()).contains("bl juno_pop3_read_latest");
         assertThat(output.assembly()).contains("sub sp, sp, #24"); // 9 words spills 5, rounded to 24
@@ -644,7 +647,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(result)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 5, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output output = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode output = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(output.assembly()).contains("bl juno_pop3_read_subject");
         assertThat(output.runtimeShim()).contains(
@@ -687,7 +690,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.empty()));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 1, 6, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
+        GeneratedCode result = new Thumb2AsmBackend().generate(new IrProgram(entryPoint, List.of(method)));
         String assembly = result.assembly();
 
         assertThat(assembly.contains("bl juno_string_builder_new")).isTrue();
@@ -726,7 +729,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(length)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 5, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
+        GeneratedCode generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl juno_string_value_of_int");
@@ -753,7 +756,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(text)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 4, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
+        GeneratedCode generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl juno_string_value_of_double");
@@ -774,7 +777,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(text)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
+        GeneratedCode generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl juno_json_get_string_value");
@@ -797,7 +800,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(temperature)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
+        GeneratedCode generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl juno_json_get_int");
@@ -825,7 +828,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(reading)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 3, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
+        GeneratedCode generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl analogRead");
@@ -846,7 +849,7 @@ class Thumb2AsmBackendTest {
                 new IrTerminator.Return(Optional.of(millis)));
         IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 2, List.of(), List.of(block));
 
-        Thumb2AsmBackend.Output generated = new Thumb2AsmBackend()
+        GeneratedCode generated = new Thumb2AsmBackend()
                 .generate(new IrProgram(entryPoint, List.of(method)));
 
         assertThat(generated.assembly()).contains("bl millis");

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.thumb2;
 
 import io.github.jabrena.juno.backend.FrameLayout;
-
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.IrInstruction;
 
@@ -24,7 +24,7 @@ final class ArrayLowering {
     /** Allocates the outer (row-handle) array, then each leaf row. */
     void emitNewMultiArray(StringBuilder output, FrameLayout frame, IrInstruction.NewMultiArray array) {
         if (array.dimensions().size() != 2) {
-            throw Thumb2AsmBackend.unsupported("array nesting deeper than 2 dimensions: " + array.dimensions());
+            throw Architecture.THUMB2.unsupported("array nesting deeper than 2 dimensions: " + array.dimensions());
         }
         int outerCount = array.dimensions().get(0);
         int innerCount = array.dimensions().get(1);
@@ -46,10 +46,12 @@ final class ArrayLowering {
     void emitArrayLoad(StringBuilder output, FrameLayout frame, IrInstruction.ArrayLoad load) {
         asm.load(output, frame, "r0", load.array());
         asm.load(output, frame, "r1", load.index());
-        if (FrameLayout.isWide(load.target().type())) {
-            output.append("    lsls r1, r1, #3\n")
-                    .append("    add r0, r0, r1\n")
-                    .append("    ldr r2, [r0]\n")
+        if (load.target().type().isWide()) {
+            output.append("""
+                        lsls r1, r1, #3
+                        add r0, r0, r1
+                        ldr r2, [r0]
+                    """)
                     .append("    ldr r3, [r0, #").append(AsmEmitter.WORD).append("]\n");
             asm.store64(output, frame, "r2", "r3", load.target());
             return;
@@ -68,11 +70,13 @@ final class ArrayLowering {
     void emitArrayStore(StringBuilder output, FrameLayout frame, IrInstruction.ArrayStore store) {
         asm.load(output, frame, "r0", store.array());
         asm.load(output, frame, "r1", store.index());
-        if (FrameLayout.isWide(store.value().type())) {
+        if (store.value().type().isWide()) {
             asm.load64(output, frame, "r2", "r3", store.value());
-            output.append("    lsls r1, r1, #3\n")
-                    .append("    add r0, r0, r1\n")
-                    .append("    str r2, [r0]\n")
+            output.append("""
+                        lsls r1, r1, #3
+                        add r0, r0, r1
+                        str r2, [r0]
+                    """)
                     .append("    str r3, [r0, #").append(AsmEmitter.WORD).append("]\n");
             return;
         }
@@ -100,7 +104,7 @@ final class ArrayLowering {
         }
         String okLabel = asm.newLabel(".Lbcok");
         asm.load(output, frame, "r0", check.index());
-        if (AsmEmitter.isModifiedImmediate(check.length())) {
+        if (asm.isModifiedImmediate(check.length())) {
             output.append("    cmp r0, #").append(check.length()).append('\n');
         } else {
             asm.emitLoadImmediate(output, "r1", check.length());

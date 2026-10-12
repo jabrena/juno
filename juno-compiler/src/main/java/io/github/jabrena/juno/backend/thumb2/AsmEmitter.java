@@ -70,7 +70,7 @@ public final class AsmEmitter {
      * halfword or word pattern, or an 8-bit value with its top bit set rotated anywhere. Such a constant can be the
      * second operand of {@code cmp}, {@code and}, {@code orr}, {@code eor}, {@code add} and {@code sub} directly.
      */
-    static boolean isModifiedImmediate(int value) {
+    boolean isModifiedImmediate(int value) {
         int low = value & 0xFF;
         if ((value & ~0xFF) == 0
                 || value == (low | low << 16)
@@ -127,7 +127,7 @@ public final class AsmEmitter {
     void emitShimCall(StringBuilder output, FrameLayout frame, String functionName, List<WordSource> words) {
         int total = words.size();
         int extra = Math.max(0, total - 4);
-        int reserved = FrameLayout.roundUp(extra * WORD, 8);
+        int reserved = alignStack(extra * WORD);
         if (reserved > 0) {
             output.append("    sub sp, sp, #").append(reserved).append('\n');
             for (int i = 4; i < total; i++) {
@@ -168,5 +168,10 @@ public final class AsmEmitter {
             output.append("    add r12, r12, sp\n")
                     .append("    str ").append(sourceRegister).append(", [r12]\n");
         }
+    }
+
+    /** {@code bytes} rounded up to the 8-byte stack alignment AAPCS requires at every call. */
+    int alignStack(int bytes) {
+        return (bytes + 7) / 8 * 8;
     }
 }

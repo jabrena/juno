@@ -22,6 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AvrAsmBackendTest {
+    private final AvrShimThunks avrShimThunks = new AvrShimThunks();
+
     private static final String REV2 = "arduino-uno-wifi-rev2";
 
     @TempDir
@@ -108,7 +110,7 @@ class AvrAsmBackendTest {
                 }
                 """;
 
-        String thunks = AvrShimThunks.generate(shim,
+        String thunks = avrShimThunks.generate(shim,
                 new java.util.TreeSet<>(Set.of("juno_string_concat_append_long", "juno_dcmp_like", "juno_alloc_like")));
 
         assertThat(thunks)
@@ -122,10 +124,10 @@ class AvrAsmBackendTest {
 
     @Test
     void refusesAThunkForACDoubleOrAMissingPrototype() {
-        assertThatThrownBy(() -> AvrShimThunks.generate("extern \"C\" void f(double value) {\n}\n", Set.of("f")))
+        assertThatThrownBy(() -> avrShimThunks.generate("extern \"C\" void f(double value) {\n}\n", Set.of("f")))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("avr-gcc makes 32 bits wide");
-        assertThatThrownBy(() -> AvrShimThunks.generate("", Set.of("juno_missing")))
+        assertThatThrownBy(() -> avrShimThunks.generate("", Set.of("juno_missing")))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("no extern \"C\" definition of juno_missing");
     }
@@ -269,8 +271,12 @@ class AvrAsmBackendTest {
                 """);
         assertThat(result.assembly())
                 // The scheduler enters a task through a global symbol that takes its argument in r22-r25.
-                .contains("    .global juno_thread_entry\n    .type juno_thread_entry, @function\njuno_thread_entry:\n"
-                        + "    push r2\n")
+                .contains("""
+                            .global juno_thread_entry
+                            .type juno_thread_entry, @function
+                        juno_thread_entry:
+                            push r2
+                        """)
                 .contains("    sts juno_avr_args+0, r22\n    sts juno_avr_args+1, r23\n")
                 .contains("    call juno_thread_backedge\n")
                 // Every method but the entry point is a safepoint too, right after its arguments are in its frame.

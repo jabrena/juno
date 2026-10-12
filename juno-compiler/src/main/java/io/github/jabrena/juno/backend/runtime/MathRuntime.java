@@ -20,17 +20,17 @@ import java.util.Set;
  * native integer division.
  */
 public final class MathRuntime {
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+
     /** Shared helpers several functions build on; {@code static inline}, so unused ones cost nothing. */
-    private static final String FLOATING_PRELUDE = RuntimeSource.load("thumb2/math-floating-prelude.cpp");
+    private final String floatingPrelude = runtimeSource.load("thumb2/math-floating-prelude.cpp");
 
     /** The {@code long} helpers of the prelude, on integers only (every architecture's C can run them). */
-    static final String LONG_PRELUDE = RuntimeSource.load("common/math-long-prelude.cpp");
+    private final String longPrelude = runtimeSource.load("common/math-long-prelude.cpp");
 
-    private static final String PRELUDE = FLOATING_PRELUDE + LONG_PRELUDE;
+    private final Map<Intrinsic, String> sources = new EnumMap<>(Intrinsic.class);
 
-    private static final Map<Intrinsic, String> SOURCES = new EnumMap<>(Intrinsic.class);
-
-    static {
+    public MathRuntime() {
         define(Intrinsic.MATH_ABS_INT, "int32_t", "int32_t a",
                 "return a < 0 ? static_cast<int32_t>(0u - static_cast<uint32_t>(a)) : a;");
         define(Intrinsic.MATH_ABS_LONG, "int64_t", "int64_t a",
@@ -107,11 +107,9 @@ public final class MathRuntime {
         define(Intrinsic.MATH_TO_DEGREES, "double", "double a", "return a * 57.29577951308232;");
     }
 
-    private MathRuntime() {
-    }
 
-    private static void define(Intrinsic intrinsic, String returnType, String parameters, String body) {
-        SOURCES.put(intrinsic, "extern \"C\" JUNO_ASM_ABI " + returnType + " " + symbol(intrinsic)
+    private void define(Intrinsic intrinsic, String returnType, String parameters, String body) {
+        sources.put(intrinsic, "extern \"C\" JUNO_ASM_ABI " + returnType + " " + symbol(intrinsic)
                 + "(" + parameters + ") { " + body + " }\n");
     }
 
@@ -119,24 +117,29 @@ public final class MathRuntime {
      * The source of {@code intrinsic}'s shim function when it only takes and returns integers ({@code int} and
      * {@code long}), so it is portable to any C; null for a floating-point overload.
      */
-    static @Nullable String integerSource(Intrinsic intrinsic) {
-        String source = SOURCES.get(intrinsic);
+    @Nullable String integerSource(Intrinsic intrinsic) {
+        String source = sources.get(intrinsic);
         return source == null || source.contains("float") || source.contains("double") ? null : source;
     }
 
-    public static boolean isMath(Intrinsic intrinsic) {
-        return SOURCES.containsKey(intrinsic);
+    public boolean isMath(Intrinsic intrinsic) {
+        return sources.containsKey(intrinsic);
     }
 
     /** {@code MATH_FLOOR_DIV_INT} becomes {@code juno_math_floor_div_int}. */
-    public static String symbol(Intrinsic intrinsic) {
+    public String symbol(Intrinsic intrinsic) {
         return "juno_" + intrinsic.name().toLowerCase(Locale.ROOT);
     }
 
+    /** The {@code long} helpers of the prelude, on integers only (every architecture's C can run them). */
+    String longPrelude() {
+        return longPrelude;
+    }
+
     /** The shared prelude plus every used function, in {@link Intrinsic} declaration order (deterministic). */
-    static String helpers(Set<Intrinsic> used) {
-        StringBuilder shim = new StringBuilder(PRELUDE);
-        SOURCES.forEach((intrinsic, source) -> {
+    String helpers(Set<Intrinsic> used) {
+        StringBuilder shim = new StringBuilder(floatingPrelude + longPrelude);
+        sources.forEach((intrinsic, source) -> {
             if (used.contains(intrinsic)) {
                 shim.append(source);
             }

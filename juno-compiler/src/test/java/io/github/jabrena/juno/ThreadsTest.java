@@ -162,10 +162,20 @@ class ThreadsTest {
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Wide", threaded);
         String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Wide").assembly();
 
-        assertThat(assembly).contains("    mrs r12, primask\n    cpsid i\n    ldr r1, [r0, #0]\n    ldr r2, [r0, #4]\n"
-                        + "    msr primask, r12\n")
-                .contains("    mrs r12, primask\n    cpsid i\n    str r2, [r1]\n    str r3, [r1, #4]\n"
-                        + "    msr primask, r12\n");
+        assertThat(assembly).contains("""
+                            mrs r12, primask
+                            cpsid i
+                            ldr r1, [r0, #0]
+                            ldr r2, [r0, #4]
+                            msr primask, r12
+                        """)
+                .contains("""
+                            mrs r12, primask
+                            cpsid i
+                            str r2, [r1]
+                            str r3, [r1, #4]
+                            msr primask, r12
+                        """);
 
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Wide",
                 programWithLongField("ArduinoUnoR4WiFi", "total = total + 3_000_000_000L;\nSerial.println(total);\n"));

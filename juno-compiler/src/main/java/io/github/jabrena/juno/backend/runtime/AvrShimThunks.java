@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
  * compilation instead of producing a thunk that would pass the wrong bits.
  */
 public final class AvrShimThunks {
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+
     private static final String PREFIX = "juno_avr_thunk_";
 
     /** How one parameter or result crosses the word interface. */
@@ -33,20 +35,18 @@ public final class AvrShimThunks {
     private record Parameter(String type, Kind kind) {
     }
 
-    private AvrShimThunks() {
-    }
 
-    public static String thunkName(String function) {
+    public String thunkName(String function) {
         return PREFIX + function;
     }
 
     /** The helpers thunks read {@code juno_avr_args} with; emitted ahead of everything else in the shim. */
-    static String prelude() {
-        return RuntimeSource.load("avr/shim-thunks.cpp");
+    String prelude() {
+        return runtimeSource.load("avr/shim-thunks.cpp");
     }
 
     /** One thunk per function in {@code functions}, each built from its prototype in {@code shim}. */
-    public static String generate(String shim, Set<String> functions) {
+    public String generate(String shim, Set<String> functions) {
         StringBuilder thunks = new StringBuilder("\n// Word-interface thunks the generated assembly calls (see AvrShimThunks).\n");
         for (String function : functions) {
             thunks.append(thunk(shim, function));
@@ -54,7 +54,7 @@ public final class AvrShimThunks {
         return thunks.toString();
     }
 
-    private static String thunk(String shim, String function) {
+    private String thunk(String shim, String function) {
         Matcher matcher = Pattern.compile("extern\\s+\"C\"\\s+([\\[\\]\\w\\s*]*?)\\b" + Pattern.quote(function)
                 + "\\s*\\(([^)]*)\\)\\s*\\{").matcher(shim);
         if (!matcher.find()) {
@@ -93,7 +93,7 @@ public final class AvrShimThunks {
         };
     }
 
-    private static List<Parameter> parameters(String function, String text) {
+    private List<Parameter> parameters(String function, String text) {
         List<Parameter> parameters = new ArrayList<>();
         String trimmed = text.strip();
         if (trimmed.isEmpty() || trimmed.equals("void")) {
@@ -109,7 +109,7 @@ public final class AvrShimThunks {
         return parameters;
     }
 
-    private static Kind kind(String function, String type) {
+    private Kind kind(String function, String type) {
         String normalized = type.replaceAll("\\s+", " ").strip();
         if (normalized.contains("*")) {
             return Kind.POINTER;

@@ -26,11 +26,11 @@ public record IrMethod(MethodRef reference, boolean isStatic, int maxLocals, Lis
         }
         for (IrBasicBlock block : blocks) {
             for (IrInstruction instruction : block.instructions()) {
-                for (Value value : IrValues.of(instruction)) {
+                for (Value value : instruction.referencedValues()) {
                     requireDeclared(values, value);
                 }
             }
-            for (Value value : IrValues.of(block.terminator())) {
+            for (Value value : block.terminator().referencedValues()) {
                 requireDeclared(values, value);
             }
         }
@@ -46,9 +46,9 @@ public record IrMethod(MethodRef reference, boolean isStatic, int maxLocals, Lis
         }
         for (IrBasicBlock block : blocks) {
             for (IrInstruction instruction : block.instructions()) {
-                IrValues.of(instruction).forEach(value -> register(inferred, value));
+                instruction.referencedValues().forEach(value -> register(inferred, value));
             }
-            IrValues.of(block.terminator()).forEach(value -> register(inferred, value));
+            block.terminator().referencedValues().forEach(value -> register(inferred, value));
         }
         for (int index = 0; index < inferred.length; index++) {
             if (inferred[index] == null) {
