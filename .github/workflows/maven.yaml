@@ -58,7 +58,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Build arduino-cli image (cached)
         if: matrix.arduino-cli-image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: juno-compiler/src/test/docker/arduino-cli
           tags: ${{ matrix.arduino-cli-image }}
