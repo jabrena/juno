@@ -8,11 +8,16 @@ CPU="-mcpu=cortex-m4 -mthumb"
 FLAGS="$CPU -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Os -ffunction-sections -fdata-sections -fno-exceptions -fno-rtti -I/harness"
 arm-none-eabi-gcc $CPU -c program.S -o program.o
 arm-none-eabi-g++ $FLAGS -include Arduino.h -c shim.cpp -o shim.o
-arm-none-eabi-g++ $FLAGS -DJUNO_ENTRY="$2" -c /harness/startup.cpp -o startup.o
+# The UNO Q's shim runs on Zephyr, whose threads use the process stack; the stand-in kernel does the same.
+HARNESS=""
+if grep -q "zephyr/kernel.h" shim.cpp; then HARNESS="-DJUNO_HARNESS_PSP"; fi
+arm-none-eabi-g++ $FLAGS $HARNESS -DJUNO_ENTRY="$2" -c /harness/startup.cpp -o startup.o
 # None of the generated shim or harness uses the C++ standard library. Link with gcc so it does not
 # implicitly request libstdc++. This keeps the very large libstdc++-arm-none-eabi-newlib package out
 # of the QEMU image while retaining g++ for compiling the C++ translation units above.
 arm-none-eabi-gcc $FLAGS -nostartfiles --specs=nosys.specs -Wl,--gc-sections -T /harness/link.ld \
     startup.o shim.o program.o -o program.elf -lm -lc -lgcc
-timeout 30 qemu-system-arm -M mps2-an386 -cpu cortex-m4 -nographic \
+# -icount ties the virtual clock to the instruction count, so SysTick (and with it every preemption of a threaded
+# program) strikes at the same instructions on every run: a failure under preemption reproduces exactly.
+timeout 60 qemu-system-arm -M mps2-an386 -cpu cortex-m4 -nographic -icount shift=4,align=off,sleep=off \
     -semihosting-config enable=on,target=native -kernel program.elf 2>&1

@@ -463,8 +463,8 @@ final class ShimLibraries {
 
                 // The wait loops below call juno_lego_wait() so that, in a program with tasks, another task can run while
                 // this one waits on the radio; without tasks it does nothing. juno_lego_hub_* entries take the guard so a
-                // second task cannot re-enter the BLE calls while another is inside one (the cooperative runtime only
-                // switches at a wait, so this never blocks a single-task program).
+                // second task cannot re-enter the BLE calls while another is inside one (runtime code is never
+                // preempted, so a task only switches inside one at a wait; this never blocks a single-task program).
                 ${JUNO_LEGO_WAIT}
                 static bool juno_lego_busy = false;
                 struct JunoLegoGuard {

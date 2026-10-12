@@ -5,6 +5,10 @@
 #include "WiFiNINA.h"
 
 unsigned long juno_harness_clock = 0;
+volatile unsigned long juno_harness_ticks = 0;
+
+// Timer0 overflows every 1024 us at 16 MHz with a /64 prescaler, the real core's millis() tick.
+ISR(TIMER0_OVF_vect) { juno_harness_ticks++; }
 HarnessSerial Serial;
 JunoHarnessWiFi WiFi;
 JunoHarnessFile juno_harness_files[4] = {{"config.txt", "ssid=juno\nport = 8080\n# comment\nname:Rev2\n", 42, true}};
@@ -35,6 +39,9 @@ void yield(void) { juno_harness_clock++; }
 
 int main() {
   UCSR0B = 1 << TXEN0;
+  TCCR0B = (1 << CS01) | (1 << CS00);
+  TIMSK0 = 1 << TOIE0;
+  sei();
   JUNO_ENTRY();
   juno_harness_write("[juno-exit]\n");
   juno_harness_exit();

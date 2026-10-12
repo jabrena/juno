@@ -14,10 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The cooperative thread runtime behind {@code StructuredTaskScope}: the closed-world {@code Runnable.run()} entry
- * function, the runtime in the shim, what a program without subtasks does not pay for, and the rejection of
- * {@code java.lang.Thread} itself. Behavior of the compiled code is covered under QEMU ({@code juno-examples}'
- * {@code TaskScheduling} program); this checks the generated text.
+ * The preemptive thread runtime behind virtual threads and {@code StructuredTaskScope}: the closed-world
+ * {@code Runnable.run()} entry function, the runtime in the shim, each board's preemption tick, what a program
+ * without subtasks does not pay for, and the rejection of {@code java.lang.Thread} itself. Behavior of the compiled
+ * code is covered under QEMU and simavr ({@code src/test/qemu/programs}, notably {@code Preemption} and
+ * {@code PreemptionStress}); this checks the generated text.
  */
 class ThreadsTest {
     @TempDir
@@ -80,6 +81,77 @@ class ThreadsTest {
 
         assertThat(shim).contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create", "k_sem_give")
                 .doesNotContain("juno_context_switch");
+    }
+
+    @Test
+    void generatedCodeIsBracketedSoTheTickKnowsWhatItMayInterrupt() throws Exception {
+        String assembly = compile("ArduinoUnoR4WiFi", START_AND_JOIN).assembly();
+
+        int start = assembly.indexOf("juno_java_code_start:\n");
+        int end = assembly.indexOf("juno_java_code_end:\n");
+        assertThat(assembly).contains(".global juno_java_code_start", ".global juno_java_code_end");
+        assertThat(start).isPositive().isLessThan(assembly.indexOf("juno_thread_entry:\n"));
+        assertThat(end).isGreaterThan(assembly.lastIndexOf("    .type "));
+    }
+
+    @Test
+    void unoR4PreemptsFromSysTickThroughATrampoline() throws Exception {
+        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+
+        assertThat(shim).contains("preemptive scheduler", "SysTick_Handler:\\n", "\"  b juno_preempt_tick\\n\"",
+                        "static void juno_port_preempt_start()", "SystemCoreClock / 1000u * JUNO_TIME_SLICE_MILLIS",
+                        "juno_preempt_trampoline:\\n", "\"  vpush {s0-s15}\\n\"", "\"  pop {pc}\\n\"",
+                        "extern \"C\" void juno_preempt_tick(uint32_t* frame) {",
+                        "extern \"C\" uint32_t juno_thread_preempted() {")
+                // The tick redirects only generated code outside an IT block / continuable LDM-STM.
+                .contains("pc >= static_cast<uint32_t>(reinterpret_cast<uintptr_t>(juno_java_code_start))",
+                        "(frame[7] & 0x0600FC00u) == 0u")
+                .doesNotContain("cooperative", "k_timer", "juno_thread_safepoint");
+    }
+
+    @Test
+    void unoQPreemptsFromAZephyrTimerReadingTheProcessStack() throws Exception {
+        String shim = compile("ArduinoUnoQ", START_AND_JOIN).runtimeShim();
+
+        assertThat(shim).contains("k_timer_init(&juno_preempt_timer, juno_preempt_expiry, nullptr);",
+                        "k_timer_start(&juno_preempt_timer, K_MSEC(JUNO_TIME_SLICE_MILLIS)",
+                        "__asm__ volatile(\"mrs %0, psp\" : \"=r\"(frame));", "juno_preempt_trampoline:\\n")
+                .doesNotContain("SysTick_Handler", "juno_thread_safepoint");
+    }
+
+    @Test
+    void theTickStartsWithTheFirstThreadAndABackedgeTakesADeferredSwitch() throws Exception {
+        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+
+        String start = shim.substring(shim.indexOf("extern \"C\" void juno_thread_start(int32_t handle) {"));
+        assertThat(start.substring(0, start.indexOf("\n}\n"))).contains("juno_port_preempt_start();");
+        String backedge = shim.substring(shim.indexOf("extern \"C\" void juno_thread_backedge() {"));
+        assertThat(backedge.substring(0, backedge.indexOf("\n}\n")))
+                .contains("yield();", "juno_preempt_due", "juno_sched_block();")
+                .as("no millisecond polling: the tick decides when a slice is over").doesNotContain("millis()");
+    }
+
+    @Test
+    void wideFieldsAreReadAndWrittenWithInterruptsMaskedOnlyWithThreads() throws Exception {
+        String body = START_AND_JOIN + "total = total + 3_000_000_000L;\nSerial.println(total);\n";
+        String threaded = programWithLongField("ArduinoUnoR4WiFi", body);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Wide", threaded);
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Wide").assembly();
+
+        assertThat(assembly).contains("    mrs r12, primask\n    cpsid i\n    ldr r1, [r0, #0]\n    ldr r2, [r0, #4]\n"
+                        + "    msr primask, r12\n")
+                .contains("    mrs r12, primask\n    cpsid i\n    str r2, [r1]\n    str r3, [r1, #4]\n"
+                        + "    msr primask, r12\n");
+
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Wide",
+                programWithLongField("ArduinoUnoR4WiFi", "total = total + 3_000_000_000L;\nSerial.println(total);\n"));
+        assertThat(CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Wide").assembly())
+                .doesNotContain("cpsid", "primask", "juno_java_code_start");
+    }
+
+    private static String programWithLongField(String board, String body) {
+        return program(board, body).replace("public final class Worker {",
+                "public final class Wide {\n    static long total = 1L;").replace("demo.Worker", "demo.Wide");
     }
 
     @Test

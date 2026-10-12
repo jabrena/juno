@@ -399,7 +399,7 @@ final class AvrRuntimeShim {
         }
         if (uses(ShimFeature.THREADS)) {
             shim.append(core.threadPort(config));
-            shim.append(ThreadRuntime.scheduler(core.delayMillisFunction(), "juno_gc_scan_bytes",
+            shim.append(ThreadRuntime.scheduler(false, core.delayMillisFunction(), "juno_gc_scan_bytes",
                     uses(ShimFeature.EXCEPTIONS), uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.TASK_CALLABLE_ENTRY), uses(ShimFeature.STRUCTURED_TASKS),
                     uses(ShimFeature.SCOPED_VALUES),

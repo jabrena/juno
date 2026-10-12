@@ -3,17 +3,34 @@ package io.github.jabrena.juno.backend;
 import io.github.jabrena.juno.RuntimeLimits;
 
 /**
- * The C++ source of the {@code java.lang.Thread} runtime in the generated shim: cooperative threads, each on a
- * stack of its own, switched only where the program already yields — loop backedges, {@code Delay}/
- * {@code Thread.sleep}, {@code Thread.yield} and {@code Thread.join}. Nothing is ever preempted in the middle of
- * an allocation, a collection or a throw, so the arena, the collector and the pending-exception slot need no
- * locking; the collector just scans every live thread's stack, and the pending exception is saved and restored
- * around each switch.
+ * The C++ source of the {@code java.lang.Thread} runtime in the generated shim: preemptive threads, each on a stack
+ * of its own, time-sliced by the scheduler ({@link #scheduler}) every {@code JUNO_TIME_SLICE_MILLIS}.
  *
- * <p>The scheduler ({@link #scheduler}) is identical for every board. Only how a stack is created and how control
- * moves between two of them differs, and that lives in the {@link CoreRuntime}'s port ({@link #renesasPort},
- * {@link #zephyrPort}): the UNO R4 has no RTOS, so a few lines of assembly swap stack pointers; the UNO Q already
- * runs on Zephyr, whose own threads carry the stacks while a baton semaphore keeps exactly one of them running.
+ * <p>On the Thumb-2 boards preemption is asynchronous: a periodic tick ({@code SysTick} on the UNO R4, a Zephyr
+ * {@code k_timer} on the UNO Q) interrupts whatever runs. When the interrupted instruction belongs to the generated
+ * Java code (between {@code juno_java_code_start} and {@code juno_java_code_end}) the tick rewrites the exception
+ * frame's return address so that, the moment the interrupt returns, the thread enters
+ * {@code juno_preempt_trampoline}: it saves every register the interrupted code may be using (the caller-saved
+ * core registers, the flags, {@code s0}-{@code s15} and {@code FPSCR}), switches to the next runnable thread like
+ * {@code Thread.yield}, and later restores all of it and resumes exactly where the tick struck. A thread is
+ * therefore preempted between any two instructions of generated code, inside a loop or not.
+ *
+ * <p>The runtime itself (the arena, the collector, the pending-exception slot, monitors, atomics, the scheduler and
+ * every core library the shim calls) is never preempted part-way: a tick that lands outside generated code only
+ * marks a switch as due, and the thread takes it at its next loop backedge or when the next tick finds it back in
+ * Java code. So none of that state needs locking; the collector scans every live thread's stack, which for a
+ * preempted thread includes the registers the trampoline saved, and the pending exception and scoped-value bindings
+ * are swapped on each switch.
+ *
+ * <p>The UNO WiFi Rev2 (AVR) cannot be interrupted at an arbitrary instruction: a reference or {@code int} is
+ * loaded and stored a byte at a time, and generated calls pass arguments through one global area. Its threads are
+ * preempted at safepoints instead: on every loop backedge and every method entry the running thread hands over the
+ * CPU once its time slice has expired, so neither a spinning loop nor a loop-free recursion can starve the others.
+ *
+ * <p>Only how a stack is created, how control moves between two of them and where the tick comes from differ per
+ * board; that lives in the {@link CoreRuntime}'s port ({@link #renesasPort}, {@link #zephyrPort},
+ * {@link #avrPort}): the UNO R4 has no RTOS, so a few lines of assembly swap stack pointers; the UNO Q already runs
+ * on Zephyr, whose own threads carry the stacks while a baton semaphore keeps exactly one of them running Java code.
  */
 final class ThreadRuntime {
     private ThreadRuntime() {
@@ -52,6 +69,7 @@ final class ThreadRuntime {
                 // ---- Juno threads: UNO R4 port (no RTOS: a stack per thread, switched by swapping sp) ----
                 static constexpr uint32_t JUNO_MAX_THREADS = ${JUNO_MAX_THREADS}u;
                 static constexpr uint32_t JUNO_THREAD_STACK_BYTES = ${JUNO_THREAD_STACK_BYTES}u;
+                static constexpr uint32_t JUNO_TIME_SLICE_MILLIS = 1u;
                 static constexpr uint32_t JUNO_STACK_CANARY = 0x4A554E4Fu;
                 #if defined(__ARM_FP)
                 static constexpr uint32_t JUNO_SWITCH_FRAME_WORDS = 16u + 9u;
@@ -105,7 +123,7 @@ final class ThreadRuntime {
                   juno_saved_sp[slot] = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(frame));
                 }
 
-                // A cancelled cooperative task will never be scheduled again; its private stack can be reused.
+                // A cancelled task will never be scheduled again; its private stack can be reused.
                 static void juno_port_cancel(uint32_t slot) {
                   static_cast<void>(slot);
                 }
@@ -135,6 +153,37 @@ final class ThreadRuntime {
                 static uintptr_t juno_port_saved_sp(uint32_t slot) {
                   return juno_saved_sp[slot];
                 }
+
+                // The preemption tick: SysTick, which the core leaves free (its startup code only binds a weak
+                // default handler). Juno threads run on the main stack, but the handler reads EXC_RETURN anyway, so
+                // the interrupted frame is found whichever stack the thread used.
+                extern "C" uint32_t SystemCoreClock;
+                extern "C" void juno_preempt_tick(uint32_t* frame);
+                extern "C" void SysTick_Handler(void);
+                __asm__(
+                    ".syntax unified\\n"
+                    ".thumb\\n"
+                    ".section .text.SysTick_Handler,\\"ax\\",%progbits\\n"
+                    ".global SysTick_Handler\\n"
+                    ".thumb_func\\n"
+                    ".type SysTick_Handler, %function\\n"
+                    "SysTick_Handler:\\n"
+                    "  tst lr, #4\\n"
+                    "  ite eq\\n"
+                    "  mrseq r0, msp\\n"
+                    "  mrsne r0, psp\\n"
+                    "  b juno_preempt_tick\\n"
+                    ".text\\n");
+
+                // Lowest priority, so the tick never interrupts another handler and the frame it inspects is
+                // always the thread's own.
+                static void juno_port_preempt_start() {
+                  volatile uint32_t* systick = reinterpret_cast<volatile uint32_t*>(0xE000E010u);
+                  *reinterpret_cast<volatile uint8_t*>(0xE000ED23u) = 0xFFu;
+                  systick[1] = SystemCoreClock / 1000u * JUNO_TIME_SLICE_MILLIS - 1u;
+                  systick[2] = 0u;
+                  systick[0] = 7u;
+                }
                 """.replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
@@ -155,6 +204,7 @@ final class ThreadRuntime {
                 // ---- Juno threads: AVR port (no RTOS: a stack per thread, switched by swapping SP) ----
                 static constexpr uint32_t JUNO_MAX_THREADS = ${JUNO_MAX_THREADS}u;
                 static constexpr uint16_t JUNO_THREAD_STACK_BYTES = ${JUNO_THREAD_STACK_BYTES}u;
+                static constexpr uint32_t JUNO_TIME_SLICE_MILLIS = 1u;
                 static constexpr uint32_t JUNO_STACK_CANARY = 0x4A554E4Fu;
                 static constexpr uint16_t JUNO_SWITCH_FRAME_BYTES = 18u;
                 #if defined(__AVR_3_BYTE_PC__)
@@ -235,7 +285,7 @@ final class ThreadRuntime {
                   juno_saved_sp[slot] = static_cast<uint16_t>(reinterpret_cast<uintptr_t>(frame) - 1u);
                 }
 
-                // A cancelled cooperative task will never be scheduled again; its private stack can be reused.
+                // A cancelled task will never be scheduled again; its private stack can be reused.
                 static void juno_port_cancel(uint32_t slot) {
                   static_cast<void>(slot);
                 }
@@ -272,7 +322,9 @@ final class ThreadRuntime {
 
     /**
      * The UNO Q's port: every Juno thread is a Zephyr thread, but each parks on its own semaphore and only the
-     * one holding the baton runs, so scheduling stays cooperative and the runtime needs no other locking.
+     * one holding the baton runs Java code, so the runtime needs no other locking. The preemption tick is a Zephyr
+     * {@code k_timer}, whose expiry runs in the system clock's interrupt: Zephyr threads run on the process stack, so
+     * {@code psp} holds the interrupted thread's exception frame.
      */
     static String zephyrPort(int maxThreads, int stackBytes) {
         return """
@@ -280,6 +332,7 @@ final class ThreadRuntime {
                 // ---- Juno threads: UNO Q port (Zephyr threads handing a baton, one runs at a time) ----
                 static constexpr uint32_t JUNO_MAX_THREADS = ${JUNO_MAX_THREADS}u;
                 static constexpr uint32_t JUNO_THREAD_STACK_BYTES = ${JUNO_THREAD_STACK_BYTES}u;
+                static constexpr uint32_t JUNO_TIME_SLICE_MILLIS = 1u;
 
                 extern "C" void yield(void);
 
@@ -347,17 +400,36 @@ final class ThreadRuntime {
                 static uintptr_t juno_port_saved_sp(uint32_t slot) {
                   return juno_zephyr_sp[slot];
                 }
+
+                extern "C" void juno_preempt_tick(uint32_t* frame);
+                static struct k_timer juno_preempt_timer;
+
+                static void juno_preempt_expiry(struct k_timer* timer) {
+                  static_cast<void>(timer);
+                  uint32_t* frame;
+                  __asm__ volatile("mrs %0, psp" : "=r"(frame));
+                  juno_preempt_tick(frame);
+                }
+
+                static void juno_port_preempt_start() {
+                  k_timer_init(&juno_preempt_timer, juno_preempt_expiry, nullptr);
+                  k_timer_start(&juno_preempt_timer, K_MSEC(JUNO_TIME_SLICE_MILLIS), K_MSEC(JUNO_TIME_SLICE_MILLIS));
+                }
                 """.replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
     /**
-     * The cooperative scheduler and the {@code Thread} intrinsics, over a core's port.
+     * The preemptive scheduler and the {@code Thread} intrinsics, over a core's port.
      *
+     * @param asynchronousPreemption whether the port's tick preempts generated code at any instruction (Thumb-2:
+     *     the port defines {@code juno_port_preempt_start} and its tick calls {@code juno_preempt_tick}); otherwise
+     *     (AVR) a thread is preempted at the safepoints the backend emits once its time slice has expired
      * @param stackScanFunction the collector's scan of one stack range: word-aligned on Thumb-2, byte by byte on AVR,
      *     whose stack frames are unaligned
      */
-    static String scheduler(String delayFunction, String stackScanFunction, boolean exceptions, boolean threadEntry,
+    static String scheduler(boolean asynchronousPreemption, String delayFunction, String stackScanFunction,
+                            boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
                             int failedExceptionClassId, int illegalStateExceptionClassId) {
         String pendingSave = exceptions ? "juno_slots[from].pending = juno_pending_exception;\n"
@@ -398,9 +470,16 @@ final class ThreadRuntime {
                   }""".replace("${JUNO_STRUCTURED_BODY}", structuredBody) : """
                 ${JUNO_ORDINARY_BODY}""";
         String taskRuntime = structuredTasks ? taskRuntime() : "";
+        String preemption = asynchronousPreemption ? asynchronousPreemption() : safepointPreemption();
+        String startPreemption = asynchronousPreemption ? """
+                  static bool juno_preempt_started = false;
+                  if (!juno_preempt_started) {
+                    juno_preempt_started = true;
+                    juno_port_preempt_start();
+                  }""" : "";
         return """
 
-                // ---- Juno threads: cooperative scheduler (same for every board) ----
+                // ---- Juno threads: preemptive scheduler (same for every board) ----
                 // Slot 0 is the main thread. A Thread handle is a small arena object, so the collector keeps it
                 // (and the Runnable it points at) alive for as long as something references it.
                 struct JunoTaskScope;
@@ -516,6 +595,7 @@ final class ThreadRuntime {
                   ${JUNO_PENDING_SWAP}
                   ${JUNO_BINDINGS_SWAP}
                   juno_current_slot = to;
+                  juno_slice_start = static_cast<uint32_t>(millis());
                   if (finished) {
                     juno_port_exit(from, to);
                   } else {
@@ -607,6 +687,7 @@ final class ThreadRuntime {
                   juno_slots[slot] = {JUNO_SLOT_READY, 0u, thread, nullptr, nullptr, 0};
                   juno_live_threads++;
                   juno_port_prepare(slot);
+                  ${JUNO_START_PREEMPTION}
                   ${JUNO_START_BINDINGS}
                 }
 
@@ -716,16 +797,7 @@ final class ThreadRuntime {
                   }
                 }
 
-                // Every loop backedge: keep the core serviced and, at most once per millisecond, give the other
-                // threads a turn so a thread that never sleeps cannot starve them.
-                extern "C" void juno_thread_backedge() {
-                  yield();
-                  if (juno_live_threads == 0u) return;
-                  uint32_t now = static_cast<uint32_t>(millis());
-                  if (now == juno_slice_start) return;
-                  juno_slice_start = now;
-                  juno_sched_block();
-                }
+                ${JUNO_PREEMPTION}
 
                 // Where main() returns: like the JVM, wait for every other (non-daemon) thread to finish.
                 extern "C" void juno_thread_main_exit() {
@@ -733,7 +805,9 @@ final class ThreadRuntime {
                   juno_slots[juno_current_slot].state = JUNO_SLOT_JOINING_ALL;
                   juno_sched_block();
                 }
-                """.replace("${JUNO_PENDING_SWAP}", pendingSave)
+                """.replace("${JUNO_PREEMPTION}", preemption)
+                .replace("${JUNO_START_PREEMPTION}", startPreemption)
+                .replace("${JUNO_PENDING_SWAP}", pendingSave)
                 .replace("${JUNO_BINDINGS_SWAP}", bindingsSwap)
                 .replace("${JUNO_THREAD_BINDINGS}", scopedValues ? "JunoBindingFrame* bindings;" : "")
                 .replace("${JUNO_SLOT_BINDINGS}", scopedValues ? "JunoBindingFrame* bindings;" : "")
@@ -751,6 +825,128 @@ final class ThreadRuntime {
                 .replace("${JUNO_MAX_MONITORS}", Integer.toString(RuntimeLimits.MAX_MONITORS))
                 .replace("${JUNO_FAILED_EXCEPTION_CLASS_ID}", Integer.toString(failedExceptionClassId))
                 .replace("${JUNO_ILLEGAL_STATE_EXCEPTION_CLASS_ID}", Integer.toString(illegalStateExceptionClassId));
+    }
+
+    /**
+     * Thumb-2's asynchronous preemption. The tick runs in handler mode with the interrupted thread's exception frame
+     * ({@code r0}-{@code r3}, {@code r12}, {@code lr}, {@code pc}, {@code xPSR}, then any FPU words). It only
+     * redirects a thread caught in generated code, and never one inside an IT block or a continuable
+     * {@code LDM}/{@code STM} (non-zero IT/ICI bits), which must resume at the very instruction it left; anything else
+     * just marks a switch as due for the next backedge.
+     *
+     * <p>The trampoline then runs in thread mode, on the thread's own stack, with every register exactly as the
+     * interrupted code left it but {@code pc}. It reserves a word for the resume address, saves the caller-saved
+     * registers, the flags and the caller-saved FPU state (the callee-saved ones survive the C call and the context
+     * switch on their own), aligns the stack for the call, and ends with a {@code pop {pc}} that leaves {@code sp}
+     * exactly where the interrupted code had it.
+     */
+    private static String asynchronousPreemption() {
+        return """
+                extern "C" const uint8_t juno_java_code_start[];
+                extern "C" const uint8_t juno_java_code_end[];
+                static volatile uint32_t juno_preempt_due = 0u;
+                static volatile uint32_t juno_preempt_resume[JUNO_MAX_THREADS];
+                // How many times a thread was preempted part-way through generated code.
+                static volatile uint32_t juno_preemptions = 0u;
+
+                extern "C" void juno_preempt_trampoline(void);
+                __asm__(
+                    ".syntax unified\\n"
+                    ".thumb\\n"
+                    ".section .text.juno_preempt_trampoline,\\"ax\\",%progbits\\n"
+                    ".global juno_preempt_trampoline\\n"
+                    ".thumb_func\\n"
+                    ".type juno_preempt_trampoline, %function\\n"
+                    "juno_preempt_trampoline:\\n"
+                    "  sub sp, sp, #4\\n"
+                    "  push {r0-r3, r12, lr}\\n"
+                    "  mrs r0, apsr\\n"
+                    "  push {r0, r4}\\n"
+                    "  mov r4, sp\\n"
+                    "  bic r0, r4, #7\\n"
+                    "  mov sp, r0\\n"
+                #if defined(__ARM_FP)
+                    "  vpush {s0-s15}\\n"
+                    "  vmrs r0, fpscr\\n"
+                    "  push {r0, r1}\\n"
+                #endif
+                    "  bl juno_thread_preempted\\n"
+                #if defined(__ARM_FP)
+                    "  pop {r1, r2}\\n"
+                    "  vmsr fpscr, r1\\n"
+                    "  vpop {s0-s15}\\n"
+                #endif
+                    "  mov sp, r4\\n"
+                    "  str r0, [sp, #32]\\n"
+                    "  pop {r0, r4}\\n"
+                #if defined(__ARM_FEATURE_DSP)
+                    "  msr APSR_nzcvqg, r0\\n"
+                #else
+                    "  msr APSR_nzcvq, r0\\n"
+                #endif
+                    "  pop {r0-r3, r12, lr}\\n"
+                    "  pop {pc}\\n"
+                    ".text\\n");
+
+                // Interrupt context: preempt the running thread now if it is in generated code, else soon.
+                extern "C" void juno_preempt_tick(uint32_t* frame) {
+                  if (juno_live_threads == 0u) return;
+                  uint32_t pc = frame[6];
+                  bool inJava = pc >= static_cast<uint32_t>(reinterpret_cast<uintptr_t>(juno_java_code_start))
+                      && pc < static_cast<uint32_t>(reinterpret_cast<uintptr_t>(juno_java_code_end));
+                  bool resumable = (frame[7] & 0x0600FC00u) == 0u;
+                  uint32_t slot = juno_current_slot;
+                  if (inJava && resumable && juno_preempt_resume[slot] == 0u) {
+                    juno_preempt_resume[slot] = pc | 1u;
+                    frame[6] = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&juno_preempt_trampoline)) & ~1u;
+                  } else {
+                    juno_preempt_due = 1u;
+                  }
+                }
+
+                // Thread context, from the trampoline: give the other threads a turn, then tell the trampoline
+                // where the interrupted code resumes.
+                extern "C" uint32_t juno_thread_preempted() {
+                  uint32_t slot = juno_current_slot;
+                  uint32_t resume = juno_preempt_resume[slot];
+                  juno_preempt_resume[slot] = 0u;
+                  juno_preempt_due = 0u;
+                  juno_preemptions++;
+                  juno_sched_block();
+                  return resume;
+                }
+
+                // Every loop backedge: keep the core serviced, and take a switch the tick could not make itself
+                // because it struck outside generated code.
+                extern "C" void juno_thread_backedge() {
+                  yield();
+                  if (juno_preempt_due == 0u || juno_live_threads == 0u) return;
+                  juno_preempt_due = 0u;
+                  juno_sched_block();
+                }
+                """;
+    }
+
+    /**
+     * AVR's preemption at safepoints: the backend calls {@code juno_thread_backedge} on every loop backedge and
+     * {@code juno_thread_safepoint} on every method entry, and either switches once the running thread's time slice
+     * is over.
+     */
+    private static String safepointPreemption() {
+        return """
+                extern "C" void juno_thread_safepoint() {
+                  if (juno_live_threads == 0u) return;
+                  uint32_t now = static_cast<uint32_t>(millis());
+                  if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) return;
+                  juno_slice_start = now;
+                  juno_sched_block();
+                }
+
+                extern "C" void juno_thread_backedge() {
+                  yield();
+                  juno_thread_safepoint();
+                }
+                """;
     }
 
     /** Joiner-based scopes and subtask operations inserted only when the program reaches that API. */

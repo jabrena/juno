@@ -189,7 +189,7 @@ public final class Thumb2AsmBackend {
         arrays = new ArrayLowering(asm);
         terminators = new TerminatorLowering(asm, ints, usesThreads ? "juno_thread_backedge" : "yield");
         convention = new CallConvention(asm);
-        fields = new FieldAccessLowering(asm, layout);
+        fields = new FieldAccessLowering(asm, layout, usesThreads);
         CoreRuntime coreRuntime = CoreRuntime.of(board.core());
         intrinsics = new IntrinsicLowering(new Thumb2IntrinsicTarget(asm), coreRuntime, features, usedMath, usesThreads);
 
@@ -203,9 +203,11 @@ public final class Thumb2AsmBackend {
                 .append("    .thumb\n");
         layout.emitDataSections(output);
         output.append("    .text\n");
+        StringBuilder code = new StringBuilder();
         for (IrMethod method : program.methods()) {
-            emitMethod(output, method);
+            emitMethod(code, method);
         }
+        output.append(RuntimeEntryPoints.preemptibleCode(usesThreads, code));
         String runtimeShim = new RuntimeShim(board, coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
         return new Output(AssemblyPeepholeOptimizer.optimize(output.toString()), runtimeShim,

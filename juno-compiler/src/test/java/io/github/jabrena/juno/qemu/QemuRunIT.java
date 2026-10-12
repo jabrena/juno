@@ -40,7 +40,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * assembled with the shim against a bare-metal harness, executed under QEMU (Cortex-M4, {@code mps2-an386}), and
  * its serial output compared with what the very same source prints on OpenJDK. This catches bugs that only exist
  * in the compiled code (calling convention, frame layout, garbage collection, exception unwinding), which neither
- * the IR tests nor an {@code arduino-cli} compile can see.
+ * the IR tests nor an {@code arduino-cli} compile can see. QEMU runs with {@code -icount}, so the preemption tick of a
+ * threaded program strikes at the same instructions every run and a failure under preemption reproduces exactly.
  *
  * <p>Programs live in {@code src/test/qemu/programs}; the OpenJDK side shadows {@code Serial} with
  * {@code src/test/qemu/openjdk}. The harness (stub {@code Arduino.h}, startup code, {@code run.sh}) is baked into
@@ -97,9 +98,10 @@ class QemuRunIT {
 
     /**
      * Whether a program runs on {@code board}: every board unless it declares some in its {@code @Board}, so a
-     * program can opt out of a board the harness cannot model. The UNO Q thread port runs on Zephyr's kernel, which the harness replaces with a small
-     * cooperative stand-in ({@code src/test/qemu/zephyr/kernel.h}), so it covers the port's logic but not Zephyr's
-     * real scheduler.
+     * program can opt out of a board the harness cannot model. The UNO Q thread port runs on Zephyr's kernel, which
+     * the harness replaces with a small stand-in ({@code src/test/qemu/zephyr/kernel.h}: baton semaphores, and a
+     * {@code k_timer} on SysTick for the preemption tick, with threads on the process stack), so it covers the
+     * port's logic but not Zephyr's real scheduler.
      */
     private static boolean targets(String mainClass, Board board) {
         Path source = QEMU.resolve("programs").resolve(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java");

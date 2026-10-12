@@ -1,8 +1,10 @@
 // Bare-metal stand-in for the slice of the Zephyr kernel the UNO Q thread port uses (threads, semaphores,
-// join, abort), so the generated Q shim can run under QEMU on the Cortex-M4 harness. It is cooperative: a thread
-// runs until it blocks on a semaphore, joins, or ends, and then the next runnable one (round robin) takes over.
-// That matches how the Juno port uses Zephyr (a baton semaphore, one thread running at a time) but it is not a
-// model of Zephyr's preemptive scheduler, priorities or timeouts; every timeout is treated as K_FOREVER.
+// join, abort, a periodic timer), so the generated Q shim can run under QEMU on the Cortex-M4 harness. Its own
+// scheduling is cooperative: a thread runs until it blocks on a semaphore, joins, or ends, and then the next runnable
+// one (round robin) takes over. That matches how the Juno port uses Zephyr (a baton semaphore, one thread running at
+// a time); preemption comes from the port's k_timer, whose expiry runs from SysTick in handler mode while threads
+// run on the process stack, as under Zephyr. It is not a model of Zephyr's priorities or timeouts: every semaphore
+// and join timeout is treated as K_FOREVER.
 #pragma once
 
 #include <stddef.h>
@@ -35,6 +37,7 @@ struct k_timeout_t {
 typedef struct k_thread* k_tid_t;
 
 #define K_FOREVER (k_timeout_t{-1})
+#define K_MSEC(ms) (k_timeout_t{static_cast<int64_t>(ms)})
 #define K_NO_WAIT (k_timeout_t{0})
 #define K_PRIO_PREEMPT(prio) (prio)
 #define K_THREAD_STACK_ARRAY_DEFINE(name, count, size) alignas(8) static char name[count][size]
@@ -160,4 +163,32 @@ inline int k_sem_take(struct k_sem* sem, k_timeout_t) {
   }
   sem->count--;
   return 0;
+}
+
+struct k_timer;
+typedef void (*k_timer_expiry_t)(struct k_timer*);
+typedef void (*k_timer_stop_t)(struct k_timer*);
+struct k_timer {
+  k_timer_expiry_t expiry;
+};
+
+inline k_timer* juno_kernel_timer = nullptr;
+extern "C" uint32_t SystemCoreClock;
+
+inline void k_timer_init(struct k_timer* timer, k_timer_expiry_t expiry, k_timer_stop_t) {
+  timer->expiry = expiry;
+}
+
+// One periodic timer, the port's preemption tick, on SysTick.
+inline void k_timer_start(struct k_timer* timer, k_timeout_t, k_timeout_t period) {
+  juno_kernel_timer = timer;
+  volatile uint32_t* systick = reinterpret_cast<volatile uint32_t*>(0xE000E010u);
+  *reinterpret_cast<volatile uint8_t*>(0xE000ED23u) = 0xFFu;
+  systick[1] = SystemCoreClock / 1000u * static_cast<uint32_t>(period.ticks) - 1u;
+  systick[2] = 0u;
+  systick[0] = 7u;
+}
+
+extern "C" void SysTick_Handler(void) {
+  if (juno_kernel_timer != nullptr) juno_kernel_timer->expiry(juno_kernel_timer);
 }

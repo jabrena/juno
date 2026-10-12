@@ -1,10 +1,14 @@
-// Bare-metal harness: reset vector, FPU enable, semihosting output/exit. JUNO_ENTRY is the generated
-// program's entry symbol (the function the .ino wrapper calls from setup()).
+// Bare-metal harness: reset vector, FPU enable, SysTick, semihosting output/exit. JUNO_ENTRY is the generated
+// program's entry symbol (the function the .ino wrapper calls from setup()). With JUNO_HARNESS_PSP (run.sh sets it
+// for the UNO Q's Zephyr shim) the program runs on the process stack, as every Zephyr thread does, and handlers on
+// a main stack of their own.
 #include <stdint.h>
 #include "Arduino.h"
 
 extern "C" {
 extern uint32_t _sbss, _ebss, _estack;
+// mps2-an386's CPU clock; the R4 thread port programs SysTick from it.
+uint32_t SystemCoreClock = 25000000u;
 void JUNO_ENTRY(void);
 void __libc_init_array(void);
 
@@ -36,12 +40,33 @@ __attribute__((weak)) void yield(void) { juno_harness_clock++; }
   juno_harness_exit(2);
 }
 
+// The shim of a threaded program defines the real one (the R4 port directly, the Q port through the kernel stand-in).
+__attribute__((weak)) void SysTick_Handler(void) {}
+
+#if defined(JUNO_HARNESS_PSP)
+alignas(8) static uint8_t juno_handler_stack[2048];
+#endif
+
 void Reset_Handler(void) {
   // CP10/CP11 full access: the shim is built hard-float, exactly like the UNO R4 core.
   *reinterpret_cast<volatile uint32_t*>(0xE000ED88) |= 0xFu << 20;
   __asm__ volatile("dsb\n isb");
   for (uint32_t* word = &_sbss; word < &_ebss; ++word) *word = 0;
   __libc_init_array();
+#if defined(JUNO_HARNESS_PSP)
+  // Thread mode moves to the process stack in place (same sp), then handlers get a main stack of their own.
+  __asm__ volatile(
+      "mrs r0, msp\n"
+      "msr psp, r0\n"
+      "movs r0, #2\n"
+      "msr control, r0\n"
+      "isb\n"
+      "msr msp, %0\n"
+      "isb\n"
+      :
+      : "r"(juno_handler_stack + sizeof juno_handler_stack)
+      : "r0", "memory");
+#endif
   JUNO_ENTRY();
   juno_harness_write("[juno-exit]\n");
   juno_harness_exit(0);
@@ -50,5 +75,5 @@ void Reset_Handler(void) {
 __attribute__((section(".isr_vector"), used))
 void (*const vector_table[16])(void) = {
     reinterpret_cast<void (*)(void)>(&_estack), Reset_Handler, fault, fault, fault, fault, fault, fault,
-    fault, fault, fault, fault, fault, fault, fault, fault};
+    fault, fault, fault, fault, fault, fault, fault, SysTick_Handler};
 }
