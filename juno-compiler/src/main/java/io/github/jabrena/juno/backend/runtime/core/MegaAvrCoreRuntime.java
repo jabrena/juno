@@ -8,6 +8,7 @@ import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.ArduinoCore;
 
@@ -132,6 +133,19 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
         return "";
     }
 
+    @Override
+    public WatchdogRuntime watchdog(int timeoutMillis) {
+        int[] timeouts = {8, 16, 32, 64, 128, 256, 512, 1000, 2000, 4100, 8200};
+        String[] constants = {"WDT_PERIOD_8CLK_gc", "WDT_PERIOD_16CLK_gc", "WDT_PERIOD_32CLK_gc",
+                "WDT_PERIOD_64CLK_gc", "WDT_PERIOD_128CLK_gc", "WDT_PERIOD_256CLK_gc",
+                "WDT_PERIOD_512CLK_gc", "WDT_PERIOD_1KCLK_gc", "WDT_PERIOD_2KCLK_gc",
+                "WDT_PERIOD_4KCLK_gc", "WDT_PERIOD_8KCLK_gc"};
+        int selected = selectTimeout(timeoutMillis, timeouts);
+        return new WatchdogRuntime("#include <avr/io.h>\n",
+                "_PROTECTED_WRITE(WDT.CTRLA, " + constants[selected] + ");",
+                "__asm__ __volatile__(\"wdr\");", timeouts[selected]);
+    }
+
     /** The AVR port needs nothing beyond {@code <string.h>}, which every shim includes. */
     @Override
     public String threadIncludes() {
@@ -146,5 +160,15 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
 
     private CompileException unsupported(String feature) {
         return Architecture.AVR.unsupported(feature + " on the megaAVR core");
+    }
+
+    private int selectTimeout(int requested, int[] timeouts) {
+        for (int index = 0; index < timeouts.length; index++) {
+            if (requested > 0 && requested <= timeouts[index]) {
+                return index;
+            }
+        }
+        throw new CompileException(
+                "@Watchdog timeoutMillis must be between 1 and 8200 on UNO WiFi Rev2: " + requested);
     }
 }

@@ -87,6 +87,7 @@ public final class AvrAsmBackend implements AsmBackend {
     private final List<String> clinitLabels = new ArrayList<>();
     private MethodRef entryPoint;
     private boolean usesThreads;
+    private boolean usesWatchdog;
     private ProgramLayout layout;
     private AvrEmitter avr;
     private IntrinsicLowering intrinsics;
@@ -114,6 +115,7 @@ public final class AvrAsmBackend implements AsmBackend {
     public GeneratedCode generate(IrProgram program) {
         entryPoint = program.entryPoint();
         usesThreads = runtimeEntryPoints.usesThreads(program);
+        usesWatchdog = program.watchdogTimeoutMillis().isPresent();
         for (int index = 0; index < program.methods().size(); index++) {
             IrMethod method = program.methods().get(index);
             MethodRef reference = method.reference();
@@ -150,7 +152,8 @@ public final class AvrAsmBackend implements AsmBackend {
                 .append("    .text\n")
                 .append(text);
         String runtimeShim = new AvrRuntimeShim(coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
-                layout.throwableClasses(), avr.thunkFunctions(), avr.argumentWords()).generate();
+                layout.throwableClasses(), avr.thunkFunctions(), avr.argumentWords(),
+                program.watchdogTimeoutMillis()).generate();
         return new GeneratedCode(output.toString(), runtimeShim, Objects.requireNonNull(functionLabels.get(entryPoint)));
     }
 
@@ -243,6 +246,9 @@ public final class AvrAsmBackend implements AsmBackend {
                         .LjunoZeroStackDone:
                         """);
         pushCallSaved(output);
+        if (usesWatchdog) {
+            output.append("    call juno_watchdog_begin\n");
+        }
     }
 
     /**
@@ -482,6 +488,9 @@ public final class AvrAsmBackend implements AsmBackend {
      */
     private void emitYieldIfBackedge(StringBuilder output, int blockStart, int target) {
         if (target <= blockStart) {
+            if (usesWatchdog && usesThreads) {
+                output.append("    call juno_watchdog_refresh\n");
+            }
             output.append(usesThreads ? "    call juno_thread_backedge\n" : "    call yield\n");
         }
     }

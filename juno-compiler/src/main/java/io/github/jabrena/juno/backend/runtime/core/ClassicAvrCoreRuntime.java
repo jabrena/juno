@@ -6,6 +6,7 @@ import io.github.jabrena.juno.backend.runtime.ParallelBusRuntime;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.ArduinoCore;
 
@@ -100,6 +101,16 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public WatchdogRuntime watchdog(int timeoutMillis) {
+        int[] timeouts = {15, 30, 60, 120, 250, 500, 1000, 2000, 4000, 8000};
+        String[] constants = {"WDTO_15MS", "WDTO_30MS", "WDTO_60MS", "WDTO_120MS", "WDTO_250MS",
+                "WDTO_500MS", "WDTO_1S", "WDTO_2S", "WDTO_4S", "WDTO_8S"};
+        int selected = selectTimeout(timeoutMillis, timeouts);
+        return new WatchdogRuntime("#include <avr/wdt.h>\n", "wdt_enable(" + constants[selected] + ");",
+                "wdt_reset();", timeouts[selected]);
+    }
+
+    @Override
     public String threadIncludes() {
         return "";
     }
@@ -112,5 +123,14 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
 
     private CompileException unsupported(String feature) {
         return Architecture.AVR.unsupported(feature + " on the classic AVR core");
+    }
+
+    private int selectTimeout(int requested, int[] timeouts) {
+        for (int index = 0; index < timeouts.length; index++) {
+            if (requested > 0 && requested <= timeouts[index]) {
+                return index;
+            }
+        }
+        throw new CompileException("@Watchdog timeoutMillis must be between 1 and 8000 on UNO R3: " + requested);
     }
 }

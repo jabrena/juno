@@ -58,6 +58,9 @@ public enum Capability {
     WATCHDOG("@Watchdog") {
         @Override
         public String unsupportedReason(Board board) {
+            if (board == Board.UNO_Q) {
+                return "UNO Q's Zephyr firmware does not enable its watchdog subsystem";
+            }
             return board.displayName() + "'s " + board.core().displayName() + " core has no WDT library";
         }
     },

@@ -132,7 +132,7 @@ loaded by the board's Zephyr firmware.
 | `Wifi` and `Udp` | Yes | Linux owns Wi-Fi; the MCU exchanges datagrams through `Arduino_RouterBridge` and `BridgeUDP` |
 | Juno HTTPS client API | Yes | TLS connections use `BridgeTCPClient` and the Linux system trust store |
 | Juno HTTP server and email APIs | No | Current intrinsics target the UNO R4 WiFi's `WiFiS3` libraries |
-| `@Watchdog` | No | Currently implemented only for the UNO R4 WiFi |
+| `@Watchdog` | No | The STM32U585 has watchdog hardware, but the current Arduino Zephyr firmware builds with `CONFIG_WATCHDOG` disabled, so sketches cannot safely use it |
 | USB mouse, SD card, servo and email APIs | Untested | Do not assume UNO R4 library compatibility |
 | Linux applications | Not yet | Juno emits the MCU sketch; networking uses the board's existing `arduino-router` service |
 

@@ -66,6 +66,30 @@ class AvrAsmBackendTest {
         return new JunoCompiler().compile(CompilerTestSupport.classpath(classes), className, false, Optional.of(R3));
     }
 
+    private CompilationResult compileWatchdog(String className, String boardAnnotation, String boardId,
+                                              int timeoutMillis) throws Exception {
+        String simpleName = className.substring(className.lastIndexOf('.') + 1);
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.%s;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.Watchdog;
+                import io.github.jabrena.juno.api.Delay;
+                @Board(%s.class)
+                @Watchdog(timeoutMillis = %d)
+                public final class %s {
+                    public static void main(String[] args) {
+                        while (true) {
+                            Delay.millis(1);
+                        }
+                    }
+                }
+                """.formatted(boardAnnotation, boardAnnotation, timeoutMillis, simpleName);
+        Path classes = CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, className, source);
+        return new JunoCompiler().compile(CompilerTestSupport.classpath(classes), className, false,
+                Optional.of(boardId));
+    }
+
     @Test
     void resolvesTheUnoWiFiRev2ToTheAvrBackend() {
         Board board = Board.fromId(REV2);
@@ -120,6 +144,48 @@ class AvrAsmBackendTest {
         assertThatThrownBy(() -> new RuntimeConfig(2048, 4, OptionalInt.empty()).forBoard(Board.UNO_R3))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("juno.Xmx can be at most 1024 bytes");
+    }
+
+    @Test
+    void enablesAndRefreshesTheClassicUnoR3Watchdog() throws Exception {
+        CompilationResult result = compileWatchdog(
+                "demo.R3Watchdog", "ArduinoUnoR3", R3, 3000);
+
+        assertThat(result.assembly())
+                .contains("call juno_watchdog_begin", "call yield")
+                .doesNotContain("call juno_watchdog_refresh");
+        assertThat(result.runtimeShim()).contains(
+                "#include <avr/wdt.h>",
+                "wdt_enable(WDTO_4S);",
+                "wdt_reset();",
+                "[juno-watchdog] panic: board will reset via watchdog in approximately 4000ms");
+    }
+
+    @Test
+    void enablesAndRefreshesTheUnoWiFiRev2Watchdog() throws Exception {
+        CompilationResult result = compileWatchdog(
+                "demo.Rev2Watchdog", "ArduinoUnoWiFiRev2", REV2, 3000);
+
+        assertThat(result.assembly())
+                .contains("call juno_watchdog_begin", "call yield")
+                .doesNotContain("call juno_watchdog_refresh");
+        assertThat(result.runtimeShim()).contains(
+                "#include <avr/io.h>",
+                "_PROTECTED_WRITE(WDT.CTRLA, WDT_PERIOD_4KCLK_gc);",
+                "__asm__ __volatile__(\"wdr\");",
+                "[juno-watchdog] panic: board will reset via watchdog in approximately 4100ms");
+    }
+
+    @Test
+    void rejectsWatchdogTimeoutsOutsideEachAvrChipsRange() {
+        assertThatThrownBy(() -> compileWatchdog(
+                "demo.R3WatchdogTooLong", "ArduinoUnoR3", R3, 8001))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("timeoutMillis must be between 1 and 8000 on UNO R3");
+        assertThatThrownBy(() -> compileWatchdog(
+                "demo.Rev2WatchdogTooLong", "ArduinoUnoWiFiRev2", REV2, 8201))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("timeoutMillis must be between 1 and 8200 on UNO WiFi Rev2");
     }
 
     @Test

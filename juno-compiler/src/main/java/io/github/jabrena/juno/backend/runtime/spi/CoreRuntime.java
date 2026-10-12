@@ -87,6 +87,9 @@ public interface CoreRuntime {
      */
     String yieldFunction();
 
+    /** Core-specific hardware-watchdog setup for the requested timeout. */
+    WatchdogRuntime watchdog(int timeoutMillis);
+
     /**
      * The core's {@code ParallelBus} helpers: {@code juno_parallel_bus_begin(const int32_t* pins, int32_t strobe)},
      * {@code juno_parallel_bus_write(int32_t value)} and {@code juno_parallel_bus_repeat16(int32_t value,

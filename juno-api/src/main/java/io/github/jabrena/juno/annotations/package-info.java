@@ -13,9 +13,10 @@
  *       under Arduino's Zephyr core) and {@link io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2}
  *       (its 8-bit ATmega4809, under Arduino's megaAVR core); the linker resolves the selection into a
  *       {@code io.github.jabrena.juno.board.Board} compilation target.</li>
- *   <li>{@link io.github.jabrena.juno.annotations.Watchdog @Watchdog} enables the RA4M1's hardware
- *       watchdog timer, rebooting the board if generated code ever stops kicking it (including on
- *       a {@code juno_panic()}) instead of hanging forever.</li>
+ *   <li>{@link io.github.jabrena.juno.annotations.Watchdog @Watchdog} enables the hardware watchdog
+ *       on UNO R3, UNO WiFi Rev2 and UNO R4 WiFi, rebooting the board if generated code ever stops
+ *       kicking it (including on a {@code juno_panic()}) instead of hanging forever. UNO Q's current
+ *       Arduino Zephyr firmware does not enable its watchdog subsystem.</li>
  * </ul>
  */
 @NullMarked

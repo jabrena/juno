@@ -19,14 +19,16 @@ import io.github.jabrena.juno.api.io.serial.Serial;
  * slots never get overwritten — the collector scans every word of a live array's payload, so each
  * block a slot points at stays reachable for as long as {@code retained} itself does). A conservative collector can
  * never reclaim something still reachable, so the arena genuinely fills up: 25 retained blocks
- * &times; ~404 bytes each is over 10 KB, comfortably past the 8 KiB arena, so within about 20 more
- * ticks (~1 second) it can no longer satisfy an allocation even after collecting, and
+ * &times; ~404 bytes each is over 10 KB, beyond every target's default arena. The 8 KiB R4 default
+ * fails within about 20 more ticks (~1 second), while the smaller AVR defaults fail sooner, and
  * {@code juno_panic()} halts the program — demonstrating that the collector only helps when data
  * actually becomes unreachable; it never raises the ceiling on how much can be alive at once.
  *
  * <p><b>{@code @Watchdog}:</b> rather than hanging forever, this class also carries
  * {@code @Watchdog(timeoutMillis = 3000)}, so once {@code juno_panic()} stops kicking it (see
- * {@link Watchdog}), the RA4M1's hardware watchdog resets the board about 3 seconds later — printing
+ * {@link Watchdog}), the target's hardware watchdog resets the board after its nearest supported
+ * period (about 3 seconds on UNO R4 WiFi, 4 seconds on UNO R3, or 4.1 seconds on UNO WiFi Rev2) —
+ * printing
  * a {@code [juno-watchdog]} diagnostic first — and the whole cycle (ticks 0-999 reclaiming fine,
  * then exhaustion, then reboot) starts over from {@code tick 0} indefinitely.
  *
@@ -41,10 +43,11 @@ import io.github.jabrena.juno.api.io.serial.Serial;
  * which prints lines like {@code [juno-gc] collect: used 8080 -> 7676} for ticks 0-999, then lines
  * where "before" keeps climbing without ever coming back down, then the pre-panic
  * {@code [juno-gc] OOM: need <n> bytes, arena_used=<used>/<capacity>} diagnostic, then
- * {@code [juno-watchdog] panic: board will reset via watchdog in 3000ms}, then (about 3 seconds
- * later) {@code tick 0} again as the board comes back up. Without {@code --gc-log}, only the
+ * {@code [juno-watchdog] panic: board will reset via watchdog in ...}, then {@code tick 0} again as
+ * the board comes back up. Without {@code --gc-log}, only the
  * {@code tick N} lines and the two unconditional pre-panic diagnostics (OOM and watchdog — see
- * {@code Thumb2AsmBackend}'s {@code juno_alloc}/{@code juno_panic}) appear.
+ * the generated backend's {@code juno_alloc}/{@code juno_panic}) appear. UNO Q rejects this example
+ * because its current Arduino Zephyr firmware does not enable the watchdog subsystem.
  */
 @Watchdog(timeoutMillis = 3000)
 public final class GcDemo {

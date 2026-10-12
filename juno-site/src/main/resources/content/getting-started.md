@@ -133,13 +133,11 @@ Juno compiles for, and `juno:verify`/`juno:upload` build for its Arduino CLI FQB
 | `@Board(ArduinoUnoWiFiRev2.class)` | Arduino UNO WiFi Rev2 | `arduino:megaavr:uno2018` |
 
 A class with no `@Board` annotation is not restricted to one board: it builds for the board named by
-`-Djuno.board=<id>`, or the UNO R4 WiFi when the option is omitted. GPIO, time, Serial, `Wifi`/`Udp`,
-and the shields built on them (LCD keypad, TFT touch) compile and upload for both boards. The LED
-matrix, Wi-Fi with HTTP/HTTPS/email, and `@Watchdog` are UNO R4 WiFi only (on the UNO Q, the LED
-matrix belongs to the board's Linux side, and its Zephyr core has no HTTP/HTTPS/email libraries
-Juno can lower to — plain `Wifi`/`Udp` still work through the MCU's own Zephyr networking), and
-Juno rejects the R4-only APIs at compile time for the UNO Q. The other APIs built on UNO R4
-libraries (USB mouse, SD card, servo) have not been tried on the UNO Q yet. The TFT games
+`-Djuno.board=<id>`, or the UNO R4 WiFi when the option is omitted. GPIO, time and Serial are broadly
+portable; Wi-Fi, the onboard LED matrix and shield support vary by board. `@Watchdog` supports UNO
+R3, UNO WiFi Rev2 and UNO R4 WiFi. UNO Q's STM32U585 has watchdog hardware, but its current Arduino
+Zephyr firmware builds with the watchdog subsystem disabled. Juno rejects unsupported APIs at
+compile time for the selected board. The TFT games
 [Star Trek](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/startrek/StarTrek.java),
 [Star Wars](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/starwars/StarWars.java),
 [The Empire Strikes Back](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/empirestrikesback/EmpireStrikesBack.java),
