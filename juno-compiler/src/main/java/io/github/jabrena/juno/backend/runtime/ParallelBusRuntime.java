@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.backend.runtime;
 
-import io.github.jabrena.juno.backend.runtime.core.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 
 /**
  * The shim half of {@code ParallelBus}. Each pin is resolved once to its GPIO port and bit; a byte then becomes one

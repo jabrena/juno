@@ -7,6 +7,7 @@ import io.github.jabrena.juno.backend.runtime.ParallelBusRuntime;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.ArduinoCore;
 

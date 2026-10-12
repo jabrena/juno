@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.backend.runtime;
 
+import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
+
 import java.util.Set;
 
 /**

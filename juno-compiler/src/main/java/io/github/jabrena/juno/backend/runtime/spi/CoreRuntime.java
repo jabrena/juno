@@ -1,27 +1,19 @@
-package io.github.jabrena.juno.backend.runtime.core;
+package io.github.jabrena.juno.backend.runtime.spi;
 
 import io.github.jabrena.juno.RuntimeConfig;
-import io.github.jabrena.juno.backend.runtime.IoRuntime;
-import io.github.jabrena.juno.backend.runtime.RuntimeShim;
-import io.github.jabrena.juno.backend.runtime.ShimLibraries;
-import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
  * Everything the generated code needs to know about the {@link ArduinoCore} it links against: the
  * symbols {@code Delay} lowers to and the runtime shim's {@code yield()}/delay glue. The Thumb-2
  * code generator itself is identical for every core of an {@link io.github.jabrena.juno.board.Architecture}; each
- * board-to-core difference lives in exactly one implementation here instead of being branched on across the backend.
+ * board-to-core difference lives in exactly one implementation instead of being branched on across the backend.
+ *
+ * <p>The implementations live in {@code backend.runtime.core}, one per {@link ArduinoCore}, and are obtained through
+ * {@code CoreRuntimes.of}. This interface depends on nothing else in the backend, so the shim and the code generators
+ * can both use it without depending on each other or on a specific core.
  */
-public sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime, MegaAvrCoreRuntime {
-
-    static CoreRuntime of(ArduinoCore core) {
-        return switch (core) {
-            case RENESAS_UNO -> new RenesasCoreRuntime();
-            case ZEPHYR -> new ZephyrCoreRuntime();
-            case MEGAAVR -> new MegaAvrCoreRuntime();
-        };
-    }
+public interface CoreRuntime {
 
     /** The symbol {@code Delay.millis} branches to, taking the delay in r0. */
     String delayMillisFunction();
@@ -80,7 +72,7 @@ public sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntim
      * The shim's {@code yield()} and delay glue, emitted ahead of {@code juno_panic}. It must provide
      * (or leave to the core) the plain {@code yield} symbol every generated loop backedge calls, and
      * define {@link #delayMillisFunction()}/{@link #delayMicrosFunction()} when those aren't core
-     * symbols. May contain the {@code ${JUNO_WATCHDOG_REFRESH}} placeholder, which {@link RuntimeShim}
+     * symbols. May contain the {@code ${JUNO_WATCHDOG_REFRESH}} placeholder, which {@code RuntimeShim}
      * substitutes afterwards.
      */
     String yieldFunction();
@@ -93,16 +85,14 @@ public sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntim
     String parallelBusHelpers();
 
     /**
-     * Core-specific SD helper implementation. Most boards use SdFat's default hardware SPI bus; cores whose shield
-     * headers do not expose that bus can override this method without introducing board checks into the backend.
+     * Core-specific SD helper implementation. Most boards use SdFat's default hardware SPI bus; a core whose shield
+     * headers do not expose that bus wires its own, without introducing board checks into the backend.
      */
-    default String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
-        return ShimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
-    }
+    String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes);
 
     /**
      * Whether the core's port runs a program's waiting device calls on a worker thread of its own (see
-     * {@link IoRuntime}), so they hold up no other thread even where the wait happens inside a vendor library. Only
+     * {@code IoRuntime}), so they hold up no other thread even where the wait happens inside a vendor library. Only
      * a core with an RTOS underneath can: the UNO Q's.
      */
     default boolean ioWorker() {
@@ -123,7 +113,7 @@ public sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntim
     String threadIncludes();
 
     /**
-     * The core's half of the {@code java.lang.Thread} runtime (see {@link ThreadRuntime}): how a thread's stack
+     * The core's half of the {@code java.lang.Thread} runtime (see {@code ThreadRuntime}): how a thread's stack
      * is created and how control moves between two threads, plus the {@code JUNO_MAX_THREADS} and
      * {@code JUNO_THREAD_STACK_BYTES} constants, sized from {@code config}.
      */

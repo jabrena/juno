@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.backend.runtime;
 
 import io.github.jabrena.juno.RuntimeConfig;
-import io.github.jabrena.juno.backend.runtime.core.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 

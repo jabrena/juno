@@ -5,6 +5,7 @@ import io.github.jabrena.juno.backend.runtime.ParallelBusRuntime;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
@@ -59,6 +60,12 @@ record RenesasCoreRuntime() implements CoreRuntime {
     public String wifiIncludes(boolean udp) {
         // WiFiS3.h exposes WiFi, WiFiClient, WiFiServer, WiFiSSLClient and WiFiUDP.
         return "#include <WiFiS3.h>\n";
+    }
+
+    /** SdFat on the core's default hardware SPI bus. */
+    @Override
+    public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
+        return ShimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
     }
 
     @Override

@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.backend.runtime;
 
 import io.github.jabrena.juno.RuntimeConfig;
-import io.github.jabrena.juno.backend.runtime.core.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 
@@ -32,7 +33,7 @@ public final class RuntimeShim {
     private final RuntimeConfig config;
 
     /**
-     * @param core {@code board}'s per-core runtime glue (see {@link CoreRuntime#of})
+     * @param core {@code board}'s per-core runtime glue (see {@code CoreRuntimes.of})
      * @param config the arena and task-stack capacities
      * @param features every optional shim feature the lowered program uses
      * @param usedMath every {@code java.lang.Math} intrinsic the lowered program calls

@@ -2,6 +2,7 @@ package io.github.jabrena.juno.backend.runtime.core;
 
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.board.ArduinoCore;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CoreRuntimeTest {
     @Test
     void theRenesasCoreIsCalledDirectlyAndGetsAUsbServicingYield() {
-        CoreRuntime runtime = CoreRuntime.of(ArduinoCore.RENESAS_UNO);
+        CoreRuntime runtime = CoreRuntimes.of(ArduinoCore.RENESAS_UNO);
 
         assertThat(runtime.delayMillisFunction()).isEqualTo("delay");
         assertThat(runtime.delayMicrosFunction()).isEqualTo("delayMicroseconds");
@@ -28,7 +29,7 @@ class CoreRuntimeTest {
 
     @Test
     void theZephyrCoreKeepsItsOwnYieldAndWrapsItsInlineDelays() {
-        CoreRuntime runtime = CoreRuntime.of(ArduinoCore.ZEPHYR);
+        CoreRuntime runtime = CoreRuntimes.of(ArduinoCore.ZEPHYR);
 
         assertThat(runtime.delayMillisFunction()).isEqualTo("juno_delay");
         assertThat(runtime.delayMicrosFunction()).isEqualTo("juno_delay_microseconds");
@@ -48,8 +49,8 @@ class CoreRuntimeTest {
 
     @Test
     void theThreadPortsDefaultToTheBoardsStackAndTheConfiguredSlots() {
-        String renesas = CoreRuntime.of(ArduinoCore.RENESAS_UNO).threadPort(RuntimeConfig.DEFAULT);
-        String zephyr = CoreRuntime.of(ArduinoCore.ZEPHYR).threadPort(RuntimeConfig.DEFAULT);
+        String renesas = CoreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(RuntimeConfig.DEFAULT);
+        String zephyr = CoreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(RuntimeConfig.DEFAULT);
 
         assertThat(renesas).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
                 "JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.MIN_THREAD_STACK_BYTES + "u");
@@ -61,9 +62,9 @@ class CoreRuntimeTest {
     void theThreadPortsTakeTheConfiguredSlotsAndStack() {
         RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.of(1536));
 
-        assertThat(CoreRuntime.of(ArduinoCore.RENESAS_UNO).threadPort(config))
+        assertThat(CoreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(config))
                 .contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 1536u");
-        assertThat(CoreRuntime.of(ArduinoCore.ZEPHYR).threadPort(config))
+        assertThat(CoreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(config))
                 .contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 1536u");
     }
 }
