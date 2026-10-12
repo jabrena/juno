@@ -11,7 +11,6 @@ import io.github.jabrena.juno.api.net.http.Json;
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
 public final class JsonScanner {
     private static final byte[] DOCUMENT = new byte[256];
-    private static final byte[] OUT = new byte[16];
 
     public static void main(String[] args) {
         int length = load("{\"users\":[{\"id\":1},{\"id\":2147483648,\"active\":false,\"name\":\"A\\n\\u00e9\\uD83D\\uDE00\"}],");
@@ -39,12 +38,13 @@ public final class JsonScanner {
         Serial.println(Json.getLong(DOCUMENT, length, "minimum") == Long.MIN_VALUE);
         Serial.println(Json.getLong(DOCUMENT, length, "tooLarge"));
 
-        int written = Json.getString(DOCUMENT, length, "users[1].name", OUT, OUT.length);
+        byte[] out = new byte[16];
+        int written = Json.getString(DOCUMENT, length, "users[1].name", out, out.length);
         Serial.println(written);
         for (int i = 0; i < written; i++) {
-            Serial.println(OUT[i] & 0xFF);
+            Serial.println(out[i] & 0xFF);
         }
-        Serial.println(Json.getString(DOCUMENT, length, "users[1].name", OUT, 4));
+        Serial.println(Json.getString(DOCUMENT, length, "users[1].name", out, 4));
 
         int root = load("  [true, 3] ");
         Serial.println(Json.type(DOCUMENT, root, "[0]"));
