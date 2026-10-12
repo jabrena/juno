@@ -23,7 +23,7 @@ import java.util.Properties;
  * an icon, the temperature, the date and weekday, and temperature/humidity bars.
  *
  * <p>WiFi credentials come from {@code application.properties} on the shield's microSD card (see
- * {@link io.github.jabrena.juno.api.net.WifiStatusTFT}). Once connected, the board's public IP
+ * {@link io.github.jabrena.juno.api.net.wifi.WifiStatusSDTFT}). Once connected, the board's public IP
  * is geolocated with <a href="https://ipinfo.io">ipinfo.io</a> ({@code city} and {@code loc}), and
  * those coordinates are passed to <a href="https://open-meteo.com">Open-Meteo</a> for the current
  * weather and the location's UTC offset. The request path depends on runtime data, so it is built

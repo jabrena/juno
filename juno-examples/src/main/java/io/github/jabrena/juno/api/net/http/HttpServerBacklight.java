@@ -11,7 +11,7 @@ import io.github.jabrena.juno.api.net.Wifi;
 /**
  * Demonstrates {@link HttpServer}'s {@code POST} handling: connects to WiFi with build-time
  * credentials from {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD} (see {@link
- * io.github.jabrena.juno.api.net.WifiStatus}), starts the LCD Keypad Shield with its backlight
+ * io.github.jabrena.juno.api.net.wifi.WifiStatus}), starts the LCD Keypad Shield with its backlight
  * off — {@link LcdKeypadShield#begin} turns it on as part of its own init sequence, so this
  * immediately overrides that — then, on every {@code
  * POST} request regardless of path or body, flashes the backlight on for {@link
