@@ -159,6 +159,14 @@ public final class ShimLibraries {
     }
 
     /**
+     * {@code Json.rawText}: a byte range copied into the rotating string-slot pool of {@link #runtimeStringHelpers()},
+     * so it needs that pool already declared.
+     */
+    String stringFromBytesHelpers() {
+        return runtimeSource.load("common/runtime-string-from-bytes.cpp");
+    }
+
+    /**
      * {@code StringBuilder} is represented as an arena-allocated header (its {@code length} and
      * {@code capacity}, as two {@code int32_t}s) immediately followed by its {@code capacity}-byte
      * buffer — a single {@code juno_alloc} block, addressed by the header's own pointer (cast to

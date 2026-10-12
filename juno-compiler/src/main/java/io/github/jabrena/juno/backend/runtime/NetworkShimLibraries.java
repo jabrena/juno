@@ -5,8 +5,8 @@ import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import java.util.Set;
 
 /**
- * Source text of the runtime shim's networking helpers: the allocation-free JSON scanner, the
- * HTTP/1.1 client codec over {@code WiFiClient}/{@code WiFiSSLClient}, the single-connection HTTP
+ * Source text of the runtime shim's networking helpers: the HTTP/1.1
+ * client codec over {@code WiFiClient}/{@code WiFiSSLClient}, the single-connection HTTP
  * server, and SMTP/POP3 — each appended by {@link RuntimeShim} only when the lowered program uses it.
  */
 final class NetworkShimLibraries {
@@ -16,39 +16,6 @@ final class NetworkShimLibraries {
     /** One bounded UDP transport shared by the program's UDP intrinsics. */
     String udpHelpers(String declaration) {
         return runtimeSource.load("common/udp.cpp").replace("${JUNO_UDP_DECLARATION}", declaration);
-    }
-
-    /**
-     * A bounded, non-allocating JSON scanner, exposed to the generated assembly as {@code extern "C"}
-     * entry points.
-     */
-    String jsonHelpers() {
-        return jsonScanner() + jsonDoubleHelpers() + jsonValueHelpers();
-    }
-
-    /** The scanner and its {@code int}/{@code long} accessors: the part of {@link #jsonHelpers()} before {@code double}. */
-    String jsonScanner() {
-        return runtimeSource.load("common/json-scanner.cpp");
-    }
-
-    /** {@code Json.getDouble} on the C {@code double}. */
-    String jsonDoubleHelpers() {
-        return runtimeSource.load("thumb2/json-double.cpp");
-    }
-
-    /** The boolean, string and array accessors after {@code double}. */
-    String jsonValueHelpers() {
-        return runtimeSource.load("common/json-value.cpp");
-    }
-
-    /**
-     * {@code Json.getString(byte[], int, String)}'s shim — separate from {@link #jsonHelpers()}
-     * since it needs the runtime-string pool ({@link ShimLibraries#runtimeStringHelpers()}), only guaranteed
-     * present when {@code JSON_GET_STRING_VALUE} is itself the reason {@link ShimFeature#RUNTIME_STRINGS} is
-     * true (a program using only e.g. {@code Json.getInt} never gets that pool at all).
-     */
-    String jsonStringValueHelpers() {
-        return runtimeSource.load("common/json-string-value.cpp");
     }
 
     /**
