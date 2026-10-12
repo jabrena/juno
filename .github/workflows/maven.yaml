@@ -27,16 +27,19 @@ jobs:
           - name: Build
             command: ./mvnw --batch-mode --no-transfer-progress verify --file pom.xml
           # The Testcontainers profiles live in the juno-compiler module and are opt-in locally (see AGENTS.md);
-          # Docker is preinstalled on the runner.
+          # Docker is preinstalled on the runner. Their unit tests already run in "Build", so these two jobs skip
+          # them (-Dtest=None) and run only their integration tests.
           - name: Compile API and shield fixtures with arduino-cli (Testcontainers)
             # Uses the image the steps below build from the GitHub Actions cache, instead of letting the test
             # download the Arduino cores and libraries again on every run.
             arduino-cli-image: juno-arduino-cli:ci
             command: >-
               ./mvnw --batch-mode --no-transfer-progress -Parduino-cli verify -pl juno-compiler -am
-              -Djuno.arduinoCliImage=juno-arduino-cli:ci
+              -Djuno.arduinoCliImage=juno-arduino-cli:ci -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false
           - name: Run programs under QEMU (Testcontainers)
-            command: ./mvnw --batch-mode --no-transfer-progress -Pqemu verify -pl juno-compiler -am
+            command: >-
+              ./mvnw --batch-mode --no-transfer-progress -Pqemu verify -pl juno-compiler -am
+              -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false
     steps:
       - uses: actions/checkout@v7
         with:
