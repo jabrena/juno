@@ -55,7 +55,7 @@ jobs:
       # and Docker rebuilds only the layers after a change. `load` puts it in the runner's Docker for the test.
       - name: Set up Docker Buildx
         if: matrix.arduino-cli-image
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build arduino-cli image (cached)
         if: matrix.arduino-cli-image
         uses: docker/build-push-action@v6
