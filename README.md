@@ -1,22 +1,33 @@
 # Juno: Java for Arduino One
 
-Juno is an ahead-of-time compiler for running a practical subset of Java on Arduino UNO Q, Arduino UNO R4 WiFi and Arduino UNO WiFi Rev2. It keeps `javac` as the Java frontend, performs
+Juno is an ahead-of-time compiler for running a practical subset of Java on Arduino One Q, Arduino One R4 WiFi, Arduino One WiFi Rev2 and Arduino One R3. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly, or
-AVR assembly for the UNO WiFi Rev2's 8-bit ATmega4809.
+AVR assembly for the UNO R3's ATmega328P and the UNO WiFi Rev2's ATmega4809.
 
 [![CI Builds](https://github.com/jabrena/juno/actions/workflows/maven.yaml/badge.svg)](https://github.com/jabrena/juno/actions/workflows/maven.yaml)
 
-**Arduino UNO Q**
-
-![](./juno-site/src/main/resources/public/images/boards/arduino-one-q.png)
-
-**Arduino UNO R4 WiFi**
-
-![](./juno-site/src/main/resources/public/images/boards/arduino-one-r4-wifi.png)
-
-**Arduino UNO R3 WiFi Rev2**
-
-![](./juno-site/src/main/resources/public/images/boards/arduino-one-r3-wifi-rev2.png)
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Arduino One Q</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-q.png" alt="Arduino UNO Q">
+    </td>
+    <td align="center" width="50%">
+      <strong>Arduino One R4 WiFi</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-r4-wifi.png" alt="Arduino UNO R4 WiFi">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Arduino One WiFi Rev2</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-r3-wifi-rev2.png" alt="Arduino UNO WiFi Rev2">
+    </td>
+    <td align="center" width="50%">
+      <strong>Arduino One R3</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-r3.png" alt="Arduino UNO R3">
+    </td>
+  </tr>
+</table>
 
 ## Modules
 
@@ -47,9 +58,8 @@ Requirements: JDK 27+ and Maven 3.9+.
 
 ### Blink
 
-[`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) runs on either board
-unmodified: expect the UNO R4 WiFi's built-in LED, or the UNO Q's red status LED, to alternate on
-and off every 500 ms (one full cycle per second).
+[`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) runs unmodified on every
+supported board. Its built-in LED alternates on and off every 500 ms (one full cycle per second).
 
 ```java
 package io.github.jabrena.juno.api;
@@ -75,7 +85,7 @@ public final class Blink {
 ```
 
 The project provides a `Maven plugin` to help the user with the common operations. `juno:upload` generates the sketch, verifies it with `arduino-cli`, and flashes it in one step.
-`Blink` targets both boards, so pick one with `-Djuno.board`:
+`Blink` has no board restriction, so pick a target with `-Djuno.board`:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
@@ -85,6 +95,10 @@ The project provides a `Maven plugin` to help the user with the common operation
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.Blink \
   -Djuno.board=arduino-uno-r4-wifi
+
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r3
 ```
 
 It auto-detects the port when exactly one matching board is connected. Otherwise, select it with

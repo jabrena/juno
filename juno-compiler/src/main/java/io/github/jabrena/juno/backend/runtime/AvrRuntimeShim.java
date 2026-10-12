@@ -10,6 +10,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -59,6 +60,7 @@ public final class AvrRuntimeShim {
     private final Set<Intrinsic> usedMath;
     private final List<String> throwableClasses;
     private final Set<String> thunkFunctions;
+    private final AvrWatchdogRuntime watchdogRuntime;
 
     /**
      * @param thunkFunctions every shim function the assembly calls through a thunk
@@ -66,7 +68,7 @@ public final class AvrRuntimeShim {
      */
     public AvrRuntimeShim(CoreRuntime core, RuntimeConfig config, boolean gcLoggingEnabled, Set<ShimFeature> features,
                    Set<Intrinsic> usedMath, List<String> throwableClasses, Set<String> thunkFunctions,
-                   int argumentWords) {
+                   int argumentWords, Optional<Integer> watchdogTimeoutMillis) {
         defineFloatingMath();
         this.core = core;
         this.config = config;
@@ -75,6 +77,7 @@ public final class AvrRuntimeShim {
         this.usedMath = usedMath;
         this.throwableClasses = throwableClasses;
         this.thunkFunctions = thunkFunctions;
+        this.watchdogRuntime = new AvrWatchdogRuntime(core, watchdogTimeoutMillis);
         if (argumentWords > 255) {
             throw Architecture.AVR.unsupported("a call with more than 255 argument words");
         }
@@ -126,6 +129,7 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.SD)) {
             shim.append("#include <SPI.h>\n#include <SdFat.h>\n");
         }
+        shim.append(watchdogRuntime.includes());
     }
 
     /** Panic, the arena and collector, the integer and core-function helpers, and Serial. */
@@ -143,12 +147,18 @@ public final class AvrRuntimeShim {
                 static inline juno_f64 juno_f32_wide(juno_f32 value) { return juno_f64_from_f32(value); }
 
                 extern "C" [[noreturn]] void juno_panic() {
+                ${JUNO_WATCHDOG_PANIC_MESSAGE}
                   noInterrupts();
                   for (;;) {}
                 }
                 """
+                .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogRuntime.panicMessage())
+                + watchdogRuntime.functions()
                 + allocatorRuntime.source(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcDeclarations)
-                + runtimeSource.load("avr/core-runtime.cpp").replace("${OVERFLOW}", f64(4294967040.0))
+                + runtimeSource.load("avr/core-runtime.cpp")
+                .replace("${PIN_MODE_TYPE}", core.avrPinModeType())
+                .replace("${PIN_STATUS_TYPE}", core.avrPinStatusType())
+                .replace("${OVERFLOW}", f64(4294967040.0))
                 .replace("${NEGATIVE_OVERFLOW}", f64(-4294967040.0))
                 .replace("${HALF}", f64(0.5))
                 .replace("${TEN}", f64(10.0));

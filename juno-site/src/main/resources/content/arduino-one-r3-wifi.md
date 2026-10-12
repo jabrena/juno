@@ -206,7 +206,8 @@ Operations that run out of memory panic loudly; they never return a wrong value.
 | `BigInteger`, `BigDecimal`, `MathContext` | Yes | See the limits above |
 | `StructuredTaskScope`, `ScopedValue`, `synchronized`, `ReentrantLock`, atomics | Yes | The same scheduler as the other boards: virtual threads preempted at loop back-edges and method entries (AVR safepoints), subtasks cooperative at loop back-edges, at most four threads including `main`; see the task stacks above |
 | `Mouse` | No | The application MCU has no native USB HID support |
-| `LedMatrix`, `@Watchdog` | No | |
+| `@Watchdog` | Yes | ATmega4809 hardware watchdog; requested timeouts round up to a supported period, at most approximately 8.2 seconds |
+| `LedMatrix` | No | |
 
 ### How it is tested
 

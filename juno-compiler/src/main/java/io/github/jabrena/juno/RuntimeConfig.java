@@ -68,26 +68,24 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
     }
 
     /**
-     * This configuration as {@code board} runs it. An AVR board has a few KB of RAM, so the default arena becomes
-     * {@link RuntimeLimits#AVR_ARENA_CAPACITY_BYTES} there and an explicit one above
-     * {@link RuntimeLimits#AVR_MAX_ARENA_BYTES} is rejected, as is a task stack above
-     * {@link RuntimeLimits#AVR_MAX_THREAD_STACK_BYTES}; every other board keeps the configuration unchanged.
+     * This configuration as {@code board} runs it. An AVR core has only a few KB of RAM, so its core-specific default
+     * and maximum arena and task-stack sizes apply; every other architecture keeps the configuration unchanged.
      */
     public RuntimeConfig forBoard(Board board) {
         if (board.core().architecture() != Architecture.AVR) {
             return this;
         }
-        if (threadStackBytes.isPresent() && threadStackBytes.getAsInt() > RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES) {
+        if (threadStackBytes.isPresent() && threadStackBytes.getAsInt() > board.core().maxThreadStackBytes()) {
             throw new CompileException("The " + board.displayName() + " has too little RAM for "
                     + threadStackBytes.getAsInt() + "-byte task stacks; juno.Xss can be at most "
-                    + RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES + " bytes there");
+                    + board.core().maxThreadStackBytes() + " bytes there");
         }
         if (arenaBytes == DEFAULT.arenaBytes) {
-            return new RuntimeConfig(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES, maxThreads, threadStackBytes);
+            return new RuntimeConfig(board.core().defaultArenaBytes(), maxThreads, threadStackBytes);
         }
-        if (arenaBytes > RuntimeLimits.AVR_MAX_ARENA_BYTES) {
+        if (arenaBytes > board.core().maxArenaBytes()) {
             throw new CompileException("The " + board.displayName() + " has too little RAM for a " + arenaBytes
-                    + "-byte arena; juno.Xmx can be at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES + " bytes there");
+                    + "-byte arena; juno.Xmx can be at most " + board.core().maxArenaBytes() + " bytes there");
         }
         return this;
     }

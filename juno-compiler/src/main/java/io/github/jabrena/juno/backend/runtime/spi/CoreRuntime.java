@@ -21,6 +21,16 @@ public interface CoreRuntime {
     /** The symbol {@code Delay.micros} branches to, taking the delay in r0. */
     String delayMicrosFunction();
 
+    /** C++ type accepted by an AVR core's {@code pinMode}; classic AVR cores use byte constants. */
+    default String avrPinModeType() {
+        return "uint8_t";
+    }
+
+    /** C++ type accepted by an AVR core's {@code digitalWrite}; classic AVR cores use byte constants. */
+    default String avrPinStatusType() {
+        return "uint8_t";
+    }
+
     /** The Arduino digital pin number {@code Gpio.builtinLed()} resolves to on this core's board. */
     int builtinLedPin();
 
@@ -76,6 +86,9 @@ public interface CoreRuntime {
      * substitutes afterwards.
      */
     String yieldFunction();
+
+    /** Core-specific hardware-watchdog setup for the requested timeout. */
+    WatchdogRuntime watchdog(int timeoutMillis);
 
     /**
      * The core's {@code ParallelBus} helpers: {@code juno_parallel_bus_begin(const int32_t* pins, int32_t strobe)},

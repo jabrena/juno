@@ -8,6 +8,7 @@ public final class CoreRuntimes {
 
     public CoreRuntime of(ArduinoCore core) {
         return switch (core) {
+            case CLASSIC_AVR -> new ClassicAvrCoreRuntime();
             case RENESAS_UNO -> new RenesasCoreRuntime();
             case ZEPHYR -> new ZephyrCoreRuntime();
             case MEGAAVR -> new MegaAvrCoreRuntime();

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -53,6 +54,21 @@ class RuntimeConfigTest {
     @Test
     void anAbsentOrBlankSizeKeepsTheDefault() {
         assertThat(RuntimeConfig.of(Optional.empty(), Optional.of(" "))).isEqualTo(RuntimeConfig.DEFAULT);
+    }
+
+    @Test
+    void appliesTheMegaAvrCoresExistingMemoryLimits() {
+        RuntimeConfig config = RuntimeConfig.DEFAULT.forBoard(Board.UNO_WIFI_REV2);
+
+        assertThat(config.arenaBytes()).isEqualTo(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES);
+        assertThatThrownBy(() -> new RuntimeConfig(RuntimeLimits.AVR_MAX_ARENA_BYTES + 8, 4, OptionalInt.empty())
+                        .forBoard(Board.UNO_WIFI_REV2))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES);
+        assertThatThrownBy(() -> new RuntimeConfig(1024, 4,
+                        OptionalInt.of(RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES + 8)).forBoard(Board.UNO_WIFI_REV2))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES);
     }
 
     @Test

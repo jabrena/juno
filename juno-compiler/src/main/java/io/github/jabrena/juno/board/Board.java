@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
  * {@code -Djuno.board} property).
  */
 public enum Board {
+    /** The classic ATmega328P UNO: basic GPIO, serial and shield APIs within its 2 KB of SRAM. */
+    UNO_R3("io/github/jabrena/juno/annotations/ArduinoUnoR3", "arduino-uno-r3", "UNO R3", "arduino:avr:uno",
+            ArduinoCore.CLASSIC_AVR, UnoGeneration.R3, EnumSet.of(Capability.WATCHDOG)),
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi", "arduino-uno-r4-wifi", "UNO R4 WiFi",
             "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO, UnoGeneration.R4,
             EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
@@ -35,7 +38,7 @@ public enum Board {
     UNO_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoWiFiRev2", "arduino-uno-wifi-rev2", "UNO WiFi Rev2",
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
             EnumSet.of(Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
-                    Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS));
+                    Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG));
 
     public static final Board DEFAULT = UNO_R4_WIFI;
 
@@ -66,7 +69,10 @@ public enum Board {
             }
         }
         throw new CompileException("Unsupported @Board target: " + apiClassName.replace('/', '.')
-                + "; supported boards are ArduinoUnoR4WiFi, ArduinoUnoQ and ArduinoUnoWiFiRev2");
+                + "; supported boards are "
+                + Arrays.stream(values()).map(Board::annotationArgument)
+                        .map(argument -> argument.substring(0, argument.length() - ".class".length()))
+                        .collect(Collectors.joining(", ")));
     }
 
     /**

@@ -16,13 +16,15 @@ RUN case "$(dpkg --print-architecture)" in \
     && curl -fsSL "https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_${asset}.tar.gz" \
         | tar -xz -C /usr/local/bin arduino-cli
 
-# The platforms of every @Board target (UNO R4 WiFi, UNO Q and UNO WiFi Rev2); pin any with
+# The platforms of every @Board target (UNO R3, UNO R4 WiFi, UNO Q and UNO WiFi Rev2); pin any with
 # --build-arg CORE=arduino:renesas_uno@<version> / ZEPHYR_CORE=arduino:zephyr@<version> /
-# MEGAAVR_CORE=arduino:megaavr@<version>.
+# MEGAAVR_CORE=arduino:megaavr@<version> / AVR_CORE=arduino:avr@<version>.
 ARG CORE=arduino:renesas_uno
 ARG ZEPHYR_CORE=arduino:zephyr
 ARG MEGAAVR_CORE=arduino:megaavr
-RUN arduino-cli core update-index && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${MEGAAVR_CORE}"
+ARG AVR_CORE=arduino:avr
+RUN arduino-cli core update-index \
+    && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${MEGAAVR_CORE}" "${AVR_CORE}"
 
 # Optional library some TFT programs (e.g. RatonLocoTFT) need; not bundled with either core above,
 # see juno-site/src/main/resources/content/hid.md.

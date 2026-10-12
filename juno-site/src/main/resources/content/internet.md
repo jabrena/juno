@@ -557,8 +557,8 @@ plain fixed-size bytes on UDP port 4210 (documented in
 [`FactorProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/ledger/FactorProtocol.java)
 and
 [`ChainProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/ChainProtocol.java)).
-A board Juno cannot compile for, such as the 8-bit [UNO WiFi Rev2](../arduino-one-r3-wifi), can
-still join with a hand-written sketch that speaks the same packets.
+Another board can still join with a hand-written sketch that speaks the same packets. Juno also
+targets the 8-bit [UNO WiFi Rev2](../arduino-one-r3-wifi), subject to its smaller memory limits.
 
 ## Troubleshooting
 

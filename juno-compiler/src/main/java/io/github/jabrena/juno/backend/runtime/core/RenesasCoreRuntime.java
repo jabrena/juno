@@ -6,6 +6,7 @@ import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
@@ -106,6 +107,12 @@ final class RenesasCoreRuntime implements CoreRuntime {
     @Override
     public String yieldFunction() {
         return runtimeSource.load("renesas/yield.cpp");
+    }
+
+    @Override
+    public WatchdogRuntime watchdog(int timeoutMillis) {
+        return new WatchdogRuntime("#include <WDT.h>\n", "WDT.begin(" + timeoutMillis + "u);", "WDT.refresh();",
+                timeoutMillis);
     }
 
     @Override

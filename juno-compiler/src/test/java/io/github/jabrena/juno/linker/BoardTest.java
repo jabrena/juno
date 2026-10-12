@@ -132,7 +132,7 @@ class BoardTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.WatchdogOnUnoQ", source);
         assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.WatchdogOnUnoQ"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("@Watchdog requires @Board(ArduinoUnoR4WiFi.class)");
+                .hasMessageContaining("UNO Q's Zephyr firmware does not enable its watchdog subsystem");
     }
 
     @Test
@@ -325,6 +325,8 @@ class BoardTest {
 
     @Test
     void everyBoardDeclaresItsCoreAndCapabilities() {
+        assertThat(Board.UNO_R3.core()).isEqualTo(ArduinoCore.CLASSIC_AVR);
+        assertThat(Board.UNO_R3.supports(Capability.WATCHDOG)).isTrue();
         assertThat(Board.UNO_R4_WIFI.core()).isEqualTo(ArduinoCore.RENESAS_UNO);
         assertThat(Capability.values()).allMatch(Board.UNO_R4_WIFI::supports);
         assertThat(Board.UNO_Q.core()).isEqualTo(ArduinoCore.ZEPHYR);
@@ -334,5 +336,6 @@ class BoardTest {
         assertThat(Board.UNO_Q.supports(Capability.HTTP_SERVER)).isTrue();
         assertThat(Board.UNO_Q.supports(Capability.SMTP_STARTTLS)).isFalse();
         assertThat(Board.UNO_Q.supports(Capability.WATCHDOG)).isFalse();
+        assertThat(Board.UNO_WIFI_REV2.supports(Capability.WATCHDOG)).isTrue();
     }
 }

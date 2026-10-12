@@ -27,7 +27,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -49,7 +52,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code -Djuno.arduinoCliImage=<image>}. Skipped when Docker is not available.
  *
  * <p>The sketches are independent, so they compile concurrently in the one container (the {@code arduino-cli}
- * profile sets how many at once, {@code -Djuno.arduinoCliParallelism}); each writes its own sketch directory.
+ * profile sets how many at once, {@code -Djuno.arduinoCliParallelism}); each writes its own sketch directory. They
+ * do share one file: {@code arduino-cli} caches each board's precompiled core ({@code core.a}) and reuses it across
+ * sketches, so the first sketch of a board compiles alone and the others link against a finished archive instead of
+ * one still being written ("File truncated").
  */
 @Tag("arduino-cli")
 @Execution(ExecutionMode.CONCURRENT)
@@ -58,6 +64,9 @@ class ArduinoCliCompileIT {
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path PROGRAMS = BASEDIR.resolve("src/test/arduino/programs");
     private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/arduino-cli/program-classes");
+
+    private static final Map<Board, Object> CORE_LOCKS = new ConcurrentHashMap<>();
+    private static final Set<Board> CORE_CACHED = ConcurrentHashMap.newKeySet();
 
     @Container
     private static final GenericContainer<?> ARDUINO_CLI = container().withCommand("sleep", "infinity");
@@ -113,10 +122,24 @@ class ArduinoCliCompileIT {
             command.add("compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3");
         }
         command.add(target);
-        ExecResult result = ARDUINO_CLI.execInContainer(command.toArray(String[]::new));
+        ExecResult result = compile(board, command.toArray(String[]::new));
 
         assertThat(result.getExitCode()).as("arduino-cli compile %s (%s):%n%s%s", program, board.displayName(),
                 result.getStdout(), result.getStderr()).isZero();
+    }
+
+    /** Compiles alone while {@code board}'s cached core is first built, then concurrently with the others. */
+    private static ExecResult compile(Board board, String[] command) throws IOException, InterruptedException {
+        synchronized (CORE_LOCKS.computeIfAbsent(board, key -> new Object())) {
+            if (!CORE_CACHED.contains(board)) {
+                ExecResult result = ARDUINO_CLI.execInContainer(command);
+                if (result.getExitCode() == 0) {
+                    CORE_CACHED.add(board);
+                }
+                return result;
+            }
+        }
+        return ARDUINO_CLI.execInContainer(command);
     }
 
     /** Runs Juno on the program, writing the same sketch directory {@code juno:compile} does. */

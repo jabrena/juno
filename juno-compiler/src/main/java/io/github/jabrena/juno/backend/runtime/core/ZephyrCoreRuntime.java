@@ -6,6 +6,7 @@ import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
@@ -118,6 +119,11 @@ final class ZephyrCoreRuntime implements CoreRuntime {
     @Override
     public String yieldFunction() {
         return runtimeSource.load("zephyr/yield.cpp");
+    }
+
+    @Override
+    public WatchdogRuntime watchdog(int timeoutMillis) {
+        throw new UnsupportedOperationException("the Zephyr firmware does not enable its watchdog subsystem");
     }
 
     @Override
