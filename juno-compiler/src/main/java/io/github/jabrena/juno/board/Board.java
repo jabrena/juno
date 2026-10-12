@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
  */
 public enum Board {
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi", "arduino-uno-r4-wifi", "UNO R4 WiFi",
-            "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO,
+            "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO, UnoGeneration.R4,
             EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
                     Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
-            ArduinoCore.ZEPHYR, EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTPS_CLIENT,
+            ArduinoCore.ZEPHYR, UnoGeneration.Q, EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.BLUETOOTH_LE, Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY,
                     Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
@@ -33,7 +33,7 @@ public enum Board {
      * GPIO, SPI and analog pins shields such as the SD card, TFT touch and LCD keypad shields use.
      */
     UNO_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoWiFiRev2", "arduino-uno-wifi-rev2", "UNO WiFi Rev2",
-            "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR,
+            "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
             EnumSet.of(Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS));
 
@@ -44,15 +44,17 @@ public enum Board {
     private final String displayName;
     private final String fqbn;
     private final ArduinoCore core;
+    private final UnoGeneration generation;
     private final Set<Capability> capabilities;
 
     Board(String apiClassName, String id, String displayName, String fqbn, ArduinoCore core,
-          Set<Capability> capabilities) {
+          UnoGeneration generation, Set<Capability> capabilities) {
         this.apiClassName = apiClassName;
         this.id = id;
         this.displayName = displayName;
         this.fqbn = fqbn;
         this.core = core;
+        this.generation = generation;
         this.capabilities = Set.copyOf(capabilities);
     }
 
@@ -98,6 +100,11 @@ public enum Board {
     /** The Arduino core this board's sketches are built with, which decides how generated code calls into it. */
     public ArduinoCore core() {
         return core;
+    }
+
+    /** The UNO generation {@code BoardRuntime.isR3()}/{@code isR4()}/{@code isQ()} report. */
+    public UnoGeneration generation() {
+        return generation;
     }
 
     public boolean supports(Capability capability) {

@@ -13,7 +13,7 @@ import java.util.Optional;
  * and a high word, starting at an even word), which is how the Thumb-2 backend passes them in registers and how the
  * AVR backend lays them out in memory for the shim's generated call thunks.
  */
-interface IntrinsicTarget {
+public interface IntrinsicTarget {
     /** Calls the runtime function {@code function} with {@code words}; the result, if any, waits in the result register(s). */
     void emitShimCall(StringBuilder output, FrameLayout frame, String function, List<WordSource> words);
 

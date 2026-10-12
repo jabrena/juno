@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -1041,7 +1042,7 @@ class GeneratedAsmToolchainTest {
     }
 
     /**
-     * {@code io.github.jabrena.juno.backend.NetworkShimLibraries#httpServerHelpers} hand-writes
+     * {@code io.github.jabrena.juno.backend.runtime.NetworkShimLibraries#httpServerHelpers} hand-writes
      * placement-new construction of a static {@code WiFiServer} and reads a {@code StringBuilder}
      * handle's raw arena bytes directly — exactly the kind of shim code most likely to have a real
      * C++ syntax error that a hand-rolled IR unit test would never catch, so this compiles it for
@@ -1249,7 +1250,7 @@ class GeneratedAsmToolchainTest {
     /**
      * Every generated program's entry-point prologue captures the live {@code sp} into
      * {@code juno_gc_stack_top} before its own {@code push} (see
-     * {@link io.github.jabrena.juno.backend.Thumb2AsmBackend#emitMethod}) so the conservative GC's
+     * {@link io.github.jabrena.juno.backend.thumb2.Thumb2AsmBackend#emitMethod}) so the conservative GC's
      * stack scan has a sound upper bound. These host-only harnesses never run that generated
      * assembly, so each one stands in for it: define the storage {@code juno_alloc}'s shim only
      * declares {@code extern}, and set it from a local near the top of {@code main()}, the same way

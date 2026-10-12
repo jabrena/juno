@@ -4,6 +4,7 @@ import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.ControlFlowGraph;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.ir.IrInstruction.Compare;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
@@ -248,7 +249,8 @@ public final class BoundsCheckElimination implements CompilerPass {
         }
 
         /** The {@code Compare} in this block that defines {@code condition}, or null. */
-        private static IrInstruction.@Nullable Compare definingCompare(IrBasicBlock block, Value condition) {
+        @Nullable
+        private static Compare definingCompare(IrBasicBlock block, Value condition) {
             for (IrInstruction instruction : block.instructions()) {
                 if (instruction instanceof IrInstruction.Compare compare && compare.target().equals(condition)) {
                     return compare;

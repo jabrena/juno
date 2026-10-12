@@ -1,7 +1,7 @@
 package io.github.jabrena.juno;
 
-import io.github.jabrena.juno.backend.AvrAsmBackend;
-import io.github.jabrena.juno.backend.Thumb2AsmBackend;
+import io.github.jabrena.juno.backend.avr.AvrAsmBackend;
+import io.github.jabrena.juno.backend.thumb2.Thumb2AsmBackend;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.Program;
 
