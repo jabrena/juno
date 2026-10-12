@@ -124,10 +124,19 @@ there waits its turn, like a `synchronized` method, while tasks that do not touc
 `StructuredTaskScope` cancels a subtask in the middle of such a call, the runtime closes the connection the subtask
 left open and frees the device, so the next request works.
 
-Some waits still hold every task, because they happen inside a vendor library rather than in Juno's runtime:
+On the **UNO Q** the network is Linux's, reached through Arduino_RouterBridge, and every network call waits inside
+that library for Linux to answer. Such a call runs on an **I/O worker**, a Zephyr thread of the runtime's own, while
+the calling task is parked: `Wifi.begin` (starting the bridge), the whole of an HTTPS request including `connect` and
+the TLS handshake, and `HttpServer.accept` and `respond` all leave the other tasks running. The text a request still
+needs is copied before it is handed over, and a task cancelled meanwhile keeps its arrays alive until the worker is
+done with them.
 
-- `Wifi.begin`, opening a connection (`connect`) and the TLS handshake, on every board;
-- the email clients (`Smtp`, `Pop3Client`), which keep using their arguments after each reply from the server;
+Some waits still hold every task, because they happen inside a vendor library with no worker to run them:
+
+- on the UNO R4 WiFi and the UNO WiFi Rev2, `Wifi.begin`, opening a connection (`connect`) and the TLS handshake;
+- on the UNO Q, the UDP calls (`Udp`), each a short round trip to Linux;
+- on every board, the email clients (`Smtp`, `Pop3Client`), which keep using their arguments after each reply from the
+  server;
 - the second or so that ArduinoBLE spends connecting to a hub it has found and discovering its services.
 
 Keep those out of the moments when other tasks must make progress.
@@ -142,7 +151,7 @@ See the `PoweredUpHubScanWhileBlinking` example.
 | Parallel execution | Yes | Yes | No, one task at a time |
 | Where a switch can happen | Anywhere | Blocking operations | Virtual threads: anywhere in compiled Java (AVR: back-edges and method entries). Subtasks: loop back-edges. Both: `sleep`, `yield`, `join`, contended monitors, and a hardware call's wait (HTTP, server, SD, Powered Up); never part-way through runtime code |
 | Memory ordering | Java Memory Model | Java Memory Model | Sequentially consistent |
-| A long blocking call | Stalls only its thread | Pins its carrier thread | Request, server, SD and Powered Up waits stall only their task; vendor waits (`Wifi.begin`, `connect`, TLS) stall every task |
+| A long blocking call | Stalls only its thread | Pins its carrier thread | Request, server, SD and Powered Up waits stall only their task, and on the UNO Q every bridge call but UDP; elsewhere vendor waits (`Wifi.begin`, `connect`, TLS) stall every task |
 
 Juno behaves like platform threads time-sliced on a single core, with the runtime's own calls atomic. That is why `StructuredTaskScope`, which uses virtual threads on the JVM, is the supported way to run work concurrently.
 

@@ -477,15 +477,70 @@ final class ThreadRuntime {
     }
 
     /**
+     * The UNO Q's I/O worker ({@link CoreRuntime#ioWorker()}), emitted after its thread port when the program makes
+     * waiting device calls.
+     */
+    static String zephyrIoWorker() {
+        return """
+
+                // ---- The I/O worker: a Zephyr thread that runs a waiting device call while its caller is parked ----
+                // A bridge call to Linux waits inside Arduino_RouterBridge (k_msleep/k_yield polling), and a Juno
+                // thread waiting there would keep the baton. The caller hands the call to this worker instead and
+                // parks in the scheduler until it is done. The worker runs above the Juno threads, so it gets the CPU
+                // whenever its call can make progress, and it never touches the scheduler, the arena or another
+                // thread's state.
+                static constexpr uint32_t JUNO_IO_WORKER_STACK_BYTES = 4096u;
+                K_THREAD_STACK_DEFINE(juno_io_worker_stack, JUNO_IO_WORKER_STACK_BYTES);
+                static struct k_thread juno_io_worker_thread;
+                static struct k_sem juno_io_job_ready;
+                static k_tid_t juno_io_worker_tid = nullptr;
+                static void (*volatile juno_io_job)(void*) = nullptr;
+                static void* volatile juno_io_job_argument = nullptr;
+                static volatile bool juno_io_job_busy = false;
+
+                static void juno_io_worker_main(void*, void*, void*) {
+                  for (;;) {
+                    k_sem_take(&juno_io_job_ready, K_FOREVER);
+                    juno_io_job(juno_io_job_argument);
+                    __atomic_store_n(&juno_io_job_busy, false, __ATOMIC_RELEASE);
+                  }
+                }
+
+                static void juno_port_io_dispatch(void (*job)(void*), void* argument) {
+                  if (juno_io_worker_tid == nullptr) {
+                    k_sem_init(&juno_io_job_ready, 0, 1);
+                    juno_io_worker_tid = k_thread_create(&juno_io_worker_thread, juno_io_worker_stack,
+                        K_THREAD_STACK_SIZEOF(juno_io_worker_stack), juno_io_worker_main, nullptr, nullptr, nullptr,
+                        K_PRIO_PREEMPT(4), 0, K_NO_WAIT);
+                  }
+                  juno_io_job = job;
+                  juno_io_job_argument = argument;
+                  __atomic_store_n(&juno_io_job_busy, true, __ATOMIC_RELEASE);
+                  k_sem_give(&juno_io_job_ready);
+                }
+
+                static bool juno_port_io_busy() {
+                  return __atomic_load_n(&juno_io_job_busy, __ATOMIC_ACQUIRE);
+                }
+
+                extern "C" bool juno_io_on_worker() {
+                  return juno_io_worker_tid != nullptr && k_current_get() == juno_io_worker_tid;
+                }
+                """;
+    }
+
+    /**
      * The preemptive scheduler and the {@code Thread} intrinsics, over a core's port.
      *
      * @param asynchronousPreemption whether the port's tick preempts generated code at any instruction (Thumb-2:
      *     the port defines {@code juno_port_preempt_start} and its tick calls {@code juno_preempt_tick}); otherwise
      *     (AVR) a thread is preempted at the safepoints the backend emits once its time slice has expired
+     * @param ioWorker whether the port runs waiting device calls on its I/O worker ({@link CoreRuntime#ioWorker()})
      * @param stackScanFunction the collector's scan of one stack range: word-aligned on Thumb-2, byte by byte on AVR,
      *     whose stack frames are unaligned
      */
-    static String scheduler(boolean asynchronousPreemption, String delayFunction, String stackScanFunction,
+    static String scheduler(boolean asynchronousPreemption, boolean ioWorker, String delayFunction,
+                            String stackScanFunction,
                             boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
                             int failedExceptionClassId, int illegalStateExceptionClassId) {
@@ -576,7 +631,9 @@ final class ThreadRuntime {
                   JUNO_SLOT_SLEEPING,
                   JUNO_SLOT_JOINING,
                   JUNO_SLOT_JOINING_ALL,
-                  JUNO_SLOT_JOINING_SCOPE
+                  JUNO_SLOT_JOINING_SCOPE,
+                  JUNO_SLOT_WAITING_IO,
+                  JUNO_SLOT_DRAINING
                 };
 
                 struct JunoSlot {
@@ -623,14 +680,15 @@ final class ThreadRuntime {
                       return (slot.joining->flags & JUNO_THREAD_FINISHED) != 0u;
                     case JUNO_SLOT_JOINING_ALL:
                       for (uint32_t other = 1u; other < JUNO_MAX_THREADS; other++) {
-                        if (juno_slots[other].state != JUNO_SLOT_FREE
-                            && (juno_slots[other].thread->flags & JUNO_THREAD_DAEMON) == 0u) {
+                        if (juno_slots[other].state != JUNO_SLOT_FREE && (juno_slots[other].thread == nullptr
+                            || (juno_slots[other].thread->flags & JUNO_THREAD_DAEMON) == 0u)) {
                           return false;
                         }
                       }
                       return true;
                     case JUNO_SLOT_JOINING_SCOPE:
                       return slot.scope->active == 0u || (slot.scope->flags & 8u) != 0u;
+                    ${JUNO_WAITING_IO_CASE}
                     default:
                       return false;
                   }
@@ -638,7 +696,9 @@ final class ThreadRuntime {
 
                 // The next thread after the current one that can run, or JUNO_MAX_THREADS if none can. The
                 // current thread comes last, so it is chosen only when nobody else is runnable.
+                ${JUNO_IO_REAP_DECLARATION}
                 static uint32_t juno_sched_pick(bool includeCurrent) {
+                  ${JUNO_IO_REAP_CALL}
                   uint32_t now = static_cast<uint32_t>(millis());
                   uint32_t last = includeCurrent ? JUNO_MAX_THREADS : JUNO_MAX_THREADS - 1u;
                   for (uint32_t step = 1u; step <= last; step++) {
@@ -865,7 +925,11 @@ final class ThreadRuntime {
                   juno_slots[juno_current_slot].state = JUNO_SLOT_JOINING_ALL;
                   juno_sched_block();
                 }
-                """.replace("${JUNO_IO_OWNERS}", IoRuntime.owners())
+                """.replace("${JUNO_IO_OWNERS}", IoRuntime.owners(ioWorker))
+                .replace("${JUNO_WAITING_IO_CASE}", ioWorker
+                        ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_port_io_busy();" : "")
+                .replace("${JUNO_IO_REAP_DECLARATION}", ioWorker ? "static void juno_io_reap();" : "")
+                .replace("${JUNO_IO_REAP_CALL}", ioWorker ? "juno_io_reap();" : "")
                 .replace("${JUNO_PREEMPTION}", preemption)
                 .replace("${JUNO_START_PREEMPTION}", startPreemption)
                 .replace("${JUNO_PENDING_SWAP}", pendingSave)
@@ -1108,8 +1172,11 @@ final class ThreadRuntime {
                     juno_task_cancel_owned(slot + 1u);
                     juno_task_release_monitors(slot + 1u);
                     juno_io_release_owned(slot + 1u);
+                    bool draining = juno_slots[slot].state == JUNO_SLOT_WAITING_IO;
                     juno_port_cancel(slot);
                     juno_slots[slot] = {JUNO_SLOT_FREE, 0u, nullptr, nullptr, nullptr, 0};
+                    // A caller cancelled while the I/O worker runs its call: its arrays must outlive the call.
+                    if (draining) juno_slots[slot].state = JUNO_SLOT_DRAINING;
                     if (juno_live_threads != 0u) juno_live_threads--;
                     return;
                   }

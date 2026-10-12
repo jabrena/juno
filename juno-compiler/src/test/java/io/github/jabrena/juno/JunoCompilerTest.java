@@ -1226,9 +1226,9 @@ class JunoCompilerTest {
                 "bl juno_http_query");
         assertThat(result.runtimeShim()).contains("#include <WiFiS3.h>",
                 "static int32_t juno_http_request(",
-                "juno_http_request(client, \"DELETE\", host, port, path, nullptr",
-                "juno_http_request(client, \"PATCH\", host, port, path, body",
-                "juno_http_request(client, \"QUERY\", host, port, path, body")
+                "juno_http_run<WiFiClient>(\"DELETE\", host, port, path, nullptr",
+                "juno_http_run<WiFiClient>(\"PATCH\", host, port, path, body",
+                "juno_http_run<WiFiClient>(\"QUERY\", host, port, path, body")
                 .doesNotContain("#include <WiFiSSLClient.h>", "juno_https_get");
     }
 
@@ -1264,9 +1264,9 @@ class JunoCompilerTest {
                 "bl juno_https_get", "bl juno_https_post", "bl juno_https_delete", "bl juno_https_patch",
                 "bl juno_https_query");
         assertThat(result.runtimeShim()).contains("#include <WiFiS3.h>", "#include <WiFiSSLClient.h>",
-                "WiFiSSLClient client;",
-                "juno_http_request(client, \"GET\", host, port, path, nullptr",
-                "juno_http_request(client, \"QUERY\", host, port, path, body")
+                "using JunoHttpsClient = WiFiSSLClient;",
+                "juno_http_run<JunoHttpsClient>(\"GET\", host, port, path, nullptr",
+                "juno_http_run<JunoHttpsClient>(\"QUERY\", host, port, path, body")
                 .doesNotContain("juno_http_get", "juno_https_get_path_buffer");
     }
 
@@ -1329,8 +1329,8 @@ class JunoCompilerTest {
         assertThat(result.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
                 "class JunoBridgeSSLClient : public BridgeTCPClient<512>",
                 "return connectSSL(host, port, \"\") == 0 ? 1 : 0;",
-                "JunoBridgeSSLClient client;")
-                .doesNotContain("#include <WiFiSSLClient.h>", "WiFiSSLClient client;");
+                "using JunoHttpsClient = JunoBridgeSSLClient;")
+                .doesNotContain("#include <WiFiSSLClient.h>", "WiFiSSLClient");
     }
 
     @Test

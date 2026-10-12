@@ -553,9 +553,7 @@ final class RuntimeShim {
     }
 
     private void appendPeripheralHelpers(StringBuilder shim) {
-        if (IoRuntime.needed(features)) {
-            shim.append(IoRuntime.prelude(uses(ShimFeature.THREADS)));
-        }
+        shim.append(IoRuntime.preludeFor(core, features));
         if (uses(ShimFeature.MOUSE)) {
             shim.append(ShimLibraries.mouseHelpers());
         }
@@ -631,10 +629,12 @@ final class RuntimeShim {
             shim.append(core.httpsHelpers());
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
-            shim.append(NetworkShimLibraries.httpHelpers(features, core.httpsClientDeclaration()));
+            shim.append(NetworkShimLibraries.httpHelpers(features, core.httpsClientType(),
+                    IoRuntime.usesWorker(core, features)));
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
-            shim.append(NetworkShimLibraries.httpServerHelpers(core.httpServerTransport()));
+            shim.append(NetworkShimLibraries.httpServerHelpers(core.httpServerTransport(),
+                    IoRuntime.usesWorker(core, features)));
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(NetworkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
@@ -662,7 +662,9 @@ final class RuntimeShim {
         }
         if (uses(ShimFeature.THREADS)) {
             shim.append(core.threadPort(config));
-            shim.append(ThreadRuntime.scheduler(true, core.delayMillisFunction(), "juno_gc_scan_range",
+            shim.append(IoRuntime.workerPortFor(core, features));
+            shim.append(ThreadRuntime.scheduler(true, IoRuntime.usesWorker(core, features),
+                    core.delayMillisFunction(), "juno_gc_scan_range",
                     uses(ShimFeature.EXCEPTIONS),
                     uses(ShimFeature.THREAD_ENTRY), uses(ShimFeature.TASK_CALLABLE_ENTRY),
                     uses(ShimFeature.STRUCTURED_TASKS), uses(ShimFeature.SCOPED_VALUES),

@@ -208,7 +208,7 @@ class ThreadsTest {
             String shim = httpProgramShim(board, true);
 
             assertThat(shim).as(board)
-                    .contains("static void juno_io_wait(uint32_t millisToWait) {\n  juno_thread_sleep(",
+                    .contains("juno_thread_sleep(static_cast<int64_t>(millisToWait));",
                             "JunoIoGuard guard(JUNO_IO_NETWORK, &client,", "juno_io_wait(1);",
                             "extern \"C\" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {")
                     .doesNotContain("delay(1);");
@@ -233,6 +233,76 @@ class ThreadsTest {
                 .containsSubsequence("juno_task_release_monitors(slot + 1u);", "juno_io_release_owned(slot + 1u);",
                         "juno_port_cancel(slot);");
         assertThat(shim).contains("if (entry.abort != nullptr) entry.abort(entry.handle);");
+    }
+
+    private String unoQNetworkShim(boolean threads) throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.net.Wifi;
+                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                @Board(ArduinoUnoQ.class)
+                public final class Fetch {
+                    public static void main() throws Exception {
+                        byte[] body = new byte[32];
+                        byte[] headers = new byte[32];
+                        int[] status = new int[2];
+                        %s
+                        Wifi.begin("juno", "secret");
+                        Serial.println(HttpsClient.get("example.com", 443, "/", body, body.length, headers,
+                                headers.length, status));
+                    }
+                }
+                """.formatted(threads ? """
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(() -> Serial.println(1));
+                            scope.join();
+                        }""" : "");
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Fetch", source);
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Fetch").runtimeShim();
+    }
+
+    @Test
+    void unoQRunsBridgeCallsOnTheIoWorkerWhileTheCallerIsParked() throws Exception {
+        String shim = unoQNetworkShim(true);
+
+        assertThat(shim).contains("K_THREAD_STACK_DEFINE(juno_io_worker_stack, JUNO_IO_WORKER_STACK_BYTES);",
+                        "K_PRIO_PREEMPT(4)", "extern \"C\" void juno_io_offload(void (*job)(void*), void* argument) {",
+                        "juno_slots[juno_current_slot].state = JUNO_SLOT_WAITING_IO;",
+                        "case JUNO_SLOT_WAITING_IO:\n                      return !juno_port_io_busy();",
+                        "juno_io_offload(juno_wifi_bridge_begin, nullptr);",
+                        "juno_io_offload(juno_http_job<Client>, &job);",
+                        "using JunoHttpsClient = JunoBridgeSSLClient;")
+                .as("short text the worker reads later is copied off the rotating string slots")
+                .contains("job.host = juno_io_stable_text(host, hostCopy);",
+                        "job.path = juno_io_stable_text(path, pathCopy);")
+                .as("a caller cancelled during its call keeps its stack scanned until the worker is done")
+                .contains("if (draining) juno_slots[slot].state = JUNO_SLOT_DRAINING;", "static void juno_io_reap() {")
+                .as("on the worker, guards are its caller's").contains("if (juno_io_on_worker()) return;");
+    }
+
+    @Test
+    void theIoWorkerExistsOnlyForAThreadedUnoQProgramWithNetworkCalls() throws Exception {
+        assertThat(unoQNetworkShim(false)).doesNotContain("juno_io_worker", "juno_io_stable_text")
+                .contains("static void juno_io_offload(void (*job)(void*), void* argument) {\n  job(argument);");
+        assertThat(compile("ArduinoUnoQ", START_AND_JOIN).runtimeShim()).doesNotContain("juno_io_worker");
+        assertThat(httpProgramShim("ArduinoUnoR4WiFi", true))
+                .doesNotContain("juno_io_worker", "JUNO_SLOT_WAITING_IO\n");
+    }
+
+    @Test
+    void theUnoQIoWorkerShimCompilesAsCpp() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        Path shim = temporaryDirectory.resolve("UnoQWorker.cpp");
+        Files.writeString(shim, unoQNetworkShim(true), StandardCharsets.UTF_8);
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
+        assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(process.exitValue()).as("UNO Q worker shim:%n%s", diagnostics).isZero();
     }
 
     @Test

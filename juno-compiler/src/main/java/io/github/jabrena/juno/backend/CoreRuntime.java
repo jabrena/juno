@@ -111,6 +111,25 @@ sealed interface CoreRuntime permits RenesasCoreRuntime, ZephyrCoreRuntime, Mega
         return ShimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
     }
 
+    /**
+     * Whether the core's port runs a program's waiting device calls on a worker thread of its own (see
+     * {@link IoRuntime}), so they hold up no other thread even where the wait happens inside a vendor library. Only
+     * a core with an RTOS underneath can: the UNO Q's.
+     */
+    default boolean ioWorker() {
+        return false;
+    }
+
+    /** The port's I/O worker, when {@link #ioWorker()} is true. */
+    default String ioWorkerPort() {
+        return "";
+    }
+
+    /** The type of the client {@link #httpsClientDeclaration()} declares as {@code client}. */
+    default String httpsClientType() {
+        return httpsClientDeclaration().replace(" client;", "").strip();
+    }
+
     /** Core-specific header the thread port needs ({@code ""} when the core brings none). */
     String threadIncludes();
 

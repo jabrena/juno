@@ -179,7 +179,7 @@ class AvrAsmBackendTest {
                 """);
         assertThat(result.runtimeShim())
                 .contains("#include <WiFiNINA.h>")
-                .contains("WiFiSSLClient client;")
+                .contains("using JunoHttpsClient = WiFiSSLClient;")
                 .contains("extern \"C\" int32_t juno_avr_thunk_juno_https_get() {")
                 .doesNotContain("WiFiSSLClient.h");
     }

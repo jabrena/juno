@@ -41,6 +41,7 @@ typedef struct k_thread* k_tid_t;
 #define K_NO_WAIT (k_timeout_t{0})
 #define K_PRIO_PREEMPT(prio) (prio)
 #define K_THREAD_STACK_ARRAY_DEFINE(name, count, size) alignas(8) static char name[count][size]
+#define K_THREAD_STACK_DEFINE(name, size) alignas(8) static char name[size]
 #define K_THREAD_STACK_SIZEOF(sym) sizeof(sym)
 #define K_THREAD_STACK_BUFFER(sym) (sym)
 
@@ -97,8 +98,17 @@ extern "C" inline void juno_kernel_trampoline() {
   for (;;) {}
 }
 
+inline k_tid_t k_current_get() { return juno_kernel_current; }
+
+// delay() (see Arduino.h) sleeps like Zephyr's k_sleep: the other ready threads run first. No priorities are modelled.
+inline void juno_kernel_sleep_yield() {
+  juno_kernel_current->state = JUNO_KT_READY;
+  juno_kernel_reschedule();
+}
+
 inline k_tid_t k_thread_create(struct k_thread* thread, char* stack, size_t size, k_thread_entry_t entry, void* a,
                                void* b, void* c, int, uint32_t, k_timeout_t) {
+  juno_harness_delay_hook = juno_kernel_sleep_yield;
   uint32_t* top = reinterpret_cast<uint32_t*>(stack + size);
   uint32_t* frame = top - 2u - JUNO_KERNEL_FRAME_WORDS;
   for (uint32_t index = 0u; index < JUNO_KERNEL_FRAME_WORDS; index++) frame[index] = 0u;

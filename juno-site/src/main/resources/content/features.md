@@ -159,11 +159,13 @@ Supported today:
   monitors, atomics and every hardware call) is never interrupted part-way, so the arena, the collector and the
   pending-exception slot need no locking. A hardware call that waits for its device (an HTTP/HTTPS response, an
   `HttpServer` request, `SdCard.begin` retries, Powered Up scans) sleeps only its own task meanwhile, holding the
-  device so other tasks take turns on it; `Wifi.begin`, `connect`, TLS handshakes and the email clients still wait
-  inside the vendor libraries and hold every task. A virtual thread is a daemon, as on the JVM: when `main` returns, the program does not wait for it. At most
+  device so other tasks take turns on it. On the UNO Q, whose network calls all wait on Linux through
+  Arduino_RouterBridge, `Wifi.begin`, HTTPS requests (`connect` and TLS included) and the HTTP server run on an I/O
+  worker thread while the caller is parked. Elsewhere `Wifi.begin`, `connect` and TLS handshakes still wait inside the
+  vendor libraries and hold every task, as do the email clients and, on the UNO Q, UDP. A virtual thread is a daemon, as on the JVM: when `main` returns, the program does not wait for it. At most
   four threads run at once, the owner included, each extra one with a 2 KiB stack on the UNO R4 WiFi and 4 KiB on the
-  UNO Q (a stack overflow on the UNO R4 panics with `[juno-thread] stack overflow` when the thread next switches
-  away). The collector scans every live stack. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each thread
+  UNO Q. A stack overflow panics with `[juno-thread] stack overflow`, caught by the thread's stack pointer as well as a
+  canary when the thread switches away or calls a device, and reported from a stack of its own. The collector scans every live stack. The UNO R4 WiFi swaps stack pointers itself; on the UNO Q each thread
   is a Zephyr thread that waits for a baton, so only one runs at a time. The rest of `java.lang.Thread` is not part of
   the language subset: `new Thread(...)`, `start()`, `setDaemon(boolean)`, the `Thread.ofVirtual()` and
   `Thread.ofPlatform()` builders and the other members fail with a `CompileException` that points to

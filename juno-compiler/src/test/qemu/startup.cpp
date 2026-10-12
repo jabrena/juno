@@ -24,6 +24,11 @@ static void semihost(int operation, const void* argument) {
 
 void juno_harness_write(const char* text) { semihost(0x04, text); }  // SYS_WRITE0
 
+// Clock.millis()/micros() call the core's C symbols directly; Arduino.h only has C++ inlines, so export aliases.
+unsigned long juno_harness_millis(void) { return millis(); }
+unsigned long juno_harness_micros(void) { return micros(); }
+__asm__(".global millis\n.set millis, juno_harness_millis\n.global micros\n.set micros, juno_harness_micros\n");
+
 [[noreturn]] void juno_harness_exit(int code) {
   // SYS_EXIT: ADP_Stopped_ApplicationExit exits QEMU with status 0, anything else with 1.
   semihost(0x18, reinterpret_cast<const void*>(code == 0 ? 0x20026 : 0x20023));
@@ -31,9 +36,12 @@ void juno_harness_write(const char* text) { semihost(0x04, text); }  // SYS_WRIT
 }
 
 // The real core's service hook. Weak: the R4 shim defines its own. Like that one (through Serial's bool
-// conversion) it lets virtual time pass, so a thread spinning on a loop backedge eventually reaches the
-// scheduler's once-per-millisecond switch on the UNO Q too.
-__attribute__((weak)) void yield(void) { juno_harness_clock++; }
+// conversion) it lets virtual time pass. On the UNO Q, whose Zephyr core makes yield() a k_yield(), it also lets the
+// stand-in kernel's other threads run (the I/O worker, which real Zephyr would run by priority).
+__attribute__((weak)) void yield(void) {
+  juno_harness_clock++;
+  if (juno_harness_delay_hook != nullptr) juno_harness_delay_hook();
+}
 
 [[noreturn]] static void fault(void) {
   juno_harness_write("[juno-fault]\n");

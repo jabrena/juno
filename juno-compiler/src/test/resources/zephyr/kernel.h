@@ -29,6 +29,7 @@ typedef void (*k_timer_stop_t)(struct k_timer*);
 #define K_THREAD_STACK_ARRAY_DEFINE(name, count, size) static char name[count][size]
 #define K_THREAD_STACK_SIZEOF(sym) sizeof(sym)
 #define K_THREAD_STACK_BUFFER(sym) (sym)
+#define K_THREAD_STACK_DEFINE(name, size) static char name[size]
 
 inline k_tid_t k_thread_create(struct k_thread*, char*, size_t, k_thread_entry_t, void*, void*, void*, int,
                                uint32_t, k_timeout_t) {
@@ -41,3 +42,4 @@ inline void k_sem_give(struct k_sem*) {}
 inline int k_sem_take(struct k_sem*, k_timeout_t) { return 0; }
 inline void k_timer_init(struct k_timer*, k_timer_expiry_t, k_timer_stop_t) {}
 inline void k_timer_start(struct k_timer*, k_timeout_t, k_timeout_t) {}
+inline k_tid_t k_current_get() { return nullptr; }
