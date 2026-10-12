@@ -25,6 +25,7 @@ class AvrAsmBackendTest {
     private final AvrShimThunks avrShimThunks = new AvrShimThunks();
 
     private static final String REV2 = "arduino-uno-wifi-rev2";
+    private static final String R3 = "arduino-uno-r3";
 
     @TempDir
     Path temporaryDirectory;
@@ -47,6 +48,24 @@ class AvrAsmBackendTest {
         return new JunoCompiler().compile(CompilerTestSupport.classpath(classes), className, false, Optional.of(REV2));
     }
 
+    private CompilationResult compileR3(String className, String body, String imports) throws Exception {
+        String simpleName = className.substring(className.lastIndexOf('.') + 1);
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+                import io.github.jabrena.juno.annotations.Board;
+                %s
+                @Board(ArduinoUnoR3.class)
+                public final class %s {
+                    public static void main(String[] args) {
+                %s
+                    }
+                }
+                """.formatted(imports, simpleName, body);
+        Path classes = CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, className, source);
+        return new JunoCompiler().compile(CompilerTestSupport.classpath(classes), className, false, Optional.of(R3));
+    }
+
     @Test
     void resolvesTheUnoWiFiRev2ToTheAvrBackend() {
         Board board = Board.fromId(REV2);
@@ -55,6 +74,52 @@ class AvrAsmBackendTest {
         assertThat(board.core().architecture()).isEqualTo(Architecture.AVR);
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoWiFiRev2")).isEqualTo(board);
         assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoWiFiRev2.class");
+    }
+
+    @Test
+    void resolvesTheClassicUnoR3ToTheAvrBackend() {
+        Board board = Board.fromId(R3);
+
+        assertThat(board).isEqualTo(Board.UNO_R3);
+        assertThat(board.fqbn()).isEqualTo("arduino:avr:uno");
+        assertThat(board.core().architecture()).isEqualTo(Architecture.AVR);
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3")).isEqualTo(board);
+        assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3.class");
+    }
+
+    @Test
+    void compilesBasicGpioForTheClassicUnoR3() throws Exception {
+        CompilationResult result = compileR3("demo.R3Blink", """
+                        Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
+                        Gpio.digitalWrite(Gpio.builtinLed(), true);
+                        Delay.millis(500);
+                """, """
+                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.io.Gpio;
+                """);
+
+        assertThat(result.assembly())
+                .contains("call juno_avr_thunk_juno_pin_mode", "call juno_avr_thunk_juno_delay_millis")
+                .contains("ldi r22, 13");
+        assertThat(result.runtimeShim()).doesNotContain("WiFiNINA", "JunoSdSoftSpiDriver", "juno_context_switch");
+        assertThat(result.runtimeShim())
+                .contains("pinMode(static_cast<uint8_t>(pin), static_cast<uint8_t>(mode));")
+                .contains("digitalWrite(static_cast<uint8_t>(pin), static_cast<uint8_t>(value != 0 ? HIGH : LOW));");
+    }
+
+    @Test
+    void rejectsFeaturesThatDoNotFitTheClassicUnoR3() {
+        assertThatThrownBy(() -> compileR3("demo.R3Wifi", "Wifi.status();",
+                "import io.github.jabrena.juno.api.net.Wifi;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3 has no onboard WiFi module");
+        assertThatThrownBy(() -> compileR3("demo.R3Tasks", "StructuredTaskScope.open();",
+                "import java.util.concurrent.StructuredTaskScope;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3 has no room for per-task stacks");
+        assertThatThrownBy(() -> new RuntimeConfig(2048, 4, OptionalInt.empty()).forBoard(Board.UNO_R3))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("juno.Xmx can be at most 1024 bytes");
     }
 
     @Test

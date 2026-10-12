@@ -35,6 +35,16 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
         return "juno_delay_micros";
     }
 
+    @Override
+    public String avrPinModeType() {
+        return "PinMode";
+    }
+
+    @Override
+    public String avrPinStatusType() {
+        return "PinStatus";
+    }
+
     /** {@code LED_BUILTIN} of the {@code uno2018} variant: the "L" LED sits on PD6, digital pin 25, not on D13. */
     @Override
     public int builtinLedPin() {

@@ -104,16 +104,12 @@ arduino-cli core update-index
 arduino-cli core install arduino:avr
 ```
 
-Generate a Juno sketch, then compile it for the R3:
+Generate and compile a Juno example for the R3 through the Maven plugin:
 
 ```bash
-java -jar juno-compiler/target/juno-compiler-0.1.0-SNAPSHOT.jar compile \
-  --main <ExampleClassName> \
-  --classpath juno-examples/target/classes:juno-api/target/classes
-
-arduino-cli compile \
-  --fqbn arduino:avr:uno \
-  build/juno/<ExampleClassName>
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.board=arduino-uno-r3
 ```
 
 Uploading changes the firmware on a connected physical board. Find the port with
@@ -121,9 +117,9 @@ Uploading changes the firmware on a connected physical board. Find the port with
 
 ## Juno compatibility
 
-UNO R3 support is currently experimental rather than a declared Juno target. The existing backend
-emits standard Arduino calls for the portable APIs, and both `Blink` and `SerialCounter` have been
-compiled successfully with the `arduino:avr:uno` core.
+The UNO R3 is a declared Juno target. Select it with `@Board(ArduinoUnoR3.class)` or the board id
+`arduino-uno-r3`. Programs without `@Board` can target it with `-Djuno.board=arduino-uno-r3`.
+Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
 
 | Juno API or feature | UNO R3 | Notes |
 |---|---:|---|
@@ -135,10 +131,10 @@ compiled successfully with the `arduino:avr:uno` core.
 | Wi-Fi and Bluetooth | Not applicable | No onboard wireless hardware |
 | DAC, RTC and CAN | Not applicable | These peripherals are not built into the R3 board |
 
-The most important practical limit is SRAM. A sketch passing the Arduino compiler's global-memory
-report can still overflow at runtime because that report does not calculate the maximum Juno call
-stack. R3 support should therefore include representative AVR compile tests and stack-budget
-testing before it is considered production-ready.
+The most important practical limit is SRAM. Juno limits the R3 arena to 1 kB and rejects APIs that
+need task stacks, arbitrary-precision arithmetic, networking, an LED matrix or native USB HID. A
+sketch passing the Arduino compiler's global-memory report can still overflow at runtime because
+that report does not calculate the maximum Juno call stack.
 
 ## Official references
 

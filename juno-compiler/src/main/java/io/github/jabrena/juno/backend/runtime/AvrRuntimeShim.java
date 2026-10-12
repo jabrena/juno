@@ -148,7 +148,10 @@ public final class AvrRuntimeShim {
                 }
                 """
                 + allocatorRuntime.source(config.arenaBytes(), gcLoggingEnabled, gcStackScan, gcDeclarations)
-                + runtimeSource.load("avr/core-runtime.cpp").replace("${OVERFLOW}", f64(4294967040.0))
+                + runtimeSource.load("avr/core-runtime.cpp")
+                .replace("${PIN_MODE_TYPE}", core.avrPinModeType())
+                .replace("${PIN_STATUS_TYPE}", core.avrPinStatusType())
+                .replace("${OVERFLOW}", f64(4294967040.0))
                 .replace("${NEGATIVE_OVERFLOW}", f64(-4294967040.0))
                 .replace("${HALF}", f64(0.5))
                 .replace("${TEN}", f64(10.0));

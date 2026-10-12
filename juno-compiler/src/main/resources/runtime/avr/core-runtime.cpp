@@ -44,11 +44,11 @@ extern "C" int32_t juno_avr_iushr(int32_t a, int32_t b) {
 
 // The core's pin and time functions take 8- and 16-bit parameters; Java passes ints.
 extern "C" void juno_pin_mode(int32_t pin, int32_t mode) {
-  pinMode(static_cast<uint8_t>(pin), static_cast<PinMode>(mode));
+  pinMode(static_cast<uint8_t>(pin), static_cast<${PIN_MODE_TYPE}>(mode));
 }
 
 extern "C" void juno_digital_write(int32_t pin, int32_t value) {
-  digitalWrite(static_cast<uint8_t>(pin), static_cast<PinStatus>(value != 0 ? HIGH : LOW));
+  digitalWrite(static_cast<uint8_t>(pin), static_cast<${PIN_STATUS_TYPE}>(value != 0 ? HIGH : LOW));
 }
 
 extern "C" int32_t juno_digital_read(int32_t pin) {

@@ -325,6 +325,8 @@ class BoardTest {
 
     @Test
     void everyBoardDeclaresItsCoreAndCapabilities() {
+        assertThat(Board.UNO_R3.core()).isEqualTo(ArduinoCore.CLASSIC_AVR);
+        assertThat(Capability.values()).noneMatch(Board.UNO_R3::supports);
         assertThat(Board.UNO_R4_WIFI.core()).isEqualTo(ArduinoCore.RENESAS_UNO);
         assertThat(Capability.values()).allMatch(Board.UNO_R4_WIFI::supports);
         assertThat(Board.UNO_Q.core()).isEqualTo(ArduinoCore.ZEPHYR);

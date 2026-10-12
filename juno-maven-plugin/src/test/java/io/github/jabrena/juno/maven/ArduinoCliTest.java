@@ -31,6 +31,19 @@ class ArduinoCliTest {
     }
 
     @Test
+    void compilesAClassicUnoR3WithoutExtraBuildProperties() {
+        FakeExecutor executor = new FakeExecutor().respond(0, "compiled");
+        ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
+        Path sketch = Path.of("target/juno/Blink");
+
+        cli.compile("arduino:avr:uno", sketch);
+
+        assertThat(executor.invocations()).containsExactly(captured(List.of(
+                "arduino-cli", "compile", "--fqbn", "arduino:avr:uno",
+                sketch.toAbsolutePath().normalize().toString())));
+    }
+
+    @Test
     void enablesSdFatSoftwareSpiForUnoWiFiRev2() {
         FakeExecutor executor = new FakeExecutor().respond(0, "compiled");
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });

@@ -50,6 +50,21 @@ class CoreRuntimeTest {
     }
 
     @Test
+    void theClassicAvrCoreUsesUnoR3PinsAndHardwareSpi() {
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.CLASSIC_AVR);
+
+        assertThat(runtime.delayMillisFunction()).isEqualTo("juno_delay_millis");
+        assertThat(runtime.delayMicrosFunction()).isEqualTo("juno_delay_micros");
+        assertThat(runtime.builtinLedPin()).isEqualTo(13);
+        assertThat(runtime.parallelBusHelpers())
+                .contains("portOutputRegister(portId)", "digitalPinToBitMask(pin)", "volatile uint8_t*");
+        assertThat(runtime.sdHelpers(2, 8, 32, 64, 96))
+                .contains("juno_sd.begin(chipSelectPin)")
+                .doesNotContain("JunoSdSoftSpiDriver");
+        assertThat(runtime.yieldFunction()).isEmpty();
+    }
+
+    @Test
     void theThreadPortsDefaultToTheBoardsStackAndTheConfiguredSlots() {
         String renesas = coreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(RuntimeConfig.DEFAULT);
         String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(RuntimeConfig.DEFAULT);
