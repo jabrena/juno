@@ -12,7 +12,7 @@
 
     <artifactId>juno-compiler</artifactId>
     <name>Juno Compiler</name>
-    <description>A tiny Java AOT compiler for Arduino UNO R4 WiFi</description>
+    <description>Ahead-of-time compiler that turns Java bytecode into Thumb-2 or AVR assembly plus a C++ runtime shim for Arduino boards</description>
 
     <dependencies>
         <dependency>
