@@ -9,6 +9,7 @@ import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiStatus;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftFpsWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftHeaderWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftTextWidget;
 import io.github.jabrena.juno.usecases.dashboard.status.TftDashboardStatusView;
 import io.github.jabrena.juno.usecases.dashboard.storage.TftDashboardStorageView;
 
@@ -22,6 +23,7 @@ public final class TftDashboardHomeView implements TftDashboardScreen {
     private final TftDashboardState state = new TftDashboardState();
     private final TftFpsWidget fps = new TftFpsWidget();
     private final TftHeaderWidget header = new TftHeaderWidget("JUNO DASHBOARD");
+    private final TftTextWidget prompt = new TftTextWidget(12, 64, 2);
     private final TftButtonWidget statusButton =
             new TftButtonWidget(72, 92, 176, 42, "VIEW STATUS", TftTouchShield.BLUE);
     private final TftButtonWidget storageButton =
@@ -64,10 +66,7 @@ public final class TftDashboardHomeView implements TftDashboardScreen {
         TftTouchShield.fillScreen(TftTouchShield.NAVY);
         header.draw();
 
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(12, 64);
-        TftTouchShield.print("Select a view");
+        prompt.draw("Select a view", TftTouchShield.WHITE);
         statusButton.draw();
         storageButton.draw();
         fps.reset();
