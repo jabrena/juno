@@ -1,28 +1,27 @@
 package io.github.jabrena.juno.api.net.http;
 
 /**
- * A minimal HTTP/1.1 client recognized as compiler intrinsics by Juno, backed by the Arduino
- * {@code WiFiS3} library's {@code WiFiClient}. Requires {@code @Board(ArduinoUnoR4WiFi.class)}
- * (the default board) and an active {@link io.github.jabrena.juno.api.net.Wifi#begin} connection.
+ * A minimal HTTP/1.1 client recognized as compiler intrinsics by Juno. As with {@code java.net.http.HttpClient}, the
+ * URL decides how a request travels: an {@code https://} URL goes over TLS (Arduino's {@code WiFiSSLClient} and its
+ * firmware CA bundle on UNO R4 WiFi, or Linux TLS through {@code Arduino_RouterBridge} on UNO Q), an {@code http://}
+ * URL over a plain {@code WiFiClient}. The port defaults to 443 or 80 and can be given explicitly, as in
+ * {@code http://192.168.1.10:8080/led}. Requires an active {@link io.github.jabrena.juno.api.net.Wifi#begin}
+ * connection or bridge, and a board that supports the scheme: the UNO Q has no plain-HTTP client, for example.
  *
- * <p>{@code host}/{@code path} (and {@code body} for {@link #post}, {@link #patch}, and
- * {@link #query}) must each be a compile-time
- * constant: either a string literal, or {@code System.getenv("NAME")} of a literal
- * environment-variable name, exactly like {@link io.github.jabrena.juno.api.net.Wifi#begin}'s credentials. Juno has no heap, so
- * none of these can be a runtime-computed {@code String} — this also means these methods must be
- * called directly with the literal in hand, never forwarded through another method's own
- * {@code String} parameter.
+ * <p>The {@code url} (and {@code body} for {@link #post}, {@link #patch} and {@link #query}) must each be a
+ * compile-time constant: a string literal, or {@code System.getenv("NAME")} of a literal environment-variable name,
+ * like {@link io.github.jabrena.juno.api.net.Wifi#begin}'s credentials. The compiler splits the URL into scheme,
+ * host, port and path, so nothing is parsed on the board. Call these methods with the literal in hand, never through
+ * another method's own {@code String} parameter. For a path that depends on runtime data, use
+ * {@link #get(String, byte[], int, byte[], int, byte[], int, int[])} with a base URL.
  *
- * <p>The response body is written into {@code bodyBuffer} and the raw response headers into
- * {@code headersBuffer} (both caller-owned, fixed-size {@code byte[]}), each starting at index 0
- * and truncated to its own length if longer — pass each buffer's own array length explicitly,
- * since Juno has no runtime {@code .length} for an array method parameter. Each method returns the
- * number of body bytes written, or {@code -1} if the connection failed. {@code statusAndHeadersLength}
- * (a caller-owned {@code int[2]}, allocated once outside any loop like the buffers themselves) is
- * filled with the HTTP status code at index 0 (or {@code 0} if the connection failed before a
- * status line was received) and the number of bytes written into {@code headersBuffer} at index 1.
- * A request that doesn't complete within a fixed 5-second timeout is abandoned and returns
- * whatever was captured so far.
+ * <p>The response body is written into {@code bodyBuffer} and the raw response headers into {@code headersBuffer}
+ * (both caller-owned, fixed-size {@code byte[]}), each from index 0 and truncated to its given length. Each method
+ * returns the number of body bytes written, or {@code -1} if the connection, TLS setup or certificate validation
+ * failed. {@code statusAndHeadersLength} (a caller-owned {@code int[2]}, allocated once outside any loop like the
+ * buffers) receives the HTTP status code at index 0 ({@code 0} if no status line arrived) and the number of bytes
+ * written into {@code headersBuffer} at index 1. A request that doesn't complete within a fixed 5-second timeout is
+ * abandoned and returns whatever was captured so far.
  */
 public final class HttpClient {
     /** A reasonable default size for a caller's body/headers buffer, in bytes. */
@@ -31,33 +30,46 @@ public final class HttpClient {
     private HttpClient() {
     }
 
-    public static native int get(String host, int port, String path,
-            byte[] bodyBuffer, int bodyBufferLength,
-            byte[] headersBuffer, int headersBufferLength,
-            int[] statusAndHeadersLength);
-
-    public static native int post(String host, int port, String path, String body,
-            byte[] bodyBuffer, int bodyBufferLength,
-            byte[] headersBuffer, int headersBufferLength,
-            int[] statusAndHeadersLength);
-
-    /** Sends a bodyless HTTP DELETE request. */
-    public static native int delete(String host, int port, String path,
-            byte[] bodyBuffer, int bodyBufferLength,
-            byte[] headersBuffer, int headersBufferLength,
-            int[] statusAndHeadersLength);
-
-    /** Sends an HTTP PATCH request with a compile-time JSON body. */
-    public static native int patch(String host, int port, String path, String body,
+    /** Sends a GET request to {@code url}. */
+    public static native int get(String url,
             byte[] bodyBuffer, int bodyBufferLength,
             byte[] headersBuffer, int headersBufferLength,
             int[] statusAndHeadersLength);
 
     /**
-     * Sends a safe, idempotent HTTP QUERY request with a compile-time JSON body, as defined by
-     * RFC 10008.
+     * Sends a GET request to {@code baseUrl} (a scheme, host and optional port, with no path of its own) for the
+     * path held in the first {@code pathLength} ASCII bytes of {@code pathBuffer}: for paths that depend on runtime
+     * data, such as coordinates read from an earlier response (a runtime {@code String} is limited to 31 bytes, far
+     * too short for a typical query string). {@code pathLength} must be less than 256; a longer or negative length
+     * returns {@code -1} without connecting.
      */
-    public static native int query(String host, int port, String path, String body,
+    public static native int get(String baseUrl, byte[] pathBuffer, int pathLength,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /** Sends a POST request to {@code url} with a compile-time body. */
+    public static native int post(String url, String body,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /** Sends a bodyless DELETE request to {@code url}. */
+    public static native int delete(String url,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /** Sends a PATCH request to {@code url} with a compile-time JSON body. */
+    public static native int patch(String url, String body,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /**
+     * Sends a safe, idempotent QUERY request to {@code url} with a compile-time JSON body, as defined by RFC 10008.
+     */
+    public static native int query(String url, String body,
             byte[] bodyBuffer, int bodyBufferLength,
             byte[] headersBuffer, int headersBufferLength,
             int[] statusAndHeadersLength);

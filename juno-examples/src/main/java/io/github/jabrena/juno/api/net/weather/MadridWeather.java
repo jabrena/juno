@@ -7,7 +7,7 @@ import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
-import io.github.jabrena.juno.api.net.http.HttpsClient;
+import io.github.jabrena.juno.api.net.http.HttpClient;
 
 /**
  * Connects to WiFi, then periodically requests Madrid's current temperature and local time from
@@ -38,8 +38,8 @@ public final class MadridWeather {
 
     private static void processWeather(DisplayData display, byte[] response, byte[] headers,
             int[] statusAndHeadersLength) {
-        String temperature = WeatherClient.fetchTemperature(response, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE,
-                headers, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength);
+        String temperature = WeatherClient.fetchTemperature(response, HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE,
+                headers, HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength);
         if (temperature != null) {
             Serial.print("Weather OK len=");
             Serial.println(temperature.length());
@@ -52,8 +52,8 @@ public final class MadridWeather {
 
     private static void processTime(DisplayData display, byte[] response, byte[] headers, byte[] timeText,
             int[] statusAndHeadersLength) {
-        String time = TimeClient.fetchTime(response, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE,
-                headers, HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength,
+        String time = TimeClient.fetchTime(response, HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE,
+                headers, HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength,
                 timeText, TIME_TEXT_BUFFER_SIZE);
         if (time != null) {
             Serial.print("Time OK len=");
@@ -100,12 +100,12 @@ public final class MadridWeather {
         // memory, so fresh allocations inside a while(true) would exhaust it after a few hundred cycles.
         // Each service gets its own buffer/scratch pair rather than sharing one, so a weather request
         // can never leave stale bytes behind for the time request (or vice versa) to read.
-        byte[] weatherResponse = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
-        byte[] weatherHeaders = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
+        byte[] weatherResponse = new byte[HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE];
+        byte[] weatherHeaders = new byte[HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE];
         int[] weatherStatusAndHeadersLength = new int[2];
 
-        byte[] timeResponse = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
-        byte[] timeHeaders = new byte[HttpsClient.DEFAULT_RESPONSE_BUFFER_SIZE];
+        byte[] timeResponse = new byte[HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE];
+        byte[] timeHeaders = new byte[HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE];
         int[] timeStatusAndHeadersLength = new int[2];
 
         byte[] timeText = new byte[TIME_TEXT_BUFFER_SIZE];

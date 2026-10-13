@@ -10,7 +10,6 @@ import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.net.email.Pop3Client;
 import io.github.jabrena.juno.api.net.email.Smtp;
 import io.github.jabrena.juno.api.net.http.HttpClient;
-import io.github.jabrena.juno.api.net.http.HttpsClient;
 import io.github.jabrena.juno.api.net.http.Json;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 import java.io.IOException;
@@ -41,7 +40,7 @@ public final class Peripherals {
         byte[] body = new byte[64];
         byte[] headers = new byte[96];
         int[] status = new int[2];
-        int length = HttpClient.post("example.com", 80, "/readings", "{\"t\":1}", body, body.length, headers,
+        int length = HttpClient.post("http://example.com/readings", "{\"t\":1}", body, body.length, headers,
                 headers.length, status);
         Serial.println(status[0]);
         Serial.println(length);
@@ -50,10 +49,10 @@ public final class Peripherals {
         double temp = Json.getDouble(body, length, "temp");
         Serial.println((int) (temp * 10));
         Serial.println("temp=" + temp);
-        int secure = HttpsClient.get("example.com", 443, "/readings", body, body.length, headers, headers.length,
+        int secure = HttpClient.get("https://example.com/readings", body, body.length, headers, headers.length,
                 status);
         Serial.println(status[0] + " " + secure + " " + Json.getInt(body, secure, "n"));
-        Serial.println(HttpsClient.get("example.com", 80, "/", body, body.length, headers, headers.length, status));
+        Serial.println(HttpClient.get("https://example.com:80/", body, body.length, headers, headers.length, status));
 
         Serial.println(Smtp.sendTls("smtp.example.com", 465, "rev2@example.com", "secret", "rev2@example.com",
                 "you@example.com", "Hello", "Sent from a UNO WiFi Rev2"));

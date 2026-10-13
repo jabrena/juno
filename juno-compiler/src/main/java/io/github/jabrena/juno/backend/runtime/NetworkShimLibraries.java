@@ -37,6 +37,9 @@ final class NetworkShimLibraries {
         if (features.contains(ShimFeature.HTTPS)) {
             helpers.append(runtimeSource.load("common/https-get.cpp"));
         }
+        if (features.contains(ShimFeature.HTTP_PATH_BUFFER)) {
+            helpers.append(runtimeSource.load("common/http-path-buffer.cpp"));
+        }
         if (features.contains(ShimFeature.HTTPS_PATH_BUFFER)) {
             helpers.append(runtimeSource.load("common/https-path-buffer.cpp"));
         }

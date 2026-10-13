@@ -300,7 +300,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.net.Wifi;
                 import io.github.jabrena.juno.api.net.Udp;
-                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
                 import io.github.jabrena.juno.api.net.email.Pop3Client;
                 import io.github.jabrena.juno.api.net.email.Smtp;
                 @Board(ArduinoUnoQ.class)
@@ -311,7 +311,7 @@ class BoardTest {
                         byte[] body = new byte[8];
                         byte[] headers = new byte[8];
                         int[] result = new int[2];
-                        HttpsClient.get("example.com", 443, "/", body, 8, headers, 8, result);
+                        HttpClient.get("https://example.com/", body, 8, headers, 8, result);
                         Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
                                 "me@example.com", "me@example.com", "Hello", "Hello");
                         Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");

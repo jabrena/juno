@@ -148,6 +148,14 @@ public enum Intrinsic {
     HTTPS_DELETE,
     HTTPS_PATCH,
     HTTPS_QUERY,
+    HTTP_GET_PATH_BUFFER,
+    /** {@code HttpClient} called with a URL: lowered to the plain or TLS request its scheme names. */
+    HTTP_URL_GET,
+    HTTP_URL_GET_PATH_BUFFER,
+    HTTP_URL_POST,
+    HTTP_URL_DELETE,
+    HTTP_URL_PATCH,
+    HTTP_URL_QUERY,
     /** {@code Json.rawText}: a byte range copied into a runtime-string slot, or {@code null} when it does not fit. */
     STRING_FROM_BYTES,
     HTTP_SERVER_BEGIN,

@@ -420,7 +420,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
                 import io.github.jabrena.juno.api.net.http.Json;
                 import io.github.jabrena.juno.api.net.Wifi;
                 public final class AsmNetworking {
@@ -429,11 +429,11 @@ class GeneratedAsmToolchainTest {
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
-                        HttpsClient.get("example.com", 443, "/status", response, response.length,
+                        HttpClient.get("https://example.com/status", response, response.length,
                                 headers, headers.length, out);
                         byte[] path = new byte[8];
                         path[0] = '/';
-                        HttpsClient.get("example.com", 443, path, 1, response, response.length,
+                        HttpClient.get("https://example.com", path, 1, response, response.length,
                                 headers, headers.length, out);
                         int temperature = Json.getInt(response, response.length, "data.temp");
                     }
@@ -456,7 +456,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.net.Wifi;
-                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQHttps {
                     public static void main(String[] args) {
@@ -464,7 +464,7 @@ class GeneratedAsmToolchainTest {
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
-                        HttpsClient.get("example.com", 443, "/", response, 64, headers, 64, out);
+                        HttpClient.get("https://example.com/", response, 64, headers, 64, out);
                     }
                 }
                 """;

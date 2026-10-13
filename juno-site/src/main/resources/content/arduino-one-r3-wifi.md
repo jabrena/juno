@@ -194,8 +194,8 @@ Operations that run out of memory panic loudly; they never return a wrong value.
 | `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | Yes | `Gpio.builtinLed()` is logical pin 25 |
 | `Serial` | Yes | |
 | `Wifi`, `Udp` | Yes | Through WiFiNINA |
-| `HttpClient`, `Json` | Yes | |
-| `HttpsClient` | Yes | TLS runs on the NINA-W102 module, which trusts the root certificates in its firmware; add others with the Arduino IDE's certificate uploader |
+| `HttpClient` with `http://` URLs, `Json` | Yes | |
+| `HttpClient` with `https://` URLs | Yes | TLS runs on the NINA-W102 module, which trusts the root certificates in its firmware; add others with the Arduino IDE's certificate uploader |
 | `Smtp.sendTls`, `Pop3Client` | Yes | Implicit TLS (usually ports 465 and 995) on the NINA-W102 module, as `WiFiSSLClient` does on the UNO R4 WiFi |
 | `Smtp.send` (STARTTLS, usually port 587) | No | Upgrading a plain connection needs a TLS stack on the board itself (the UNO R4 WiFi runs ESP_SSLClient), far beyond 6 KB of RAM; use `Smtp.sendTls` on port 465 |
 | `HttpServer` | No | Rejected at compile time |

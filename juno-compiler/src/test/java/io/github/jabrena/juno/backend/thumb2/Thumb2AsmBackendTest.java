@@ -520,7 +520,7 @@ class Thumb2AsmBackendTest {
 
     @Test
     void lowersHttpsGetWithStackSpilledArgumentsAndATlsRuntimeShim() {
-        // HttpsClient.get("api.open-meteo.com", 443, "/v1/forecast", body, 512, headers, 512, out) —
+        // HttpClient.get("https://api.open-meteo.com/v1/forecast", body, 512, headers, 512, out) —
         // 8 argument words exceeds the 4 available AAPCS registers, exercising emitShimCall's
         // stack-spill path.
         MethodRef entryPoint = new MethodRef("demo/HttpsFetch", "main", "()I");

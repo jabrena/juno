@@ -1,8 +1,7 @@
 /**
  * HTTP(S) client and server support built on {@link io.github.jabrena.juno.api.net.Wifi}'s
- * connection: {@link io.github.jabrena.juno.api.net.http.HttpClient}/{@link
- * io.github.jabrena.juno.api.net.http.HttpsClient} to send requests into a caller-owned {@code
- * byte[]} response buffer, {@link io.github.jabrena.juno.api.net.http.Json} to read typed
+ * connection: {@link io.github.jabrena.juno.api.net.http.HttpClient} to send {@code http://} and {@code https://}
+ * requests into a caller-owned {@code byte[]} response buffer, {@link io.github.jabrena.juno.api.net.http.Json} to read typed
  * values directly out of a response buffer without building a parsed document, and {@link
  * io.github.jabrena.juno.api.net.http.HttpServer} (plain HTTP only) to serve requests, with
  * {@link io.github.jabrena.juno.api.net.http.HttpMethod}/{@link

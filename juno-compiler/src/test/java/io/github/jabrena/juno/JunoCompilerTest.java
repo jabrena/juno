@@ -1273,15 +1273,15 @@ class JunoCompilerTest {
                         byte[] response = new byte[128];
                         byte[] headers = new byte[128];
                         int[] out = new int[2];
-                        int getBytes = HttpClient.get("example.com", 80, "/status", response, response.length,
+                        int getBytes = HttpClient.get("http://example.com/status", response, response.length,
                                 headers, headers.length, out);
-                        int postBytes = HttpClient.post("example.com", 80, "/submit", "{\\"ok\\":true}",
+                        int postBytes = HttpClient.post("http://example.com/submit", "{\\"ok\\":true}",
                                 response, response.length, headers, headers.length, out);
-                        int deleteBytes = HttpClient.delete("example.com", 80, "/items/7",
+                        int deleteBytes = HttpClient.delete("http://example.com/items/7",
                                 response, response.length, headers, headers.length, out);
-                        int patchBytes = HttpClient.patch("example.com", 80, "/items/7", "{\\"value\\":2}",
+                        int patchBytes = HttpClient.patch("http://example.com/items/7", "{\\"value\\":2}",
                                 response, response.length, headers, headers.length, out);
-                        int queryBytes = HttpClient.query("example.com", 80, "/items/search",
+                        int queryBytes = HttpClient.query("http://example.com/items/search",
                                 "{\\"tag\\":\\"new\\"}", response, response.length,
                                 headers, headers.length, out);
                     }
@@ -1307,21 +1307,21 @@ class JunoCompilerTest {
     void lowersHttpsMethodIntrinsics() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
                 public final class HttpsDemo {
                     public static void main(String[] args) {
                         byte[] response = new byte[128];
                         byte[] headers = new byte[128];
                         int[] out = new int[2];
-                        int getBytes = HttpsClient.get("example.com", 443, "/status",
+                        int getBytes = HttpClient.get("https://example.com/status",
                                 response, response.length, headers, headers.length, out);
-                        int postBytes = HttpsClient.post("example.com", 443, "/submit", "{\\"ok\\":true}",
+                        int postBytes = HttpClient.post("https://example.com/submit", "{\\"ok\\":true}",
                                 response, response.length, headers, headers.length, out);
-                        int deleteBytes = HttpsClient.delete("example.com", 443, "/items/7",
+                        int deleteBytes = HttpClient.delete("https://example.com/items/7",
                                 response, response.length, headers, headers.length, out);
-                        int patchBytes = HttpsClient.patch("example.com", 443, "/items/7", "{\\"value\\":2}",
+                        int patchBytes = HttpClient.patch("https://example.com/items/7", "{\\"value\\":2}",
                                 response, response.length, headers, headers.length, out);
-                        int queryBytes = HttpsClient.query("example.com", 443, "/items/search",
+                        int queryBytes = HttpClient.query("https://example.com/items/search",
                                 "{\\"tag\\":\\"new\\"}", response, response.length,
                                 headers, headers.length, out);
                     }
@@ -1345,7 +1345,7 @@ class JunoCompilerTest {
     void lowersHttpsGetWithARuntimePathBuffer() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
                 public final class HttpsPathBufferDemo {
                     public static void main(String[] args) {
                         byte[] path = new byte[16];
@@ -1354,7 +1354,7 @@ class JunoCompilerTest {
                         byte[] response = new byte[128];
                         byte[] headers = new byte[128];
                         int[] out = new int[2];
-                        int bytes = HttpsClient.get("example.com", 443, path, 2,
+                        int bytes = HttpClient.get("https://example.com", path, 2,
                                 response, response.length, headers, headers.length, out);
                     }
                 }
@@ -1377,7 +1377,7 @@ class JunoCompilerTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.net.Wifi;
-                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
                 @Board(ArduinoUnoQ.class)
                 public final class UnoQHttps {
                     public static void main(String[] args) {
@@ -1387,7 +1387,7 @@ class JunoCompilerTest {
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
-                        HttpsClient.get("example.com", 443, path, 1,
+                        HttpClient.get("https://example.com", path, 1,
                                 response, 64, headers, 64, out);
                     }
                 }
@@ -1402,6 +1402,97 @@ class JunoCompilerTest {
                 "return connectSSL(host, port, \"\") == 0 ? 1 : 0;",
                 "using JunoHttpsClient = JunoBridgeSSLClient;")
                 .doesNotContain("#include <WiFiSSLClient.h>", "WiFiSSLClient");
+    }
+
+    @Test
+    void lowersAPlainHttpGetWithARuntimePath() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
+                public final class HttpPathBufferDemo {
+                    public static void main(String[] args) {
+                        byte[] path = new byte[8];
+                        path[0] = '/';
+                        byte[] response = new byte[64];
+                        byte[] headers = new byte[64];
+                        int[] out = new int[2];
+                        HttpClient.get("http://example.com:8080", path, 1, response, 64, headers, 64, out);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpPathBufferDemo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpPathBufferDemo");
+
+        assertThat(result.assembly()).contains("bl juno_http_get_path_buffer", ".asciz \"example.com\"");
+        assertThat(result.runtimeShim()).contains(
+                "extern \"C\" int32_t juno_http_get_path_buffer(const char* host, int32_t port,")
+                .doesNotContain("juno_https_get", "#include <WiFiSSLClient.h>");
+    }
+
+    @Test
+    void rejectsAPlainHttpUrlOnABoardWithoutAPlainHttpClient() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
+                @Board(ArduinoUnoQ.class)
+                public final class UnoQPlainHttp {
+                    public static void main(String[] args) {
+                        byte[] response = new byte[64];
+                        int[] out = new int[2];
+                        HttpClient.get("http://example.com/", response, 64, response, 64, out);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoQPlainHttp", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoQPlainHttp"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("an http:// URL needs HttpClient")
+                .hasMessageContaining("does not provide a supported plain-HTTP client");
+    }
+
+    @Test
+    void rejectsABaseUrlWithItsOwnPathForARuntimePath() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
+                public final class BaseUrlWithPath {
+                    public static void main(String[] args) {
+                        byte[] path = new byte[8];
+                        byte[] response = new byte[64];
+                        int[] out = new int[2];
+                        HttpClient.get("https://example.com/v1", path, 1, response, 64, response, 64, out);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.BaseUrlWithPath", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BaseUrlWithPath"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("must have no path of its own");
+    }
+
+    @Test
+    void rejectsAUrlWithoutAScheme() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
+                public final class NoScheme {
+                    public static void main(String[] args) {
+                        byte[] response = new byte[64];
+                        int[] out = new int[2];
+                        HttpClient.get("example.com/status", response, 64, response, 64, out);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NoScheme", source);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NoScheme"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("must start with http:// or https://");
     }
 
     @Test

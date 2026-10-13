@@ -525,8 +525,9 @@ public final class IntrinsicLowering {
     }
 
     /**
-     * {@code HttpClient}/{@code HttpsClient}: host literal, port, path literal (plus content-type and
-     * body literals for requests that carry a body), then response/headers buffers and their lengths.
+     * {@code HttpClient}'s plain and TLS requests, which {@code HttpUrlCall} derives from the call's URL: host literal,
+     * port, path literal (plus a body literal for requests that carry one), then response/headers buffers and their
+     * lengths.
      */
     private void registerHttpClients() {
         List<Operand> bodiless = List.of(literal(0), arg(0), literal(1), arg(1), arg(2), arg(3), arg(4), arg(5));
@@ -539,6 +540,9 @@ public final class IntrinsicLowering {
         shim(Intrinsic.HTTP_QUERY, "juno_http_query", Result.WORD, withBody, ShimFeature.HTTP);
         shim(Intrinsic.HTTPS_GET, "juno_https_get", Result.WORD, bodiless, ShimFeature.HTTPS);
         shim(Intrinsic.HTTPS_DELETE, "juno_https_delete", Result.WORD, bodiless, ShimFeature.HTTPS);
+        shim(Intrinsic.HTTP_GET_PATH_BUFFER, "juno_http_get_path_buffer", Result.WORD,
+                List.of(literal(0), arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7)),
+                ShimFeature.HTTP, ShimFeature.HTTP_PATH_BUFFER);
         shim(Intrinsic.HTTPS_GET_PATH_BUFFER, "juno_https_get_path_buffer", Result.WORD,
                 List.of(literal(0), arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7)),
                 ShimFeature.HTTPS, ShimFeature.HTTPS_PATH_BUFFER);

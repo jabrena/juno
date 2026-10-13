@@ -26,10 +26,12 @@ final class CallLowering {
 
     private final MethodContext context;
     private final OperandStack stack;
+    private final HttpUrlCall httpUrlCall;
 
     CallLowering(MethodContext context) {
         this.context = context;
         this.stack = context.stack();
+        this.httpUrlCall = new HttpUrlCall(context);
     }
 
     /**
@@ -55,7 +57,9 @@ final class CallLowering {
         CallArguments arguments = popArguments(instruction, called, descriptor, intrinsic);
         Optional<Value> receiver = hasReceiver ? Optional.of(stack.pop()) : Optional.empty();
         Optional<Value> result = Optional.ofNullable(result(descriptor));
-        if (intrinsic.isPresent() && interfaceTargets.isEmpty()) {
+        if (intrinsic.isPresent() && interfaceTargets.isEmpty() && HttpUrlCall.handles(intrinsic.get())) {
+            httpUrlCall.emit(instruction, called, intrinsic.get(), arguments, result);
+        } else if (intrinsic.isPresent() && interfaceTargets.isEmpty()) {
             context.emit(new IrInstruction.IntrinsicCall(result, intrinsic.get(), receiver, arguments.values(),
                     arguments.literals()));
         } else {
