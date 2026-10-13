@@ -1026,7 +1026,7 @@ class JunoCompilerTest {
 
         assertThat(result.assembly()).contains("bl juno_sd_size", ".asciz \"log.txt\"");
         assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_sd_size(const char* path)",
-                "if (!file) return -1;", "file.size()");
+                "if (!file) return -1;", "file.size()").doesNotContain("juno_sd_free_kib");
     }
 
     @Test
@@ -1197,6 +1197,52 @@ class JunoCompilerTest {
 
         assertThat(result.assembly()).contains("bl juno_memory_arena_capacity", "bl juno_memory_arena_used");
         assertThat(result.runtimeShim()).contains("return static_cast<int32_t>(sizeof(juno_arena));");
+    }
+
+    @Test
+    void lowersTheFlashFootprintFromTheCoresLinkerLayout() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Memory;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                public final class FlashRoom {
+                    public static void main(String[] args) {
+                        Serial.println(Memory.flashCapacityBytes() - Memory.flashUsedBytes());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FlashRoom", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.FlashRoom");
+
+        assertThat(result.assembly()).contains("bl juno_memory_flash_capacity", "bl juno_memory_flash_used");
+        assertThat(result.runtimeShim())
+                .contains("__etext - __ROM_Start", "return 262144;")
+                .doesNotContain("juno_memory_arena_used");
+    }
+
+    @Test
+    void lowersSdCardCapacityOnlyWhenTheProgramAsksForIt() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.SdCard;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                public final class SdRoom {
+                    public static void main(String[] args) {
+                        SdCard.begin();
+                        Serial.println(SdCard.totalKiB());
+                        Serial.println(SdCard.freeKiB());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.SdRoom", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SdRoom");
+
+        assertThat(result.assembly()).contains("bl juno_sd_total_kib", "bl juno_sd_free_kib");
+        assertThat(result.runtimeShim()).contains(
+                "extern \"C\" int32_t juno_sd_free_kib()", "juno_io_offload(juno_sd_free_kib_job, &result);");
+        assertThat(result.runtimeShim()).doesNotContain("juno_memory_flash_used");
     }
 
     @Test

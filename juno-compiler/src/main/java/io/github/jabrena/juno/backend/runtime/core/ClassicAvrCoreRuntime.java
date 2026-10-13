@@ -3,6 +3,7 @@ package io.github.jabrena.juno.backend.runtime.core;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.ParallelBusRuntime;
+import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
@@ -12,6 +13,7 @@ import io.github.jabrena.juno.board.ArduinoCore;
 
 /** The classic UNO R3's {@code arduino:avr} core for its ATmega328P. */
 final class ClassicAvrCoreRuntime implements CoreRuntime {
+    private final RuntimeSource runtimeSource = new RuntimeSource();
     private final ParallelBusRuntime parallelBusRuntime = new ParallelBusRuntime();
     private final ShimLibraries shimLibraries = new ShimLibraries();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
@@ -58,6 +60,11 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
     @Override
     public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
         return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
+    }
+
+    @Override
+    public String flashHelpers() {
+        return runtimeSource.load("avr/flash.cpp").replace("${JUNO_FLASH_CAPACITY}", "32256");
     }
 
     @Override

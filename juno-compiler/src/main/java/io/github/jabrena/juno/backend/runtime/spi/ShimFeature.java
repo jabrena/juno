@@ -37,6 +37,10 @@ public enum ShimFeature {
     STRING_FROM_BYTES,
     STRING_BUILDER,
     MEMORY,
+    /** {@code Memory.flashUsedBytes()}/{@code flashCapacityBytes()}, answered by each core's linker layout. */
+    FLASH,
+    /** {@code SdCard.totalKiB()}/{@code freeKiB()}, on top of {@link #SD}. */
+    SD_CAPACITY,
     RANDOM,
     EXCEPTIONS,
     /** Preemptive {@code java.lang.Thread} runtime: scheduler, preemption tick, per-thread stacks, collector roots. */

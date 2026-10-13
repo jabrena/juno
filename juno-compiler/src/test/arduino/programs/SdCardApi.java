@@ -32,6 +32,7 @@ public final class SdCardApi {
         app.saveAndReadState();
         app.logEvents();
         app.writeCsv();
+        app.reportCapacity();
     }
 
     /**
@@ -99,5 +100,11 @@ public final class SdCardApi {
             SdCard.appendLine(CSV_FILE, "" + armed);
         }
         Serial.println(SdCard.size(CSV_FILE));
+    }
+
+    /** Capacity: the volume's size and free space in KiB. Counting the free space scans the whole FAT, so ask once. */
+    private void reportCapacity() {
+        Serial.println(SdCard.totalKiB());
+        Serial.println(SdCard.freeKiB());
     }
 }

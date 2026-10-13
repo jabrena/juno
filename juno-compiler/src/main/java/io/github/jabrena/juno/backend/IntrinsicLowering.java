@@ -215,6 +215,9 @@ public final class IntrinsicLowering {
         shim(Intrinsic.MEMORY_ARENA_USED, "juno_memory_arena_used", Result.WORD, List.of(), ShimFeature.MEMORY);
         shim(Intrinsic.MEMORY_ARENA_CAPACITY, "juno_memory_arena_capacity", Result.WORD, List.of(),
                 ShimFeature.MEMORY);
+        shim(Intrinsic.MEMORY_FLASH_USED, "juno_memory_flash_used", Result.WORD, List.of(), ShimFeature.FLASH);
+        shim(Intrinsic.MEMORY_FLASH_CAPACITY, "juno_memory_flash_capacity", Result.WORD, List.of(),
+                ShimFeature.FLASH);
     }
 
     /**
@@ -395,6 +398,10 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SD_APPEND_TEXT, "juno_sd_file_append_text", Result.WORD, List.of(literal(0), arg(0)),
                 ShimFeature.SD);
         shim(Intrinsic.SD_REMOVE, "juno_sd_remove", Result.WORD, List.of(literal(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_TOTAL_KIB, "juno_sd_total_kib", Result.WORD, List.of(), ShimFeature.SD,
+                ShimFeature.SD_CAPACITY);
+        shim(Intrinsic.SD_FREE_KIB, "juno_sd_free_kib", Result.WORD, List.of(), ShimFeature.SD,
+                ShimFeature.SD_CAPACITY);
         registerRandomAccessFile();
         shim(Intrinsic.PROPERTIES_NEW, "juno_properties_new", Result.WORD, List.of(), ShimFeature.SD);
         shim(Intrinsic.PROPERTIES_LOAD, "juno_properties_load", Result.NONE, List.of(RECEIVER, arg(0)),

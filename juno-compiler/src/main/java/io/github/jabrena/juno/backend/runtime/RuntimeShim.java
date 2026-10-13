@@ -228,6 +228,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.MEMORY)) {
             shim.append(shimLibraries.memoryHelpers());
         }
+        if (uses(ShimFeature.FLASH)) {
+            shim.append(core.flashHelpers());
+        }
         if (uses(ShimFeature.RANDOM)) {
             shim.append(shimLibraries.randomHelpers());
         }
@@ -239,6 +242,9 @@ public final class RuntimeShim {
         }
         if (uses(ShimFeature.SD)) {
             shim.append(shimLibraries.sdHelpers());
+        }
+        if (uses(ShimFeature.SD_CAPACITY)) {
+            shim.append(shimLibraries.sdCapacityHelpers());
         }
         if (uses(ShimFeature.LONG)) {
             shim.append(shimLibraries.longHelpers());

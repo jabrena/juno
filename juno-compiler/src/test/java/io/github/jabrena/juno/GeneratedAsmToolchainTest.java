@@ -1010,6 +1010,33 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    void compilesAStorageOccupancyProgramsShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.Memory;
+                import io.github.jabrena.juno.api.io.SdCard;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                public final class AsmStorageOccupancy {
+                    public static void main(String[] args) {
+                        Serial.println(Memory.flashUsedBytes());
+                        Serial.println(Memory.flashCapacityBytes());
+                        if (!SdCard.begin()) return;
+                        Serial.println(SdCard.totalKiB());
+                        Serial.println(SdCard.freeKiB());
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmStorageOccupancy", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmStorageOccupancy");
+        Path shim = temporaryDirectory.resolve("AsmStorageOccupancyShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
     void compilesARandomAccessFileProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");

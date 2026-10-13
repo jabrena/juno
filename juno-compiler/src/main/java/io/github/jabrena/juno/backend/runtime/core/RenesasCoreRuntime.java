@@ -80,6 +80,11 @@ final class RenesasCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String flashHelpers() {
+        return runtimeSource.load("renesas/flash.cpp");
+    }
+
+    @Override
     public String httpServerTransport() {
         return runtimeSource.load("renesas/http-server-transport.cpp");
     }

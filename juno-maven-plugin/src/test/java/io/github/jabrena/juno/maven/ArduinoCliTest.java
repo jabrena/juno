@@ -58,6 +58,20 @@ class ArduinoCliTest {
     }
 
     @Test
+    void disablesSdFatSerialHelpersForUnoQ() {
+        FakeExecutor executor = new FakeExecutor().respond(0, "compiled");
+        ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
+        Path sketch = Path.of("target/juno/DashboardTFT");
+
+        cli.compile("arduino:zephyr:unoq", sketch);
+
+        assertThat(executor.invocations()).containsExactly(captured(List.of(
+                "arduino-cli", "compile", "--fqbn", "arduino:zephyr:unoq",
+                "--build-property", "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0",
+                sketch.toAbsolutePath().normalize().toString())));
+    }
+
+    @Test
     void installsCoreAndLibraryWithExpectedArguments() {
         FakeExecutor executor = new FakeExecutor().respond(0, "core installed").respond(0, "lib installed");
         List<String> output = new ArrayList<>();

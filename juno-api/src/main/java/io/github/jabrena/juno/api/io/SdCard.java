@@ -77,4 +77,19 @@ public final class SdCard {
 
     /** Deletes {@code path} from the card. Returns whether it was removed. */
     public static native boolean remove(String path);
+
+    /**
+     * The card volume's total capacity in KiB, or {@code -1} before a successful {@link #begin()}. Reads only the
+     * volume header, so it returns at once.
+     */
+    public static native int totalKiB();
+
+    /**
+     * The card volume's free space in KiB, or {@code -1} before a successful {@link #begin()}. A FAT32 card's own
+     * free-space count (its FSInfo sector, kept by the computer that last wrote the card) answers at once, though it
+     * may lag a few clusters behind writes the board made since. Without one, the whole allocation table is counted,
+     * which can take a minute on a large card; the count pauses between slices so other threads keep running, but
+     * the calling thread waits for all of it, so call this from a background thread and keep the result.
+     */
+    public static native int freeKiB();
 }
