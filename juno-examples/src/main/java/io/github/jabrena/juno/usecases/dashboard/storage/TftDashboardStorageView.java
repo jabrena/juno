@@ -1,27 +1,23 @@
 package io.github.jabrena.juno.usecases.dashboard.storage;
 
 import io.github.jabrena.juno.api.Memory;
-import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardScreen;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.SdCapacity;
+import io.github.jabrena.juno.usecases.dashboard.commons.mvc.Navigator;
+import io.github.jabrena.juno.usecases.dashboard.commons.mvc.View;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftFpsWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftHeaderWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftOccupancyBar;
 
-/**
- * Shows flash, RAM-arena and SD-card occupancy as three {@link TftOccupancyBar} rows. The SD row reads the shared
- * {@link TftDashboardState}; the view also provides the capacity service the SD thread calls.
- */
-public final class TftDashboardStorageView implements TftDashboardScreen {
+/** Shows flash, RAM-arena and SD-card occupancy as three {@link TftOccupancyBar} rows; the SD row reads the model. */
+public final class TftDashboardStorageView implements View {
     private static final int FIRST_ROW_Y = 44;
     private static final int ROW_HEIGHT = 52;
 
-
-    private final TftDashboardScreen home;
-    private final TftDashboardState state;
+    private final Navigator navigator;
+    private final TftDashboardState model;
     private final TftFpsWidget fps;
     private final TftHeaderWidget header = new TftHeaderWidget("STORAGE");
     private final TftButtonWidget homeButton = new TftButtonWidget(196, 200, 112, 34, "HOME", TftTouchShield.GRAY);
@@ -32,19 +28,14 @@ public final class TftDashboardStorageView implements TftDashboardScreen {
     private final TftOccupancyBar sdBar = new TftOccupancyBar(FIRST_ROW_Y + 2 * ROW_HEIGHT, "SD CARD",
             TftTouchShield.ORANGE, 1024, "MiB", "scanning card...", "no card");
 
-    public TftDashboardStorageView(TftDashboardScreen home, TftDashboardState state, TftFpsWidget fps) {
-        this.home = home;
-        this.state = state;
+    public TftDashboardStorageView(Navigator navigator, TftDashboardState model, TftFpsWidget fps) {
+        this.navigator = navigator;
+        this.model = model;
         this.fps = fps;
     }
 
-    /** The service behind the SD row; slow, since counting the free space can read the card's whole FAT. */
-    public SdCapacity measureSdCapacity() {
-        return new SdCapacity(SdCard.totalKiB(), SdCard.freeKiB());
-    }
-
     @Override
-    public void show() {
+    public void enter() {
         TftTouchShield.fillScreen(TftTouchShield.NAVY);
         header.draw();
         homeButton.draw();
@@ -57,10 +48,10 @@ public final class TftDashboardStorageView implements TftDashboardScreen {
     }
 
     @Override
-    public void draw() {
+    public void render() {
         ramBar.update(Memory.arenaUsedBytes(), Memory.arenaCapacityBytes());
-        SdCapacity capacity = state.sdCapacity();
-        if (!state.cardReady() || capacity != null && !capacity.known()) {
+        SdCapacity capacity = model.sdCapacity();
+        if (!model.cardReady() || capacity != null && !capacity.known()) {
             sdBar.showUnavailable();
         } else if (capacity == null) {
             sdBar.showPending();
@@ -71,11 +62,10 @@ public final class TftDashboardStorageView implements TftDashboardScreen {
     }
 
     @Override
-    public TftDashboardScreen touch(int x, int y) {
+    public void touch(int x, int y) {
         if (homeButton.contains(x, y)) {
-            return home;
+            navigator.back();
         }
-        return this;
     }
 
 }
