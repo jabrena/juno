@@ -1,22 +1,29 @@
-package io.github.jabrena.juno.usecases.dashboard;
+package io.github.jabrena.juno.usecases.dashboard.status;
 
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardScreen;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.StatusFile;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiCredentials;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiStatus;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftFpsWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftHeaderWidget;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * The network status screen: Wi-Fi, SD card and STATUS.TXT, each line redrawn only when its value changes. It also
- * does the work behind those lines: it logs the start-up to STATUS.TXT, and on the background thread reads the
- * file's size and connects Wi-Fi with the credentials from the card.
+ * The network status screen: Wi-Fi, SD card and STATUS.TXT, read from the shared {@link TftDashboardState} and each
+ * line redrawn only when its value changes. It also provides the services behind those lines, each returning a
+ * record: the size of STATUS.TXT and the Wi-Fi credentials, which the SD thread calls, and the Wi-Fi connection,
+ * which the Wi-Fi thread calls.
  */
-final class TftDashboardStatusView implements TftDashboardScreen {
-    private static final int STATE_WAITING = 0;
+public final class TftDashboardStatusView implements TftDashboardScreen {
     private static final int STATE_RUNNING = 1;
     private static final int STATE_OK = 2;
     private static final int STATE_FAILED = 3;
@@ -38,69 +45,87 @@ final class TftDashboardStatusView implements TftDashboardScreen {
     private static final int HOME_BUTTON_HEIGHT = 34;
 
     private final TftDashboardScreen home;
+    private final TftDashboardState state;
+    private final TftFpsWidget fps;
+    private final TftHeaderWidget header = new TftHeaderWidget("NETWORK STATUS");
 
-    // Written by the background thread, read by the display loop.
-    private volatile int wifiState = STATE_WAITING;
-    private volatile int sdState = STATE_WAITING;
-    private volatile int statusFileBytes = -1;
-
-    private boolean sdReady;
     private boolean statusFileWritten;
 
     private int shownWifiState = UNSHOWN;
     private int shownSdState = UNSHOWN;
     private int shownFileBytes = UNSHOWN;
 
-    TftDashboardStatusView(TftDashboardScreen home) {
+    public TftDashboardStatusView(TftDashboardScreen home, TftDashboardState state, TftFpsWidget fps) {
         this.home = home;
+        this.state = state;
+        this.fps = fps;
     }
 
     /** Logs the start-up to STATUS.TXT; called once, on the main thread, after the card was started. */
-    void writeStartupStatus(boolean cardReady) {
-        sdReady = cardReady;
-        if (!cardReady) {
-            sdState = STATE_FAILED;
+    public void writeStartupStatus() {
+        if (!state.cardReady()) {
             return;
         }
         statusFileWritten = SdCard.appendLine(STATUS_FILE, "dashboard startup");
         if (!statusFileWritten) {
-            sdState = STATE_FAILED;
             Serial.println("Could not write STATUS.TXT");
         }
     }
 
-    /** Runs on the background thread. */
-    void readStatusFile() {
-        if (!statusFileWritten) {
-            return;
-        }
-        sdState = STATE_RUNNING;
-        int bytes = SdCard.size(STATUS_FILE);
-        statusFileBytes = bytes;
-        sdState = bytes >= 0 ? STATE_OK : STATE_FAILED;
+    /** Service: the size of STATUS.TXT; a quick read of the card. */
+    public StatusFile readStatusFile() {
+        return new StatusFile(statusFileWritten ? SdCard.size(STATUS_FILE) : -1);
     }
 
-    /** Runs on the background thread: joining the network can take several seconds. */
-    void connectWifi() {
-        wifiState = STATE_RUNNING;
-        boolean connected;
-        try {
-            connected = joinNetwork();
-        } catch (IOException failed) {
-            connected = false;
+    /** Service: the Wi-Fi credentials from application.properties on the card, or null when there are none. */
+    public WifiCredentials loadCredentials() {
+        if (!state.cardReady()) {
+            Serial.println("WiFi settings unavailable without SD card");
+            return null;
         }
-        wifiState = connected ? STATE_OK : STATE_FAILED;
+        try {
+            InputStream file = SdCard.open("application.properties");
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return null;
+            }
+            Properties properties = new Properties();
+            properties.load(file);
+            file.close();
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            if (ssid == null || password == null) {
+                Serial.println("WiFi credentials are missing");
+                return null;
+            }
+            return new WifiCredentials(ssid, password);
+        } catch (IOException failed) {
+            Serial.println("Could not read application.properties");
+            return null;
+        }
+    }
+
+    /** Service: joins the network, which can take several seconds; it never touches the card. */
+    public WifiStatus connectWifi(WifiCredentials credentials) {
+        if (credentials == null) {
+            return new WifiStatus(false);
+        }
+        Wifi.begin(credentials.ssid(), credentials.password());
+        int attempts = 0;
+        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+            Delay.millis(1000);
+            attempts = attempts + 1;
+        }
+        return new WifiStatus(Wifi.status() == Wifi.STATUS_CONNECTED);
     }
 
     @Override
     public void show() {
         TftTouchShield.fillScreen(TftTouchShield.NAVY);
+        header.draw();
+
         TftTouchShield.setTextSize(2);
         TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(12, 12);
-        TftTouchShield.print("NETWORK STATUS");
-        TftTouchShield.drawHorizontalLine(12, 34, 296, TftTouchShield.CYAN);
-
         TftTouchShield.setCursor(12, WIFI_Y);
         TftTouchShield.print("WIFI");
         TftTouchShield.setCursor(12, SD_Y);
@@ -108,6 +133,7 @@ final class TftDashboardStatusView implements TftDashboardScreen {
         TftTouchShield.setCursor(12, FILE_Y);
         TftTouchShield.print("FILE");
         drawHomeButton();
+        fps.reset();
 
         shownWifiState = UNSHOWN;
         shownSdState = UNSHOWN;
@@ -116,21 +142,25 @@ final class TftDashboardStatusView implements TftDashboardScreen {
 
     @Override
     public void draw() {
-        int wifi = wifiState;
-        if (wifi != shownWifiState) {
-            shownWifiState = wifi;
-            drawState(wifi, WIFI_Y);
+        StatusFile file = state.statusFile();
+        WifiStatus wifi = state.wifiStatus();
+        int wifiState = wifi == null ? STATE_RUNNING : wifi.connected() ? STATE_OK : STATE_FAILED;
+        if (wifiState != shownWifiState) {
+            shownWifiState = wifiState;
+            drawState(wifiState, WIFI_Y);
         }
-        int sd = sdState;
-        if (sd != shownSdState) {
-            shownSdState = sd;
-            drawState(sd, SD_Y);
+        int sdState = !state.cardReady() || !statusFileWritten ? STATE_FAILED
+                : file == null ? STATE_RUNNING : file.readable() ? STATE_OK : STATE_FAILED;
+        if (sdState != shownSdState) {
+            shownSdState = sdState;
+            drawState(sdState, SD_Y);
         }
-        int fileBytes = statusFileBytes;
+        int fileBytes = file == null ? -1 : file.bytes();
         if (fileBytes != shownFileBytes) {
             shownFileBytes = fileBytes;
             drawFileBytes(fileBytes);
         }
+        fps.update();
     }
 
     @Override
@@ -139,35 +169,6 @@ final class TftDashboardStatusView implements TftDashboardScreen {
             return home;
         }
         return this;
-    }
-
-    private boolean joinNetwork() throws IOException {
-        if (!sdReady) {
-            Serial.println("WiFi settings unavailable without SD card");
-            return false;
-        }
-        InputStream file = SdCard.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return false;
-        }
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        if (ssid == null || password == null) {
-            Serial.println("WiFi credentials are missing");
-            return false;
-        }
-
-        Wifi.begin(ssid, password);
-        int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
-            Delay.millis(1000);
-            attempts = attempts + 1;
-        }
-        return Wifi.status() == Wifi.STATUS_CONNECTED;
     }
 
     private void drawHomeButton() {
@@ -193,9 +194,7 @@ final class TftDashboardStatusView implements TftDashboardScreen {
         TftTouchShield.setTextSize(2);
         TftTouchShield.setTextColor(stateColor(state), TftTouchShield.NAVY);
         TftTouchShield.setCursor(VALUE_X, y);
-        if (state == STATE_WAITING) {
-            TftTouchShield.print("WAITING");
-        } else if (state == STATE_RUNNING) {
+        if (state == STATE_RUNNING) {
             TftTouchShield.print("STARTING");
         } else if (state == STATE_OK) {
             TftTouchShield.print("OK");

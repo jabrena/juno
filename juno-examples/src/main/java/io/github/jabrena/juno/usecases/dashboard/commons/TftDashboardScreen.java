@@ -1,11 +1,11 @@
-package io.github.jabrena.juno.usecases.dashboard;
+package io.github.jabrena.juno.usecases.dashboard.commons;
 
 /**
  * One view of the dashboard. A screen draws itself and decides what a touch means: a touch on one of its buttons
  * either does its own work and stays, or opens another screen. The main loop only routes touches and draws the FPS
  * label shared by every screen.
  */
-interface TftDashboardScreen {
+public interface TftDashboardScreen {
     /** Draws the screen's static content; called once each time the screen opens. */
     void show();
 

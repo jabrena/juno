@@ -61,7 +61,7 @@ class ArduinoCliTest {
     void disablesSdFatSerialHelpersForUnoQ() {
         FakeExecutor executor = new FakeExecutor().respond(0, "compiled");
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
-        Path sketch = Path.of("target/juno/TftConcurrentDashboard");
+        Path sketch = Path.of("target/juno/DashboardTFT");
 
         cli.compile("arduino:zephyr:unoq", sketch);
 
