@@ -202,7 +202,7 @@ class ThreadsTest {
                         byte[] headers = new byte[32];
                         int[] status = new int[2];
                         %s
-                        Serial.println(HttpClient.get("example.com", 80, "/", body, body.length, headers, headers.length,
+                        Serial.println(HttpClient.get("http://example.com/", body, body.length, headers, headers.length,
                                 status));
                     }
                 }
@@ -252,7 +252,7 @@ class ThreadsTest {
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 import io.github.jabrena.juno.api.net.Wifi;
-                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
                 @Board(ArduinoUnoQ.class)
                 public final class Fetch {
                     public static void main() throws Exception {
@@ -261,7 +261,7 @@ class ThreadsTest {
                         int[] status = new int[2];
                         %s
                         Wifi.begin("juno", "secret");
-                        Serial.println(HttpsClient.get("example.com", 443, "/", body, body.length, headers,
+                        Serial.println(HttpClient.get("https://example.com/", body, body.length, headers,
                                 headers.length, status));
                     }
                 }

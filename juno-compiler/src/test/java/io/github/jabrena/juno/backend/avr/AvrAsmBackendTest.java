@@ -315,7 +315,7 @@ class AvrAsmBackendTest {
                         byte[] headers = new byte[32];
                         int[] status = new int[2];
                         Wifi.begin("ssid", "password");
-                        Serial.println(HttpClient.get("example.com", 80, "/", body, 32, headers, 32, status));
+                        Serial.println(HttpClient.get("http://example.com/", body, 32, headers, 32, status));
                         Serial.println(Udp.listen(4210));
                 """, """
                 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -335,10 +335,10 @@ class AvrAsmBackendTest {
         CompilationResult result = compile("demo.AvrTls", """
                         byte[] body = new byte[32];
                         int[] status = new int[2];
-                        Serial.println(HttpsClient.get("example.com", 443, "/", body, 32, body, 32, status));
+                        Serial.println(HttpClient.get("https://example.com/", body, 32, body, 32, status));
                 """, """
                 import io.github.jabrena.juno.api.io.serial.Serial;
-                import io.github.jabrena.juno.api.net.http.HttpsClient;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
                 """);
         assertThat(result.runtimeShim())
                 .contains("#include <WiFiNINA.h>")

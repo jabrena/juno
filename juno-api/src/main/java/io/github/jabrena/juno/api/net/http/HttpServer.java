@@ -5,7 +5,8 @@ package io.github.jabrena.juno.api.net.http;
  * the Arduino {@code WiFiS3} library's {@code WiFiServer} on UNO R4 WiFi and by {@code
  * BridgeTCPServer} (a listener in {@code arduino-router} on Linux) on UNO Q. Requires an active
  * {@link io.github.jabrena.juno.api.net.Wifi#begin} or {@link io.github.jabrena.juno.api.net.Wifi#beginAP}
- * connection. Plain HTTP only — there is no TLS-server equivalent of {@link HttpsClient}.
+ * connection. Plain HTTP only — there is no TLS-server equivalent of {@link HttpClient}'s {@code https://}
+ * requests.
  *
  * <p>{@link #begin(int)} starts listening once. From then on, call {@link #accept} once per
  * {@code loop()} iteration: it returns immediately with {@code -1} when no client is currently

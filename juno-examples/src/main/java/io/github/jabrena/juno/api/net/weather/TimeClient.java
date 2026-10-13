@@ -1,13 +1,11 @@
 package io.github.jabrena.juno.api.net.weather;
 
-import io.github.jabrena.juno.api.net.http.HttpsClient;
+import io.github.jabrena.juno.api.net.http.HttpClient;
 import io.github.jabrena.juno.api.net.http.Json;
 
 /** Reads Madrid's local time from an Open-Meteo forecast response. */
 public final class TimeClient {
-    private static final String API_HOST = "api.open-meteo.com";
-    private static final int HTTPS_PORT = 443;
-    private static final String API_PATH = "/v1/forecast?latitude=40.4168&longitude=-3.7038"
+    private static final String API_URL = "https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038"
             + "&current=temperature_2m&timezone=Europe%2FMadrid";
     private static final String CURRENT_TIME_PATH = "current.time";
     private static final int HOUR_INDEX = 11;
@@ -29,7 +27,7 @@ public final class TimeClient {
      */
     public static String fetchTime(byte[] response, int responseLength, byte[] headers, int headersLength,
             int[] statusAndHeadersLength, byte[] timeText, int timeTextLength) {
-        int bodyLength = HttpsClient.get(API_HOST, HTTPS_PORT, API_PATH, response, responseLength,
+        int bodyLength = HttpClient.get(API_URL, response, responseLength,
                 headers, headersLength, statusAndHeadersLength);
         if (statusAndHeadersLength[0] != HTTP_STATUS_OK || bodyLength <= 0) {
             return null;

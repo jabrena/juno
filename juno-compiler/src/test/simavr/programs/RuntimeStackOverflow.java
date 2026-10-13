@@ -4,7 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
-import io.github.jabrena.juno.api.net.http.HttpsClient;
+import io.github.jabrena.juno.api.net.http.HttpClient;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
@@ -28,7 +28,7 @@ public final class RuntimeStackOverflow {
         Serial.println("before");
         try (var scope = StructuredTaskScope.open()) {
             scope.fork(() -> {
-                HttpsClient.get("example.com", 443, path, 9, body, BODY, headers, HEADERS, status);
+                HttpClient.get("https://example.com", path, 9, body, BODY, headers, HEADERS, status);
             });
             scope.join();
         }

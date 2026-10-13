@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
-import io.github.jabrena.juno.api.net.http.HttpsClient;
+import io.github.jabrena.juno.api.net.http.HttpClient;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
@@ -14,7 +14,7 @@ import java.util.concurrent.StructuredTaskScope;
  * On the UNO Q a network call waits inside Arduino_RouterBridge for Linux to answer; the call runs on the I/O worker
  * so the other threads keep going. The harness's stand-in bridge (src/test/qemu/Arduino_RouterBridge.h) takes 30 ms to
  * start and 40 ms to open a TLS connection, waiting by polling as the real library does. While the main thread is in
- * {@code Wifi.begin} and in {@code HttpsClient.get}, a virtual thread watches the clock: it must see time pass, so it
+ * {@code Wifi.begin} and in {@code HttpClient.get}, a virtual thread watches the clock: it must see time pass, so it
  * ran. Then a subtask is cancelled while its request is on the worker, and the next request must still work.
  * BridgeWhileWaiting.expected holds the output by hand.
  */
@@ -61,7 +61,7 @@ public final class BridgeWhileWaiting {
         Serial.println((Wifi.status() == Wifi.STATUS_CONNECTED ? "bridge up: " : "bridge down: ") + bridge);
 
         begin();
-        int length = HttpsClient.get("example.com", 443, "/", body, BODY, headers, HEADERS, status);
+        int length = HttpClient.get("https://example.com/", body, BODY, headers, HEADERS, status);
         String request = verdict();
         Serial.println(status[0] + " " + length + ": " + request);
         stop = true;
@@ -69,7 +69,7 @@ public final class BridgeWhileWaiting {
 
         try (var scope = StructuredTaskScope.open()) {
             scope.fork(() -> {
-                HttpsClient.get("example.com", 443, "/", body, BODY, headers, HEADERS, status);
+                HttpClient.get("https://example.com/", body, BODY, headers, HEADERS, status);
             });
             Callable<String> failing = () -> {
                 Thread.sleep(5);
@@ -83,7 +83,7 @@ public final class BridgeWhileWaiting {
         }
 
         status[0] = 0;
-        length = HttpsClient.get("example.com", 443, "/", body, BODY, headers, HEADERS, status);
+        length = HttpClient.get("https://example.com/", body, BODY, headers, HEADERS, status);
         Serial.println(status[0] + " " + length);
     }
 }

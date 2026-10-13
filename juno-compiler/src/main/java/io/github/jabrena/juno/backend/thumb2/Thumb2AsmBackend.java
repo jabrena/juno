@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  * function (real {@code bl} calls between them, full AAPCS parameter passing including stack-passed
  * arguments beyond the first four), with branches, {@code switch}, {@code int} arithmetic/comparisons,
  * fixed-size arrays, arena-allocated objects with fields, mutable static fields, GPIO/delay,
- * {@code LedMatrix}, {@code Serial}, {@code Mouse}, {@code Wifi}, {@code HttpClient}/{@code HttpsClient},
+ * {@code LedMatrix}, {@code Serial}, {@code Mouse}, {@code Wifi}, {@code HttpClient},
  * compiler-generated constant arrays used by enums, and
  * {@code long}/{@code float}/{@code double} support. Calls Juno can't statically resolve, and
  * instruction kinds with no codegen yet fail loudly with {@link CompileException} rather than emitting
@@ -61,10 +61,10 @@ import java.util.stream.Collectors;
  * (4/8 bytes, holding the raw IEEE-754 bit pattern) — see {@code FrameLayout}. Each JVM local slot is
  * one 32-bit word; {@code long}/{@code double} use the two consecutive slots reserved by the JVMS.
  *
- * <h2>{@code HttpClient}/{@code HttpsClient}</h2>
+ * <h2>{@code HttpClient}</h2>
  * Backed by an {@code extern "C"} HTTP/1.1 codec in the generated runtime shim ({@code Json} is plain Java, compiled
  * like the program). A call needing more than four argument words (e.g.
- * {@code HttpsClient.get}'s nine) spills the overflow onto a transient stack area via
+ * an {@code https://} {@code HttpClient.get} with a runtime path, nine words once lowered) spills the overflow onto a transient stack area via
  * {@code AsmEmitter#emitShimCall}, the same mechanism {@link #emitCall} already uses for user methods.
  *
  * <h2>Storage model</h2>

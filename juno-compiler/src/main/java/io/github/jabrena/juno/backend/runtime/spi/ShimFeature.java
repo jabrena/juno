@@ -28,6 +28,7 @@ public enum ShimFeature {
     DOUBLE,
     HTTP,
     HTTPS,
+    HTTP_PATH_BUFFER,
     HTTPS_PATH_BUFFER,
     HTTP_SERVER,
     SMTP,

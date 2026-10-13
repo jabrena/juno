@@ -9,7 +9,7 @@ import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
-import io.github.jabrena.juno.api.net.http.HttpsClient;
+import io.github.jabrena.juno.api.net.http.HttpClient;
 import io.github.jabrena.juno.api.net.http.Json;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
@@ -27,8 +27,8 @@ import java.util.Properties;
  * is geolocated with <a href="https://ipinfo.io">ipinfo.io</a> ({@code city} and {@code loc}), and
  * those coordinates are passed to <a href="https://open-meteo.com">Open-Meteo</a> for the current
  * weather and the location's UTC offset. The request path depends on runtime data, so it is built
- * in a {@code byte[]} and sent with {@link HttpsClient#get(String, int, byte[], int, byte[], int,
- * byte[], int, int[])}.
+ * in a {@code byte[]} and sent with {@link HttpClient#get(String, byte[], int, byte[], int, byte[],
+ * int, int[])} and an {@code https://} base URL.
  *
  * <p>The clock is set from the HTTPS response's {@code Date} header plus Open-Meteo's
  * {@code utc_offset_seconds}, then kept running with {@link Clock#millis()}. Weather refreshes
@@ -46,7 +46,6 @@ public final class WeatherTFT {
     private static final int NETWORK_SETTLE_MILLIS = 2000;
     private static final int LOCATION_RETRY_MILLIS = 5000;
     private static final int HTTP_STATUS_OK = 200;
-    private static final int HTTPS_PORT = 443;
 
     // Latest weather.
     private static int temperature;
@@ -191,7 +190,7 @@ public final class WeatherTFT {
      */
     private static int locate(byte[] response, byte[] headers, int[] statusAndHeaders,
             byte[] city, byte[] location, byte[] publicIp) {
-        int bodyLength = HttpsClient.get("ipinfo.io", HTTPS_PORT, "/json", response, 1024,
+        int bodyLength = HttpClient.get("https://ipinfo.io/json", response, 1024,
                 headers, 512, statusAndHeaders);
         if (statusAndHeaders[0] != HTTP_STATUS_OK || bodyLength <= 0) {
             Serial.print("ipinfo.io request failed, status ");
@@ -257,7 +256,7 @@ public final class WeatherTFT {
 
     private static boolean fetchWeather(byte[] path, int pathLength, byte[] response, byte[] headers,
             int[] statusAndHeaders) {
-        int bodyLength = HttpsClient.get("api.open-meteo.com", HTTPS_PORT, path, pathLength,
+        int bodyLength = HttpClient.get("https://api.open-meteo.com", path, pathLength,
                 response, 1024, headers, 512, statusAndHeaders);
         if (statusAndHeaders[0] != HTTP_STATUS_OK || bodyLength <= 0) {
             Serial.println("Open-Meteo request failed");

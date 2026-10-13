@@ -269,7 +269,7 @@ reports the mailbox message count and reads the newest message's `From`/`Subject
 POP3S (port 995) — see that package's Javadoc for the full scope and its deliberate limits (one
 recipient, plain text only, no attachments/HTML/MIME/folders/OAuth2).
 
-`Pop3Client` reuses `HttpsClient`'s native `WiFiSSLClient` and needs no extra library. `Smtp`
+`Pop3Client` reuses the native `WiFiSSLClient` behind `HttpClient`'s `https://` requests and needs no extra library. `Smtp`
 needs the third-party `ESP_SSLClient` library (the UNO R4 WiFi's native TLS client can only
 negotiate TLS from the first byte, not upgrade an existing plaintext connection the way
 `STARTTLS` requires) — installed by `juno:install-deps` above, or on its own with

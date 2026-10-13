@@ -8,8 +8,8 @@ Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiF
 
 - connect to a Wi-Fi network with [`Wifi`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/Wifi.java);
 - send plain HTTP or TLS-protected HTTPS `GET`, `POST`, `DELETE`, `PATCH`, and `QUERY` requests with
-  [`HttpClient`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java) and
-  [`HttpsClient`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/HttpsClient.java); and
+  [`HttpClient`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java),
+  where the URL's `http://` or `https://` scheme decides whether the request uses TLS; and
 - extract typed values directly from JSON response bytes with
   [`Json`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/http/Json.java).
 
@@ -35,8 +35,8 @@ public final class InternetExample {
 
 The current network layer deliberately stays small:
 
-- request hosts, paths, and request bodies must be compile-time strings — except
-  `HttpsClient.get`'s `byte[]` path overload (see [Runtime request paths](#runtime-request-paths));
+- request URLs and request bodies must be compile-time strings — except the path of
+  `HttpClient.get`'s `byte[]` path overload (see [Runtime request paths](#runtime-request-paths));
 - custom request headers, redirects, cookies, and authentication helpers are not available;
 - HTTPS uses the root CA bundle installed in the board's WiFi firmware; Juno does not yet accept a
   custom CA certificate from Java source;
@@ -44,8 +44,8 @@ The current network layer deliberately stays small:
 - each request has a fixed five-second timeout; and
 - the response body may be truncated when it is larger than the supplied buffer.
 
-Prefer `HttpsClient` for Internet services. Do not send API tokens, personal data, credentials, or
-other secrets with plain `HttpClient`.
+Prefer `https://` URLs for Internet services. Do not send API tokens, personal data, credentials, or
+other secrets to an `http://` URL.
 
 ## Supplying Wi-Fi credentials
 
@@ -61,19 +61,16 @@ Wifi.begin(
         System.getenv("JUNO_WIFI_PASSWORD"));
 ```
 
-The same mechanism can supply an HTTP or HTTPS host, path, or request body when necessary:
+The same mechanism can supply a request URL or body when necessary:
 
 ```java
 int responseBytes = HttpClient.get(
-        System.getenv("JUNO_API_HOST"),
-        80,
-        System.getenv("JUNO_API_PATH"),
-        response,
-        response.length);
+        System.getenv("JUNO_API_URL"),
+        response, response.length, headers, headers.length, status);
 ```
 
-Any value supplied this way is still embedded in the generated firmware. `HttpsClient` protects it
-in transit; `HttpClient` sends it without encryption.
+Any value supplied this way is still embedded in the generated firmware. An `https://` URL protects
+it in transit; an `http://` URL sends it without encryption.
 
 Unlike HTTP hosts, paths, and bodies, `Wifi.begin` also accepts stable runtime strings returned by
 `java.util.Properties.getProperty`, so credentials can remain on removable storage rather than in firmware.
@@ -106,28 +103,31 @@ calling `Wifi.begin` again before the next request.
 
 ## Calling REST APIs
 
-`HttpClient.get` takes a host name, TCP port, path, response buffer, and buffer capacity:
+`HttpClient.get` takes a URL, a response buffer and its capacity, a headers buffer and its capacity,
+and an `int[2]` that receives the HTTP status code and the number of header bytes:
 
 ```java
-private static final String HOST = "api.open-meteo.com";
-private static final int PORT = 80;
-private static final String PATH = "/v1/forecast?latitude=40.4168&longitude=-3.7038"
-        + "&current=temperature_2m";
+private static final String URL = "http://api.open-meteo.com/v1/forecast?latitude=40.4168"
+        + "&longitude=-3.7038&current=temperature_2m";
 
 byte[] response = new byte[512];
-int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
+byte[] headers = new byte[256];
+int[] status = new int[2];
+int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
 ```
 
-Pass the host without `http://` and normally begin the path with `/`. The host and path must be
-compile-time strings — see
-[docs/APIS.md](../apis#consuming-an-api-httpclient-walkthrough) for exactly what that means.
+As with `java.net.http.HttpClient`, the URL decides how the request travels: `http://` sends it in
+the clear and `https://` over TLS. The port defaults to 80 or 443; give another one explicitly, as in
+`http://192.168.1.10:8080/led`. The URL must be a compile-time string (a constant built from
+other constants is fine) — see [docs/APIS.md](../apis#consuming-an-api-httpclient-walkthrough) for
+exactly what that means. The compiler splits it into host, port and path, so nothing is parsed on
+the board, and a board that lacks the scheme's client (the UNO Q has no plain-HTTP client) is
+rejected at compile time.
 
-For TLS, use the equivalent `HttpsClient` method, conventionally on port 443. Do not include
-`https://` in the host:
+For TLS, use an `https://` URL:
 
 ```java
-int responseBytes = HttpsClient.get(
-        "httpbin.org", 443, "/anything", response, response.length);
+int responseBytes = HttpClient.get("https://httpbin.org/anything", response, response.length, headers, headers.length, status);
 ```
 
 Juno emits Arduino's `WiFiSSLClient`, which validates the server certificate against the root CA
@@ -159,7 +159,7 @@ see [docs/APIS.md](../apis#buffers-are-caller-owned-forever) for why:
 byte[] response = new byte[512];
 
 while (true) {
-    int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
+    int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
     // Process response[0..responseBytes).
     Delay.millis(60000);
 }
@@ -168,8 +168,8 @@ while (true) {
 ### Runtime request paths
 
 When a path depends on runtime data — for example coordinates returned by an earlier request —
-build it in a `byte[]` and use the `HttpsClient.get` overload that takes the buffer and its length
-instead of a `String`. Runtime `String`s are limited to 31 bytes, which is far too short for a
+build it in a `byte[]` and use the `HttpClient.get` overload that takes a base URL (a scheme, host and
+optional port, with no path of its own) plus the buffer and its length. Runtime `String`s are limited to 31 bytes, which is far too short for a
 typical query string; the buffer overload accepts paths of up to 255 bytes and returns `-1` without
 connecting when `pathLength` is larger:
 
@@ -177,18 +177,19 @@ connecting when `pathLength` is larger:
 byte[] path = new byte[256];
 int pathLength = 0;
 // ... copy "/v1/forecast?latitude=", the runtime latitude, and so on into path ...
-int responseBytes = HttpsClient.get("api.open-meteo.com", 443, path, pathLength,
-        response, response.length, headers, headers.length, statusAndHeaders);
+int responseBytes = HttpClient.get("https://api.open-meteo.com", path, pathLength,
+        response, response.length, headers, headers.length, status);
 ```
 
-The host must still be a compile-time string. Only HTTPS `GET` has this overload today.
+The base URL must still be a compile-time string. Only `GET` has this overload today, for both
+`http://` and `https://` base URLs.
 [`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/WeatherTFT.java)
 uses it to pass the coordinates returned by ipinfo.io to Open-Meteo.
 
 ### Choosing an HTTP method
 
-Both `HttpClient` and `HttpsClient` provide the following methods. They write the response body into
-the supplied buffer and return the same result values described above:
+`HttpClient` provides the following methods, for `http://` and `https://` URLs alike. They write the
+response body into the supplied buffer and return the same result values described above:
 
 | Method | Request body | Typical purpose |
 |---|---|---|
@@ -211,36 +212,27 @@ The body-carrying methods send a compile-time JSON body. For example, `post` can
 private static final String BODY = "{\"sensor\":\"outside\",\"value\":23}";
 
 int responseBytes = HttpClient.post(
-        "example.com",
-        80,
-        "/api/readings",
+        "http://example.com/api/readings",
         BODY,
-        response,
-        response.length);
+        response, response.length, headers, headers.length, status);
 ```
 
 `patch` uses the same signature to partially update a resource:
 
 ```java
 int responseBytes = HttpClient.patch(
-        "example.com",
-        80,
-        "/api/readings/7",
+        "http://example.com/api/readings/7",
         "{\"value\":24}",
-        response,
-        response.length);
+        response, response.length, headers, headers.length, status);
 ```
 
 Use `query` only with a server that implements RFC 10008:
 
 ```java
 int responseBytes = HttpClient.query(
-        "example.com",
-        80,
-        "/api/readings/search",
+        "http://example.com/api/readings/search",
         "{\"sensor\":\"outside\"}",
-        response,
-        response.length);
+        response, response.length, headers, headers.length, status);
 ```
 
 The body cannot be assembled from runtime sensor readings yet because Juno has no runtime `String`
@@ -252,11 +244,8 @@ construction. Custom authorization headers are also unsupported.
 
 ```java
 int responseBytes = HttpClient.delete(
-        "example.com",
-        80,
-        "/api/readings/7",
-        response,
-        response.length);
+        "http://example.com/api/readings/7",
+        response, response.length, headers, headers.length, status);
 ```
 
 ## Extracting information from JSON responses
@@ -264,7 +253,7 @@ int responseBytes = HttpClient.delete(
 Always pass the number returned by `HttpClient`, not the array capacity, to `Json`:
 
 ```java
-int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
+int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
 if (responseBytes > 0) {
     double temperature = Json.getDouble(
             response, responseBytes, "current.temperature_2m");
@@ -394,9 +383,8 @@ import io.github.jabrena.juno.api.net.Wifi;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class InternetExample {
-    private static final String HOST = "api.open-meteo.com";
-    private static final String PATH = "/v1/forecast?latitude=40.4168&longitude=-3.7038"
-            + "&current=temperature_2m";
+    private static final String URL = "http://api.open-meteo.com/v1/forecast?latitude=40.4168"
+            + "&longitude=-3.7038&current=temperature_2m";
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
@@ -418,8 +406,10 @@ public final class InternetExample {
         }
 
         byte[] response = new byte[512];
+        byte[] headers = new byte[256];
+        int[] status = new int[2];
         while (true) {
-            int responseBytes = HttpClient.get(HOST, 80, PATH, response, response.length);
+            int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
             if (responseBytes < 0) {
                 Serial.println("HTTP connection failed");
             } else if (Json.type(response, responseBytes,
@@ -566,10 +556,10 @@ targets the 8-bit [UNO WiFi Rev2](../arduino-one-r3-wifi), subject to its smalle
   that invokes `juno compile`; setting it only for `mvn package` is not sufficient.
 - **Wi-Fi never reaches `STATUS_CONNECTED`:** verify the SSID/password and signal strength, and use
   a bounded retry loop so the failure is observable.
-- **`HttpClient` returns `-1`:** the TCP connection failed. Confirm Wi-Fi connectivity, the host,
-  port, DNS availability, and that the service accepts plain HTTP.
+- **`HttpClient` returns `-1` for an `http://` URL:** the TCP connection failed. Confirm Wi-Fi
+  connectivity, the host, port, DNS availability, and that the service accepts plain HTTP.
 - **`HttpClient` returns `0`:** no body bytes were captured before the connection ended or timed out.
-- **`HttpsClient` returns `-1`:** the TCP or TLS connection failed. Check the host and port, update
+- **`HttpClient` returns `-1` for an `https://` URL:** the TCP or TLS connection failed. Check the host and port, update
   the board's connectivity firmware, and ensure its root CA bundle trusts the service certificate.
 - **`Json.type` returns `TYPE_INVALID`:** pass the returned HTTP byte count—not `response.length`—and
   increase the response buffer if the body may have been truncated.

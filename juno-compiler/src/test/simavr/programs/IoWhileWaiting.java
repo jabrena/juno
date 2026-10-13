@@ -46,7 +46,7 @@ public final class IoWhileWaiting {
         Thread watcher = Thread.startVirtualThread(IoWhileWaiting::watch);
         started = Clock.millis();
         inRequest = true;
-        int length = HttpClient.get("example.com", 8080, "/slow", body, body.length, headers, headers.length, status);
+        int length = HttpClient.get("http://example.com:8080/slow", body, body.length, headers, headers.length, status);
         inRequest = false;
         stop = true;
         watcher.join();
@@ -55,7 +55,7 @@ public final class IoWhileWaiting {
 
         try (var scope = StructuredTaskScope.open()) {
             scope.fork(() -> {
-                HttpClient.get("example.com", 8080, "/slow", body, BODY, headers, HEADERS, status);
+                HttpClient.get("http://example.com:8080/slow", body, BODY, headers, HEADERS, status);
             });
             Callable<String> failing = () -> {
                 Thread.sleep(5);
@@ -69,7 +69,7 @@ public final class IoWhileWaiting {
         }
 
         status[0] = 0;
-        length = HttpClient.get("example.com", 8080, "/slow", body, body.length, headers, headers.length, status);
+        length = HttpClient.get("http://example.com:8080/slow", body, body.length, headers, headers.length, status);
         Serial.println(status[0] + " " + length);
     }
 }

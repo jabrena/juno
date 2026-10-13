@@ -1,13 +1,11 @@
 package io.github.jabrena.juno.api.net.weather;
 
-import io.github.jabrena.juno.api.net.http.HttpsClient;
+import io.github.jabrena.juno.api.net.http.HttpClient;
 import io.github.jabrena.juno.api.net.http.Json;
 
 /** Fetches and reads Madrid's current weather from Open-Meteo. */
 public final class WeatherClient {
-    private static final String API_HOST = "api.open-meteo.com";
-    private static final int HTTPS_PORT = 443;
-    private static final String API_PATH = "/v1/forecast?latitude=40.4168&longitude=-3.7038"
+    private static final String API_URL = "https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038"
             + "&current=temperature_2m&timezone=Europe%2FMadrid";
     private static final String TEMPERATURE_PATH = "current.temperature_2m";
     private static final int HTTP_STATUS_OK = 200;
@@ -28,7 +26,7 @@ public final class WeatherClient {
      */
     public static String fetchTemperature(byte[] response, int responseLength, byte[] headers, int headersLength,
             int[] statusAndHeadersLength) {
-        int bodyLength = HttpsClient.get(API_HOST, HTTPS_PORT, API_PATH, response, responseLength,
+        int bodyLength = HttpClient.get(API_URL, response, responseLength,
                 headers, headersLength, statusAndHeadersLength);
         if (statusAndHeadersLength[0] != HTTP_STATUS_OK || bodyLength <= 0) {
             return null;

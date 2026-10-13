@@ -11,7 +11,7 @@ Juno provides a small, allocation-free email stack for the Arduino UNO R4 WiFi. 
 - report a mailbox's message count, read the newest message, and read any message's subject with
   [`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/email/Pop3Client.java).
 
-Like `HttpClient`/`HttpsClient` (see [the Internet access guide](../internet)), these are compiler
+Like `HttpClient` (see [the Internet access guide](../internet)), these are compiler
 intrinsics: Java declares them as `native` methods, and Juno emits their Arduino C++
 implementations only when the program uses them. Every buffer belongs to the caller; nothing here
 allocates a runtime `String` or a heap object.
@@ -41,7 +41,7 @@ public final class EmailExample {
 }
 ```
 
-`Pop3Client` reuses `HttpsClient`'s native `WiFiSSLClient` (implicit TLS, POP3S on port 995) and
+`Pop3Client` reuses the native `WiFiSSLClient` behind `HttpClient`'s `https://` requests (implicit TLS, POP3S on port 995) and
 needs no extra library. `Smtp` needs the third-party `ESP_SSLClient` library — see
 [Why `Smtp` needs an extra library](#why-smtp-needs-an-extra-library) below — installed once with:
 
@@ -107,7 +107,7 @@ implicit TLS instead. `sent` is `0` on success, or a negative code identifying t
 
 ### Why `Smtp` needs an extra library
 
-The UNO R4 WiFi's native `WiFiSSLClient` (the same class `HttpsClient`/`Pop3Client` use) can only
+The UNO R4 WiFi's native `WiFiSSLClient` (the same class `HttpClient`'s `https://` requests and `Pop3Client` use) can only
 negotiate TLS from the very first byte of a connection — it has no way to start a plaintext
 connection and upgrade it to TLS mid-stream, which is exactly what `STARTTLS` requires. The
 third-party [`ESP_SSLClient`](https://github.com/mobizt/ESP_SSLClient) library adds that upgrade
@@ -120,7 +120,7 @@ being vendored into this repository (see the discussion in
 
 One consequence: `ESP_SSLClient`'s software TLS stack validates the server's host name but not its
 full certificate chain (there is no CA bundle available to it on this board), unlike
-`HttpsClient`/`Pop3Client`, which validate against the WiFi module's own firmware-backed CA bundle.
+`HttpClient`'s `https://` requests and `Pop3Client`, which validate against the WiFi module's own firmware-backed CA bundle.
 This is a deliberate tradeoff to fit `STARTTLS` in the available RAM, not an oversight.
 
 ## Reading a mailbox

@@ -7,9 +7,9 @@ layout: page
 This is a developer-facing guide to Juno's Java-facing API classes (`Delay`, `Gpio`, `HttpClient`,
 `Smtp`, ...): what they actually are, how to *consume* one from an example program, and the
 checklist for *creating* a new one. It uses `HttpClient` as the running example throughout,
-because it is small, already has both a plain-Java-adjacent sibling (`HttpsClient`) and a
-non-trivial argument shape (mixed `String`/`byte[]`/`int[]` parameters), and is documented in full
-end-user detail in [the Internet access guide](../internet).
+because it is small, picks plain HTTP or TLS from its URL at compile time, has a non-trivial
+argument shape (mixed `String`/`byte[]`/`int[]` parameters), and is documented in full end-user
+detail in [the Internet access guide](../internet).
 
 ## What an API class actually is
 
@@ -18,7 +18,7 @@ Every operation Juno recognizes is declared as a `public static native` method:
 
 ```java
 // juno-api/src/main/java/io/github/jabrena/juno/api/net/http/HttpClient.java
-public static native int get(String host, int port, String path,
+public static native int get(String url,
         byte[] responseBuffer, int responseBufferLength,
         byte[] headersBuffer, int headersBufferLength,
         int[] statusAndHeadersLength);
@@ -46,7 +46,9 @@ The general shape, common to every Juno API that touches hardware or network sta
 
 ```java
 byte[] response = new byte[512];
-int responseBytes = HttpClient.get("api.example.com", 80, "/status", response, response.length);
+byte[] headers = new byte[256];
+int[] status = new int[2];
+int responseBytes = HttpClient.get("http://api.example.com/status", response, response.length, headers, headers.length, status);
 if (responseBytes < 0) {
     Serial.println("HTTP connection failed");
 } else {
@@ -54,7 +56,7 @@ if (responseBytes < 0) {
 }
 ```
 
-Unless an API explicitly documents runtime-string support, every `String` argument (`host`, `path`,
+Unless an API explicitly documents runtime-string support, every `String` argument (URLs,
 request bodies, JSON paths, ...) must be a **compile-time constant**: a string literal, a `private static final` compile-time-constant expression, or a
 direct `System.getenv("LITERAL_NAME")` call. Juno resolves that last form itself, at compile time,
 by calling the real `System.getenv` in its own JVM process (`BytecodeToIr.isCompileTimeGetenv`/
@@ -135,7 +137,7 @@ and reuse it:
 ```java
 byte[] response = new byte[512];
 while (true) {
-    int responseBytes = HttpClient.get(HOST, PORT, PATH, response, response.length);
+    int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
     // ...
     Delay.millis(60000);
 }
@@ -176,7 +178,7 @@ that reaches it.
 
 ```java
 Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/HttpClient", "get",
-        "(Ljava/lang/String;ILjava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_GET),
+        "(Ljava/lang/String;[BI[BI[I)I"), Intrinsic.HTTP_URL_GET),
 ```
 
 This is the single place `BytecodeToIr` (bytecode-lowering time) decides a given call site is an
@@ -190,6 +192,16 @@ parameter, add it to `IntrinsicRegistry.RUNTIME_STRING_PARAMETERS`. Current exam
 `HttpServer#respond`'s body, both `Wifi#begin` credentials, and `java.util.Properties#getProperty`'s key;
 each is a plain `const char*` to its shim whether it originated as a literal or a stable runtime
 string.
+
+### 3b. Compile-time rewriting, when the arguments decide the operation
+
+Most intrinsics lower as they are. `HttpClient` is the exception: which operation a call means
+depends on its URL literal. `HttpUrlCall` (in `juno-compiler`'s `lowering` package) reads the URL
+while the call is built, splits it into host, port and path, checks that the board has the scheme's
+client (the UNO Q has no plain-HTTP client), and emits the plain `HTTP_GET` or the TLS `HTTPS_GET`
+instead, with the host and path as literals and the port as a constant. Everything after that,
+including the linker's per-board checks and the shim, only ever sees those two operations; no URL
+is parsed on the board.
 
 ### 4. Backend codegen
 
@@ -226,10 +238,10 @@ case HTTP_GET, HTTP_DELETE -> {
 left-to-right declaration order: `literalArguments()` holds every `String`-typed argument (already
 resolved to its compile-time value), and `arguments()` holds everything else (`int`, `byte[]`,
 `int[]`, ...). Wiring a new case means walking the method's declared parameters left to right and
-pulling the next item off whichever list matches that parameter's type — `HttpClient.get(String
-host, int port, String path, byte[] responseBuffer, ...)` above pulls `literalArguments().get(0)`
-(host), then `arguments().get(0)` (port), then `literalArguments().get(1)` (path), then
-`arguments().get(1..)` for the rest. Get this interleaving wrong and arguments silently land in
+pulling the next item off whichever list matches that parameter's type — the `HTTP_GET` that
+`HttpClient.get(String url, byte[] responseBuffer, ...)` is rewritten to (see step 3b) pulls
+`literalArguments().get(0)` (host), then `arguments().get(0)` (port), then
+`literalArguments().get(1)` (path), then `arguments().get(1..)` for the rest. Get this interleaving wrong and arguments silently land in
 the wrong shim parameter — there is no type-level check tying the two lists back to the original
 signature.
 
@@ -284,8 +296,7 @@ Not every new capability needs a new intrinsic:
 
 ## See also
 
-- [docs/INTERNET.md](../internet) — full end-user reference for `Wifi`/`HttpClient`/
-  `HttpsClient`/`Json`.
+- [docs/INTERNET.md](../internet) — full end-user reference for `Wifi`/`HttpClient`/`Json`.
 - [docs/EMAIL.md](../email) — full end-user reference for `Smtp`/`Pop3Client`, and a second worked
   example of everything in this guide (including a case where an intrinsic needed a third-party
   library).

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.net.email;
 /**
  * A minimal POP3S client recognized as a compiler intrinsic by Juno, backed by the same
  * board-specific implicit-TLS transport as
- * {@link io.github.jabrena.juno.api.net.http.HttpsClient}. It supports UNO R4 WiFi and UNO Q
+ * {@link io.github.jabrena.juno.api.net.http.HttpClient}'s {@code https://} requests. It supports UNO R4 WiFi and UNO Q
  * and requires an active {@link io.github.jabrena.juno.api.net.Wifi#begin} connection.
  *
  * <p>{@code host}, {@code username}, and {@code password} must be compile-time strings (a
