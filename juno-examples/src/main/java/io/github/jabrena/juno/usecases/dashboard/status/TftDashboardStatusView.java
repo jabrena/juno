@@ -5,6 +5,7 @@ import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftButtonWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardScreen;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.StatusFile;
@@ -39,15 +40,12 @@ public final class TftDashboardStatusView implements TftDashboardScreen {
     private static final int FILE_Y = 128;
     private static final int UNSHOWN = Integer.MIN_VALUE;
 
-    private static final int HOME_BUTTON_X = 196;
-    private static final int HOME_BUTTON_Y = 200;
-    private static final int HOME_BUTTON_WIDTH = 112;
-    private static final int HOME_BUTTON_HEIGHT = 34;
 
     private final TftDashboardScreen home;
     private final TftDashboardState state;
     private final TftFpsWidget fps;
     private final TftHeaderWidget header = new TftHeaderWidget("NETWORK STATUS");
+    private final TftButtonWidget homeButton = new TftButtonWidget(196, 200, 112, 34, "HOME", TftTouchShield.GRAY);
 
     private boolean statusFileWritten;
 
@@ -132,7 +130,7 @@ public final class TftDashboardStatusView implements TftDashboardScreen {
         TftTouchShield.print("SD");
         TftTouchShield.setCursor(12, FILE_Y);
         TftTouchShield.print("FILE");
-        drawHomeButton();
+        homeButton.draw();
         fps.reset();
 
         shownWifiState = UNSHOWN;
@@ -165,28 +163,10 @@ public final class TftDashboardStatusView implements TftDashboardScreen {
 
     @Override
     public TftDashboardScreen touch(int x, int y) {
-        if (homeButtonContains(x, y)) {
+        if (homeButton.contains(x, y)) {
             return home;
         }
         return this;
-    }
-
-    private void drawHomeButton() {
-        TftTouchShield.fillRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
-                TftTouchShield.GRAY);
-        TftTouchShield.drawRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
-                TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
-        TftTouchShield.setCursor(228, 209);
-        TftTouchShield.print("HOME");
-    }
-
-    private boolean homeButtonContains(int x, int y) {
-        return x >= HOME_BUTTON_X
-                && x < HOME_BUTTON_X + HOME_BUTTON_WIDTH
-                && y >= HOME_BUTTON_Y
-                && y < HOME_BUTTON_Y + HOME_BUTTON_HEIGHT;
     }
 
     private void drawState(int state, int y) {

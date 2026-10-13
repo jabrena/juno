@@ -3,6 +3,7 @@ package io.github.jabrena.juno.usecases.dashboard.home;
 import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.usecases.dashboard.commons.TftButtonWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardScreen;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiStatus;
@@ -18,15 +19,13 @@ import io.github.jabrena.juno.usecases.dashboard.storage.TftDashboardStorageView
  * {@link TftDashboardState} both views read. Only the SD thread touches the card, so it is never shared.
  */
 public final class TftDashboardHomeView implements TftDashboardScreen {
-    private static final int BUTTON_X = 72;
-    private static final int STATUS_BUTTON_Y = 92;
-    private static final int STORAGE_BUTTON_Y = 146;
-    private static final int BUTTON_WIDTH = 176;
-    private static final int BUTTON_HEIGHT = 42;
-
     private final TftDashboardState state = new TftDashboardState();
     private final TftFpsWidget fps = new TftFpsWidget();
     private final TftHeaderWidget header = new TftHeaderWidget("JUNO DASHBOARD");
+    private final TftButtonWidget statusButton =
+            new TftButtonWidget(72, 92, 176, 42, "VIEW STATUS", TftTouchShield.BLUE);
+    private final TftButtonWidget storageButton =
+            new TftButtonWidget(72, 146, 176, 42, "VIEW STORAGE", TftTouchShield.BLUE);
     private final TftDashboardStatusView statusView;
     private final TftDashboardStorageView storageView;
 
@@ -69,8 +68,8 @@ public final class TftDashboardHomeView implements TftDashboardScreen {
         TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
         TftTouchShield.setCursor(12, 64);
         TftTouchShield.print("Select a view");
-        drawButton(STATUS_BUTTON_Y, "VIEW STATUS", 94);
-        drawButton(STORAGE_BUTTON_Y, "VIEW STORAGE", 88);
+        statusButton.draw();
+        storageButton.draw();
         fps.reset();
     }
 
@@ -81,27 +80,13 @@ public final class TftDashboardHomeView implements TftDashboardScreen {
 
     @Override
     public TftDashboardScreen touch(int x, int y) {
-        if (buttonContains(x, y, STATUS_BUTTON_Y)) {
+        if (statusButton.contains(x, y)) {
             return statusView;
         }
-        if (buttonContains(x, y, STORAGE_BUTTON_Y)) {
+        if (storageButton.contains(x, y)) {
             return storageView;
         }
         return this;
     }
 
-    private void drawButton(int buttonY, String label, int labelX) {
-        TftTouchShield.fillRect(BUTTON_X, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, TftTouchShield.BLUE);
-        TftTouchShield.drawRect(BUTTON_X, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLUE);
-        TftTouchShield.setCursor(labelX, buttonY + 13);
-        TftTouchShield.print(label);
-    }
-
-    private boolean buttonContains(int x, int y, int buttonY) {
-        return x >= BUTTON_X
-                && x < BUTTON_X + BUTTON_WIDTH
-                && y >= buttonY
-                && y < buttonY + BUTTON_HEIGHT;
-    }
 }
