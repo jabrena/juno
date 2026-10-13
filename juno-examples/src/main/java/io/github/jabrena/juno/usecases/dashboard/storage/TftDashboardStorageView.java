@@ -3,12 +3,13 @@ package io.github.jabrena.juno.usecases.dashboard.storage;
 import io.github.jabrena.juno.api.Memory;
 import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftButtonWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardScreen;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.SdCapacity;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftFpsWidget;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftHeaderWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftFpsWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftHeaderWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftOccupancyBar;
 
 /**
  * Shows flash, RAM-arena and SD-card occupancy as three {@link TftOccupancyBar} rows. The SD row reads the shared

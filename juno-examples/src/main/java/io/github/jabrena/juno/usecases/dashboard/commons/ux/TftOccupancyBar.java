@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.dashboard.storage;
+package io.github.jabrena.juno.usecases.dashboard.commons.ux;
 
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
@@ -7,7 +7,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
  * that turns yellow and then red as it fills, and a "used / capacity" line. It remembers what it last drew and
  * redraws only when the value changes.
  */
-final class TftOccupancyBar {
+public final class TftOccupancyBar {
     private static final int X = 12;
     private static final int WIDTH = 296;
     private static final int HEIGHT = 48;
@@ -42,7 +42,7 @@ final class TftOccupancyBar {
      * A row at {@code y}; its "used / capacity" line divides both values by {@code divisor} and appends {@code unit}.
      * {@code pendingText} shows while the value is still being measured, {@code unavailableText} when there is none.
      */
-    TftOccupancyBar(int y, String label, int accentColor, int divisor, String unit, String pendingText,
+    public TftOccupancyBar(int y, String label, int accentColor, int divisor, String unit, String pendingText,
                     String unavailableText) {
         this.y = y;
         this.label = label;
@@ -54,12 +54,12 @@ final class TftOccupancyBar {
     }
 
     /** Forgets what was drawn, so the next update redraws the row; called when the screen is cleared. */
-    void reset() {
+    public void reset() {
         shownUsed = UNSHOWN;
         shownCapacity = UNSHOWN;
     }
 
-    void update(int used, int capacity) {
+    public void update(int used, int capacity) {
         if (capacity <= 0 || used < 0) {
             showUnavailable();
         } else if (changed(used, capacity)) {
@@ -72,7 +72,7 @@ final class TftOccupancyBar {
         }
     }
 
-    void showPending() {
+    public void showPending() {
         if (changed(PENDING, PENDING)) {
             clear();
             drawBar(0, TftTouchShield.GRAY);
@@ -80,7 +80,7 @@ final class TftOccupancyBar {
         }
     }
 
-    void showUnavailable() {
+    public void showUnavailable() {
         if (changed(UNAVAILABLE, UNAVAILABLE)) {
             clear();
             drawBar(0, TftTouchShield.GRAY);

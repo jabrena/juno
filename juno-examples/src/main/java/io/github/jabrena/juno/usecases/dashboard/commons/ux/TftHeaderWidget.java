@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.dashboard.commons;
+package io.github.jabrena.juno.usecases.dashboard.commons.ux;
 
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 

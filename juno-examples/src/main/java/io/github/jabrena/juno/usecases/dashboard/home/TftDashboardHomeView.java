@@ -3,13 +3,13 @@ package io.github.jabrena.juno.usecases.dashboard.home;
 import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftButtonWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardScreen;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiStatus;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftFpsWidget;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftHeaderWidget;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftTextWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftFpsWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftHeaderWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftTextWidget;
 import io.github.jabrena.juno.usecases.dashboard.status.TftDashboardStatusView;
 import io.github.jabrena.juno.usecases.dashboard.storage.TftDashboardStorageView;
 
