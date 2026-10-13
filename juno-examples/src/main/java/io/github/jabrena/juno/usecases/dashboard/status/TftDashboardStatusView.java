@@ -10,8 +10,10 @@ import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.StatusFile;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiCredentials;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiStatus;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftFpsWidget;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftHeaderWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftFpsWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftHeaderWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftTextWidget;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,36 +26,28 @@ import java.util.Properties;
  * which the Wi-Fi thread calls.
  */
 public final class TftDashboardStatusView implements TftDashboardScreen {
-    private static final int STATE_RUNNING = 1;
-    private static final int STATE_OK = 2;
-    private static final int STATE_FAILED = 3;
-
     private static final String STATUS_FILE = "STATUS.TXT";
     private static final int MAX_CONNECTION_ATTEMPTS = 10;
 
+    private static final int LABEL_X = 12;
     private static final int VALUE_X = 90;
-    private static final int VALUE_WIDTH = 218;
-    private static final int LINE_HEIGHT = 16;
     private static final int WIFI_Y = 56;
     private static final int SD_Y = 92;
     private static final int FILE_Y = 128;
-    private static final int UNSHOWN = Integer.MIN_VALUE;
-
-    private static final int HOME_BUTTON_X = 196;
-    private static final int HOME_BUTTON_Y = 200;
-    private static final int HOME_BUTTON_WIDTH = 112;
-    private static final int HOME_BUTTON_HEIGHT = 34;
 
     private final TftDashboardScreen home;
     private final TftDashboardState state;
     private final TftFpsWidget fps;
     private final TftHeaderWidget header = new TftHeaderWidget("NETWORK STATUS");
+    private final TftButtonWidget homeButton = new TftButtonWidget(196, 200, 112, 34, "HOME", TftTouchShield.GRAY);
+    private final TftTextWidget wifiLabel = new TftTextWidget(LABEL_X, WIFI_Y, 2);
+    private final TftTextWidget sdLabel = new TftTextWidget(LABEL_X, SD_Y, 2);
+    private final TftTextWidget fileLabel = new TftTextWidget(LABEL_X, FILE_Y, 2);
+    private final TftTextWidget wifiValue = new TftTextWidget(VALUE_X, WIFI_Y, 2);
+    private final TftTextWidget sdValue = new TftTextWidget(VALUE_X, SD_Y, 2);
+    private final TftTextWidget fileValue = new TftTextWidget(VALUE_X, FILE_Y, 2);
 
     private boolean statusFileWritten;
-
-    private int shownWifiState = UNSHOWN;
-    private int shownSdState = UNSHOWN;
-    private int shownFileBytes = UNSHOWN;
 
     public TftDashboardStatusView(TftDashboardScreen home, TftDashboardState state, TftFpsWidget fps) {
         this.home = home;
@@ -123,109 +117,49 @@ public final class TftDashboardStatusView implements TftDashboardScreen {
     public void show() {
         TftTouchShield.fillScreen(TftTouchShield.NAVY);
         header.draw();
-
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(12, WIFI_Y);
-        TftTouchShield.print("WIFI");
-        TftTouchShield.setCursor(12, SD_Y);
-        TftTouchShield.print("SD");
-        TftTouchShield.setCursor(12, FILE_Y);
-        TftTouchShield.print("FILE");
-        drawHomeButton();
+        wifiLabel.draw("WIFI", TftTouchShield.WHITE);
+        sdLabel.draw("SD", TftTouchShield.WHITE);
+        fileLabel.draw("FILE", TftTouchShield.WHITE);
+        homeButton.draw();
         fps.reset();
-
-        shownWifiState = UNSHOWN;
-        shownSdState = UNSHOWN;
-        shownFileBytes = UNSHOWN;
+        wifiValue.reset();
+        sdValue.reset();
+        fileValue.reset();
     }
 
     @Override
     public void draw() {
         StatusFile file = state.statusFile();
         WifiStatus wifi = state.wifiStatus();
-        int wifiState = wifi == null ? STATE_RUNNING : wifi.connected() ? STATE_OK : STATE_FAILED;
-        if (wifiState != shownWifiState) {
-            shownWifiState = wifiState;
-            drawState(wifiState, WIFI_Y);
+        if (wifi == null) {
+            wifiValue.set("STARTING", TftTouchShield.YELLOW);
+        } else if (wifi.connected()) {
+            wifiValue.set("OK", TftTouchShield.GREEN);
+        } else {
+            wifiValue.set("FAILED", TftTouchShield.RED);
         }
-        int sdState = !state.cardReady() || !statusFileWritten ? STATE_FAILED
-                : file == null ? STATE_RUNNING : file.readable() ? STATE_OK : STATE_FAILED;
-        if (sdState != shownSdState) {
-            shownSdState = sdState;
-            drawState(sdState, SD_Y);
+        if (!state.cardReady() || !statusFileWritten) {
+            sdValue.set("FAILED", TftTouchShield.RED);
+        } else if (file == null) {
+            sdValue.set("STARTING", TftTouchShield.YELLOW);
+        } else if (file.readable()) {
+            sdValue.set("OK", TftTouchShield.GREEN);
+        } else {
+            sdValue.set("FAILED", TftTouchShield.RED);
         }
-        int fileBytes = file == null ? -1 : file.bytes();
-        if (fileBytes != shownFileBytes) {
-            shownFileBytes = fileBytes;
-            drawFileBytes(fileBytes);
+        if (file == null || !file.readable()) {
+            fileValue.set("-", TftTouchShield.WHITE);
+        } else {
+            fileValue.set(file.bytes(), " B", TftTouchShield.WHITE);
         }
         fps.update();
     }
 
     @Override
     public TftDashboardScreen touch(int x, int y) {
-        if (homeButtonContains(x, y)) {
+        if (homeButton.contains(x, y)) {
             return home;
         }
         return this;
-    }
-
-    private void drawHomeButton() {
-        TftTouchShield.fillRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
-                TftTouchShield.GRAY);
-        TftTouchShield.drawRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
-                TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
-        TftTouchShield.setCursor(228, 209);
-        TftTouchShield.print("HOME");
-    }
-
-    private boolean homeButtonContains(int x, int y) {
-        return x >= HOME_BUTTON_X
-                && x < HOME_BUTTON_X + HOME_BUTTON_WIDTH
-                && y >= HOME_BUTTON_Y
-                && y < HOME_BUTTON_Y + HOME_BUTTON_HEIGHT;
-    }
-
-    private void drawState(int state, int y) {
-        TftTouchShield.fillRect(VALUE_X, y, VALUE_WIDTH, LINE_HEIGHT, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(stateColor(state), TftTouchShield.NAVY);
-        TftTouchShield.setCursor(VALUE_X, y);
-        if (state == STATE_RUNNING) {
-            TftTouchShield.print("STARTING");
-        } else if (state == STATE_OK) {
-            TftTouchShield.print("OK");
-        } else {
-            TftTouchShield.print("FAILED");
-        }
-    }
-
-    private void drawFileBytes(int bytes) {
-        TftTouchShield.fillRect(VALUE_X, FILE_Y, VALUE_WIDTH, LINE_HEIGHT, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(VALUE_X, FILE_Y);
-        if (bytes < 0) {
-            TftTouchShield.print("-");
-        } else {
-            TftTouchShield.print(bytes);
-            TftTouchShield.print(" B");
-        }
-    }
-
-    private int stateColor(int state) {
-        if (state == STATE_OK) {
-            return TftTouchShield.GREEN;
-        }
-        if (state == STATE_FAILED) {
-            return TftTouchShield.RED;
-        }
-        if (state == STATE_RUNNING) {
-            return TftTouchShield.YELLOW;
-        }
-        return TftTouchShield.GRAY;
     }
 }

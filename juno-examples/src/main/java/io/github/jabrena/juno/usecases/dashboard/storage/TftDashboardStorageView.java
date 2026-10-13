@@ -6,8 +6,10 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardScreen;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.SdCapacity;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftFpsWidget;
-import io.github.jabrena.juno.usecases.dashboard.commons.TftHeaderWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftFpsWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftHeaderWidget;
+import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftOccupancyBar;
 
 /**
  * Shows flash, RAM-arena and SD-card occupancy as three {@link TftOccupancyBar} rows. The SD row reads the shared
@@ -17,15 +19,12 @@ public final class TftDashboardStorageView implements TftDashboardScreen {
     private static final int FIRST_ROW_Y = 44;
     private static final int ROW_HEIGHT = 52;
 
-    private static final int HOME_BUTTON_X = 196;
-    private static final int HOME_BUTTON_Y = 200;
-    private static final int HOME_BUTTON_WIDTH = 112;
-    private static final int HOME_BUTTON_HEIGHT = 34;
 
     private final TftDashboardScreen home;
     private final TftDashboardState state;
     private final TftFpsWidget fps;
     private final TftHeaderWidget header = new TftHeaderWidget("STORAGE");
+    private final TftButtonWidget homeButton = new TftButtonWidget(196, 200, 112, 34, "HOME", TftTouchShield.GRAY);
     private final TftOccupancyBar flashBar = new TftOccupancyBar(FIRST_ROW_Y, "FLASH", TftTouchShield.MAGENTA, 1024,
             "KiB", "measuring...", "not available");
     private final TftOccupancyBar ramBar = new TftOccupancyBar(FIRST_ROW_Y + ROW_HEIGHT, "RAM ARENA",
@@ -48,7 +47,7 @@ public final class TftDashboardStorageView implements TftDashboardScreen {
     public void show() {
         TftTouchShield.fillScreen(TftTouchShield.NAVY);
         header.draw();
-        drawHomeButton();
+        homeButton.draw();
         fps.reset();
 
         flashBar.reset();
@@ -73,27 +72,10 @@ public final class TftDashboardStorageView implements TftDashboardScreen {
 
     @Override
     public TftDashboardScreen touch(int x, int y) {
-        if (homeButtonContains(x, y)) {
+        if (homeButton.contains(x, y)) {
             return home;
         }
         return this;
     }
 
-    private void drawHomeButton() {
-        TftTouchShield.fillRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
-                TftTouchShield.GRAY);
-        TftTouchShield.drawRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
-                TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
-        TftTouchShield.setCursor(228, 209);
-        TftTouchShield.print("HOME");
-    }
-
-    private boolean homeButtonContains(int x, int y) {
-        return x >= HOME_BUTTON_X
-                && x < HOME_BUTTON_X + HOME_BUTTON_WIDTH
-                && y >= HOME_BUTTON_Y
-                && y < HOME_BUTTON_Y + HOME_BUTTON_HEIGHT;
-    }
 }
