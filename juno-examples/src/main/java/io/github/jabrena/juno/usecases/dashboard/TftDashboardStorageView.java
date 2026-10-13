@@ -1,15 +1,20 @@
 package io.github.jabrena.juno.usecases.dashboard;
 
 import io.github.jabrena.juno.api.Memory;
+import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 
 /** Renders flash, RAM-arena and SD-card occupancy as segmented bars, redrawing a row only when it changes. */
-final class TftDashboardStorageView {
+final class TftDashboardStorageView implements TftDashboardScreen {
     private static final int ROW_FLASH = 0;
     private static final int ROW_RAM = 1;
     private static final int ROW_SD = 2;
     private static final int ROWS = 3;
     private static final int UNKNOWN = -1;
+
+    private static final int CAPACITY_SCANNING = 0;
+    private static final int CAPACITY_READY = 1;
+    private static final int CAPACITY_UNAVAILABLE = 2;
 
     private static final int ROW_X = 12;
     private static final int FIRST_ROW_Y = 44;
@@ -31,15 +36,35 @@ final class TftDashboardStorageView {
     private static final int HOME_BUTTON_WIDTH = 112;
     private static final int HOME_BUTTON_HEIGHT = 34;
 
-    private final TftConcurrentDashboardController controller;
+    private final TftDashboardScreen home;
     private final int[] shownUsed = new int[ROWS];
     private final int[] shownCapacity = new int[ROWS];
 
-    TftDashboardStorageView(TftConcurrentDashboardController controller) {
-        this.controller = controller;
+    // Written by the background thread, read by the display loop.
+    private volatile int sdCapacityState = CAPACITY_SCANNING;
+    private volatile int sdTotalKiB = UNKNOWN;
+    private volatile int sdFreeKiB = UNKNOWN;
+
+    TftDashboardStorageView(TftDashboardScreen home) {
+        this.home = home;
     }
 
-    void show() {
+    /** No card: the SD row shows "no card" instead of waiting for a scan. */
+    void markSdUnavailable() {
+        sdCapacityState = CAPACITY_UNAVAILABLE;
+    }
+
+    /** Runs on the background thread: counting the free space can read the card's whole allocation table. */
+    void scanSdCapacity() {
+        int total = SdCard.totalKiB();
+        int free = SdCard.freeKiB();
+        sdTotalKiB = total;
+        sdFreeKiB = free;
+        sdCapacityState = total > 0 && free >= 0 ? CAPACITY_READY : CAPACITY_UNAVAILABLE;
+    }
+
+    @Override
+    public void show() {
         TftTouchShield.fillScreen(TftTouchShield.NAVY);
         TftTouchShield.setTextSize(2);
         TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
@@ -55,13 +80,32 @@ final class TftDashboardStorageView {
         updateRow(ROW_FLASH, Memory.flashUsedBytes(), Memory.flashCapacityBytes());
     }
 
-    void draw(int framesPerSecond) {
+    @Override
+    public void draw() {
         updateRow(ROW_RAM, Memory.arenaUsedBytes(), Memory.arenaCapacityBytes());
         updateSdRow();
-        drawFps(framesPerSecond);
     }
 
-    boolean homeButtonContains(int x, int y) {
+    @Override
+    public TftDashboardScreen touch(int x, int y) {
+        if (homeButtonContains(x, y)) {
+            return home;
+        }
+        return this;
+    }
+
+    private void drawHomeButton() {
+        TftTouchShield.fillRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
+                TftTouchShield.GRAY);
+        TftTouchShield.drawRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
+                TftTouchShield.WHITE);
+        TftTouchShield.setTextSize(2);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
+        TftTouchShield.setCursor(228, 209);
+        TftTouchShield.print("HOME");
+    }
+
+    private boolean homeButtonContains(int x, int y) {
         return x >= HOME_BUTTON_X
                 && x < HOME_BUTTON_X + HOME_BUTTON_WIDTH
                 && y >= HOME_BUTTON_Y
@@ -69,13 +113,13 @@ final class TftDashboardStorageView {
     }
 
     private void updateSdRow() {
-        int state = controller.sdCapacityState();
-        if (state == TftConcurrentDashboardController.STATUS_SUCCEEDED) {
-            int totalKiB = controller.sdTotalKiB();
-            updateRow(ROW_SD, totalKiB - controller.sdFreeKiB(), totalKiB);
+        int state = sdCapacityState;
+        if (state == CAPACITY_READY) {
+            int totalKiB = sdTotalKiB;
+            updateRow(ROW_SD, totalKiB - sdFreeKiB, totalKiB);
         } else {
             // A capacity of UNKNOWN marks the row as pending (used 0) or unavailable (used UNKNOWN).
-            int used = state == TftConcurrentDashboardController.STATUS_FAILED ? UNKNOWN : 0;
+            int used = state == CAPACITY_UNAVAILABLE ? UNKNOWN : 0;
             updateRow(ROW_SD, used, UNKNOWN);
         }
     }
@@ -168,26 +212,6 @@ final class TftDashboardStorageView {
         } else {
             TftTouchShield.print("not available");
         }
-    }
-
-    private void drawHomeButton() {
-        TftTouchShield.fillRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
-                TftTouchShield.GRAY);
-        TftTouchShield.drawRect(HOME_BUTTON_X, HOME_BUTTON_Y, HOME_BUTTON_WIDTH, HOME_BUTTON_HEIGHT,
-                TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
-        TftTouchShield.setCursor(228, 209);
-        TftTouchShield.print("HOME");
-    }
-
-    private void drawFps(int framesPerSecond) {
-        TftTouchShield.fillRect(12, 212, 150, 20, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(12, 216);
-        TftTouchShield.print("FPS ");
-        TftTouchShield.print(framesPerSecond);
     }
 
     /** {@code used} as a share of {@code capacity}, 0..100, without overflowing on an SD card's KiB count. */
