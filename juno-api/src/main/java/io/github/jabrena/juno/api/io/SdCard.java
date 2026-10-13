@@ -85,9 +85,11 @@ public final class SdCard {
     public static native int totalKiB();
 
     /**
-     * The card volume's free space in KiB, or {@code -1} before a successful {@link #begin()}. Counting it scans the
-     * whole allocation table, which takes seconds on a large card and holds up every thread except where the core
-     * has an I/O worker (the UNO Q's): call it once from a background thread and keep the result.
+     * The card volume's free space in KiB, or {@code -1} before a successful {@link #begin()}. A FAT32 card's own
+     * free-space count (its FSInfo sector, kept by the computer that last wrote the card) answers at once, though it
+     * may lag a few clusters behind writes the board made since. Without one, the whole allocation table is counted,
+     * which can take a minute on a large card; the count pauses between slices so other threads keep running, but
+     * the calling thread waits for all of it, so call this from a background thread and keep the result.
      */
     public static native int freeKiB();
 }

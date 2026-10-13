@@ -28,6 +28,11 @@ public:
   operator bool() const { return true; }
 };
 
+class SdCard {
+public:
+  bool readSector(uint32_t, uint8_t*) { return true; }
+};
+
 class SdFat32 {
 public:
   bool begin(int32_t) { return true; }
@@ -37,5 +42,9 @@ public:
   uint8_t fatType() const { return 32; }
   uint32_t clusterCount() const { return 0; }
   uint8_t sectorsPerCluster() const { return 64; }
-  int32_t freeClusterCount() { return 0; }
+  uint32_t fatStartSector() const { return 0; }
+  SdCard* card() { return &m_card; }
+
+private:
+  SdCard m_card;
 };
