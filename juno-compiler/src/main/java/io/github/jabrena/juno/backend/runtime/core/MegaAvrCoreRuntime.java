@@ -87,6 +87,11 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String flashHelpers() {
+        return runtimeSource.load("avr/flash.cpp").replace("${JUNO_FLASH_CAPACITY}", "48640");
+    }
+
+    @Override
     public String wifiIncludes(boolean udp) {
         return "#include <WiFiNINA.h>\n" + (udp ? "#include <WiFiUdp.h>\n" : "");
     }

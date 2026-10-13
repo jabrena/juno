@@ -104,6 +104,12 @@ public interface CoreRuntime {
     String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes);
 
     /**
+     * Core-specific {@code juno_memory_flash_used()}/{@code juno_memory_flash_capacity()}: where the program image
+     * ends depends on the core's linker layout, and its limit on the board's upload size.
+     */
+    String flashHelpers();
+
+    /**
      * Whether the core's port runs a program's waiting device calls on a worker thread of its own (see
      * {@code IoRuntime}), so they hold up no other thread even where the wait happens inside a vendor library. Only
      * a core with an RTOS underneath can: the UNO Q's.

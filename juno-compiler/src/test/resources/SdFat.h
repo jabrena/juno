@@ -34,4 +34,8 @@ public:
   bool exists(const char*) { return true; }
   File32 open(const char*, int) { return File32(); }
   bool remove(const char*) { return true; }
+  uint8_t fatType() const { return 32; }
+  uint32_t clusterCount() const { return 0; }
+  uint8_t sectorsPerCluster() const { return 64; }
+  int32_t freeClusterCount() { return 0; }
 };

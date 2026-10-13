@@ -194,6 +194,9 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.MEMORY)) {
             shim.append(shimLibraries.memoryHelpers());
         }
+        if (uses(ShimFeature.FLASH)) {
+            shim.append(core.flashHelpers());
+        }
         if (uses(ShimFeature.RANDOM)) {
             shim.append(shimLibraries.randomHelpers());
         }
@@ -201,6 +204,9 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.SD)) {
             shim.append(core.sdHelpers(SD_OPEN_FILES, PROPERTIES_ENTRIES, PROPERTIES_KEY_BYTES,
                     PROPERTIES_VALUE_BYTES, PROPERTIES_LINE_BYTES));
+        }
+        if (uses(ShimFeature.SD_CAPACITY)) {
+            shim.append(shimLibraries.sdCapacityHelpers());
         }
         if (uses(ShimFeature.LONG)) {
             shim.append(shimLibraries.longHelpers());

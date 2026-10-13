@@ -82,6 +82,11 @@ public final class ShimLibraries {
         return runtimeSource.load("common/memory.cpp");
     }
 
+    /** {@code SdCard.totalKiB()}/{@code freeKiB()} over the mounted volume; needs the SD helpers and I/O prelude first. */
+    String sdCapacityHelpers() {
+        return runtimeSource.load("common/sd-capacity.cpp");
+    }
+
     /** Arduino core {@code random()}/{@code randomSeed()} bindings. */
     String randomHelpers() {
         return runtimeSource.load("common/random.cpp");

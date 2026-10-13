@@ -77,4 +77,17 @@ public final class SdCard {
 
     /** Deletes {@code path} from the card. Returns whether it was removed. */
     public static native boolean remove(String path);
+
+    /**
+     * The card volume's total capacity in KiB, or {@code -1} before a successful {@link #begin()}. Reads only the
+     * volume header, so it returns at once.
+     */
+    public static native int totalKiB();
+
+    /**
+     * The card volume's free space in KiB, or {@code -1} before a successful {@link #begin()}. Counting it scans the
+     * whole allocation table, which takes seconds on a large card and holds up every thread except where the core
+     * has an I/O worker (the UNO Q's): call it once from a background thread and keep the result.
+     */
+    public static native int freeKiB();
 }
