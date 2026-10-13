@@ -31,6 +31,7 @@
  *       fonts.</li>
  *   <li>{@code lcd} — drivers for character LCD shields, built entirely from {@code io} and
  *       {@link io.github.jabrena.juno.api.Delay} rather than a new compiler intrinsic.</li>
+ *   <li>{@code mvc} — views, navigation and a frame-loop controller for multi-screen TFT programs.</li>
  * </ul>
  *
  * <p>Classes in this package and its subpackages are final, non-instantiable utility types (or,
