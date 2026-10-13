@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.imu;
 
 import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.io.Gpio;
 import io.github.jabrena.juno.api.io.i2c.I2c;
 
 /**
@@ -18,6 +19,8 @@ import io.github.jabrena.juno.api.io.i2c.I2c;
  *
  * <p>The shield's BNO055 answers at address {@code 0x28}; the {@code 0x29} variant is selected with
  * {@link #begin(int)}. Works on both boards, wherever {@code Wire} reaches the shield's SDA/SCL.
+ * {@link #begin} drives D7, the shield's sensor reset line, so a program using the shield must not
+ * use D7 for anything else.
  *
  * @see <a href="https://docs.arduino.cc/hardware/9-axis-motion-shield/">Arduino 9 Axis Motion Shield</a>
  */
@@ -33,15 +36,25 @@ public final class NineAxisMotionShield {
     private static final int EULER_HEADING = 0x1A;
     private static final int EULER_PITCH = 0x1E;
     private static final int CALIBRATION_STATUS = 0x35;
+    private static final int UNIT_SELECTION = 0x3B;
     private static final int OPERATION_MODE = 0x3D;
     private static final int POWER_MODE = 0x3E;
     private static final int CHIP_ID_VALUE = 0xA0;
     private static final int MODE_CONFIG = 0x00;
     private static final int MODE_IMU = 0x08;
+    /** Android orientation (bit 7); the other unit bits stay 0: m/s², dps, degrees, Celsius. */
+    private static final int UNIT_ANDROID = 0x80;
     private static final int POWER_NORMAL = 0x00;
     /** The sensor boots in about 650 ms and needs up to 19 ms to switch between modes. */
     private static final int BOOT_MILLIS = 700;
     private static final int MODE_SWITCH_MILLIS = 30;
+    /**
+     * The shield wires the BNO055's RESET line to D7 (fitted {@code R_RESET} on the V3 schematic, as
+     * in Arduino's NineAxesMotion library); the chip only runs while it is high.
+     */
+    private static final int RESET_PIN = Gpio.D7;
+    private static final int RESET_LOW_MILLIS = 300;
+    private static final int RESET_HIGH_MILLIS = 600;
     /** Heading is reported in sixteenths of a degree. */
     private static final int UNITS_PER_DEGREE = 16;
     private static final int SIGN_BIT = 0x8000;
@@ -60,6 +73,11 @@ public final class NineAxisMotionShield {
      */
     public static boolean begin(int sensorAddress) {
         address = sensorAddress;
+        Gpio.pinMode(RESET_PIN, Gpio.OUTPUT);
+        Gpio.digitalWrite(RESET_PIN, false);
+        Delay.millis(RESET_LOW_MILLIS);
+        Gpio.digitalWrite(RESET_PIN, true);
+        Delay.millis(RESET_HIGH_MILLIS);
         I2c.begin();
         Delay.millis(BOOT_MILLIS);
         if (I2c.readRegister(address, CHIP_ID) != CHIP_ID_VALUE) {
@@ -67,6 +85,7 @@ public final class NineAxisMotionShield {
         }
         I2c.writeRegister(address, OPERATION_MODE, MODE_CONFIG);
         Delay.millis(MODE_SWITCH_MILLIS);
+        I2c.writeRegister(address, UNIT_SELECTION, UNIT_ANDROID);
         I2c.writeRegister(address, POWER_MODE, POWER_NORMAL);
         Delay.millis(MODE_SWITCH_MILLIS);
         I2c.writeRegister(address, OPERATION_MODE, MODE_IMU);
