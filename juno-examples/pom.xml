@@ -25,6 +25,10 @@
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.jabrena</groupId>
+            <artifactId>juno-rcx-firmware</artifactId>
+        </dependency>
         <!-- Tests drive the compiler directly (JunoCompiler, CompilationRequest) on the example classes. -->
         <dependency>
             <groupId>io.github.jabrena</groupId>
