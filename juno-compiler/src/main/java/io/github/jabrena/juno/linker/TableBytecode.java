@@ -13,6 +13,8 @@ final class TableBytecode {
     private static final int NEWARRAY = 188;
 
     /** An initializer's element values (raw bits), and the index of the {@code putstatic} storing the array. */
+    // The values array is read once by the table builder and never compared or hashed.
+    @SuppressWarnings("ArrayRecordComponent")
     record Initializer(long[] values, int putstatic) {
     }
 
@@ -76,7 +78,10 @@ final class TableBytecode {
             case 'D' -> doubleConstant(pool, instruction);
             default -> {
                 Integer value = intConstant(pool, instruction);
-                yield value == null ? null : (long) switch (element) {
+                if (value == null) {
+                    yield null;
+                }
+                yield (long) switch (element) {
                     case 'B' -> (byte) value.intValue();
                     case 'C' -> (char) value.intValue();
                     case 'S' -> (short) value.intValue();

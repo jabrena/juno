@@ -29,7 +29,7 @@ public final class AsmEmitter {
 
     /** A fresh assembler-local label, unique across the whole generated file. */
     String newLabel(String prefix) {
-        return prefix + (labelCounter++);
+        return prefix + labelCounter++;
     }
 
     /** Loads the address of {@code literal}'s {@code .rodata} symbol (see {@link ProgramLayout}). */
@@ -105,9 +105,14 @@ public final class AsmEmitter {
 
     void loadWord(StringBuilder output, FrameLayout frame, WordSource source, String register, int extraSpOffset) {
         switch (source) {
-            case WordSource.FromValue from when frame.constant(from.value()) instanceof Integer constant ->
+            case WordSource.FromValue from -> {
+                Integer constant = frame.constant(from.value());
+                if (constant != null) {
                     emitLoadImmediate(output, register, constant);
-            case WordSource.FromValue from -> emitLoad(output, register, frame.valueOffset(from.value()) + extraSpOffset);
+                } else {
+                    emitLoad(output, register, frame.valueOffset(from.value()) + extraSpOffset);
+                }
+            }
             case WordSource.FromValueLow from -> emitLoad(output, register, frame.valueOffset(from.value()) + extraSpOffset);
             case WordSource.FromValueHigh from ->
                     emitLoad(output, register, frame.valueOffset(from.value()) + WORD + extraSpOffset);

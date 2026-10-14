@@ -11,6 +11,8 @@ import java.util.Map;
  * exactly one {@link IrInstruction.Const} is rematerialized instead: it has no slot, and every use loads its
  * immediate (or folds it into the instruction), so the constant is never stored and reloaded.
  */
+// The offset arrays are read by index; equals/hashCode on them is identity-based and nothing relies on it.
+@SuppressWarnings("ArrayRecordComponent")
 public record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<Integer, Integer> constants) {
     /** Bytes of one Java word on every target: an {@code int}, a reference, half a {@code long}/{@code double}. */
     public static final int WORD = 4;

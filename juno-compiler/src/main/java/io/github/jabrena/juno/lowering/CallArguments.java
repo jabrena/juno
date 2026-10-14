@@ -14,10 +14,10 @@ record CallArguments(List<Argument> arguments) {
         arguments = List.copyOf(arguments);
     }
 
-    sealed interface Argument permits Runtime, Literal {
+    sealed interface Argument permits RuntimeValue, Literal {
     }
 
-    record Runtime(Value value) implements Argument {
+    record RuntimeValue(Value value) implements Argument {
     }
 
     record Literal(String text) implements Argument {
@@ -27,7 +27,7 @@ record CallArguments(List<Argument> arguments) {
     List<Value> values() {
         return arguments.stream()
                 .<Value>mapMulti((argument, sink) -> {
-                    if (argument instanceof Runtime(Value value)) {
+                    if (argument instanceof RuntimeValue(Value value)) {
                         sink.accept(value);
                     }
                 })
@@ -46,7 +46,7 @@ record CallArguments(List<Argument> arguments) {
     }
 
     Value value(int index) {
-        return ((Runtime) arguments.get(index)).value();
+        return ((RuntimeValue) arguments.get(index)).value();
     }
 
     /** The literal text of argument {@code index}, or {@code null} when it was passed as a runtime value. */

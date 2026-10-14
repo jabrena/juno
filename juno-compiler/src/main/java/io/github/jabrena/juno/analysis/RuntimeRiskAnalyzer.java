@@ -118,7 +118,10 @@ public final class RuntimeRiskAnalyzer {
                             + fallback.reason()));
         }
 
-        if (lowered != program) {
+        // Identity, not equality: skip the recount when the optimizer returned its input instance unchanged.
+        @SuppressWarnings("ReferenceEquality")
+        boolean loweredChanged = lowered != program;
+        if (loweredChanged) {
             boundsChecks = count(lowered, IrInstruction.BoundsCheck.class);
             arrayAccesses = count(lowered, IrInstruction.ArrayLoad.class) + count(lowered, IrInstruction.ArrayStore.class);
         }

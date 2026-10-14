@@ -61,7 +61,7 @@ final class NetworkShimLibraries {
      * heap allocator {@code new} for anything Java-visible) plus a single "current" {@code
      * WiFiClient} held across one {@code accept()}/{@code respond()} pair — this hardware can only
      * meaningfully serve one request at a time, so there is no connection-handle scheme.
-     * {@code accept()} mirrors {@link #httpHelpers()}'s response-parsing state machine, reversed
+     * {@code accept()} mirrors {@link #httpHelpers(Set, String, boolean)}'s response-parsing state machine, reversed
      * to parse a request line and headers instead of a status line.
      */
     String httpServerHelpers(String transport, boolean worker) {
@@ -80,7 +80,7 @@ final class NetworkShimLibraries {
      * the unrelated client types involved: {@code ESP_SSLClient} ({@code Smtp}'s STARTTLS
      * upgrade wrapper around a plain {@code WiFiClient}) and the core-selected implicit-TLS
      * client used by {@code Pop3Client} — the same template-over-client-type approach as
-     * {@link #httpHelpers()}'s {@code juno_http_request}, reused here because there is no common
+     * {@link #httpHelpers(Set, String, boolean)}'s {@code juno_http_request}, reused here because there is no common
      * base class between the two client types worth naming.
      */
     String emailHelpers(Set<ShimFeature> features, String tlsClientDeclaration) {

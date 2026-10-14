@@ -146,7 +146,7 @@ public final class ScalarReplacement implements CompilerPass {
     private void addField(Map<FieldRef, JunoType> fields, FieldRef field, JunoType type, Value object,
                                  Set<Value> escaped) {
         JunoType previous = fields.putIfAbsent(field, type);
-        if (type == JunoType.INT64 || previous != null && previous != type) {
+        if (type == JunoType.INT64 || (previous != null && previous != type)) {
             escaped.add(object);
         }
     }

@@ -6,6 +6,8 @@ import io.github.jabrena.juno.classfile.ExceptionHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -25,12 +27,12 @@ public final class ControlFlowGraphBuilder {
      */
     public ControlFlowGraph build(String methodDisplayName, List<Instruction> instructions,
                                   List<ExceptionHandler> handlers) {
-        TreeMap<Integer, Instruction> byOffset = new TreeMap<>();
+        NavigableMap<Integer, Instruction> byOffset = new TreeMap<>();
         for (Instruction instruction : instructions) {
             byOffset.put(instruction.offset(), instruction);
         }
 
-        TreeSet<Integer> leaders = new TreeSet<>();
+        NavigableSet<Integer> leaders = new TreeSet<>();
         leaders.add(instructions.get(0).offset());
         for (ExceptionHandler handler : handlers) {
             if (!byOffset.containsKey(handler.handlerPc())) {
@@ -75,7 +77,7 @@ public final class ControlFlowGraphBuilder {
         return new ControlFlowGraph(List.copyOf(blocks));
     }
 
-    private Terminator terminatorOf(String methodDisplayName, Instruction last, TreeMap<Integer, Instruction> byOffset,
+    private Terminator terminatorOf(String methodDisplayName, Instruction last, NavigableMap<Integer, Instruction> byOffset,
                                     List<ExceptionHandler> handlers) {
         int opcode = last.opcode();
         if (opcode == 191) {
@@ -124,8 +126,8 @@ public final class ControlFlowGraphBuilder {
         return opcode == 170 || opcode == 171;
     }
 
-    private void addSwitchLeader(String methodDisplayName, TreeMap<Integer, Instruction> byOffset,
-                                 TreeSet<Integer> leaders, Instruction instruction, int relativeTarget) {
+    private void addSwitchLeader(String methodDisplayName, NavigableMap<Integer, Instruction> byOffset,
+                                 NavigableSet<Integer> leaders, Instruction instruction, int relativeTarget) {
         int target = instruction.offset() + relativeTarget;
         if (!byOffset.containsKey(target)) {
             throw new CompileException(methodDisplayName + " at bytecode offset " + instruction.offset()

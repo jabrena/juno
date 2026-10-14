@@ -28,7 +28,7 @@ final class TableReads {
         for (int cursor = index + 1; cursor < instructions.size(); cursor++) {
             Instruction instruction = instructions.get(cursor);
             int opcode = instruction.opcode();
-            if (opcode >= 46 && opcode <= 53 && above == 1 || opcode == ARRAYLENGTH && above == 0) {
+            if ((opcode >= 46 && opcode <= 53 && above == 1) || (opcode == ARRAYLENGTH && above == 0)) {
                 return true;
             }
             int[] effect = stackEffect(linked, instruction);

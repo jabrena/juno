@@ -99,7 +99,10 @@ public final class AvrShimThunks {
         if (trimmed.isEmpty() || trimmed.equals("void")) {
             return parameters;
         }
-        for (String declaration : trimmed.split(",")) {
+        // A single literal comma, never a regex, so the plain split is exact here.
+        @SuppressWarnings("StringSplitter")
+        String[] declarations = trimmed.split(",");
+        for (String declaration : declarations) {
             String parameter = declaration.strip();
             // The type is everything before the parameter's name.
             Matcher name = Pattern.compile("^(.*?)\\s*\\b\\w+$").matcher(parameter);

@@ -222,7 +222,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
         }
         arrays.emitHelpers(code);
         output.append(runtimeEntryPoints.preemptibleCode(usesThreads, code));
-        String runtimeShim = new RuntimeShim(board, coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
+        String runtimeShim = new RuntimeShim(coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
         return new GeneratedCode(assemblyPeepholeOptimizer.optimize(output.toString()), runtimeShim,
                 java.util.Objects.requireNonNull(functionLabels.get(entryPoint)));
@@ -421,11 +421,12 @@ public final class Thumb2AsmBackend implements AsmBackend {
         asm.emitLoadImmediate(output, "r1", AsmEmitter.WORD);
         output.append("    bl juno_alloc\n");
         int classId = layout.throwableClasses().indexOf(object.className());
+        Integer typeId = layout.objectTypeId(object.className());
         if (classId >= 0) {
             // juno_alloc zero-fills, so the message word already starts out null.
             asm.emitLoadImmediate(output, "r1", classId);
             output.append("    str r1, [r0, #").append(ThrowableTypes.CLASS_ID_OFFSET).append("]\n");
-        } else if (layout.objectTypeId(object.className()) instanceof Integer typeId) {
+        } else if (typeId != null) {
             asm.emitLoadImmediate(output, "r1", typeId);
             output.append("    str r1, [r0, #0]\n");
         }

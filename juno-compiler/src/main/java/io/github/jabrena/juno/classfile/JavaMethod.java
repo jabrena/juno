@@ -4,6 +4,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
+// code is an array, so equals/hashCode are identity-based; no caller compares or hashes JavaMethod values
+@SuppressWarnings("ArrayRecordComponent")
 public record JavaMethod(
         String owner,
         int accessFlags,

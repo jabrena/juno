@@ -45,7 +45,7 @@ final class CallLowering {
             String type = descriptor.parameters().get(index);
             arguments[index] = Descriptor.isString(type)
                     ? stringArgument(instruction, called, intrinsic, index)
-                    : new CallArguments.Runtime(stack.pop(typeOf(type)));
+                    : new CallArguments.RuntimeValue(stack.pop(typeOf(type)));
         }
         return new CallArguments(Arrays.asList(arguments));
     }
@@ -104,6 +104,6 @@ final class CallLowering {
                 && literal != null) {
             return new CallArguments.Literal(literal);
         }
-        return new CallArguments.Runtime(value);
+        return new CallArguments.RuntimeValue(value);
     }
 }

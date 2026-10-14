@@ -64,7 +64,7 @@ final class AvrIntArithmeticLowering {
 
     /** {@code A = A <op> constant} without a second operand, or false when that takes a full operand load anyway. */
     private boolean emitConstantBinary(StringBuilder output, BinaryOp operation, int constant) {
-        switch (operation) {
+        return switch (operation) {
             case ADD, SUBTRACT -> {
                 // subi/sbci subtract with borrow; adding c is subtracting -c.
                 int subtrahend = operation == BinaryOp.ADD ? -constant : constant;
@@ -72,7 +72,7 @@ final class AvrIntArithmeticLowering {
                     output.append("    ").append(index == 0 ? "subi " : "sbci ").append(avr.r(A + index))
                             .append(", ").append((subtrahend >>> (8 * index)) & 0xFF).append('\n');
                 }
-                return true;
+                yield true;
             }
             case AND, OR -> {
                 for (int index = 0; index < AvrEmitter.WORD; index++) {
@@ -83,23 +83,21 @@ final class AvrIntArithmeticLowering {
                         output.append("    ori ").append(avr.r(A + index)).append(", ").append(part).append('\n');
                     }
                 }
-                return true;
+                yield true;
             }
             case SHIFT_LEFT, SHIFT_RIGHT, UNSIGNED_SHIFT_RIGHT -> {
                 emitConstantShift(output, operation, constant & 31);
-                return true;
+                yield true;
             }
             case MULTIPLY -> {
                 if (constant > 0 && Integer.bitCount(constant) == 1) {
                     emitConstantShift(output, BinaryOp.SHIFT_LEFT, Integer.numberOfTrailingZeros(constant));
-                    return true;
+                    yield true;
                 }
-                return false;
+                yield false;
             }
-            default -> {
-                return false;
-            }
-        }
+            default -> false;
+        };
     }
 
     /** Shifts A by a constant {@code amount} (0-31): whole bytes by moves, the rest bit by bit. */

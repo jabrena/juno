@@ -58,7 +58,7 @@ final class AvrEmitter {
     }
 
     String newLabel(String prefix) {
-        return prefix + (labelCounter++);
+        return prefix + labelCounter++;
     }
 
     String r(int register) {

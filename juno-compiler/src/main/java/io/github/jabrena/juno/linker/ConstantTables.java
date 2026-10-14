@@ -30,10 +30,6 @@ import java.util.TreeSet;
  * program that compiled before still compiles unchanged.
  */
 public final class ConstantTables {
-    private final TableReads tableReads = new TableReads();
-
-    private final TableBytecode tableBytecode = new TableBytecode();
-
     private static final int GETSTATIC = 178;
     private static final int PUTSTATIC = 179;
 
@@ -138,7 +134,7 @@ public final class ConstantTables {
             Map<MethodRef, Set<Integer>> offsets = new HashMap<>();
             for (Candidate candidate : candidates.values()) {
                 tables.put(candidate.table().field(), candidate.table());
-                offsets.computeIfAbsent(candidate.initializer(), unused -> new TreeSet<>()).addAll(candidate.offsets());
+                offsets.computeIfAbsent(candidate.initializer(), _ -> new TreeSet<>()).addAll(candidate.offsets());
             }
             return new ConstantTables(Map.copyOf(tables), Map.copyOf(offsets), List.copyOf(fallbacks));
         }
@@ -171,7 +167,7 @@ public final class ConstantTables {
 
         private boolean isTableField(FieldRef field, JavaClass owner, char element) {
             char declared = field.descriptor().length() == 2 ? field.descriptor().charAt(1) : 0;
-            if (!field.owner().equals(owner.name()) || declared != element && !(element == 'B' && declared == 'Z')) {
+            if (!field.owner().equals(owner.name()) || (declared != element && !(element == 'B' && declared == 'Z'))) {
                 return false;
             }
             FieldInfo declaration = owner.findField(field.name(), field.descriptor());

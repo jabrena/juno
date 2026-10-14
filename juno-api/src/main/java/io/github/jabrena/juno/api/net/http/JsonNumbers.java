@@ -140,7 +140,7 @@ final class JsonNumbers {
             scale *= 10.0;
         }
         double value = decimalExponent < 0 ? significand / scale : significand * scale;
-        if (value - value != 0.0) {
+        if (value > Double.MAX_VALUE) {
             return 0.0; // overflowed to infinity
         }
         return negative ? -value : value;

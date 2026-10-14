@@ -3,7 +3,6 @@ package io.github.jabrena.juno.backend.runtime;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
-import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 
 import java.util.List;
@@ -33,7 +32,6 @@ public final class RuntimeShim {
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final AllocatorRuntime allocatorRuntime = new AllocatorRuntime();
 
-    private final Board board;
     private final CoreRuntime core;
     private final boolean gcLoggingEnabled;
     private final Set<ShimFeature> features;
@@ -50,10 +48,9 @@ public final class RuntimeShim {
      * @param usedMath every {@code java.lang.Math} intrinsic the lowered program calls
      * @param watchdogTimeoutMillis the entry point's {@code @Watchdog} timeout, if it has one
      */
-    public RuntimeShim(Board board, CoreRuntime core, RuntimeConfig config, boolean gcLoggingEnabled,
+    public RuntimeShim(CoreRuntime core, RuntimeConfig config, boolean gcLoggingEnabled,
                 Set<ShimFeature> features,
                 Set<Intrinsic> usedMath, List<String> throwableClasses, Optional<Integer> watchdogTimeoutMillis) {
-        this.board = board;
         this.core = core;
         this.config = config;
         this.gcLoggingEnabled = gcLoggingEnabled;

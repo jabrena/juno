@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -46,7 +47,7 @@ public final class ProgramLayout {
     public ProgramLayout(IrProgram program) {
         throwableClasses = program.throwableClasses();
         objectTypeIds = program.objectTypeIds();
-        Map<String, TreeMap<String, FieldRef>> layouts = new TreeMap<>();
+        Map<String, SortedMap<String, FieldRef>> layouts = new TreeMap<>();
         for (IrMethod method : program.methods()) {
             for (IrBasicBlock block : method.blocks()) {
                 for (IrInstruction instruction : block.instructions()) {
@@ -54,7 +55,7 @@ public final class ProgramLayout {
                 }
             }
         }
-        for (Map.Entry<String, TreeMap<String, FieldRef>> layout : layouts.entrySet()) {
+        for (Map.Entry<String, SortedMap<String, FieldRef>> layout : layouts.entrySet()) {
             // A throwable's own fields follow its class-id/message header (see ThrowableTypes).
             int header = throwableClasses.contains(layout.getKey())
                     ? ThrowableTypes.HEADER_BYTES
@@ -73,43 +74,43 @@ public final class ProgramLayout {
         return field.descriptor().equals("J") || field.descriptor().equals("D") ? 2 * FrameLayout.WORD : FrameLayout.WORD;
     }
 
-    private void collect(Map<String, TreeMap<String, FieldRef>> layouts, IrInstruction instruction) {
+    private void collect(Map<String, SortedMap<String, FieldRef>> layouts, IrInstruction instruction) {
         switch (instruction) {
             case IrInstruction.NewObject object ->
-                    layouts.computeIfAbsent(object.className(), unused -> new TreeMap<>());
+                    layouts.computeIfAbsent(object.className(), _ -> new TreeMap<>());
             case IrInstruction.LambdaCreate lambda -> {
                 if (lambda.site().isCapturing()) {
                     objectSizes.put(lambda.site().syntheticClassName(),
                             (lambda.captures().size() + 1) * FrameLayout.WORD);
                 } else {
                     lambdaFunctionSymbols.computeIfAbsent(lambda.site(),
-                            unused -> "juno_lambda_" + lambdaFunctionSymbols.size());
+                            _ -> "juno_lambda_" + lambdaFunctionSymbols.size());
                 }
             }
             case IrInstruction.LambdaCall call -> {
                 if (call.site().implementation().referenceKind() == MethodHandleRef.REF_NEW_INVOKE_SPECIAL) {
-                    layouts.computeIfAbsent(call.site().implementation().method().owner(), unused -> new TreeMap<>());
+                    layouts.computeIfAbsent(call.site().implementation().method().owner(), _ -> new TreeMap<>());
                 }
             }
             case IrInstruction.LoadField load -> layouts
-                    .computeIfAbsent(load.field().owner(), unused -> new TreeMap<>())
+                    .computeIfAbsent(load.field().owner(), _ -> new TreeMap<>())
                     .put(load.field().displayName(), load.field());
             case IrInstruction.StoreField store -> layouts
-                    .computeIfAbsent(store.field().owner(), unused -> new TreeMap<>())
+                    .computeIfAbsent(store.field().owner(), _ -> new TreeMap<>())
                     .put(store.field().displayName(), store.field());
             case IrInstruction.LoadStatic load -> staticSymbols.computeIfAbsent(
                     load.field(), field -> "juno_static_" + sanitize(field.displayName()));
             case IrInstruction.StoreStatic store -> staticSymbols.computeIfAbsent(
                     store.field(), field -> "juno_static_" + sanitize(field.displayName()));
             case IrInstruction.IntArrayConst array -> intArraySymbols.computeIfAbsent(
-                    array, unused -> "juno_int_array" + intArraySymbols.size());
+                    array, _ -> "juno_int_array" + intArraySymbols.size());
             case IrInstruction.ConstantTableRef table -> constantTables.put(table.table().field(), table.table());
             case IrInstruction.StringConst constant -> stringLiteralSymbols.computeIfAbsent(
-                    constant.value(), unused -> "juno_str" + stringLiteralSymbols.size());
+                    constant.value(), _ -> "juno_str" + stringLiteralSymbols.size());
             case IrInstruction.IntrinsicCall call -> {
                 for (String literal : call.literalArguments()) {
                     stringLiteralSymbols.computeIfAbsent(literal,
-                            unused -> "juno_str" + stringLiteralSymbols.size());
+                            _ -> "juno_str" + stringLiteralSymbols.size());
                 }
             }
             default -> { }
