@@ -48,6 +48,7 @@ public enum Board {
     private final String fqbn;
     private final ArduinoCore core;
     private final UnoGeneration generation;
+    @SuppressWarnings("ImmutableEnumChecker") // Set.copyOf in the constructor makes it unmodifiable
     private final Set<Capability> capabilities;
 
     Board(String apiClassName, String id, String displayName, String fqbn, ArduinoCore core,

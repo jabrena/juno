@@ -149,6 +149,8 @@ public final class ClassFileReader {
     }
 
     /** A method's {@code Code} attribute; {@link #ABSENT} for abstract and native methods. */
+    // The code array is read once into a JavaMethod and never compared or hashed.
+    @SuppressWarnings("ArrayRecordComponent")
     private record CodeAttribute(int maxStack, int maxLocals, byte @Nullable [] code, List<ExceptionHandler> exceptionHandlers) {
         private static final CodeAttribute ABSENT = new CodeAttribute(0, 0, null, List.of());
     }
@@ -210,7 +212,7 @@ public final class ClassFileReader {
         return annotations;
     }
 
-    /** Reads one {@code annotation} structure, folding {@code @Board}/{@code @Watchdog}'s values into {@code annotations}. */
+    /** Reads one annotation structure, folding {@code @Board}/{@code @Watchdog}'s values into {@code annotations}. */
     private ClassAnnotations readAnnotation(DataInputStream input, ConstantPool pool, ClassAnnotations annotations)
             throws IOException {
         String typeDescriptor = pool.utf8(input.readUnsignedShort());

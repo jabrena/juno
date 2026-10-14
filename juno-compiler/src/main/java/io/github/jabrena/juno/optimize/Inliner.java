@@ -55,7 +55,10 @@ public final class Inliner implements CompilerPass {
         IrProgram current = program;
         for (int round = 0; round < MAX_ROUNDS; round++) {
             IrProgram next = inlineOnce(current);
-            if (next == current) {
+            // Identity, not equality: inlineOnce returns its input instance when nothing was inlined.
+            @SuppressWarnings("ReferenceEquality")
+            boolean fixpoint = next == current;
+            if (fixpoint) {
                 return current;
             }
             // Rejoin each inlined body with its surroundings, so the method's block count reflects its size again.
