@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>juno-compiler</artifactId>
-    <name>Juno Compiler</name>
+    <name>Juno Arduino Compiler</name>
     <description>Ahead-of-time compiler that turns Java bytecode into Thumb-2 or AVR assembly plus a C++ runtime shim for Arduino boards</description>
 
     <dependencies>
