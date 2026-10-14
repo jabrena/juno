@@ -32,6 +32,15 @@ final class RcxLink {
     static int argument1;
     private static boolean toggle;
     private static boolean receiveEnabled;
+    /** The opcode, up to ten arguments and the checksum: the longest reply decoded, the brick's version report. */
+    private static final int FRAME_VALUES = 12;
+    /**
+     * The frame being decoded, allocated once: allocating it while a frame arrives delayed the first byte's
+     * decoding past its start bit on the slower boards, so every reply was lost.
+     */
+    private static final int[] FRAME = new int[FRAME_VALUES];
+    /** How long {@link #awaitReply} lets one wait for a start bit run before it checks its deadline again. */
+    private static final int REPLY_POLL_MICROS = 20000;
 
     static void begin(int receivePin, int transmitPin) {
         receiveEnabled = receivePin >= 0;
@@ -46,13 +55,21 @@ final class RcxLink {
         if (!Infrared.receiving()) {
             return -1;
         }
-        int[] data = new int[8];
+        return receiveFrame(FIRST_BYTE_MICROS);
+    }
+
+    /**
+     * Waits up to {@code waitMicros} for a frame's first start bit, then reads the frame as {@link #receive} does.
+     * Waiting inside {@link Infrared#readByte} catches the start bit's edge, so the bits are sampled in their middle.
+     */
+    private static int receiveFrame(int waitMicros) {
+        int[] data = FRAME;
         int count = 0;
-        if (Infrared.readByte(FIRST_BYTE_MICROS) != 0x55 || Infrared.readByte(GAP_MICROS) != 0xFF
+        if (Infrared.readByte(waitMicros) != 0x55 || Infrared.readByte(GAP_MICROS) != 0xFF
                 || Infrared.readByte(GAP_MICROS) != 0x00) {
             return -1;
         }
-        while (count < 8) {
+        while (count < FRAME_VALUES) {
             int value = Infrared.readByte(GAP_MICROS);
             if (value < 0) {
                 break;
@@ -78,6 +95,11 @@ final class RcxLink {
         argument0 = count > 2 ? data[1] : 0;
         argument1 = count > 3 ? data[2] : 0;
         return count - 2;
+    }
+
+    /** Argument {@code index} (from 0) of the last frame {@link #receive} or {@link #awaitReply} accepted. */
+    static int argument(int index) {
+        return FRAME[index + 1];
     }
 
     /** Transmits {@code opcode} with {@code arguments} (0..2) arguments {@code first} and {@code second}. */
@@ -136,10 +158,19 @@ final class RcxLink {
     /** Like the two-argument request, for commands with up to three arguments. */
     static int request(int command, int first, int second, int third, int arguments) {
         send(command, first, second, third, arguments);
+        return awaitReply(command, REPLY_TIMEOUT_MILLIS);
+    }
+
+    /**
+     * Waits up to {@code timeoutMillis} for the reply to {@code command}, whose opcode is the command's complement,
+     * skipping other frames; returns its argument count, with the arguments in {@link #argument0} and
+     * {@link #argument1}, or {@code -1}.
+     */
+    static int awaitReply(int command, int timeoutMillis) {
         int replyOpcode = ~command & 0xFF & ~OPCODE_TOGGLE;
         int started = Clock.millis();
-        while (Clock.millis() - started < REPLY_TIMEOUT_MILLIS) {
-            int count = receive();
+        while (Clock.millis() - started < timeoutMillis) {
+            int count = receiveFrame(REPLY_POLL_MICROS);
             if (count >= 0 && opcode == replyOpcode) {
                 return count;
             }

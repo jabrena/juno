@@ -12,7 +12,7 @@
 
     <artifactId>juno-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <name>Juno Maven Plugin</name>
+    <name>Juno Arduino Maven Plugin</name>
     <description>Maven integration for compiling, verifying, uploading, and monitoring Juno Arduino programs</description>
 
     <dependencies>

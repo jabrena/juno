@@ -7,8 +7,8 @@ package io.github.jabrena.juno.api.lego;
  * can sense obstacles without extra wiring to the Arduino. Plain Java on {@link io.github.jabrena.juno.api.io.ir.Infrared}.
  *
  * <p>Each call is a request and a reply, which takes 100 ms or more; they return {@code -1} when the
- * brick does not answer (out of range, off, or the IR LED not pointing at it). The opcode and
- * argument encodings come from the published RCX opcode tables and have not been verified on a brick.
+ * brick does not answer (out of range, off, or the IR LED not pointing at it). The opcode and argument encodings have
+ * not been verified on a brick.
  */
 public final class RcxBrick {
     private RcxBrick() {
@@ -34,6 +34,37 @@ public final class RcxBrick {
 
     /** The highest power level of {@link #setMotorPower}. */
     public static final int MAX_POWER = 7;
+    /** The smallest number {@link #showNumber} displays. */
+    public static final int MIN_DISPLAY = -9999;
+    /** The largest number {@link #showNumber} displays. */
+    public static final int MAX_DISPLAY = 9999;
+
+    /** The display icons for {@link #showIcon}, numbered as the RCX ROM numbers them. */
+    public static final int ICON_STANDING = 0x06;
+    public static final int ICON_WALKING = 0x07;
+    public static final int ICON_SENSOR_1_VIEW = 0x08;
+    public static final int ICON_SENSOR_1_PRESSED = 0x09;
+    public static final int ICON_SENSOR_2_VIEW = 0x0A;
+    public static final int ICON_SENSOR_2_PRESSED = 0x0B;
+    public static final int ICON_SENSOR_3_VIEW = 0x0C;
+    public static final int ICON_SENSOR_3_PRESSED = 0x0D;
+    public static final int ICON_MOTOR_A_VIEW = 0x0E;
+    public static final int ICON_MOTOR_A_BACKWARD = 0x0F;
+    public static final int ICON_MOTOR_A_FORWARD = 0x10;
+    public static final int ICON_MOTOR_B_VIEW = 0x11;
+    public static final int ICON_MOTOR_B_BACKWARD = 0x12;
+    public static final int ICON_MOTOR_B_FORWARD = 0x13;
+    public static final int ICON_MOTOR_C_VIEW = 0x14;
+    public static final int ICON_MOTOR_C_BACKWARD = 0x15;
+    public static final int ICON_MOTOR_C_FORWARD = 0x16;
+    public static final int ICON_DATALOG = 0x18;
+    public static final int ICON_DOWNLOAD = 0x19;
+    public static final int ICON_UPLOAD = 0x1A;
+    public static final int ICON_BATTERY_LOW = 0x1B;
+    public static final int ICON_RANGE_SHORT = 0x1C;
+    public static final int ICON_RANGE_LONG = 0x1D;
+    /** Every segment of the display at once. */
+    public static final int ICON_ALL = 0x20;
 
     private static final int OPCODE_ON_OFF_FLOAT = 0x21;
     private static final int OPCODE_OUTPUT_DIRECTION = 0xE1;
@@ -56,6 +87,10 @@ public final class RcxBrick {
     private static final int OPCODE_PLAY_SOUND = 0x51;
     private static final int OPCODE_PLAY_TONE = 0x23;
     private static final int OPCODE_POLL = 0x12;
+    /** Juno's firmware only: an opcode LEGO's firmware does not use, whose low bits give it two arguments. */
+    private static final int OPCODE_SHOW_NUMBER = 0x72;
+    /** Juno's firmware only, like {@link #OPCODE_SHOW_NUMBER}. */
+    private static final int OPCODE_SET_ICON = 0xA2;
     private static final int OPCODE_SET_INPUT_TYPE = 0x32;
     private static final int OPCODE_SET_INPUT_MODE = 0x42;
     private static final int SOURCE_SENSOR_VALUE = 9;
@@ -186,6 +221,26 @@ public final class RcxBrick {
      */
     public static boolean playSound(int sound) {
         return RcxLink.request(OPCODE_PLAY_SOUND, sound & 0xFF, 0, 1) >= 0;
+    }
+
+    /**
+     * Shows {@code value}, limited to {@link #MIN_DISPLAY}..{@link #MAX_DISPLAY}, on the brick's display in place of
+     * the command counter, until the next call. Needs Juno's own RCX firmware ({@code RcxRemoteFirmware}); LEGO's
+     * firmware does not know the command and does not answer. Returns whether the brick acknowledged.
+     */
+    public static boolean showNumber(int value) {
+        int limited = value < MIN_DISPLAY ? MIN_DISPLAY : value > MAX_DISPLAY ? MAX_DISPLAY : value;
+        return RcxLink.request(OPCODE_SHOW_NUMBER, limited & 0xFF, (limited >> 8) & 0xFF, 2) >= 0;
+    }
+
+    /**
+     * Lights the display icon {@code icon}, {@code ICON_*}, or with {@code lit} false hands it back to the brick, which
+     * lights some icons from its own state: running motors' arrows, pressed touch sensors, low battery, and the
+     * minifigure, standing and walking while a motor runs. Needs Juno's own RCX firmware ({@code RcxRemoteFirmware});
+     * LEGO's firmware does not know the command and does not answer. Returns whether the brick acknowledged.
+     */
+    public static boolean showIcon(int icon, boolean lit) {
+        return RcxLink.request(OPCODE_SET_ICON, icon & 0xFF, lit ? 1 : 0, 2) >= 0;
     }
 
     /**

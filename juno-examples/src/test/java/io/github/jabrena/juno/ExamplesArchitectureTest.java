@@ -6,6 +6,7 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.Location;
 import io.github.jabrena.juno.annotations.Watchdog;
+import io.github.jabrena.juno.api.lego.rcxfirmware.RcxFirmwareImage;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -29,18 +30,22 @@ class ExamplesArchitectureTest {
         JavaClasses examples = new ClassFileImporter().importPath(Path.of("target/classes"));
         Set<String> examplesNames = names(examples);
         Set<String> apiNames = names(new ClassFileImporter().importLocations(Set.of(apiLocation())));
+        Set<String> rcxFirmwareNames = names(new ClassFileImporter().importLocations(Set.of(rcxFirmwareLocation())));
 
-        DescribedPredicate<JavaClass> apiExamplesOrJdk = DescribedPredicate.describe("juno-api, the examples or the JDK",
-                type -> isJdkOrIn(type.getBaseComponentType(), apiNames, examplesNames));
+        DescribedPredicate<JavaClass> allowedClasses = DescribedPredicate.describe(
+                "juno-api, the RCX firmware image, the examples or the JDK",
+                type -> isJdkOrIn(type.getBaseComponentType(), apiNames, rcxFirmwareNames, examplesNames));
 
-        classes().should().onlyDependOnClassesThat(apiExamplesOrJdk)
-                .because("examples are programs compiled against juno-api; the compiler is a test-only dependency here")
+        classes().should().onlyDependOnClassesThat(allowedClasses)
+                .because("examples are programs compiled against board-side artifacts; the compiler is test-only")
                 .check(examples);
     }
 
-    private static boolean isJdkOrIn(JavaClass type, Set<String> apiNames, Set<String> examplesNames) {
+    private static boolean isJdkOrIn(
+            JavaClass type, Set<String> apiNames, Set<String> rcxFirmwareNames, Set<String> examplesNames) {
         return type.isPrimitive() || type.getPackageName().startsWith("java.")
-                || apiNames.contains(type.getName()) || examplesNames.contains(type.getName());
+                || apiNames.contains(type.getName()) || rcxFirmwareNames.contains(type.getName())
+                || examplesNames.contains(type.getName());
     }
 
     private static Set<String> names(JavaClasses classes) {
@@ -50,5 +55,9 @@ class ExamplesArchitectureTest {
     /** juno-api's classes directory in a reactor build, its jar otherwise; anchored on an annotation nothing shadows. */
     private static Location apiLocation() throws URISyntaxException {
         return Location.of(Watchdog.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    }
+
+    private static Location rcxFirmwareLocation() throws URISyntaxException {
+        return Location.of(RcxFirmwareImage.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
 }

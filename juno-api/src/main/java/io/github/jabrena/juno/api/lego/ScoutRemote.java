@@ -5,13 +5,11 @@ import io.github.jabrena.juno.api.io.ir.Infrared;
 /**
  * Remote control of a LEGO Scout brick (Robotics Discovery Set) over infrared, plain Java on top of
  * {@link Infrared}: see there for the wiring of the IR receiver module and the IR LED. The Scout
- * speaks the RCX infrared framing and opcode set (the NXC and NQC toolchains treat them as one
- * family, with the Scout adding the opcodes {@code 0x47} and {@code 0xD5}), so it understands the
- * remote-control and message commands of {@link RcxRemote}, and also these direct commands.
+ * speaks the RCX infrared framing and opcode set, adding the opcodes {@code 0x47} and {@code 0xD5}, so it understands
+ * the remote-control and message commands of {@link RcxRemote}, and also these direct commands.
  *
  * <p>The Scout answers each direct command with an acknowledgement, which this class does not wait
- * for. The opcode values come from the NXC constants; the argument encodings are those of the
- * matching RCX opcodes and, like the Scout mode argument, have not been verified on a Scout.
+ * for. The opcode and argument encodings, including the Scout mode argument, have not been verified on a Scout.
  *
  * <p>Sending is blocking, about 50 ms per command at 2400 baud. Works on both boards.
  */

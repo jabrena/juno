@@ -41,6 +41,8 @@ This is a multi-module Maven build:
 - [`juno-maven-plugin/`](juno-maven-plugin) — Maven goals for generating a sketch (`juno:compile`),
   compiling it with Arduino CLI (`juno:verify`), uploading it (`juno:upload`), and opening the
   serial monitor (`juno:monitor`).
+- [`juno-rcx-firmware/`](juno-rcx-firmware) — the independent H8/300 firmware generator for the
+  LEGO RCX, its S-record, and the generated Java representation consumed by `juno-examples`.
 - [`juno-examples/`](juno-examples) — example Java programs written against `juno-api`, built
   like any other Maven module so they're checked for compile errors on every build.
 - [`juno-site/`](juno-site) — the [Roq](https://iamroq.dev)/Quarkus static site generator behind
@@ -457,6 +459,8 @@ jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000       # then open http://127
 - https://docs.arduino.cc/hardware/uno-wifi-rev2/
 - https://lejos.sourceforge.io/
 - https://lejos.sourceforge.io/nxt/nxj/api/index.html
+- https://lejos.sourceforge.io/rcx/api/index.html
+- https://pbrick.info/index.html-p=74.html
 - https://tinyvm.sourceforge.net/
 - https://haiku-vm.sourceforge.net/
 - https://sunspotdev.org/
