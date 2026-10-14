@@ -14,8 +14,8 @@ import io.github.jabrena.juno.api.io.ir.Infrared;
  * its arguments and a checksum. The remote sends opcode {@code 0xD2} with a 16-bit
  * button mask, repeatedly while a button is held and once more with the mask {@code 0} on release.
  *
- * <p>The mask goes on the wire high byte first ({@code D2 hh ll}); the button values match the
- * bit assignments of the NXC {@code RCX_Remote*} constants once their bytes are swapped back.
+ * <p>The mask goes on the wire high byte first ({@code D2 hh ll}); the button constants below use the decoded 16-bit
+ * mask order.
  *
  * <p>Receiving and sending are blocking: a frame takes about 50 ms at 2400 baud, during which
  * {@link #buttons()} (or {@link #message()}) decodes it. Call them regularly from the main loop,
