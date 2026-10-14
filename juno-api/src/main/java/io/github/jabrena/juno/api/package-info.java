@@ -16,6 +16,8 @@
  *       elapsed time without blocking.</li>
  *   <li>{@link io.github.jabrena.juno.api.Random} — seeded, bounded pseudorandom numbers backed by
  *       Arduino's generator.</li>
+ *   <li>{@link io.github.jabrena.juno.api.UuidCodec} — conversion between supported
+ *       {@link java.util.UUID} values and caller-owned 16-byte network representations.</li>
  * </ul>
  *
  * <p>Board-specific or peripheral-specific operations live in subpackages instead, grouped by the

@@ -139,6 +139,7 @@ public final class IntrinsicLowering {
         registerAtomics();
         registerStructuredTasks();
         registerScopedValues();
+        registerUuid();
         registerMonitors();
         registerSerial();
         registerStrings();
@@ -176,6 +177,25 @@ public final class IntrinsicLowering {
         shim(Intrinsic.THROW_RAISE, "juno_throw_raise", Result.NONE, List.of(arg(0)), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_PENDING, "juno_throw_pending", Result.WORD, List.of(), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_CATCH, "juno_throw_catch", Result.WORD, List.of(arg(0)), ShimFeature.EXCEPTIONS);
+    }
+
+    private void registerUuid() {
+        shim(Intrinsic.UUID_NEW, "juno_uuid_new", Result.WORD,
+                List.of(new ArgumentLow(0), new ArgumentHigh(0), new ArgumentLow(1), new ArgumentHigh(1)),
+                ShimFeature.UUID);
+        shim(Intrinsic.UUID_GET_MOST_SIGNIFICANT_BITS, "juno_uuid_get_most_significant_bits", Result.WIDE,
+                List.of(RECEIVER), ShimFeature.UUID);
+        shim(Intrinsic.UUID_GET_LEAST_SIGNIFICANT_BITS, "juno_uuid_get_least_significant_bits", Result.WIDE,
+                List.of(RECEIVER), ShimFeature.UUID);
+        shim(Intrinsic.UUID_VERSION, "juno_uuid_version", Result.WORD, List.of(RECEIVER), ShimFeature.UUID);
+        shim(Intrinsic.UUID_VARIANT, "juno_uuid_variant", Result.WORD, List.of(RECEIVER), ShimFeature.UUID);
+        shim(Intrinsic.UUID_EQUALS, "juno_uuid_equals", Result.WORD, List.of(RECEIVER, arg(0)), ShimFeature.UUID);
+        shim(Intrinsic.UUID_COMPARE_TO, "juno_uuid_compare_to", Result.WORD, List.of(RECEIVER, arg(0)),
+                ShimFeature.UUID);
+        shim(Intrinsic.UUID_HASH_CODE, "juno_uuid_hash_code", Result.WORD, List.of(RECEIVER), ShimFeature.UUID);
+        shim(Intrinsic.UUID_FROM_STRING, "juno_uuid_from_string", Result.WORD, List.of(STRING_ARGUMENT),
+                ShimFeature.UUID, ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.UUID_TO_STRING, "juno_uuid_to_string", Result.WORD, List.of(RECEIVER), ShimFeature.UUID);
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */

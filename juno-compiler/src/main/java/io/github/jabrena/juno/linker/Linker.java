@@ -44,6 +44,8 @@ public final class Linker {
 
     private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
 
+    private final UuidSupport uuidSupport = new UuidSupport();
+
     private final ThrowableTypes throwableTypes = new ThrowableTypes();
 
     private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
@@ -207,6 +209,7 @@ public final class Linker {
         structuredTaskSupport.validateCall(called);
         scopedValueSupport.validateCall(called);
         bigNumberSupport.validateCall(called);
+        uuidSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {

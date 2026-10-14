@@ -50,6 +50,7 @@ public record Descriptor(List<String> parameters, String returnType) {
                         || isString(returnType)
                         || isStringBuilder(returnType)
                         || new BigNumberSupport().isBigNumberType(returnType)
+                        || new UuidSupport().isUuidType(returnType)
                         || isSupportedArrayType(returnType, referenceClassNames)
                         || isReferenceType(returnType, referenceClassNames));
     }
@@ -119,6 +120,7 @@ public record Descriptor(List<String> parameters, String returnType) {
                 || new ThreadSupport().isThreadType(type)
                 || new ScopedValueSupport().isScopedValueType(type)
                 || new BigNumberSupport().isBigNumberType(type)
+                || new UuidSupport().isUuidType(type)
                 || new AtomicSupport().isAtomicType(type)
                 || isRandomAccessFile(type)
                 || isSupportedArrayType(type, referenceClassNames)

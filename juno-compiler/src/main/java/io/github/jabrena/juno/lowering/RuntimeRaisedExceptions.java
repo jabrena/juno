@@ -4,6 +4,7 @@ import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.StructuredTaskSupport;
+import io.github.jabrena.juno.linker.UuidSupport;
 
 import java.util.List;
 
@@ -18,6 +19,8 @@ final class RuntimeRaisedExceptions {
 
     private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
 
+    private final UuidSupport uuidSupport = new UuidSupport();
+
     private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
 
     /** The exceptions the runtime may raise while running a method of {@code owner}. */
@@ -31,6 +34,9 @@ final class RuntimeRaisedExceptions {
         if (bigNumberSupport.isBigNumberOwner(owner)) {
             return List.of(ExceptionRouting.ARITHMETIC_EXCEPTION, "java/lang/NumberFormatException",
                     "java/lang/IllegalArgumentException");
+        }
+        if (uuidSupport.isUuidOwner(owner)) {
+            return List.of("java/lang/IllegalArgumentException");
         }
         if (randomAccessFileMethods.isOwner(owner)) {
             return RandomAccessFileMethods.EXCEPTIONS;

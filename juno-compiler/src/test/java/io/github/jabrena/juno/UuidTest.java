@@ -1,0 +1,134 @@
+package io.github.jabrena.juno;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+/** The deliberately bounded {@code java.util.UUID} subset lowered onto the runtime shim. */
+class UuidTest {
+    @TempDir
+    Path temporaryDirectory;
+
+    @Test
+    void constructsUuidAndReadsBothHalves() throws Exception {
+        CompilationResult result = compile("""
+                public static void main() {
+                    java.util.UUID value = new java.util.UUID(0x123456789abcdef0L, 0x0fedcba987654321L);
+                    long most = value.getMostSignificantBits();
+                    long least = value.getLeastSignificantBits();
+                }
+                """);
+
+        assertThat(result.assembly()).contains(
+                "bl juno_uuid_new", "bl juno_uuid_get_most_significant_bits",
+                "bl juno_uuid_get_least_significant_bits");
+        assertThat(result.runtimeShim()).contains(
+                "juno_uuid_new", "juno_uuid_get_most_significant_bits",
+                "juno_uuid_get_least_significant_bits");
+    }
+
+    @Test
+    void lowersValueSemanticsAndCanonicalText() throws Exception {
+        CompilationResult result = compile("""
+                public static void main() {
+                    java.util.UUID parsed = java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+                    java.util.UUID copy = new java.util.UUID(
+                            parsed.getMostSignificantBits(), parsed.getLeastSignificantBits());
+                    int version = parsed.version();
+                    int variant = parsed.variant();
+                    boolean equal = parsed.equals(copy);
+                    int order = parsed.compareTo(copy);
+                    int hash = parsed.hashCode();
+                    String canonical = parsed.toString();
+                    java.util.UUID reparsed = java.util.UUID.fromString(canonical);
+                }
+                """);
+
+        assertThat(result.assembly()).contains(
+                "bl juno_uuid_from_string", "bl juno_uuid_version", "bl juno_uuid_variant",
+                "bl juno_uuid_equals", "bl juno_uuid_compare_to", "bl juno_uuid_hash_code",
+                "bl juno_uuid_to_string", "bl juno_throw_pending");
+        assertThat(result.runtimeShim()).contains(
+                "juno_uuid_from_string", "juno_uuid_version", "juno_uuid_variant",
+                "juno_uuid_equals", "juno_uuid_compare_to", "juno_uuid_hash_code",
+                "juno_uuid_to_string", "java.lang.IllegalArgumentException");
+    }
+
+    @Test
+    void rejectsRandomUuidUntilBoardsProvideSuitableEntropy() throws Exception {
+        String source = """
+                package demo;
+                public final class Tasks {
+                    public static void main() {
+                        java.util.UUID value = java.util.UUID.randomUUID();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Tasks", source, "25");
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("randomUUID")
+                .hasMessageContaining("entropy");
+    }
+
+    @Test
+    void compilesNetworkByteConversionThroughThePublicApi() throws Exception {
+        CompilationResult result = compile("""
+                public static void main() {
+                    byte[] bytes = new byte[20];
+                    java.util.UUID original = new java.util.UUID(0x123456789abcdef0L, 0x0fedcba987654321L);
+                    io.github.jabrena.juno.api.UuidCodec.toBytes(original, bytes, 2);
+                    java.util.UUID copy = io.github.jabrena.juno.api.UuidCodec.fromBytes(bytes, 2);
+                    boolean equal = original.equals(copy);
+                }
+                """);
+
+        assertThat(result.assembly()).contains(
+                "juno_uuid_new", "juno_uuid_get_most_significant_bits",
+                "juno_uuid_get_least_significant_bits", "juno_uuid_equals");
+    }
+
+    @Test
+    void uuidCanCrossMethodAndFieldBoundaries() throws Exception {
+        CompilationResult result = compile("""
+                private static java.util.UUID shared;
+                private final java.util.UUID value;
+
+                private Tasks(java.util.UUID value) {
+                    this.value = value;
+                }
+
+                private java.util.UUID value() {
+                    return value;
+                }
+
+                private static java.util.UUID identity(java.util.UUID value) {
+                    return value;
+                }
+
+                public static void main() {
+                    shared = new java.util.UUID(1L, 2L);
+                    java.util.UUID result = identity(new Tasks(shared).value());
+                    boolean equal = result.equals(shared);
+                }
+                """);
+
+        assertThat(result.assembly()).contains("juno_uuid_new", "juno_uuid_equals");
+    }
+
+    private CompilationResult compile(String members) throws Exception {
+        String source = """
+                package demo;
+                public final class Tasks {
+                %s
+                }
+                """.formatted(members);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Tasks", source, "25");
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks");
+    }
+}

@@ -204,6 +204,7 @@ Operations that run out of memory panic loudly; they never return a wrong value.
 | `LcdKeypadShield`, `TftTouchShield` | Yes | |
 | `Servo`, `I2c`, `Infrared` | Untested | Generated, but not yet run in the simulator or on hardware |
 | `BigInteger`, `BigDecimal`, `MathContext` | Yes | See the limits above |
+| `UUID`, `UuidCodec` | Yes | Construction, bit access, version/variant, equality/ordering, canonical text and 16-byte network conversion; `randomUUID()` is rejected until a hardware entropy source is available |
 | `StructuredTaskScope`, `ScopedValue`, `synchronized`, `ReentrantLock`, atomics | Yes | The same scheduler as the other boards: virtual threads preempted at loop back-edges and method entries (AVR safepoints), subtasks cooperative at loop back-edges, at most four threads including `main`; see the task stacks above |
 | `Mouse` | No | The application MCU has no native USB HID support |
 | `@Watchdog` | Yes | ATmega4809 hardware watchdog; requested timeouts round up to a supported period, at most approximately 8.2 seconds |

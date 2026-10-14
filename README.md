@@ -145,6 +145,10 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   `toPlainString` follow the JDK's results, scales and rounding. Values are immutable blocks in the
   8 KiB arena and are garbage-collected, so precision is limited by memory, not by a fixed width. See
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java).
+- **UUID:** immutable `java.util.UUID` values with construction, bit access, version/variant,
+  equality, ordering, canonical parsing/formatting, and caller-buffer 16-byte network conversion
+  through `UuidCodec`. `UUID.randomUUID()` remains unavailable until a suitable board entropy
+  source is exposed.
 - **Objects:** simple enums, records, final closed-world classes, constructors, and instance fields.
   Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative
   garbage collection. See

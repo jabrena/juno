@@ -105,6 +105,13 @@ Supported today:
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
 - Arduino-backed pseudorandom numbers through `Random.seed(int)`, `Random.nextInt(bound)`, and
   `Random.nextInt(origin, bound)`, with exclusive upper bounds
+- `java.util.UUID` as an immutable arena value: `new UUID(long, long)`, both bit getters,
+  `version`, `variant`, `equals`, `hashCode`, `compareTo`, canonical `fromString` and lowercase
+  canonical `toString`. Parsing accepts exactly the 36-character hyphenated representation, with
+  either uppercase or lowercase hexadecimal digits. `UuidCodec.fromBytes` / `toBytes` convert to
+  and from the 16-byte, most-significant-byte-first network representation using caller-owned
+  buffers. `UUID.randomUUID()` is deliberately rejected until Juno exposes a suitable hardware
+  entropy source; the Arduino pseudorandom generator is not used as a substitute.
 - `java.lang.Math`: `abs`/`min`/`max` (`int`/`long`/`float`/`double`), `clamp` (Java 21 overloads),
   `floorDiv`/`floorMod`, `signum`, `round`, `floor`, `ceil`, `sqrt`, `cbrt`, `pow`, `hypot`, `exp`,
   `log`, `log10`, `sin`/`cos`/`tan`, `asin`/`acos`/`atan`/`atan2`, and `toRadians`/`toDegrees`; `Math.PI`

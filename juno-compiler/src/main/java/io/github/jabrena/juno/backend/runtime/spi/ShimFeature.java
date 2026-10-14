@@ -56,6 +56,8 @@ public enum ShimFeature {
     SCOPED_VALUES,
     /** A reachable {@code ScopedValue.CallableOp} entry point behind {@code Carrier.call}. */
     SCOPED_CALL_ENTRY,
+    /** {@code java.util.UUID}: immutable 128-bit values stored in arena blocks. */
+    UUID,
     /** {@code java.math.BigInteger}/{@code BigDecimal}/{@code MathContext}: immutable arena blocks. */
     BIG_NUMBERS,
     /** {@code BigDecimal.valueOf(double)}, which formats the double with the runtime-string helpers. */

@@ -32,6 +32,7 @@ public final class IntrinsicRegistry {
             new IntrinsicParameter(Intrinsic.PROPERTIES_GET_DEFAULT, 1),
             new IntrinsicParameter(Intrinsic.SD_APPEND_LINE, 1),
             new IntrinsicParameter(Intrinsic.SD_APPEND_TEXT, 1),
+            new IntrinsicParameter(Intrinsic.UUID_FROM_STRING, 0),
             new IntrinsicParameter(Intrinsic.BIG_INTEGER_PARSE, 0),
             new IntrinsicParameter(Intrinsic.BIG_DECIMAL_PARSE, 0));
 
@@ -472,12 +473,13 @@ public final class IntrinsicRegistry {
             Map.entry(new MethodRef("java/lang/Math", "toRadians", "(D)D"), Intrinsic.MATH_TO_RADIANS),
             Map.entry(new MethodRef("java/lang/Math", "toDegrees", "(D)D"), Intrinsic.MATH_TO_DEGREES));
 
-    private static final Map<MethodRef, Intrinsic> METHODS = withBigNumbers();
+    private static final Map<MethodRef, Intrinsic> METHODS = withRuntimeValueTypes();
 
 
-    private static Map<MethodRef, Intrinsic> withBigNumbers() {
+    private static Map<MethodRef, Intrinsic> withRuntimeValueTypes() {
         Map<MethodRef, Intrinsic> methods = new HashMap<>(CORE_METHODS);
         methods.putAll(BigNumberMethods.METHODS);
+        methods.putAll(UuidMethods.METHODS);
         return Map.copyOf(methods);
     }
 
