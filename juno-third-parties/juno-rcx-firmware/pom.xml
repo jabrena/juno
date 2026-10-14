@@ -8,6 +8,7 @@
         <groupId>io.github.jabrena</groupId>
         <artifactId>java-for-arduino</artifactId>
         <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>juno-rcx-firmware</artifactId>

@@ -14,7 +14,7 @@
         <module>juno-maven-plugin</module>
         <module>juno-examples</module>
         <module>juno-site</module>
-        <module>juno-rcx-firmware</module>
+        <module>juno-third-parties</module>
     </modules>
 
     <properties>
