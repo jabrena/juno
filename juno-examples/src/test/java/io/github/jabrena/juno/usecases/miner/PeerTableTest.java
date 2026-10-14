@@ -76,6 +76,23 @@ class PeerTableTest {
     }
 
     @Test
+    void eachSlotReportsItsPeersStateHeightAndMiningFlag() {
+        PeerTable peers = new PeerTable();
+        update(peers, 7, 12, 192L, ChainProtocol.MINING, 1000);
+        int slot = 0;
+
+        assertThat(peers.state(slot, 1000 + ALIVE_FOR)).isEqualTo(PeerTable.ALIVE);
+        assertThat(peers.state(slot, 1000 + SUSPECT_AT)).isEqualTo(PeerTable.SUSPECT);
+        assertThat(peers.state(slot, 1000 + DEAD_AT)).isEqualTo(PeerTable.DEAD);
+        assertThat(peers.state(1, 1000)).as("a slot never used").isEqualTo(PeerTable.EMPTY);
+        assertThat(peers.height(slot)).isEqualTo(12);
+        assertThat(peers.isMining(slot)).isTrue();
+
+        update(peers, 7, 13, 208L, 0, 2000);
+        assertThat(peers.isMining(slot)).as("the latest heartbeat wins").isFalse();
+    }
+
+    @Test
     void aDeathIsReportedOnceAndAHeartbeatBringsThePeerBack() {
         PeerTable peers = new PeerTable();
         update(peers, 7, 3, 48L, 0, 1000);

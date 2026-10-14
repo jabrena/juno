@@ -22,7 +22,7 @@ import io.github.jabrena.juno.games.blockchain.Sha256;
  *
  * All fields are big-endian. Unlike Bitcoin, the proof-of-work is a single SHA-256 rather than two.
  */
-final class BlockFormat {
+public final class BlockFormat {
     static final int VERSION = 1;
     static final int HEADER_SIZE = 80;
     static final int PREVIOUS = 4;
@@ -32,11 +32,11 @@ final class BlockFormat {
     static final int NONCE = 76;
 
     static final int PAYLOAD = HEADER_SIZE;
-    static final int MINER = PAYLOAD;
-    static final int NUMBER = PAYLOAD + 4;
-    static final int COUNT = PAYLOAD + 12;
-    static final int FACTORS = PAYLOAD + 13;
-    static final int MAX_SIZE = FACTORS + Factorizer.MAX_FACTORS * 9;
+    public static final int MINER = PAYLOAD;
+    public static final int NUMBER = PAYLOAD + 4;
+    public static final int COUNT = PAYLOAD + 12;
+    public static final int FACTORS = PAYLOAD + 13;
+    public static final int MAX_SIZE = FACTORS + Factorizer.MAX_FACTORS * 9;
 
     /** Bit length of every bounty, the number each block has to factor. */
     static final int BOUNTY_BITS = 40;

@@ -18,15 +18,15 @@ import io.github.jabrena.juno.games.blockchain.Sha256;
  * checkpoint, trusting the height and work its sender claimed, and everything after it is
  * validated in full. That is how a node joins a network whose history it was not there for.
  */
-final class BlockPool {
+public final class BlockPool {
     static final int CAPACITY = 10;
     static final int MAX_FETCH = 4;
 
-    static final int INVALID = 0;
+    public static final int INVALID = 0;
     static final int DUPLICATE = 1;
     static final int STORED = 2;
-    static final int NEW_TIP = 3;
-    static final int NEED_PARENT = 4;
+    public static final int NEW_TIP = 3;
+    public static final int NEED_PARENT = 4;
 
     private static final int EMPTY = 0;
     private static final int PENDING = 1;
@@ -60,7 +60,7 @@ final class BlockPool {
      * {@code initialBits} is the genesis difficulty; every {@code retargetInterval} blocks it moves one
      * bit toward a block every {@code targetSeconds}.
      */
-    BlockPool(int initialBits, int retargetInterval, int targetSeconds) {
+    public BlockPool(int initialBits, int retargetInterval, int targetSeconds) {
         this.initialBits = initialBits;
         this.retargetInterval = retargetInterval;
         this.targetSeconds = targetSeconds;
@@ -72,7 +72,7 @@ final class BlockPool {
      * {@link #NEW_TIP}, {@link #STORED} (valid, on a lighter branch), {@link #NEED_PARENT} (the caller
      * should ask the sender for {@link #missingParent}), {@link #DUPLICATE} or {@link #INVALID}.
      */
-    int add(byte[] buffer, int offset, int claimedHeight, long claimedWork, int claimedPeriodStart) {
+    public int add(byte[] buffer, int offset, int claimedHeight, long claimedWork, int claimedPeriodStart) {
         hashHeader(buffer, offset);
         if (find(digest, 0) >= 0) {
             return DUPLICATE;
@@ -135,7 +135,7 @@ final class BlockPool {
     }
 
     /** Copies the hash of the block a {@link #NEED_PARENT} answer asks for into {@code hash[offset..)}. */
-    void missingParent(byte[] hash, int offset) {
+    public void missingParent(byte[] hash, int offset) {
         BlockFormat.copy(blocks, needed * BlockFormat.MAX_SIZE + BlockFormat.PREVIOUS, hash, offset,
                 Sha256.DIGEST_SIZE);
     }
@@ -144,12 +144,12 @@ final class BlockPool {
      * Whether a block is still waiting for the parent that {@link #missingParent} names, so the caller should keep
      * asking for it (a request or its answer can be lost).
      */
-    boolean waitingForParent() {
+    public boolean waitingForParent() {
         return status[needed] == PENDING;
     }
 
     /** The slot holding the block whose hash is at {@code hash[offset..)}, or -1. */
-    int find(byte[] hash, int offset) {
+    public int find(byte[] hash, int offset) {
         for (int i = 0; i < CAPACITY; i++) {
             if (status[i] != EMPTY && BlockFormat.sameHash(hashes, i * Sha256.DIGEST_SIZE, hash, offset)) {
                 return i;
@@ -159,7 +159,7 @@ final class BlockPool {
     }
 
     /** Whether {@code slot} holds a block that passed validation (only those are served to peers). */
-    boolean isValid(int slot) {
+    public boolean isValid(int slot) {
         return status[slot] == VALID;
     }
 
@@ -168,28 +168,28 @@ final class BlockPool {
         return expectedBits(tip, heights[tip] + 1);
     }
 
-    int tip() {
+    public int tip() {
         return tip;
     }
 
     /** Increments every time the tip moves, so a miner knows to rebuild its template. */
-    int tipChanges() {
+    public int tipChanges() {
         return tipChanges;
     }
 
-    int height(int slot) {
+    public int height(int slot) {
         return heights[slot];
     }
 
-    long work(int slot) {
+    public long work(int slot) {
         return works[slot];
     }
 
-    int bits(int slot) {
+    public int bits(int slot) {
         return bits[slot];
     }
 
-    int time(int slot) {
+    public int time(int slot) {
         return times[slot];
     }
 
@@ -198,12 +198,12 @@ final class BlockPool {
     }
 
     /** The block bytes; slot {@code s} starts at {@code s * BlockFormat.MAX_SIZE}. */
-    byte[] blocks() {
+    public byte[] blocks() {
         return blocks;
     }
 
     /** The block hashes; slot {@code s} starts at {@code s * Sha256.DIGEST_SIZE}. */
-    byte[] hashes() {
+    public byte[] hashes() {
         return hashes;
     }
 
