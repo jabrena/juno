@@ -123,7 +123,7 @@ public final class ConstantFolder implements CompilerPass {
             if (selector != null) {
                 int target = switched.defaultTarget();
                 for (int index = 0; index < switched.keys().size(); index++) {
-                    if (switched.keys().get(index) == selector) {
+                    if (selector.equals(switched.keys().get(index))) {
                         target = switched.targets().get(index);
                         break;
                     }
