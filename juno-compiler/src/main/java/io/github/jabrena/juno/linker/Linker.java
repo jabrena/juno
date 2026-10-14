@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 /** Performs closed-world reachability and resolves every static call before code generation. */
 public final class Linker {
-    private final BigNumberMethods bigNumberMethods = new BigNumberMethods();
 
     private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
 
@@ -84,11 +83,6 @@ public final class Linker {
         Board board = resolveBoard(declaredBoards, requestedBoardId);
         JavaMethod main = findMain(mainClass);
         MethodRef entryPoint = main.reference();
-        Set<String> enumClassNames = classes.values().stream()
-                .filter(JavaClass::isEnum)
-                .map(JavaClass::name)
-                .collect(Collectors.toUnmodifiableSet());
-
         JavaMethod mainInitializer = mainClass.findMethod("<clinit>", "()V");
         ReachabilityClosure.Result reachability = reachabilityClosure.resolve(entryPoint,
                 mainInitializer == null ? null : mainInitializer.reference(), classes,
