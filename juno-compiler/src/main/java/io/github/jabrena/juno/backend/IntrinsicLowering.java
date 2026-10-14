@@ -33,7 +33,7 @@ public final class IntrinsicLowering {
     /** Emits the code for one intrinsic call. */
     @FunctionalInterface
     private interface Lowering {
-        public void emit(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call);
+        void emit(StringBuilder output, FrameLayout frame, IrInstruction.IntrinsicCall call);
     }
 
     /** Where one AAPCS argument word of a {@link ShimCall} comes from, relative to the call. */

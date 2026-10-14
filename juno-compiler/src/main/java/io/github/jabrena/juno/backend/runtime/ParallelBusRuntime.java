@@ -11,8 +11,9 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 public final class ParallelBusRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
 
-
     /**
+     * Returns the parallel-bus helper source with the core-specific snippets filled in.
+     *
      * @param prelude   includes and declarations the core's snippets need
      * @param portType  the C type of a port handle
      * @param resolve   statements setting {@code port} and {@code mask} from the Arduino pin number {@code pin}

@@ -36,8 +36,6 @@ final class FrameAllocator {
     }
 
     FrameLayout layout() {
-        List<Value> values = method.values();
-        int numValues = values.size();
         int numLocals = method.maxLocals();
         Map<Integer, Integer> constants = constants();
         ValueStorage valueStorage = allocateValues(constants);
@@ -206,6 +204,8 @@ final class FrameAllocator {
         return type.isWide() ? 8 : FrameLayout.WORD;
     }
 
+    // Private holders built and read only in this class; the arrays are never compared or hashed.
+    @SuppressWarnings("ArrayRecordComponent")
     private record BlockIntervals(int[] first, int[] last) {
     }
 
@@ -215,6 +215,7 @@ final class FrameAllocator {
     private record ActiveInterval(int last, int word, int widthWords) {
     }
 
+    @SuppressWarnings("ArrayRecordComponent")
     private record ValueStorage(int[] offsets, int bytes) {
     }
 

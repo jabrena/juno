@@ -33,7 +33,7 @@ public final class IoRuntime {
      */
     boolean needed(Set<ShimFeature> features, boolean worker) {
         return features.contains(ShimFeature.HTTP) || features.contains(ShimFeature.HTTPS)
-                || worker && features.contains(ShimFeature.WIFI)
+                || (worker && features.contains(ShimFeature.WIFI))
                 || features.contains(ShimFeature.HTTP_SERVER) || features.contains(ShimFeature.SD)
                 || features.contains(ShimFeature.LEGO_POWERED_UP);
     }
