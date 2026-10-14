@@ -13,7 +13,7 @@ import io.github.jabrena.juno.games.blockchain.Sha256;
  * bytes (version, parent hash, most of the payload hash) are fixed for the whole search, so they are
  * absorbed once into a midstate and each attempt only compresses the last 16 bytes.
  */
-final class Miner {
+public final class Miner {
     private final byte[] block = new byte[BlockFormat.MAX_SIZE];
     private final byte[] digest = new byte[Sha256.DIGEST_SIZE];
     private final byte[] shaBlock = new byte[Sha256.BLOCK_SIZE];
@@ -29,7 +29,7 @@ final class Miner {
     private int attempts;
 
     /** Starts a new block on {@code pool}'s tip, mined by {@code minerId} at network time {@code now} (seconds). */
-    void prepare(BlockPool pool, int minerId, int now) {
+    public void prepare(BlockPool pool, int minerId, int now) {
         int tip = pool.tip();
         byte[] hashes = pool.hashes();
         for (int i = 0; i < BlockFormat.MAX_SIZE; i++) {
@@ -66,7 +66,7 @@ final class Miner {
      * Tries up to {@code tries} nonces and returns whether one met the target; the finished block is
      * then in {@link #block()}.
      */
-    boolean mine(int tries) {
+    public boolean mine(int tries) {
         for (int i = 0; i < tries; i++) {
             Bytes.writeInt(block, BlockFormat.NONCE, nonce);
             for (int s = 0; s < Sha256.STATE_SIZE; s++) {
@@ -87,7 +87,7 @@ final class Miner {
         return false;
     }
 
-    byte[] block() {
+    public byte[] block() {
         return block;
     }
 
@@ -96,7 +96,7 @@ final class Miner {
     }
 
     /** Hashes tried since {@link #prepare}. */
-    int attempts() {
+    public int attempts() {
         return attempts;
     }
 }

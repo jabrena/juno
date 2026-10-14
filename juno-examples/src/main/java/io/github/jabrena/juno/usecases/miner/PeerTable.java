@@ -12,12 +12,18 @@ package io.github.jabrena.juno.usecases.miner;
  *
  * <p>Times are {@code int} milliseconds compared by subtraction, so a clock that wraps around does not matter.
  */
-final class PeerTable {
-    static final int CAPACITY = 8;
+public final class PeerTable {
+    public static final int CAPACITY = 8;
     /** How often a node broadcasts its heartbeat. */
-    static final int HELLO_INTERVAL_MILLIS = 5000;
+    public static final int HELLO_INTERVAL_MILLIS = 5000;
     static final int SUSPECT_AFTER_MILLIS = 3 * HELLO_INTERVAL_MILLIS;
     static final int DEAD_AFTER_MILLIS = 5 * HELLO_INTERVAL_MILLIS;
+
+    /** What {@link #state} says of a slot: it never held a peer, or its peer is alive, suspect or dead. */
+    public static final int EMPTY = 0;
+    public static final int ALIVE = 1;
+    public static final int SUSPECT = 2;
+    public static final int DEAD = 3;
 
     private final byte[] uuids = new byte[CAPACITY * NodeId.SIZE];
     /** Whether a slot holds a peer. */
@@ -33,7 +39,7 @@ final class PeerTable {
      * Records a heartbeat from the peer whose UUID is at {@code uuid[offset..)}, received at {@code now}, and returns
      * whether the peer is new or came back from the dead.
      */
-    boolean update(byte[] uuid, int offset, int height, long work, int peerFlags, int now) {
+    public boolean update(byte[] uuid, int offset, int height, long work, int peerFlags, int now) {
         int slot = find(uuid, offset);
         boolean joined = false;
         if (slot < 0) {
@@ -53,7 +59,7 @@ final class PeerTable {
     }
 
     /** Nodes heard from recently enough to count as alive. */
-    int alive(int now) {
+    public int alive(int now) {
         int count = 0;
         for (int i = 0; i < CAPACITY; i++) {
             if (isAlive(i, now)) {
@@ -64,7 +70,7 @@ final class PeerTable {
     }
 
     /** Nodes that missed enough heartbeats to be doubtful, but not enough to be declared dead. */
-    int suspect(int now) {
+    public int suspect(int now) {
         int count = 0;
         for (int i = 0; i < CAPACITY; i++) {
             int age = now - lastSeen[i];
@@ -76,7 +82,7 @@ final class PeerTable {
     }
 
     /** Alive nodes that say they are mining. */
-    int mining(int now) {
+    public int mining(int now) {
         int count = 0;
         for (int i = 0; i < CAPACITY; i++) {
             if (isAlive(i, now) && (flags[i] & ChainProtocol.MINING) != 0) {
@@ -87,7 +93,7 @@ final class PeerTable {
     }
 
     /** The most cumulative work any alive peer reports for its tip, or 0 with no peers. */
-    long bestWork(int now) {
+    public long bestWork(int now) {
         long best = 0L;
         for (int i = 0; i < CAPACITY; i++) {
             if (isAlive(i, now) && works[i] > best) {
@@ -113,7 +119,7 @@ final class PeerTable {
      * Each death is handed out once, so the caller can log it; {@link #uuids()} holds the peer's UUID at
      * {@code slot * NodeId.SIZE}.
      */
-    int nextDead(int now) {
+    public int nextDead(int now) {
         for (int i = 0; i < CAPACITY; i++) {
             if (used[i] != 0 && reported[i] == 0 && now - lastSeen[i] >= DEAD_AFTER_MILLIS) {
                 reported[i] = 1;
@@ -124,8 +130,27 @@ final class PeerTable {
     }
 
     /** The UUIDs of the slots, {@code NodeId.SIZE} bytes each. */
-    byte[] uuids() {
+    public byte[] uuids() {
         return uuids;
+    }
+
+    /** {@link #EMPTY}, or whether the peer in {@code slot} is {@link #ALIVE}, {@link #SUSPECT} or {@link #DEAD}. */
+    public int state(int slot, int now) {
+        if (used[slot] == 0) {
+            return EMPTY;
+        }
+        int age = now - lastSeen[slot];
+        return age < SUSPECT_AFTER_MILLIS ? ALIVE : age < DEAD_AFTER_MILLIS ? SUSPECT : DEAD;
+    }
+
+    /** The height of the tip the peer in {@code slot} announced last. */
+    public int height(int slot) {
+        return heights[slot];
+    }
+
+    /** Whether the peer in {@code slot} said in its last heartbeat that it was mining. */
+    public boolean isMining(int slot) {
+        return (flags[slot] & ChainProtocol.MINING) != 0;
     }
 
     private boolean isAlive(int slot, int now) {

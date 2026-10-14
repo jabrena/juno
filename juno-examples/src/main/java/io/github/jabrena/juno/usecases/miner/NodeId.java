@@ -14,8 +14,8 @@ import io.github.jabrena.juno.games.blockchain.Bytes;
  * clock alone would be about 32 bits of luck; the address is different for every board on a network, so two boards
  * never draw the same sequence, however close their boot times are.
  */
-final class NodeId {
-    static final int SIZE = 16;
+public final class NodeId {
+    public static final int SIZE = 16;
 
     private static final String HEX = "0123456789abcdef";
 
@@ -23,7 +23,7 @@ final class NodeId {
     }
 
     /** Fills {@code uuid[0..SIZE)} with a new random UUID; call it once Wi-Fi is up, so the address is known. */
-    static void generate(byte[] uuid) {
+    public static void generate(byte[] uuid) {
         int[] address = new int[4];
         Wifi.localIP(address);
         Random.seed(Clock.micros() ^ (address[0] << 24 | address[1] << 16 | address[2] << 8 | address[3]));
@@ -36,13 +36,13 @@ final class NodeId {
     }
 
     /** The first four bytes as the 32-bit id that a block records for its miner; never 0. */
-    static int shortId(byte[] uuid, int offset) {
+    public static int shortId(byte[] uuid, int offset) {
         int id = Bytes.readInt(uuid, offset);
         return id == 0 ? 1 : id;
     }
 
     /** Whether the UUIDs at {@code a[aOffset..)} and {@code b[bOffset..)} are the same. */
-    static boolean same(byte[] a, int aOffset, byte[] b, int bOffset) {
+    public static boolean same(byte[] a, int aOffset, byte[] b, int bOffset) {
         for (int i = 0; i < SIZE; i++) {
             if (a[aOffset + i] != b[bOffset + i]) {
                 return false;
@@ -52,7 +52,7 @@ final class NodeId {
     }
 
     /** Prints {@code uuid} in the usual 8-4-4-4-12 form, without a line break. */
-    static void print(byte[] uuid) {
+    public static void print(byte[] uuid) {
         for (int i = 0; i < SIZE; i++) {
             if (i == 4 || i == 6 || i == 8 || i == 10) {
                 Serial.print("-");

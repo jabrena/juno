@@ -9,7 +9,7 @@ package io.github.jabrena.juno.usecases.miner;
  * that lies) must not stop this node for good. After {@link #GIVE_UP_MILLIS} without the tip moving, the node mines
  * again until the tip moves, which starts a fresh wait if it is still behind.
  */
-final class SyncGate {
+public final class SyncGate {
     static final int GIVE_UP_MILLIS = 30_000;
 
     private static final int IDLE = 0;
@@ -24,7 +24,7 @@ final class SyncGate {
      * Whether to wait instead of mining at time {@code now}: {@code behind} says peers have announced more work than
      * this node's tip holds, and {@code tipChanges} is {@link BlockPool#tipChanges()}.
      */
-    boolean shouldWait(boolean behind, int tipChanges, int now) {
+    public boolean shouldWait(boolean behind, int tipChanges, int now) {
         if (tipChanges != seenTipChanges) {
             seenTipChanges = tipChanges;
             state = IDLE;

@@ -25,19 +25,19 @@ import io.github.jabrena.juno.games.blockchain.Bytes;
  * work of its tip. Nodes that predate it ignore the type; the packet keeps the common size so they still accept
  * it as well-formed before skipping it.
  */
-final class ChainProtocol {
-    static final int BLOCK = 1;
-    static final int GET_BLOCK = 2;
-    static final int GET_TIP = 3;
-    static final int HELLO = 4;
+public final class ChainProtocol {
+    public static final int BLOCK = 1;
+    public static final int GET_BLOCK = 2;
+    public static final int GET_TIP = 3;
+    public static final int HELLO = 4;
 
     /** HELLO flag: the sender is mining, as opposed to waiting for a heavier chain it has heard of. */
-    static final int MINING = 1;
+    public static final int MINING = 1;
 
-    static final int BODY = 24;
-    static final int PACKET_SIZE = BODY + BlockFormat.MAX_SIZE;
+    public static final int BODY = 24;
+    public static final int PACKET_SIZE = BODY + BlockFormat.MAX_SIZE;
     /** Where a HELLO packet carries its sender's UUID. */
-    static final int HELLO_UUID = BODY;
+    public static final int HELLO_UUID = BODY;
 
     private static final int TYPE = 6;
     private static final int HEIGHT = 8;
@@ -50,7 +50,7 @@ final class ChainProtocol {
     private ChainProtocol() {
     }
 
-    static void writeRequest(byte[] packet, int type) {
+    public static void writeRequest(byte[] packet, int type) {
         for (int i = 0; i < PACKET_SIZE; i++) {
             packet[i] = 0;
         }
@@ -64,7 +64,7 @@ final class ChainProtocol {
     }
 
     /** A BLOCK packet carrying {@code pool}'s block in {@code slot}. */
-    static void writeBlock(byte[] packet, BlockPool pool, int slot) {
+    public static void writeBlock(byte[] packet, BlockPool pool, int slot) {
         writeRequest(packet, BLOCK);
         Bytes.writeInt(packet, HEIGHT, pool.height(slot));
         Bytes.writeLong(packet, WORK, pool.work(slot));
@@ -77,7 +77,7 @@ final class ChainProtocol {
      * A HELLO packet: the node with {@code uuid} says it is alive, with the {@code height} and {@code work} of its
      * tip. Read the tip back with {@link #height} and {@link #work}, and the sender with {@link #HELLO_UUID}.
      */
-    static void writeHello(byte[] packet, byte[] uuid, int height, long work, int flags) {
+    public static void writeHello(byte[] packet, byte[] uuid, int height, long work, int flags) {
         writeRequest(packet, HELLO);
         packet[FLAGS] = (byte) flags;
         Bytes.writeInt(packet, HEIGHT, height);
@@ -85,30 +85,30 @@ final class ChainProtocol {
         BlockFormat.copy(uuid, 0, packet, HELLO_UUID, NodeId.SIZE);
     }
 
-    static int helloFlags(byte[] packet) {
+    public static int helloFlags(byte[] packet) {
         return Bytes.unsigned(packet[FLAGS]);
     }
 
-    static boolean valid(byte[] packet, int length) {
+    public static boolean valid(byte[] packet, int length) {
         return length == PACKET_SIZE
                 && packet[0] == 'J' && packet[1] == 'U' && packet[2] == 'N' && packet[3] == 'O'
                 && Bytes.unsigned(packet[4]) == VERSION
                 && Bytes.unsigned(packet[5]) == CHAIN_SERVICE;
     }
 
-    static int type(byte[] packet) {
+    public static int type(byte[] packet) {
         return Bytes.unsigned(packet[TYPE]);
     }
 
-    static int height(byte[] packet) {
+    public static int height(byte[] packet) {
         return Bytes.readInt(packet, HEIGHT);
     }
 
-    static long work(byte[] packet) {
+    public static long work(byte[] packet) {
         return Bytes.readLong(packet, WORK);
     }
 
-    static int periodStart(byte[] packet) {
+    public static int periodStart(byte[] packet) {
         return Bytes.readInt(packet, PERIOD_START);
     }
 }
