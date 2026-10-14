@@ -147,8 +147,10 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java).
 - **UUID:** immutable `java.util.UUID` values with construction, bit access, version/variant,
   equality, ordering, canonical parsing/formatting, and caller-buffer 16-byte network conversion
-  through `UuidCodec`. `UUID.randomUUID()` remains unavailable until a suitable board entropy
-  source is exposed.
+  through `UuidCodec`. `UUID.randomUUID()` uses the RA4M1 SCE5 TRNG on UNO R4 WiFi, the
+  ATECC608 secure element on UNO WiFi Rev2, and the STM32U585 Zephyr CSPRNG on UNO Q; it is
+  rejected on classic UNO R3. `PortNoise.collectSeed` is an explicitly non-cryptographic,
+  opt-in collector for a user-provided physical noise circuit.
 - **Objects:** simple enums, records, final closed-world classes, constructors, and instance fields.
   Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative
   garbage collection. See

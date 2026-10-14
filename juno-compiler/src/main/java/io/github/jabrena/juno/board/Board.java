@@ -22,12 +22,12 @@ public enum Board {
             ArduinoCore.CLASSIC_AVR, UnoGeneration.R3, EnumSet.of(Capability.WATCHDOG)),
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi", "arduino-uno-r4-wifi", "UNO R4 WiFi",
             "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO, UnoGeneration.R4,
-            EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
+            EnumSet.of(Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
                     Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
-            ArduinoCore.ZEPHYR, UnoGeneration.Q, EnumSet.of(Capability.LED_MATRIX, Capability.WIFI, Capability.HTTPS_CLIENT,
+            ArduinoCore.ZEPHYR, UnoGeneration.Q, EnumSet.of(Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.BLUETOOTH_LE, Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY,
                     Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
@@ -37,7 +37,7 @@ public enum Board {
      */
     UNO_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoWiFiRev2", "arduino-uno-wifi-rev2", "UNO WiFi Rev2",
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
-            EnumSet.of(Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
+            EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG));
 
     public static final Board DEFAULT = UNO_R4_WIFI;

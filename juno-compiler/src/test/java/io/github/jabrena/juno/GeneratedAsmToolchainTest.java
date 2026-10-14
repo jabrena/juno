@@ -75,6 +75,38 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    void compilesRandomUuidShimsForBoardsWithNativeEntropy() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        for (String board : new String[] {"ArduinoUnoWiFiRev2", "ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
+            String name = "AsmUuidRandom" + board;
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.%1$s;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import java.util.UUID;
+                    @Board(%1$s.class)
+                    public final class %2$s {
+                        public static void main(String[] args) {
+                            UUID value = UUID.randomUUID();
+                            int attributes = value.version() + value.variant();
+                        }
+                    }
+                    """.formatted(board, name);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+            assertThat(result.assembly()).contains("juno_uuid_random");
+            if (board.equals("ArduinoUnoWiFiRev2")) {
+                assertThat(result.runtimeShim()).contains("juno_atecc608_crc", "juno_avr_thunk_juno_uuid_random");
+            } else {
+                Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
+                Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+                syntaxCheckCpp(compiler, shim);
+            }
+        }
+    }
+
+    @Test
     void assemblesAGpioLedMatrixAndSerialProgram() throws Exception {
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");

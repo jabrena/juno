@@ -68,6 +68,11 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String uuidRandomHelpers() {
+        throw unsupported("a cryptographic entropy source");
+    }
+
+    @Override
     public String wifiIncludes(boolean udp) {
         throw unsupported("networking");
     }

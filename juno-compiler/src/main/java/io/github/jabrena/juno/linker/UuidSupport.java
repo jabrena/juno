@@ -25,10 +25,6 @@ public final class UuidSupport {
 
     public void validateCall(MethodRef called) {
         if (isUuidOwner(called.owner()) && !intrinsicRegistry.isIntrinsic(called)) {
-            if (called.name().equals("randomUUID")) {
-                throw new CompileException("java.util.UUID.randomUUID() needs a suitable board entropy source; "
-                        + "Juno does not currently expose one");
-            }
             throw new CompileException("Juno's java.util.UUID subset does not support: " + called.displayName());
         }
     }

@@ -85,6 +85,11 @@ final class RenesasCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String uuidRandomHelpers() {
+        return runtimeSource.load("renesas/uuid-random.cpp");
+    }
+
+    @Override
     public String httpServerTransport() {
         return runtimeSource.load("renesas/http-server-transport.cpp");
     }

@@ -59,12 +59,31 @@ class UuidTest {
     }
 
     @Test
-    void rejectsRandomUuidUntilBoardsProvideSuitableEntropy() throws Exception {
+    void lowersRandomUuidThroughTheR4HardwareEntropyProvider() throws Exception {
+        CompilationResult result = compile("""
+                public static void main() {
+                    java.util.UUID value = java.util.UUID.randomUUID();
+                    int version = value.version();
+                    int variant = value.variant();
+                }
+                """);
+
+        assertThat(result.assembly()).contains("bl juno_uuid_random");
+        assertThat(result.runtimeShim()).contains(
+                "juno_uuid_random", "HW_SCE_McuSpecificInit", "HW_SCE_GenerateRandomNumberSub");
+    }
+
+    @Test
+    void rejectsRandomUuidOnTheClassicUnoWithoutAHardwareEntropySource() throws Exception {
         String source = """
                 package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+                import io.github.jabrena.juno.annotations.Board;
+                import java.util.UUID;
+                @Board(ArduinoUnoR3.class)
                 public final class Tasks {
                     public static void main() {
-                        java.util.UUID value = java.util.UUID.randomUUID();
+                        UUID value = UUID.randomUUID();
                     }
                 }
                 """;
@@ -72,8 +91,20 @@ class UuidTest {
 
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("randomUUID")
-                .hasMessageContaining("entropy");
+                .hasMessageContaining("cryptographic entropy source");
+    }
+
+    @Test
+    void lowersExplicitPortNoiseSamplingWithoutTreatingItAsSecureEntropy() throws Exception {
+        CompilationResult result = compile("""
+                public static void main() {
+                    int seed = io.github.jabrena.juno.api.PortNoise.collectSeed(14, 2, 64);
+                    io.github.jabrena.juno.api.Random.seed(seed);
+                }
+                """);
+
+        assertThat(result.assembly()).contains("bl analogRead", "bl digitalRead", "bl micros", "juno_random_seed");
+        assertThat(result.runtimeShim()).doesNotContain("juno_uuid_random_bytes");
     }
 
     @Test

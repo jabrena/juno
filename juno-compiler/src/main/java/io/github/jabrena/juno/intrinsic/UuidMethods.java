@@ -8,6 +8,7 @@ import java.util.Map;
 public final class UuidMethods {
     static final Map<MethodRef, Intrinsic> METHODS = Map.ofEntries(
             Map.entry(new MethodRef("java/util/UUID", "<init>", "(JJ)V"), Intrinsic.UUID_NEW),
+            Map.entry(new MethodRef("java/util/UUID", "randomUUID", "()Ljava/util/UUID;"), Intrinsic.UUID_RANDOM),
             Map.entry(new MethodRef("java/util/UUID", "getMostSignificantBits", "()J"),
                     Intrinsic.UUID_GET_MOST_SIGNIFICANT_BITS),
             Map.entry(new MethodRef("java/util/UUID", "getLeastSignificantBits", "()J"),

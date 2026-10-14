@@ -137,6 +137,7 @@ builds for the board named by `-Djuno.board`, or the WiFi variant when it is omi
 | `Gpio` and `DigitalOutput` | Yes | Uses standard Arduino GPIO calls |
 | `Delay` and `Clock` | Yes | Uses Arduino delay and time functions |
 | `Serial` | Yes | Uses the board's USB serial support |
+| `UUID.randomUUID()` | Yes | Uses the RA4M1 Secure Crypto Engine 5 true-random-number generator; Juno fails closed if the hardware provider reports an error |
 | `Mouse` | Yes | Requires the Arduino `Mouse` library and native USB HID support |
 | `LedMatrix` | Yes | Requires the WiFi model's onboard 12x8 matrix |
 | Wi-Fi and Bluetooth | Yes (Wi-Fi) | Bluetooth has no Juno intrinsic API yet |

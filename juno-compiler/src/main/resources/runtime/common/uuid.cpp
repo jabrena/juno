@@ -43,6 +43,8 @@ extern "C" int32_t juno_uuid_new(int64_t most, int64_t least) {
   return juno_uuid_handle(value);
 }
 
+${JUNO_UUID_RANDOM_METHOD}
+
 extern "C" int64_t juno_uuid_get_most_significant_bits(int32_t handle) {
   JunoUuid* value = juno_uuid_pointer(handle);
   return juno_uuid_long(value->mostLow, value->mostHigh);

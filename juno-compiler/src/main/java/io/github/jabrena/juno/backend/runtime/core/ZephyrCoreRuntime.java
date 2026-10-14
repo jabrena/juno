@@ -93,6 +93,11 @@ final class ZephyrCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String uuidRandomHelpers() {
+        return runtimeSource.load("zephyr/uuid-random.cpp");
+    }
+
+    @Override
     public String httpServerTransport() {
         // The listener lives in arduino-router on Linux (tcp/listen, tcp/accept). BridgeTCPServer
         // keeps returning the same connection from accept() until disconnect() is called, so

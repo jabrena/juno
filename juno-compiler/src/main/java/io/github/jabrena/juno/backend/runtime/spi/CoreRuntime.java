@@ -110,6 +110,12 @@ public interface CoreRuntime {
     String flashHelpers();
 
     /**
+     * Board-native, cryptographic random-byte provider for {@code UUID.randomUUID()}. The returned source must
+     * fail closed rather than substitute Arduino's pseudorandom generator or GPIO/ADC samples.
+     */
+    String uuidRandomHelpers();
+
+    /**
      * Whether the core's port runs a program's waiting device calls on a worker thread of its own (see
      * {@code IoRuntime}), so they hold up no other thread even where the wait happens inside a vendor library. Only
      * a core with an RTOS underneath can: the UNO Q's.

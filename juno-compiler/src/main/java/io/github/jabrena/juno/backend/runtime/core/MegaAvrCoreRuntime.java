@@ -92,6 +92,11 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String uuidRandomHelpers() {
+        return runtimeSource.load("megaavr/uuid-random.cpp");
+    }
+
+    @Override
     public String wifiIncludes(boolean udp) {
         return "#include <WiFiNINA.h>\n" + (udp ? "#include <WiFiUdp.h>\n" : "");
     }

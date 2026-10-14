@@ -18,6 +18,8 @@
  *       Arduino's generator.</li>
  *   <li>{@link io.github.jabrena.juno.api.UuidCodec} — conversion between supported
  *       {@link java.util.UUID} values and caller-owned 16-byte network representations.</li>
+ *   <li>{@link io.github.jabrena.juno.api.PortNoise} — explicitly non-cryptographic sampling from a
+ *       user-provided physical noise circuit.</li>
  * </ul>
  *
  * <p>Board-specific or peripheral-specific operations live in subpackages instead, grouped by the

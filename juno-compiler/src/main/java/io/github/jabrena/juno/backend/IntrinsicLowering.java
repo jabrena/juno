@@ -183,6 +183,8 @@ public final class IntrinsicLowering {
         shim(Intrinsic.UUID_NEW, "juno_uuid_new", Result.WORD,
                 List.of(new ArgumentLow(0), new ArgumentHigh(0), new ArgumentLow(1), new ArgumentHigh(1)),
                 ShimFeature.UUID);
+        shim(Intrinsic.UUID_RANDOM, "juno_uuid_random", Result.WORD, List.of(), ShimFeature.UUID,
+                ShimFeature.UUID_RANDOM);
         shim(Intrinsic.UUID_GET_MOST_SIGNIFICANT_BITS, "juno_uuid_get_most_significant_bits", Result.WIDE,
                 List.of(RECEIVER), ShimFeature.UUID);
         shim(Intrinsic.UUID_GET_LEAST_SIGNIFICANT_BITS, "juno_uuid_get_least_significant_bits", Result.WIDE,
