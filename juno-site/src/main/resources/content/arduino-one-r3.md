@@ -127,6 +127,8 @@ Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
 | `Delay` and `Clock` | Yes | Uses Arduino delay and time functions |
 | `Serial` | Yes | Uses the ATmega16U2 USB-to-serial path |
 | `@Watchdog` | Yes | ATmega328P hardware watchdog; requested timeouts round up to a supported period, at most 8 seconds |
+| `UUID.randomUUID()` | No | The R3 has no board-native cryptographic entropy source; Juno rejects this call at compile time |
+| `PortNoise.collectSeed(...)` | Yes, non-cryptographic | Samples a user-provided physical noise circuit, GPIO and timer jitter; it is unsuitable for secrets or UUID v4 generation |
 | `Mouse` | No | The sketch MCU has no native USB HID support |
 | `LedMatrix` | No | The R3 has no onboard 12x8 LED matrix |
 | Wi-Fi and Bluetooth | Not applicable | No onboard wireless hardware |

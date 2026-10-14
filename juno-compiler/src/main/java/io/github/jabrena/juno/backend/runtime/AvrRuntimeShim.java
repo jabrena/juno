@@ -32,6 +32,7 @@ public final class AvrRuntimeShim {
     private final AvrShimThunks avrShimThunks = new AvrShimThunks();
     private final MathRuntime mathRuntime = new MathRuntime();
     private final BigNumberRuntime bigNumberRuntime = new BigNumberRuntime();
+    private final UuidRuntime uuidRuntime = new UuidRuntime();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
     private final IoRuntime ioRuntime = new IoRuntime();
     private final NetworkShimLibraries networkShimLibraries = new NetworkShimLibraries();
@@ -233,6 +234,13 @@ public final class AvrRuntimeShim {
         appendNetworkHelpers(shim);
         if (uses(ShimFeature.ATOMICS)) {
             shim.append(atomicRuntime.helpers());
+        }
+        if (uses(ShimFeature.UUID_RANDOM)) {
+            shim.append(core.uuidRandomHelpers());
+        }
+        if (uses(ShimFeature.UUID)) {
+            shim.append(uuidRuntime.helpers(throwableClasses.indexOf("java/lang/IllegalArgumentException"),
+                    uses(ShimFeature.UUID_RANDOM)));
         }
         if (uses(ShimFeature.BIG_NUMBERS)) {
             shim.append(bigNumberRuntime.handleHelpers())

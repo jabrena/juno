@@ -105,6 +105,16 @@ Supported today:
 - Java-compatible 32-bit wrapping arithmetic and divide-overflow behavior
 - Arduino-backed pseudorandom numbers through `Random.seed(int)`, `Random.nextInt(bound)`, and
   `Random.nextInt(origin, bound)`, with exclusive upper bounds
+- `java.util.UUID` as an immutable arena value: `new UUID(long, long)`, both bit getters,
+  `version`, `variant`, `equals`, `hashCode`, `compareTo`, canonical `fromString` and lowercase
+  canonical `toString`. Parsing accepts exactly the 36-character hyphenated representation, with
+  either uppercase or lowercase hexadecimal digits. `UuidCodec.fromBytes` / `toBytes` convert to
+  and from the 16-byte, most-significant-byte-first network representation using caller-owned
+  buffers. `UUID.randomUUID()` is available only where Juno can bind a board-native source: the
+  RA4M1 SCE5 TRNG (UNO R4 WiFi), ATECC608 secure-element RNG (UNO WiFi Rev2), or STM32U585
+  Zephyr CSPRNG (UNO Q). It is rejected on classic UNO R3; Arduino's pseudorandom generator is
+  never substituted. `PortNoise.collectSeed` is a separate, explicitly non-cryptographic startup
+  sampler for a user-provided analog noise circuit and digital comparator input.
 - `java.lang.Math`: `abs`/`min`/`max` (`int`/`long`/`float`/`double`), `clamp` (Java 21 overloads),
   `floorDiv`/`floorMod`, `signum`, `round`, `floor`, `ceil`, `sqrt`, `cbrt`, `pow`, `hypot`, `exp`,
   `log`, `log10`, `sin`/`cos`/`tan`, `asin`/`acos`/`atan`/`atan2`, and `toRadians`/`toDegrees`; `Math.PI`

@@ -28,7 +28,9 @@ admits eight primitive JVM descriptor types as ordinary scalar method parameters
 
 Primitive arrays, simple enums, records, and final closed-world object types are also supported as
 parameters/results under the restrictions in [FEATURES.md](../features). `DigitalOutput` remains a
-compiler-erased handle rather than an arena object.
+compiler-erased handle rather than an arena object. The supported `java.util.UUID` subset is also a
+one-word handle: its immutable 128-bit value lives in an arena block and crosses method boundaries
+as that handle.
 
 ## Typed IR scalar lanes
 

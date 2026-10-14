@@ -16,6 +16,7 @@ import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LockSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.ThreadSupport;
+import io.github.jabrena.juno.linker.UuidSupport;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -40,6 +41,8 @@ final class FieldLowering implements InstructionLowering {
     private final ScopedValueSupport scopedValueSupport = new ScopedValueSupport();
 
     private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
+
+    private final UuidSupport uuidSupport = new UuidSupport();
 
     private final MethodContext context;
     private final OperandStack stack;
@@ -169,6 +172,7 @@ final class FieldLowering implements InstructionLowering {
                 || threadSupport.isThreadType(descriptor)
                 || scopedValueSupport.isScopedValueType(descriptor)
                 || bigNumberSupport.isBigNumberType(descriptor)
+                || uuidSupport.isUuidType(descriptor)
                 || lockSupport.isReentrantLockType(descriptor)
                 || atomicSupport.isAtomicType(descriptor)
                 || Descriptor.isArrayType(descriptor)

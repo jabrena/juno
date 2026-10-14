@@ -44,6 +44,8 @@ public final class Linker {
 
     private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
 
+    private final UuidSupport uuidSupport = new UuidSupport();
+
     private final ThrowableTypes throwableTypes = new ThrowableTypes();
 
     private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
@@ -207,6 +209,7 @@ public final class Linker {
         structuredTaskSupport.validateCall(called);
         scopedValueSupport.validateCall(called);
         bigNumberSupport.validateCall(called);
+        uuidSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {
@@ -252,6 +255,7 @@ public final class Linker {
 
     private static Map<Intrinsic, Capability> requiredCapabilities() {
         Map<Intrinsic, Capability> required = new EnumMap<>(Intrinsic.class);
+        require(required, Capability.SECURE_ENTROPY, Intrinsic.UUID_RANDOM);
         require(required, Capability.LED_MATRIX, Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME,
                 Intrinsic.LED_MATRIX_COLUMNS, Intrinsic.LED_MATRIX_CLEAR);
         require(required, Capability.WIFI, Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_BEGIN_AP, Intrinsic.WIFI_STATUS, Intrinsic.WIFI_LOCAL_IP,

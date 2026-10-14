@@ -6,6 +6,12 @@ package io.github.jabrena.juno.board;
  * for features the target actually has.
  */
 public enum Capability {
+    SECURE_ENTROPY("UUID.randomUUID") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no board-native cryptographic entropy source";
+        }
+    },
     LED_MATRIX("LedMatrix") {
         @Override
         public String unsupportedReason(Board board) {

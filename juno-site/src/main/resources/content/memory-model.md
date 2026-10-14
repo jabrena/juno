@@ -13,7 +13,7 @@ where the behavior differs from the JVM; this page explains why.
 
 | Region | What goes there | Lifetime |
 |---|---|---|
-| **Arena** (fixed 8 KiB) | Objects, records, arrays, capturing closures, `BigInteger` / `BigDecimal` values, atomic cells, task and scope handles | Garbage-collected |
+| **Arena** (fixed 8 KiB) | Objects, records, arrays, capturing closures, `UUID`, `BigInteger` / `BigDecimal` values, atomic cells, task and scope handles | Garbage-collected |
 | **Static data** (`.bss`) | Mutable `static` fields, one symbol per field | The whole program |
 | **Flash** (`.rodata`) | String literals and `static final` tables with an all-constant initializer | The whole program, costs no RAM |
 | **Stack** | Local variables, operand slots and call frames | One call |

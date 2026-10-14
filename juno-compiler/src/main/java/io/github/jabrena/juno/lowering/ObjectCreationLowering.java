@@ -14,6 +14,7 @@ import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LockSupport;
 import io.github.jabrena.juno.linker.ThrowableTypes;
+import io.github.jabrena.juno.linker.UuidSupport;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,8 @@ final class ObjectCreationLowering implements InstructionLowering {
     private final LockSupport lockSupport = new LockSupport();
 
     private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
+
+    private final UuidSupport uuidSupport = new UuidSupport();
 
     private final ThrowableTypes throwableTypes = new ThrowableTypes();
 
@@ -78,14 +81,16 @@ final class ObjectCreationLowering implements InstructionLowering {
 
     /** Whether {@code called} is a constructor this class lowers to a runtime handle. */
     boolean buildsHandle(MethodRef called) {
-        return bigNumberSupport.isConstruction(called) || called.equals(STRING_BUILDER)
+        return bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
+                || called.equals(STRING_BUILDER)
                 || called.equals(LockSupport.CONSTRUCTOR) || atomicSupport.isConstruction(called)
                 || called.equals(PROPERTIES) || called.equals(RandomAccessFileMethods.CONSTRUCTOR);
     }
 
     /** Lowers a constructor {@link #buildsHandle} accepts. */
     void construct(Instruction instruction, MethodRef called) {
-        if (bigNumberSupport.isConstruction(called) || atomicSupport.isConstruction(called)) {
+        if (bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
+                || atomicSupport.isConstruction(called)) {
             constructFromArguments(instruction, called);
         } else if (called.equals(STRING_BUILDER)) {
             Value capacity = stack.pop();
@@ -157,6 +162,7 @@ final class ObjectCreationLowering implements InstructionLowering {
         return className.startsWith("java/lang/") || className.equals("java/util/Properties")
                 || randomAccessFileMethods.isOwner(className)
                 || lockSupport.isReentrantLockClass(className)
-                || atomicSupport.isAtomicClass(className) || bigNumberSupport.isBigNumberOwner(className);
+                || atomicSupport.isAtomicClass(className) || bigNumberSupport.isBigNumberOwner(className)
+                || uuidSupport.isUuidOwner(className);
     }
 }

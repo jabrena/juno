@@ -398,6 +398,32 @@ class AvrAsmBackendTest {
     }
 
     @Test
+    void lowersUuidWideValuesThroughAvrThunksOnBothR3Boards() throws Exception {
+        String body = """
+                        UUID value = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+                        UUID copy = new UUID(value.getMostSignificantBits(), value.getLeastSignificantBits());
+                        Serial.println(copy.toString());
+                        Serial.println(copy.equals(value));
+                """;
+        String imports = """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.util.UUID;
+                """;
+
+        for (CompilationResult result : List.of(
+                compile("demo.AvrUuid", body, imports), compileR3("demo.ClassicAvrUuid", body, imports))) {
+            assertThat(result.assembly()).contains(
+                    "call juno_avr_thunk_juno_uuid_new",
+                    "call juno_avr_thunk_juno_uuid_get_most_significant_bits",
+                    "call juno_avr_thunk_juno_uuid_get_least_significant_bits");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" int32_t juno_avr_thunk_juno_uuid_new()",
+                    "extern \"C\" uint64_t juno_avr_thunk_juno_uuid_get_most_significant_bits()",
+                    "juno_uuid_from_string", "juno_uuid_to_string");
+        }
+    }
+
+    @Test
     void sizesTheArenaForSixKilobytesOfRam() {
         assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_WIFI_REV2).arenaBytes())
                 .isEqualTo(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES);

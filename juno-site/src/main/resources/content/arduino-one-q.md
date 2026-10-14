@@ -125,6 +125,7 @@ loaded by the board's Zephyr firmware.
 |---|---:|---|
 | `Gpio` and `DigitalOutput` | Yes | Uses the STM32's Arduino GPIO mapping |
 | `Delay`, `Clock` and `Random` | Yes | Uses Arduino/Zephyr timing support |
+| `UUID.randomUUID()` | Yes | Uses Zephyr's cryptographic random service on the local STM32U585 TRNG; it does not depend on Linux, Wi-Fi traffic or the Bridge |
 | `Serial` | Yes | Uses the MCU sketch's serial path |
 | LCD keypad and TFT touch shields | Yes | Built on GPIO, timing and analog input |
 | TFT games | Yes | Battleship, Blackjack, Chess, Tempest and Texas Hold'em support both UNO Q and UNO R4 WiFi; Empire Strikes Back, Missile Command, Pac-Man, Red Baron, Space Paranoids, Star Trek, Star Wars and DOOM target UNO Q only; Lunar Lander targets UNO R4 WiFi only |
