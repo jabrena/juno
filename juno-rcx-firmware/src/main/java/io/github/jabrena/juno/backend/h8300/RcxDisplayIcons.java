@@ -1,0 +1,181 @@
+package io.github.jabrena.juno.backend.h8300;
+
+import io.github.jabrena.juno.backend.h8300.RcxRom.Argument;
+
+/**
+ * The display icons of {@link RcxRemoteFirmware}. Each icon, numbered as the ROM numbers it ({@link RcxRom#LCD_ICONS}
+ * plus 0x06-0x20), is lit when the Arduino set it with command 0xA2 or when the brick's own state calls for it: the
+ * motor arrows of running outputs (from {@link RcxMotorCommands}), the pressed marker of touch sensors (from
+ * {@link RcxSensorCommands}), the battery-low warning below about 6.5 V, and the minifigure, which stands, and walks
+ * while any motor runs. {@link #UPDATE} recomputes and redraws them all.
+ */
+final class RcxDisplayIcons {
+    /** Command 0xA2: icon 0x06-0x20, then 1 to light it or 0 to leave it to the brick's own state. */
+    static final String SET_ICON = "set_icon";
+    /** Subroutine: recomputes the brick's own icons and redraws every icon. */
+    static final String UPDATE = "update_icons";
+    /** Subroutine: advances the walking animation, then {@link #UPDATE}. */
+    static final String TICK = "icons_tick";
+
+    /** One byte per icon number 0x00-0x20, non-zero while the Arduino has the icon lit. */
+    private static final int MANUAL = 0xC0A0;
+    /** One byte per icon number 0x00-0x20, non-zero while the brick's own state lights the icon. */
+    private static final int AUTOMATIC = 0xC0D0;
+    /** The position in {@link #DRAWN} while redrawing. */
+    private static final int CURSOR = 0xC0F2;
+    /** Alternates 0 and 1 every tick: the walking figure shows on 1 while a motor runs. */
+    private static final int PHASE = 0xC0F4;
+    /** Non-zero while any output is on; written by {@link RcxMotorCommands#automaticIcons}. */
+    private static final int MOVING = 0xC0F6;
+    private static final int BATTERY = 0xC0F8;
+    private static final int FIRST_ICON = 0x06;
+    private static final int ALL_SEGMENTS = 0x20;
+    private static final int STANDING = 0x06;
+    private static final int WALKING = 0x07;
+    private static final int BATTERY_LOW = 0x1B;
+    /** The ROM's battery reading for 6.5 V: millivolts x 1560 / 43988. */
+    private static final int BATTERY_LOW_READING = 231;
+    /** Every icon the ROM draws one by one; 0x17, 0x1E and 0x1F are number styles, not icons. */
+    private static final int[] DRAWN = {
+        0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16,
+        0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D};
+    private static final String DRAWN_TABLE = "drawn_icons";
+
+    private final RcxCode code;
+    private final H8Assembler assembler;
+
+    RcxDisplayIcons(RcxCode code) {
+        this.code = code;
+        this.assembler = code.assembler();
+    }
+
+    /** The byte that lights icon {@code icon} from the brick's own state. */
+    int automatic(int icon) {
+        return AUTOMATIC + icon;
+    }
+
+    /** The word {@link RcxMotorCommands} sets while any output is on. */
+    int moving() {
+        return MOVING;
+    }
+
+    /** The command handler, the subroutines and the table of drawn icons. */
+    void handlers(RcxMotorCommands motors, RcxSensorCommands sensors) {
+        setIcon();
+        tick();
+        update(motors, sensors);
+        assembler.label(DRAWN_TABLE);
+        assembler.data(DRAWN);
+    }
+
+    /** Stores the Arduino's choice for the icon; darkening one clears it at once, as "every segment" needs. */
+    private void setIcon() {
+        String redraw = code.newLabel();
+        assembler.label(SET_ICON);
+        assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R2L);
+        assembler.moveImmediate(0, H8ByteRegister.R2H);
+        assembler.compareImmediate(FIRST_ICON, H8ByteRegister.R2L);
+        code.jumpIf(H8Condition.CARRY_SET, RcxCode.REPLY_ACK);
+        assembler.compareImmediate(ALL_SEGMENTS + 1, H8ByteRegister.R2L);
+        code.jumpIf(H8Condition.CARRY_CLEAR, RcxCode.REPLY_ACK);
+        assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R0L);
+        assembler.storeByteIndexed(H8ByteRegister.R0L, MANUAL, H8Register.R2);
+        assembler.branch(H8Condition.NOT_EQUAL, redraw);
+        iconOpcode();
+        code.rom().call(RcxRom.CLEAR_LCD_SEGMENT, Argument.register(H8Register.R5));
+        assembler.label(redraw);
+        assembler.call(UPDATE);
+        code.replyWith(1);
+    }
+
+    private void tick() {
+        assembler.label(TICK);
+        assembler.load(PHASE, H8Register.R0);
+        assembler.xor(1, H8ByteRegister.R0L);
+        assembler.store(H8Register.R0, PHASE);
+        assembler.call(UPDATE);
+        assembler.returnFromSubroutine();
+    }
+
+    private void update(RcxMotorCommands motors, RcxSensorCommands sensors) {
+        assembler.label(UPDATE);
+        motors.automaticIcons(this);
+        sensors.automaticIcons(this);
+        batteryIcon();
+        figureIcons();
+        redraw();
+        code.rom().call(RcxRom.REFRESH_DISPLAY);
+        assembler.returnFromSubroutine();
+    }
+
+    private void batteryIcon() {
+        String store = code.newLabel();
+        code.rom().call(RcxRom.GET_POWER_STATUS, RcxRom.POWER_STATUS_BATTERY, BATTERY);
+        assembler.moveImmediate(0, H8ByteRegister.R2L);
+        assembler.moveImmediate(BATTERY_LOW_READING, H8Register.R1);
+        assembler.load(BATTERY, H8Register.R0);
+        assembler.compare(H8Register.R1, H8Register.R0);
+        assembler.branch(H8Condition.CARRY_CLEAR, store);
+        assembler.moveImmediate(1, H8ByteRegister.R2L);
+        assembler.label(store);
+        assembler.storeByte(H8ByteRegister.R2L, automatic(BATTERY_LOW));
+    }
+
+    /** Standing, or walking on every other tick while any motor runs. */
+    private void figureIcons() {
+        String store = code.newLabel();
+        assembler.moveImmediate(1, H8ByteRegister.R2L);
+        assembler.moveImmediate(0, H8ByteRegister.R3L);
+        assembler.load(MOVING, H8Register.R0);
+        assembler.branch(H8Condition.EQUAL, store);
+        assembler.load(PHASE, H8Register.R0);
+        assembler.branch(H8Condition.EQUAL, store);
+        assembler.moveImmediate(0, H8ByteRegister.R2L);
+        assembler.moveImmediate(1, H8ByteRegister.R3L);
+        assembler.label(store);
+        assembler.storeByte(H8ByteRegister.R2L, automatic(STANDING));
+        assembler.storeByte(H8ByteRegister.R3L, automatic(WALKING));
+    }
+
+    /**
+     * Lights or darkens every icon in {@link #DRAWN} by its two bytes, keeping the position in memory since the ROM
+     * calls change the registers, then lights every segment if the Arduino asked for that.
+     */
+    private void redraw() {
+        String next = code.newLabel();
+        String loop = code.newLabel();
+        String lit = code.newLabel();
+        String done = code.newLabel();
+        code.clearWord(CURSOR);
+        assembler.label(loop);
+        assembler.load(CURSOR, H8Register.R4);
+        assembler.loadByteIndexed(DRAWN_TABLE, H8Register.R4, H8ByteRegister.R2L);
+        assembler.moveImmediate(0, H8ByteRegister.R2H);
+        iconOpcode();
+        assembler.loadByteIndexed(MANUAL, H8Register.R2, H8ByteRegister.R0L);
+        assembler.branch(H8Condition.NOT_EQUAL, lit);
+        assembler.loadByteIndexed(AUTOMATIC, H8Register.R2, H8ByteRegister.R0L);
+        assembler.branch(H8Condition.NOT_EQUAL, lit);
+        code.rom().call(RcxRom.CLEAR_LCD_SEGMENT, Argument.register(H8Register.R5));
+        assembler.branch(H8Condition.ALWAYS, next);
+        assembler.label(lit);
+        code.rom().call(RcxRom.SET_LCD_SEGMENT, Argument.register(H8Register.R5));
+        assembler.label(next);
+        assembler.load(CURSOR, H8Register.R0);
+        assembler.adds(1, H8Register.R0);
+        assembler.store(H8Register.R0, CURSOR);
+        assembler.moveImmediate(DRAWN.length, H8Register.R1);
+        assembler.compare(H8Register.R1, H8Register.R0);
+        assembler.branch(H8Condition.NOT_EQUAL, loop);
+        assembler.loadByte(MANUAL + ALL_SEGMENTS, H8ByteRegister.R0L);
+        assembler.branch(H8Condition.EQUAL, done);
+        code.rom().call(RcxRom.SET_LCD_SEGMENT, RcxRom.LCD_ICONS + ALL_SEGMENTS);
+        assembler.label(done);
+    }
+
+    /** r5 = the ROM opcode of icon r2. */
+    private void iconOpcode() {
+        assembler.moveImmediate(RcxRom.LCD_ICONS, H8Register.R5);
+        assembler.add(H8Register.R2, H8Register.R5);
+    }
+}
