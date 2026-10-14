@@ -11,11 +11,13 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - **Build:** Maven via the `./mvnw` wrapper (`.mvn/wrapper/maven-wrapper.properties`).
 - **Test framework:** JUnit (Jupiter). `juno-compiler` also uses Testcontainers (test scope) for the opt-in `arduino-cli` and QEMU tests.
 - **Architecture rules:** ArchUnit (test scope). `ApiArchitectureTest` keeps `juno-api` free of compiler and
-  third-party code; `ExamplesArchitectureTest` keeps `juno-examples` on `juno-api` and the JDK only.
-- **Nullness:** JSpecify (`provided` scope). Every `juno-api`, `juno-compiler` and `juno-maven-plugin` package is
-  `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use `Objects.requireNonNull` for a
+  third-party code; `ExamplesArchitectureTest` keeps `juno-examples` on board-side artifacts and the JDK only;
+  `RcxFirmwareArchitectureTest` keeps the RCX generator independent of `juno-api` and `juno-compiler`.
+- **Nullness:** JSpecify (`provided` scope). Every `juno-api`, `juno-compiler`, `juno-rcx-firmware` and
+  `juno-maven-plugin` package is `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use
+  `Objects.requireNonNull` for a
   lookup that must succeed by construction. NullAway (Error Prone, configured in the root `pom.xml`) enforces this at
-  compile time in those three modules and fails the build on a nullness error.
+  compile time in those four modules and fails the build on a nullness error.
 - **Build checks:** Spotless (formatting: imports as project/third-party, `java.*`, then static), the Maven
   Enforcer (JDK/Maven versions, dependency convergence) and `dependency:analyze-only` (no undeclared or unused
   dependencies) run on every `verify`; documented exceptions live in the poms.
@@ -32,13 +34,17 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   specific board.
 - `juno-maven-plugin/` – Maven goals (`juno:compile`, `verify`, `upload`, `monitor`) and their tests; tests use a
   fake process executor and never touch hardware.
-- `juno-examples/` – example programs buildable with `arduino-cli`, plus game, `arduino-cli` and QEMU tests.
+- `juno-rcx-firmware/` – the independent H8/300 RCX firmware generator, its generated S-record and its generated
+  Java image; it depends on neither `juno-api` nor `juno-compiler`.
+- `juno-examples/` – example programs buildable with `arduino-cli`, including the RCX firmware downloader; depends
+  on `juno-api` and the generated image from `juno-rcx-firmware`.
 - `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`. Images
   live once, in `src/main/resources/public/images/`; the README links to them there.
 
 ## Code style
 
-- **`juno-compiler` and `juno-maven-plugin` run on the build machine: write them object-oriented.** Behavior lives
+- **`juno-compiler`, the generator in `juno-rcx-firmware`, and `juno-maven-plugin` run on the build machine: write
+  them object-oriented.** Behavior lives
   on objects that hold their collaborators as `final` fields, not in static utility classes (`lowering` is the
   reference: `MethodContext`, `OperandStack`, one lowerer per opcode group registered on an `OpcodeTable`). Prefer
   records and sealed interfaces for data, behavior on the type that owns the data (`IrInstruction.referencedValues()`),
@@ -48,7 +54,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   refactoring must keep every example's generated `.S`, `Shim.cpp` and report byte-identical (see
   `skills/juno-debugging`). Skills `121`, `122`, `123`, `128`, `141` and `142` under `.claude/skills` hold the
   detailed guidance.
-- **`juno-api` and `juno-examples` run on the board: write them for zero allocation.** The board has one fixed
+- **`juno-api`, the generated `RcxFirmwareImage`, and `juno-examples` run on the board: write them for zero
+  allocation.** The board has one fixed
   arena (8 KiB, 1 KiB on AVR) and no `OutOfMemoryError`, so the API stays `final` classes of static intrinsics over
   primitives and caller-owned buffers, and an example allocates its buffers and objects once at startup and never
   inside its main loop. Follow `skills/juno-zero-allocation` when adding an API entry or an example, and
@@ -77,6 +84,10 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 
 # Install reactor artifacts so the example module can resolve the development plugin
 ./mvnw install
+
+# Regenerate the tracked RCX S-record and Java image on demand (run from the repository root)
+./mvnw -pl juno-rcx-firmware compile
+java -cp juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware
 
 # Generate Blink. juno-examples/pom.xml supplies its main class.
 ./mvnw -f juno-examples/pom.xml compile juno:compile
