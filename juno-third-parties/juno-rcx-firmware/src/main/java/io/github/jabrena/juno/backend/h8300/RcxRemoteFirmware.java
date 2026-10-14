@@ -46,7 +46,7 @@ import java.util.Objects;
  * take a battery out for a minute before downloading other firmware.
  *
  * <pre>
- * java -cp juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware [minutes]
+ * java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware [minutes]
  * </pre>
  *
  * <p>Run from the repository root; it updates both the tracked S-record and its Java representation used by
@@ -98,9 +98,9 @@ public final class RcxRemoteFirmware {
     /** The command-line flag that leaves the display icons out. */
     private static final String NO_ICONS = "--no-icons";
     private static final Path SRECORD_OUTPUT =
-            Path.of("juno-rcx-firmware/src/main/resources/rcx/firmware.srec");
+            Path.of("juno-third-parties/juno-rcx-firmware/src/main/resources/rcx/firmware.srec");
     private static final Path JAVA_OUTPUT = Path.of(
-            "juno-rcx-firmware/src/main/java/io/github/jabrena/juno/api/lego/rcxfirmware/RcxFirmwareImage.java");
+            "juno-third-parties/juno-rcx-firmware/src/main/java/io/github/jabrena/juno/api/lego/rcxfirmware/RcxFirmwareImage.java");
     /** The versions reply: ROM 0003.0001 as LEGO's ROM reports it, then firmware 0000.0001. */
     private static final int[] VERSIONS = {0x00, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01};
     private static final int SOUND_BEEP_BEEP = 1;
