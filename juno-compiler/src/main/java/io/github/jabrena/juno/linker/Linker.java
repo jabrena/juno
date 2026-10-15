@@ -46,6 +46,8 @@ public final class Linker {
 
     private final UuidSupport uuidSupport = new UuidSupport();
 
+    private final LocalDateTimeSupport localDateTimeSupport = new LocalDateTimeSupport();
+
     private final ThrowableTypes throwableTypes = new ThrowableTypes();
 
     private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
@@ -210,6 +212,7 @@ public final class Linker {
         scopedValueSupport.validateCall(called);
         bigNumberSupport.validateCall(called);
         uuidSupport.validateCall(called);
+        localDateTimeSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {
@@ -263,6 +266,7 @@ public final class Linker {
                 Intrinsic.UDP_STOP);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
                 Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY);
+        require(required, Capability.HTTPS_CLIENT, Intrinsic.LOCAL_DATE_TIME_NOW);
         // A URL-based request needs Wi-Fi whatever its scheme; whether it also needs plain HTTP or TLS is only known
         // from the URL literal, which the lowering checks against the board (HttpUrlCall).
         require(required, Capability.WIFI, Intrinsic.HTTP_URL_GET, Intrinsic.HTTP_URL_GET_PATH_BUFFER,

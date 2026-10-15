@@ -13,6 +13,7 @@ import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.Descriptor;
+import io.github.jabrena.juno.linker.LocalDateTimeSupport;
 import io.github.jabrena.juno.linker.LockSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.ThreadSupport;
@@ -43,6 +44,8 @@ final class FieldLowering implements InstructionLowering {
     private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
 
     private final UuidSupport uuidSupport = new UuidSupport();
+
+    private final LocalDateTimeSupport localDateTimeSupport = new LocalDateTimeSupport();
 
     private final MethodContext context;
     private final OperandStack stack;
@@ -86,6 +89,12 @@ final class FieldLowering implements InstructionLowering {
             stack.push(target);
         } else if (bigConstant.isPresent()) {
             pushBigConstant(bigConstant.get());
+        } else if (localDateTimeSupport.isMinimum(field)) {
+            Value handle = values.int32();
+            context.emit(new IrInstruction.IntrinsicCall(Optional.of(handle),
+                    io.github.jabrena.juno.intrinsic.Intrinsic.LOCAL_DATE_TIME_MIN,
+                    Optional.empty(), List.of(), List.of()));
+            stack.push(handle);
         } else if (ordinal != null) {
             stack.pushInt(ordinal);
         } else if (field.name().startsWith("$SwitchMap$")) {
@@ -173,6 +182,7 @@ final class FieldLowering implements InstructionLowering {
                 || scopedValueSupport.isScopedValueType(descriptor)
                 || bigNumberSupport.isBigNumberType(descriptor)
                 || uuidSupport.isUuidType(descriptor)
+                || localDateTimeSupport.isLocalDateTimeType(descriptor)
                 || lockSupport.isReentrantLockType(descriptor)
                 || atomicSupport.isAtomicType(descriptor)
                 || Descriptor.isArrayType(descriptor)

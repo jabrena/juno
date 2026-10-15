@@ -480,6 +480,7 @@ public final class IntrinsicRegistry {
         Map<MethodRef, Intrinsic> methods = new HashMap<>(CORE_METHODS);
         methods.putAll(BigNumberMethods.METHODS);
         methods.putAll(UuidMethods.METHODS);
+        methods.putAll(LocalDateTimeMethods.METHODS);
         return Map.copyOf(methods);
     }
 
