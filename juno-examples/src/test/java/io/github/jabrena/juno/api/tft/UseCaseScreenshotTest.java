@@ -15,11 +15,6 @@ class UseCaseScreenshotTest {
 
     static Stream<Arguments> useCases() {
         return Stream.of(
-                Arguments.of("usecases.ledger.LedgerGame", "ledger-menu", "end:3000"),
-                Arguments.of("usecases.ledger.LedgerGame", "ledger-leader", "3000:120,120 end:6000"),
-                Arguments.of("usecases.ledger.LedgerGame", "ledger-worker", "3000:120,210 end:6000"),
-                Arguments.of("usecases.ledger.LedgerGame", "ledger-menu-again",
-                        "3000:120,120 8000:120,297 end:10000"),
                 Arguments.of("usecases.miner.MinerGame", "miner", "end:60000"),
                 Arguments.of("usecases.miner2.Miner2", "miner2-cover-logo", "end:1500"),
                 Arguments.of("usecases.miner2.Miner2", "miner2-cover-board", "end:4500"),

@@ -128,7 +128,7 @@ loaded by the board's Zephyr firmware.
 | `UUID.randomUUID()` | Yes | Uses Zephyr's cryptographic random service on the local STM32U585 TRNG; it does not depend on Linux, Wi-Fi traffic or the Bridge |
 | `Serial` | Yes | Uses the MCU sketch's serial path |
 | LCD keypad and TFT touch shields | Yes | Built on GPIO, timing and analog input |
-| TFT games | Yes | Battleship, Blackjack, Chess, Tempest and Texas Hold'em support both UNO Q and UNO R4 WiFi; Empire Strikes Back, Missile Command, Pac-Man, Red Baron, Space Paranoids, Star Trek, Star Wars and DOOM target UNO Q only; Lunar Lander targets UNO R4 WiFi only |
+| TFT games | Yes | Battleship, Blackjack, Chess, Tempest and Texas Hold'em support both UNO Q and UNO R4 WiFi; Empire Strikes Back, Missile Command, Pac-Man, Red Baron, Star Trek, Star Wars and DOOM target UNO Q only; Lunar Lander targets UNO R4 WiFi only |
 | Onboard LED matrix | Yes | 13x8 through the Zephyr core's `Arduino_LED_Matrix`; `LedCanvas.width()` is 13 here and 12 on the UNO R4 WiFi, so frames and fonts adapt. Compiles with `arduino-cli`; not yet confirmed on hardware |
 | `Wifi` and `Udp` | Yes | Linux owns Wi-Fi; the MCU exchanges datagrams through `Arduino_RouterBridge` and `BridgeUDP` |
 | Juno HTTPS client API | Yes | TLS connections use `BridgeTCPClient` and the Linux system trust store |
@@ -140,44 +140,6 @@ loaded by the board's Zephyr firmware.
 The Arduino linker report is authoritative for a generated sketch's usable memory. Its reported
 limits describe the Zephyr user-sketch partition and runtime budget, which are smaller than the
 STM32U585's complete physical flash and SRAM.
-
-## Space Paranoids example
-
-`SpaceParanoids` is a complete UNO Q workload for the ELEGOO 2.8-inch TFT touch shield. Its entry
-point carries `@Board(ArduinoUnoQ.class)`, so no FQBN override is needed.
-
-Compile it through `javac`, Juno and the real Arduino toolchain without changing the board:
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
-```
-
-Upload it after `arduino-cli board list` shows a connected UNO Q:
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
-```
-
-When more than one matching board is connected, or auto-detection cannot select the desired port,
-append `-Djuno.port=<PORT>`. Uploading replaces the sketch currently running on the STM32U585.
-
-The cohesive-class refactor recorded in commit `5df18a3` preserved the screenshot and simulation
-tests while reducing the generated sketch's memory use:
-
-| UNO Q Arduino linker report | Before | After | Change |
-|---|---:|---:|---:|
-| Program storage | 242,140 bytes | 238,796 bytes | -3,344 bytes |
-| Dynamic memory | 172,988 bytes | 169,364 bytes | -3,624 bytes |
-
-The post-refactor build uses 30% of the 786,432-byte program partition and 64% of the
-262,144-byte dynamic-memory budget reported by Arduino CLI. These figures are a reproducible
-reference for the current toolchain, not fixed hardware reservations; core, compiler and linker
-updates can change them.
-
-See [GAMES.md](../games#space-paranoids) for gameplay and controls, and [ARDUINO.md](../arduino)
-for the general Juno compile, upload and monitor workflow.
 
 ## Official references
 
