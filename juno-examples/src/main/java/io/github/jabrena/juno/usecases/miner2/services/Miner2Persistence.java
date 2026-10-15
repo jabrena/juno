@@ -9,9 +9,10 @@ import io.github.jabrena.juno.usecases.miner.NodeId;
 import java.io.IOException;
 import java.util.UUID;
 
-/** Small append-only journal for the identity and the useful work of a Miner2 node. */
+/** Small append-only journal for the identity, the color and the useful work of a Miner2 node. */
 public final class Miner2Persistence {
     private static final String ID_FILE = "MINER2.ID";
+    private static final String COLOR_FILE = "MINER2.COL";
     private static final String CHAIN_FILE = "MINER2.CHAIN";
     private static final String FACTOR_FILE = "MINER2.FAC";
     private static final String RUN_FILE = "MINER2.RUN";
@@ -31,6 +32,36 @@ public final class Miner2Persistence {
             writeIdentity(identity);
         }
         return identity;
+    }
+
+    /**
+     * The color saved by {@link #saveColor}, or -1 when there is none, the card is missing, or what it holds is not a
+     * color below {@code colors}. Call it after {@link #loadOrCreateIdentity}, which starts the card.
+     */
+    public int loadColor(int colors) {
+        if (!ready || !SdCard.exists(COLOR_FILE)) {
+            return -1;
+        }
+        java.io.InputStream file = SdCard.open(COLOR_FILE);
+        if (file == null) {
+            return -1;
+        }
+        try {
+            int digit = hex(file.read());
+            file.close();
+            return digit >= 0 && digit < colors ? digit : -1;
+        } catch (IOException failed) {
+            return -1;
+        }
+    }
+
+    /** Saves this node's color, so it keeps it after a restart, like its identity. */
+    public void saveColor(int color) {
+        if (!ready) {
+            return;
+        }
+        SdCard.remove(COLOR_FILE);
+        SdCard.appendText(COLOR_FILE, color + "\n");
     }
 
     /** Whether the SD card was available when the identity was loaded. */

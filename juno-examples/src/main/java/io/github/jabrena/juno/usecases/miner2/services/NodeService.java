@@ -1,27 +1,32 @@
 package io.github.jabrena.juno.usecases.miner2.services;
 
 import io.github.jabrena.juno.api.Clock;
+import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Task;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2State;
 
 /**
  * Owns the node's work: the controller advances it one step per frame, on the main thread, before the active view
  * renders. A step serves the network first, so the miner always builds on the freshest tip, then mines for the rest
- * of its budget. Views consume only what the two publish in the model. Joining Wi-Fi is stepped too, from boot, so
+ * of its budget, on the bounty bit length the network let it claim. Views consume only what the two publish in the model. Joining Wi-Fi is stepped too, from boot, so
  * the cover keeps drawing while the node connects; the network and the miner wait until the link is up.
  */
 public final class NodeService implements Task {
     private final Miner2State model;
     private final NetworkService network;
     private final MiningService mining;
+    private final ClaimService claims;
+    private final Miner2Persistence persistence;
     private final WifiLink link = new WifiLink();
     private boolean started;
     private boolean networkStarted;
 
     public NodeService(Miner2State model, Miner2Persistence persistence) {
         this.model = model;
-        this.network = new NetworkService(model, link, Clock.millis());
-        this.mining = new MiningService(model, persistence);
+        this.persistence = persistence;
+        this.claims = new ClaimService(model);
+        this.network = new NetworkService(model, link, claims, Clock.millis());
+        this.mining = new MiningService(model, persistence, claims);
     }
 
     /**
@@ -65,6 +70,12 @@ public final class NodeService implements Task {
             networkStarted = true;
         }
         network.step(now);
+        if (claims.colorChanged()) {
+            int color = model.board().ownColor();
+            persistence.saveColor(color);
+            Serial.print("Color taken, now ");
+            Serial.println(color);
+        }
         mining.step();
     }
 }

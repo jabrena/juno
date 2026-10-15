@@ -15,8 +15,8 @@ import io.github.jabrena.juno.usecases.miner2.commons.Miner2State;
 
 /**
  * The mining side of the node: the original Miner's main loop, turned into a step the frame loop calls. Each step
- * decides whether to wait for a heavier chain ({@link SyncGate}), logs a tip that moved, rebuilds the block template
- * when it did, and then tries nonces {@link #SLICE} at a time until {@link #BUDGET_MILLIS} have passed, leaving the
+ * decides whether to wait for a heavier chain ({@link SyncGate}), logs a tip that moved, waits while the node owns no
+ * bounty bit length ({@link ClaimService}), rebuilds the block template when the tip or that length changed, and then tries nonces {@link #SLICE} at a time until {@link #BUDGET_MILLIS} have passed, leaving the
  * rest of the frame to the views and the network.
  */
 final class MiningService {
@@ -27,17 +27,20 @@ final class MiningService {
 
     private final Miner2State model;
     private final Miner2Persistence persistence;
+    private final ClaimService claims;
     private final BlockPool pool;
     private final Miner miner = new Miner();
     private final SyncGate gate = new SyncGate();
     private final byte[] outgoing = new byte[ChainProtocol.PACKET_SIZE];
     private int template = -1;
+    private int templateBits;
     private int loggedTip;
     private int clockOffset;
 
-    MiningService(Miner2State model, Miner2Persistence persistence) {
+    MiningService(Miner2State model, Miner2Persistence persistence, ClaimService claims) {
         this.model = model;
         this.persistence = persistence;
+        this.claims = claims;
         this.pool = model.pool();
         this.loggedTip = pool.tipChanges();
     }
@@ -54,12 +57,18 @@ final class MiningService {
             followNetworkTime(pool.time(pool.tip()));
             printTip();
         }
-        if (waiting) {
+        int bountyBits = claims.owned();
+        if (waiting || bountyBits == 0) {
             return;
         }
-        if (pool.tipChanges() != template) {
+        if (bountyBits != templateBits) {
+            Serial.print("Mining bit ");
+            Serial.println(bountyBits);
+        }
+        if (pool.tipChanges() != template || bountyBits != templateBits) {
             template = pool.tipChanges();
-            miner.prepare(pool, model.nodeId(), now());
+            templateBits = bountyBits;
+            miner.prepare(pool, model.nodeId(), now(), bountyBits);
         }
         do {
             int before = miner.attempts();
@@ -77,7 +86,9 @@ final class MiningService {
         if (pool.add(miner.block(), 0, 0, 0L, 0) == BlockPool.NEW_TIP) {
             ChainProtocol.writeBlock(outgoing, pool, pool.tip());
             model.countSend(Udp.broadcast(NodeIo.PORT, outgoing, ChainProtocol.PACKET_SIZE));
-            Serial.print("Mined after ");
+            Serial.print("Mined bit ");
+            Serial.print(templateBits);
+            Serial.print(" after ");
             Serial.print(miner.attempts());
             Serial.println(" hashes");
             model.countMined();

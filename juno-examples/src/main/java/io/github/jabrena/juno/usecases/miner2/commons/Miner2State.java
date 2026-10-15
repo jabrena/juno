@@ -8,12 +8,14 @@ import io.github.jabrena.juno.usecases.miner.PeerTable;
 import java.util.UUID;
 
 /**
- * The model Miner 2's views render: the node's chain and peers, which the node service updates, plus the counters
- * that the original game only logged on serial. Everything runs on the main thread, so nothing here is guarded.
+ * The model Miner 2's views render: the node's chain, peers and blocks board, which the node service updates, plus
+ * the counters that the original game only logged on serial. Everything runs on the main thread, so nothing here is
+ * guarded.
  */
 public final class Miner2State {
     private final BlockPool pool;
     private final PeerTable peers = new PeerTable();
+    private final BitBoard board = new BitBoard();
     private final UUID uuid;
     private final byte[] uuidBytes = new byte[UuidCodec.BYTES];
     private final int nodeId;
@@ -43,6 +45,11 @@ public final class Miner2State {
 
     public PeerTable peers() {
         return peers;
+    }
+
+    /** Which bounty bit lengths are mined, and which nodes are mining which. */
+    public BitBoard board() {
+        return board;
     }
 
     /** This node's UUID, loaded from persistent storage when one was previously saved. */

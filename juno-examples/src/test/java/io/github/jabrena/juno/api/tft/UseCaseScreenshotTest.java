@@ -19,8 +19,9 @@ class UseCaseScreenshotTest {
                 Arguments.of("usecases.miner2.Miner2", "miner2-cover-logo", "end:1500"),
                 Arguments.of("usecases.miner2.Miner2", "miner2-cover-board", "end:4500"),
                 Arguments.of("usecases.miner2.Miner2", "miner2-cover-title", "end:7500"),
-                Arguments.of("usecases.miner2.Miner2", "miner2-chain", "7500:120,225 end:60000"),
-                Arguments.of("usecases.miner2.Miner2", "miner2-peers", "7500:120,225 60000:90,300 end:61000"),
+                Arguments.of("usecases.miner2.Miner2", "miner2-blocks", "7500:120,225 end:60000"),
+                Arguments.of("usecases.miner2.Miner2", "miner2-chain", "7500:120,225 60000:100,300 end:61000"),
+                Arguments.of("usecases.miner2.Miner2", "miner2-peers", "7500:120,225 60000:160,300 end:61000"),
                 Arguments.of("usecases.miner2.Miner2", "miner2-net", "7500:120,225 60000:200,300 end:62500"));
     }
 

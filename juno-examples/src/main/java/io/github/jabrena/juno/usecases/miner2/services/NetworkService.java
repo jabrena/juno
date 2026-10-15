@@ -12,7 +12,7 @@ import io.github.jabrena.juno.usecases.miner2.commons.Miner2State;
 
 /**
  * The network side of the node: the original Miner's receiver thread, turned into a step the frame loop calls. Each
- * step serves a few packets, sends the heartbeat when it is due, asks again for a missing parent, logs lost peers and
+ * step serves a few packets, moves this node's claim on the blocks board, sends the heartbeat when it is due, asks again for a missing parent, logs lost peers and
  * the network counters, and restarts a Wi-Fi link that went silent. It runs on the main thread, between the mining
  * slices, so it shares the pool with the miner without a lock.
  */
@@ -37,6 +37,7 @@ final class NetworkService {
 
     private final Miner2State model;
     private final WifiLink link;
+    private final ClaimService claims;
     private final BlockPool pool;
     private final PeerTable peers;
     private final int helloEvery;
@@ -52,9 +53,10 @@ final class NetworkService {
     private int lastHeard;
     private int nextRecovery;
 
-    NetworkService(Miner2State model, WifiLink link, int now) {
+    NetworkService(Miner2State model, WifiLink link, ClaimService claims, int now) {
         this.model = model;
         this.link = link;
+        this.claims = claims;
         this.pool = model.pool();
         this.peers = model.peers();
         // Nodes beat at slightly different rates (up to a second apart), so their heartbeats do not collide.
@@ -88,6 +90,9 @@ final class NetworkService {
             lastHeard = now;
             serve(length, now);
         }
+        if (claims.step(now, reply)) {
+            broadcast();
+        }
         heartbeat(now);
         retryFetch(now);
         reportLostPeers(now);
@@ -102,6 +107,7 @@ final class NetworkService {
             int tip = pool.tip();
             ChainProtocol.writeHello(reply, model.uuidBytes(), pool.height(tip), pool.work(tip),
                     model.syncing() ? 0 : ChainProtocol.MINING);
+            claims.stampHello(reply);
             broadcast();
         }
         if (now - nextAsk >= 0) {
@@ -197,6 +203,8 @@ final class NetworkService {
             answer();
         } else if (type == ChainProtocol.HELLO) {
             serveHello(now);
+        } else if ((type == ChainProtocol.CLAIM || type == ChainProtocol.TAKEN) && claims.serve(incoming, reply, now)) {
+            answer();
         }
     }
 
@@ -219,6 +227,7 @@ final class NetworkService {
             // This node's own heartbeat, echoed back by the network.
             return;
         }
+        claims.serveHello(incoming, now);
         long work = ChainProtocol.work(incoming);
         if (peers.update(incoming, ChainProtocol.HELLO_UUID, ChainProtocol.height(incoming), work,
                 ChainProtocol.helloFlags(incoming), now)) {

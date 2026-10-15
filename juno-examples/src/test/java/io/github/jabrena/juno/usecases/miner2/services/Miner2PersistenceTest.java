@@ -54,4 +54,29 @@ class Miner2PersistenceTest {
         assertThat(persistence.loadOrCreateIdentity().version()).isEqualTo(4);
         assertThat(persistence.isReady()).isFalse();
     }
+
+    @Test
+    void keepsTheColorSavedBesideTheIdentity() {
+        SdCard.present = true;
+        Miner2Persistence persistence = new Miner2Persistence();
+        persistence.loadOrCreateIdentity();
+        assertThat(persistence.loadColor(8)).as("nothing saved yet").isEqualTo(-1);
+
+        persistence.saveColor(5);
+        persistence.saveColor(6);
+
+        Miner2Persistence restarted = new Miner2Persistence();
+        restarted.loadOrCreateIdentity();
+        assertThat(restarted.loadColor(8)).isEqualTo(6);
+        assertThat(restarted.loadColor(6)).as("not a color below the limit").isEqualTo(-1);
+    }
+
+    @Test
+    void hasNoColorWithoutAnSdCard() {
+        Miner2Persistence persistence = new Miner2Persistence();
+        persistence.loadOrCreateIdentity();
+        persistence.saveColor(3);
+
+        assertThat(persistence.loadColor(8)).isEqualTo(-1);
+    }
 }

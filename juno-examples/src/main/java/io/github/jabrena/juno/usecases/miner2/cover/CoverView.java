@@ -10,9 +10,9 @@ import io.github.jabrena.juno.usecases.miner2.commons.Miner2Views;
 import io.github.jabrena.juno.usecases.miner2.services.NodeService;
 
 /**
- * Miner 2's cover: the MINER title with a PLAY button that opens the chain and starts the node. The Wi-Fi and SD icons
- * sit where the other views' header shows them, so the node can be seen joining Wi-Fi. The startup intro is a separate
- * view, shown once.
+ * Miner 2's cover: the MINER title with a PLAY button that opens the blocks board and starts the node. The Wi-Fi and
+ * SD icons sit where the other views' header shows them, so the node can be seen joining Wi-Fi. The startup intro is a
+ * separate view, shown once.
  */
 public final class CoverView implements View {
     private static final int WIDTH = 240;
@@ -48,8 +48,8 @@ public final class CoverView implements View {
     public void touch(int x, int y) {
         if (isPlay(x, y)) {
             node.begin();
-            Serial.println("Miner2: opening the chain");
-            navigator.show(Miner2Views.CHAIN);
+            Serial.println("Miner2: opening the blocks");
+            navigator.show(Miner2Views.BLOCKS);
         }
     }
 
