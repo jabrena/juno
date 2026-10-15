@@ -1,6 +1,6 @@
 # JUno: Java for Arduino One
 
-JUno `/ˈxu.no/` is an ahead-of-time compiler for running a practical subset of Java on Arduino One Q, Arduino One R4 WiFi, Arduino One WiFi Rev2 and Arduino One R3. It keeps `javac` as the Java frontend, performs
+JUno `/ˈxu.no/` is an ahead-of-time compiler for running a practical subset of Java on Arduino boards. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly, or
 AVR assembly for the UNO R3's ATmega328P and the UNO WiFi Rev2's ATmega4809.
 
@@ -41,15 +41,15 @@ This is a multi-module Maven build:
 - [`juno-maven-plugin/`](juno-maven-plugin) — Maven goals for generating a sketch (`juno:compile`),
   compiling it with Arduino CLI (`juno:verify`), uploading it (`juno:upload`), and opening the
   serial monitor (`juno:monitor`).
-- [`juno-third-parties/`](juno-third-parties) — integrations maintained outside the core compiler,
-  currently including the independent H8/300 firmware generator for the LEGO RCX, its S-record,
-  and the generated Java representation consumed by `juno-examples`.
 - [`juno-examples/`](juno-examples) — example Java programs written against `juno-api`, built
   like any other Maven module so they're checked for compile errors on every build.
 - [`juno-site/`](juno-site) — the [Roq](https://iamroq.dev)/Quarkus static site generator behind
   the [documentation site](https://jabrena.github.io/juno/). `docs/` is entirely generated from
   Markdown under `juno-site/src/main/resources/content/` — see
   [Documentation site](#documentation-site) below to regenerate it.
+- [`juno-third-parties/`](juno-third-parties) — integrations maintained outside the core compiler,
+  currently including the independent H8/300 firmware generator for the LEGO RCX, its S-record,
+  and the generated Java representation consumed by `juno-examples`.
 
 ## Quick start
 
