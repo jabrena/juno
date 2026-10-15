@@ -32,6 +32,17 @@ These fail with a `CompileException`; they are listed because they come up when 
 - **Concatenating arbitrary objects.** Juno lowers `StringConcatFactory` for strings and primitive
   values, but not the general `String.valueOf(Object)`/`toString()` path.
 
+## Memory
+
+These compile without an error, but cost RAM the JVM would not.
+
+- **Only `static final` constant arrays live in flash.** A `static final` one-dimensional primitive array
+  initialized with constants, and only ever read as `T[i]` or `T.length`, is placed in flash and costs no RAM.
+  The same array declared as an instance field (`final byte[] DATA = {...}`) is built in the arena each time
+  the object is created, even if there is only one instance, so a large image or lookup table can exhaust the
+  8 KiB arena and stop the board at startup. Keep large constant tables `static final`, and read them only by
+  index: passing a table to a method or storing it elsewhere also keeps it in RAM (reported as `JUNO-RISK-012`).
+
 ## Exceptions
 
 See [Feature Inventory](/features) for the supported subset. Beyond it:
@@ -40,6 +51,18 @@ See [Feature Inventory](/features) for the supported subset. Beyond it:
   `catch` or `finally` in the program can receive it; otherwise it still panics (and costs no guard).
 - `addSuppressed` is accepted and dropped, so a `close()` failure while another exception unwinds is lost.
 - Exception causes and stack traces are not modelled.
+
+## Board differences
+
+The API is the same on every board, but some calls can only return what the board's own stack exposes.
+
+- **Network addresses on the UNO Q.** The UNO Q's Wi-Fi belongs to its Linux side; the MCU that runs your program
+  reaches the network only through the `arduino-router` bridge, and version 0.4.x of the bridge does not expose the
+  Linux interface's addresses. `Wifi.localIP`, `Wifi.gatewayIP` and `Wifi.macAddress` therefore write zeroes there
+  (`0.0.0.0`), while the UNO R4 WiFi reports the real values. Wi-Fi itself, `Wifi.status` and UDP work normally; the
+  board is still reachable at its address, and `arduino-cli board list` shows it. A program that needs its own
+  address on the UNO Q can learn it from the source address of its own UDP broadcast, when the network echoes it
+  back.
 
 ## How these are found
 

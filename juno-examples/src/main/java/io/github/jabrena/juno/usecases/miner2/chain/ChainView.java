@@ -10,9 +10,11 @@ import io.github.jabrena.juno.games.blockchain.Sha256;
 import io.github.jabrena.juno.usecases.miner.BlockFormat;
 import io.github.jabrena.juno.usecases.miner.BlockPool;
 import io.github.jabrena.juno.usecases.miner.PeerTable;
+import io.github.jabrena.juno.usecases.miner2.commons.Miner2Header;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2State;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2Views;
 import io.github.jabrena.juno.usecases.miner2.commons.TabBar;
+import io.github.jabrena.juno.usecases.miner2.services.NodeService;
 
 /**
  * The tip of the chain, as the original Miner's only screen showed it: height, difficulty, how many blocks this node
@@ -22,17 +24,21 @@ import io.github.jabrena.juno.usecases.miner2.commons.TabBar;
 public final class ChainView implements View {
     private final Navigator navigator;
     private final Miner2State model;
+    private final Miner2Header header;
+    private final NodeService node;
     private int shownTip;
     private int shownNodes;
 
-    public ChainView(Navigator navigator, Miner2State model) {
+    public ChainView(Navigator navigator, Miner2State model, Miner2Header header, NodeService node) {
         this.navigator = navigator;
         this.model = model;
+        this.header = header;
+        this.node = node;
     }
 
     @Override
     public void enter() {
-        GameScreen.header("MINER", TftTouchShield.GREEN);
+        header.enter();
         TabBar.draw(Miner2Views.CHAIN);
         shownTip = model.pool().tipChanges() - 1;
         shownNodes = -1;
@@ -40,6 +46,7 @@ public final class ChainView implements View {
 
     @Override
     public void render() {
+        header.render();
         BlockPool pool = model.pool();
         if (pool.tipChanges() != shownTip) {
             shownTip = pool.tipChanges();
@@ -55,7 +62,11 @@ public final class ChainView implements View {
 
     @Override
     public void touch(int x, int y) {
-        TabBar.follow(navigator, x, y);
+        if (Miner2Header.isWifi(x, y)) {
+            node.toggleWifi();
+        } else {
+            TabBar.follow(navigator, x, y);
+        }
     }
 
     /** One number that changes whenever what {@link #showNodes} would draw changes. */

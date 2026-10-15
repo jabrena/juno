@@ -1,25 +1,21 @@
 package io.github.jabrena.juno.usecases.miner2.cover;
 
-import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
+import io.github.jabrena.juno.usecases.miner2.commons.Miner2Header;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2Views;
+import io.github.jabrena.juno.usecases.miner2.services.NodeService;
 
 /**
- * Miner 2's cover, in three steps: the Java logo for {@link #STEP_MILLIS}, then an Arduino board turned on its side
- * for as long, then the MINER title with a PLAY button that opens the chain. The node is already mining behind it.
+ * Miner 2's cover: the MINER title with a PLAY button that opens the chain and starts the node. The Wi-Fi and SD icons
+ * sit where the other views' header shows them, so the node can be seen joining Wi-Fi. The startup intro is a separate
+ * view, shown once.
  */
 public final class CoverView implements View {
-    static final int STEP_MILLIS = 3000;
-    static final int LOGO = 0;
-    static final int BOARD = 1;
-    static final int TITLE = 2;
-
     private static final int WIDTH = 240;
-    private static final int HEIGHT = 320;
     private static final int TITLE_SIZE = 6;
     private static final int TITLE_Y = 80;
     private static final int PLAY_X = 50;
@@ -28,51 +24,33 @@ public final class CoverView implements View {
     private static final int PLAY_HEIGHT = 50;
 
     private final Navigator navigator;
-    private int enteredAt;
-    private int shownStep;
+    private final NodeService node;
+    private final Miner2Header header;
 
-    public CoverView(Navigator navigator) {
+    public CoverView(Navigator navigator, NodeService node, Miner2Header header) {
         this.navigator = navigator;
+        this.node = node;
+        this.header = header;
     }
 
     @Override
     public void enter() {
-        enteredAt = Clock.millis();
-        shownStep = -1;
+        drawTitle();
+        header.redrawIcons();
     }
 
     @Override
     public void render() {
-        int current = step(Clock.millis() - enteredAt);
-        if (current == shownStep) {
-            return;
-        }
-        shownStep = current;
-        if (current == LOGO) {
-            TftTouchShield.fillScreen(TftTouchShield.WHITE);
-            JavaLogoImage.draw((WIDTH - JavaLogoImage.WIDTH) / 2, (HEIGHT - JavaLogoImage.HEIGHT) / 2);
-        } else if (current == BOARD) {
-            TftTouchShield.fillScreen(TftTouchShield.WHITE);
-            BoardImage.draw((WIDTH - BoardImage.WIDTH) / 2, (HEIGHT - BoardImage.HEIGHT) / 2);
-        } else {
-            drawTitle();
-        }
+        header.render();
     }
 
     @Override
     public void touch(int x, int y) {
-        if (shownStep == TITLE && isPlay(x, y)) {
+        if (isPlay(x, y)) {
+            node.begin();
             Serial.println("Miner2: opening the chain");
             navigator.show(Miner2Views.CHAIN);
         }
-    }
-
-    /** Which step of the cover shows {@code elapsedMillis} after it was entered. */
-    static int step(int elapsedMillis) {
-        if (elapsedMillis < STEP_MILLIS) {
-            return LOGO;
-        }
-        return elapsedMillis < 2 * STEP_MILLIS ? BOARD : TITLE;
     }
 
     /** Whether ({@code x}, {@code y}) is on the PLAY button. */

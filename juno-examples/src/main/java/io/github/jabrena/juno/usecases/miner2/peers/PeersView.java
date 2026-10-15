@@ -8,9 +8,11 @@ import io.github.jabrena.juno.games.blockchain.GameScreen;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
 import io.github.jabrena.juno.usecases.miner.NodeId;
 import io.github.jabrena.juno.usecases.miner.PeerTable;
+import io.github.jabrena.juno.usecases.miner2.commons.Miner2Header;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2State;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2Views;
 import io.github.jabrena.juno.usecases.miner2.commons.TabBar;
+import io.github.jabrena.juno.usecases.miner2.services.NodeService;
 
 /**
  * The nodes this node has heard from, one row per slot of its {@link PeerTable}: the first word of the peer's UUID,
@@ -23,21 +25,25 @@ public final class PeersView implements View {
 
     private final Navigator navigator;
     private final Miner2State model;
+    private final Miner2Header header;
+    private final NodeService node;
     private final int[] shownRows = new int[PeerTable.CAPACITY];
     private boolean shownNone;
 
-    public PeersView(Navigator navigator, Miner2State model) {
+    public PeersView(Navigator navigator, Miner2State model, Miner2Header header, NodeService node) {
         this.navigator = navigator;
         this.model = model;
+        this.header = header;
+        this.node = node;
     }
 
     @Override
     public void enter() {
-        GameScreen.header("MINER", TftTouchShield.GREEN);
+        header.enter();
         TabBar.draw(Miner2Views.PEERS);
         GameScreen.row(0, 1, TftTouchShield.WHITE);
         TftTouchShield.print("This node ");
-        TftTouchShield.print(NodeIo.hexWord(model.uuid(), 0));
+        TftTouchShield.print(NodeIo.hexWord(model.uuidBytes(), 0));
         GameScreen.row(1, 1, TftTouchShield.GRAY);
         TftTouchShield.print("Heard by heartbeat:");
         for (int slot = 0; slot < PeerTable.CAPACITY; slot++) {
@@ -48,6 +54,7 @@ public final class PeersView implements View {
 
     @Override
     public void render() {
+        header.render();
         PeerTable peers = model.peers();
         int now = Clock.millis();
         boolean none = true;
@@ -70,7 +77,11 @@ public final class PeersView implements View {
 
     @Override
     public void touch(int x, int y) {
-        TabBar.follow(navigator, x, y);
+        if (Miner2Header.isWifi(x, y)) {
+            node.toggleWifi();
+        } else {
+            TabBar.follow(navigator, x, y);
+        }
     }
 
     /**

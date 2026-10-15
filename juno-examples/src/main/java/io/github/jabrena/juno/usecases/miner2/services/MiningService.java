@@ -26,6 +26,7 @@ final class MiningService {
     static final int BUDGET_MILLIS = 20;
 
     private final Miner2State model;
+    private final Miner2Persistence persistence;
     private final BlockPool pool;
     private final Miner miner = new Miner();
     private final SyncGate gate = new SyncGate();
@@ -34,8 +35,9 @@ final class MiningService {
     private int loggedTip;
     private int clockOffset;
 
-    MiningService(Miner2State model) {
+    MiningService(Miner2State model, Miner2Persistence persistence) {
         this.model = model;
+        this.persistence = persistence;
         this.pool = model.pool();
         this.loggedTip = pool.tipChanges();
     }
@@ -48,6 +50,7 @@ final class MiningService {
         model.publishSyncing(waiting);
         if (pool.tipChanges() != loggedTip) {
             loggedTip = pool.tipChanges();
+            persistence.appendChain(pool, pool.tip());
             followNetworkTime(pool.time(pool.tip()));
             printTip();
         }
@@ -78,6 +81,7 @@ final class MiningService {
             Serial.print(miner.attempts());
             Serial.println(" hashes");
             model.countMined();
+            persistence.appendMining(pool, pool.tip());
         }
     }
 
