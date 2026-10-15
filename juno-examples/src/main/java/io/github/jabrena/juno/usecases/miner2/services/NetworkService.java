@@ -36,6 +36,7 @@ final class NetworkService {
     private static final int RECOVER_BACKOFF_MILLIS = 120_000;
 
     private final Miner2State model;
+    private final WifiLink link;
     private final BlockPool pool;
     private final PeerTable peers;
     private final int helloEvery;
@@ -51,8 +52,9 @@ final class NetworkService {
     private int lastHeard;
     private int nextRecovery;
 
-    NetworkService(Miner2State model, int now) {
+    NetworkService(Miner2State model, WifiLink link, int now) {
         this.model = model;
+        this.link = link;
         this.pool = model.pool();
         this.peers = model.peers();
         // Nodes beat at slightly different rates (up to a second apart), so their heartbeats do not collide.
@@ -65,8 +67,12 @@ final class NetworkService {
         this.nextRecovery = now;
     }
 
-    /** Asks the network for its tip, so a node that joins late catches up at once, and reads its own address. */
-    void begin() {
+    /**
+     * Asks the network for its tip, so a node that joins late catches up at once, and reads its own address. Starts
+     * the silence count afresh, since the link may have been down for a while.
+     */
+    void begin(int now) {
+        lastHeard = now;
         Wifi.localIP(model.address());
         ChainProtocol.writeRequest(reply, ChainProtocol.GET_TIP);
         broadcast();
@@ -94,7 +100,7 @@ final class NetworkService {
         if (now - nextHello >= 0) {
             nextHello = now + helloEvery;
             int tip = pool.tip();
-            ChainProtocol.writeHello(reply, model.uuid(), pool.height(tip), pool.work(tip),
+            ChainProtocol.writeHello(reply, model.uuidBytes(), pool.height(tip), pool.work(tip),
                     model.syncing() ? 0 : ChainProtocol.MINING);
             broadcast();
         }
@@ -144,8 +150,8 @@ final class NetworkService {
     }
 
     /**
-     * Restarts Wi-Fi and the UDP socket when no packet has arrived for {@link #SILENT_MILLIS}. The restart blocks the
-     * frame loop until the link is back: with no thread of its own, the node neither mines nor redraws meanwhile.
+     * Restarts Wi-Fi and the UDP socket when no packet has arrived for {@link #SILENT_MILLIS}. The link rejoins step by
+     * step, so the views keep redrawing; the node neither serves the network nor mines until it is back.
      */
     private void restartIfSilent(int now) {
         if (now - lastHeard < SILENT_MILLIS || now - nextRecovery < 0) {
@@ -159,7 +165,7 @@ final class NetworkService {
         Serial.print(" (restart ");
         Serial.print(model.restarts());
         Serial.println(")");
-        NodeIo.connect();
+        link.start(now);
     }
 
     private void reportLostPeers(int now) {
@@ -209,7 +215,7 @@ final class NetworkService {
 
     /** Notes the peer's heartbeat and, when it holds a heavier tip than ours, asks it for that tip. */
     private void serveHello(int now) {
-        if (NodeId.same(incoming, ChainProtocol.HELLO_UUID, model.uuid(), 0)) {
+        if (NodeId.same(incoming, ChainProtocol.HELLO_UUID, model.uuidBytes(), 0)) {
             // This node's own heartbeat, echoed back by the network.
             return;
         }

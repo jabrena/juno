@@ -7,7 +7,7 @@ import io.github.jabrena.juno.games.blockchain.GameScreen;
 /**
  * The row of tabs along the bottom of the portrait 240x320 screen, one per view in {@link Miner2Views} order. Every
  * view draws it with its own tab highlighted and hands it the touches, so one copy of the drawing and hit-testing
- * code serves all three.
+ * code serves all three. Stopping is not a tab: it is the Wi-Fi icon in the header.
  */
 public final class TabBar {
     public static final int TOP = GameScreen.MENU_Y;
@@ -56,6 +56,9 @@ public final class TabBar {
         if (tab == Miner2Views.CHAIN) {
             return "CHAIN";
         }
-        return tab == Miner2Views.PEERS ? "PEERS" : "NET";
+        if (tab == Miner2Views.PEERS) {
+            return "PEERS";
+        }
+        return "NET";
     }
 }

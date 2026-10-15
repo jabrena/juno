@@ -8,17 +8,20 @@ import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.mvc.ViewRouter;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
-import io.github.jabrena.juno.games.blockchain.GameScreen;
-import io.github.jabrena.juno.games.blockchain.NodeIo;
 import io.github.jabrena.juno.usecases.miner.BlockPool;
 import io.github.jabrena.juno.usecases.miner.NodeId;
 import io.github.jabrena.juno.usecases.miner2.chain.ChainView;
+import io.github.jabrena.juno.usecases.miner2.commons.Miner2Header;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2State;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2Views;
 import io.github.jabrena.juno.usecases.miner2.cover.CoverView;
+import io.github.jabrena.juno.usecases.miner2.intro.IntroView;
 import io.github.jabrena.juno.usecases.miner2.network.NetworkView;
 import io.github.jabrena.juno.usecases.miner2.peers.PeersView;
+import io.github.jabrena.juno.usecases.miner2.services.Miner2Persistence;
 import io.github.jabrena.juno.usecases.miner2.services.NodeService;
+
+import java.util.UUID;
 
 /**
  * Model-view-controller migration of {@link io.github.jabrena.juno.usecases.miner.MinerGame}, following Doom2. The
@@ -38,33 +41,39 @@ public final class Miner2 {
     /** A frame is a little longer than the node service's mining budget, so touches and redraws stay prompt. */
     private static final int FRAME_MILLIS = 25;
 
-    private Miner2() {
-    }
-
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(500);
+        Serial.println("Miner2 example");
+
         TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
-        GameScreen.message("CONNECTING WIFI", TftTouchShield.CYAN);
-        NodeIo.connect();
+        TftTouchShield.setRotation(TftTouchShield.PORTRAIT);
 
-        byte[] uuid = new byte[NodeId.SIZE];
-        NodeId.generate(uuid);
-        Serial.print("Miner2 node ");
-        NodeId.print(uuid);
-        Serial.println("");
+        new Miner2().run();
+    }
 
+    private void run() {
+
+        Miner2Persistence persistence = new Miner2Persistence();
+        UUID uuid = persistence.loadOrCreateIdentity();
         Miner2State model = new Miner2State(new BlockPool(INITIAL_BITS, RETARGET_INTERVAL, TARGET_SECONDS), uuid);
-        ViewRouter controller = new ViewRouter(FRAME_MILLIS);
-        controller.register(Miner2Views.CHAIN, new ChainView(controller, model));
-        controller.register(Miner2Views.PEERS, new PeersView(controller, model));
-        controller.register(Miner2Views.NETWORK, new NetworkView(controller, model));
-        controller.register(Miner2Views.COVER, new CoverView(controller));
+        model.publishSdCardReady(persistence.isReady());
+        Serial.print("Miner2 node ");
+        NodeId.print(model.uuidBytes());
+        Serial.println("");
+        Serial.println(persistence.isReady() ? "SD journal ready" : "SD journal unavailable");
 
-        NodeService node = new NodeService(model);
-        node.begin();
-        controller.start(Miner2Views.COVER);
+        NodeService node = new NodeService(model, persistence);
+        node.connect();
+        Miner2Header header = new Miner2Header(model);
+
+        ViewRouter controller = new ViewRouter(FRAME_MILLIS);
+        controller.register(Miner2Views.CHAIN, new ChainView(controller, model, header, node));
+        controller.register(Miner2Views.PEERS, new PeersView(controller, model, header, node));
+        controller.register(Miner2Views.NETWORK, new NetworkView(controller, model, header, node));
+        controller.register(Miner2Views.COVER, new CoverView(controller, node, header));
+        controller.register(Miner2Views.INTRO, new IntroView(controller));
+        controller.start(Miner2Views.INTRO);
         controller.background(node);
         controller.run();
     }

@@ -6,9 +6,11 @@ import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.tft.TftTouchShield;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.usecases.miner2.commons.Miner2Header;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2State;
 import io.github.jabrena.juno.usecases.miner2.commons.Miner2Views;
 import io.github.jabrena.juno.usecases.miner2.commons.TabBar;
+import io.github.jabrena.juno.usecases.miner2.services.NodeService;
 
 /**
  * What this node can tell about its network and its work: its address, the packets it received, rejected, sent
@@ -20,17 +22,21 @@ public final class NetworkView implements View {
 
     private final Navigator navigator;
     private final Miner2State model;
+    private final Miner2Header header;
+    private final NodeService node;
     private int refreshedAt;
     private int hashesAtRefresh;
 
-    public NetworkView(Navigator navigator, Miner2State model) {
+    public NetworkView(Navigator navigator, Miner2State model, Miner2Header header, NodeService node) {
         this.navigator = navigator;
         this.model = model;
+        this.header = header;
+        this.node = node;
     }
 
     @Override
     public void enter() {
-        GameScreen.header("MINER", TftTouchShield.GREEN);
+        header.enter();
         TabBar.draw(Miner2Views.NETWORK);
         GameScreen.row(1, 1, TftTouchShield.GRAY);
         TftTouchShield.print("UDP port " + NodeIo.PORT);
@@ -41,6 +47,7 @@ public final class NetworkView implements View {
 
     @Override
     public void render() {
+        header.render();
         int now = Clock.millis();
         int elapsed = now - refreshedAt;
         if (elapsed < REFRESH_MILLIS) {
@@ -55,7 +62,11 @@ public final class NetworkView implements View {
 
     @Override
     public void touch(int x, int y) {
-        TabBar.follow(navigator, x, y);
+        if (Miner2Header.isWifi(x, y)) {
+            node.toggleWifi();
+        } else {
+            TabBar.follow(navigator, x, y);
+        }
     }
 
     /** The rate of {@code hashes} tried in {@code elapsedMillis}, in hashes per second. */
@@ -67,6 +78,7 @@ public final class NetworkView implements View {
     private void showCounters(int rate) {
         int[] ip = model.address();
         GameScreen.row(0, 2, TftTouchShield.WHITE);
+        // The UNO Q reports 0.0.0.0: its Wi-Fi belongs to Linux, which does not share the address with the MCU.
         TftTouchShield.print("IP " + ip[0] + "." + ip[1] + "." + ip[2] + "." + ip[3]);
         GameScreen.row(2, 1, TftTouchShield.WHITE);
         TftTouchShield.print("Received " + model.received());
