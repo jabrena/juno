@@ -140,6 +140,7 @@ public final class IntrinsicLowering {
         registerStructuredTasks();
         registerScopedValues();
         registerUuid();
+        registerLocalDateTime();
         registerMonitors();
         registerSerial();
         registerStrings();
@@ -198,6 +199,31 @@ public final class IntrinsicLowering {
         shim(Intrinsic.UUID_FROM_STRING, "juno_uuid_from_string", Result.WORD, List.of(STRING_ARGUMENT),
                 ShimFeature.UUID, ShimFeature.EXCEPTIONS);
         shim(Intrinsic.UUID_TO_STRING, "juno_uuid_to_string", Result.WORD, List.of(RECEIVER), ShimFeature.UUID);
+    }
+
+    private void registerLocalDateTime() {
+        shim(Intrinsic.LOCAL_DATE_TIME_CONFIGURE, "juno_local_date_time_configure", Result.WORD, List.of(arg(0)),
+                ShimFeature.LOCAL_DATE_TIME, ShimFeature.LOCAL_DATE_TIME_CONFIG, ShimFeature.SD);
+        shim(Intrinsic.LOCAL_DATE_TIME_NOW, "juno_local_date_time_now", Result.WORD, List.of(),
+                ShimFeature.LOCAL_DATE_TIME, ShimFeature.LOCAL_DATE_TIME_NOW, ShimFeature.WIFI, ShimFeature.HTTPS);
+        shim(Intrinsic.LOCAL_DATE_TIME_MIN, "juno_local_date_time_min", Result.WORD, List.of(),
+                ShimFeature.LOCAL_DATE_TIME);
+        shim(Intrinsic.LOCAL_DATE_TIME_GET_YEAR, "juno_local_date_time_get_year", Result.WORD,
+                List.of(RECEIVER), ShimFeature.LOCAL_DATE_TIME);
+        shim(Intrinsic.LOCAL_DATE_TIME_GET_MONTH_VALUE, "juno_local_date_time_get_month_value", Result.WORD,
+                List.of(RECEIVER), ShimFeature.LOCAL_DATE_TIME);
+        shim(Intrinsic.LOCAL_DATE_TIME_GET_DAY_OF_MONTH, "juno_local_date_time_get_day_of_month", Result.WORD,
+                List.of(RECEIVER), ShimFeature.LOCAL_DATE_TIME);
+        shim(Intrinsic.LOCAL_DATE_TIME_GET_HOUR, "juno_local_date_time_get_hour", Result.WORD,
+                List.of(RECEIVER), ShimFeature.LOCAL_DATE_TIME);
+        shim(Intrinsic.LOCAL_DATE_TIME_GET_MINUTE, "juno_local_date_time_get_minute", Result.WORD,
+                List.of(RECEIVER), ShimFeature.LOCAL_DATE_TIME);
+        shim(Intrinsic.LOCAL_DATE_TIME_GET_SECOND, "juno_local_date_time_get_second", Result.WORD,
+                List.of(RECEIVER), ShimFeature.LOCAL_DATE_TIME);
+        shim(Intrinsic.LOCAL_DATE_TIME_EQUALS, "juno_local_date_time_equals", Result.WORD,
+                List.of(RECEIVER, arg(0)), ShimFeature.LOCAL_DATE_TIME);
+        shim(Intrinsic.LOCAL_DATE_TIME_TO_STRING, "juno_local_date_time_to_string", Result.WORD,
+                List.of(RECEIVER), ShimFeature.LOCAL_DATE_TIME);
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */

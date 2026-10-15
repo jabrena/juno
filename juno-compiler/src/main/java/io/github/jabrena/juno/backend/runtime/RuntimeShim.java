@@ -26,6 +26,7 @@ public final class RuntimeShim {
     private final MathRuntime mathRuntime = new MathRuntime();
     private final BigNumberRuntime bigNumberRuntime = new BigNumberRuntime();
     private final UuidRuntime uuidRuntime = new UuidRuntime();
+    private final LocalDateTimeRuntime localDateTimeRuntime = new LocalDateTimeRuntime();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
     private final IoRuntime ioRuntime = new IoRuntime();
     private final NetworkShimLibraries networkShimLibraries = new NetworkShimLibraries();
@@ -293,7 +294,15 @@ public final class RuntimeShim {
             shim.append(uuidRuntime.helpers(throwableClasses.indexOf("java/lang/IllegalArgumentException"),
                     uses(ShimFeature.UUID_RANDOM)));
         }
+        appendLocalDateTimeHelpers(shim);
         appendConcurrencyHelpers(shim);
+    }
+
+    private void appendLocalDateTimeHelpers(StringBuilder shim) {
+        if (uses(ShimFeature.LOCAL_DATE_TIME)) {
+            shim.append(localDateTimeRuntime.helpers(uses(ShimFeature.LOCAL_DATE_TIME_NOW),
+                    uses(ShimFeature.LOCAL_DATE_TIME_CONFIG)));
+        }
     }
 
     /** Scoped-value bindings, then the thread scheduler that swaps them (it refers to the binding stack). */

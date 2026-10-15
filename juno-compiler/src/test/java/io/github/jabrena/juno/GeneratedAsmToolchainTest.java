@@ -33,6 +33,40 @@ class GeneratedAsmToolchainTest {
     Path temporaryDirectory;
 
     @Test
+    void compilesAnInternetBackedLocalDateTimeShimWithACppCompiler() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.InternetClock;
+                import io.github.jabrena.juno.api.net.Wifi;
+                import java.time.LocalDateTime;
+                import java.util.Properties;
+                @Board(ArduinoUnoR4WiFi.class)
+                public final class AsmLocalDateTime {
+                    public static void main(String[] args) {
+                        Wifi.begin("ssid", "password");
+                        Properties properties = new Properties();
+                        InternetClock.configure(properties);
+                        LocalDateTime value = LocalDateTime.now();
+                        boolean offline = value.equals(LocalDateTime.MIN);
+                        int fields = value.getYear() + value.getMonthValue() + value.getDayOfMonth()
+                                + value.getHour() + value.getMinute() + value.getSecond();
+                        String text = value.toString();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLocalDateTime", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLocalDateTime");
+        Path shim = temporaryDirectory.resolve("AsmLocalDateTimeShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
     void compilesAUuidProgramsShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");

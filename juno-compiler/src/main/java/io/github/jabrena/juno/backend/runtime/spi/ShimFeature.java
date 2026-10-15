@@ -60,6 +60,12 @@ public enum ShimFeature {
     UUID,
     /** A board-native cryptographic random source used by {@code UUID.randomUUID()}. */
     UUID_RANDOM,
+    /** {@code java.time.LocalDateTime}: immutable calendar values represented by one-word handles. */
+    LOCAL_DATE_TIME,
+    /** Internet-backed UTC synchronization used by {@code LocalDateTime.now()}. */
+    LOCAL_DATE_TIME_NOW,
+    /** SD-loaded {@code application.properties} can override the internet clock endpoint and JSON path. */
+    LOCAL_DATE_TIME_CONFIG,
     /** {@code java.math.BigInteger}/{@code BigDecimal}/{@code MathContext}: immutable arena blocks. */
     BIG_NUMBERS,
     /** {@code BigDecimal.valueOf(double)}, which formats the double with the runtime-string helpers. */
