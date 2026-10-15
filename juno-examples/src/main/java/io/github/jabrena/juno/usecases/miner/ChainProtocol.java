@@ -9,13 +9,18 @@ import io.github.jabrena.juno.games.blockchain.Bytes;
  *  0..3   "JUNO"
  *  4      version (1)
  *  5      service (3 = chain)
- *  6      type: BLOCK, GET_BLOCK, GET_TIP or HELLO
+ *  6      type: BLOCK, GET_BLOCK, GET_TIP, HELLO, CLAIM or TAKEN
  *  7      HELLO: flags ({@link #MINING}); otherwise reserved
  *  8..11  BLOCK: height the sender gives the block; HELLO: the height of the sender's tip
  * 12..19  BLOCK: cumulative work the sender gives it; HELLO: the work of the sender's tip
  * 20..23  BLOCK: start time of its retarget period
  * 24..    BLOCK: the block ({@link BlockFormat}); GET_BLOCK: the 32-byte hash wanted;
- *         HELLO: the sender's 16-byte node UUID ({@link NodeId})
+ *         HELLO, CLAIM, TAKEN: the sender's 16-byte node UUID ({@link NodeId}), then the bit board:
+ * 40..43  board round
+ * 44      HELLO: the bounty bit length the sender owns (0 for none); CLAIM, TAKEN: the bit length asked about
+ * 45..52  mask of the bit lengths the sender has seen mined this round (bit {@code n} for length {@code n})
+ * 53      the sender's color plus one (0 for none)
+ * 54..85  the color plus one of the node that mined each bit length, a nibble per length, high nibble first
  * </pre>
  *
  * The three metadata fields are what the sender computed. A receiver that holds the parent
@@ -24,12 +29,18 @@ import io.github.jabrena.juno.games.blockchain.Bytes;
  * <p>HELLO is the heartbeat each node broadcasts every few seconds: its UUID and the height and cumulative
  * work of its tip. Nodes that predate it ignore the type; the packet keeps the common size so they still accept
  * it as well-formed before skipping it.
+ *
+ * <p>CLAIM and TAKEN share out bounty bit lengths (Miner 2's blocks board): a node broadcasts CLAIM for the length it
+ * wants to mine next, and a node that owns that length, or has seen it mined, answers TAKEN. Nodes that predate them
+ * skip both types, and their HELLO leaves the board fields zero: round 0, no board.
  */
 public final class ChainProtocol {
     public static final int BLOCK = 1;
     public static final int GET_BLOCK = 2;
     public static final int GET_TIP = 3;
     public static final int HELLO = 4;
+    public static final int CLAIM = 5;
+    public static final int TAKEN = 6;
 
     /** HELLO flag: the sender is mining, as opposed to waiting for a heavier chain it has heard of. */
     public static final int MINING = 1;
@@ -39,6 +50,11 @@ public final class ChainProtocol {
     /** Where a HELLO packet carries its sender's UUID. */
     public static final int HELLO_UUID = BODY;
 
+    private static final int BOARD_ROUND = HELLO_UUID + NodeId.SIZE;
+    private static final int BOARD_BIT = BOARD_ROUND + 4;
+    private static final int BOARD_MINED = BOARD_BIT + 1;
+    private static final int BOARD_COLOR = BOARD_MINED + 8;
+    private static final int BOARD_CELLS = BOARD_COLOR + 1;
     private static final int TYPE = 6;
     private static final int HEIGHT = 8;
     private static final int WORK = 12;
@@ -83,6 +99,54 @@ public final class ChainProtocol {
         Bytes.writeInt(packet, HEIGHT, height);
         Bytes.writeLong(packet, WORK, work);
         BlockFormat.copy(uuid, 0, packet, HELLO_UUID, NodeId.SIZE);
+    }
+
+    /**
+     * Adds the bit board to a HELLO that {@link #writeHello} or a claim that {@link #writeClaim} wrote: the board's
+     * {@code round}, the bit length the sender owns or asks about ({@code bit}, 0 for none), the {@code mined} mask
+     * and the sender's {@code color} plus one. The cells' colors follow with {@link #writeBoardCell}.
+     */
+    public static void writeBoard(byte[] packet, int round, int bit, long mined, int color) {
+        Bytes.writeInt(packet, BOARD_ROUND, round);
+        packet[BOARD_BIT] = (byte) bit;
+        Bytes.writeLong(packet, BOARD_MINED, mined);
+        packet[BOARD_COLOR] = (byte) color;
+    }
+
+    /** Writes {@code value} (0 to 15) as the color of bit length {@code length} (0 to 63). */
+    public static void writeBoardCell(byte[] packet, int length, int value) {
+        int at = BOARD_CELLS + length / 2;
+        int shift = length % 2 == 0 ? 4 : 0;
+        packet[at] = (byte) (packet[at] & ~(15 << shift) | (value & 15) << shift);
+    }
+
+    /** A {@link #CLAIM} or {@link #TAKEN} packet from the node with {@code uuid}; its board follows. */
+    public static void writeClaim(byte[] packet, int type, byte[] uuid) {
+        writeRequest(packet, type);
+        BlockFormat.copy(uuid, 0, packet, HELLO_UUID, NodeId.SIZE);
+    }
+
+    /** The sender's color plus one, 0 for none. */
+    public static int boardColor(byte[] packet) {
+        return Bytes.unsigned(packet[BOARD_COLOR]);
+    }
+
+    /** What {@link #writeBoardCell} wrote for bit length {@code length}. */
+    public static int boardCell(byte[] packet, int length) {
+        int shift = length % 2 == 0 ? 4 : 0;
+        return Bytes.unsigned(packet[BOARD_CELLS + length / 2]) >>> shift & 15;
+    }
+
+    public static int boardRound(byte[] packet) {
+        return Bytes.readInt(packet, BOARD_ROUND);
+    }
+
+    public static int boardBit(byte[] packet) {
+        return Bytes.unsigned(packet[BOARD_BIT]);
+    }
+
+    public static long boardMined(byte[] packet) {
+        return Bytes.readLong(packet, BOARD_MINED);
     }
 
     public static int helloFlags(byte[] packet) {

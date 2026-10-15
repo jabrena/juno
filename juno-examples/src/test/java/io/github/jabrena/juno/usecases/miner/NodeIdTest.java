@@ -60,4 +60,16 @@ class NodeIdTest {
 
         assertThat(NodeId.same(first, 0, second, 0)).as("the generator keeps advancing").isFalse();
     }
+
+    @Test
+    void precedesOrdersUuidsByUnsignedBytes() {
+        byte[] low = new byte[NodeId.SIZE];
+        byte[] high = new byte[NodeId.SIZE];
+        low[15] = 0x7f;
+        high[15] = (byte) 0x80;
+
+        assertThat(NodeId.precedes(low, 0, high, 0)).as("0x80 is above 0x7f, not negative").isTrue();
+        assertThat(NodeId.precedes(high, 0, low, 0)).isFalse();
+        assertThat(NodeId.precedes(low, 0, low.clone(), 0)).as("a UUID does not precede itself").isFalse();
+    }
 }

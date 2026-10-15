@@ -34,8 +34,8 @@ final class BlockRules {
     }
 
     /**
-     * Whether the block at {@code buffer[base..)} carries a payload matching its payload hash, the bounty
-     * its parent hash dictates, and a correct factorization of it.
+     * Whether the block at {@code buffer[base..)} carries a payload matching its payload hash, a bounty its parent
+     * hash dictates for one of the allowed bit lengths, and a correct factorization of it.
      */
     boolean payloadValid(byte[] buffer, int base) {
         payloadHash(buffer, base, digest);
@@ -43,7 +43,9 @@ final class BlockRules {
             return false;
         }
         long number = Bytes.readLong(buffer, base + BlockFormat.NUMBER);
-        if (number != BlockFormat.bounty(buffer, base + BlockFormat.PREVIOUS)) {
+        int length = BlockFormat.bitLength(number);
+        if (length < BlockFormat.MIN_BOUNTY_BITS || length > BlockFormat.MAX_BOUNTY_BITS
+                || number != BlockFormat.bounty(buffer, base + BlockFormat.PREVIOUS, length)) {
             return false;
         }
         int count = Bytes.unsigned(buffer[base + BlockFormat.COUNT]);

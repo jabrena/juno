@@ -30,6 +30,14 @@ public final class Miner {
 
     /** Starts a new block on {@code pool}'s tip, mined by {@code minerId} at network time {@code now} (seconds). */
     public void prepare(BlockPool pool, int minerId, int now) {
+        prepare(pool, minerId, now, BlockFormat.BOUNTY_BITS);
+    }
+
+    /**
+     * Like {@link #prepare(BlockPool, int, int)}, factoring a bounty of {@code bountyBits} bits, from
+     * {@link BlockFormat#MIN_BOUNTY_BITS} to {@link BlockFormat#MAX_BOUNTY_BITS}.
+     */
+    public void prepare(BlockPool pool, int minerId, int now, int bountyBits) {
         int tip = pool.tip();
         byte[] hashes = pool.hashes();
         for (int i = 0; i < BlockFormat.MAX_SIZE; i++) {
@@ -38,7 +46,7 @@ public final class Miner {
         Bytes.writeInt(block, 0, BlockFormat.VERSION);
         BlockFormat.copy(hashes, tip * Sha256.DIGEST_SIZE, block, BlockFormat.PREVIOUS, Sha256.DIGEST_SIZE);
 
-        long number = BlockFormat.bounty(block, BlockFormat.PREVIOUS);
+        long number = BlockFormat.bounty(block, BlockFormat.PREVIOUS, bountyBits);
         int count = Factorizer.factorize(number, primes, exponents, stack);
         Bytes.writeInt(block, BlockFormat.MINER, minerId);
         Bytes.writeLong(block, BlockFormat.NUMBER, number);

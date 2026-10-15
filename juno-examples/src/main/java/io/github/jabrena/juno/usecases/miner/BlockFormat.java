@@ -15,7 +15,7 @@ import io.github.jabrena.juno.games.blockchain.Sha256;
  *         72  bits(4)               required leading zero bits of the header hash
  *         76  nonce(4)
  * payload 80  miner id(4)
- *         84  n(8)                  the bounty: derived from the previous hash, never chosen by the miner
+ *         84  n(8)                  the bounty: derived from the previous hash; the miner chooses only its bit length
  *         92  factor count(1)
  *         93  (prime(8), exponent(1)) x count
  * </pre>
@@ -38,8 +38,12 @@ public final class BlockFormat {
     public static final int FACTORS = PAYLOAD + 13;
     public static final int MAX_SIZE = FACTORS + Factorizer.MAX_FACTORS * 9;
 
-    /** Bit length of every bounty, the number each block has to factor. */
+    /** Bit length of the bounty MinerGame mines, the number each of its blocks has to factor. */
     static final int BOUNTY_BITS = 40;
+    /** The shortest bounty a block may carry: a 1-bit number has no prime factors. */
+    public static final int MIN_BOUNTY_BITS = 2;
+    /** The longest bounty a block may carry, the limit of {@code Factorizer}. */
+    public static final int MAX_BOUNTY_BITS = 62;
 
     private BlockFormat() {
     }
@@ -54,9 +58,28 @@ public final class BlockFormat {
                 && Bytes.unsigned(buffer[offset + COUNT]) <= Factorizer.MAX_FACTORS;
     }
 
-    /** The number a block whose parent hash is at {@code buffer[offset..offset + 32)} must factor. */
+    /** The {@link #BOUNTY_BITS}-bit number a block whose parent hash is at {@code buffer[offset..offset + 32)} factors. */
     static long bounty(byte[] buffer, int offset) {
-        return (Bytes.readLong(buffer, offset) >>> (64 - BOUNTY_BITS)) | (1L << (BOUNTY_BITS - 1));
+        return bounty(buffer, offset, BOUNTY_BITS);
+    }
+
+    /**
+     * The {@code length}-bit number a block whose parent hash is at {@code buffer[offset..offset + 32)} factors: the
+     * hash's top bits with the highest one set, so the number has exactly {@code length} bits.
+     */
+    static long bounty(byte[] buffer, int offset, int length) {
+        return (Bytes.readLong(buffer, offset) >>> (64 - length)) | (1L << (length - 1));
+    }
+
+    /** How many bits {@code number} needs, 0 for 0: the bit length a bounty was derived with. */
+    public static int bitLength(long number) {
+        int length = 0;
+        long rest = number;
+        while (rest != 0) {
+            rest = rest >>> 1;
+            length++;
+        }
+        return length;
     }
 
     /** Whether the 32-byte hash at {@code hash[0..32)} starts with at least {@code bits} zero bits. */

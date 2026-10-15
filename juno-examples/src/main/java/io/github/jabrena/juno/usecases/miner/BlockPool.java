@@ -158,6 +158,11 @@ public final class BlockPool {
         return -1;
     }
 
+    /** The slot holding the parent of the block in {@code slot}, or -1 when the parent is not held. */
+    public int parent(int slot) {
+        return parentOf(slot);
+    }
+
     /** Whether {@code slot} holds a block that passed validation (only those are served to peers). */
     public boolean isValid(int slot) {
         return status[slot] == VALID;

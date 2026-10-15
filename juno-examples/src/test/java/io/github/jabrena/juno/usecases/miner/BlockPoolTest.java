@@ -52,10 +52,13 @@ class BlockPoolTest {
         rehashPayload(lyingPayload);
         assertThat(deliver(lyingPayload, pool())).as("factors that do not multiply back").isEqualTo(BlockPool.INVALID);
 
+        // A 2-bit bounty is allowed, but the parent hash dictates which of 2 and 3 it is: take the other one.
+        long dictated = BlockFormat.bounty(good, ChainProtocol.BODY + BlockFormat.PREVIOUS, 2);
+        long chosen = dictated == 2 ? 3 : 2;
         byte[] easyNumber = good.clone();
-        Bytes.writeLong(easyNumber, ChainProtocol.BODY + BlockFormat.NUMBER, 2);
+        Bytes.writeLong(easyNumber, ChainProtocol.BODY + BlockFormat.NUMBER, chosen);
         easyNumber[ChainProtocol.BODY + BlockFormat.COUNT] = 1;
-        Bytes.writeLong(easyNumber, ChainProtocol.BODY + BlockFormat.FACTORS, 2);
+        Bytes.writeLong(easyNumber, ChainProtocol.BODY + BlockFormat.FACTORS, chosen);
         easyNumber[ChainProtocol.BODY + BlockFormat.FACTORS + 8] = 1;
         rehashPayload(easyNumber);
         assertThat(deliver(easyNumber, pool())).as("a number the miner chose").isEqualTo(BlockPool.INVALID);
@@ -76,6 +79,37 @@ class BlockPoolTest {
                     Bytes.readInt(noWork, ChainProtocol.BODY + BlockFormat.NONCE) + 1);
         } while (meetsTarget(noWork));
         assertThat(deliver(noWork, pool())).as("hash above the target").isEqualTo(BlockPool.INVALID);
+    }
+
+    @Test
+    void acceptsABountyOfAnyAllowedBitLength() {
+        BlockPool a = pool();
+        BlockPool b = pool();
+        Miner miner = new Miner();
+        for (int length : new int[] {BlockFormat.MIN_BOUNTY_BITS, 7, BlockFormat.MAX_BOUNTY_BITS}) {
+            miner.prepare(a, 1, a.time(a.tip()) + 1, length);
+            while (!miner.mine(64)) {
+                // keep hashing
+            }
+            assertThat(a.add(miner.block(), 0, 0, 0L, 0)).isEqualTo(BlockPool.NEW_TIP);
+            byte[] packet = new byte[ChainProtocol.PACKET_SIZE];
+            ChainProtocol.writeBlock(packet, a, a.tip());
+
+            assertThat(deliver(packet, b)).as("a %d-bit bounty", length).isEqualTo(BlockPool.NEW_TIP);
+            long number = Bytes.readLong(b.blocks(), b.tip() * BlockFormat.MAX_SIZE + BlockFormat.NUMBER);
+            assertThat(BlockFormat.bitLength(number)).isEqualTo(length);
+        }
+    }
+
+    @Test
+    void walksBackFromABlockToItsParent() {
+        BlockPool a = pool();
+        mine(a, 1, 2, 0, 1);
+
+        int parent = a.parent(a.tip());
+        assertThat(a.height(parent)).isEqualTo(1);
+        assertThat(a.height(a.parent(parent))).isZero();
+        assertThat(a.parent(a.parent(parent))).as("genesis has no parent").isEqualTo(-1);
     }
 
     @Test

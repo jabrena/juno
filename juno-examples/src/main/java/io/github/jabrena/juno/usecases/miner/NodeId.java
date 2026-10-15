@@ -51,6 +51,21 @@ public final class NodeId {
         return true;
     }
 
+    /**
+     * Whether the UUID at {@code a[aOffset..)} sorts before the one at {@code b[bOffset..)}, comparing unsigned bytes:
+     * an order every node agrees on, to settle a tie between two of them.
+     */
+    public static boolean precedes(byte[] a, int aOffset, byte[] b, int bOffset) {
+        for (int i = 0; i < SIZE; i++) {
+            int x = a[aOffset + i] & 0xff;
+            int y = b[bOffset + i] & 0xff;
+            if (x != y) {
+                return x < y;
+            }
+        }
+        return false;
+    }
+
     /** Prints {@code uuid} in the usual 8-4-4-4-12 form, without a line break. */
     public static void print(byte[] uuid) {
         for (int i = 0; i < SIZE; i++) {
