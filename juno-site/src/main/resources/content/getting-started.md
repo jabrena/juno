@@ -140,9 +140,8 @@ Zephyr firmware builds with the watchdog subsystem disabled. Juno rejects unsupp
 compile time for the selected board. The TFT games
 [Star Trek](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/startrek/StarTrek.java),
 [Star Wars](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/starwars/StarWars.java),
-[The Empire Strikes Back](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/empirestrikesback/EmpireStrikesBack.java),
-[Red Baron](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/redbaron/RedBaron.java) and
-[Space Paranoids](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/spaceparanoids/SpaceParanoids.java)
+[The Empire Strikes Back](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/empirestrikesback/EmpireStrikesBack.java) and
+[Red Baron](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/redbaron/RedBaron.java)
 target the UNO Q:
 
 ```java

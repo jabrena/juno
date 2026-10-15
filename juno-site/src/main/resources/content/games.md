@@ -32,7 +32,7 @@ The screenshots were rendered on a desktop by running each game's unmodified cod
 
 ## Contents
 
-- [Arcade](#arcade): [Pac-Man](#pac-man), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [Space Paranoids](#space-paranoids), [DOOM](#doom), [Lunar Lander](#lunar-lander)
+- [Arcade](#arcade): [Pac-Man](#pac-man), [Missile Command](#missile-command), [Tempest](#tempest), [Star Wars](#star-wars), [The Empire Strikes Back](#the-empire-strikes-back), [Red Baron](#red-baron), [Star Trek](#star-trek), [DOOM](#doom), [Lunar Lander](#lunar-lander)
 - [Board and strategy](#board-and-strategy): [Chess](#chess), [Battleship](#battleship)
 - [Cards and casino](#cards-and-casino): [Blackjack](#blackjack), [Texas Hold'em](#texas-holdem)
 - [Network](#network): [Gladiator](#gladiator)
@@ -125,17 +125,6 @@ Command the Enterprise through sectors of Klingon battlecruisers with phasers, p
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.startrek.StarTrek
-```
-
-### Space Paranoids
-
-<img src="../images/games/space-paranoids-cpu.gif" alt="Space Paranoids on the TFT shield, three minutes driven by the CPU" width="320">
-
-Drive a tank through a wireframe maze and destroy the flying hunters before time runs out. Play it yourself or watch the CPU. Runs on the Arduino UNO Q.
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.games.spaceparanoids.SpaceParanoids
 ```
 
 ### DOOM
@@ -333,10 +322,10 @@ On top of these:
   regenerate the pictures with
   `./mvnw -pl juno-examples test -Dtest=GameScreenshotTest -Djuno.updateScreenshots=true`.
 - `CardGamesTest`, `PacManTest`, `MissileCommandTest`, `TempestTest`, `StarWarsTest`,
-  `EmpireStrikesBackTest`, `RedBaronTest`, `StarTrekTest`, `SpaceParanoidsTest`, `DoomTest`,
+  `EmpireStrikesBackTest`, `RedBaronTest`, `StarTrekTest`, `DoomTest`,
   `LunarLanderTest` and `GladiatorTest` check rules and computer players: the poker hand ranking against a brute-force
   reference, no chip lost across all-ins and side pots, and that autopilots clear Missile Command
-  waves, Tempest levels, Space Paranoids and Star Trek sectors, whole Red Baron and
+  waves, Tempest levels, Star Trek sectors, whole Red Baron and
   Empire Strikes Back waves, nearly every dot of a Pac-Man maze, and a Gladiator duel fought to the end
   through the arena's own rules and packets.
 
