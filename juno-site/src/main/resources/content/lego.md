@@ -4,8 +4,8 @@ description: "Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, fro
 layout: page
 ---
 
-[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubRemote.java)
-(`io.github.jabrena.juno.api.lego`) lets a Juno program remote-control a LEGO Powered Up hub — run
+[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/lego/poweredup/PoweredUpHubRemote.java)
+(`io.github.jabrena.juno.api.lego.poweredup`) lets a Juno program remote-control a LEGO Powered Up hub — run
 its motors and set its status LED — the same way the LEGO apps do. The board acts as a Bluetooth
 Low Energy central and speaks the
 [LEGO Wireless Protocol 3.0](https://lego.github.io/lego-ble-wireless-protocol-docs/) to the hub.
@@ -37,7 +37,7 @@ for that board that uses `PoweredUpHubRemote` should not also use `Wifi`, `Udp`,
 ## API
 
 ```java
-import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
+import io.github.jabrena.juno.api.lego.poweredup.PoweredUpHubRemote;
 
 if (PoweredUpHubRemote.connect(10_000)) {              // scan up to 10 s; 0 waits forever
     PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
@@ -99,7 +99,7 @@ Things to know:
 
 ### Example: driving a square
 
-[`MagicSquarePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/MagicSquarePoweredUpHub.java)
+[`MagicSquarePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/poweredup/MagicSquarePoweredUpHub.java)
 drives a two-motor vehicle (left motor on port A, right on port B) around a square, forever: straight
 for 3 seconds, stop, turn left 90 degrees, straight for 3 seconds, stop, turn left 90 degrees:
 
@@ -113,16 +113,16 @@ stop();
 ```
 
 `TURN_MILLIS` is the time a spin on the spot takes for 90 degrees; tune it for your vehicle.
-`MagicSquareRcx` and `MagicSquareScout` in the same package do the same over infrared with an RCX or
-Scout brick, using `RcxRemote` and `ScoutRemote`.
+`MagicSquareRcx` in `lego.rcx` and `MagicSquareScout` in `lego.scout` do the same over infrared with
+an RCX or Scout brick, using `RcxRemote` and `ScoutRemote`.
 
 ## Example: a touch screen remote
 
-[`PoweredUpHubHello`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubHello.java)
+[`PoweredUpHubHello`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/poweredup/PoweredUpHubHello.java)
 is the smallest check that a hub connects: it cycles the hub's LED through nine colors and reconnects if the
 link drops.
 
-[`PoweredUpHubTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/PoweredUpHubTFT.java)
+[`PoweredUpHubTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/poweredup/PoweredUpHubTFT.java)
 is a remote for the [ELEGOO 2.8" TFT touch shield](../tft-touch-shield). A button along the bottom connects and
 disconnects, and four tabs choose the view:
 
@@ -135,7 +135,7 @@ disconnects, and four tabs choose the view:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.lego.PoweredUpHubTFT \
+  -Djuno.main=io.github.jabrena.juno.api.lego.poweredup.PoweredUpHubTFT \
   -Djuno.board=arduino-uno-q
 ```
 

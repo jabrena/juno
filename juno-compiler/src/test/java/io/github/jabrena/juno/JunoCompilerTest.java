@@ -1801,7 +1801,7 @@ class JunoCompilerTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.lego.PoweredUpHubRemote;
+                import io.github.jabrena.juno.api.lego.poweredup.PoweredUpHubRemote;
                 @Board(ArduinoUnoR4WiFi.class)
                 public final class Train {
                     public static void main(String[] args) {
