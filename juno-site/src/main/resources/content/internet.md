@@ -467,20 +467,27 @@ data for display on the LED matrix.
 
 [`Udp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/net/Udp.java)
 works on both the UNO R4 WiFi and the UNO Q, and unlike the HTTP client its payloads are runtime
-`byte[]` buffers. That makes it the way for boards to exchange data they compute. The Miner games
-build a small, decentralized factorization network on it (see [Games](../games#network)). Code they share, such as SHA-256 and the factorizer, lives in
+`byte[]` buffers. That makes it the way for boards to exchange data they compute. Miner 2 builds a
+small, decentralized factorization network on it (see [Games](../games#network)). Code they share, such as SHA-256 and the factorizer, lives in
 [`games/blockchain`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blockchain).
 
-### Miner
+### Miner 2
 
-[`MinerGame`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/MinerGame.java)
+[`Miner2`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/Miner2.java)
 has no leader. Every board is an equal node that mines, validates and relays blocks.
 
 - **Proof-of-work.** A block counts when the SHA-256 hash of its 80-byte, Bitcoin-layout header has
   at least `bits` leading zero bits. The miner absorbs the fixed first 64 header bytes once (the
   midstate), so each attempt costs one compression.
-- **Useful work.** Each block must also carry the factorization of a 40-bit number derived from its
-  parent's hash, which every node checks. Miners can't choose an easy number.
+- **Useful work.** Each block must also carry the factorization of a number derived from its parent's
+  hash, which every node checks. The miner picks only the number's length, from 2 to 62 bits.
+- **Sharing out lengths.** Before mining, a node broadcasts `CLAIM` for the shortest length nobody has
+  mined or claimed, and waits 1.5 seconds. A node that owns that length, or has seen it mined, answers
+  `TAKEN`, and the claimer tries the next one; silence makes it the owner until a block with that
+  length joins the chain. On a simultaneous claim the lower node UUID keeps the length. Once every
+  length is mined, a new round starts. The `BLOCKS` tab shows the board like Tetris: each mined length
+  in the color of the node that mined it, and the lengths being mined outlined. Colors are unique
+  between nodes and saved on the SD card beside the node's identity.
 - **Consensus.** The branch with the most cumulative work is the chain. Every eight blocks the
   difficulty moves one bit toward a block every 30 seconds.
 - **Joining late.** A node that boots late asks for the current tip, and asks again every 30 seconds.
@@ -490,24 +497,19 @@ has no leader. Every board is an equal node that mines, validates and relays blo
 - **Heartbeats.** Every node broadcasts a small `HELLO` packet every five seconds or so, with its id and
   the height and work of its tip. A node a peer has not heard from for 15 seconds is *suspect*, and
   after 25 seconds it is declared *lost* and logged over serial; its next heartbeat brings it back.
-  Time is measured on each board's own clock. The screen shows `Nodes N  mining M`, counting the
-  board itself.
+  Time is measured on each board's own clock. The `CHAIN` tab shows `Nodes N  mining M`, counting the
+  board itself. Heartbeats also carry the sender's blocks board, so a node that joins late learns it.
 - **Catching up.** A heartbeat that announces more work than a node's tip holds makes it ask that peer for
   the tip, and pause mining (`SYNC` on the screen) instead of building a rival branch. The pause is
-  limited to 30 seconds, so a stale or lying heartbeat cannot stop a node for good. Nodes that predate
-  heartbeats ignore them and keep working.
-- **Two preemptive threads.** A virtual thread serves the network (it receives and answers packets,
-  and sends the heartbeats) while the main thread mines and shows the tip. They share one block pool
-  guarded by its monitor and take 1 ms turns on the processor, so mining never waits for the radio.
+  limited to 30 seconds, so a stale or lying heartbeat cannot stop a node for good.
+- **One thread.** The views, the network and the miner all run on the main thread: every frame the node
+  serves a few packets, then mines for about 20 ms, then the active view redraws. No locks are needed,
+  and the UNO R4 WiFi builds without extra stack settings.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.Xss=1536 -Djuno.main=io.github.jabrena.juno.usecases.miner.MinerGame
+  -Djuno.main=io.github.jabrena.juno.usecases.miner.Miner2
 ```
-
-The UNO R4 WiFi needs `-Djuno.Xss=1536`: the default 2 KiB stack for each of the three extra thread slots
-takes RAM that the 8 KiB arena would otherwise need to fit, and the miner's network thread needs about
-1.4 KB of stack. The UNO Q has the room and takes the defaults.
 
 This is phase 1 of the plan in [issue #43](https://github.com/jabrena/juno/issues/43): blocks are
 not signed yet, and block times are not bounded against the future.
@@ -516,7 +518,7 @@ not signed yet, and block times are not bounded against the future.
 
 The wire format is
 plain fixed-size bytes on UDP port 4210 (documented in
-[`ChainProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/ChainProtocol.java)).
+[`ChainProtocol`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/chain/ChainProtocol.java)).
 Another board can still join with a hand-written sketch that speaks the same packets. Juno also
 targets the 8-bit [UNO WiFi Rev2](../arduino-one-r3-wifi), subject to its smaller memory limits.
 
