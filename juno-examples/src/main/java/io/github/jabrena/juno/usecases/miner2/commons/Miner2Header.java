@@ -5,10 +5,11 @@ import io.github.jabrena.juno.games.blockchain.GameScreen;
 
 /** Draws Miner2's title and live Wi-Fi and SD-card indicators without redrawing an unchanged header. */
 public final class Miner2Header {
-    private static final int WIFI_X = 183;
-    private static final int WIFI_Y = 28;
     private static final int SD_X = 209;
     private static final int SD_Y = 8;
+    private static final int WIFI_X = 183;
+    /** The arcs' centre: the outer arc (radius 13) tops out on the SD card's top edge. */
+    private static final int WIFI_Y = SD_Y + 13;
 
     private final Miner2State model;
     private int shownStatus = -1;
