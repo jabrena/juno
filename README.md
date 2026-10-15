@@ -6,6 +6,8 @@ AVR assembly for the UNO R3's ATmega328P and the UNO WiFi Rev2's ATmega4809.
 
 [![CI Builds](https://github.com/jabrena/juno/actions/workflows/maven.yaml/badge.svg)](https://github.com/jabrena/juno/actions/workflows/maven.yaml)
 
+## Arduino boards
+
 <table>
   <tr>
     <td align="center" width="50%">
@@ -29,27 +31,44 @@ AVR assembly for the UNO R3's ATmega328P and the UNO WiFi Rev2's ATmega4809.
   </tr>
 </table>
 
-## Modules
+## Arduino Shields
 
-This is a multi-module Maven build:
-
-- [`juno-api/`](juno-api) — the programming model: the Java-facing hardware API the compiler
-  recognizes as intrinsics (`api/`) and the `@Board` annotations used to select a compilation
-  target (`annotations/`). This is the only artifact programs compile against.
-- [`juno-compiler/`](juno-compiler) — the compiler (`classfile`, `bytecode`, `linker`, `backend`, …),
-  which depends on `juno-api`. Builds the executable `juno-compiler/target/juno-compiler-<version>.jar`.
-- [`juno-maven-plugin/`](juno-maven-plugin) — Maven goals for generating a sketch (`juno:compile`),
-  compiling it with Arduino CLI (`juno:verify`), uploading it (`juno:upload`), and opening the
-  serial monitor (`juno:monitor`).
-- [`juno-examples/`](juno-examples) — example Java programs written against `juno-api`, built
-  like any other Maven module so they're checked for compile errors on every build.
-- [`juno-site/`](juno-site) — the [Roq](https://iamroq.dev)/Quarkus static site generator behind
-  the [documentation site](https://jabrena.github.io/juno/). `docs/` is entirely generated from
-  Markdown under `juno-site/src/main/resources/content/` — see
-  [Documentation site](#documentation-site) below to regenerate it.
-- [`juno-third-parties/`](juno-third-parties) — integrations maintained outside the core compiler,
-  currently including the independent H8/300 firmware generator for the LEGO RCX, its S-record,
-  and the generated Java representation consumed by `juno-examples`.
+<table>
+  <thead>
+    <tr>
+      <th>Shield</th>
+      <th>Image</th>
+      <th>Supported features</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td><strong>LCD Keypad Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="220"></td>
+    <td>16x2 HD44780 character display, five-button keypad, and controllable backlight.</td>
+  </tr>
+  <tr>
+    <td><strong>ELEGOO 2.8-inch TFT Touch Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-tft.png" alt="ELEGOO 2.8-inch TFT Touch Shield" width="220"></td>
+    <td>240x320 ILI9341 display, resistive touch input, and an onboard microSD socket.</td>
+  </tr>
+  <tr>
+    <td><strong>Arduino 9 Axis Motion Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="220"></td>
+    <td>BNO055 heading, pitch, roll, gyroscope, and calibration data over I2C.</td>
+  </tr>
+  <tr>
+    <td><strong>PCA9685 PWM &amp; Servo Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-pwm-servo.png" alt="PCA9685 PWM and Servo Shield" width="220"></td>
+    <td>Sixteen independently controlled 12-bit PWM/servo channels over I2C.</td>
+  </tr>
+  <tr>
+    <td><strong>AZDelivery Data Logger Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="220"></td>
+    <td>SPI SD-card access. The shield's real-time clock is not currently exposed.</td>
+  </tr>
+  </tbody>
+</table>
 
 ## Quick start
 
@@ -94,18 +113,59 @@ The project provides a `Maven plugin` to help the user with the common operation
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.Blink \
   -Djuno.board=arduino-uno-q
-
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
-  -Djuno.board=arduino-uno-r4-wifi
-
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
-  -Djuno.board=arduino-uno-r3
+  #-Djuno.board=arduino-uno-r4-wifi
+  #-Djuno.board=arduino-uno-wifi-rev2
+  #-Djuno.board=arduino-uno-r3
 ```
 
 It auto-detects the port when exactly one matching board is connected. Otherwise, select it with
 `-Djuno.port=<PORT>`. Select another example with `-Djuno.main=<fully-qualified-class-name>`.
+
+## Maven plugin
+
+The `juno` Maven plugin provides these goals. Goals marked **Manual** run only when invoked explicitly.
+
+<table>
+  <thead>
+    <tr>
+      <th>Goal</th>
+      <th>Purpose</th>
+      <th>Default phase</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>juno:boards</code></td>
+      <td>Lists the boards and serial ports detected by Arduino CLI without touching a board.</td>
+      <td>Manual</td>
+    </tr>
+    <tr>
+      <td><code>juno:install-deps</code></td>
+      <td>Installs the Arduino core and optional libraries required by the examples.</td>
+      <td>Manual</td>
+    </tr>
+    <tr>
+      <td><code>juno:compile</code></td>
+      <td>Generates the assembly, C++ runtime shim, and Arduino sketch wrapper.</td>
+      <td><code>process-classes</code></td>
+    </tr>
+    <tr>
+      <td><code>juno:verify</code></td>
+      <td>Generates the sketch and compiles it with Arduino CLI without using physical hardware.</td>
+      <td><code>verify</code></td>
+    </tr>
+    <tr>
+      <td><code>juno:upload</code></td>
+      <td>Generates, verifies, and uploads the sketch to the selected or detected board.</td>
+      <td>Manual</td>
+    </tr>
+    <tr>
+      <td><code>juno:monitor</code></td>
+      <td>Opens the serial monitor for the selected or detected board.</td>
+      <td>Manual</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Supported Java subset
 
@@ -179,20 +239,6 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`VirtualThreads`](juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), and
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java)
   (a scoped `MathContext` shared by three parallel subtasks).
-- **Concurrency patterns:** JCStress-style examples from the
-  [`concurrency`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/package-info.java) package:
-  lost updates from plain, volatile, monitor, lock and atomic increments
-  ([`LostUpdates`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/LostUpdates.java)),
-  Peterson's algorithm and a compare-and-set spin lock
-  ([`Mutexes`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Mutexes.java)),
-  deadlock avoidance by lock ordering
-  ([`DiningPhilosophers`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/DiningPhilosophers.java)),
-  a producer and consumer over a bounded buffer
-  ([`BoundedBuffer`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/BoundedBuffer.java)),
-  first-success and all-or-nothing `StructuredTaskScope` joiners
-  ([`StructuredRace`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/StructuredRace.java)),
-  and double-checked locking with a volatile field
-  ([`LazyInit`](juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/LazyInit.java)).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
   HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
   See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) (GPIO and delays),
@@ -218,104 +264,28 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   The [AZDelivery Data Logger Module Data Recorder Shield](https://jabrena.github.io/juno/storage)
   provides the SD card for
   [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSD.java).
-- **Compile-time safety checks:** deterministic closed-world linking and runtime-risk warnings for
-  loop allocations, arena pressure, recursion, unchecked array access, possible division by zero,
-  and proven-null dereferences.
 
-For example,
-[`UnsupportedFeature`](juno-examples/src/main/java/io/github/jabrena/juno/language/UnsupportedFeature.java)
-compiles with plain `javac`, but it deliberately fails `juno:compile`: its generated record
-`toString()` uses the unsupported `ObjectMethods` bootstrap.
+## Maven modules
 
-```bash
-# Expected to fail with an unsupported-bootstrap diagnostic
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.UnsupportedFeature
-```
+This is a multi-module Maven build:
 
-Compile any supported example by passing its fully qualified class name. These examples all come
-from the `io.github.jabrena.juno` package. Examples whose `@Board` lists both boards need
-`-Djuno.board`:
-
-```bash
-# Entrypoints and methods
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.HelloWorld
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.Methods
-
-# Values and control flow
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.Variables
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.PrimitiveTypes
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.Operators
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.ControlFlow
-
-# Arrays
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.Arrays
-
-# Objects and interfaces
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.Objects
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.Interfaces \
-  -Djuno.board=arduino-uno-r4-wifi
-
-# Lambdas and method references
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.Lambdas \
-  -Djuno.board=arduino-uno-r4-wifi
-
-# Math and random numbers
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.MathFunctions
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.RandomNumbers
-
-# Exceptions
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.Exceptions
-
-# Concurrency
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.Synchronization \
-  -Djuno.board=arduino-uno-r4-wifi
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.VirtualThreads \
-  -Djuno.board=arduino-uno-r4-wifi
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.ScopedValuesPrecision \
-  -Djuno.board=arduino-uno-r4-wifi
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.concurrency.LostUpdates \
-  -Djuno.board=arduino-uno-r4-wifi
-
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.language.concurrency.Mutexes \
-  -Djuno.board=arduino-uno-r4-wifi
-```
-
-Examples in subpackages use the same command. A board-specific program can also select its target
-explicitly:
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.games.chess.Chess \
-  -Djuno.board=arduino-uno-r4-wifi
-```
+- [`juno-api/`](juno-api) — the programming model: the Java-facing hardware API the compiler
+  recognizes as intrinsics (`api/`) and the `@Board` annotations used to select a compilation
+  target (`annotations/`). This is the only artifact programs compile against.
+- [`juno-compiler/`](juno-compiler) — the compiler (`classfile`, `bytecode`, `linker`, `backend`, …),
+  which depends on `juno-api`. Builds the executable `juno-compiler/target/juno-compiler-<version>.jar`.
+- [`juno-maven-plugin/`](juno-maven-plugin) — Maven goals for generating a sketch (`juno:compile`),
+  compiling it with Arduino CLI (`juno:verify`), uploading it (`juno:upload`), and opening the
+  serial monitor (`juno:monitor`).
+- [`juno-examples/`](juno-examples) — example Java programs written against `juno-api`, built
+  like any other Maven module so they're checked for compile errors on every build.
+- [`juno-site/`](juno-site) — the [Roq](https://iamroq.dev)/Quarkus static site generator behind
+  the [documentation site](https://jabrena.github.io/juno/). `docs/` is entirely generated from
+  Markdown under `juno-site/src/main/resources/content/` — see
+  [Documentation site](#documentation-site) below to regenerate it.
+- [`juno-third-parties/`](juno-third-parties) — integrations maintained outside the core compiler,
+  currently including the independent H8/300 firmware generator for the LEGO RCX, its S-record,
+  and the generated Java representation consumed by `juno-examples`.
 
 ## Architecture
 
@@ -334,125 +304,16 @@ single instruction. That is also why there is no dynamic class loading, reflecti
                  classfile → bytecode → linker → lowering → optimize → backend
 ```
 
-1. **Write the program** against the Java-facing hardware API (`Serial`, `Gpio`, `Delay`, …, in
-   `io.github.jabrena.juno.api`) and, if it should run on a specific board, annotate the entry point with
-   `@Board`. The entry point is a `static void main(String[])` (or `main()`).
-2. **Compile with `javac`.** Maven does this for you (`compile`). The result is ordinary `.class` files, which are
-   the only input Juno reads; the Java sources are never parsed.
-3. **Read the classes.** `classfile` parses the `.class` files and resolves their constant pools, and
-   `bytecode` decodes each method into the admitted instruction subset.
-4. **Link, closed-world.** `linker` starts at `main` and follows every statically resolvable call. Calls into
-   the hardware API become *intrinsics*, methods nothing reaches are discarded, and the board from `@Board`
-   is resolved. Anything reachable that falls outside the subset (an unsupported opcode, an unsupported
-   `invokedynamic` bootstrap, a type Juno does not model) stops the build with a diagnostic naming the method,
-   the bytecode offset, and the operation, rather than emitting code with uncertain behavior.
-5. **Lower to IR.** `lowering` turns each reachable method into Juno's own block-structured intermediate
-   representation (`ir`), making every operand-stack slot and local variable an explicit, typed value.
-   Lambdas, string concatenation, enums, records, exceptions, and structured tasks are given their Juno-specific
-   meaning here.
-6. **Optimize.** `optimize` runs IR passes: small leaf methods (getters, setters, constructors, little math
-   helpers) are inlined; an object that never leaves its method is scalar-replaced, its fields kept in locals
-   instead of the arena; local copies and constants are propagated across the control-flow graph and folded;
-   branches with a constant condition, dead blocks, unused values and stores nothing reads are removed; and a
-   range analysis drops every array bounds check it proves can never fail. The backend folds constants into
-   Thumb-2 immediate operands and tests a comparison that feeds a branch directly. `analysis` then inspects
-   the result and reports runtime risks at build time: arena budget versus estimated use, static RAM, call
-   depth, allocation inside loops, recursion, possible division by zero, unchecked array access, and
-   proven-null dereferences.
-7. **Generate code.** `backend` emits GNU ARM Cortex-M4 (Thumb-2) assembly directly from the IR, plus a small
-   `extern "C"` C++ runtime shim (GPIO, Serial, LED matrix, Wi-Fi, HTTP, JSON, strings, the arena allocator and
-   its garbage collector, `long`/`float`/`double` support, exception and structured-task support) that the assembly calls
-   into. Most optional helpers and Arduino headers (Mouse, Wi-Fi, HTTP, JSON, strings, …) are included only when the
-   program uses them, and the output is deterministic: the same classes always produce the same bytes. Per-core differences (UNO R4 WiFi's Renesas
-   core versus UNO Q's Zephyr core) live in a `CoreRuntime`, never in a branch on a specific board.
-8. **Wrap it as a sketch.** The Maven plugin writes the `.S`, the `Shim.cpp`, and a tiny `.ino` whose `setup()`
-   calls the generated entry point and whose `loop()` is empty, under `target/juno/<Main>Asm/`.
-9. **Build and flash with the Arduino toolchain.** `arduino-cli compile --fqbn <board>` assembles and links the
-   sketch against the board's core, and `arduino-cli upload` flashes it. The plugin drives both, so
-   `juno:verify` stops after the compile (no board needed), `juno:upload` also flashes it, and `juno:monitor`
-   opens the serial monitor.
-
-In practice, steps 2 to 9 are one command per goal (`juno-examples/pom.xml` supplies `Blink` as the default
-entry point; select another with `-Djuno.main=<class>`):
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:compile   # javac + Juno: generate the sketch only
-./mvnw -f juno-examples/pom.xml compile juno:verify    # ... and build it with arduino-cli (no board needed)
-./mvnw -f juno-examples/pom.xml compile juno:upload    # ... and flash the connected board
-./mvnw -f juno-examples/pom.xml juno:monitor           # attach the serial monitor
-```
-
-### Modules and packages
-
-- `classfile` parses standard JVM class files and resolves constant-pool references.
-- `bytecode` decodes and validates the v0.1 instruction set.
-- `linker` starts at `main`, follows reachable static calls, resolves hardware intrinsics, and
-  eliminates unreachable methods.
-- `lowering`, `ir`, and `optimize` translate the reachable bytecode into Juno's IR and simplify it;
-  `analysis` builds the control-flow graph and produces the build-time runtime-risk report.
-- `backend` emits GNU ARM (Cortex-M4, Thumb-2) assembly directly from Juno's IR, plus a small
-  `extern "C"` C++ runtime shim (GPIO/Serial/LED matrix/Wi-Fi/HTTP/JSON helpers, the arena
-  allocator, `long`/`float`/`double` support) that the generated assembly calls into.
-- `juno-maven-plugin` wraps the compiler and the Arduino CLI as the `juno:compile`, `juno:verify`,
-  `juno:upload`, and `juno:monitor` goals.
-
-The compiler stages live under
-[`juno-compiler/src/main/java/io/github/jabrena/juno/`](juno-compiler/src/main/java/io/github/jabrena/juno);
-the small Java-facing hardware abstraction (`api/`) and the `@Board` selection types (`annotations/`)
-live under [`juno-api/src/main/java/io/github/jabrena/juno/`](juno-api/src/main/java/io/github/jabrena/juno).
-
-## Development
-
-All commands use the Maven wrapper (`./mvnw`) from the repository root, with the JDK pinned in `.sdkmanrc`.
-
-### Build and test
-
-```bash
-./mvnw clean test      # unit tests, including the offline assembly/shim toolchain checks
-./mvnw clean verify    # what CI runs: tests, static analysis, and packaging
-```
-
-### Run generated code on a toolchain
-
-Both profiles live in the `juno-compiler` module, need Docker and are opt-in, because they start containers.
-
-```bash
-# Compile the small API and shield fixtures for each board with the real arduino-cli (does not touch hardware)
-./mvnw -pl juno-compiler -am -Parduino-cli verify
-
-# Run the core-feature programs under QEMU (Cortex-M4) and compare their serial output with OpenJDK's
-./mvnw -pl juno-compiler -am -Pqemu verify
-```
-
-### Code quality
-
-The `cyclomatic-complexity` profile is active by default, so a plain `verify` already enforces it;
-naming it explicitly just makes that visible.
-
-```bash
-./mvnw clean verify -Pcyclomatic-complexity               # fail the build on over-complex methods (PMD)
-./mvnw -Pcyclomatic-complexity -DskipTests site           # generate the complexity report
-jwebserver -d "$(pwd)/target/site" -p 8000                # then open http://127.0.0.1:8000/
-```
-
-### Documentation
-
-The published site lives in `docs/` and is generated from `juno-site/src/main/resources/content/`;
-never edit `docs/` by hand.
-
-```bash
-./mvnw javadoc:aggregate                                  # API docs into docs/javadocs/<version>/
-./mvnw clean verify -Psite                                # wipe and regenerate docs/: site, then Javadoc
-./mvnw -f juno-site/pom.xml quarkus:dev                   # live preview while editing the Markdown
-```
-
-To preview the generated site locally at the web root (`docs/` itself has the GitHub Pages `/juno`
-prefix baked in):
-
-```bash
-./mvnw -f juno-site/pom.xml clean package quarkus:run -Dquarkus.http.root-path=/
-jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000       # then open http://127.0.0.1:8000/
-```
+1. **Write and compile Java.** Programs use the Juno hardware API and optionally select a board with `@Board`.
+   Maven runs `javac`; Juno consumes the resulting `.class` files.
+2. **Link and validate.** Juno starts at `main`, keeps only reachable code, converts hardware calls into
+   intrinsics, and rejects unsupported bytecode with a precise diagnostic.
+3. **Lower and optimize.** Reachable methods become Juno IR, where compiler passes simplify the program and
+   report risks such as excessive arena use, recursion, or unsafe array access.
+4. **Generate the sketch.** The backend emits native assembly and a small C++ runtime shim. The Maven plugin
+   packages them with a minimal `.ino` under `target/juno/<Main>Asm/`.
+5. **Build and run.** Arduino CLI compiles the generated sketch for the selected board. Use `juno:verify` to
+   compile it, `juno:upload` to flash it, and `juno:monitor` to read its serial output.
 
 ## References
 
