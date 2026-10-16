@@ -19,6 +19,8 @@
         <juno.main>io.github.jabrena.juno.api.Blink</juno.main>
         <juno.envFile>${maven.multiModuleProjectDirectory}/.env</juno.envFile>
         <kotlin.version>2.2.20</kotlin.version>
+        <scala.version>3.10.0</scala.version>
+        <scala-maven-plugin.version>4.9.9</scala-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -43,6 +45,20 @@
                     <artifactId>annotations</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- Scala examples compile against the Juno API only; the Scala library is needed at build time, never on the board. -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala3-library_3</artifactId>
+            <version>${scala.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Declared because the examples' classes reference it (ModuleSerializationProxy); dependency:analyze requires it. -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!-- Tests drive the compiler directly (JunoCompiler, CompilationRequest) on the example classes. -->
         <dependency>
@@ -111,6 +127,30 @@
                 <executions>
                     <execution>
                         <id>compile-kotlin</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala-maven-plugin.version}</version>
+                <configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                    <args>
+                        <!-- Scala examples are Java 27 bytecode, the same release as the Java examples. -->
+                        <arg>-java-output-version:27</arg>
+                    </args>
+                    <!-- The plugin also runs javac over the Java sources in mixed mode, so it needs the preview flag too. -->
+                    <javacArgs>
+                        <arg>--enable-preview</arg>
+                    </javacArgs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>compile-scala</id>
                         <goals>
                             <goal>compile</goal>
                         </goals>

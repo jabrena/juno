@@ -65,15 +65,30 @@ The Docker profiles run end-to-end tests with Testcontainers:
 
 - `arduino-cli` in `juno-compiler` compiles the small API and shield fixtures in `juno-compiler/src/test/arduino/programs`
   for each board they declare (UNO R4 WiFi and UNO Q) with the real `arduino-cli`.
-- `arduino-cli` in `juno-examples` compiles the Java language examples in `juno-examples/src/main/java/.../language` for
-  each board their `@Board` annotation declares (UNO R4 WiFi when none) with the real `arduino-cli`. To run only these,
-  pass `-Dit.test=LanguageExamplesArduinoCliIT -Dfailsafe.failIfNoSpecifiedTests=false`, which skips the fixture tests.
+- `arduino-cli` in `juno-examples` compiles the Java, Kotlin and Scala language examples in
+  `juno-examples/src/main/{java,kotlin,scala}/.../language` for each board their `@Board` annotation declares (UNO R4 WiFi
+  when none) with the real `arduino-cli`. To run only these, pass
+  `-Dit.test=LanguageExamplesArduinoCliIT -Dfailsafe.failIfNoSpecifiedTests=false`, which skips the fixture tests.
 - `qemu` runs the language fixtures in `juno-compiler/src/test/qemu/programs` on QEMU (Cortex-M4) and compares their serial
   output with a JVM run of the same source.
 
 The `arduino-cli` profile is declared in both modules, so `-P arduino-cli` from the root or with `-am` runs both suites.
 The `juno-examples` suite is the one that builds the example programs; the in-process `LanguageExamplesCompilationTest`
-runs by default with `./mvnw test` and needs no Docker.
+runs by default with `./mvnw test` and needs no Docker. It compiles every Java, Kotlin and Scala entry point through
+Juno, once per board, and `ExamplesArchitectureTest` keeps all three languages on the Juno API and the JDK.
+
+The Scala examples (`juno-examples/src/main/scala/.../language/scala`) are compiled to Java 27 bytecode
+(`-java-output-version:27`), the same release as the Java examples. The pinned Scala 3.10.0 is needed: Scala 3.8.1 rejects
+27 as an output version. Each example is a `final class` with a companion `object` whose `main` is `@static`, which gives the
+entry point the static method Juno looks for. Scala code that calls into the Scala runtime (`Array(...)`, `for`, `do`,
+`s"..."`, case classes, `StringOps`) does not compile for the board, so the examples use `while` loops and `java.*` types.
+
+To generate one Scala example for a board, pass its class name:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.language.scala.HelloWorld -Djuno.board=arduino-uno-r4-wifi
+```
 
 ## Plugin Goals Reference
 

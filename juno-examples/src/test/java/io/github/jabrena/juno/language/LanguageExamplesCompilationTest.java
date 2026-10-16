@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *
  * <p>Entry points are found by reading their class files, not by loading them: {@code ScopedValuesPrecision} is
  * compiled with preview features, which the test JVM does not enable, so loading it would fail. The Kotlin examples
- * under {@code language.kotlin} are included: their {@code @JvmStatic main} is found the same way.
+ * under {@code language.kotlin} and {@code language.scala} are included: their {@code main} is found the same way.
  */
 class LanguageExamplesCompilationTest {
     private static final String LANGUAGE_PACKAGE = "io/github/jabrena/juno/language";
