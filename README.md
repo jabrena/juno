@@ -265,6 +265,9 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   factor numbers together and chain the verified answers as a leaderless, Bitcoin-style proof-of-work chain), and
   [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/SdFileOperations.java) (SD card).
 - **Shields:** stacked shields are driven through the same intrinsic APIs.
+  The [Grove Base Shield and DHT11](https://jabrena.github.io/juno/grove) exposes the UNO pin map
+  and reads a Grove Temperature and Humidity Sensor without an Arduino library, as shown by
+  [`GroveDht11Monitor`](juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/GroveDht11Monitor.java).
   The [LCD Keypad Shield](https://jabrena.github.io/juno/lcd-keypad-shield) (16x2 display, buttons,
   backlight) is shown in
   [`LcdKeypadDemo`](juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java).
