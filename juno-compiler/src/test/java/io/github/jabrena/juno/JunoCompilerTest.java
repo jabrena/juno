@@ -452,6 +452,28 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersGroveDht11DriverToGpioAndTimingIntrinsics() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
+                import io.github.jabrena.juno.api.thirdparty.grove.GroveDht11;
+                public final class GroveDht11Demo {
+                    public static void main(String[] args) {
+                        int[] reading = new int[GroveDht11.READING_LENGTH];
+                        GroveDht11.read(GroveBaseShield.D4, reading, reading.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.GroveDht11Demo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveDht11Demo");
+
+        assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl digitalRead",
+                "bl micros", "bl delay", "bl delayMicroseconds");
+        assertThat(result.runtimeShim()).doesNotContain("#include <DHT.h>", "#include <Wire.h>");
+    }
+
+    @Test
     void lowersSerialIntrinsics() throws Exception {
         String source = """
                 package demo;
