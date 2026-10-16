@@ -2,14 +2,14 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
 import java.util.UUID;
 
 /** Board-native UUID-v4 generation: SCE5 on R4, ATECC608 on Rev2, and the STM32 RNG on UNO Q. */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoWiFiRev2.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoR3WiFiRev2.class, ArduinoUnoQ.class})
 public final class UuidRandom {
     private UuidRandom() {
     }

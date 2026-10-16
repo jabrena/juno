@@ -114,7 +114,7 @@ The project provides a `Maven plugin` to help the user with the common operation
   -Djuno.main=io.github.jabrena.juno.api.Blink \
   -Djuno.board=arduino-uno-q
   #-Djuno.board=arduino-uno-r4-wifi
-  #-Djuno.board=arduino-uno-wifi-rev2
+  #-Djuno.board=arduino-uno-r3-wifi-rev2
   #-Djuno.board=arduino-uno-r3
 ```
 

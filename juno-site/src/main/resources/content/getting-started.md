@@ -127,10 +127,10 @@ Juno compiles for, and `juno:verify`/`juno:upload` build for its Arduino CLI FQB
 
 | Annotation | Board | FQBN |
 |---|---|---|
-| `@Board(ArduinoUnoR3.class)` | Arduino UNO R3 | `arduino:avr:uno` |
-| `@Board(ArduinoUnoR4WiFi.class)` | Arduino UNO R4 WiFi | `arduino:renesas_uno:unor4wifi` |
 | `@Board(ArduinoUnoQ.class)` | Arduino UNO Q (its STM32U585 microcontroller) | `arduino:zephyr:unoq` |
-| `@Board(ArduinoUnoWiFiRev2.class)` | Arduino UNO WiFi Rev2 | `arduino:megaavr:uno2018` |
+| `@Board(ArduinoUnoR4WiFi.class)` | Arduino UNO R4 WiFi | `arduino:renesas_uno:unor4wifi` |
+| `@Board(ArduinoUnoR3WiFiRev2.class)` | Arduino UNO R3 WiFi Rev2 | `arduino:megaavr:uno2018` |
+| `@Board(ArduinoUnoR3.class)` | Arduino UNO R3 | `arduino:avr:uno` |
 
 A class with no `@Board` annotation is not restricted to one board: it builds for the board named by
 `-Djuno.board=<id>`, or the UNO R4 WiFi when the option is omitted. GPIO, time and Serial are broadly

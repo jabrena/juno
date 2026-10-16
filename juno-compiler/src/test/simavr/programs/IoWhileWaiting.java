@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -17,7 +17,7 @@ import java.util.concurrent.StructuredTaskScope;
  * waits, and the network must be free again for the next request rather than stay locked by a thread that will never
  * run again. No JVM can run these APIs, so IoWhileWaiting.expected holds the output by hand.
  */
-@Board(ArduinoUnoWiFiRev2.class)
+@Board(ArduinoUnoR3WiFiRev2.class)
 public final class IoWhileWaiting {
     static volatile boolean stop;
     static volatile boolean inRequest;

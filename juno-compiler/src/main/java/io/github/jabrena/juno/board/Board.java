@@ -35,7 +35,7 @@ public enum Board {
      * The ATmega4809 board: Wi-Fi, UDP, HTTP, HTTPS and TLS email through its NINA-W102 module ({@code WiFiNINA}), and the
      * GPIO, SPI and analog pins shields such as the SD card, TFT touch and LCD keypad shields use.
      */
-    UNO_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoWiFiRev2", "arduino-uno-wifi-rev2", "UNO WiFi Rev2",
+    UNO_R3_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2", "arduino-uno-r3-wifi-rev2", "UNO WiFi Rev2",
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
             EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG));

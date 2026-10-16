@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.net.time;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.InternetClock;
@@ -30,7 +30,7 @@ import java.util.Properties;
  * <p>The two {@code time.api.*} entries are optional; without them the compiled environment configuration, or the
  * built-in TimeAPI.io {@code dateTime} default, is used.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
 public final class InternetTime {
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 

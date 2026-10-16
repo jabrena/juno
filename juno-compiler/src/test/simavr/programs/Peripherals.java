@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -22,7 +22,7 @@ import java.util.Properties;
  * in RAM holding config.txt (SdFat.h), and pins that read as zero for the LCD and TFT shields. No JVM can run these
  * APIs, so Peripherals.expected holds the output by hand.
  */
-@Board(ArduinoUnoWiFiRev2.class)
+@Board(ArduinoUnoR3WiFiRev2.class)
 public final class Peripherals {
     static void printBytes(byte[] bytes, int length) {
         for (int i = 0; i < length; i++) {

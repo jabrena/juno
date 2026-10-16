@@ -71,7 +71,7 @@ class GeneratedAsmToolchainTest {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         for (String board : new String[] {
-            "ArduinoUnoR3", "ArduinoUnoWiFiRev2", "ArduinoUnoR4WiFi", "ArduinoUnoQ"
+            "ArduinoUnoR3", "ArduinoUnoR3WiFiRev2", "ArduinoUnoR4WiFi", "ArduinoUnoQ"
         }) {
             String name = "AsmUuid" + board;
             String source = """
@@ -98,7 +98,7 @@ class GeneratedAsmToolchainTest {
             Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
             Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
-            if (board.equals("ArduinoUnoR3") || board.equals("ArduinoUnoWiFiRev2")) {
+            if (board.equals("ArduinoUnoR3") || board.equals("ArduinoUnoR3WiFiRev2")) {
                 assertThat(result.runtimeShim()).contains(
                         "juno_uuid_new", "juno_avr_thunk_juno_uuid_new",
                         "juno_avr_thunk_juno_uuid_get_most_significant_bits");
@@ -112,7 +112,7 @@ class GeneratedAsmToolchainTest {
     void compilesRandomUuidShimsForBoardsWithNativeEntropy() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        for (String board : new String[] {"ArduinoUnoWiFiRev2", "ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
+        for (String board : new String[] {"ArduinoUnoR3WiFiRev2", "ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
             String name = "AsmUuidRandom" + board;
             String source = """
                     package demo;
@@ -130,7 +130,7 @@ class GeneratedAsmToolchainTest {
             CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
             assertThat(result.assembly()).contains("juno_uuid_random");
-            if (board.equals("ArduinoUnoWiFiRev2")) {
+            if (board.equals("ArduinoUnoR3WiFiRev2")) {
                 assertThat(result.runtimeShim()).contains("juno_atecc608_crc", "juno_avr_thunk_juno_uuid_random");
             } else {
                 Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
