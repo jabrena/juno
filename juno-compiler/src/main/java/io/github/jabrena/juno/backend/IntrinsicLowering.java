@@ -584,6 +584,9 @@ public final class IntrinsicLowering {
         shim(Intrinsic.HTTP_GET, "juno_http_get", Result.WORD, bodiless, ShimFeature.HTTP);
         shim(Intrinsic.HTTP_DELETE, "juno_http_delete", Result.WORD, bodiless, ShimFeature.HTTP);
         shim(Intrinsic.HTTP_POST, "juno_http_post", Result.WORD, withBody, ShimFeature.HTTP);
+        List<Operand> bufferedPost = List.of(literal(0), arg(0), literal(1),
+                arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8), arg(9));
+        shim(Intrinsic.HTTP_POST_BUFFER, "juno_http_post_buffer", Result.WORD, bufferedPost, ShimFeature.HTTP);
         shim(Intrinsic.HTTP_PATCH, "juno_http_patch", Result.WORD, withBody, ShimFeature.HTTP);
         shim(Intrinsic.HTTP_QUERY, "juno_http_query", Result.WORD, withBody, ShimFeature.HTTP);
         shim(Intrinsic.HTTPS_GET, "juno_https_get", Result.WORD, bodiless, ShimFeature.HTTPS);
@@ -595,6 +598,7 @@ public final class IntrinsicLowering {
                 List.of(literal(0), arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7)),
                 ShimFeature.HTTPS, ShimFeature.HTTPS_PATH_BUFFER);
         shim(Intrinsic.HTTPS_POST, "juno_https_post", Result.WORD, withBody, ShimFeature.HTTPS);
+        shim(Intrinsic.HTTPS_POST_BUFFER, "juno_https_post_buffer", Result.WORD, bufferedPost, ShimFeature.HTTPS);
         shim(Intrinsic.HTTPS_PATCH, "juno_https_patch", Result.WORD, withBody, ShimFeature.HTTPS);
         shim(Intrinsic.HTTPS_QUERY, "juno_https_query", Result.WORD, withBody, ShimFeature.HTTPS);
         shim(Intrinsic.HTTPS_REQUEST_BUFFER, "juno_https_request_buffer", Result.WORD,

@@ -113,3 +113,41 @@ turning ADC readings into concentrations or alarm thresholds.
   -Djuno.board=arduino-uno-r3-wifi-rev2 \
   -Djuno.main=io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveSensorWiringMonitor
 ```
+
+## Publishing temperatures to Supabase
+
+[`SupabaseGroveTemperatures`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/supabase/SupabaseGroveTemperatures.java)
+reads three temperature sensors once a minute and inserts them as one row into a Supabase
+`sensor-data` table through PostgREST:
+
+| Column | Module | Shield socket |
+|---|---|---|
+| `temp1` | Temperature and Humidity Sensor Pro (DHT22 format) | **D4** |
+| `temp2` | DHT11 | **D2** |
+| `temp3` | Temperature Sensor v1.2 | **A0** |
+| `ts` | UTC from `LocalDateTime.now()` | — |
+
+Temperatures are sent as JSON numbers with one decimal; a sensor that fails to read is sent as
+`null`. `id` is left to the table's default. The request headers are all chosen by the program:
+
+```java
+HttpHeaders headers = new HttpHeaders(requestHeaders, REQUEST_HEADERS_CAPACITY)
+        .add("apikey", System.getenv("SUPABASE_API_KEY"))
+        .add("Content-Type", "application/json")
+        .add("Prefer", "return=representation");
+```
+
+The body is built at runtime in a caller-owned buffer and sent with the allocation-free
+`HttpClient.post(url, requestHeaders, length, requestBody, length, …)` overload. A
+`Content-Type` header supplied this way replaces the default `application/json`.
+`SUPABASE_API_URL` is the complete table endpoint, for example
+`https://<project>.supabase.co/rest/v1/sensor-data`, and together with `SUPABASE_API_KEY`,
+`JUNO_WIFI_SSID` and `JUNO_WIFI_PASSWORD` it comes from the module's `.env` file. Use a publishable
+key protected by Row Level Security, never a secret key. Wi-Fi, TLS and the three drivers exceed the
+UNO WiFi Rev2's flash, so this example targets the UNO R4 WiFi and UNO Q:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.board=arduino-uno-r4-wifi \
+  -Djuno.main=io.github.jabrena.juno.usecases.supabase.SupabaseGroveTemperatures
+```

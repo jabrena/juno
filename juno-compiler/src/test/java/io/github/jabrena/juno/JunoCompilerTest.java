@@ -1431,6 +1431,42 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersUrlPostWithCallerOwnedHeadersAndBody() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
+                public final class BufferedPostDemo {
+                    public static void main(String[] args) {
+                        byte[] requestHeaders = new byte[32];
+                        byte[] requestBody = new byte[32];
+                        requestBody[0] = '[';
+                        requestBody[1] = ']';
+                        byte[] response = new byte[128];
+                        byte[] headers = new byte[128];
+                        int[] out = new int[2];
+                        HttpClient.post("https://example.com/rest/v1/sensor-data", requestHeaders, 0,
+                                requestBody, 2, response, response.length, headers, headers.length, out);
+                        HttpClient.post("http://example.com/submit", requestHeaders, 0,
+                                requestBody, 2, response, response.length, headers, headers.length, out);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.BufferedPostDemo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BufferedPostDemo");
+
+        assertThat(result.assembly()).contains(".asciz \"example.com\"", ".asciz \"/rest/v1/sensor-data\"",
+                ".asciz \"/submit\"", "bl juno_https_post_buffer", "bl juno_http_post_buffer");
+        assertThat(result.runtimeShim()).contains(
+                "extern \"C\" int32_t juno_https_post_buffer(const char* host, int32_t port, const char* path,",
+                "extern \"C\" int32_t juno_http_post_buffer(const char* host, int32_t port, const char* path,",
+                "juno_http_run<JunoHttpsClient>(\"POST\", host, port, path, nullptr,\n"
+                        + "                           requestHeadersBuffer, requestHeadersLength,\n"
+                        + "                           requestBodyBuffer, requestBodyLength",
+                "if (!juno_http_has_content_type(requestHeadersBuffer, requestHeadersLength)) {");
+    }
+
+    @Test
     void lowersHttpsGetWithARuntimePathBuffer() throws Exception {
         String source = """
                 package demo;

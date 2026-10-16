@@ -97,6 +97,8 @@ final class HttpUrlCall {
         routes.put(Intrinsic.HTTP_URL_GET_PATH_BUFFER,
                 new Route(Intrinsic.HTTP_GET_PATH_BUFFER, Intrinsic.HTTPS_GET_PATH_BUFFER));
         routes.put(Intrinsic.HTTP_URL_POST, new Route(Intrinsic.HTTP_POST, Intrinsic.HTTPS_POST));
+        routes.put(Intrinsic.HTTP_URL_POST_BUFFER,
+                new Route(Intrinsic.HTTP_POST_BUFFER, Intrinsic.HTTPS_POST_BUFFER));
         routes.put(Intrinsic.HTTP_URL_DELETE, new Route(Intrinsic.HTTP_DELETE, Intrinsic.HTTPS_DELETE));
         routes.put(Intrinsic.HTTP_URL_PATCH, new Route(Intrinsic.HTTP_PATCH, Intrinsic.HTTPS_PATCH));
         routes.put(Intrinsic.HTTP_URL_QUERY, new Route(Intrinsic.HTTP_QUERY, Intrinsic.HTTPS_QUERY));

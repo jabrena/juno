@@ -12,9 +12,10 @@ package io.github.jabrena.juno.api.net.http;
  * compile-time constant: a string literal, or {@code System.getenv("NAME")} of a literal environment-variable name,
  * like {@link io.github.jabrena.juno.api.net.Wifi#begin}'s credentials. The compiler splits the URL into scheme,
  * host, port and path, so nothing is parsed on the board. Call these methods with the literal in hand, never through
- * another method's own {@code String} parameter. For a path that depends on runtime data, use
- * {@link #get(String, byte[], int, byte[], int, byte[], int, int[])} with a base URL. Small protocol drivers that
- * also need runtime request headers or bodies can use {@link #requestHttps}.
+ * another method's own {@code String} parameter. For request headers or a body that depend on runtime data, use
+ * {@link #post(String, byte[], int, byte[], int, byte[], int, byte[], int, int[])}. For a path that depends on
+ * runtime data, use {@link #get(String, byte[], int, byte[], int, byte[], int, int[])} with a base URL. Small
+ * protocol drivers that also need a runtime method or path can use {@link #requestHttps}.
  *
  * <p>The response body is written into {@code bodyBuffer} and the raw response headers into {@code headersBuffer}
  * (both caller-owned, fixed-size {@code byte[]}), each from index 0 and truncated to its given length. Each method
@@ -51,6 +52,20 @@ public final class HttpClient {
 
     /** Sends a POST request to {@code url} with a compile-time body. */
     public static native int post(String url, String body,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /**
+     * Sends a POST request to {@code url} with caller-owned request headers and a caller-owned JSON body. The first
+     * {@code requestHeadersLength} bytes may contain complete HTTP header lines ending in {@code \r\n}, without the
+     * final blank line; a {@code Content-Type} line there replaces the default {@code application/json}. The first
+     * {@code requestBodyLength} bytes form the body. This overload is allocation-free and
+     * is intended for small board-side clients whose authentication headers or JSON values are only known at runtime.
+     */
+    public static native int post(String url,
+            byte[] requestHeadersBuffer, int requestHeadersLength,
+            byte[] requestBodyBuffer, int requestBodyLength,
             byte[] bodyBuffer, int bodyBufferLength,
             byte[] headersBuffer, int headersBufferLength,
             int[] statusAndHeadersLength);

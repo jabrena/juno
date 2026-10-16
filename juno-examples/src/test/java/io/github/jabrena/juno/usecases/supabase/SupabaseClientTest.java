@@ -23,6 +23,22 @@ class SupabaseClientTest {
     }
 
     @Test
+    void buildsASelectFilterFromACallerOwnedAsciiValue() {
+        Fixture fixture = new Fixture();
+        byte[] cutoff = "2026-10-31T23:30:00Z".getBytes(StandardCharsets.US_ASCII);
+
+        fixture.client.from("sensor-data")
+                .select("ts,temp1,temp2,temp3")
+                .filter("ts", "gte", cutoff, cutoff.length)
+                .limit(60);
+
+        assertThat(fixture.client.ready()).isTrue();
+        assertThat(text(fixture.path, fixture.client.pathLength()))
+                .isEqualTo("/rest/v1/sensor-data?select=ts%2Ctemp1%2Ctemp2%2Ctemp3"
+                        + "&ts=gte.2026-10-31T23%3A30%3A00Z&limit=60");
+    }
+
+    @Test
     void buildsInsertAndUpdateBodiesWithoutReplacingCallerBuffers() {
         Fixture fixture = new Fixture();
 
