@@ -24,8 +24,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # The turbo builder (.mvn/extensions.xml) starts downstream modules once upstream packaging finishes; it
+          # cut the full build from about 2:08 to 1:29 locally.
           - name: Build
-            command: ./mvnw --batch-mode --no-transfer-progress verify --file pom.xml
+            command: ./mvnw --batch-mode --no-transfer-progress verify --file pom.xml -b turbo -T1C
           # The Testcontainers profiles live in the juno-compiler module and are opt-in locally (see AGENTS.md);
           # Docker is preinstalled on the runner. Their unit tests already run in "Build", so these two jobs skip
           # them (-Dtest=None) and run only their integration tests.

@@ -71,7 +71,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ./mvnw clean package
 
 # Full verify, matching CI (.github/workflows/maven.yaml); also runs Spotless, the Enforcer and dependency analysis
-./mvnw --batch-mode --no-transfer-progress verify
+./mvnw --batch-mode --no-transfer-progress verify -b turbo -T1C
 
 # Fix formatting violations reported by spotless:check
 ./mvnw spotless:apply
