@@ -452,25 +452,58 @@ class JunoCompilerTest {
     }
 
     @Test
-    void lowersGroveDht11DriverToGpioAndTimingIntrinsics() throws Exception {
+    void lowersGroveDht22DriverToGpioAndTimingIntrinsics() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
-                import io.github.jabrena.juno.api.thirdparty.grove.GroveDht11;
-                public final class GroveDht11Demo {
+                import io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveDht22;
+                public final class GroveDht22Demo {
                     public static void main(String[] args) {
-                        int[] reading = new int[GroveDht11.READING_LENGTH];
-                        GroveDht11.read(GroveBaseShield.D4, reading, reading.length);
+                        int[] reading = new int[GroveDht22.READING_LENGTH];
+                        int[] frame = new int[GroveDht22.FRAME_LENGTH];
+                        GroveDht22.read(GroveBaseShield.D4, reading, reading.length, frame, frame.length);
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.GroveDht11Demo", source);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.GroveDht22Demo", source);
 
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveDht11Demo");
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveDht22Demo");
 
         assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl digitalRead",
                 "bl micros", "bl delay", "bl delayMicroseconds");
         assertThat(result.runtimeShim()).doesNotContain("#include <DHT.h>", "#include <Wire.h>");
+    }
+
+    @Test
+    void lowersGrovePirAndAnalogGasDrivers() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveAnalogGas;
+                import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
+                import io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveCompassProbe;
+                import io.github.jabrena.juno.api.thirdparty.grove.sensors.GrovePirMotion;
+                public final class GroveSensorsDemo {
+                    public static void main(String[] args) {
+                        GrovePirMotion.begin(GroveBaseShield.D3);
+                        int compass = GroveCompassProbe.detect();
+                        int[] axes = new int[3];
+                        boolean compassReading = compass == GroveCompassProbe.BMM150
+                                && GroveCompassProbe.readRaw(axes, axes.length);
+                        int gas = GroveAnalogGas.rawValue(GroveBaseShield.A0);
+                        boolean motion = GrovePirMotion.motionDetected(GroveBaseShield.D3);
+                        if (motion && gas > 100 && compassReading) {
+                            io.github.jabrena.juno.api.io.serial.Serial.println(gas);
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.GroveSensorsDemo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveSensorsDemo");
+
+        assertThat(result.assembly()).contains("bl pinMode", "bl digitalRead", "bl analogRead",
+                "bl juno_i2c_begin", "bl juno_i2c_read_register", "bl juno_i2c_write_register");
+        assertThat(result.runtimeShim()).contains("#include <Wire.h>").doesNotContain("#include <DHT.h>");
     }
 
     @Test
