@@ -2,7 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
  * zeroes it), objects mutated through inlined methods, float fields, and objects that escape into a field, an array
  * or another object and so must stay on the heap.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
 public final class ObjectsAndCalls {
     private static final int[] INPUTS = {0, 1, -1, 7, 250, -4096, 65535};
 

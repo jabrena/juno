@@ -58,15 +58,15 @@ class RuntimeConfigTest {
 
     @Test
     void appliesTheMegaAvrCoresExistingMemoryLimits() {
-        RuntimeConfig config = RuntimeConfig.DEFAULT.forBoard(Board.UNO_WIFI_REV2);
+        RuntimeConfig config = RuntimeConfig.DEFAULT.forBoard(Board.UNO_R3_WIFI_REV2);
 
         assertThat(config.arenaBytes()).isEqualTo(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES);
         assertThatThrownBy(() -> new RuntimeConfig(RuntimeLimits.AVR_MAX_ARENA_BYTES + 8, 4, OptionalInt.empty())
-                        .forBoard(Board.UNO_WIFI_REV2))
+                        .forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES);
         assertThatThrownBy(() -> new RuntimeConfig(1024, 4,
-                        OptionalInt.of(RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES + 8)).forBoard(Board.UNO_WIFI_REV2))
+                        OptionalInt.of(RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES + 8)).forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES);
     }

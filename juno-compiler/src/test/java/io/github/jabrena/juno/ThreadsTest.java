@@ -124,7 +124,7 @@ class ThreadsTest {
 
     @Test
     void structuredSubtasksAreCooperativeWhileVirtualThreadsArePreemptive() throws Exception {
-        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ", "ArduinoUnoWiFiRev2"}) {
+        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ", "ArduinoUnoR3WiFiRev2"}) {
             String shim = compile(board, START_AND_JOIN).runtimeShim();
 
             assertThat(shim).as(board).contains("static bool juno_slot_cooperative(uint32_t slot) {",
@@ -133,7 +133,7 @@ class ThreadsTest {
         String arm = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
         assertThat(arm).as("the tick never redirects a subtask; it switches at the subtask's next backedge")
                 .contains("if (inJava && resumable && !juno_slot_cooperative(slot) && juno_preempt_resume[slot] == 0u) {");
-        String avr = compile("ArduinoUnoWiFiRev2", START_AND_JOIN).runtimeShim();
+        String avr = compile("ArduinoUnoR3WiFiRev2", START_AND_JOIN).runtimeShim();
         String safepoint = avr.substring(avr.indexOf("extern \"C\" void juno_thread_safepoint() {"));
         assertThat(safepoint.substring(0, safepoint.indexOf("\n}\n")))
                 .as("a subtask skips the method-entry safepoint").contains("if (juno_slot_cooperative(juno_current_slot)) return;");
@@ -214,7 +214,7 @@ class ThreadsTest {
     @Test
     void anHttpRequestWaitsWithoutHoldingUpTheOtherThreads() throws Exception {
         // The UNO Q has no plain-HTTP client; its HTTPS client shares the same request code.
-        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoWiFiRev2"}) {
+        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoR3WiFiRev2"}) {
             String shim = httpProgramShim(board, true);
 
             assertThat(shim).as(board)

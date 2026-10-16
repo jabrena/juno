@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AvrAsmBackendTest {
     private final AvrShimThunks avrShimThunks = new AvrShimThunks();
 
-    private static final String REV2 = "arduino-uno-wifi-rev2";
+    private static final String R3WIFIREV2 = Board.UNO_R3_WIFI_REV2.id();
     private static final String R3 = "arduino-uno-r3";
 
     @TempDir
@@ -34,10 +34,10 @@ class AvrAsmBackendTest {
         String simpleName = className.substring(className.lastIndexOf('.') + 1);
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
                 import io.github.jabrena.juno.annotations.Board;
                 %s
-                @Board(ArduinoUnoWiFiRev2.class)
+                @Board(ArduinoUnoR3WiFiRev2.class)
                 public final class %s {
                     public static void main(String[] args) {
                 %s
@@ -45,7 +45,7 @@ class AvrAsmBackendTest {
                 }
                 """.formatted(imports, simpleName, body);
         Path classes = CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, className, source);
-        return new JunoCompiler().compile(CompilerTestSupport.classpath(classes), className, false, Optional.of(REV2));
+        return new JunoCompiler().compile(CompilerTestSupport.classpath(classes), className, false, Optional.of(R3WIFIREV2));
     }
 
     private CompilationResult compileR3(String className, String body, String imports) throws Exception {
@@ -92,12 +92,12 @@ class AvrAsmBackendTest {
 
     @Test
     void resolvesTheUnoWiFiRev2ToTheAvrBackend() {
-        Board board = Board.fromId(REV2);
-        assertThat(board).isEqualTo(Board.UNO_WIFI_REV2);
+        Board board = Board.fromId(R3WIFIREV2);
+        assertThat(board).isEqualTo(Board.UNO_R3_WIFI_REV2);
         assertThat(board.fqbn()).isEqualTo("arduino:megaavr:uno2018");
         assertThat(board.core().architecture()).isEqualTo(Architecture.AVR);
-        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoWiFiRev2")).isEqualTo(board);
-        assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoWiFiRev2.class");
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2")).isEqualTo(board);
+        assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3WiFiRev2.class");
     }
 
     @Test
@@ -193,7 +193,7 @@ class AvrAsmBackendTest {
     @Test
     void enablesAndRefreshesTheUnoWiFiRev2Watchdog() throws Exception {
         CompilationResult result = compileWatchdog(
-                "demo.Rev2Watchdog", "ArduinoUnoWiFiRev2", REV2, 3000);
+                "demo.Rev2Watchdog", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 3000);
 
         assertThat(result.assembly())
                 .contains("call juno_watchdog_begin", "call yield")
@@ -212,7 +212,7 @@ class AvrAsmBackendTest {
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("timeoutMillis must be between 1 and 8000 on UNO R3");
         assertThatThrownBy(() -> compileWatchdog(
-                "demo.Rev2WatchdogTooLong", "ArduinoUnoWiFiRev2", REV2, 8201))
+                "demo.Rev2WatchdogTooLong", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 8201))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("timeoutMillis must be between 1 and 8200 on UNO WiFi Rev2");
     }
@@ -425,12 +425,12 @@ class AvrAsmBackendTest {
 
     @Test
     void sizesTheArenaForSixKilobytesOfRam() {
-        assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_WIFI_REV2).arenaBytes())
+        assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_R3_WIFI_REV2).arenaBytes())
                 .isEqualTo(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES);
         assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_R4_WIFI)).isEqualTo(RuntimeConfig.DEFAULT);
         RuntimeConfig explicit = new RuntimeConfig(2048, 4, OptionalInt.empty());
-        assertThat(explicit.forBoard(Board.UNO_WIFI_REV2)).isEqualTo(explicit);
-        assertThatThrownBy(() -> new RuntimeConfig(4096, 4, OptionalInt.empty()).forBoard(Board.UNO_WIFI_REV2))
+        assertThat(explicit.forBoard(Board.UNO_R3_WIFI_REV2)).isEqualTo(explicit);
+        assertThatThrownBy(() -> new RuntimeConfig(4096, 4, OptionalInt.empty()).forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES);
     }
@@ -507,13 +507,13 @@ class AvrAsmBackendTest {
 
     @Test
     void sizesTaskStacksForSixKilobytesOfRam() {
-        assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_WIFI_REV2)
-                .threadStackBytes(Board.UNO_WIFI_REV2.core().defaultThreadStackBytes()))
+        assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_R3_WIFI_REV2)
+                .threadStackBytes(Board.UNO_R3_WIFI_REV2.core().defaultThreadStackBytes()))
                 .isEqualTo(RuntimeLimits.AVR_THREAD_STACK_BYTES);
         RuntimeConfig larger = new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(1024));
-        assertThat(larger.forBoard(Board.UNO_WIFI_REV2).threadStackBytes()).hasValue(1024);
+        assertThat(larger.forBoard(Board.UNO_R3_WIFI_REV2).threadStackBytes()).hasValue(1024);
         assertThatThrownBy(() -> new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(2048))
-                .forBoard(Board.UNO_WIFI_REV2))
+                .forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("juno.Xss can be at most " + RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES);
     }

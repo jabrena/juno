@@ -336,6 +336,6 @@ class BoardTest {
         assertThat(Board.UNO_Q.supports(Capability.HTTP_SERVER)).isTrue();
         assertThat(Board.UNO_Q.supports(Capability.SMTP_STARTTLS)).isFalse();
         assertThat(Board.UNO_Q.supports(Capability.WATCHDOG)).isFalse();
-        assertThat(Board.UNO_WIFI_REV2.supports(Capability.WATCHDOG)).isTrue();
+        assertThat(Board.UNO_R3_WIFI_REV2.supports(Capability.WATCHDOG)).isTrue();
     }
 }

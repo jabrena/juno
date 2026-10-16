@@ -2,8 +2,8 @@ package io.github.jabrena.juno.api;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
@@ -20,7 +20,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoUnoR3.class, ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
+@Board({ArduinoUnoR3.class, ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
 public final class StorageOccupancy {
     private static final int REPORT_PERIOD_MS = 2000;
 

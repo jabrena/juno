@@ -2,12 +2,12 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
 /** long arithmetic held in register pairs, on locals only (see WideCalls for long parameters and results). */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
 public final class LongMath {
     public static void main(String[] args) {
         long factorial = 1;

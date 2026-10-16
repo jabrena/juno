@@ -27,6 +27,6 @@ class TouchPaintTFTCompilationTest {
         Path examples = Path.of("target/classes");
         Path api = Path.of(Watchdog.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         return new JunoCompiler().compile(new CompilationRequest(List.of(examples, api), MAIN, false,
-                Optional.of("arduino-uno-wifi-rev2")));
+                Optional.of("arduino-uno-r3-wifi-rev2")));
     }
 }

@@ -10,7 +10,7 @@
  *       {@link io.github.jabrena.juno.annotations.ArduinoUnoR3} (its classic 8-bit ATmega328P, under Arduino's AVR
  *       core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi},
  *       {@link io.github.jabrena.juno.annotations.ArduinoUnoQ} (its STM32U585 microcontroller,
- *       under Arduino's Zephyr core) and {@link io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2}
+ *       under Arduino's Zephyr core) and {@link io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2}
  *       (its 8-bit ATmega4809, under Arduino's megaAVR core); the linker resolves the selection into a
  *       {@code io.github.jabrena.juno.board.Board} compilation target.</li>
  *   <li>{@link io.github.jabrena.juno.annotations.Watchdog @Watchdog} enables the hardware watchdog

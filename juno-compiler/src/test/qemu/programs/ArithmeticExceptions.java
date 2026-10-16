@@ -2,7 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import java.math.BigDecimal;
@@ -15,7 +15,7 @@ import java.math.RoundingMode;
  * runtime, caught by type and through a superclass, with the JDK's messages. Every message stays within the 31
  * characters of a runtime String once concatenated.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
 public final class ArithmeticExceptions {
     static int divide(int a, int b) {
         return a / b;

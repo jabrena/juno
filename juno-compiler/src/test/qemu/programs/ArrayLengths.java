@@ -3,7 +3,7 @@ package demo;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
  * the rows of a two-dimensional array and an enum's {@code values()}, plus arrays that keep their length
  * across collections.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoWiFiRev2.class, ArduinoUnoR3.class})
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class, ArduinoUnoR3.class})
 public final class ArrayLengths {
     enum Color { RED, GREEN, BLUE }
 

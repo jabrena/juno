@@ -121,10 +121,10 @@ class LocalDateTimeTest {
     void supportsTheUnoWifiRev2ThroughAvrThunks() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoWiFiRev2;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
                 import io.github.jabrena.juno.annotations.Board;
                 import java.time.LocalDateTime;
-                @Board(ArduinoUnoWiFiRev2.class)
+                @Board(ArduinoUnoR3WiFiRev2.class)
                 public final class WifiRev2Clock {
                     public static void main() {
                         LocalDateTime value = LocalDateTime.now();
