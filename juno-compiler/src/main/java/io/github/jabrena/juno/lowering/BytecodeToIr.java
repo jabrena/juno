@@ -67,7 +67,8 @@ public final class BytecodeToIr {
         Map<String, Integer> objectTypeIds = objectTypeIds(program.interfaceDispatches(), throwableClasses);
         ProgramContext context = new ProgramContext(program.classes(), throwableClasses,
                 program.interfaceDispatches(), objectTypeIds, program.lambdaSites(), new ThrowingMethods(),
-                constantTables, divisionByZeroUnwinds, decoder, stringConcatResolver, program.board());
+                constantTables, divisionByZeroUnwinds, decoder, stringConcatResolver, program.board(),
+                program.clojureFunctions());
         List<IrMethod> methods = lowerMethods(program.methods(), context);
         // A first pass without call guards shows which methods can unwind with an exception; only calls to
         // those get a pending-exception poll, so programs that never throw across a call lower unchanged.
@@ -84,7 +85,7 @@ public final class BytecodeToIr {
     public IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes, Board board) {
         ProgramContext context = new ProgramContext(classes, throwableClasses(List.of(linked), classes, false),
                 Map.of(), Map.of(), Map.of(), new ThrowingMethods(), ConstantTables.none(), false, decoder,
-                stringConcatResolver, board);
+                stringConcatResolver, board, List.of());
         return new MethodLowering(context, linked).lower();
     }
 

@@ -33,6 +33,10 @@ final class ConstantLowering implements OpcodeGroup {
             context.stack().pushFloat(pool.floatValue(index));
         } else if (pool.isString(index)) {
             context.stack().pushString(pool.string(index));
+        } else if (pool.isClass(index)) {
+            // Juno has no Class objects; the linker admits a class literal only in a namespace's loader, which
+            // hands it to Util.loadWithClass, and that call is lowered to nothing.
+            context.stack().pushInt(0);
         } else {
             context.stack().pushInt(pool.integer(index));
         }

@@ -11,6 +11,7 @@ import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
+import io.github.jabrena.juno.linker.ClojureSupport;
 import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LocalDateTimeSupport;
@@ -185,6 +186,7 @@ final class FieldLowering implements InstructionLowering {
                 || localDateTimeSupport.isLocalDateTimeType(descriptor)
                 || lockSupport.isReentrantLockType(descriptor)
                 || atomicSupport.isAtomicType(descriptor)
+                || ClojureSupport.isHandleType(descriptor)
                 || Descriptor.isArrayType(descriptor)
                 || Descriptor.isReferenceType(descriptor, context.classes().keySet())) {
             return JunoType.INT32;

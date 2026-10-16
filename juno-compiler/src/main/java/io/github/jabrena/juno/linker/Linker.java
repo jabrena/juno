@@ -15,6 +15,7 @@ import io.github.jabrena.juno.intrinsic.BigNumberMethods;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
@@ -88,11 +89,12 @@ public final class Linker {
         JavaMethod main = findMain(mainClass);
         MethodRef entryPoint = main.reference();
         JavaMethod mainInitializer = mainClass.findMethod("<clinit>", "()V");
+        List<MethodRef> clojureFunctions = new ArrayList<>();
         ReachabilityClosure.Result reachability = reachabilityClosure.resolve(entryPoint,
                 mainInitializer == null ? null : mainInitializer.reference(), classes,
                 reference -> linkMethod(classes, reference, reference.equals(entryPoint)),
                 (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, declaredBoards, classes,
-                        work, calls, instantiated, lambdas), interfaceDispatchResolver,
+                        work, calls, instantiated, lambdas, clojureFunctions), interfaceDispatchResolver,
                 method -> hasReachableBody(method, classes),
                 (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
         structuredTaskSupport.validateNoCustomJoiners(reachability.instantiatedClasses(),
@@ -106,7 +108,8 @@ public final class Linker {
             requireCapability(declaredBoards, Capability.WATCHDOG, "");
         }
         return new Program(entryPoint, reachability.methods(), classes, board,
-                mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches(), reachability.lambdaSites());
+                mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches(), reachability.lambdaSites(),
+                clojureFunctions);
     }
 
     private void validateInterfaceTargetCapability(InterfaceDispatch dispatch, MethodRef method,
@@ -163,7 +166,7 @@ public final class Linker {
         if (method == null) {
             throw new CompileException("Reachable method not found: " + reference.displayName());
         }
-        validateMethod(method, entryPoint, classes.keySet());
+        validateMethod(method, entryPoint, classes.keySet(), owner);
         List<Instruction> instructions = decoder.decode(method);
         ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions,
                 method.exceptionHandlers());
@@ -173,16 +176,20 @@ public final class Linker {
     /** Queues every method and static initializer {@code linked}'s invoke/static-field instructions reach. */
     private void enqueueDependencies(LinkedMethod linked, List<Board> declaredBoards, Map<String, JavaClass> classes,
             Deque<MethodRef> work, Map<InterfaceCallSite, MethodRef> interfaceCalls,
-            Set<String> instantiatedClasses, Map<LambdaCallSite, LambdaSite> lambdaSites) {
+            Set<String> instantiatedClasses, Map<LambdaCallSite, LambdaSite> lambdaSites,
+            List<MethodRef> clojureFunctions) {
         JavaClass owner = linked.owner();
         MethodRef caller = linked.method().reference();
-        for (Instruction instruction : linked.instructions()) {
+        List<Instruction> instructions = linked.instructions();
+        for (int index = 0; index < instructions.size(); index++) {
+            Instruction instruction = instructions.get(index);
             int opcode = instruction.opcode();
             if (opcode == 182 || opcode == 183 || opcode == 184) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
                 threadSupport.registerEntry(called, interfaceCalls);
                 structuredTaskSupport.registerEntry(called, interfaceCalls);
                 scopedValueSupport.registerEntry(called, interfaceCalls);
+                bindClojureFunction(called, linked, index, classes, clojureFunctions, caller, declaredBoards, work);
                 enqueueCall(called, caller, declaredBoards, classes, work);
             }
             if (opcode == 185) {
@@ -201,7 +208,20 @@ public final class Linker {
             if (opcode == 178 || opcode == 179) {
                 enqueueStaticInitializer(owner.constantPool().fieldRef(instruction.operandA()), classes, work);
             }
+            ClojureSupport.validateClassLiteral(linked, instruction);
         }
+    }
+
+    /** Records the Clojure function a namespace's {@code Var.internPrivate} binds, and queues its body. */
+    private void bindClojureFunction(MethodRef called, LinkedMethod linked, int index,
+            Map<String, JavaClass> classes, List<MethodRef> clojureFunctions, MethodRef caller,
+            List<Board> declaredBoards, Deque<MethodRef> work) {
+        ClojureSupport.boundFunction(called, linked, index, classes)
+                .filter(function -> !clojureFunctions.contains(function))
+                .ifPresent(function -> {
+                    clojureFunctions.add(function);
+                    enqueueCall(function, caller, declaredBoards, classes, work);
+                });
     }
 
     private void enqueueCall(MethodRef called, MethodRef caller, List<Board> declaredBoards,
@@ -216,6 +236,7 @@ public final class Linker {
         bigNumberSupport.validateCall(called);
         uuidSupport.validateCall(called);
         localDateTimeSupport.validateCall(called);
+        ClojureSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
         } else if (hasReachableBody(called, classes)) {
@@ -226,6 +247,7 @@ public final class Linker {
     /** Whether {@code called} is an ordinary method whose bytecode must be linked, not one Juno lowers itself. */
     private boolean hasReachableBody(MethodRef called, Map<String, JavaClass> classes) {
         return !intrinsicRegistry.isIntrinsic(called)
+                && !ClojureSupport.isLowered(called)
                 && !isRuntimeBaseConstructor(called)
                 && !throwableTypes.isBuiltInConstructor(called)
                 && !throwableTypes.isGetMessage(called, classes)
@@ -345,7 +367,8 @@ public final class Linker {
         return result;
     }
 
-    private void validateMethod(JavaMethod method, boolean entryPoint, Set<String> referenceClassNames) {
+    private void validateMethod(JavaMethod method, boolean entryPoint, Set<String> referenceClassNames,
+            JavaClass owner) {
         if (method.isNative() || method.code() == null) {
             throw new CompileException("Native method has no Juno intrinsic: " + method.reference().displayName());
         }
@@ -354,7 +377,8 @@ public final class Linker {
         boolean conventionalMain = entryPoint
                 && descriptor.parameters().equals(List.of("[Ljava/lang/String;"))
                 && descriptor.returnsVoid();
-        if (!conventionalMain && !descriptor.usesOnlyV01Types(referenceClassNames)) {
+        if (!conventionalMain && !descriptor.usesOnlyV01Types(referenceClassNames)
+                && !ClojureSupport.acceptsFunctionDescriptor(owner.superClassName(), descriptor)) {
             throw new CompileException("Juno methods may use only supported scalar, array, or closed-world reference parameters and returns: "
                     + method.reference().displayName());
         }
