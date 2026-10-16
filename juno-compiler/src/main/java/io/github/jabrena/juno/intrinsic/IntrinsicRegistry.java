@@ -303,6 +303,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.HTTP_URL_GET_PATH_BUFFER),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/HttpClient", "post", "(Ljava/lang/String;Ljava/lang/String;[BI[BI[I)I"),
                     Intrinsic.HTTP_URL_POST),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/HttpClient", "post",
+                    "(Ljava/lang/String;[BI[BI[BI[BI[I)I"), Intrinsic.HTTP_URL_POST_BUFFER),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/HttpClient", "delete", "(Ljava/lang/String;[BI[BI[I)I"),
                     Intrinsic.HTTP_URL_DELETE),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/HttpClient", "patch", "(Ljava/lang/String;Ljava/lang/String;[BI[BI[I)I"),

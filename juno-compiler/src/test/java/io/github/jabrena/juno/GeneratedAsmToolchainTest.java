@@ -548,6 +548,8 @@ class GeneratedAsmToolchainTest {
                         HttpClient.requestHttps("example.com", 443, "POST", path, 1,
                                 requestHeaders, 0, requestBody, 0,
                                 response, response.length, headers, headers.length, out);
+                        HttpClient.post("https://example.com/rest/v1/sensor-data", requestHeaders, 0,
+                                requestBody, 2, response, response.length, headers, headers.length, out);
                         int temperature = Json.getInt(response, response.length, "data.temp");
                     }
                 }

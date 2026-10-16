@@ -265,17 +265,20 @@ public final class Linker {
                 Intrinsic.WIFI_GATEWAY_IP, Intrinsic.WIFI_MAC_ADDRESS, Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
                 Intrinsic.UDP_STOP);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
-                Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY,
+                Intrinsic.HTTPS_POST, Intrinsic.HTTPS_POST_BUFFER, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH,
+                Intrinsic.HTTPS_QUERY,
                 Intrinsic.HTTPS_REQUEST_BUFFER);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.LOCAL_DATE_TIME_NOW);
         // A URL-based request needs Wi-Fi whatever its scheme; whether it also needs plain HTTP or TLS is only known
         // from the URL literal, which the lowering checks against the board (HttpUrlCall).
         require(required, Capability.WIFI, Intrinsic.HTTP_URL_GET, Intrinsic.HTTP_URL_GET_PATH_BUFFER,
-                Intrinsic.HTTP_URL_POST, Intrinsic.HTTP_URL_DELETE, Intrinsic.HTTP_URL_PATCH, Intrinsic.HTTP_URL_QUERY);
+                Intrinsic.HTTP_URL_POST, Intrinsic.HTTP_URL_POST_BUFFER, Intrinsic.HTTP_URL_DELETE,
+                Intrinsic.HTTP_URL_PATCH, Intrinsic.HTTP_URL_QUERY);
         require(required, Capability.TLS_EMAIL, Intrinsic.SMTP_SEND_TLS, Intrinsic.POP3_MESSAGE_COUNT,
                 Intrinsic.POP3_READ_LATEST, Intrinsic.POP3_READ_SUBJECT);
         require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_GET, Intrinsic.HTTP_GET_PATH_BUFFER,
-                Intrinsic.HTTP_POST, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH, Intrinsic.HTTP_QUERY);
+                Intrinsic.HTTP_POST, Intrinsic.HTTP_POST_BUFFER, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH,
+                Intrinsic.HTTP_QUERY);
         require(required, Capability.SMTP_STARTTLS, Intrinsic.SMTP_SEND);
         require(required, Capability.USB_HID, Intrinsic.MOUSE_BEGIN, Intrinsic.MOUSE_MOVE);
         require(required, Capability.STRUCTURED_CONCURRENCY, Intrinsic.TASK_JOINER_ALL_SUCCESSFUL,

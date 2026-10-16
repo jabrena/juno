@@ -19,6 +19,21 @@ extern "C" int32_t juno_http_post(const char* host, int32_t port, const char* pa
                            headersBuffer, headersBufferLength, statusAndHeadersLength);
 }
 
+extern "C" int32_t juno_http_post_buffer(const char* host, int32_t port, const char* path,
+                                           const uint8_t* requestHeadersBuffer,
+                                           int32_t requestHeadersLength,
+                                           const uint8_t* requestBodyBuffer,
+                                           int32_t requestBodyLength,
+                                           uint8_t* responseBuffer, int32_t responseBufferLength,
+                                           uint8_t* headersBuffer, int32_t headersBufferLength,
+                                           int32_t* statusAndHeadersLength) {
+  return juno_http_run<WiFiClient>("POST", host, port, path, nullptr,
+                           requestHeadersBuffer, requestHeadersLength,
+                           requestBodyBuffer, requestBodyLength,
+                           responseBuffer, responseBufferLength,
+                           headersBuffer, headersBufferLength, statusAndHeadersLength);
+}
+
 extern "C" int32_t juno_http_delete(const char* host, int32_t port, const char* path,
                                      uint8_t* responseBuffer, int32_t responseBufferLength,
                                      uint8_t* headersBuffer, int32_t headersBufferLength,

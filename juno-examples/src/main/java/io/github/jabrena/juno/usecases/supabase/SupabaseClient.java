@@ -12,10 +12,11 @@ import io.github.jabrena.juno.api.net.http.HttpClient;
  * a Supabase publishable key protected by Row Level Security, never a secret or legacy {@code service_role} key. A
  * signed-in user's JWT can be added separately with {@link #authorize(String)}.
  *
- * <p>Table and column names are limited to ASCII letters, digits, and underscores. Query values and select
- * expressions are percent-encoded from ASCII. JSON supplied as a {@link String} must be ASCII; use the byte-buffer
- * overloads for pre-encoded UTF-8. Buffer exhaustion makes the current request invalid, so {@link #execute()} returns
- * a rejected response without connecting. No method allocates after startup.
+ * <p>Table names may contain ASCII letters, digits, underscores, and hyphens; column and parameter names are limited
+ * to letters, digits, and underscores. Query values and select expressions are percent-encoded from ASCII. JSON
+ * supplied as a {@link String} must be ASCII; use the byte-buffer overloads for pre-encoded UTF-8. Buffer exhaustion
+ * makes the current request invalid, so {@link #execute()} returns a rejected response without connecting. No method
+ * allocates after startup.
  */
 public final class SupabaseClient {
     /** Standard Supabase HTTPS port. */
@@ -28,15 +29,13 @@ public final class SupabaseClient {
     private static final int DELETE = 4;
 
     private final String projectHost;
-    private final byte[] pathBuffer;
-    private final int pathCapacity;
+    private final SupabasePathBuilder path;
     private final byte[] requestHeadersBuffer;
     private final int requestHeadersCapacity;
     private final byte[] requestBodyBuffer;
     private final int requestBodyCapacity;
     private final SupabaseResponse response;
 
-    private int pathLength;
     private int requestHeadersLength;
     private int requestBodyLength;
     private int operation;
@@ -61,8 +60,7 @@ public final class SupabaseClient {
             int requestBodyCapacity,
             SupabaseResponse response) {
         this.projectHost = projectHost;
-        this.pathBuffer = pathBuffer;
-        this.pathCapacity = pathCapacity;
+        path = new SupabasePathBuilder(pathBuffer, pathCapacity);
         this.requestHeadersBuffer = requestHeadersBuffer;
         this.requestHeadersCapacity = requestHeadersCapacity;
         this.requestBodyBuffer = requestBodyBuffer;
@@ -91,14 +89,15 @@ public final class SupabaseClient {
 
     /** Starts a request against {@code /rest/v1/table}. */
     public SupabaseClient from(String table) {
-        pathLength = 0;
         requestBodyLength = 0;
         operation = NONE;
         filterCount = 0;
         queryStarted = false;
         requestValid = headersValid;
-        appendPathAscii("/rest/v1/");
-        appendIdentifier(table);
+        path.reset(requestValid);
+        path.appendAscii("/rest/v1/");
+        path.appendTable(table);
+        requestValid = path.valid();
         return this;
     }
 
@@ -109,8 +108,10 @@ public final class SupabaseClient {
             return this;
         }
         operation = SELECT;
-        appendParameterName("select");
-        appendEncoded(columns);
+        path.appendParameterName("select", queryStarted);
+        path.appendEncoded(columns);
+        queryStarted = true;
+        requestValid = path.valid();
         return this;
     }
 
@@ -162,11 +163,36 @@ public final class SupabaseClient {
             requestValid = false;
             return this;
         }
-        appendParameterName(column);
-        appendPathAscii(operator);
-        appendPathByte('.');
-        appendEncoded(value);
+        path.appendParameterName(column, queryStarted);
+        path.appendAscii(operator);
+        path.appendAscii(".");
+        path.appendEncoded(value);
+        queryStarted = true;
         filterCount = filterCount + 1;
+        requestValid = path.valid();
+        return this;
+    }
+
+    /**
+     * Adds a PostgREST filter whose value is the first {@code valueLength} ASCII bytes in caller-owned storage.
+     * This supports values calculated on the board without creating a runtime {@link String}.
+     */
+    public SupabaseClient filter(String column, String operator, byte[] value, int valueLength) {
+        if (operation != SELECT && operation != UPDATE && operation != DELETE) {
+            requestValid = false;
+            return this;
+        }
+        if (!SupabaseSyntax.supportsOperator(operator) || valueLength < 0) {
+            requestValid = false;
+            return this;
+        }
+        path.appendParameterName(column, queryStarted);
+        path.appendAscii(operator);
+        path.appendAscii(".");
+        path.appendEncoded(value, valueLength);
+        queryStarted = true;
+        filterCount = filterCount + 1;
+        requestValid = path.valid();
         return this;
     }
 
@@ -176,8 +202,10 @@ public final class SupabaseClient {
             requestValid = false;
             return this;
         }
-        appendParameterName("limit");
-        appendPositiveInt(rows);
+        path.appendParameterName("limit", queryStarted);
+        path.appendPositiveInt(rows);
+        queryStarted = true;
+        requestValid = path.valid();
         return this;
     }
 
@@ -211,7 +239,7 @@ public final class SupabaseClient {
 
     /** The current request-path length, useful for diagnostics without creating a String. */
     public int pathLength() {
-        return pathLength;
+        return path.length();
     }
 
     /** The current request-body length. */
@@ -229,8 +257,8 @@ public final class SupabaseClient {
                 projectHost,
                 HTTPS_PORT,
                 method,
-                pathBuffer,
-                pathLength,
+                path.buffer(),
+                path.length(),
                 requestHeadersBuffer,
                 requestHeadersLength,
                 requestBodyBuffer,
@@ -276,78 +304,6 @@ public final class SupabaseClient {
             index = index + 1;
         }
         return this;
-    }
-
-    private void appendIdentifier(String identifier) {
-        int length = identifier.length();
-        if (length == 0) {
-            requestValid = false;
-            return;
-        }
-        int index = 0;
-        while (index < length && requestValid) {
-            int character = identifier.charAt(index);
-            if (!SupabaseSyntax.identifierCharacter(character)) {
-                requestValid = false;
-            } else {
-                appendPathByte(character);
-            }
-            index = index + 1;
-        }
-    }
-
-    private void appendParameterName(String name) {
-        appendPathByte(queryStarted ? '&' : '?');
-        queryStarted = true;
-        appendIdentifier(name);
-        appendPathByte('=');
-    }
-
-    private void appendEncoded(String value) {
-        int length = value.length();
-        int index = 0;
-        while (index < length && requestValid) {
-            int character = value.charAt(index);
-            if (character > 127) {
-                requestValid = false;
-            } else if (SupabaseSyntax.unreserved(character)) {
-                appendPathByte(character);
-            } else {
-                appendPathByte('%');
-                appendPathByte(SupabaseSyntax.hex(character >> 4));
-                appendPathByte(SupabaseSyntax.hex(character & 15));
-            }
-            index = index + 1;
-        }
-    }
-
-    private void appendPositiveInt(int value) {
-        int divisor = 1;
-        while (value / divisor >= 10 && divisor <= 100_000_000) {
-            divisor = divisor * 10;
-        }
-        while (divisor > 0) {
-            appendPathByte('0' + value / divisor % 10);
-            divisor = divisor / 10;
-        }
-    }
-
-    private void appendPathAscii(String value) {
-        int length = value.length();
-        int index = 0;
-        while (index < length && requestValid) {
-            appendPathByte(value.charAt(index));
-            index = index + 1;
-        }
-    }
-
-    private void appendPathByte(int value) {
-        if (pathLength >= pathCapacity) {
-            requestValid = false;
-            return;
-        }
-        pathBuffer[pathLength] = (byte) value;
-        pathLength = pathLength + 1;
     }
 
     private void appendBodyByte(int value) {

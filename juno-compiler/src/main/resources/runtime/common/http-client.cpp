@@ -1,4 +1,25 @@
 
+// Whether caller-owned request headers already start a line with "Content-Type:" (any case), so the
+// default JSON content type is not sent a second time.
+static bool juno_http_has_content_type(const uint8_t* headers, int32_t length) {
+  static const char name[] = "content-type:";
+  const int32_t nameLength = static_cast<int32_t>(sizeof(name) - 1);
+  int32_t lineStart = 0;
+  while (headers != nullptr && lineStart + nameLength <= length) {
+    int32_t matched = 0;
+    while (matched < nameLength) {
+      uint8_t c = headers[lineStart + matched];
+      if (c >= 'A' && c <= 'Z') c = static_cast<uint8_t>(c + ('a' - 'A'));
+      if (c != static_cast<uint8_t>(name[matched])) break;
+      matched++;
+    }
+    if (matched == nameLength) return true;
+    while (lineStart < length && headers[lineStart] != '\n') lineStart++;
+    lineStart++;
+  }
+  return false;
+}
+
 template <typename Client>
 static int32_t juno_http_request(Client& client, const char* method, const char* host, int32_t port,
                                   const char* path, const char* body,
@@ -25,7 +46,10 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
   }
   if (body != nullptr || requestBodyLength >= 0) {
     const int32_t bodyLength = body != nullptr ? static_cast<int32_t>(strlen(body)) : requestBodyLength;
-    client.print("Content-Type: application/json\r\nContent-Length: ");
+    if (!juno_http_has_content_type(requestHeadersBuffer, requestHeadersLength)) {
+      client.print("Content-Type: application/json\r\n");
+    }
+    client.print("Content-Length: ");
     client.print(static_cast<unsigned long>(bodyLength));
     client.print("\r\n\r\n");
     if (body != nullptr) {
