@@ -263,7 +263,8 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   inherited by forked subtasks. Platform threads (`new Thread`) and `Thread.ofVirtual()` builders are
   rejected at compile time; `AtomicInteger`, `AtomicBoolean` and `AtomicLong` are available. See
   [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java),
-  [`VirtualThreads`](juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), and
+  [`VirtualThreads`](juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java),
+  [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java) (subtasks owned by a scope that is joined and closed before the owner reads their results), and
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java)
   (a scoped `MathContext` shared by three parallel subtasks).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
