@@ -23,7 +23,7 @@ public final class LedMatrix {
      */
     public static native void loadFrame(int word0, int word1, int word2, int word3);
 
-    /** Loads a frame of at most 96 pixels: {@link #loadFrame(int, int, int, int)} with {@code word3} zero. */
+    /** Loads a frame of at most 96 pixels using {@link #loadFrame(int, int, int, int)} with its fourth word set to zero. */
     public static void loadFrame(int word0, int word1, int word2) {
         loadFrame(word0, word1, word2, 0);
     }

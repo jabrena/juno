@@ -46,8 +46,8 @@ public final class RcxFirmwareImageSource {
         StringBuilder cases = new StringBuilder();
         StringBuilder classes = new StringBuilder();
         for (int chunk = 0; chunk < chunks; chunk++) {
-            cases.append("            case ").append(chunk).append(":\n")
-                    .append("                return Chunk").append(chunk).append(".DATA[offset];\n");
+            cases.append("            case ").append(chunk).append(" -> Chunk").append(chunk)
+                    .append(".DATA[offset];\n");
             classes.append(chunkSource(chunk));
         }
         return """
@@ -66,10 +66,9 @@ public final class RcxFirmwareImageSource {
 
                     public static byte byteAt(int address) {
                         int offset = address %% CHUNK_SIZE;
-                        switch (address / CHUNK_SIZE) {
-                %s            default:
-                                return 0;
-                        }
+                        return switch (address / CHUNK_SIZE) {
+                %s            default -> 0;
+                        };
                     }
                 %s}
                 """.formatted(PACKAGE, image.origin(), bytes.length, image.entry(), checksum(), CHUNK_SIZE, cases,

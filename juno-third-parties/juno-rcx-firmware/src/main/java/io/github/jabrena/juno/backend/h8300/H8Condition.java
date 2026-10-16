@@ -27,7 +27,24 @@ public enum H8Condition {
 
     /** The condition that holds exactly when this one does not: the opcodes come in pairs differing in bit 0. */
     public H8Condition opposite() {
-        return values()[ordinal() ^ 1];
+        return switch (this) {
+            case ALWAYS -> NEVER;
+            case NEVER -> ALWAYS;
+            case HIGHER -> LOWER_OR_SAME;
+            case LOWER_OR_SAME -> HIGHER;
+            case CARRY_CLEAR -> CARRY_SET;
+            case CARRY_SET -> CARRY_CLEAR;
+            case NOT_EQUAL -> EQUAL;
+            case EQUAL -> NOT_EQUAL;
+            case OVERFLOW_CLEAR -> OVERFLOW_SET;
+            case OVERFLOW_SET -> OVERFLOW_CLEAR;
+            case PLUS -> MINUS;
+            case MINUS -> PLUS;
+            case GREATER_OR_EQUAL -> LESS;
+            case LESS -> GREATER_OR_EQUAL;
+            case GREATER -> LESS_OR_EQUAL;
+            case LESS_OR_EQUAL -> GREATER;
+        };
     }
 
     int opcode() {
