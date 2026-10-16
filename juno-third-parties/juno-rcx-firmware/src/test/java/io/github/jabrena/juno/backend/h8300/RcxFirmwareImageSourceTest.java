@@ -37,7 +37,7 @@ class RcxFirmwareImageSourceTest {
 
         String source = new RcxFirmwareImageSource(new H8Image(0x8000, 0x8000, bytes)).source();
 
-        assertThat(source).contains("return Chunk0.DATA[offset];", "return Chunk1.DATA[offset];")
+        assertThat(source).contains("case 0 -> Chunk0.DATA[offset];", "case 1 -> Chunk1.DATA[offset];")
                 .contains("private static final class Chunk0", "private static final class Chunk1");
     }
 

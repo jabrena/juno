@@ -13,12 +13,10 @@ public final class RcxFirmwareImage {
 
     public static byte byteAt(int address) {
         int offset = address % CHUNK_SIZE;
-        switch (address / CHUNK_SIZE) {
-            case 0:
-                return Chunk0.DATA[offset];
-            default:
-                return 0;
-        }
+        return switch (address / CHUNK_SIZE) {
+            case 0 -> Chunk0.DATA[offset];
+            default -> 0;
+        };
     }
 
     private static final class Chunk0 {

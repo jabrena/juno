@@ -27,10 +27,16 @@
 #   MVNW_REPOURL - repo url base for downloading maven distribution
 #   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
 #   MVNW_VERBOSE - true: enable verbose log; debug: trace the mvnw script; others: silence the output
+#   PMD_JAVA_DISABLE_AUX_CLASSPATH_WARNINGS - false: show PMD auxiliary classpath warnings
 # ----------------------------------------------------------------------------
 
 set -euf
 [ "${MVNW_VERBOSE-}" != debug ] || set -x
+
+# The project and build JDK are both pinned to Java 27, so PMD's current-platform
+# fallback supplies the intended jrt-fs.jar when performing type resolution.
+: "${PMD_JAVA_DISABLE_AUX_CLASSPATH_WARNINGS:=true}"
+export PMD_JAVA_DISABLE_AUX_CLASSPATH_WARNINGS
 
 # OS specific support.
 native_path() { printf %s\\n "$1"; }

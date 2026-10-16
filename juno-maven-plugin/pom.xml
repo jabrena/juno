@@ -85,6 +85,7 @@
                 <artifactId>maven-plugin-plugin</artifactId>
                 <configuration>
                     <goalPrefix>juno</goalPrefix>
+                    <requiredJavaVersion>${java.version}</requiredJavaVersion>
                 </configuration>
             </plugin>
         </plugins>
