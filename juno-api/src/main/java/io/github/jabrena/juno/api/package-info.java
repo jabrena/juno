@@ -37,8 +37,10 @@
  *       fonts.</li>
  *   <li>{@code lcd} — drivers for character LCD shields, built entirely from {@code io} and
  *       {@link io.github.jabrena.juno.api.Delay} rather than a new compiler intrinsic.</li>
- *   <li>{@code thirdparty.grove} — the passive Grove Base Shield pin map and allocation-free
- *       drivers for Grove sensors such as the DHT11 temperature/humidity module.</li>
+   *   <li>{@code thirdparty.grove} — the passive Grove Base Shield pin map and allocation-free
+   *       drivers for Grove sensors such as Seeed's
+   *       <a href="https://wiki.seeedstudio.com/Grove-Temperature_and_Humidity_Sensor_Pro/">Grove
+   *       Temperature and Humidity Sensor Pro</a>.</li>
  *   <li>{@code mvc} — views, navigation and a frame-loop controller for multi-screen TFT programs.</li>
  * </ul>
  *

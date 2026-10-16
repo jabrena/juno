@@ -67,6 +67,11 @@ AVR assembly for the UNO R3's ATmega328P and the UNO WiFi Rev2's ATmega4809.
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="220"></td>
     <td>SPI SD-card access. The shield's real-time clock is not currently exposed.</td>
   </tr>
+  <tr>
+    <td><strong>Grove Base Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-grove.png" alt="Grove Base Shield" width="220"></td>
+    <td>Grove digital, analog, I2C, and UART connectors.</td>
+  </tr>
   </tbody>
 </table>
 
@@ -123,49 +128,59 @@ It auto-detects the port when exactly one matching board is connected. Otherwise
 
 ## Maven plugin
 
-The `juno` Maven plugin provides these goals. Goals marked **Manual** run only when invoked explicitly.
+The `juno` Maven plugin provides these goals. The commands below run them from the examples module;
+add `-Djuno.main=<fully-qualified-class-name>` and `-Djuno.board=<id>` when needed.
 
 <table>
   <thead>
     <tr>
       <th>Goal</th>
       <th>Purpose</th>
-      <th>Default phase</th>
+      <th>Command</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><code>juno:boards</code></td>
       <td>Lists the boards and serial ports detected by Arduino CLI without touching a board.</td>
-      <td>Manual</td>
+      <td><code>./mvnw -f juno-examples/pom.xml juno:boards</code></td>
     </tr>
     <tr>
       <td><code>juno:install-deps</code></td>
       <td>Installs the Arduino core and optional libraries required by the examples.</td>
-      <td>Manual</td>
+      <td><code>./mvnw -f juno-examples/pom.xml juno:install-deps</code></td>
     </tr>
     <tr>
       <td><code>juno:compile</code></td>
       <td>Generates the assembly, C++ runtime shim, and Arduino sketch wrapper.</td>
-      <td><code>process-classes</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:compile</code></td>
     </tr>
     <tr>
       <td><code>juno:verify</code></td>
       <td>Generates the sketch and compiles it with Arduino CLI without using physical hardware.</td>
-      <td><code>verify</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:verify</code></td>
     </tr>
     <tr>
       <td><code>juno:upload</code></td>
       <td>Generates, verifies, and uploads the sketch to the selected or detected board.</td>
-      <td>Manual</td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:upload</code></td>
     </tr>
     <tr>
       <td><code>juno:monitor</code></td>
       <td>Opens the serial monitor for the selected or detected board.</td>
-      <td>Manual</td>
+      <td><code>./mvnw -f juno-examples/pom.xml juno:monitor</code></td>
     </tr>
   </tbody>
 </table>
+
+For example, verify the Grove Temperature and Humidity Sensor Pro monitor for an UNO WiFi Rev2
+without uploading it:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveDht22Monitor \
+  -Djuno.board=arduino-uno-r3-wifi-rev2
+```
 
 ## Supported Java subset
 
@@ -265,9 +280,9 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   factor numbers together and chain the verified answers as a leaderless, Bitcoin-style proof-of-work chain), and
   [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/SdFileOperations.java) (SD card).
 - **Shields:** stacked shields are driven through the same intrinsic APIs.
-  The [Grove Base Shield and DHT11](https://jabrena.github.io/juno/grove) exposes the UNO pin map
-  and reads a Grove Temperature and Humidity Sensor without an Arduino library, as shown by
-  [`GroveDht11Monitor`](juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/GroveDht11Monitor.java).
+  The [Grove Base Shield and Temperature and Humidity Sensor Pro](https://jabrena.github.io/juno/grove)
+  exposes the UNO pin map and reads the sensor without an Arduino library, as shown by
+  [`GroveDht22Monitor`](juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveDht22Monitor.java).
   The [LCD Keypad Shield](https://jabrena.github.io/juno/lcd-keypad-shield) (16x2 display, buttons,
   backlight) is shown in
   [`LcdKeypadDemo`](juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java).

@@ -1,0 +1,50 @@
+package io.github.jabrena.juno.api.thirdparty.grove.sensors;
+
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.io.serial.BaudRate;
+import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
+
+/**
+ * Diagnoses a Grove compass on I2C, an analog gas sensor on A0, and a PIR on D3. A compass on D8
+ * or an analog gas sensor on D7 cannot be read correctly; move those plugs before running.
+ */
+@Board({ArduinoUnoR3WiFiRev2.class})
+public final class GroveSensorWiringMonitor {
+    private GroveSensorWiringMonitor() {
+    }
+
+    public static void main(String[] args) {
+        Serial.begin(BaudRate.BAUD_115200);
+        GrovePirMotion.begin(GroveBaseShield.D3);
+        Delay.millis(1000);
+        int compass = GroveCompassProbe.detect();
+        Serial.print("Compass chip: ");
+        switch (compass) {
+            case GroveCompassProbe.BMM150 -> Serial.println("BMM150 (Grove V2.0)");
+            default -> Serial.println("not found on I2C");
+        }
+        int[] compassAxes = new int[GroveCompassProbe.AXIS_LENGTH];
+        while (true) {
+            boolean compassReading = compass == GroveCompassProbe.BMM150
+                    && GroveCompassProbe.readRaw(compassAxes, compassAxes.length);
+            Serial.print("Compass X/Y/Z: ");
+            if (compassReading) {
+                Serial.print(compassAxes[GroveCompassProbe.X_AXIS]);
+                Serial.print(" / ");
+                Serial.print(compassAxes[GroveCompassProbe.Y_AXIS]);
+                Serial.print(" / ");
+                Serial.println(compassAxes[GroveCompassProbe.Z_AXIS]);
+            } else {
+                Serial.println("read failed");
+            }
+            Serial.print("Gas ADC A0: ");
+            Serial.println(GroveAnalogGas.rawValue(GroveBaseShield.A0));
+            Serial.print("PIR D3: ");
+            Serial.println(GrovePirMotion.motionDetected(GroveBaseShield.D3));
+            Delay.millis(2000);
+        }
+    }
+}

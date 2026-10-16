@@ -7,7 +7,7 @@ import io.github.jabrena.juno.api.io.Gpio;
  * runtime object: every socket is an ordinary UNO pin, so these constants can be passed directly
  * to a Grove driver or to {@link Gpio}.
  *
- * <p>Use {@link #D4}, for example, for the {@code SIG} wire of a Grove DHT11 module plugged into
+ * <p>Use {@link #D4}, for example, for the {@code SIG} wire of a Grove DHT module plugged into
  * the shield's D4 socket. The module's {@code GND} and {@code VCC} wires are supplied by the
  * socket; the driver only needs the signal pin.
  */

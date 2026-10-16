@@ -45,7 +45,7 @@ items:
   - title: "Serial"
     path: "/serial"
     icon: "fa-solid fa-terminal"
-  - title: "Grove DHT11"
+  - title: "Grove Temperature and Humidity Sensor Pro"
     path: "/grove"
     icon: "fa-solid fa-temperature-half"
   - title: "HID (Mouse)"
