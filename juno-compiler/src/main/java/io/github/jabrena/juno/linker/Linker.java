@@ -265,7 +265,8 @@ public final class Linker {
                 Intrinsic.WIFI_GATEWAY_IP, Intrinsic.WIFI_MAC_ADDRESS, Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
                 Intrinsic.UDP_STOP);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
-                Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY);
+                Intrinsic.HTTPS_POST, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH, Intrinsic.HTTPS_QUERY,
+                Intrinsic.HTTPS_REQUEST_BUFFER);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.LOCAL_DATE_TIME_NOW);
         // A URL-based request needs Wi-Fi whatever its scheme; whether it also needs plain HTTP or TLS is only known
         // from the URL literal, which the lowering checks against the board (HttpUrlCall).

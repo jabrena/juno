@@ -34,7 +34,9 @@ public final class IntrinsicRegistry {
             new IntrinsicParameter(Intrinsic.SD_APPEND_TEXT, 1),
             new IntrinsicParameter(Intrinsic.UUID_FROM_STRING, 0),
             new IntrinsicParameter(Intrinsic.BIG_INTEGER_PARSE, 0),
-            new IntrinsicParameter(Intrinsic.BIG_DECIMAL_PARSE, 0));
+            new IntrinsicParameter(Intrinsic.BIG_DECIMAL_PARSE, 0),
+            new IntrinsicParameter(Intrinsic.HTTPS_REQUEST_BUFFER, 0),
+            new IntrinsicParameter(Intrinsic.HTTPS_REQUEST_BUFFER, 2));
 
     /**
      * Parameters that accept a runtime {@code String} but still take the literal path (a {@code .asciz}
@@ -307,6 +309,9 @@ public final class IntrinsicRegistry {
                     Intrinsic.HTTP_URL_PATCH),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/HttpClient", "query", "(Ljava/lang/String;Ljava/lang/String;[BI[BI[I)I"),
                     Intrinsic.HTTP_URL_QUERY),
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/HttpClient", "requestHttps",
+                    "(Ljava/lang/String;ILjava/lang/String;[BI[BI[BI[BI[BI[I)I"),
+                    Intrinsic.HTTPS_REQUEST_BUFFER),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/Json", "rawText",
                     "([BII)Ljava/lang/String;"), Intrinsic.STRING_FROM_BYTES),
             Map.entry(new MethodRef("io/github/jabrena/juno/api/net/http/HttpServer", "begin", "(I)V"),

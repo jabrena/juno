@@ -43,13 +43,18 @@ final class NetworkShimLibraries {
         if (features.contains(ShimFeature.HTTPS_PATH_BUFFER)) {
             helpers.append(runtimeSource.load("common/https-path-buffer.cpp"));
         }
+        if (features.contains(ShimFeature.HTTPS_REQUEST_BUFFER)) {
+            helpers.append(runtimeSource.load("common/https-request-buffer.cpp"));
+        }
         return helpers.toString().replace("${JUNO_HTTPS_CLIENT_TYPE}", httpsClientType)
                 .replace("${JUNO_HTTP_RUN_PREPARE}", worker ? """
                       JunoIoGuard guard(JUNO_IO_NETWORK);
                       char hostCopy[JUNO_IO_TEXT_COPY_BYTES];
+                      char methodCopy[JUNO_IO_TEXT_COPY_BYTES];
                       char pathCopy[JUNO_IO_TEXT_COPY_BYTES];
                       char bodyCopy[JUNO_IO_TEXT_COPY_BYTES];
                       job.host = juno_io_stable_text(host, hostCopy);
+                      job.method = juno_io_stable_text(method, methodCopy);
                       job.path = juno_io_stable_text(path, pathCopy);
                       job.body = juno_io_stable_text(body, bodyCopy);""" : "");
     }
