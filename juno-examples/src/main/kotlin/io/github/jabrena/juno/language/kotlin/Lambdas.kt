@@ -6,7 +6,7 @@ import io.github.jabrena.juno.annotations.Board
 import io.github.jabrena.juno.api.io.serial.BaudRate
 import io.github.jabrena.juno.api.io.serial.Serial
 
-/** Non-capturing and capturing lambdas, plus bound and unbound function references. */
+/** Non-capturing and capturing lambdas, including ones that call a member and a bound method. */
 @Board(ArduinoUnoR4WiFi::class, ArduinoUnoQ::class)
 object Lambdas {
 
@@ -19,9 +19,11 @@ object Lambdas {
         val capturedAmount = 2
         val captured = IntOperation { value -> value + capturedAmount }
 
-        val instanceReference = IntOperation(this::twice)
+        // Lambdas instead of callable references: a reference compiles to a kotlin.jvm.internal.FunctionAdapter
+        // subclass, which ExamplesArchitectureTest rejects.
+        val instanceReference = IntOperation { value -> twice(value) }
         val offset = Offset(3)
-        val boundReference = IntOperation(offset::add)
+        val boundReference = IntOperation { value -> offset.add(value) }
 
         val result = square(2) + captured(1) + instanceReference(2) + boundReference(3)
 
