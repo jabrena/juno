@@ -206,6 +206,17 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   `toPlainString` follow the JDK's results, scales and rounding. Values are immutable blocks in the
   8 KiB arena and are garbage-collected, so precision is limited by memory, not by a fixed width. See
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java).
+- **LocalDateTime:** a bounded `java.time.LocalDateTime` subset with `now()`, `MIN`, calendar and clock
+  component accessors, `equals`, and ISO-8601 `toString`. `now()` synchronizes UTC over HTTPS after Wi-Fi
+  connects; configure the endpoint and JSON path with `InternetClock.configure(Properties)` or the
+  `JUNO_LOCAL_DATE_TIME_URL` / `JUNO_LOCAL_DATE_TIME_JSON_PATH` build settings. If the clock is unavailable,
+  `now()` returns `LocalDateTime.MIN`. Values are immutable one-word handles in the arena. Supported on the
+  UNO R4 WiFi, UNO Q, and UNO R3 WiFi Rev2; classic UNO R3 is rejected because it has no HTTPS runtime. See
+  [`InternetTime`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/time/InternetTime.java). Its SD-card
+  `application.properties` requires `wifi.ssid` and `wifi.password`; optionally set `time.api.url` and
+  `time.api.jsonPath` to select a different HTTPS endpoint and JSON field, for example:
+  `wifi.ssid=YOUR_WIFI_SSID`, `wifi.password=YOUR_WIFI_PASSWORD`,
+  `time.api.url=https://gateway.timeapi.world/timezone/Etc/UTC`, and `time.api.jsonPath=utc_datetime`.
 - **UUID:** immutable `java.util.UUID` values with construction, bit access, version/variant,
   equality, ordering, canonical parsing/formatting, and caller-buffer 16-byte network conversion
   through `UuidCodec`. `UUID.randomUUID()` uses the RA4M1 SCE5 TRNG on UNO R4 WiFi, the

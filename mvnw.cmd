@@ -25,8 +25,12 @@
 @REM   MVNW_REPOURL - repo url base for downloading maven distribution
 @REM   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
 @REM   MVNW_VERBOSE - true: enable verbose log; others: silence the output
+@REM   PMD_JAVA_DISABLE_AUX_CLASSPATH_WARNINGS - false: show PMD auxiliary classpath warnings
 @REM ----------------------------------------------------------------------------
 
+@REM The project and build JDK are both pinned to Java 27, so PMD's current-platform
+@REM fallback supplies the intended jrt-fs.jar when performing type resolution.
+@IF NOT DEFINED PMD_JAVA_DISABLE_AUX_CLASSPATH_WARNINGS (SET PMD_JAVA_DISABLE_AUX_CLASSPATH_WARNINGS=true)
 @IF "%__MVNW_ARG0_NAME__%"=="" (SET __MVNW_ARG0_NAME__=%~nx0)
 @SET __MVNW_CMD__=
 @SET __MVNW_ERROR__=

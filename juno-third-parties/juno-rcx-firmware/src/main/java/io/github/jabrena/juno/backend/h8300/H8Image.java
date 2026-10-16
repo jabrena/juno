@@ -13,6 +13,7 @@ import java.util.Arrays;
  * @param entry the address execution starts at
  * @param bytes the machine code and data
  */
+@SuppressWarnings("ArrayRecordComponent")
 public record H8Image(int origin, int entry, byte[] bytes) {
     private static final int RECORD_DATA = 16;
 
