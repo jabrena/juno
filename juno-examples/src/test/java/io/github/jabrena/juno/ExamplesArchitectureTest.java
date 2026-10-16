@@ -44,8 +44,20 @@ class ExamplesArchitectureTest {
     private static boolean isJdkOrIn(
             JavaClass type, Set<String> apiNames, Set<String> rcxFirmwareNames, Set<String> examplesNames) {
         return type.isPrimitive() || type.getPackageName().startsWith("java.")
+                || isKotlinAnnotation(type)
                 || apiNames.contains(type.getName()) || rcxFirmwareNames.contains(type.getName())
                 || examplesNames.contains(type.getName());
+    }
+
+    /**
+     * Kotlin compiles each example against annotations that add no code the board could run ({@code @Metadata},
+     * {@code @JvmStatic}, and the JetBrains nullability markers such as {@code @NotNull}). Any other kotlin-stdlib
+     * reference, such as a helper call, still fails the rule.
+     */
+    private static boolean isKotlinAnnotation(JavaClass type) {
+        String name = type.getName();
+        return name.startsWith("org.jetbrains.annotations.")
+                || (name.startsWith("kotlin.") && type.isAnnotation());
     }
 
     private static Set<String> names(JavaClasses classes) {

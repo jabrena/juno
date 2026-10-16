@@ -18,6 +18,7 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <juno.main>io.github.jabrena.juno.api.Blink</juno.main>
         <juno.envFile>${maven.multiModuleProjectDirectory}/.env</juno.envFile>
+        <kotlin.version>2.2.20</kotlin.version>
     </properties>
 
     <dependencies>
@@ -28,6 +29,20 @@
         <dependency>
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-rcx-firmware</artifactId>
+        </dependency>
+        <!-- Kotlin examples compile against the Juno API only; the stdlib is needed at build time, never on the board. -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <!-- Nullability annotations are never read by the board toolchain; the class is Java 5 bytecode Juno rejects. -->
+                <exclusion>
+                    <groupId>org.jetbrains</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Tests drive the compiler directly (JunoCompiler, CompilationRequest) on the example classes. -->
         <dependency>
@@ -55,10 +70,53 @@
             <artifactId>slf4j-nop</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Only LanguageExamplesArduinoCliIT (the arduino-cli profile) uses these; versions come from the root pom. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <!-- Pulled in through duct-tape: compile-time nullability annotations the test runtime never reads. -->
+                <exclusion>
+                    <groupId>org.jetbrains</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <configuration>
+                    <sourceDirs>
+                        <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
+                    </sourceDirs>
+                    <jvmTarget>24</jvmTarget>
+                    <args>
+                        <!-- Keep the bytecode Juno lowers free of kotlin.jvm.internal.Intrinsics calls. -->
+                        <arg>-Xno-param-assertions</arg>
+                        <arg>-Xno-call-assertions</arg>
+                        <arg>-Xno-receiver-assertions</arg>
+                    </args>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>compile-kotlin</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -86,4 +144,47 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Compile the language examples with the real arduino-cli in Docker (LanguageExamplesArduinoCliIT). -->
+        <profile>
+            <id>arduino-cli</id>
+            <properties>
+                <!-- How many sketches LanguageExamplesArduinoCliIT compiles at once; override with -Djuno.arduinoCliParallelism. -->
+                <juno.arduinoCliParallelism>4</juno.arduinoCliParallelism>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <groups>arduino-cli</groups>
+                            <properties>
+                                <configurationParameters>
+                                    junit.jupiter.execution.parallel.enabled = true
+                                    junit.jupiter.execution.parallel.config.strategy = fixed
+                                    junit.jupiter.execution.parallel.config.fixed.parallelism = ${juno.arduinoCliParallelism}
+                                </configurationParameters>
+                            </properties>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
