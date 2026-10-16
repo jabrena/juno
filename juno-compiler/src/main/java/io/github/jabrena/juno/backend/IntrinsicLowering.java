@@ -597,6 +597,10 @@ public final class IntrinsicLowering {
         shim(Intrinsic.HTTPS_POST, "juno_https_post", Result.WORD, withBody, ShimFeature.HTTPS);
         shim(Intrinsic.HTTPS_PATCH, "juno_https_patch", Result.WORD, withBody, ShimFeature.HTTPS);
         shim(Intrinsic.HTTPS_QUERY, "juno_https_query", Result.WORD, withBody, ShimFeature.HTTPS);
+        shim(Intrinsic.HTTPS_REQUEST_BUFFER, "juno_https_request_buffer", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
+                        arg(9), arg(10), arg(11), arg(12), arg(13)),
+                ShimFeature.HTTPS, ShimFeature.HTTPS_REQUEST_BUFFER);
     }
 
     private void registerEmail() {

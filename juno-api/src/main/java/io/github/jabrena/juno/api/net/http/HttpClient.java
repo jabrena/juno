@@ -13,7 +13,8 @@ package io.github.jabrena.juno.api.net.http;
  * like {@link io.github.jabrena.juno.api.net.Wifi#begin}'s credentials. The compiler splits the URL into scheme,
  * host, port and path, so nothing is parsed on the board. Call these methods with the literal in hand, never through
  * another method's own {@code String} parameter. For a path that depends on runtime data, use
- * {@link #get(String, byte[], int, byte[], int, byte[], int, int[])} with a base URL.
+ * {@link #get(String, byte[], int, byte[], int, byte[], int, int[])} with a base URL. Small protocol drivers that
+ * also need runtime request headers or bodies can use {@link #requestHttps}.
  *
  * <p>The response body is written into {@code bodyBuffer} and the raw response headers into {@code headersBuffer}
  * (both caller-owned, fixed-size {@code byte[]}), each from index 0 and truncated to its given length. Each method
@@ -70,6 +71,28 @@ public final class HttpClient {
      * Sends a safe, idempotent QUERY request to {@code url} with a compile-time JSON body, as defined by RFC 10008.
      */
     public static native int query(String url, String body,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /**
+     * Sends an HTTPS request whose host, path, request headers, and optional body are held in caller-owned storage.
+     * This lower-level form supports small board-side protocol drivers that need runtime paths or authentication
+     * headers without allocating strings. {@code host} is a DNS name without {@code https://}, a port, or a path. The
+     * first {@code pathLength} bytes of {@code pathBuffer} are the request target. The first
+     * {@code requestHeadersLength} bytes of {@code requestHeadersBuffer} may contain any number of complete HTTP
+     * header lines, each ending in {@code \r\n}, without the final blank line. A zero length sends no custom headers.
+     * A negative {@code requestBodyLength} sends no body; otherwise the first that many bytes of
+     * {@code requestBodyBuffer} are sent as JSON.
+     *
+     * <p>The response contract is the same as {@link #get(String, byte[], int, byte[], int, int[])}. All storage is
+     * caller-owned and the operation is allocation-free. Invalid negative lengths, a path of 256 bytes or more, or
+     * a request-header block of 1024 bytes or more return {@code -1} without connecting.
+     */
+    public static native int requestHttps(String host, int port, String method,
+            byte[] pathBuffer, int pathLength,
+            byte[] requestHeadersBuffer, int requestHeadersLength,
+            byte[] requestBodyBuffer, int requestBodyLength,
             byte[] bodyBuffer, int bodyBufferLength,
             byte[] headersBuffer, int headersBufferLength,
             int[] statusAndHeadersLength);

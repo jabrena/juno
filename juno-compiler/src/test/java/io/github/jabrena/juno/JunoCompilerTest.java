@@ -1371,6 +1371,56 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersBufferedHttpsRequestWithMultipleHeaders() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
+                public final class BufferedHttpsDemo {
+                    private static int request(String host, String method,
+                            byte[] path, byte[] requestHeaders, byte[] requestBody,
+                            byte[] responseBody, byte[] responseHeaders, int[] status) {
+                        return HttpClient.requestHttps(host, 443, method,
+                                path, 1, requestHeaders, 10, requestBody, -1,
+                                responseBody, 256, responseHeaders, 128, status);
+                    }
+
+                    public static void main(String[] args) {
+                        byte[] path = new byte[32];
+                        path[0] = '/';
+                        byte[] requestHeaders = new byte[64];
+                        requestHeaders[0] = 'a';
+                        requestHeaders[1] = ':';
+                        requestHeaders[2] = '1';
+                        requestHeaders[3] = '\\r';
+                        requestHeaders[4] = '\\n';
+                        requestHeaders[5] = 'b';
+                        requestHeaders[6] = ':';
+                        requestHeaders[7] = '2';
+                        requestHeaders[8] = '\\r';
+                        requestHeaders[9] = '\\n';
+                        byte[] requestBody = new byte[32];
+                        byte[] responseBody = new byte[256];
+                        byte[] responseHeaders = new byte[128];
+                        int[] status = new int[2];
+                        request("project.supabase.co", "GET", path, requestHeaders, requestBody,
+                                responseBody, responseHeaders, status);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.BufferedHttpsDemo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BufferedHttpsDemo");
+
+        assertThat(result.assembly()).contains("bl juno_https_request_buffer");
+        assertThat(result.runtimeShim()).contains(
+                "extern \"C\" int32_t juno_https_request_buffer(",
+                "client.write(requestHeadersBuffer, static_cast<size_t>(requestHeadersLength))",
+                "client.write(requestBodyBuffer, static_cast<size_t>(bodyLength))",
+                "using JunoHttpsClient = WiFiSSLClient;")
+                .doesNotContain("juno_http_get(");
+    }
+
+    @Test
     void lowersHttpsThroughRouterBridgeOnUnoQ() throws Exception {
         String source = """
                 package demo;

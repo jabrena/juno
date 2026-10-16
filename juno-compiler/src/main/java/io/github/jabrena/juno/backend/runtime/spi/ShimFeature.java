@@ -30,6 +30,7 @@ public enum ShimFeature {
     HTTPS,
     HTTP_PATH_BUFFER,
     HTTPS_PATH_BUFFER,
+    HTTPS_REQUEST_BUFFER,
     HTTP_SERVER,
     SMTP,
     SMTP_TLS,

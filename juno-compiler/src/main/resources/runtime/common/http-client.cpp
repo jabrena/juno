@@ -2,6 +2,8 @@
 template <typename Client>
 static int32_t juno_http_request(Client& client, const char* method, const char* host, int32_t port,
                                   const char* path, const char* body,
+                                  const uint8_t* requestHeadersBuffer, int32_t requestHeadersLength,
+                                  const uint8_t* requestBodyBuffer, int32_t requestBodyLength,
                                   uint8_t* responseBuffer, int32_t responseBufferLength,
                                   uint8_t* headersBuffer, int32_t headersBufferLength,
                                   int32_t* statusAndHeadersLength) {
@@ -18,11 +20,19 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
   client.print(" HTTP/1.1\r\nHost: ");
   client.print(host);
   client.print("\r\nConnection: close\r\n");
-  if (body != nullptr) {
+  if (requestHeadersBuffer != nullptr && requestHeadersLength > 0) {
+    client.write(requestHeadersBuffer, static_cast<size_t>(requestHeadersLength));
+  }
+  if (body != nullptr || requestBodyLength >= 0) {
+    const int32_t bodyLength = body != nullptr ? static_cast<int32_t>(strlen(body)) : requestBodyLength;
     client.print("Content-Type: application/json\r\nContent-Length: ");
-    client.print(static_cast<unsigned long>(strlen(body)));
+    client.print(static_cast<unsigned long>(bodyLength));
     client.print("\r\n\r\n");
-    client.print(body);
+    if (body != nullptr) {
+      client.print(body);
+    } else if (bodyLength > 0) {
+      client.write(requestBodyBuffer, static_cast<size_t>(bodyLength));
+    }
   } else {
     client.print("\r\n");
   }
@@ -162,6 +172,10 @@ struct JunoHttpJob {
   int32_t port;
   const char* path;
   const char* body;
+  const uint8_t* requestHeadersBuffer;
+  int32_t requestHeadersLength;
+  const uint8_t* requestBodyBuffer;
+  int32_t requestBodyLength;
   uint8_t* responseBuffer;
   int32_t responseBufferLength;
   uint8_t* headersBuffer;
@@ -175,16 +189,23 @@ static void juno_http_job(void* argument) {
   JunoHttpJob* job = static_cast<JunoHttpJob*>(argument);
   Client client;
   job->result = juno_http_request(client, job->method, job->host, job->port, job->path, job->body,
+                                  job->requestHeadersBuffer, job->requestHeadersLength,
+                                  job->requestBodyBuffer, job->requestBodyLength,
                                   job->responseBuffer, job->responseBufferLength, job->headersBuffer,
                                   job->headersBufferLength, job->statusAndHeadersLength);
 }
 
 template <typename Client>
 static int32_t juno_http_run(const char* method, const char* host, int32_t port, const char* path,
-                             const char* body, uint8_t* responseBuffer, int32_t responseBufferLength,
+                             const char* body,
+                             const uint8_t* requestHeadersBuffer, int32_t requestHeadersLength,
+                             const uint8_t* requestBodyBuffer, int32_t requestBodyLength,
+                             uint8_t* responseBuffer, int32_t responseBufferLength,
                              uint8_t* headersBuffer, int32_t headersBufferLength,
                              int32_t* statusAndHeadersLength) {
-  JunoHttpJob job = {method, host, port, path, body, responseBuffer, responseBufferLength,
+  JunoHttpJob job = {method, host, port, path, body,
+                     requestHeadersBuffer, requestHeadersLength, requestBodyBuffer, requestBodyLength,
+                     responseBuffer, responseBufferLength,
                      headersBuffer, headersBufferLength, statusAndHeadersLength, 0};
   ${JUNO_HTTP_RUN_PREPARE}
   juno_io_offload(juno_http_job<Client>, &job);
