@@ -44,7 +44,7 @@ class ExamplesArchitectureTest {
     private static boolean isJdkOrIn(
             JavaClass type, Set<String> apiNames, Set<String> rcxFirmwareNames, Set<String> examplesNames) {
         return type.isPrimitive() || type.getPackageName().startsWith("java.")
-                || isKotlinAnnotation(type)
+                || isKotlinAnnotation(type) || isScalaSerializationProxy(type)
                 || apiNames.contains(type.getName()) || rcxFirmwareNames.contains(type.getName())
                 || examplesNames.contains(type.getName());
     }
@@ -58,6 +58,15 @@ class ExamplesArchitectureTest {
         String name = type.getName();
         return name.startsWith("org.jetbrains.annotations.")
                 || (name.startsWith("kotlin.") && type.isAnnotation());
+    }
+
+    /**
+     * Scala gives every top-level object a {@code writeReplace} that hands Java serialization a
+     * {@code ModuleSerializationProxy}. Only serialization calls it, and Juno never lowers it because {@code main} does
+     * not reach it, so the proxy adds no code the board could run.
+     */
+    private static boolean isScalaSerializationProxy(JavaClass type) {
+        return type.getName().equals("scala.runtime.ModuleSerializationProxy");
     }
 
     private static Set<String> names(JavaClasses classes) {
