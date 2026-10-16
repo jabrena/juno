@@ -147,14 +147,6 @@ public final class Thumb2AsmBackend implements AsmBackend {
     private FieldAccessLowering fields;
     private IntrinsicLowering intrinsics;
 
-    public Thumb2AsmBackend() {
-        this(false);
-    }
-
-    public Thumb2AsmBackend(boolean gcLoggingEnabled) {
-        this(gcLoggingEnabled, Board.DEFAULT);
-    }
-
     /**
      * @param gcLoggingEnabled when {@code true}, {@code juno_gc_collect()} in the generated runtime
      *     shim prints one {@code Serial} line per collection (arena bytes used before/after), letting

@@ -1,10 +1,12 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.analysis.RuntimeRiskReport;
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -276,7 +278,8 @@ class RuntimeRiskAnalyzerTest {
     private RuntimeRiskReport compileReport(String className, String source) throws Exception {
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, className, source);
         CompilationResult result = new JunoCompiler().compile(
-                new CompilationRequest(CompilerTestSupport.classpath(temporaryDirectory), className));
+                new CompilationRequest(CompilerTestSupport.classpath(temporaryDirectory), className, false,
+                        Optional.of(Board.UNO_R4_WIFI.id())));
         return result.report().runtimeRisks();
     }
 

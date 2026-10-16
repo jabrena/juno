@@ -10,9 +10,8 @@ import java.util.stream.Collectors;
 
 /**
  * A Juno compilation target, resolved from the entry-point class's {@code @Board} annotation (see
- * {@code io.github.jabrena.juno.annotations.Board}). {@link #DEFAULT} is used when the entry point
- * carries no {@code @Board} annotation at all, preserving Juno's original UNO-R4-WiFi-shaped behavior.
- * {@code @Board} may declare more than one board; {@link #id()}/{@link #fromId} is how a build picks
+ * {@code io.github.jabrena.juno.annotations.Board}). {@code @Board} may declare more than one board;
+ * {@link #id()}/{@link #fromId} is how a build picks
  * one of them explicitly (the standalone CLI's {@code --board} option, the Maven plugin's
  * {@code -Djuno.board} property).
  */
@@ -39,8 +38,6 @@ public enum Board {
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
             EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG));
-
-    public static final Board DEFAULT = UNO_R4_WIFI;
 
     private final String apiClassName;
     private final String id;

@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
  *
  * @param mainClass the entry point's fully qualified class name
  * @param classPath the closed-world classpath
- * @param board the target board, required only when the entry point's {@code @Board} declares more than one
+ * @param board the target board, required when the entry point has no {@code @Board} annotation and otherwise
+ *     required only when that annotation declares more than one board
  */
 record ProgramSelection(String mainClass, List<Path> classPath, Optional<String> board) {
     ProgramSelection {

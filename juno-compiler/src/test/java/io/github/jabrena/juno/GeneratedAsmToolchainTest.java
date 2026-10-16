@@ -1,6 +1,6 @@
 package io.github.jabrena.juno;
 
-
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -672,13 +672,13 @@ class GeneratedAsmToolchainTest {
         JunoCompiler juno = new JunoCompiler();
 
         CompilationResult r4 = juno.compile(classpath, "demo.AsmUdp", false,
-                Optional.of("arduino-uno-r4-wifi"));
+                Optional.of(Board.UNO_R4_WIFI.id()));
         Path r4Shim = temporaryDirectory.resolve("AsmUdpR4Shim.cpp");
         Files.writeString(r4Shim, r4.runtimeShim(), StandardCharsets.UTF_8);
         syntaxCheckCpp(compiler, r4Shim);
 
         CompilationResult q = juno.compile(classpath, "demo.AsmUdp", false,
-                Optional.of("arduino-uno-q"));
+                Optional.of(Board.UNO_Q.id()));
         Path qShim = temporaryDirectory.resolve("AsmUdpQShim.cpp");
         Files.writeString(qShim, q.runtimeShim(), StandardCharsets.UTF_8);
         syntaxCheckCpp(compiler, qShim);

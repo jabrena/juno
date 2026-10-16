@@ -80,16 +80,11 @@ public final class BytecodeToIr {
                 throwableClasses, objectTypeIds);
     }
 
-    /** Lowers one method on its own, with no enum classes to resolve (e.g. a hand-built method in a test). */
-    public IrMethod lower(LinkedMethod linked) {
-        return lower(linked, Map.of());
-    }
-
-    /** Lowers one method on its own, as if it were the whole program. */
-    public IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes) {
+    /** Lowers one method on its own, as if it were the whole program, for the explicitly supplied board. */
+    public IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes, Board board) {
         ProgramContext context = new ProgramContext(classes, throwableClasses(List.of(linked), classes, false),
                 Map.of(), Map.of(), Map.of(), new ThrowingMethods(), ConstantTables.none(), false, decoder,
-                stringConcatResolver, Board.DEFAULT);
+                stringConcatResolver, board);
         return new MethodLowering(context, linked).lower();
     }
 
