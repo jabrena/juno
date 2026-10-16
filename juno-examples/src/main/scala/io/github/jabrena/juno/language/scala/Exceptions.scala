@@ -2,6 +2,10 @@ package io.github.jabrena.juno.language.scala
 
 import scala.annotation.static
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi
+import io.github.jabrena.juno.annotations.Board
 import io.github.jabrena.juno.api.io.serial.BaudRate
 import io.github.jabrena.juno.api.io.serial.Serial
 
@@ -14,6 +18,7 @@ import io.github.jabrena.juno.api.io.serial.Serial
  * run while it unwinds. An integer division by zero inside a `try` raises `ArithmeticException("/ by zero")`. An
  * exception that no handler catches prints `Exception in thread "main" <class>: <message>` and halts the board.
  */
+@Board(Array(classOf[ArduinoUnoR4WiFi], classOf[ArduinoUnoQ], classOf[ArduinoUnoR3WiFiRev2]))
 final class Exceptions
 
 object Exceptions {

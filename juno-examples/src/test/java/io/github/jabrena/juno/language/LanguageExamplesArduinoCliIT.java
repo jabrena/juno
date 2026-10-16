@@ -35,9 +35,9 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Compiles the Java, Kotlin and Scala language examples the way {@code juno:verify} does: Juno generates the sketch, then
+ * Compiles the Java, Kotlin, Scala and Clojure language examples the way {@code juno:verify} does: Juno generates the sketch, then
  * {@code arduino-cli compile} builds and links it with the real core of every board the example's {@code @Board}
- * annotation declares (UNO R4 WiFi when it declares none), inside a Docker container. The examples are read from this
+ * annotation declares, or on every board when it declares none, inside a Docker container. The examples are read from this
  * module's own compiled classes, so nothing is recompiled and no source tree is reached into. Nothing is executed:
  * the cores only prove that the generated shim links for that board. Run behavior is covered by {@code QemuRunIT}
  * and by flashing a board.
@@ -65,6 +65,7 @@ class LanguageExamplesArduinoCliIT {
     private static final String LANGUAGE_PACKAGE = "io/github/jabrena/juno/language";
     private static final String KOTLIN_PACKAGE = "io.github.jabrena.juno.language.kotlin.";
     private static final String SCALA_PACKAGE = "io.github.jabrena.juno.language.scala.";
+    private static final String CLOJURE_PACKAGE = "io.github.jabrena.juno.language.clojure.";
     private static final String UNSUPPORTED_FEATURE = UnsupportedFeature.class.getName();
     private static final String MAIN_DESCRIPTOR = "([Ljava/lang/String;)V";
 
@@ -90,6 +91,10 @@ class LanguageExamplesArduinoCliIT {
         ARDUINO_CLI.copyFileToContainer(MountableFile.forHostPath(sketch), target);
 
         List<String> command = new ArrayList<>(List.of("arduino-cli", "compile", "--fqbn", board.fqbn()));
+        if (board == Board.UNO_R3_WIFI_REV2) {
+            command.add("--build-property");
+            command.add("compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3");
+        }
         command.add(target);
         ExecResult result = compile(board, command.toArray(String[]::new));
 
@@ -128,15 +133,18 @@ class LanguageExamplesArduinoCliIT {
     }
 
     /**
-     * The sketch name. Java, Kotlin and Scala examples share simple names (Arrays, Strings, ...), so Kotlin and Scala
-     * get a prefix.
+     * The sketch name. Java, Kotlin, Scala and Clojure examples share simple names (Arrays, Strings, ...), so Kotlin,
+     * Scala and Clojure get a prefix.
      */
     private static String exampleName(String mainClass) {
         String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
         if (mainClass.startsWith(KOTLIN_PACKAGE)) {
             return "Kotlin" + simpleName;
         }
-        return mainClass.startsWith(SCALA_PACKAGE) ? "Scala" + simpleName : simpleName;
+        if (mainClass.startsWith(SCALA_PACKAGE)) {
+            return "Scala" + simpleName;
+        }
+        return mainClass.startsWith(CLOJURE_PACKAGE) ? "Clojure" + simpleName : simpleName;
     }
 
     private static String className(Path classFile) {
@@ -144,11 +152,11 @@ class LanguageExamplesArduinoCliIT {
         return relative.substring(0, relative.length() - ".class".length()).replace('/', '.');
     }
 
-    /** The {@code @Board} targets of the entry point; UNO R4 WiFi when it declares none. */
+    /** The {@code @Board} targets of the entry point; every board when it declares none. */
     private static List<Board> boardsFor(JavaClass javaClass) {
         List<String> apiClassNames = javaClass.boardApiClassNames();
         return apiClassNames.isEmpty()
-                ? List.of(Board.UNO_R4_WIFI)
+                ? List.of(Board.values())
                 : apiClassNames.stream().map(Board::fromApiClassName).distinct().toList();
     }
 

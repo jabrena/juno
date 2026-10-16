@@ -1,5 +1,9 @@
 package io.github.jabrena.juno.language;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.language.Exceptions.SensorException;
@@ -14,6 +18,7 @@ import io.github.jabrena.juno.language.Exceptions.SensorException;
  * {@code ArithmeticException("/ by zero")}. An exception that no handler catches prints
  * {@code Exception in thread "main" <class>: <message>} and halts the board.
  */
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
 public class Exceptions {
 
     public static void main(String[] args) {

@@ -34,12 +34,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Compiles every {@code language} example entry point through {@link JunoCompiler}, once per board its
- * {@code @Board} annotation declares (UNO R4 WiFi when it declares none). This is the in-process counterpart of
+ * {@code @Board} annotation declares, or on every board when it declares none. This is the in-process counterpart of
  * {@code juno:verify}: it catches a language example the compiler rejects without needing Docker or arduino-cli.
  *
  * <p>Entry points are found by reading their class files, not by loading them: {@code ScopedValuesPrecision} is
  * compiled with preview features, which the test JVM does not enable, so loading it would fail. The Kotlin examples
- * under {@code language.kotlin} and {@code language.scala} are included: their {@code main} is found the same way.
+ * under {@code language.kotlin}, {@code language.scala} and {@code language.clojure} are included: their {@code main} is found the same way.
  */
 class LanguageExamplesCompilationTest {
     private static final String LANGUAGE_PACKAGE = "io/github/jabrena/juno/language";
@@ -105,14 +105,14 @@ class LanguageExamplesCompilationTest {
                 && method.flags().has(AccessFlag.STATIC);
     }
 
-    /** The boards named by {@code @Board}, or UNO R4 WiFi when the entry point declares none. */
+    /** The boards named by {@code @Board}, or every board when the entry point declares none. */
     private static List<Board> boardsFor(ClassModel model) {
         Optional<Annotation> board = model.findAttribute(Attributes.runtimeVisibleAnnotations())
                 .flatMap(attribute -> attribute.annotations().stream()
                         .filter(annotation -> annotation.classSymbol().descriptorString().equals(BOARD_ANNOTATION))
                         .findFirst());
         if (board.isEmpty()) {
-            return List.of(Board.UNO_R4_WIFI);
+            return List.of(Board.values());
         }
         List<Board> boards = new ArrayList<>();
         for (AnnotationElement element : board.get().elements()) {
