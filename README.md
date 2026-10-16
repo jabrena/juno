@@ -251,7 +251,8 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`Lambdas`](juno-examples/src/main/java/io/github/jabrena/juno/language/Lambdas.java).
 - **Math and random numbers:** the documented `java.lang.Math` subset and Arduino-backed bounded
   pseudorandom numbers. See
-  [`MathFunctions`](juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctions.java) and
+  [`MathFunctionsSinglePrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsSinglePrecision.java),
+  [`MathFunctionsDoublePrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) and
   [`RandomNumbers`](juno-examples/src/main/java/io/github/jabrena/juno/language/RandomNumbers.java).
 - **Exceptions:** `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
   `finally`, nested handlers, propagation between methods, custom final exception classes, and
