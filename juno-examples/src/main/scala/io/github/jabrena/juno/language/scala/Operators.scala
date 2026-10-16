@@ -32,11 +32,11 @@ object Operators {
     @static
     private def arithmetic(): Unit = {
         Serial.println("Arithmetic operators")
-        Serial.println("12 + 5 = " + (LEFT + RIGHT))
-        Serial.println("12 - 5 = " + (LEFT - RIGHT))
-        Serial.println("12 * 5 = " + (LEFT * RIGHT))
-        Serial.println("12 / 5 = " + (LEFT / RIGHT))
-        Serial.println("12 % 5 = " + (LEFT % RIGHT))
+        Serial.println(s"12 + 5 = ${LEFT + RIGHT}")
+        Serial.println(s"12 - 5 = ${LEFT - RIGHT}")
+        Serial.println(s"12 * 5 = ${LEFT * RIGHT}")
+        Serial.println(s"12 / 5 = ${LEFT / RIGHT}")
+        Serial.println(s"12 % 5 = ${LEFT % RIGHT}")
     }
 
     @static
@@ -44,18 +44,18 @@ object Operators {
         Serial.println("Assignment operators")
         var result = LEFT
         result += RIGHT
-        Serial.println("result += 5: " + result)
+        Serial.println(s"result += 5: $result")
         result *= 2
-        Serial.println("result *= 2: " + result)
+        Serial.println(s"result *= 2: $result")
     }
 
     @static
     private def comparison(): Unit = {
         Serial.println("Comparison operators")
-        Serial.println("12 == 5: " + (LEFT == RIGHT))
-        Serial.println("12 != 5: " + (LEFT != RIGHT))
-        Serial.println("12 < 5: " + (LEFT < RIGHT))
-        Serial.println("12 >= 5: " + (LEFT >= RIGHT))
+        Serial.println(s"12 == 5: ${LEFT == RIGHT}")
+        Serial.println(s"12 != 5: ${LEFT != RIGHT}")
+        Serial.println(s"12 < 5: ${LEFT < RIGHT}")
+        Serial.println(s"12 >= 5: ${LEFT >= RIGHT}")
     }
 
     @static
@@ -63,25 +63,25 @@ object Operators {
         val positive = LEFT > 0
         val singleDigit = RIGHT < 10
         Serial.println("Logical operators")
-        Serial.println("positive && singleDigit: " + (positive && singleDigit))
-        Serial.println("positive || singleDigit: " + (positive || singleDigit))
-        Serial.println("!positive: " + !positive)
+        Serial.println(s"positive && singleDigit: ${positive && singleDigit}")
+        Serial.println(s"positive || singleDigit: ${positive || singleDigit}")
+        Serial.println(s"!positive: ${!positive}")
     }
 
     @static
     private def bitwise(): Unit = {
         Serial.println("Bitwise operators")
-        Serial.println("12 & 5 = " + (LEFT & RIGHT))
-        Serial.println("12 | 5 = " + (LEFT | RIGHT))
-        Serial.println("12 ^ 5 = " + (LEFT ^ RIGHT))
+        Serial.println(s"12 & 5 = ${LEFT & RIGHT}")
+        Serial.println(s"12 | 5 = ${LEFT | RIGHT}")
+        Serial.println(s"12 ^ 5 = ${LEFT ^ RIGHT}")
     }
 
     @static
     private def shifts(): Unit = {
         Serial.println("Shift operators")
-        Serial.println("12 << 2 = " + (LEFT << 2))
-        Serial.println("12 >> 1 = " + (LEFT >> 1))
-        Serial.println("-16 >>> 2 = " + (-16 >>> 2))
+        Serial.println(s"12 << 2 = ${LEFT << 2}")
+        Serial.println(s"12 >> 1 = ${LEFT >> 1}")
+        Serial.println(s"-16 >>> 2 = ${-16 >>> 2}")
     }
 
     @static
@@ -89,9 +89,9 @@ object Operators {
         Serial.println("Unary operators")
         var value = LEFT
         value += 1
-        Serial.println("12++ = " + value)
+        Serial.println(s"12++ = $value")
         value -= 1
-        Serial.println("13-- = " + value)
-        Serial.println("-12 = " + (-LEFT))
+        Serial.println(s"13-- = $value")
+        Serial.println(s"-12 = ${-LEFT}")
     }
 }

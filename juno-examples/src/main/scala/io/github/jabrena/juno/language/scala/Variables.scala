@@ -26,20 +26,20 @@ object Variables {
         val voltage = 3.3
 
         Serial.println("Variables demo")
-        Serial.println("board: " + board)
-        Serial.println("active: " + active)
-        Serial.println("original counter: " + originalCounter)
+        Serial.println(s"board: $board")
+        Serial.println(s"active: $active")
+        Serial.println(s"original counter: $originalCounter")
 
         counter += STEP
-        Serial.println("updated counter: " + counter)
+        Serial.println(s"updated counter: $counter")
 
-        Serial.println("distance: " + distance)
-        Serial.println("temperature: " + temperature)
-        Serial.println("voltage: " + voltage)
+        Serial.println(s"distance: $distance")
+        Serial.println(s"temperature: $temperature")
+        Serial.println(s"voltage: $voltage")
 
         if (active) {
             val doubledCounter = counter * 2
-            Serial.println("block-scoped value: " + doubledCounter)
+            Serial.println(s"block-scoped value: $doubledCounter")
         }
     }
 }

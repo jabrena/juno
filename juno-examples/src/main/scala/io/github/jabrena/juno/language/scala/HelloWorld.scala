@@ -11,7 +11,6 @@ object HelloWorld {
 
     @static
     def main(args: Array[String]): Unit = {
-        // Serial.println("Hello, World!")
         Serial.begin(BaudRate.BAUD_115200)
         Serial.println("Hello, World!")
     }

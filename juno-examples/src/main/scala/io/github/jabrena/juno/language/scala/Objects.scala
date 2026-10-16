@@ -57,15 +57,15 @@ object Objects {
         val counter = new Counter(10, 5)
         counter.increment()
         counter.increment()
-        Serial.println("counter: " + counter.value)
+        Serial.println(s"counter: ${counter.value}")
 
-        var position = new Point(0, 0)
-        position = position.moved(North, 4)
-        position = position.moved(East, 3)
-        position = position.moved(South, 6)
-        Serial.println("x: " + position.x)
-        Serial.println("y: " + position.y)
-        Serial.println("distance: " + position.distanceFromOrigin())
+        val position = new Point(0, 0)
+          .moved(North, 4)
+          .moved(East, 3)
+          .moved(South, 6)
+        Serial.println(s"x: ${position.x}")
+        Serial.println(s"y: ${position.y}")
+        Serial.println(s"distance: ${position.distanceFromOrigin()}")
 
         // Every Point is a fresh arena object; the conservative collector reclaims the unreachable ones,
         // so the total allocated here is far beyond the 8 KiB arena.
@@ -75,6 +75,6 @@ object Objects {
             walker = walker.moved(East, 1)
             step += 1
         }
-        Serial.println("walker x: " + walker.x)
+        Serial.println(s"walker x: ${walker.x}")
     }
 }

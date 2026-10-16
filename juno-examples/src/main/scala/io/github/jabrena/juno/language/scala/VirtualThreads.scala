@@ -29,7 +29,7 @@ object VirtualThreads {
     @static
     def main(args: Array[String]): Unit = {
         Serial.begin(BaudRate.BAUD_115200)
-        Serial.println("Counting primes below " + LIMIT)
+        Serial.println(s"Counting primes below $LIMIT")
 
         countInParallel()
         report()
@@ -54,11 +54,11 @@ object VirtualThreads {
         var total = 0
         var index = 0
         while (index < SLICES) {
-            Serial.println("slice " + index + ": " + counts(index))
+            Serial.println(s"slice $index: ${counts(index)}")
             total += counts(index)
             index += 1
         }
-        Serial.println("primes below " + LIMIT + ": " + total)
+        Serial.println(s"primes below $LIMIT: $total")
     }
 
     /** Counts the primes in `[from, to)` by trial division and stores the result in `counts[slot]`. */

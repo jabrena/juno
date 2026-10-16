@@ -54,10 +54,10 @@ object Exceptions {
                 if (reading > 100) {
                     throw new IllegalStateException("sensor saturated")
                 }
-                Serial.println("accepted: " + reading)
+                Serial.println(s"accepted: $reading")
             } catch {
-                case e: IllegalArgumentException => Serial.println("rejected: " + e.getMessage)
-                case e: IllegalStateException => Serial.println("rejected: " + e.getMessage)
+                case e: IllegalArgumentException => Serial.println(s"rejected: ${e.getMessage}")
+                case e: IllegalStateException => Serial.println(s"rejected: ${e.getMessage}")
             } finally {
                 Serial.println("checked one reading")
             }
@@ -72,7 +72,7 @@ object Exceptions {
         try {
             throw new SensorException("sensor offline", 2)
         } catch {
-            case e: SensorException => Serial.println(e.getMessage + " on sensor " + e.sensor)
+            case e: SensorException => Serial.println(s"${e.getMessage} on sensor ${e.sensor}")
         }
     }
 
@@ -83,7 +83,7 @@ object Exceptions {
         try {
             throw new NumberFormatException("not a number")
         } catch {
-            case e: IllegalArgumentException => Serial.println("caught: " + e.getMessage)
+            case e: IllegalArgumentException => Serial.println(s"caught: ${e.getMessage}")
         }
     }
 
@@ -97,7 +97,7 @@ object Exceptions {
             val average = total / samples
             Serial.println(average)
         } catch {
-            case e: ArithmeticException => Serial.println("caught: " + e.getMessage)
+            case e: ArithmeticException => Serial.println(s"caught: ${e.getMessage}")
         }
     }
 
@@ -111,7 +111,7 @@ object Exceptions {
                 Serial.println("inner finally runs first")
             }
         } catch {
-            case e: UnsupportedOperationException => Serial.println("outer catch: " + e.getMessage)
+            case e: UnsupportedOperationException => Serial.println(s"outer catch: ${e.getMessage}")
         }
     }
 
@@ -121,15 +121,15 @@ object Exceptions {
         Serial.println("Across functions")
         try {
             // parse() throws two calls below this handler; the exception unwinds through sample().
-            Serial.println("parsed " + sample(41))
-            Serial.println("parsed " + sample(-1))
+            Serial.println(s"parsed ${sample(41)}")
+            Serial.println(s"parsed ${sample(-1)}")
         } catch {
-            case e: IllegalArgumentException => Serial.println("caught " + e.getMessage)
+            case e: IllegalArgumentException => Serial.println(s"caught ${e.getMessage}")
         }
         try {
             withFinally(-1)
         } catch {
-            case e: IllegalArgumentException => Serial.println("caught " + e.getMessage)
+            case e: IllegalArgumentException => Serial.println(s"caught ${e.getMessage}")
         }
     }
 
@@ -140,7 +140,7 @@ object Exceptions {
         try {
             withResource(1, -1)
         } catch {
-            case e: IllegalArgumentException => Serial.println("caught " + e.getMessage)
+            case e: IllegalArgumentException => Serial.println(s"caught ${e.getMessage}")
         }
         withResource(2, 5)
     }
@@ -168,7 +168,7 @@ object Exceptions {
     /** A resource whose close() is observable on the serial monitor. */
     final class Channel(id: Int) extends AutoCloseable {
         override def close(): Unit = {
-            Serial.println("close " + id)
+            Serial.println(s"close $id")
         }
     }
 
