@@ -73,7 +73,7 @@ public final class Linker {
      * {@code requestedBoardId} (see {@link Board#fromId}) picks which of the entry point's declared
      * {@code @Board} targets this build compiles for; it must name one of them. An entry point with no
      * {@code @Board} is unrestricted, so the requested board alone decides the target. It may be omitted
-     * only when the entry point declares exactly one board (or none, defaulting to {@link Board#DEFAULT}) —
+     * only when the entry point declares exactly one board —
      * declaring more than one and omitting it is a {@link CompileException}, since silently picking one
      * would make the build depend on declaration order.
      */
@@ -118,13 +118,16 @@ public final class Linker {
 
     /**
      * Every board the entry point's {@code @Board} annotation names. Without the annotation the program
-     * is unrestricted: the requested board if one was given (so capabilities are still checked against
-     * it), otherwise just {@link Board#DEFAULT}.
+     * is unrestricted and must receive its target from the requested board.
      */
     private List<Board> declaredBoards(JavaClass mainClass, Optional<String> requestedBoardId) {
         List<String> boardApiClassNames = mainClass.boardApiClassNames();
         if (boardApiClassNames.isEmpty()) {
-            return List.of(requestedBoardId.map(Board::fromId).orElse(Board.DEFAULT));
+            if (requestedBoardId.isEmpty()) {
+                throw new CompileException("Target board is required when the entry point has no @Board annotation; "
+                        + "pass -Djuno.board=<id> for the Maven plugin or --board=<id> for the standalone CLI");
+            }
+            return List.of(Board.fromId(requestedBoardId.get()));
         }
         return boardApiClassNames.stream().map(Board::fromApiClassName).distinct().toList();
     }

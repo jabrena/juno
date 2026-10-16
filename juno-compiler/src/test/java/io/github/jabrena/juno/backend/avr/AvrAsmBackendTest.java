@@ -25,7 +25,7 @@ class AvrAsmBackendTest {
     private final AvrShimThunks avrShimThunks = new AvrShimThunks();
 
     private static final String R3WIFIREV2 = Board.UNO_R3_WIFI_REV2.id();
-    private static final String R3 = "arduino-uno-r3";
+    private static final String R3 = Board.UNO_R3.id();
 
     @TempDir
     Path temporaryDirectory;
@@ -94,7 +94,7 @@ class AvrAsmBackendTest {
     void resolvesTheUnoWiFiRev2ToTheAvrBackend() {
         Board board = Board.fromId(R3WIFIREV2);
         assertThat(board).isEqualTo(Board.UNO_R3_WIFI_REV2);
-        assertThat(board.fqbn()).isEqualTo("arduino:megaavr:uno2018");
+        assertThat(board.fqbn()).isEqualTo(Board.UNO_R3_WIFI_REV2.fqbn());
         assertThat(board.core().architecture()).isEqualTo(Architecture.AVR);
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2")).isEqualTo(board);
         assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3WiFiRev2.class");
@@ -105,7 +105,7 @@ class AvrAsmBackendTest {
         Board board = Board.fromId(R3);
 
         assertThat(board).isEqualTo(Board.UNO_R3);
-        assertThat(board.fqbn()).isEqualTo("arduino:avr:uno");
+        assertThat(board.fqbn()).isEqualTo(Board.UNO_R3.fqbn());
         assertThat(board.core().architecture()).isEqualTo(Architecture.AVR);
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3")).isEqualTo(board);
         assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3.class");

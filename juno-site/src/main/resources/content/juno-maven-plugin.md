@@ -56,7 +56,7 @@ can be selected without editing the POM.
 | `juno.main` | `compile`, `verify`, `upload` | *(required)* | Fully qualified entry-point class. |
 | `juno.outputDirectory` | `compile`, `verify`, `upload` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
 | `juno.gcLog` | `compile`, `verify`, `upload` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../features)). |
-| `juno.board` | `compile`, `verify`, `upload` | *(required only if `@Board` declares more than one board)* | Which declared board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`). |
+| `juno.board` | `compile`, `verify`, `upload`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`, `arduino-uno-r3`, `arduino-uno-r3-wifi-rev2`). |
 | `juno.arduinoCli` | `verify`, `upload`, `boards`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `upload`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `upload`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
@@ -83,7 +83,8 @@ always wins for a given run.
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Watch its Serial output
-./mvnw -f juno-examples/pom.xml juno:monitor
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 `upload` and `monitor` auto-detect the port when exactly one matching board is connected;

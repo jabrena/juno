@@ -1,6 +1,7 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.annotations.Watchdog;
+import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.classfile.ClassPath;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.linker.Linker;
@@ -21,6 +22,8 @@ import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 public final class CompilerTestSupport {
+    private static final String TEST_BOARD = Board.UNO_R4_WIFI.id();
+
     private CompilerTestSupport() {
     }
 
@@ -92,15 +95,24 @@ public final class CompilerTestSupport {
     }
 
     public static CompilationResult compileJuno(Path classes, String mainClass) {
-        return new JunoCompiler().compile(classpath(classes), mainClass);
+        return new JunoCompiler().compile(classpath(classes), mainClass, false, requestedBoard(classes, mainClass));
     }
 
     public static Program link(Path classes, String mainClass) {
-        return link(classes, mainClass, Optional.empty());
+        return link(classes, mainClass, requestedBoard(classes, mainClass));
     }
 
     public static Program link(Path classes, String mainClass, Optional<String> requestedBoard) {
         Map<String, JavaClass> loaded = new ClassPath().load(classpath(classes));
         return new Linker().link(loaded, mainClass, requestedBoard);
+    }
+
+    /** Supplies a target only for unannotated fixtures; annotated fixtures exercise their declared board selection. */
+    private static Optional<String> requestedBoard(Path classes, String mainClass) {
+        JavaClass entryPoint = new ClassPath().load(classpath(classes)).get(mainClass.replace('.', '/'));
+        if (entryPoint == null) {
+            throw new AssertionError("Fixture main class not found: " + mainClass);
+        }
+        return entryPoint.boardApiClassNames().isEmpty() ? Optional.of(TEST_BOARD) : Optional.empty();
     }
 }

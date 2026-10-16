@@ -1,6 +1,7 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.analysis.ConfigSuggestion;
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -47,7 +48,7 @@ class ConfigAnalyzerTest {
     @Test
     void countsTheUnusedStackAtTheBoardsOwnSize() throws Exception {
         List<ConfigSuggestion> suggestions = suggestions("demo.TwoForks", TWO_FORKS, RuntimeConfig.DEFAULT,
-                Optional.of("arduino-uno-q"));
+                Optional.of(Board.UNO_Q.id()));
 
         assertThat(suggestions).extracting(ConfigSuggestion::bytesDelta).containsExactly(-4096);
     }
@@ -141,8 +142,9 @@ class ConfigAnalyzerTest {
     private List<ConfigSuggestion> suggestions(String className, String source, RuntimeConfig config,
                                                Optional<String> board) throws Exception {
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, className, source);
+        Optional<String> targetBoard = board.or(() -> Optional.of(Board.UNO_R4_WIFI.id()));
         CompilationResult result = new JunoCompiler().compile(new CompilationRequest(
-                CompilerTestSupport.classpath(temporaryDirectory), className, false, board, config));
+                CompilerTestSupport.classpath(temporaryDirectory), className, false, targetBoard, config));
         return result.report().configSuggestions();
     }
 }

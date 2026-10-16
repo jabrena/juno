@@ -130,7 +130,7 @@ Juno generates GNU ARM (Cortex-M4) assembly plus a small C++ runtime shim, and t
 `arduino:renesas_uno` core assembles/compiles and links them into native RA4M1 machine code. The
 entry-point class's `@Board` annotation
 (`io.github.jabrena.juno.annotations.Board`) selects the target board; a class with no `@Board` annotation
-builds for the board named by `-Djuno.board`, or the WiFi variant when it is omitted.
+must receive its target from `-Djuno.board`.
 
 | Juno API or feature | R4 WiFi | Notes |
 |---|---:|---|

@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.CompilerTestSupport;
+import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrBasicBlock;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -234,7 +236,7 @@ class BytecodeToIrTest {
                 .filter(method -> method.method().reference().name().equals(name))
                 .findFirst()
                 .orElseThrow();
-        return lowering.lower(linked);
+        return lowering.lower(linked, Map.of(), Board.UNO_R4_WIFI);
     }
 
     private IrBasicBlock blockAt(IrMethod method, int start) {

@@ -20,7 +20,7 @@ class BoardTest {
     Path temporaryDirectory;
 
     @Test
-    void defaultsToUnoR4WiFiWithoutAnAnnotation() throws Exception {
+    void requiresARequestedBoardWithoutAnAnnotation() throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.Delay;
@@ -31,9 +31,11 @@ class BoardTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Unannotated", source);
-        Program program = CompilerTestSupport.link(temporaryDirectory, "demo.Unannotated");
-
-        assertThat(program.board()).isEqualTo(Board.UNO_R4_WIFI);
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.Unannotated", Optional.empty()))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("Target board is required")
+                .hasMessageContaining("-Djuno.board=<id>")
+                .hasMessageContaining("--board=<id>");
     }
 
     @Test
@@ -52,9 +54,9 @@ class BoardTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.OnUnoQ", source);
-        Program program = CompilerTestSupport.link(temporaryDirectory, "demo.OnUnoQ");
+        Program program = CompilerTestSupport.link(temporaryDirectory, "demo.OnUnoQ", Optional.empty());
         assertThat(program.board()).isEqualTo(Board.UNO_Q);
-        assertThat(program.board().fqbn()).isEqualTo("arduino:zephyr:unoq");
+        assertThat(program.board().fqbn()).isEqualTo(Board.UNO_Q.fqbn());
 
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OnUnoQ");
         // Zephyr inlines delay()/delayMicroseconds() and provides yield() itself.
@@ -94,8 +96,11 @@ class BoardTest {
     void theUnoR4KeepsItsOwnYieldAndLedMatrix() throws Exception {
         String source = """
                 package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.Delay;
                 import io.github.jabrena.juno.api.led.LedMatrix;
+                @Board(ArduinoUnoR4WiFi.class)
                 public final class OnUnoR4 {
                     public static void main(String[] args) {
                         Delay.millis(1);
@@ -130,7 +135,7 @@ class BoardTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.WatchdogOnUnoQ", source);
-        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.WatchdogOnUnoQ"))
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.WatchdogOnUnoQ", Optional.empty()))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO Q's Zephyr firmware does not enable its watchdog subsystem");
     }
@@ -151,7 +156,7 @@ class BoardTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Portable", source);
-        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.Portable"))
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.Portable", Optional.empty()))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("@Board declares multiple boards")
                 .hasMessageContaining("UNO Q")
@@ -176,11 +181,11 @@ class BoardTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Portable", source);
 
         Program onUnoQ = CompilerTestSupport.link(temporaryDirectory, "demo.Portable",
-                Optional.of("arduino-uno-q"));
+                Optional.of(Board.UNO_Q.id()));
         assertThat(onUnoQ.board()).isEqualTo(Board.UNO_Q);
 
         Program onUnoR4 = CompilerTestSupport.link(temporaryDirectory, "demo.Portable",
-                Optional.of("arduino-uno-r4-wifi"));
+                Optional.of(Board.UNO_R4_WIFI.id()));
         assertThat(onUnoR4.board()).isEqualTo(Board.UNO_R4_WIFI);
     }
 
@@ -200,7 +205,7 @@ class BoardTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.OnlyUnoQ", source);
         assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.OnlyUnoQ",
-                Optional.of("arduino-uno-r4-wifi")))
+                Optional.of(Board.UNO_R4_WIFI.id())))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("is not one of @Board's declared boards");
     }
@@ -219,9 +224,7 @@ class BoardTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Unrestricted", source);
 
         assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.Unrestricted",
-                Optional.of("arduino-uno-q")).board()).isEqualTo(Board.UNO_Q);
-        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.Unrestricted",
-                Optional.empty()).board()).isEqualTo(Board.DEFAULT);
+                Optional.of(Board.UNO_Q.id())).board()).isEqualTo(Board.UNO_Q);
     }
 
     @Test
@@ -260,9 +263,9 @@ class BoardTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortableWithLedMatrix", source);
         // Both boards have an LED matrix (12x8 and 13x8), so each declared board builds the same source.
         assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableWithLedMatrix",
-                Optional.of("arduino-uno-r4-wifi")).board()).isEqualTo(Board.UNO_R4_WIFI);
+                Optional.of(Board.UNO_R4_WIFI.id())).board()).isEqualTo(Board.UNO_R4_WIFI);
         assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableWithLedMatrix",
-                Optional.of("arduino-uno-q")).board()).isEqualTo(Board.UNO_Q);
+                Optional.of(Board.UNO_Q.id())).board()).isEqualTo(Board.UNO_Q);
     }
 
     @Test
@@ -287,9 +290,9 @@ class BoardTest {
         // Both boards provide Bluetooth LE: the R4 WiFi through its ESP32-S3, the UNO Q through
         // its Linux side's adapter, tunnelled over Arduino_RouterBridge.
         assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableTrain",
-                Optional.of("arduino-uno-q")).board()).isEqualTo(Board.UNO_Q);
+                Optional.of(Board.UNO_Q.id())).board()).isEqualTo(Board.UNO_Q);
         assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableTrain",
-                Optional.of("arduino-uno-r4-wifi")).board()).isEqualTo(Board.UNO_R4_WIFI);
+                Optional.of(Board.UNO_R4_WIFI.id())).board()).isEqualTo(Board.UNO_R4_WIFI);
     }
 
     @Test
@@ -319,7 +322,7 @@ class BoardTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiOnUnoQ", source);
-        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.WifiOnUnoQ").board())
+        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.WifiOnUnoQ", Optional.empty()).board())
                 .isEqualTo(Board.UNO_Q);
     }
 

@@ -112,7 +112,8 @@ Build, upload, and open the serial monitor with `juno-maven-plugin` (see
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
 
-./mvnw -f juno-examples/pom.xml juno:monitor
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 Always use the `juno:monitor` goal rather than invoking `arduino-cli monitor` directly — it

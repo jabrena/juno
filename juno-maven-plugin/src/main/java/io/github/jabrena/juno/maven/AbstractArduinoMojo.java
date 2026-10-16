@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.maven;
 
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.board.Board;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -18,7 +17,7 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
     @Parameter(property = "juno.arduinoCli", defaultValue = "arduino-cli", required = true)
     private String arduinoCli;
 
-    /** Optional FQBN override. Compile goals derive it from {@code @Board}; monitor uses {@code juno.board} or Juno's default board. */
+    /** Optional FQBN override. Compile goals derive it from {@code @Board}; monitor requires {@code juno.board}. */
     @Parameter(property = "juno.fqbn")
     private @Nullable String fqbn;
 
@@ -45,10 +44,6 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
     /** The configured FQBN override, else {@code detectedFqbn}. */
     final String targetFqbn(String detectedFqbn) {
         return configured(fqbn).orElse(detectedFqbn);
-    }
-
-    final String defaultFqbn() {
-        return targetFqbn(Board.DEFAULT.fqbn());
     }
 
     final String resolvePort(ArduinoCli cli, String fqbn) {

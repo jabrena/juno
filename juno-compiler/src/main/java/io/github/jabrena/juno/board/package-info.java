@@ -2,8 +2,8 @@
  * Juno's model of a compilation target: {@link io.github.jabrena.juno.board.Board}, resolved from
  * the entry-point class's {@code @Board} annotation (see
  * {@link io.github.jabrena.juno.annotations.Board}) via
- * {@link io.github.jabrena.juno.board.Board#fromApiClassName}, or
- * {@link io.github.jabrena.juno.board.Board#DEFAULT} when the entry point carries none.
+ * {@link io.github.jabrena.juno.board.Board#fromApiClassName}, or the explicitly requested board when the entry point
+ * carries no annotation.
  *
  * <p>Each constant carries the data the rest of the compiler and {@code juno-maven-plugin} need
  * for that board: its Arduino CLI FQBN, a display name, the {@link io.github.jabrena.juno.board.ArduinoCore}

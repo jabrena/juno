@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,8 @@ class MainTest {
     void inspectPrintsASummaryReportByDefault() throws Exception {
         compileFixture();
 
-        Main.run(new String[]{"inspect", "--main", "demo.Fixture", "--classpath", classPath()});
+        Main.run(new String[]{"inspect", "--main", "demo.Fixture", "--classpath", classPath(),
+                "--board", Board.UNO_R4_WIFI.id()});
 
         String output = captured.toString(StandardCharsets.UTF_8);
         assertThat(output.contains("Entry point: demo.Fixture.main")).isTrue();
@@ -50,7 +52,8 @@ class MainTest {
     void inspectWithIrFlagPrintsTheLoweredInstructions() throws Exception {
         compileFixture();
 
-        Main.run(new String[]{"inspect", "--main", "demo.Fixture", "--classpath", classPath(), "--ir"});
+        Main.run(new String[]{"inspect", "--main", "demo.Fixture", "--classpath", classPath(),
+                "--board", Board.UNO_R4_WIFI.id(), "--ir"});
 
         String output = captured.toString(StandardCharsets.UTF_8);
         assertThat(output.contains("Juno IR:")).isTrue();
@@ -61,7 +64,8 @@ class MainTest {
     void inspectWithCfgFlagPrintsBlockTerminators() throws Exception {
         compileFixture();
 
-        Main.run(new String[]{"inspect", "--main", "demo.Fixture", "--classpath", classPath(), "--cfg"});
+        Main.run(new String[]{"inspect", "--main", "demo.Fixture", "--classpath", classPath(),
+                "--board", Board.UNO_R4_WIFI.id(), "--cfg"});
 
         String output = captured.toString(StandardCharsets.UTF_8);
         assertThat(output.contains("Control flow graphs:")).isTrue();
@@ -74,7 +78,7 @@ class MainTest {
         Path output = temporaryDirectory.resolve("out").resolve("Risky.S");
 
         Main.run(new String[]{"compile", "--main", "demo.Risky", "--classpath", classPath(),
-                "--output", output.toString()});
+                "--board", Board.UNO_R4_WIFI.id(), "--output", output.toString()});
 
         String printed = captured.toString(StandardCharsets.UTF_8);
         assertThat(printed.contains("Runtime risk analysis:")).isTrue();
@@ -90,7 +94,7 @@ class MainTest {
         Path output = temporaryDirectory.resolve("out").resolve("Fixture.S");
 
         Main.run(new String[]{"compile", "--main", "demo.Fixture", "--classpath", classPath(),
-                "--output", output.toString(), "--metrics"});
+                "--board", Board.UNO_R4_WIFI.id(), "--output", output.toString(), "--metrics"});
 
         assertThat(captured.toString(StandardCharsets.UTF_8)).contains(
                 "Compilation metrics:",
@@ -111,7 +115,7 @@ class MainTest {
         Path output = temporaryDirectory.resolve("out").resolve("Fixture.S");
 
         Main.run(new String[]{"compile", "--main", "demo.Fixture", "--classpath", classPath(),
-                "--output", output.toString(), "--gc-log"});
+                "--board", Board.UNO_R4_WIFI.id(), "--output", output.toString(), "--gc-log"});
 
         String shim = Files.readString(output.resolveSibling("FixtureShim.cpp"),
                 StandardCharsets.UTF_8);
@@ -124,7 +128,7 @@ class MainTest {
         Path output = temporaryDirectory.resolve("out").resolve("Fixture.S");
 
         Main.run(new String[]{"compile", "--main", "demo.Fixture", "--classpath", classPath(),
-                "--output", output.toString()});
+                "--board", Board.UNO_R4_WIFI.id(), "--output", output.toString()});
 
         String shim = Files.readString(output.resolveSibling("FixtureShim.cpp"),
                 StandardCharsets.UTF_8);

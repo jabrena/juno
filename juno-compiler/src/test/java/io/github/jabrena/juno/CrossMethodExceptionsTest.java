@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -232,12 +233,12 @@ class CrossMethodExceptionsTest {
         List<Path> classpath = CompilerTestSupport.classpath(temporaryDirectory);
         JunoCompiler juno = new JunoCompiler();
 
-        for (String board : List.of("arduino-uno-r4-wifi", "arduino-uno-q")) {
-            CompilationResult result = juno.compile(classpath, "demo.Resources", false, Optional.of(board));
+        for (Board board : List.of(Board.UNO_R4_WIFI, Board.UNO_Q)) {
+            CompilationResult result = juno.compile(classpath, "demo.Resources", false, Optional.of(board.id()));
 
-            assertThat(result.assembly()).as(board).contains("bl juno_throw_pending", "bl juno_throw_catch",
+            assertThat(result.assembly()).as(board.id()).contains("bl juno_throw_pending", "bl juno_throw_catch",
                     "bl juno_throw_raise", "bl juno_throw_check_escape");
-            assertThat(result.runtimeShim()).as(board).contains(
+            assertThat(result.runtimeShim()).as(board.id()).contains(
                     "extern \"C\" int32_t juno_throw_catch(int32_t caughtMask)",
                     "extern \"C\" void juno_throw_check_escape()");
         }

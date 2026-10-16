@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.maven;
 
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -13,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ArduinoCliTest {
-    private static final String FQBN = "arduino:renesas_uno:unor4wifi";
+    private static final String FQBN = Board.UNO_R4_WIFI.fqbn();
 
     @Test
     void compilesSketchWithExpectedArguments() {
@@ -36,10 +37,10 @@ class ArduinoCliTest {
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
         Path sketch = Path.of("target/juno/Blink");
 
-        cli.compile("arduino:avr:uno", sketch);
+        cli.compile(Board.UNO_R3.fqbn(), sketch);
 
         assertThat(executor.invocations()).containsExactly(captured(List.of(
-                "arduino-cli", "compile", "--fqbn", "arduino:avr:uno",
+                "arduino-cli", "compile", "--fqbn", Board.UNO_R3.fqbn(),
                 sketch.toAbsolutePath().normalize().toString())));
     }
 
@@ -49,10 +50,10 @@ class ArduinoCliTest {
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
         Path sketch = Path.of("target/juno/WifiStatusTFT");
 
-        cli.compile("arduino:megaavr:uno2018", sketch);
+        cli.compile(Board.UNO_R3_WIFI_REV2.fqbn(), sketch);
 
         assertThat(executor.invocations()).containsExactly(captured(List.of(
-                "arduino-cli", "compile", "--fqbn", "arduino:megaavr:uno2018",
+                "arduino-cli", "compile", "--fqbn", Board.UNO_R3_WIFI_REV2.fqbn(),
                 "--build-property", "compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3",
                 sketch.toAbsolutePath().normalize().toString())));
     }
@@ -63,10 +64,10 @@ class ArduinoCliTest {
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
         Path sketch = Path.of("target/juno/DashboardTFT");
 
-        cli.compile("arduino:zephyr:unoq", sketch);
+        cli.compile(Board.UNO_Q.fqbn(), sketch);
 
         assertThat(executor.invocations()).containsExactly(captured(List.of(
-                "arduino-cli", "compile", "--fqbn", "arduino:zephyr:unoq",
+                "arduino-cli", "compile", "--fqbn", Board.UNO_Q.fqbn(),
                 "--build-property", "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0",
                 sketch.toAbsolutePath().normalize().toString())));
     }
@@ -101,7 +102,7 @@ class ArduinoCliTest {
     @Test
     void validatesConfiguredPortAgainstBoardAndFqbn() {
         FakeExecutor executor = new FakeExecutor().respond(0, boardList(
-                detected("COM3", FQBN), detected("COM4", "arduino:avr:uno")));
+                detected("COM3", FQBN), detected("COM4", Board.UNO_R3.fqbn())));
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
 
         assertThat(cli.resolvePort(FQBN, Optional.of(" COM3 "))).isEqualTo("COM3");
@@ -110,7 +111,7 @@ class ArduinoCliTest {
     @Test
     void rejectsConfiguredPortForDifferentBoard() {
         FakeExecutor executor = new FakeExecutor().respond(0, boardList(
-                detected("COM3", FQBN), detected("COM4", "arduino:avr:uno")));
+                detected("COM3", FQBN), detected("COM4", Board.UNO_R3.fqbn())));
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
 
         assertThatThrownBy(() -> cli.resolvePort(FQBN, Optional.of("COM4")))
@@ -134,7 +135,7 @@ class ArduinoCliTest {
     @Test
     void reportsWhenNoMatchingBoardIsConnected() {
         FakeExecutor executor = new FakeExecutor().respond(0, boardList(
-                detected("COM4", "arduino:avr:uno")));
+                detected("COM4", Board.UNO_R3.fqbn())));
         ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
 
         assertThatThrownBy(() -> cli.resolvePort(FQBN, Optional.empty()))

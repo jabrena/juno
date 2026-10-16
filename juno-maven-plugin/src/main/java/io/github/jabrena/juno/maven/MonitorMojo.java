@@ -12,14 +12,16 @@ public final class MonitorMojo extends AbstractArduinoMojo {
     @Parameter(property = "juno.baudRate", defaultValue = "115200", required = true)
     private int baudRate;
 
-    /** Board whose port to attach to, e.g. {@code arduino-uno-q}; defaults to Juno's default board. */
+    /** Board whose port to attach to, e.g. {@code arduino-uno-q}; required. */
     @Parameter(property = "juno.board")
     private @Nullable String board;
 
     @Override
     void run() {
         ArduinoCli cli = arduinoCli();
-        String fqbn = configured(board).map(id -> targetFqbn(Board.fromId(id).fqbn())).orElseGet(this::defaultFqbn);
+        String boardId = configured(board).orElseThrow(() -> new ArduinoCliException(
+                "Missing required target board; configure -Djuno.board=<id>"));
+        String fqbn = targetFqbn(Board.fromId(boardId).fqbn());
         String port = resolvePort(cli, fqbn);
         getLog().info("Opening serial monitor at " + baudRate + " baud; press Ctrl+C to stop");
         cli.monitor(port, baudRate);
