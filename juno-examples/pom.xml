@@ -21,6 +21,8 @@
         <kotlin.version>2.2.20</kotlin.version>
         <scala.version>3.10.0</scala.version>
         <scala-maven-plugin.version>4.9.9</scala-maven-plugin.version>
+        <clojure.version>1.12.0</clojure.version>
+        <exec-maven-plugin.version>3.5.1</exec-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -58,6 +60,13 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Clojure examples compile against the Juno API only; the Clojure runtime is needed at build time (AOT), never on the board. -->
+        <dependency>
+            <groupId>org.clojure</groupId>
+            <artifactId>clojure</artifactId>
+            <version>${clojure.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- Tests drive the compiler directly (JunoCompiler, CompilationRequest) on the example classes. -->
@@ -154,6 +163,34 @@
                         <goals>
                             <goal>compile</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Ahead-of-time compiles the Clojure namespaces under src/main/clojure into target/classes, before Juno runs. -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${exec-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile-clojure</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>clojure.main</mainClass>
+                            <!-- Clojure is a provided dependency, so the compile scope (not runtime) puts it on the classpath. -->
+                            <classpathScope>compile</classpathScope>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${project.basedir}/src/main/clojure</additionalClasspathElement>
+                            </additionalClasspathElements>
+                            <arguments>
+                                <argument>${project.basedir}/clojure-aot/compile-namespaces.clj</argument>
+                                <argument>${project.basedir}/src/main/clojure</argument>
+                                <argument>${project.build.outputDirectory}</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

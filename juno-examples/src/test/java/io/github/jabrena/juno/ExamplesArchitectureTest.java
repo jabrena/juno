@@ -44,7 +44,7 @@ class ExamplesArchitectureTest {
     private static boolean isJdkOrIn(
             JavaClass type, Set<String> apiNames, Set<String> rcxFirmwareNames, Set<String> examplesNames) {
         return type.isPrimitive() || type.getPackageName().startsWith("java.")
-                || isKotlinAnnotation(type) || isScalaSerializationProxy(type)
+                || isKotlinAnnotation(type) || isScalaSerializationProxy(type) || isClojureRuntime(type)
                 || apiNames.contains(type.getName()) || rcxFirmwareNames.contains(type.getName())
                 || examplesNames.contains(type.getName());
     }
@@ -67,6 +67,16 @@ class ExamplesArchitectureTest {
      */
     private static boolean isScalaSerializationProxy(JavaClass type) {
         return type.getName().equals("scala.runtime.ModuleSerializationProxy");
+    }
+
+    /**
+     * Clojure's ahead-of-time output calls the {@code clojure.lang} runtime and {@code clojure.core} functions, which
+     * the board does not have. The compiler lowers the calls it supports ({@code ClojureSupport}) and rejects every
+     * other one at link time, which {@code LanguageExamplesCompilationTest} checks for each example.
+     */
+    private static boolean isClojureRuntime(JavaClass type) {
+        String name = type.getName();
+        return name.startsWith("clojure.lang.") || name.startsWith("clojure.core");
     }
 
     private static Set<String> names(JavaClasses classes) {
