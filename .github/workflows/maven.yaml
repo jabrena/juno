@@ -36,6 +36,14 @@ jobs:
             command: >-
               ./mvnw --batch-mode --no-transfer-progress -Parduino-cli verify -pl juno-compiler -am
               -Djuno.arduinoCliImage=juno-arduino-cli:ci -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false
+          # The language examples have their own arduino-cli profile in juno-examples. -Dit.test selects only
+          # LanguageExamplesArduinoCliIT, so the fixture integration tests above do not run again here.
+          - name: Compile language examples with arduino-cli (Testcontainers)
+            arduino-cli-image: juno-arduino-cli:ci
+            command: >-
+              ./mvnw --batch-mode --no-transfer-progress -Parduino-cli verify -pl juno-examples -am
+              -Djuno.arduinoCliImage=juno-arduino-cli:ci -Dit.test=LanguageExamplesArduinoCliIT
+              -Dfailsafe.failIfNoSpecifiedTests=false
           - name: Run programs under QEMU (Testcontainers)
             command: >-
               ./mvnw --batch-mode --no-transfer-progress -Pqemu verify -pl juno-compiler -am
