@@ -79,7 +79,8 @@ Use the following commands for the complete `Blink` workflow. Pick one target wi
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Monitor
-./mvnw -f juno-examples/pom.xml juno:monitor
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 Upload and monitor auto-detect the port when exactly one matching board is connected. Otherwise,
@@ -133,7 +134,7 @@ Juno compiles for, and `juno:verify`/`juno:upload` build for its Arduino CLI FQB
 | `@Board(ArduinoUnoR3.class)` | Arduino UNO R3 | `arduino:avr:uno` |
 
 A class with no `@Board` annotation is not restricted to one board: it builds for the board named by
-`-Djuno.board=<id>`, or the UNO R4 WiFi when the option is omitted. GPIO, time and Serial are broadly
+`-Djuno.board=<id>`, which is required. GPIO, time and Serial are broadly
 portable; Wi-Fi, the onboard LED matrix and shield support vary by board. `@Watchdog` supports UNO
 R3, UNO WiFi Rev2 and UNO R4 WiFi. UNO Q's STM32U585 has watchdog hardware, but its current Arduino
 Zephyr firmware builds with the watchdog subsystem disabled. Juno rejects unsupported APIs at

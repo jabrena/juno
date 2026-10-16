@@ -129,7 +129,8 @@ It auto-detects the port when exactly one matching board is connected. Otherwise
 ## Maven plugin
 
 The `juno` Maven plugin provides these goals. The commands below run them from the examples module;
-add `-Djuno.main=<fully-qualified-class-name>` and `-Djuno.board=<id>` when needed.
+add `-Djuno.main=<fully-qualified-class-name>` and `-Djuno.board=<id>` when the entry point has no single-board
+`@Board` declaration.
 
 <table>
   <thead>
@@ -153,22 +154,22 @@ add `-Djuno.main=<fully-qualified-class-name>` and `-Djuno.board=<id>` when need
     <tr>
       <td><code>juno:compile</code></td>
       <td>Generates the assembly, C++ runtime shim, and Arduino sketch wrapper.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:compile</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:verify</code></td>
       <td>Generates the sketch and compiles it with Arduino CLI without using physical hardware.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:verify</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:upload</code></td>
       <td>Generates, verifies, and uploads the sketch to the selected or detected board.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:upload</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:monitor</code></td>
       <td>Opens the serial monitor for the selected or detected board.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml juno:monitor</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
   </tbody>
 </table>

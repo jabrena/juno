@@ -157,8 +157,8 @@ The following sections list useful goals for each plugin configured in this proj
 
 | Goal | Purpose |
 |------|---------|
-| `./mvnw -f juno-examples/pom.xml compile juno:compile` | Generate the Arduino sketch (`.S`, shim, `.ino`) with Juno |
-| `./mvnw -f juno-examples/pom.xml compile juno:verify` | Generate the sketch and compile it with `arduino-cli` |
-| `./mvnw -f juno-examples/pom.xml compile juno:upload` | Generate, verify and upload to the board |
+| `./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.board=arduino-uno-r4-wifi` | Generate the Arduino sketch (`.S`, shim, `.ino`) with Juno |
+| `./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.board=arduino-uno-r4-wifi` | Generate the sketch and compile it with `arduino-cli` |
+| `./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi` | Generate, verify and upload to the board |
 | `./mvnw -f juno-examples/pom.xml juno:boards` | List connected boards and serial ports (read-only) |
-| `./mvnw -f juno-examples/pom.xml juno:monitor` | Attach the serial monitor (`-Djuno.board=<id>`, `-Djuno.port=<port>`) |
+| `./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi` | Attach the serial monitor (`-Djuno.board=<id>`, `-Djuno.port=<port>`) |

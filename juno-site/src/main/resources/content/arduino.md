@@ -62,7 +62,8 @@ the example module resolve the development version of `juno-maven-plugin` by its
 sketch:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:compile
+./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 The plugin generates a complete Arduino sketch directory:
@@ -77,15 +78,18 @@ juno-examples/target/juno/BlinkAsm/
 Verify it with the real Arduino toolchain without touching a connected board:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:verify
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
-`juno:verify` derives the FQBN from the entry point's `@Board` annotation. Upload performs the same
+`juno:verify` derives the FQBN from the entry point's `@Board` annotation, or from the required
+`-Djuno.board` when the entry point has no annotation. Upload performs the same
 generation and verification first, then uses `arduino-cli board list --json` to select the only
 connected matching board:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 If more than one matching board is connected, or a specific port is required, select it explicitly:
@@ -108,7 +112,8 @@ Open an interactive serial monitor (115200 baud by default, matching every juno-
 `Serial.begin(...)` rate) with:
 
 ```bash
-./mvnw -f juno-examples/pom.xml juno:monitor
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 Use `-Djuno.baudRate=...` to select another baud rate and `-Djuno.port=...` to select a port.
@@ -129,7 +134,8 @@ Then open the serial monitor at the same baud rate the sketch uses
 (`Serial.begin(BaudRate.BAUD_115200)`, `juno:monitor`'s default):
 
 ```bash
-./mvnw -f juno-examples/pom.xml juno:monitor
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 The intended output is `0`, `1`, `2`, ... once a second. Press `Ctrl+C` to exit the monitor.
