@@ -27,12 +27,10 @@ object Lambdas {
         val offset = new Offset(3)
         val boundReference: IntOperation = (value: Int) => offset.add(value)
 
-        val result = applyOperation(square, 2) +
-            applyOperation(captured, 1) +
-            applyOperation(instanceReference, 2) +
-            applyOperation(boundReference, 3)
+        // Calling an IntOperation directly works through its apply method, as Scala's function-call syntax does.
+        val result = square(2) + captured(1) + instanceReference(2) + boundReference(3)
 
-        val printResult: Runnable = () => Serial.println("Lambda result: " + result)
+        val printResult: Runnable = () => Serial.println(s"Lambda result: $result")
         printResult.run()
     }
 
@@ -46,7 +44,4 @@ object Lambdas {
 
     @static
     private def twice(value: Int): Int = value * 2
-
-    @static
-    private def applyOperation(operation: IntOperation, value: Int): Int = operation.apply(value)
 }

@@ -52,7 +52,7 @@ object ScopedValuesPrecision {
 
     @static
     private def ownerBinding(): Unit = {
-        report("owner binds " + digits() + " digits")
+        report(s"owner binds ${digits()} digits")
     }
 
     /** A nested binding may lower the precision for its own extent. */
@@ -78,7 +78,7 @@ object ScopedValuesPrecision {
     /** Forks one approximation per constant (a scope holds at most three subtasks), then prints and combines them. */
     @static
     private def report(title: String): Unit = {
-        Serial.println("== " + title)
+        Serial.println(s"== $title")
         val scope = StructuredTaskScope.open[AnyRef]()
         try {
             // Each subtask writes its own slot, as VirtualThreads does: a value-returning Callable would need a bridge

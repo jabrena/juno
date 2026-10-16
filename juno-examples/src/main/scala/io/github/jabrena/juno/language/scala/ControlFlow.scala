@@ -28,19 +28,14 @@ object ControlFlow {
         val initialValue = 6
         val doubledValue = initialValue * 2
         val finalValue = doubledValue + 3
-        Serial.println("initial value: " + initialValue)
-        Serial.println("doubled value: " + doubledValue)
-        Serial.println("final value: " + finalValue)
+        Serial.println(s"initial value: $initialValue")
+        Serial.println(s"doubled value: $doubledValue")
+        Serial.println(s"final value: $finalValue")
 
         Serial.println("Bifurcation")
-        if (finalValue >= 10) {
-            Serial.println("final value is at least 10")
-        } else {
-            Serial.println("final value is below 10")
-        }
+        Serial.println(if (finalValue >= 10) "final value is at least 10" else "final value is below 10")
 
-        val remainder = finalValue % 3
-        remainder match {
+        (finalValue % 3) match {
             case 0 => Serial.println("divisible by 3")
             case 1 => Serial.println("remainder is 1")
             case _ => Serial.println("remainder is 2")
@@ -49,14 +44,14 @@ object ControlFlow {
         Serial.println("Iteration with for")
         var index = 1
         while (index <= 3) {
-            Serial.println("for index: " + index)
+            Serial.println(s"for index: $index")
             index += 1
         }
 
         Serial.println("Iteration with while")
         var countdown = 3
         while (countdown > 0) {
-            Serial.println("countdown: " + countdown)
+            Serial.println(s"countdown: $countdown")
             countdown -= 1
         }
 
@@ -64,7 +59,7 @@ object ControlFlow {
         var attempt = 1
         var again = true
         while (again) {
-            Serial.println("attempt: " + attempt)
+            Serial.println(s"attempt: $attempt")
             attempt += 1
             again = attempt <= 2
         }

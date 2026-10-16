@@ -24,32 +24,25 @@ object Arrays {
             numbers(index) = (index + 1) * 10
             index += 1
         }
-        Serial.println("length: " + numbers.length)
-        Serial.println("first: " + numbers(0))
-        Serial.println("last: " + numbers(numbers.length - 1))
-        Serial.println("sum: " + sum(numbers, numbers.length))
-        Serial.println("max: " + max(numbers, numbers.length))
+        Serial.println(s"length: ${numbers.length}")
+        Serial.println(s"first: ${numbers(0)}")
+        Serial.println(s"last: ${numbers(numbers.length - 1)}")
+        printSummary(numbers)
 
-        reverse(numbers, numbers.length)
-        Serial.println("after reverse, first: " + numbers(0))
+        reverseInPlace(numbers)
+        Serial.println(s"after reverse, first: ${numbers(0)}")
 
         val voltages = new Array[Double](4)
         voltages(0) = 3.5
         voltages(1) = 5.0
         voltages(2) = 1.5
         voltages(3) = 2.0
-        var total = 0.0
-        index = 0
-        while (index < voltages.length) {
-            total += voltages(index)
-            index += 1
-        }
-        Serial.println("mean voltage: " + total / voltages.length)
+        Serial.println(s"mean voltage: ${mean(voltages)}")
 
         val big = new Array[Long](2)
         big(0) = 3000000000L
         big(1) = big(0) * 2
-        Serial.println("big[1]: " + big(1))
+        Serial.println(s"big[1]: ${big(1)}")
 
         val grid = new Array[Array[Int]](2)
         grid(0) = new Array[Int](3)
@@ -63,38 +56,31 @@ object Arrays {
             }
             row += 1
         }
-        Serial.println("grid[1][2]: " + grid(1)(2))
+        Serial.println(s"grid[1][2]: ${grid(1)(2)}")
     }
 
-    // An array parameter has no known length, so callers pass the element count.
+    // An array knows its own length, so the helpers take no separate count parameter.
     @static
-    private def sum(values: Array[Int], count: Int): Int = {
+    private def printSummary(values: Array[Int]): Unit = {
         var total = 0
-        var index = 0
-        while (index < count) {
-            total += values(index)
-            index += 1
-        }
-        total
-    }
-
-    @static
-    private def max(values: Array[Int], count: Int): Int = {
         var largest = values(0)
-        var index = 1
-        while (index < count) {
+        var index = 0
+        while (index < values.length) {
+            total += values(index)
             if (values(index) > largest) {
                 largest = values(index)
             }
             index += 1
         }
-        largest
+        Serial.println(s"sum: $total")
+        Serial.println(s"max: $largest")
     }
 
+    // Swaps from both ends toward the middle; the Scala library's reverse goes through a class the examples cannot depend on.
     @static
-    private def reverse(values: Array[Int], count: Int): Unit = {
+    private def reverseInPlace(values: Array[Int]): Unit = {
         var left = 0
-        var right = count - 1
+        var right = values.length - 1
         while (left < right) {
             val swap = values(left)
             values(left) = values(right)
@@ -102,5 +88,16 @@ object Arrays {
             left += 1
             right -= 1
         }
+    }
+
+    @static
+    private def mean(values: Array[Double]): Double = {
+        var total = 0.0
+        var index = 0
+        while (index < values.length) {
+            total += values(index)
+            index += 1
+        }
+        total / values.length
     }
 }

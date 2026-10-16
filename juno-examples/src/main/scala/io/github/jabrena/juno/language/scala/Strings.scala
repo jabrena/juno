@@ -6,7 +6,7 @@ import io.github.jabrena.juno.api.Delay
 import io.github.jabrena.juno.api.io.serial.BaudRate
 import io.github.jabrena.juno.api.io.serial.Serial
 
-/** Demonstrates strings: literals, length, charAt, equals, number conversion, concatenation, and a StringBuilder. */
+/** Demonstrates strings: literals, length, charAt, equals, number conversion, interpolation, and a StringBuilder. */
 final class Strings
 
 object Strings {
@@ -29,34 +29,34 @@ object Strings {
 
     @static
     private def inspecting(): Unit = {
-        Serial.println("name: " + NAME)
-        Serial.println("length: " + NAME.length)
+        Serial.println(s"name: $NAME")
+        Serial.println(s"length: ${NAME.length}")
         // charAt is called explicitly: Scala apply on a String goes through StringOps, a Scala library class the examples cannot depend on.
-        Serial.println("first: " + NAME.charAt(0))
-        Serial.println("last: " + NAME.charAt(NAME.length - 1))
+        Serial.println(s"first: ${NAME.charAt(0)}")
+        Serial.println(s"last: ${NAME.charAt(NAME.length - 1)}")
     }
 
     @static
     private def comparing(): Unit = {
         // equals() is called explicitly: Scala == on objects goes through a Scala library helper the examples cannot depend on.
-        Serial.println("equals Juno: " + NAME.equals("Juno"))
-        Serial.println("equals Uno: " + NAME.equals("Uno"))
+        Serial.println(s"equals Juno: ${NAME.equals("Juno")}")
+        Serial.println(s"equals Uno: ${NAME.equals("Uno")}")
     }
 
     @static
     private def converting(): Unit = {
         val text = String.valueOf(COUNT)
-        Serial.println("valueOf: " + text + " has " + text.length + " digits")
+        Serial.println(s"valueOf: $text has ${text.length} digits")
     }
 
     @static
     private def concatenating(): Unit = {
-        Serial.println("greeting: " + "Hello, " + NAME + "! count=" + COUNT)
+        Serial.println(s"greeting: Hello, $NAME! count=$COUNT")
     }
 
     @static
     private def reversing(): Unit = {
-        Serial.println("reversed: " + reverse(NAME))
+        Serial.println(s"reversed: ${reverse(NAME)}")
     }
 
     // java.lang.StringBuilder is named in full: Scala's default StringBuilder is a collection type.

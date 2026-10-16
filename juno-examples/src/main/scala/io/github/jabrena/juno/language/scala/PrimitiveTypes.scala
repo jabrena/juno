@@ -14,13 +14,13 @@ object PrimitiveTypes {
     def main(args: Array[String]): Unit = {
         Serial.begin(BaudRate.BAUD_115200)
         Serial.println("Primitive types demo")
-        Serial.println("boolean: values: " + true + " or " + false)
-        Serial.println("byte: " + java.lang.Byte.BYTES + " bytes, range: " + java.lang.Byte.MIN_VALUE + " to " + java.lang.Byte.MAX_VALUE)
-        Serial.println("short: " + java.lang.Short.BYTES + " bytes, range: " + java.lang.Short.MIN_VALUE + " to " + java.lang.Short.MAX_VALUE)
-        Serial.println("char: " + java.lang.Character.BYTES + " bytes, range: " + java.lang.Character.MIN_VALUE.toInt + " to " + java.lang.Character.MAX_VALUE.toInt)
-        Serial.println("int: " + java.lang.Integer.BYTES + " bytes, range: " + java.lang.Integer.MIN_VALUE + " to " + java.lang.Integer.MAX_VALUE)
-        Serial.println("long: " + java.lang.Long.BYTES + " bytes, range: " + java.lang.Long.MIN_VALUE + " to " + java.lang.Long.MAX_VALUE)
-        Serial.println("float: " + java.lang.Float.BYTES + " bytes, range: " + java.lang.Float.MIN_VALUE + " to " + java.lang.Float.MAX_VALUE)
-        Serial.println("double: " + java.lang.Double.BYTES + " bytes, range: " + java.lang.Double.MIN_VALUE + " to " + java.lang.Double.MAX_VALUE)
+        Serial.println("boolean: values: true or false")
+        Serial.println(s"byte: ${java.lang.Byte.BYTES} bytes, range: ${Byte.MinValue} to ${Byte.MaxValue}")
+        Serial.println(s"short: ${java.lang.Short.BYTES} bytes, range: ${Short.MinValue} to ${Short.MaxValue}")
+        Serial.println(s"char: ${java.lang.Character.BYTES} bytes, range: ${Char.MinValue.toInt} to ${Char.MaxValue.toInt}")
+        Serial.println(s"int: ${java.lang.Integer.BYTES} bytes, range: ${Int.MinValue} to ${Int.MaxValue}")
+        Serial.println(s"long: ${java.lang.Long.BYTES} bytes, range: ${Long.MinValue} to ${Long.MaxValue}")
+        Serial.println(s"float: ${java.lang.Float.BYTES} bytes, range: ${Float.MinPositiveValue} to ${Float.MaxValue}")
+        Serial.println(s"double: ${java.lang.Double.BYTES} bytes, range: ${Double.MinPositiveValue} to ${Double.MaxValue}")
     }
 }
