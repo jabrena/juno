@@ -6,7 +6,7 @@ import io.github.jabrena.juno.annotations.Board
 import io.github.jabrena.juno.api.io.serial.BaudRate
 import io.github.jabrena.juno.api.io.serial.Serial
 
-/** Non-capturing and capturing lambdas, plus bound function references. */
+/** Non-capturing and capturing lambdas, plus bound and unbound function references. */
 @Board(ArduinoUnoR4WiFi::class, ArduinoUnoQ::class)
 object Lambdas {
 
@@ -19,23 +19,17 @@ object Lambdas {
         val capturedAmount = 2
         val captured = IntOperation { value -> value + capturedAmount }
 
-        val instanceReference = IntOperation { value -> twice(value) }
+        val instanceReference = IntOperation(this::twice)
         val offset = Offset(3)
-        val boundReference = IntOperation { value -> offset.add(value) }
+        val boundReference = IntOperation(offset::add)
 
-        val result = apply(square, 2) +
-            apply(captured, 1) +
-            apply(instanceReference, 2) +
-            apply(boundReference, 3)
+        val result = square(2) + captured(1) + instanceReference(2) + boundReference(3)
 
-        val printResult = Runnable {
-            Serial.println("Lambda result: $result")
-        }
-        printResult.run()
+        Runnable { Serial.println("Lambda result: $result") }.run()
     }
 
     fun interface IntOperation {
-        fun apply(value: Int): Int
+        operator fun invoke(value: Int): Int
     }
 
     class Offset(private val amount: Int) {
@@ -43,6 +37,4 @@ object Lambdas {
     }
 
     private fun twice(value: Int): Int = value * 2
-
-    private fun apply(operation: IntOperation, value: Int): Int = operation.apply(value)
 }

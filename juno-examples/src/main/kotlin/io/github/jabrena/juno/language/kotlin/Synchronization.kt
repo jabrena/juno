@@ -70,7 +70,7 @@ object Synchronization {
     }
 
     private fun count() {
-        for (i in 0 until 50) {
+        repeat(50) {
             atomicCounter.incrementAndGet()
 
             synchronized(guard) {

@@ -34,9 +34,7 @@ object Exceptions {
     /** Throw, catch two types with separate clauses, and a finally block that runs for every reading. */
     private fun validatingReadings() {
         Serial.println("Validating readings")
-        val readings = intArrayOf(12, -3, 250)
-        for (index in readings.indices) {
-            val reading = readings[index]
+        for (reading in intArrayOf(12, -3, 250)) {
             try {
                 if (reading < 0) {
                     throw IllegalArgumentException("negative reading")
@@ -44,11 +42,11 @@ object Exceptions {
                 if (reading > 100) {
                     throw IllegalStateException("sensor saturated")
                 }
-                Serial.println("accepted: " + reading)
+                Serial.println("accepted: $reading")
             } catch (e: IllegalArgumentException) {
-                Serial.println("rejected: " + e.message)
+                Serial.println("rejected: ${e.message}")
             } catch (e: IllegalStateException) {
-                Serial.println("rejected: " + e.message)
+                Serial.println("rejected: ${e.message}")
             } finally {
                 Serial.println("checked one reading")
             }
@@ -61,7 +59,7 @@ object Exceptions {
         try {
             throw SensorException("sensor offline", 2)
         } catch (e: SensorException) {
-            Serial.println(e.message + " on sensor " + e.sensor)
+            Serial.println("${e.message} on sensor ${e.sensor}")
         }
     }
 
@@ -73,7 +71,7 @@ object Exceptions {
         try {
             throw NumberFormatException("not a number")
         } catch (e: IllegalArgumentException) {
-            Serial.println("caught: " + e.message)
+            Serial.println("caught: ${e.message}")
         }
     }
 
@@ -86,7 +84,7 @@ object Exceptions {
             val average = total / samples
             Serial.println(average)
         } catch (e: ArithmeticException) {
-            Serial.println("caught: " + e.message)
+            Serial.println("caught: ${e.message}")
         }
     }
 
@@ -99,7 +97,7 @@ object Exceptions {
                 Serial.println("inner finally runs first")
             }
         } catch (e: UnsupportedOperationException) {
-            Serial.println("outer catch: " + e.message)
+            Serial.println("outer catch: ${e.message}")
         }
     }
 
@@ -108,15 +106,15 @@ object Exceptions {
         Serial.println("Across functions")
         try {
             // parse() throws two calls below this handler; the exception unwinds through sample().
-            Serial.println("parsed " + sample(41))
-            Serial.println("parsed " + sample(-1))
+            Serial.println("parsed ${sample(41)}")
+            Serial.println("parsed ${sample(-1)}")
         } catch (e: IllegalArgumentException) {
-            Serial.println("caught " + e.message)
+            Serial.println("caught ${e.message}")
         }
         try {
             withFinally(-1)
         } catch (e: IllegalArgumentException) {
-            Serial.println("caught " + e.message)
+            Serial.println("caught ${e.message}")
         }
     }
 
@@ -126,7 +124,7 @@ object Exceptions {
         try {
             withResource(1, -1)
         } catch (e: IllegalArgumentException) {
-            Serial.println("caught " + e.message)
+            Serial.println("caught ${e.message}")
         }
         withResource(2, 5)
     }
