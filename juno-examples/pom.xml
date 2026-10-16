@@ -70,6 +70,24 @@
             <artifactId>slf4j-nop</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Only LanguageExamplesArduinoCliIT (the arduino-cli profile) uses these; versions come from the root pom. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <!-- Pulled in through duct-tape: compile-time nullability annotations the test runtime never reads. -->
+                <exclusion>
+                    <groupId>org.jetbrains</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -126,4 +144,47 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Compile the language examples with the real arduino-cli in Docker (LanguageExamplesArduinoCliIT). -->
+        <profile>
+            <id>arduino-cli</id>
+            <properties>
+                <!-- How many sketches LanguageExamplesArduinoCliIT compiles at once; override with -Djuno.arduinoCliParallelism. -->
+                <juno.arduinoCliParallelism>4</juno.arduinoCliParallelism>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <groups>arduino-cli</groups>
+                            <properties>
+                                <configurationParameters>
+                                    junit.jupiter.execution.parallel.enabled = true
+                                    junit.jupiter.execution.parallel.config.strategy = fixed
+                                    junit.jupiter.execution.parallel.config.fixed.parallelism = ${juno.arduinoCliParallelism}
+                                </configurationParameters>
+                            </properties>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
