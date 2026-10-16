@@ -38,6 +38,41 @@ This driver is implemented in Java over `Gpio`, `Clock.micros()` and `Delay`; it
 library or compiler intrinsic and therefore works on the UNO R3, UNO WiFi Rev2, UNO R4 WiFi and
 UNO Q targets.
 
+## DHT11, temperature, sound and light batch
+
+The DHT11 is a separate, whole-number sensor from the DHT22-format Temperature and Humidity
+Sensor Pro. Use [`GroveDht11`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveDht11.java)
+for the [Seeed DHT11 module](https://www.seeedstudio.com/Grove-Temperature-Humidity-Sensor-DHT11.html).
+The DHT11 signal is digital, so connect it to **D4** (or another digital socket and pass that pin
+to the driver).
+
+For the new analog modules, use separate analog sockets. The recommended wiring for
+[`GroveSensorBatchMonitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveSensorBatchMonitor.java)
+is:
+
+| Module | Shield socket | Juno driver | Result |
+|---|---|---|---|
+| [Grove Temperature Sensor v1.2](https://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/) | **A0** | `GroveTemperatureSensorV12` | Celsius and raw ADC count |
+| [Grove Sound Sensor v1.6](https://wiki.seeedstudio.com/Grove-Sound_Sensor/) | **A1** | `GroveSoundSensorV16` | Raw ADC count |
+| [Grove Light Sensor v1.2](https://www.seeedstudio.com/Grove-Light-Sensor-p-746.html) | **A2** | `GroveLightSensorV12` | Raw ADC count |
+
+All three analog modules expose a voltage on `SIG`; they cannot be read from D7 or D8. The
+temperature driver applies Seeed's v1.2 thermistor equation through the float-returning
+`GroveTemperatureSensorV12.celsius(int)`, using the documented 100 kΩ nominal resistance and
+`B = 4275 K` constants. Its allocation-free float logarithm keeps the driver compatible with
+the UNO WiFi Rev2, whose toolchain does not provide Juno's double-precision Math intrinsics.
+`rawValue(int)` and `celsiusFromRaw(int)` are also available when an application needs to retain
+the sample or inspect the calibration. The sound module is an amplified microphone signal, not a
+calibrated dB meter, and the light module's ADC count is not automatically lux.
+
+Run the dedicated monitor with:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.board=arduino-uno-r3-wifi-rev2 \
+  -Djuno.main=io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveSensorBatchMonitor
+```
+
 ### Observed DHT22-format readings
 
 The connected module on the UNO WiFi Rev2 produced the checksum-valid raw frame

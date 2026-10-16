@@ -507,6 +507,40 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersGroveSensorBatchDriversToGpioAndTimingIntrinsics() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
+                import io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveDht11;
+                import io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveLightSensorV12;
+                import io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveSoundSensorV16;
+                import io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveTemperatureSensorV12;
+                public final class GroveSensorBatchDemo {
+                    public static void main(String[] args) {
+                        int[] reading = new int[GroveDht11.READING_LENGTH];
+                        int[] frame = new int[GroveDht11.FRAME_LENGTH];
+                        boolean valid = GroveDht11.read(GroveBaseShield.D4, reading, reading.length,
+                                frame, frame.length);
+                        int temperature = GroveTemperatureSensorV12.rawValue(GroveBaseShield.A0);
+                        float celsius = GroveTemperatureSensorV12.celsiusFromRaw(temperature);
+                        int sound = GroveSoundSensorV16.rawValue(GroveBaseShield.A1);
+                        int light = GroveLightSensorV12.rawValue(GroveBaseShield.A2);
+                        if (valid && temperature + sound + light > 0) {
+                            io.github.jabrena.juno.api.io.serial.Serial.println(celsius);
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.GroveSensorBatchDemo", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveSensorBatchDemo");
+
+        assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl digitalRead",
+                "bl analogRead", "bl micros", "bl delay", "bl delayMicroseconds");
+        assertThat(result.runtimeShim()).doesNotContain("#include <DHT.h>", "#include <Wire.h>");
+    }
+
+    @Test
     void lowersSerialIntrinsics() throws Exception {
         String source = """
                 package demo;
