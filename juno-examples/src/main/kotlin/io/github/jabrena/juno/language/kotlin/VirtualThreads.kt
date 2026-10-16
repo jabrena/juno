@@ -46,9 +46,9 @@ object VirtualThreads {
     /** The owner adds up the partial counts once every virtual thread has finished. */
     private fun report() {
         var total = 0
-        for (index in 0 until SLICES) {
-            Serial.println("slice $index: " + counts[index])
-            total += counts[index]
+        counts.forEachIndexed { index, count ->
+            Serial.println("slice $index: $count")
+            total += count
         }
         Serial.println("primes below $LIMIT: $total")
     }

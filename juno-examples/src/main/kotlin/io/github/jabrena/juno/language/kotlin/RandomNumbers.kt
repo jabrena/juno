@@ -28,22 +28,19 @@ object RandomNumbers {
 
     private fun diceRolls() {
         Serial.println("Five dice rolls")
-        for (roll in 1..5) {
-            val die = Random.nextInt(1, 7)
+        repeat(5) {
             Serial.print("roll: ")
-            Serial.println(die)
+            Serial.println(Random.nextInt(1, 7))
         }
     }
 
     private fun percentage() {
-        val percentage = Random.nextInt(100)
         Serial.print("value from 0 to 99: ")
-        Serial.println(percentage)
+        Serial.println(Random.nextInt(100))
     }
 
     private fun temperature() {
-        val temperature = Random.nextInt(-10, 41)
         Serial.print("value from -10 to 40: ")
-        Serial.println(temperature)
+        Serial.println(Random.nextInt(-10, 41))
     }
 }

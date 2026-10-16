@@ -5,8 +5,7 @@ import io.github.jabrena.juno.api.io.serial.BaudRate
 import io.github.jabrena.juno.api.io.serial.Serial
 
 /**
- * Demonstrates calling functions with parameters and return values, reporting each result with string
- * concatenation.
+ * Demonstrates calling functions with parameters and return values, reporting each result with a string template.
  */
 object Methods {
 
@@ -22,18 +21,18 @@ object Methods {
         val sum = add(left, right)
         val squared = square(sum)
 
-        Serial.println(left.toString() + " + " + right + " = " + sum)
-        Serial.println(sum.toString() + " squared = " + squared)
-        Serial.println(sum.toString() + " is even: " + isEven(sum))
+        Serial.println("$left + $right = $sum")
+        Serial.println("$sum squared = $squared")
+        Serial.println("$sum is even: ${isEven(sum)}")
 
         val product = multiply(123456L, 1000L)
-        Serial.println("long product: " + product)
+        Serial.println("long product: $product")
 
         val mean = average(12.5, 7.5)
-        Serial.println("average: " + mean)
+        Serial.println("average: $mean")
 
         val combined = addThenDouble(left, right)
-        Serial.println("add then double: " + combined)
+        Serial.println("add then double: $combined")
     }
 
     private fun printHeading() {
