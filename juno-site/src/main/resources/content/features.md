@@ -140,6 +140,17 @@ Supported today:
   `NumberFormatException` are raised as in Java. Not supported: `new BigDecimal(double)`, bit operations beyond
   shifts, `modPow`/`isProbablePrime`, `divideAndRemainder` and the other methods; `BigDecimal.valueOf(double)`
   goes through Juno's own `double` formatting. See the board-ready [`ScopedValuesPrecision` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java).
+- `java.time.LocalDateTime`: the bounded immutable subset includes `now()`, `MIN`, year/month/day/hour/minute/
+  second accessors, `equals` and ISO-8601 `toString`. `now()` synchronizes UTC over HTTPS after Wi-Fi connects;
+  applications can override the endpoint and JSON path with `InternetClock.configure(Properties)`, or the build
+  can use `JUNO_LOCAL_DATE_TIME_URL` and `JUNO_LOCAL_DATE_TIME_JSON_PATH`. An unavailable clock returns
+  `LocalDateTime.MIN`. Values are one-word arena handles. The intrinsic is available on the UNO R4 WiFi, UNO Q
+  and UNO R3 WiFi Rev2; classic UNO R3 is rejected because it has no HTTPS runtime. See the board-ready
+  [`InternetTime` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/time/InternetTime.java).
+  Its SD-card `application.properties` requires `wifi.ssid` and `wifi.password`; optionally set `time.api.url`
+  and `time.api.jsonPath` to select a different HTTPS endpoint and JSON field. Example:
+  `wifi.ssid=YOUR_WIFI_SSID`, `wifi.password=YOUR_WIFI_PASSWORD`,
+  `time.api.url=https://gateway.timeapi.world/timezone/Etc/UTC`, and `time.api.jsonPath=utc_datetime`.
 - exception handling: `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
   `finally`, nested handlers, and `try`-with-resources, including exceptions that propagate out of the
   method that throws them to a `catch`/`finally` in any caller (the exception is left pending and each
