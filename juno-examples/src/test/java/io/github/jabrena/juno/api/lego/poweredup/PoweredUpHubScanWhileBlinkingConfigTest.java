@@ -7,6 +7,7 @@ import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.analysis.ConfigSuggestion;
 import io.github.jabrena.juno.analysis.ConfigSuggestionFormatter;
 import io.github.jabrena.juno.annotations.Watchdog;
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -55,6 +56,6 @@ class PoweredUpHubScanWhileBlinkingConfigTest {
         // Anchored on an annotation: test sources here shadow some api classes (e.g. a fake Gpio).
         Path api = Path.of(Watchdog.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         return new JunoCompiler().compile(new CompilationRequest(List.of(examples, api), MAIN, false,
-                Optional.of("arduino-uno-r4-wifi"), config));
+                Optional.of(Board.UNO_R4_WIFI.id()), config));
     }
 }

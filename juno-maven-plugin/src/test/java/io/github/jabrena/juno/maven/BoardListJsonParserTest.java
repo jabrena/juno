@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.maven;
 
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -47,7 +48,7 @@ class BoardListJsonParserTest {
 
         assertThat(ports).containsExactly(
                 new DetectedPort("/dev/cu.usbmodem1", "serial",
-                        List.of("Arduino UNO R4 WiFi"), List.of("arduino:renesas_uno:unor4wifi")),
+                        List.of("Arduino " + Board.UNO_R4_WIFI.displayName()), List.of(Board.UNO_R4_WIFI.fqbn())),
                 new DetectedPort("/dev/cu.Bluetooth", "serial", List.of(), List.of()));
     }
 

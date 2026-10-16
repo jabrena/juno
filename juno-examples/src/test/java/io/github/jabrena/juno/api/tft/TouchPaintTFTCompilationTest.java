@@ -4,6 +4,7 @@ import io.github.jabrena.juno.CompilationRequest;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.annotations.Watchdog;
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -27,6 +28,6 @@ class TouchPaintTFTCompilationTest {
         Path examples = Path.of("target/classes");
         Path api = Path.of(Watchdog.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         return new JunoCompiler().compile(new CompilationRequest(List.of(examples, api), MAIN, false,
-                Optional.of("arduino-uno-r3-wifi-rev2")));
+                Optional.of(Board.UNO_R3_WIFI_REV2.id())));
     }
 }
