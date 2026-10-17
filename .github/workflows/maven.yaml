@@ -260,7 +260,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tar -xzf integration-build.tar.gz -C .
+          mkdir -p .ci
+          tar -xzf integration-build.tar.gz -C .ci
           cp -a .ci/integration-build/m2/. "$HOME/.m2/repository/"
           for module in juno-compiler juno-examples; do
             cp -a ".ci/integration-build/$module/target" "$module/"
