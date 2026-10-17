@@ -11,10 +11,19 @@
                    (filter #(.endsWith (.getName ^java.io.File %) ".clj")))]
   (binding [*compile-path* output-dir
             *compiler-options* {:direct-linking true}]
-    (doseq [^java.io.File file sources
-            :let [relative (str (.relativize base (.toPath file)))
-                  without-extension (subs relative 0 (- (count relative) 4))
-                  namespace (-> without-extension
-                                (clojure.string/replace "/" ".")
-                                (clojure.string/replace "_" "-"))]]
-      (compile (symbol namespace)))))
+    ;; A namespace may import a class another one generates (SensorException, for example), so a namespace that
+    ;; fails is retried after the others; the loop stops when a pass makes no progress.
+    (let [namespaces (for [^java.io.File file sources
+                           :let [relative (str (.relativize base (.toPath file)))
+                                 without-extension (subs relative 0 (- (count relative) 4))]]
+                       (-> without-extension
+                           (clojure.string/replace "/" ".")
+                           (clojure.string/replace "_" "-")
+                           symbol))]
+      (loop [pending (vec namespaces)]
+        (let [failed (filterv #(not (try (compile %) true (catch Throwable _ false))) pending)]
+          (cond
+            (empty? failed) nil
+            (= (count failed) (count pending))
+            (throw (ex-info "Clojure namespaces failed to compile" {:namespaces (mapv str failed)}))
+            :else (recur failed)))))))
