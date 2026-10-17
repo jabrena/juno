@@ -1,21 +1,27 @@
 package io.github.jabrena.juno.linker;
 
 import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.ConstantPool;
+import io.github.jabrena.juno.classfile.FieldInfo;
 import io.github.jabrena.juno.classfile.JavaClass;
+import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.MethodRef;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESTATIC;
 import static io.github.jabrena.juno.bytecode.Opcodes.LDC;
+import static io.github.jabrena.juno.bytecode.Opcodes.LDC2_W;
 import static io.github.jabrena.juno.bytecode.Opcodes.LDC_W;
+import static io.github.jabrena.juno.bytecode.Opcodes.PUTSTATIC;
 
 /**
  * The Clojure runtime calls Juno lowers, from the AOT-compiled code of a direct-linked namespace. A namespace's
@@ -73,6 +79,14 @@ public final class ClojureSupport {
     /** {@code (- x)}: the one-argument {@code Numbers.minus}, a negation. */
     public static final MethodRef NUMBERS_NEGATE = new MethodRef(NUMBERS, "minus", "(J)J");
 
+    /** {@code Long.valueOf(long)}: how Clojure boxes a long constant, lowered only for an int-range literal. */
+    public static final MethodRef LONG_VALUE_OF = new MethodRef("java/lang/Long", "valueOf", "(J)Ljava/lang/Long;");
+    /** {@code Numbers.int_array(size)}: {@code (int-array n)}; the size must be a literal. */
+    public static final MethodRef NUMBERS_INT_ARRAY = new MethodRef(NUMBERS, "int_array", "(" + OBJECT + ")[I");
+    /** {@code RT.aget(int[], int)} and {@code RT.aset(int[], int, int)}: {@code (aget a i)} and {@code (aset a i v)}. */
+    public static final MethodRef RT_AGET = new MethodRef(RT, "aget", "([II)I");
+    public static final MethodRef RT_ASET = new MethodRef(RT, "aset", "([III)I");
+
     /** The boolean comparisons Clojure emits for primitive {@code long} operands, such as {@code (< a b)} as a value. */
     public static final MethodRef NUMBERS_LT = new MethodRef(NUMBERS, "lt", "(JJ)Z");
     public static final MethodRef NUMBERS_LTE = new MethodRef(NUMBERS, "lte", "(JJ)Z");
@@ -84,7 +98,8 @@ public final class ClojureSupport {
     private static final Set<MethodRef> LOWERED = Set.of(VAR_INTERN, VAR_IS_BOUND, VAR_GET, VAR_GET_RAW_ROOT,
             VAR_DEREF, RT_SEQ, LOAD_WITH_CLASS, APPLY_TO, RT_INT_CAST, RT_UNCHECKED_INT_CAST, RT_FLOAT_CAST, RT_FLOAT_CAST_OF_LONG, NUMBERS_ADD,
             NUMBERS_MINUS, NUMBERS_MULTIPLY, NUMBERS_QUOTIENT, NUMBERS_REMAINDER, NUMBERS_INC, NUMBERS_DEC, NUMBERS_NEGATE,
-            NUMBERS_LT, NUMBERS_LTE, NUMBERS_GT, NUMBERS_GTE, NUMBERS_EQUIV);
+            NUMBERS_LT, NUMBERS_LTE, NUMBERS_GT, NUMBERS_GTE, NUMBERS_EQUIV, LONG_VALUE_OF, NUMBERS_INT_ARRAY,
+            RT_AGET, RT_ASET);
 
     /** The internal name of a function's class: the munged namespace, then the munged var name after a {@code $}. */
     public static String functionClass(String namespace, String name) {
@@ -102,6 +117,45 @@ public final class ClojureSupport {
             throw new CompileException("Clojure runtime call not supported by Juno: "
                     + method.displayName());
         }
+    }
+
+    /** Whether {@code owner} is a class the Clojure compiler generated, from a function or a namespace. */
+    public static boolean isClojureClass(JavaClass owner) {
+        String superClassName = owner.superClassName();
+        return superClassName != null && superClassName.startsWith(PACKAGE);
+    }
+
+    /**
+     * The value of a {@code static final Object} field a Clojure class sets in its static initializer to a boxed
+     * long literal ({@code ldc2_w; Long.valueOf; putstatic}), or empty when it is set to anything else. Clojure keeps
+     * a literal constant this way, so reading it yields the literal: the size of {@code (int-array 5)}, for example.
+     * Only an int-range literal is returned, since a boxed value is one word.
+     */
+    public static OptionalLong constantStaticField(JavaClass owner, String name, BytecodeDecoder decoder) {
+        FieldInfo field = owner.findField(name, "Ljava/lang/Object;");
+        JavaMethod initializer = owner.findMethod("<clinit>", "()V");
+        if (field == null || !field.isStatic() || !field.isFinal() || !isClojureClass(owner) || initializer == null) {
+            return OptionalLong.empty();
+        }
+        ConstantPool pool = owner.constantPool();
+        List<Instruction> code = decoder.decode(initializer);
+        for (int index = 0; index + 2 < code.size(); index++) {
+            Instruction load = code.get(index);
+            Instruction box = code.get(index + 1);
+            Instruction store = code.get(index + 2);
+            if (load.opcode() == LDC2_W && box.opcode() == INVOKESTATIC && store.opcode() == PUTSTATIC
+                    && pool.methodRef(box.operandA()).equals(LONG_VALUE_OF)
+                    && pool.fieldRef(store.operandA()).name().equals(name)) {
+                long value = pool.longValue(load.operandA());
+                return value == (int) value ? OptionalLong.of(value) : OptionalLong.empty();
+            }
+        }
+        return OptionalLong.empty();
+    }
+
+    /** Whether a field of {@code owner} with {@code descriptor} holds a boxed Clojure value (an {@code Object}). */
+    public static boolean isClojureObjectField(JavaClass owner, String descriptor) {
+        return descriptor.equals(OBJECT) && isClojureClass(owner);
     }
 
     /** A Clojure value type (an {@code ISeq}, {@code IFn}, {@code Var} or other {@code clojure.lang} object). */

@@ -3,6 +3,7 @@ package io.github.jabrena.juno.lowering;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -50,8 +51,22 @@ final class ClojureLowering {
             new ConversionLowering(context).longToFloat();
         } else if (called.equals(ClojureSupport.RT_INT_CAST) || called.equals(ClojureSupport.RT_UNCHECKED_INT_CAST)) {
             new ConversionLowering(context).longToInt();
+        } else if (called.equals(ClojureSupport.NUMBERS_INT_ARRAY)) {
+            intArray(instruction);
         } else if (called.owner().equals("clojure/lang/Numbers")) {
             numbers(instruction, called);
+        } else if (called.equals(ClojureSupport.LONG_VALUE_OF)) {
+            boxLiteral(instruction);
+        } else if (called.equals(ClojureSupport.RT_AGET)) {
+            Value index = stack.pop();
+            Value array = stack.pop();
+            stack.push(new ArrayLowering(context).loadElement(ArrayElementType.INT, array, index));
+        } else if (called.equals(ClojureSupport.RT_ASET)) {
+            Value element = stack.pop();
+            Value index = stack.pop();
+            Value array = stack.pop();
+            new ArrayLowering(context).storeElement(ArrayElementType.INT, array, index, element);
+            stack.push(element);
         } else if (called.equals(ClojureSupport.APPLY_TO)) {
             applyTo(instruction);
         } else {
@@ -79,6 +94,31 @@ final class ClojureLowering {
             }
         }
         stack.pushInt(handle);
+    }
+
+    /**
+     * {@code Long.valueOf(x)}: a boxed long is one word here, so only a long literal that fits an int can be boxed; its
+     * word is the int itself. Any other boxed long is rejected rather than truncated.
+     */
+    private void boxLiteral(Instruction instruction) {
+        OperandStack.LongHalves value = stack.popHalves();
+        Integer low = context.facts().knownInt(value.low());
+        Integer high = context.facts().knownInt(value.high());
+        if (low == null || high == null || high != low >> 31) {
+            throw new CompileException(context.at(instruction)
+                    + ": a Clojure boxed long is supported only for a literal that fits an int");
+        }
+        stack.pushInt(low);
+    }
+
+    /** {@code Numbers.int_array(size)}: {@code (int-array n)}, a new int array of a literal size. */
+    private void intArray(Instruction instruction) {
+        Value size = stack.pop();
+        Integer length = context.facts().knownInt(size);
+        if (length == null) {
+            throw new CompileException(context.at(instruction) + ": (int-array n) needs a literal size");
+        }
+        stack.push(new ArrayLowering(context).allocate(ArrayElementType.INT, length));
     }
 
     /** {@code Numbers} arithmetic on primitive longs, through the same IR as the JVM's {@code LADD}/{@code LDIV}/... */

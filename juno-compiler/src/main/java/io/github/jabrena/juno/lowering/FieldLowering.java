@@ -23,6 +23,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import static io.github.jabrena.juno.bytecode.Opcodes.GETFIELD;
 import static io.github.jabrena.juno.bytecode.Opcodes.GETSTATIC;
@@ -96,6 +97,8 @@ final class FieldLowering implements InstructionLowering {
                     io.github.jabrena.juno.intrinsic.Intrinsic.LOCAL_DATE_TIME_MIN,
                     Optional.empty(), List.of(), List.of()));
             stack.push(handle);
+        } else if (clojureConstant(field).isPresent()) {
+            stack.pushInt((int) clojureConstant(field).getAsLong());
         } else if (ordinal != null) {
             stack.pushInt(ordinal);
         } else if (field.name().startsWith("$SwitchMap$")) {
@@ -109,6 +112,13 @@ final class FieldLowering implements InstructionLowering {
             context.emit(new IrInstruction.LoadStatic(target, field));
             stack.push(target);
         }
+    }
+
+    /** The int literal a Clojure class sets this static field to, read at link-free compile time (see ClojureSupport). */
+    private OptionalLong clojureConstant(FieldRef field) {
+        JavaClass owner = context.classes().get(field.owner());
+        return owner == null ? OptionalLong.empty()
+                : ClojureSupport.constantStaticField(owner, field.name(), context.program().decoder());
     }
 
     private void pushBigConstant(BigNumberSupport.Constant constant) {
@@ -189,6 +199,10 @@ final class FieldLowering implements InstructionLowering {
                 || ClojureSupport.isHandleType(descriptor)
                 || Descriptor.isArrayType(descriptor)
                 || Descriptor.isReferenceType(descriptor, context.classes().keySet())) {
+            return JunoType.INT32;
+        }
+        JavaClass owner = context.classes().get(field.owner());
+        if (owner != null && ClojureSupport.isClojureObjectField(owner, descriptor)) {
             return JunoType.INT32;
         }
         throw new CompileException(context.at(instruction) + ": unsupported field type: " + field.displayName());

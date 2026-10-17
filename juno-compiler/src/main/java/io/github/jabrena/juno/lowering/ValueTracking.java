@@ -17,13 +17,16 @@ import java.util.Map;
 final class ValueTracking {
     private final Map<Value, Integer> arrayLength = new HashMap<>();
     private final Map<Value, String> stringOf = new HashMap<>();
+    private final Map<Value, Integer> intOf = new HashMap<>();
     private Map<Integer, Integer> slotLength = new HashMap<>();
     private Map<Integer, String> slotString = new HashMap<>();
+    private Map<Integer, Integer> slotInt = new HashMap<>();
     private Map<Integer, JunoType> slotType = new HashMap<>();
 
     void startBlock() {
         slotLength = new HashMap<>();
         slotString = new HashMap<>();
+        slotInt = new HashMap<>();
         slotType = new HashMap<>();
     }
 
@@ -43,6 +46,15 @@ final class ValueTracking {
         return stringOf.get(value);
     }
 
+    /** Records that the value is the int constant {@code constant}, as an {@code iconst}/{@code ldc} push makes it. */
+    void markKnownInt(Value value, int constant) {
+        intOf.put(value, constant);
+    }
+
+    @Nullable Integer knownInt(Value value) {
+        return intOf.get(value);
+    }
+
     /** Tags the value occupying {@code slot} as a compile-time string literal, without a {@link Value} in hand. */
     void markSlotString(int slot, String literal) {
         slotString.put(slot, literal);
@@ -51,6 +63,7 @@ final class ValueTracking {
     void clearSlot(int slot) {
         slotLength.remove(slot);
         slotString.remove(slot);
+        slotInt.remove(slot);
         slotType.remove(slot);
     }
 
@@ -61,6 +74,7 @@ final class ValueTracking {
     /** {@code value} was stored to {@code slot}: the slot now carries the value's facts. */
     void recordPush(int slot, Value value) {
         slotType.put(slot, value.type());
+        putOrRemove(slotInt, slot, intOf.get(value));
         putOrRemove(slotLength, slot, arrayLength.get(value));
         putOrRemove(slotString, slot, stringOf.get(value));
     }
@@ -74,6 +88,10 @@ final class ValueTracking {
         String string = slotString.get(slot);
         if (string != null) {
             stringOf.put(value, string);
+        }
+        Integer constant = slotInt.get(slot);
+        if (constant != null) {
+            intOf.put(value, constant);
         }
     }
 
