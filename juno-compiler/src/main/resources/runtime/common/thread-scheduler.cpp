@@ -3,6 +3,9 @@
 // Slot 0 is the main thread. A Thread handle is a small arena object, so the collector keeps it
 // (and the Runnable it points at) alive for as long as something references it.
 struct JunoTaskScope;
+struct JunoTaskConfiguration {
+  int32_t timeoutMillis;
+};
 struct JunoThreadObject {
   uint32_t runnable;
   uint32_t flags;
@@ -27,6 +30,7 @@ struct JunoTaskScope {
   uint32_t flags;
   uint32_t active;
   uint32_t owner;
+  uint32_t deadline;
   int32_t firstFailure;
   int32_t result;
   JunoThreadObject* tasks[JUNO_MAX_THREADS - 1u];
@@ -70,6 +74,7 @@ static JunoMonitor juno_monitors[JUNO_MAX_MONITORS];
 
 ${JUNO_ORDINARY_ENTRY}
 ${JUNO_TASK_ENTRY}
+${JUNO_IO_WAITING_DECLARATION}
 
 static JunoThreadObject* juno_thread_of(int32_t handle) {
   if (handle == 0) juno_panic();
@@ -94,7 +99,8 @@ static bool juno_slot_runnable(uint32_t index, uint32_t now) {
       }
       return true;
     case JUNO_SLOT_JOINING_SCOPE:
-      return slot.scope->active == 0u || (slot.scope->flags & 8u) != 0u;
+      return slot.scope->active == 0u || (slot.scope->flags & 8u) != 0u
+          || (slot.scope->deadline != 0u && static_cast<int32_t>(now - slot.scope->deadline) >= 0);
     ${JUNO_WAITING_IO_CASE}
     default:
       return false;

@@ -239,6 +239,19 @@ public final class SupabaseClient {
         return this;
     }
 
+    /** Adds a non-negative PostgREST row offset after the configured ordering. */
+    public SupabaseClient offset(int rows) {
+        if (operation != SELECT || rows < 0) {
+            requestValid = false;
+            return this;
+        }
+        path.appendParameterName("offset", queryStarted);
+        path.appendPositiveInt(rows);
+        queryStarted = true;
+        requestValid = path.valid();
+        return this;
+    }
+
     /**
      * Executes the built request over HTTPS and returns the reusable response. Update and delete operations require at
      * least one filter as a guard against accidentally changing an entire table.

@@ -28,8 +28,6 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
                                   uint8_t* responseBuffer, int32_t responseBufferLength,
                                   uint8_t* headersBuffer, int32_t headersBufferLength,
                                   int32_t* statusAndHeadersLength) {
-  // Waiting for the response lets the other threads run; another HTTP call waits its turn.
-  JunoIoGuard guard(JUNO_IO_NETWORK, &client, [](void* handle) { static_cast<Client*>(handle)->stop(); });
   if (!client.connect(host, static_cast<uint16_t>(port))) {
     statusAndHeadersLength[0] = 0;
     statusAndHeadersLength[1] = 0;
@@ -92,15 +90,21 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
   int32_t chunkRemaining = 0;
   int32_t chunkSizeValue = 0;
   bool chunkExtension = false;
+  int availableBytes = 0;
 
   while (millis() < deadline) {
-    if (!client.available()) {
+    // Some transports refill over RPC on every available() call. Drain the reported batch
+    // before polling again, otherwise a request can spend its entire deadline fetching single bytes.
+    if (availableBytes == 0) availableBytes = client.available();
+    if (availableBytes <= 0) {
+      availableBytes = 0;
       if (!client.connected()) break;
       juno_io_wait(1);
       continue;
     }
     int value = client.read();
     if (value < 0) break;
+    availableBytes--;
     char c = static_cast<char>(value);
 
     if (inStatusLine) {
@@ -205,14 +209,15 @@ struct JunoHttpJob {
   uint8_t* headersBuffer;
   int32_t headersBufferLength;
   int32_t* statusAndHeadersLength;
+  void* client;
   int32_t result;
 };
 
 template <typename Client>
 static void juno_http_job(void* argument) {
   JunoHttpJob* job = static_cast<JunoHttpJob*>(argument);
-  Client client;
-  job->result = juno_http_request(client, job->method, job->host, job->port, job->path, job->body,
+  Client* client = static_cast<Client*>(job->client);
+  job->result = juno_http_request(*client, job->method, job->host, job->port, job->path, job->body,
                                   job->requestHeadersBuffer, job->requestHeadersLength,
                                   job->requestBodyBuffer, job->requestBodyLength,
                                   job->responseBuffer, job->responseBufferLength, job->headersBuffer,
@@ -227,10 +232,11 @@ static int32_t juno_http_run(const char* method, const char* host, int32_t port,
                              uint8_t* responseBuffer, int32_t responseBufferLength,
                              uint8_t* headersBuffer, int32_t headersBufferLength,
                              int32_t* statusAndHeadersLength) {
+  Client client;
   JunoHttpJob job = {method, host, port, path, body,
                      requestHeadersBuffer, requestHeadersLength, requestBodyBuffer, requestBodyLength,
                      responseBuffer, responseBufferLength,
-                     headersBuffer, headersBufferLength, statusAndHeadersLength, 0};
+                     headersBuffer, headersBufferLength, statusAndHeadersLength, &client, 0};
   ${JUNO_HTTP_RUN_PREPARE}
   juno_io_offload(juno_http_job<Client>, &job);
   return job.result;

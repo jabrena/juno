@@ -1,11 +1,16 @@
 static constexpr uint32_t JUNO_JOINER_ALL_SUCCESSFUL = 1u;
 static constexpr uint32_t JUNO_JOINER_ANY_SUCCESSFUL = 2u;
 static constexpr uint32_t JUNO_JOINER_AWAIT_ALL_SUCCESSFUL = 3u;
-static constexpr uint32_t JUNO_JOINER_AWAIT_ALL = 4u;
 static constexpr uint32_t JUNO_SCOPE_JOINED = 1u;
 static constexpr uint32_t JUNO_SCOPE_CLOSED = 2u;
 static constexpr uint32_t JUNO_SCOPE_HAS_RESULT = 4u;
 static constexpr uint32_t JUNO_SCOPE_SHUTDOWN = 8u;
+static constexpr uint32_t JUNO_SCOPE_TIMED_OUT = 16u;
+
+static JunoTaskConfiguration* juno_task_configuration_of(int32_t handle) {
+  if (handle == 0) juno_panic();
+  return reinterpret_cast<JunoTaskConfiguration*>(static_cast<intptr_t>(handle));
+}
 
 static JunoTaskScope* juno_task_scope_of(int32_t handle) {
   if (handle == 0) juno_panic();
@@ -92,6 +97,16 @@ static void juno_task_cancel_siblings(JunoTaskScope* scope, JunoThreadObject* co
   }
 }
 
+static bool juno_task_scope_timeout_expired(const JunoTaskScope* scope) {
+  return scope->deadline != 0u
+      && static_cast<int32_t>(static_cast<uint32_t>(millis()) - scope->deadline) >= 0;
+}
+
+static void juno_task_scope_timeout(JunoTaskScope* scope) {
+  scope->flags |= JUNO_SCOPE_TIMED_OUT | JUNO_SCOPE_SHUTDOWN;
+  juno_task_cancel_siblings(scope, nullptr);
+}
+
 static void juno_task_complete(JunoThreadObject* task, int32_t result) {
   JunoTaskScope* scope = task->scope;
   int32_t failure = juno_pending_exception;
@@ -120,14 +135,82 @@ static void juno_task_complete(JunoThreadObject* task, int32_t result) {
 
 extern "C" int32_t juno_task_scope_open(int32_t policy) {
   if (policy < static_cast<int32_t>(JUNO_JOINER_ALL_SUCCESSFUL)
-          || policy > static_cast<int32_t>(JUNO_JOINER_AWAIT_ALL)) {
+          || policy > static_cast<int32_t>(JUNO_JOINER_AWAIT_ALL_SUCCESSFUL)) {
     juno_task_raise_illegal_state("Unsupported StructuredTaskScope Joiner");
     return 0;
   }
   auto* scope = static_cast<JunoTaskScope*>(juno_alloc(sizeof(JunoTaskScope), 4u));
   scope->policy = static_cast<uint32_t>(policy);
+  scope->flags = 0u;
+  scope->active = 0u;
   scope->owner = juno_current_slot + 1u;
+  scope->deadline = 0u;
+  scope->firstFailure = 0;
+  scope->result = 0;
+  for (uint32_t index = 0u; index < JUNO_MAX_THREADS - 1u; index++) scope->tasks[index] = nullptr;
   return static_cast<int32_t>(reinterpret_cast<intptr_t>(scope));
+}
+
+extern "C" int32_t juno_task_configuration_default() {
+  auto* configuration = static_cast<JunoTaskConfiguration*>(juno_alloc(sizeof(JunoTaskConfiguration), 4u));
+  configuration->timeoutMillis = 0;
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(configuration));
+}
+
+extern "C" int32_t juno_task_configuration_with_timeout(int32_t configurationHandle, int32_t timeoutMillis) {
+  if (timeoutMillis <= 0) {
+    juno_task_raise_illegal_state("StructuredTaskScope timeout must be positive");
+    return 0;
+  }
+  JunoTaskConfiguration* configuration = juno_task_configuration_of(configurationHandle);
+  configuration->timeoutMillis = timeoutMillis;
+  return configurationHandle;
+}
+
+extern "C" int32_t juno_duration_of_millis(int64_t millisValue) {
+  if (millisValue <= 0 || millisValue > 0x7FFFFFFFLL) {
+    juno_task_raise_illegal_state("StructuredTaskScope timeout is outside the supported range");
+    return 0;
+  }
+  return static_cast<int32_t>(millisValue);
+}
+
+extern "C" int32_t juno_duration_of_seconds(int64_t seconds) {
+  if (seconds <= 0 || seconds > 0x7FFFFFFFLL / 1000LL) {
+    juno_task_raise_illegal_state("StructuredTaskScope timeout is outside the supported range");
+    return 0;
+  }
+  return static_cast<int32_t>(seconds * 1000LL);
+}
+
+static int32_t juno_task_scope_open_configured(int32_t policy, int32_t operatorHandle) {
+  int32_t configuration = juno_task_configuration_default();
+  int32_t configured = juno_task_configuration_entry(operatorHandle, configuration);
+  JunoTaskConfiguration* config = juno_task_configuration_of(configured);
+  if (config->timeoutMillis == 0) return juno_task_scope_open(policy);
+  if (policy < static_cast<int32_t>(JUNO_JOINER_ALL_SUCCESSFUL)
+          || policy > static_cast<int32_t>(JUNO_JOINER_AWAIT_ALL_SUCCESSFUL)) {
+    juno_task_raise_illegal_state("Unsupported StructuredTaskScope Joiner");
+    return 0;
+  }
+  auto* scope = static_cast<JunoTaskScope*>(juno_alloc(sizeof(JunoTaskScope), 4u));
+  scope->policy = static_cast<uint32_t>(policy);
+  scope->flags = 0u;
+  scope->active = 0u;
+  scope->owner = juno_current_slot + 1u;
+  scope->deadline = static_cast<uint32_t>(millis()) + static_cast<uint32_t>(config->timeoutMillis);
+  scope->firstFailure = 0;
+  scope->result = 0;
+  for (uint32_t index = 0u; index < JUNO_MAX_THREADS - 1u; index++) scope->tasks[index] = nullptr;
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(scope));
+}
+
+extern "C" int32_t juno_task_scope_open_config(int32_t operatorHandle) {
+  return juno_task_scope_open_configured(static_cast<int32_t>(JUNO_JOINER_AWAIT_ALL_SUCCESSFUL), operatorHandle);
+}
+
+extern "C" int32_t juno_task_scope_open_with_config(int32_t policy, int32_t operatorHandle) {
+  return juno_task_scope_open_configured(policy, operatorHandle);
 }
 
 extern "C" int32_t juno_task_scope_open_default() {
@@ -181,12 +264,21 @@ extern "C" int32_t juno_task_scope_join(int32_t scopeHandle) {
     return 0;
   }
   while (scope->active != 0u && (scope->flags & JUNO_SCOPE_SHUTDOWN) == 0u) {
+    if (juno_task_scope_timeout_expired(scope)) {
+      juno_task_scope_timeout(scope);
+      break;
+    }
     juno_slots[juno_current_slot].state = JUNO_SLOT_JOINING_SCOPE;
     juno_slots[juno_current_slot].scope = scope;
     juno_sched_block();
   }
   juno_slots[juno_current_slot].scope = nullptr;
   scope->flags |= JUNO_SCOPE_JOINED;
+  if ((scope->flags & JUNO_SCOPE_TIMED_OUT) != 0u) {
+    juno_throw_raise(juno_task_exception(${JUNO_FAILED_EXCEPTION_CLASS_ID}u,
+            "structured task scope timed out"));
+    return 0;
+  }
   if ((scope->policy == JUNO_JOINER_ALL_SUCCESSFUL
           || scope->policy == JUNO_JOINER_AWAIT_ALL_SUCCESSFUL)
           && scope->firstFailure != 0) {
@@ -200,8 +292,8 @@ extern "C" int32_t juno_task_scope_join(int32_t scopeHandle) {
     }
     return scope->result;
   }
-  // allSuccessfulOrThrow returns a non-null scope-backed token. Stream operations
-  // remain outside Juno's deliberately small subset; both await policies return null.
+  // allSuccessfulOrThrow returns a non-null scope-backed token. Result-list operations
+  // remain outside Juno's deliberately small subset; awaitAllSuccessfulOrThrow returns null.
   return scope->policy == JUNO_JOINER_ALL_SUCCESSFUL ? scopeHandle : 0;
 }
 

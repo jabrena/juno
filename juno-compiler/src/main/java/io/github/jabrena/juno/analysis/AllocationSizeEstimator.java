@@ -25,6 +25,11 @@ final class AllocationSizeEstimator {
     /** The intrinsics that start a thread, each allocating one thread object. */
     private static final Set<Intrinsic> THREAD_LAUNCHES = Set.of(
             Intrinsic.THREAD_START_VIRTUAL, Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
+    private static final Set<Intrinsic> STRUCTURED_SCOPE_OPENS = Set.of(
+            Intrinsic.TASK_SCOPE_OPEN_DEFAULT, Intrinsic.TASK_SCOPE_OPEN,
+            Intrinsic.TASK_SCOPE_OPEN_CONFIG, Intrinsic.TASK_SCOPE_OPEN_WITH_CONFIG);
+    private static final Set<Intrinsic> CONFIGURED_SCOPE_OPENS = Set.of(
+            Intrinsic.TASK_SCOPE_OPEN_CONFIG, Intrinsic.TASK_SCOPE_OPEN_WITH_CONFIG);
 
 
     int allocationBytes(IrInstruction instruction, Map<String, JavaClass> classes,
@@ -46,30 +51,30 @@ final class AllocationSizeEstimator {
         if (instruction instanceof IrInstruction.NewMultiArray array) {
             return multiArrayBytes(array.leafType(), array.dimensions());
         }
-        if (instruction instanceof IrInstruction.IntrinsicCall call
-                && call.intrinsic() == Intrinsic.PROPERTIES_NEW) {
+        if (instruction instanceof IrInstruction.IntrinsicCall call) {
+            return intrinsicAllocationBytes(call.intrinsic());
+        }
+        return 0;
+    }
+
+    private int intrinsicAllocationBytes(Intrinsic intrinsic) {
+        if (intrinsic == Intrinsic.PROPERTIES_NEW) {
             return allocationUpperBound(RuntimeLimits.PROPERTIES_STORAGE_BYTES, 4);
         }
-        if (instruction instanceof IrInstruction.IntrinsicCall call
-                && (call.intrinsic() == Intrinsic.TASK_SCOPE_OPEN_DEFAULT
-                || call.intrinsic() == Intrinsic.TASK_SCOPE_OPEN)) {
-            return allocationUpperBound(RuntimeLimits.STRUCTURED_TASK_SCOPE_BYTES, 4);
+        if (STRUCTURED_SCOPE_OPENS.contains(intrinsic)) {
+            int scopeBytes = allocationUpperBound(RuntimeLimits.STRUCTURED_TASK_SCOPE_BYTES, 4);
+            return scopeBytes + (CONFIGURED_SCOPE_OPENS.contains(intrinsic)
+                    ? RuntimeLimits.STRUCTURED_TASK_CONFIGURATION_BYTES : 0);
         }
-        if (instruction instanceof IrInstruction.IntrinsicCall call && THREAD_LAUNCHES.contains(call.intrinsic())) {
+        if (THREAD_LAUNCHES.contains(intrinsic)) {
             return allocationUpperBound(RuntimeLimits.THREAD_OBJECT_BYTES, 4);
         }
-        if (instruction instanceof IrInstruction.IntrinsicCall call
-                && call.intrinsic() == Intrinsic.REENTRANT_LOCK_NEW) {
+        if (intrinsic == Intrinsic.REENTRANT_LOCK_NEW
+                || intrinsic == Intrinsic.ATOMIC_INT_NEW_DEFAULT
+                || intrinsic == Intrinsic.ATOMIC_INT_NEW) {
             return allocationUpperBound(Integer.BYTES, Integer.BYTES);
         }
-        if (instruction instanceof IrInstruction.IntrinsicCall call
-                && (call.intrinsic() == Intrinsic.ATOMIC_INT_NEW_DEFAULT
-                || call.intrinsic() == Intrinsic.ATOMIC_INT_NEW)) {
-            return allocationUpperBound(Integer.BYTES, Integer.BYTES);
-        }
-        if (instruction instanceof IrInstruction.IntrinsicCall call
-                && (call.intrinsic() == Intrinsic.ATOMIC_LONG_NEW_DEFAULT
-                || call.intrinsic() == Intrinsic.ATOMIC_LONG_NEW)) {
+        if (intrinsic == Intrinsic.ATOMIC_LONG_NEW_DEFAULT || intrinsic == Intrinsic.ATOMIC_LONG_NEW) {
             return allocationUpperBound(2 * Integer.BYTES, Integer.BYTES);
         }
         return 0;

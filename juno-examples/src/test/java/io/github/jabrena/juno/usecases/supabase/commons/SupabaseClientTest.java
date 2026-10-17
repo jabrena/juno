@@ -9,17 +9,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SupabaseClientTest {
 
     @Test
-    void buildsASelectWithEncodedColumnsFiltersAndLimit() {
+    void buildsASelectWithEncodedColumnsFiltersLimitAndOffset() {
         Fixture fixture = new Fixture();
 
         fixture.client.from("sensor_readings")
                 .select("temperature,humidity")
                 .eq("room", "lab 1")
-                .limit(10);
+                .limit(10)
+                .offset(20);
 
         assertThat(fixture.client.ready()).isTrue();
         assertThat(text(fixture.path, fixture.client.pathLength()))
-                .isEqualTo("/rest/v1/sensor_readings?select=temperature%2Chumidity&room=eq.lab%201&limit=10");
+                .isEqualTo("/rest/v1/sensor_readings?select=temperature%2Chumidity&room=eq.lab%201&limit=10&offset=20");
     }
 
     @Test

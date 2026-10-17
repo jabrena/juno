@@ -287,6 +287,10 @@ public final class IntrinsicLowering {
         ShimFeature[] taskRuntime = {ShimFeature.THREADS, ShimFeature.STRUCTURED_TASKS, ShimFeature.EXCEPTIONS};
         shim(Intrinsic.TASK_SCOPE_OPEN_DEFAULT, "juno_task_scope_open_default", Result.WORD, List.of(), taskRuntime);
         shim(Intrinsic.TASK_SCOPE_OPEN, "juno_task_scope_open", Result.WORD, List.of(arg(0)), taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_OPEN_CONFIG, "juno_task_scope_open_config", Result.WORD, List.of(arg(0)),
+                taskRuntime);
+        shim(Intrinsic.TASK_SCOPE_OPEN_WITH_CONFIG, "juno_task_scope_open_with_config", Result.WORD,
+                List.of(arg(0), arg(1)), taskRuntime);
         shim(Intrinsic.TASK_SCOPE_FORK_CALLABLE, "juno_task_scope_fork_callable", Result.WORD,
                 List.of(RECEIVER, arg(0)), ShimFeature.THREADS, ShimFeature.STRUCTURED_TASKS,
                 ShimFeature.EXCEPTIONS, ShimFeature.TASK_CALLABLE_ENTRY);
@@ -300,6 +304,10 @@ public final class IntrinsicLowering {
         shim(Intrinsic.TASK_STATE, "juno_task_state", Result.WORD, List.of(RECEIVER), taskRuntime);
         shim(Intrinsic.TASK_EXCEPTION, "juno_task_exception", Result.WORD, List.of(RECEIVER), taskRuntime);
         shim(Intrinsic.TASK_SCOPE_CLOSE, "juno_task_scope_close", Result.NONE, List.of(RECEIVER), taskRuntime);
+        shim(Intrinsic.TASK_CONFIGURATION_WITH_TIMEOUT, "juno_task_configuration_with_timeout", Result.WORD,
+                List.of(RECEIVER, arg(0)), taskRuntime);
+        shim(Intrinsic.DURATION_OF_MILLIS, "juno_duration_of_millis", Result.WORD, wide(0), taskRuntime);
+        shim(Intrinsic.DURATION_OF_SECONDS, "juno_duration_of_seconds", Result.WORD, wide(0), taskRuntime);
     }
 
     /** {@code java.lang.ScopedValue}: bindings are a chain of arena records entered on the calling thread's stack. */

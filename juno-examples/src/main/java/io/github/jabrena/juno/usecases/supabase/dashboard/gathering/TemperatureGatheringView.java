@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase.dashboard.status;
+package io.github.jabrena.juno.usecases.supabase.dashboard.gathering;
 
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
@@ -6,7 +6,7 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.supabase.dashboard.commons.TemperatureDashboardState;
 import io.github.jabrena.juno.usecases.supabase.dashboard.services.SupabaseTemperatureService;
 
-/** Displays the bounded Supabase page collection progress, then opens the histogram when collection is terminal. */
+/** Displays bounded Supabase page collection progress, opening the histogram only after a complete collection. */
 public final class TemperatureGatheringView implements View {
     private static final int UNSHOWN = -2;
 
@@ -38,9 +38,7 @@ public final class TemperatureGatheringView implements View {
     @Override
     public void render() {
         int status = model.status();
-        if (status == TemperatureDashboardState.COMPLETE
-                || status == TemperatureDashboardState.PARTIAL
-                || status == TemperatureDashboardState.WIFI_FAILED) {
+        if (status == TemperatureDashboardState.COMPLETE) {
             navigator.show(nextViewId);
             return;
         }
@@ -70,6 +68,18 @@ public final class TemperatureGatheringView implements View {
         TftTouchShield.setCursor(18, 132);
         if (model.status() == TemperatureDashboardState.CONNECTING) {
             TftTouchShield.print("Connecting WiFi...");
+            return;
+        }
+        if (model.status() == TemperatureDashboardState.WIFI_FAILED) {
+            TftTouchShield.print("WiFi failed");
+            return;
+        }
+        if (model.status() == TemperatureDashboardState.PARTIAL) {
+            TftTouchShield.print("HTTP request failed");
+            TftTouchShield.setTextSize(1);
+            TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+            TftTouchShield.setCursor(18, 172);
+            TftTouchShield.print("See serial monitor");
             return;
         }
         TftTouchShield.print("page ");

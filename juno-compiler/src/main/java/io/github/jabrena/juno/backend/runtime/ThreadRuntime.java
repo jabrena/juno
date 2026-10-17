@@ -72,7 +72,8 @@ public final class ThreadRuntime {
      * {@code JUNO_STACK_GUARD_BYTES} free for the C calls of the deepest frame and for reporting the overflow.
      */
     public String avrPort(int maxThreads, int stackBytes) {
-        return runtimeSource.load("avr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+        return runtimeSource.load("avr/thread-heap.cpp")
+                + runtimeSource.load("avr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -102,10 +103,11 @@ public final class ThreadRuntime {
      *     the port defines {@code juno_port_preempt_start} and its tick calls {@code juno_preempt_tick}); otherwise
      *     (AVR) a thread is preempted at the safepoints the backend emits once its time slice has expired
      * @param ioWorker whether the port runs waiting device calls on its I/O worker ({@link CoreRuntime#ioWorker()})
+     * @param maxHttpRequests the core's safe number of simultaneous HTTP transport leases
      * @param stackScanFunction the collector's scan of one stack range: word-aligned on Thumb-2, byte by byte on AVR,
      *     whose stack frames are unaligned
      */
-    String scheduler(boolean asynchronousPreemption, boolean ioWorker, String delayFunction,
+    String scheduler(boolean asynchronousPreemption, boolean ioWorker, int maxHttpRequests, String delayFunction,
                             String stackScanFunction,
                             boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
@@ -124,6 +126,8 @@ public final class ThreadRuntime {
                   }""" : "";
         String taskEntry = structuredTasks
                 ? (taskCallableEntry ? "extern \"C\" int32_t juno_task_entry(int32_t callable);\n" : "")
+                        + "extern \"C\" int32_t juno_task_configuration_entry(int32_t operatorHandle, "
+                        + "int32_t configuration);\n"
                         + "static void juno_task_complete(JunoThreadObject* task, int32_t result);"
                 : "";
         String ordinaryEntry = threadEntry ? "extern \"C\" void juno_thread_entry(int32_t runnable);" : "";
@@ -158,10 +162,12 @@ public final class ThreadRuntime {
                     juno_preempt_started = true;
                     juno_port_preempt_start();
                   }""" : "";
-        return runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker))
+        return runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker, maxHttpRequests))
                 .replace("${JUNO_WAITING_IO_CASE}", ioWorker
-                        ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_port_io_busy();" : "")
-                .replace("${JUNO_IO_REAP_DECLARATION}", ioWorker ? "static void juno_io_reap();" : "")
+                        ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_io_waiting(index);" : "")
+                .replace("${JUNO_IO_WAITING_DECLARATION}", ioWorker ? "static bool juno_io_waiting(uint32_t slot);" : "")
+                .replace("${JUNO_IO_REAP_DECLARATION}", ioWorker
+                        ? "static void juno_io_reap();\nstatic bool juno_io_waiting(uint32_t slot);" : "")
                 .replace("${JUNO_IO_REAP_CALL}", ioWorker ? "juno_io_reap();" : "")
                 .replace("${JUNO_PREEMPTION}", preemption)
                 .replace("${JUNO_START_PREEMPTION}", startPreemption)

@@ -108,6 +108,10 @@ public final class BytecodeToIr {
         if (taskEntry != null) {
             methods.add(entries.taskEntry(taskEntry, StructuredTaskSupport.ENTRY_METHOD));
         }
+        InterfaceDispatch configurationEntry = dispatches.get(StructuredTaskSupport.CONFIGURATION_ENTRY_SITE);
+        if (configurationEntry != null) {
+            methods.add(entries.configurationEntry(configurationEntry));
+        }
         InterfaceDispatch scopedEntry = dispatches.get(ScopedValueSupport.ENTRY_SITE);
         if (scopedEntry != null) {
             methods.add(entries.taskEntry(scopedEntry, ScopedValueSupport.ENTRY_METHOD));

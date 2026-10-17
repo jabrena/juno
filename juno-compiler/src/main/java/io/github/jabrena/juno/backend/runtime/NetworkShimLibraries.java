@@ -21,7 +21,7 @@ final class NetworkShimLibraries {
     /**
      * Backs the HTTP/HTTPS APIs with a shared HTTP/1.1 codec over plain or TLS WiFi clients. Each request is a job
      * for {@code juno_io_offload} (see {@link IoRuntime}): run in place, or on the I/O worker while the caller is
-     * parked, in which case the request's text is copied first and the caller holds the network guard.
+     * parked, in which case the request's text is copied first and the caller holds one HTTP lease.
      */
     String httpHelpers(Set<ShimFeature> features, String httpsClientType, boolean worker) {
         StringBuilder helpers = new StringBuilder(runtimeSource.load("common/http-client.cpp"));
@@ -48,7 +48,7 @@ final class NetworkShimLibraries {
         }
         return helpers.toString().replace("${JUNO_HTTPS_CLIENT_TYPE}", httpsClientType)
                 .replace("${JUNO_HTTP_RUN_PREPARE}", worker ? """
-                      JunoIoGuard guard(JUNO_IO_NETWORK);
+                      JunoHttpGuard guard(nullptr);
                       char hostCopy[JUNO_IO_TEXT_COPY_BYTES];
                       char methodCopy[JUNO_IO_TEXT_COPY_BYTES];
                       char pathCopy[JUNO_IO_TEXT_COPY_BYTES];
@@ -56,7 +56,10 @@ final class NetworkShimLibraries {
                       job.host = juno_io_stable_text(host, hostCopy);
                       job.method = juno_io_stable_text(method, methodCopy);
                       job.path = juno_io_stable_text(path, pathCopy);
-                      job.body = juno_io_stable_text(body, bodyCopy);""" : "");
+                      job.body = juno_io_stable_text(body, bodyCopy);""" : """
+                      JunoHttpGuard guard(&client, [](void* handle) {
+                        static_cast<Client*>(handle)->stop();
+                      });""");
     }
 
     /**

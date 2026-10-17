@@ -52,6 +52,15 @@ class RuntimeConfigTest {
     }
 
     @Test
+    void readsAnExplicitSchedulerSlotLimit() {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("3"));
+
+        assertThat(config.maxThreads()).isEqualTo(3);
+        assertThatThrownBy(() -> RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("many")))
+                .isInstanceOf(CompileException.class).hasMessageContaining("juno.maxThreads");
+    }
+
+    @Test
     void anAbsentOrBlankSizeKeepsTheDefault() {
         assertThat(RuntimeConfig.of(Optional.empty(), Optional.of(" "))).isEqualTo(RuntimeConfig.DEFAULT);
     }

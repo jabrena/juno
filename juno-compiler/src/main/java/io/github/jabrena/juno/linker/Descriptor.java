@@ -49,6 +49,8 @@ public record Descriptor(List<String> parameters, String returnType) {
                         || isDouble(returnType)
                         || isString(returnType)
                         || isStringBuilder(returnType)
+                        || isStructuredTaskConfigurationType(returnType)
+                        || isDurationType(returnType)
                         || new BigNumberSupport().isBigNumberType(returnType)
                         || new UuidSupport().isUuidType(returnType)
                         || new LocalDateTimeSupport().isLocalDateTimeType(returnType)
@@ -118,6 +120,8 @@ public record Descriptor(List<String> parameters, String returnType) {
         return isIntegerLike(type) || isLong(type) || isFloat(type) || isDouble(type)
                 || isString(type)
                 || isStringBuilder(type)
+                || isStructuredTaskConfigurationType(type)
+                || isDurationType(type)
                 || new ThreadSupport().isThreadType(type)
                 || new ScopedValueSupport().isScopedValueType(type)
                 || new BigNumberSupport().isBigNumberType(type)
@@ -132,6 +136,14 @@ public record Descriptor(List<String> parameters, String returnType) {
     /** {@code java.io.RandomAccessFile}, an open SD card file's one-word handle, so helpers can share one open file. */
     public static boolean isRandomAccessFile(String type) {
         return type.equals("Ljava/io/RandomAccessFile;");
+    }
+
+    private static boolean isStructuredTaskConfigurationType(String type) {
+        return type.equals("Ljava/util/concurrent/StructuredTaskScope$Configuration;");
+    }
+
+    private static boolean isDurationType(String type) {
+        return type.equals("Ljava/time/Duration;");
     }
 
     private static boolean isSupportedArrayType(String type, Set<String> referenceClassNames) {

@@ -324,7 +324,7 @@ public final class RuntimeShim {
             shim.append(core.threadPort(config));
             shim.append(ioRuntime.workerPortFor(core, features));
             shim.append(threadRuntime.scheduler(true, ioRuntime.usesWorker(core, features),
-                    core.delayMillisFunction(), "juno_gc_scan_range",
+                    core.maxConcurrentHttpRequests(), core.delayMillisFunction(), "juno_gc_scan_range",
                     uses(ShimFeature.EXCEPTIONS),
                     uses(ShimFeature.THREAD_ENTRY), uses(ShimFeature.TASK_CALLABLE_ENTRY),
                     uses(ShimFeature.STRUCTURED_TASKS), uses(ShimFeature.SCOPED_VALUES),

@@ -64,6 +64,13 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     @Parameter(property = "juno.Xss")
     private @Nullable String threadStackSize;
 
+    /**
+     * Number of scheduler slots, including the main task. Set this to one plus the maximum number of simultaneous
+     * structured subtasks when RAM is constrained; it defaults to four.
+     */
+    @Parameter(property = "juno.maxThreads")
+    private @Nullable String maxThreads;
+
     final CompiledSketch compileSketch() {
         String entryPoint = configured(mainClass).orElseThrow(() -> new ArduinoCliException(
                 "Missing required Juno entry point; configure <mainClass> or -Djuno.main=<class>"));
@@ -74,7 +81,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         SketchLayout layout = new SketchLayout(outputDirectory.toPath().toAbsolutePath().normalize(), entryPoint);
 
         RuntimeConfig runtimeConfig = RuntimeConfig.of(Optional.ofNullable(arenaSize),
-                Optional.ofNullable(threadStackSize));
+                Optional.ofNullable(threadStackSize), Optional.ofNullable(maxThreads));
         CompilationResult result = new JunoCompiler().compileTo(
                 new CompilationRequest(classpath, entryPoint, gcLog, configured(board), runtimeConfig),
                 layout.assembly(), layout.runtimeShim());
