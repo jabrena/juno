@@ -15,8 +15,9 @@ import java.util.Set;
  * <p>A thread that sleeps inside a library call can find another thread entering the same library, which none of the
  * Arduino libraries tolerate halfway through a transaction. So each waiting entry point holds a device guard
  * ({@code JunoIoGuard}) for its whole call: a second thread waits its turn, like a {@code synchronized} method, while
- * threads that do not touch the device keep running. HTTP requests instead use two independently owned, bounded
- * {@code JunoHttpGuard} leases; Wi-Fi setup and the HTTP server retain the exclusive network guard. A guard records its owner; cancelling a structured subtask that
+ * threads that do not touch the device keep running. HTTP requests instead use core-bounded, independently owned
+ * {@code JunoHttpGuard} leases: two on R4/Q and one on WiFi Rev2, whose blocking TLS handshake can starve another
+ * response. Wi-Fi setup and the HTTP server retain the exclusive network guard. A guard records its owner; cancelling a structured subtask that
  * owns one runs the guard's abort hook (closing a half-used client) and releases it, so the device does not stay
  * locked by a thread that will never run again.
  *
@@ -151,7 +152,7 @@ public final class IoRuntime {
      * again, and a caller cancelled meanwhile stays {@code JUNO_SLOT_DRAINING}, its stack still scanned by the
      * collector since the worker may write into its arrays, until {@code juno_io_reap} frees it.
      */
-    String owners(boolean worker) {
+    String owners(boolean worker, int maxHttpRequests) {
         String workerState = worker ? """
 
                 // The owner and deferred cancellation state of each I/O worker. A cancelled call keeps its device
@@ -185,6 +186,7 @@ public final class IoRuntime {
                   if (offloading) juno_io_deferred_owner[offloadingWorker] = owner;""" : "";
         String offload = worker ? runtimeSource.load("common/io-worker-offload.cpp") : "";
         return runtimeSource.load("common/io-owners.cpp").replace("${WORKER_STATE}", workerState)
+                .replace("${JUNO_HTTP_MAX_IN_FLIGHT}", Integer.toString(maxHttpRequests))
                 .replace("${ON_WORKER}", onWorker)
                 .replace("${ON_HTTP_WORKER}", onHttpWorker)
                 .replace("${OFFLOADING}", offloadingFlag)

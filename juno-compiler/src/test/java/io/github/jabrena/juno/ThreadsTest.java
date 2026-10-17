@@ -123,6 +123,22 @@ class ThreadsTest {
     }
 
     @Test
+    void avrContextSwitchesPreserveTheNativeHeapBoundary() throws Exception {
+        String shim = compile("ArduinoUnoR3WiFiRev2", START_AND_JOIN).runtimeShim();
+
+        assertThat(shim).contains("extern char* __malloc_heap_end;",
+                "juno_main_malloc_heap_end = __malloc_heap_end;",
+                "__malloc_heap_end = juno_main_malloc_heap_end;",
+                "static void juno_port_switch(uint32_t from, uint32_t to) {\n"
+                        + "  juno_port_check_stack(from);\n"
+                        + "  juno_port_set_limit(to);\n"
+                        + "  juno_port_malloc_switch(from, to, SP - JUNO_SWITCH_FRAME_BYTES - JUNO_RETURN_ADDRESS_BYTES);",
+                "static void juno_port_exit(uint32_t from, uint32_t to) {\n"
+                        + "  juno_port_set_limit(to);\n"
+                        + "  juno_port_malloc_switch(from, to, SP - JUNO_SWITCH_FRAME_BYTES - JUNO_RETURN_ADDRESS_BYTES);");
+    }
+
+    @Test
     void structuredSubtasksAreCooperativeWhileVirtualThreadsArePreemptive() throws Exception {
         for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ", "ArduinoUnoR3WiFiRev2"}) {
             String shim = compile(board, START_AND_JOIN).runtimeShim();
@@ -255,11 +271,12 @@ class ThreadsTest {
     }
 
     @Test
-    void twoHttpsSubtasksLeaseIndependentBoundedNetworkSlots() throws Exception {
+    void twoHttpsSubtasksRespectTheCoreTransportLimit() throws Exception {
         for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoR3WiFiRev2", "ArduinoUnoQ"}) {
             String shim = parallelHttpsProgramShim(board);
 
-            assertThat(shim).as(board).contains("static constexpr uint32_t JUNO_HTTP_MAX_IN_FLIGHT = 2u;",
+            int maxHttpRequests = board.equals("ArduinoUnoR3WiFiRev2") ? 1 : 2;
+            assertThat(shim).as(board).contains("static constexpr uint32_t JUNO_HTTP_MAX_IN_FLIGHT = " + maxHttpRequests + "u;",
                             "extern \"C\" uint32_t juno_http_acquire(void* handle, void (*abort)(void*))",
                             "struct JunoHttpGuard {", "JunoHttpGuard guard(",
                             "extern \"C\" int32_t juno_task_entry(int32_t callable);")

@@ -128,6 +128,12 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
         return "";
     }
 
+    /** Keep NINA TLS handshakes from blocking another request's receive deadline. */
+    @Override
+    public int maxConcurrentHttpRequests() {
+        return 1;
+    }
+
     /**
      * The NINA-W102 module runs TLS itself, so HTTPS costs the ATmega4809 next to nothing; the module trusts the root
      * certificates in its firmware (the Arduino IDE's certificate uploader adds more).

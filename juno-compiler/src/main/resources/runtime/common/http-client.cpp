@@ -90,15 +90,21 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
   int32_t chunkRemaining = 0;
   int32_t chunkSizeValue = 0;
   bool chunkExtension = false;
+  int availableBytes = 0;
 
   while (millis() < deadline) {
-    if (!client.available()) {
+    // Some transports refill over RPC on every available() call. Drain the reported batch
+    // before polling again, otherwise a request can spend its entire deadline fetching single bytes.
+    if (availableBytes == 0) availableBytes = client.available();
+    if (availableBytes <= 0) {
+      availableBytes = 0;
       if (!client.connected()) break;
       juno_io_wait(1);
       continue;
     }
     int value = client.read();
     if (value < 0) break;
+    availableBytes--;
     char c = static_cast<char>(value);
 
     if (inStatusLine) {

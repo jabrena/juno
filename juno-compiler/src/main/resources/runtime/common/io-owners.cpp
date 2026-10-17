@@ -5,7 +5,7 @@ struct JunoIoOwner {
   void* handle;
   void (*abort)(void*);
 };
-static constexpr uint32_t JUNO_HTTP_MAX_IN_FLIGHT = 2u;
+static constexpr uint32_t JUNO_HTTP_MAX_IN_FLIGHT = ${JUNO_HTTP_MAX_IN_FLIGHT}u;
 static constexpr uint32_t JUNO_IO_HTTP_FIRST_OWNER = 0u;
 static constexpr uint32_t JUNO_IO_NETWORK_OWNER = 2u;
 static constexpr uint32_t JUNO_IO_OWNED_DEVICES = 5u;

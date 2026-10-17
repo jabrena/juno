@@ -33,6 +33,31 @@ class GeneratedAsmToolchainTest {
     Path temporaryDirectory;
 
     @Test
+    void avrTasksKeepNativeAllocationsBelowTheParkedMainStack() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String runtime = Files.readString(Path.of("src/main/resources/runtime/avr/thread-heap.cpp"));
+        String harness = Files.readString(Path.of("src/test/resources/avr-thread-heap-harness.cpp"));
+        Process run = compileAndStart(compiler, harness.replace("// AVR_THREAD_HEAP", runtime), "avr-thread-heap");
+        assertThat(run.waitFor(20, TimeUnit.SECONDS)).isTrue();
+        String diagnostics = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as(diagnostics).isZero();
+    }
+
+    @Test
+    void drainsHttpBatchesBeforePollingTheRpcTransportAgain() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String runtime = Files.readString(Path.of("src/main/resources/runtime/common/http-client.cpp"));
+        String codec = runtime.substring(0, runtime.indexOf("struct JunoHttpJob"));
+        String harness = Files.readString(Path.of("src/test/resources/http-batch-harness.cpp"));
+        Process run = compileAndStart(compiler, harness.replace("// HTTP_CODEC", codec), "http-batch-runtime");
+        assertThat(run.waitFor(20, TimeUnit.SECONDS)).isTrue();
+        String diagnostics = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as(diagnostics).isZero();
+    }
+
+    @Test
     void compilesAnInternetBackedLocalDateTimeShimWithACppCompiler() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");

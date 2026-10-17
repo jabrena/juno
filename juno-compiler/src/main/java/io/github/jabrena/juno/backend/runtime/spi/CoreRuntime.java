@@ -75,6 +75,11 @@ public interface CoreRuntime {
     /** Optional core-specific HTTPS adapter emitted before the HTTP codec. */
     String httpsHelpers();
 
+    /** Safe number of simultaneous HTTP transport leases; excess callers wait cooperatively. */
+    default int maxConcurrentHttpRequests() {
+        return 2;
+    }
+
     /** Local client declaration used by each generated HTTPS entry point. */
     String httpsClientDeclaration();
 

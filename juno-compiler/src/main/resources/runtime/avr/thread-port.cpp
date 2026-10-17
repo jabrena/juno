@@ -123,11 +123,13 @@ static void juno_port_check_stack(uint32_t slot) {
 static void juno_port_switch(uint32_t from, uint32_t to) {
   juno_port_check_stack(from);
   juno_port_set_limit(to);
+  juno_port_malloc_switch(from, to, SP - JUNO_SWITCH_FRAME_BYTES - JUNO_RETURN_ADDRESS_BYTES);
   juno_context_switch(&juno_saved_sp[from], juno_saved_sp[to]);
 }
 
 static void juno_port_exit(uint32_t from, uint32_t to) {
   juno_port_set_limit(to);
+  juno_port_malloc_switch(from, to, SP - JUNO_SWITCH_FRAME_BYTES - JUNO_RETURN_ADDRESS_BYTES);
   juno_context_switch(&juno_saved_sp[from], juno_saved_sp[to]);
 }
 

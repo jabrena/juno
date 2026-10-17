@@ -269,7 +269,7 @@ public final class AvrRuntimeShim {
             shim.append(core.threadPort(config));
             shim.append(ioRuntime.workerPortFor(core, features));
             shim.append(threadRuntime.scheduler(false, ioRuntime.usesWorker(core, features),
-                    core.delayMillisFunction(), "juno_gc_scan_bytes",
+                    core.maxConcurrentHttpRequests(), core.delayMillisFunction(), "juno_gc_scan_bytes",
                     uses(ShimFeature.EXCEPTIONS), uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.TASK_CALLABLE_ENTRY), uses(ShimFeature.STRUCTURED_TASKS),
                     uses(ShimFeature.SCOPED_VALUES),
