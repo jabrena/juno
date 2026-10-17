@@ -70,6 +70,7 @@ static JunoMonitor juno_monitors[JUNO_MAX_MONITORS];
 
 ${JUNO_ORDINARY_ENTRY}
 ${JUNO_TASK_ENTRY}
+${JUNO_IO_WAITING_DECLARATION}
 
 static JunoThreadObject* juno_thread_of(int32_t handle) {
   if (handle == 0) juno_panic();

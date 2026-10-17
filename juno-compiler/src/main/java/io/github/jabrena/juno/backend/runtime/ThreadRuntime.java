@@ -160,8 +160,10 @@ public final class ThreadRuntime {
                   }""" : "";
         return runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker))
                 .replace("${JUNO_WAITING_IO_CASE}", ioWorker
-                        ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_port_io_busy();" : "")
-                .replace("${JUNO_IO_REAP_DECLARATION}", ioWorker ? "static void juno_io_reap();" : "")
+                        ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_io_waiting(index);" : "")
+                .replace("${JUNO_IO_WAITING_DECLARATION}", ioWorker ? "static bool juno_io_waiting(uint32_t slot);" : "")
+                .replace("${JUNO_IO_REAP_DECLARATION}", ioWorker
+                        ? "static void juno_io_reap();\nstatic bool juno_io_waiting(uint32_t slot);" : "")
                 .replace("${JUNO_IO_REAP_CALL}", ioWorker ? "juno_io_reap();" : "")
                 .replace("${JUNO_PREEMPTION}", preemption)
                 .replace("${JUNO_START_PREEMPTION}", startPreemption)

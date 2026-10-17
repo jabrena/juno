@@ -15,7 +15,8 @@ import java.util.Set;
  * <p>A thread that sleeps inside a library call can find another thread entering the same library, which none of the
  * Arduino libraries tolerate halfway through a transaction. So each waiting entry point holds a device guard
  * ({@code JunoIoGuard}) for its whole call: a second thread waits its turn, like a {@code synchronized} method, while
- * threads that do not touch the device keep running. A guard records its owner; cancelling a structured subtask that
+ * threads that do not touch the device keep running. HTTP requests instead use two independently owned, bounded
+ * {@code JunoHttpGuard} leases; Wi-Fi setup and the HTTP server retain the exclusive network guard. A guard records its owner; cancelling a structured subtask that
  * owns one runs the guard's abort hook (closing a half-used client) and releases it, so the device does not stay
  * locked by a thread that will never run again.
  *
@@ -77,6 +78,8 @@ public final class IoRuntime {
                 extern "C" void juno_thread_sleep(int64_t millis);
                 extern "C" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*));
                 extern "C" void juno_io_release(uint32_t device);
+                extern "C" uint32_t juno_http_acquire(void* handle, void (*abort)(void*));
+                extern "C" void juno_http_release(uint32_t device);
                 """ + offload + """
 
                 static void juno_io_wait(uint32_t millisToWait) {
@@ -96,11 +99,25 @@ public final class IoRuntime {
 
                 static void juno_io_release(uint32_t) {
                 }
+
+                static uint32_t juno_http_acquire(void*, void (*)(void*)) {
+                  return 0u;
+                }
+
+                static void juno_http_release(uint32_t) {
+                }
                 """;
         return """
 
-                // ---- Juno I/O: waits that let the other threads run, one thread per device ----
-                enum : uint32_t { JUNO_IO_NETWORK, JUNO_IO_STORAGE, JUNO_IO_BLE, JUNO_IO_DEVICES };
+                // ---- Juno I/O: waits that let the other threads run, bounded HTTP and one thread per other device ----
+                enum : uint32_t {
+                  JUNO_IO_HTTP_FIRST,
+                  JUNO_IO_HTTP_SECOND,
+                  JUNO_IO_NETWORK,
+                  JUNO_IO_STORAGE,
+                  JUNO_IO_BLE,
+                  JUNO_IO_DEVICES
+                };
 
                 """ + implementation + """
 
@@ -112,6 +129,16 @@ public final class IoRuntime {
                   }
                   ~JunoIoGuard() {
                     juno_io_release(device);
+                  }
+                };
+
+                struct JunoHttpGuard {
+                  uint32_t device;
+                  JunoHttpGuard(void* handle = nullptr, void (*abort)(void*) = nullptr)
+                      : device(juno_http_acquire(handle, abort)) {
+                  }
+                  ~JunoHttpGuard() {
+                    juno_http_release(device);
                   }
                 };
                 """;
@@ -127,30 +154,42 @@ public final class IoRuntime {
     String owners(boolean worker) {
         String workerState = worker ? """
 
-                // The thread whose job the worker is running (slot + 1), and the abort of a device whose owner was
-                // cancelled while its job ran: deferred until the worker is done with the device.
-                static uint32_t juno_io_offloader = 0u;
-                static void (*juno_io_deferred_abort)(void*) = nullptr;
-                static void* juno_io_deferred_handle = nullptr;
+                // The owner and deferred cancellation state of each I/O worker. A cancelled call keeps its device
+                // lease until its worker finishes, so another request cannot reuse its transport prematurely.
+                static uint32_t juno_io_offloader[JUNO_IO_WORKER_COUNT];
+                static uint32_t juno_io_worker_for_slot[JUNO_MAX_THREADS];
+                static uint32_t juno_io_deferred_owner[JUNO_IO_WORKER_COUNT];
+                static void (*juno_io_deferred_abort[JUNO_IO_WORKER_COUNT])(void*);
+                static void* juno_io_deferred_handle[JUNO_IO_WORKER_COUNT];
                 """ : "";
         String onWorker = worker ? "\n  if (juno_io_on_worker()) return;" : "";
+        String onHttpWorker = worker ? "\n  if (juno_io_on_worker()) return 0u;" : "";
         String abort = worker ? """
                     if (entry.abort == nullptr) {
                     } else if (offloading) {
-                      juno_io_deferred_abort = entry.abort;
-                      juno_io_deferred_handle = entry.handle;
+                      juno_io_deferred_abort[offloadingWorker] = entry.abort;
+                      juno_io_deferred_handle[offloadingWorker] = entry.handle;
                     } else {
                       entry.abort(entry.handle);
                     }""" : """
                     if (entry.abort != nullptr) entry.abort(entry.handle);""";
         String offloadingFlag = worker ? """
-                  bool offloading = juno_io_offloader == owner && juno_port_io_busy();
-                  if (juno_io_offloader == owner) juno_io_offloader = 0u;""" : "";
+                  uint32_t offloadingWorker = JUNO_IO_WORKER_COUNT;
+                  for (uint32_t worker = 0u; worker < JUNO_IO_WORKER_COUNT; worker++) {
+                    if (juno_io_offloader[worker] == owner && juno_port_io_busy(worker)) {
+                      offloadingWorker = worker;
+                      break;
+                    }
+                  }
+                  bool offloading = offloadingWorker != JUNO_IO_WORKER_COUNT;
+                  if (offloading) juno_io_deferred_owner[offloadingWorker] = owner;""" : "";
         String offload = worker ? runtimeSource.load("common/io-worker-offload.cpp") : "";
         return runtimeSource.load("common/io-owners.cpp").replace("${WORKER_STATE}", workerState)
                 .replace("${ON_WORKER}", onWorker)
+                .replace("${ON_HTTP_WORKER}", onHttpWorker)
                 .replace("${OFFLOADING}", offloadingFlag)
                 .replace("${ABORT}", abort)
+                .replace("${OFFLOADING_CONTINUE}", worker ? "\n    if (offloading) continue;" : "")
                 .replace("${OFFLOAD}", offload);
     }
 }

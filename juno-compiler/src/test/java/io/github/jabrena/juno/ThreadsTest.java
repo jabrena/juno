@@ -211,6 +211,66 @@ class ThreadsTest {
         return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Fetch").runtimeShim();
     }
 
+    private String parallelHttpsProgramShim(String board) throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.%1$s;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.net.http.HttpClient;
+                @Board(%1$s.class)
+                public final class ParallelFetch {
+                    static final class First {
+                        private final byte[] body = new byte[32];
+                        private final byte[] headers = new byte[32];
+                        private final int[] status = new int[2];
+                        First fetch() {
+                            HttpClient.get("https://one.example/", body, body.length, headers, headers.length, status);
+                            return this;
+                        }
+                    }
+                    static final class Second {
+                        private final byte[] body = new byte[32];
+                        private final byte[] headers = new byte[32];
+                        private final int[] status = new int[2];
+                        Second fetch() {
+                            HttpClient.get("https://two.example/", body, body.length, headers, headers.length, status);
+                            return this;
+                        }
+                    }
+                    public static void main() throws Exception {
+                        First first = new First();
+                        Second second = new Second();
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            var firstTask = scope.fork(() -> first.fetch());
+                            var secondTask = scope.fork(() -> second.fetch());
+                            scope.join();
+                            firstTask.get();
+                            secondTask.get();
+                        }
+                    }
+                }
+                """.formatted(board);
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.ParallelFetch", source);
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ParallelFetch").runtimeShim();
+    }
+
+    @Test
+    void twoHttpsSubtasksLeaseIndependentBoundedNetworkSlots() throws Exception {
+        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoR3WiFiRev2", "ArduinoUnoQ"}) {
+            String shim = parallelHttpsProgramShim(board);
+
+            assertThat(shim).as(board).contains("static constexpr uint32_t JUNO_HTTP_MAX_IN_FLIGHT = 2u;",
+                            "extern \"C\" uint32_t juno_http_acquire(void* handle, void (*abort)(void*))",
+                            "struct JunoHttpGuard {", "JunoHttpGuard guard(",
+                            "extern \"C\" int32_t juno_task_entry(int32_t callable);")
+                    .doesNotContain("JunoIoGuard guard(JUNO_IO_NETWORK, &client,");
+            if (board.equals("ArduinoUnoQ")) {
+                assertThat(shim).contains("static constexpr uint32_t JUNO_IO_WORKER_COUNT = 2u;",
+                        "static bool juno_io_waiting(uint32_t slot)");
+            }
+        }
+    }
+
     @Test
     void anHttpRequestWaitsWithoutHoldingUpTheOtherThreads() throws Exception {
         // The UNO Q has no plain-HTTP client; its HTTPS client shares the same request code.
@@ -219,7 +279,7 @@ class ThreadsTest {
 
             assertThat(shim).as(board)
                     .contains("juno_thread_sleep(static_cast<int64_t>(millisToWait));",
-                            "JunoIoGuard guard(JUNO_IO_NETWORK, &client,", "juno_io_wait(1);",
+                            "JunoHttpGuard guard(&client,", "juno_io_wait(1);",
                             "extern \"C\" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {")
                     .doesNotContain("delay(1);");
         }
@@ -278,10 +338,12 @@ class ThreadsTest {
     void unoQRunsBridgeCallsOnTheIoWorkerWhileTheCallerIsParked() throws Exception {
         String shim = unoQNetworkShim(true);
 
-        assertThat(shim).contains("K_THREAD_STACK_DEFINE(juno_io_worker_stack, JUNO_IO_WORKER_STACK_BYTES);",
+        assertThat(shim).contains("K_THREAD_STACK_DEFINE(juno_io_worker_stack_first, JUNO_IO_WORKER_STACK_BYTES);",
+                        "K_THREAD_STACK_DEFINE(juno_io_worker_stack_second, JUNO_IO_WORKER_STACK_BYTES);",
+                        "static constexpr uint32_t JUNO_IO_WORKER_COUNT = 2u;",
                         "K_PRIO_PREEMPT(4)", "extern \"C\" void juno_io_offload(void (*job)(void*), void* argument) {",
                         "juno_slots[juno_current_slot].state = JUNO_SLOT_WAITING_IO;",
-                        "case JUNO_SLOT_WAITING_IO:\n                      return !juno_port_io_busy();",
+                        "case JUNO_SLOT_WAITING_IO:\n                      return !juno_io_waiting(index);",
                         "juno_io_offload(juno_wifi_bridge_begin, nullptr);",
                         "juno_io_offload(juno_http_job<Client>, &job);",
                         "using JunoHttpsClient = JunoBridgeSSLClient;")
@@ -412,12 +474,12 @@ class ThreadsTest {
     }
 
     @Test
-    void bothPortsCompileAsCpp() throws Exception {
+    void parallelHttpsShimsCompileAsCppOnArmBoards() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
             Path shim = temporaryDirectory.resolve(board + ".cpp");
-            Files.writeString(shim, compile(board, START_AND_JOIN).runtimeShim(), StandardCharsets.UTF_8);
+            Files.writeString(shim, parallelHttpsProgramShim(board), StandardCharsets.UTF_8);
             Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
                     "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
             assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
