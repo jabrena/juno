@@ -11,9 +11,9 @@ import io.github.jabrena.juno.api.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseClient;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseResponse;
 import io.github.jabrena.juno.usecases.supabase.dashboard.commons.TemperatureDashboardState;
+import io.github.jabrena.juno.usecases.supabase.dashboard.gathering.TemperatureGatheringView;
 import io.github.jabrena.juno.usecases.supabase.dashboard.intro.IntroView;
 import io.github.jabrena.juno.usecases.supabase.dashboard.services.SupabaseTemperatureService;
-import io.github.jabrena.juno.usecases.supabase.dashboard.status.TemperatureGatheringView;
 import io.github.jabrena.juno.usecases.supabase.dashboard.status.TemperatureHistogramView;
 import io.github.jabrena.juno.usecases.supabase.publisher.SupabaseGroveTemperatures;
 
@@ -26,8 +26,8 @@ import io.github.jabrena.juno.usecases.supabase.publisher.SupabaseGroveTemperatu
  *   <li><b>Views</b>: the gathering view reports bounded-page progress before {@link TemperatureHistogramView}
  *       presents the completed model.</li>
  *   <li><b>Controller</b>: the API's {@link ViewRouter} owns the view and advances background work every frame.</li>
- *   <li><b>Service</b>: {@link SupabaseTemperatureService} implements the API's background-task contract and reads one
- *       bounded page at a time.</li>
+ *   <li><b>Service</b>: {@link SupabaseTemperatureService} implements the API's background-task contract, obtains the
+ *       exact count with the first page, then reads pairs of bounded pages concurrently.</li>
  * </ul>
  *
  * <p>This class only wires those pieces together. Build-time environment variables provide
@@ -36,9 +36,11 @@ import io.github.jabrena.juno.usecases.supabase.publisher.SupabaseGroveTemperatu
  * access. Never embed a secret or legacy {@code service_role} key in firmware.
  *
  * <p>Each bin is one degree Celsius from 10 to 39; readings outside that range are counted in open-ended buckets. A
- * row containing any null sensor reading is counted as missing. Every object and buffer is allocated once at startup,
- * and the controller loop allocates nothing. The response buffer holds one page, so this targets UNO R4 WiFi and UNO
- * Q.
+ * row containing any null sensor reading is counted as missing. Buffers and application objects are allocated once at
+ * startup; each gathering step creates one bounded structured scope for two independent HTTPS requests,
+ * and subsequent controller iterations allocate nothing. Each response buffer holds one page, so this targets UNO R4
+ * WiFi and UNO Q. On the R4, build with {@code -Djuno.Xmx=9800 -Djuno.Xss=2k -Djuno.maxThreads=3} so its two task
+ * stacks fit beside the WiFi and TFT runtimes.
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class SupabaseGroveTemperaturesHistogram {
@@ -49,7 +51,7 @@ public final class SupabaseGroveTemperaturesHistogram {
     private static final int PATH_CAPACITY = 192;
     private static final int REQUEST_HEADERS_CAPACITY = 144;
     private static final int REQUEST_BODY_CAPACITY = 1;
-    private static final int RESPONSE_BODY_CAPACITY = 4096;
+    private static final int RESPONSE_BODY_CAPACITY = 3584;
     private static final int RESPONSE_HEADERS_CAPACITY = 256;
 
     private SupabaseGroveTemperaturesHistogram() {
@@ -79,9 +81,29 @@ public final class SupabaseGroveTemperaturesHistogram {
                 requestBody, REQUEST_BODY_CAPACITY,
                 response);
 
+        byte[] nextPath = new byte[PATH_CAPACITY];
+        byte[] nextRequestHeaders = new byte[REQUEST_HEADERS_CAPACITY];
+        byte[] nextRequestBody = new byte[REQUEST_BODY_CAPACITY];
+        byte[] nextResponseBody = new byte[RESPONSE_BODY_CAPACITY];
+        byte[] nextResponseHeaders = new byte[RESPONSE_HEADERS_CAPACITY];
+        int[] nextStatus = new int[2];
+        SupabaseResponse nextResponse = new SupabaseResponse(
+                nextResponseBody, RESPONSE_BODY_CAPACITY,
+                nextResponseHeaders, RESPONSE_HEADERS_CAPACITY,
+                nextStatus);
+        SupabaseClient nextSupabase = new SupabaseClient(
+                System.getenv("SUPABASE_API_HOST"),
+                System.getenv("SUPABASE_API_KEY"),
+                nextPath, PATH_CAPACITY,
+                nextRequestHeaders, REQUEST_HEADERS_CAPACITY,
+                nextRequestBody, REQUEST_BODY_CAPACITY,
+                nextResponse);
+
         TemperatureDashboardState model = new TemperatureDashboardState();
         SupabaseTemperatureService service = new SupabaseTemperatureService(
-                supabase, response, RESPONSE_BODY_CAPACITY, model);
+                supabase, response, RESPONSE_BODY_CAPACITY,
+                nextSupabase, nextResponse,
+                model);
         ViewRouter controller = new ViewRouter(FRAME_PERIOD_MILLIS);
         controller.register(INTRO_VIEW,
                 new IntroView(controller, GATHERING_VIEW));
