@@ -48,7 +48,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>Opt-in, as it needs Docker and downloads the cores on first use:
  * {@code ./mvnw -pl juno-examples -am -Parduino-cli verify -Dit.test=LanguageExamplesArduinoCliIT}. The image is built
  * from the compiler's {@code juno-compiler/src/test/docker/arduino-cli/Dockerfile}; to use a prebuilt image instead,
- * pass {@code -Djuno.arduinoCliImage=<image>}. Skipped when Docker is not available.
+ * pass {@code -Djuno.arduinoCliImage=<image>}. Pass {@code -Djuno.language=java|kotlin|scala|clojure} to compile only
+ * that language; the default is all languages. Skipped when Docker is not available.
  *
  * <p>The sketches compile concurrently in the one container; {@code arduino-cli} caches each board's precompiled core
  * and reuses it, so the first sketch of a board compiles alone and the others wait for that archive.
@@ -63,9 +64,6 @@ class LanguageExamplesArduinoCliIT {
     private static final Path EXAMPLE_CLASSES = BASEDIR.resolve("target/classes");
     private static final Path API_CLASSES = codeSource(Watchdog.class);
     private static final String LANGUAGE_PACKAGE = "io/github/jabrena/juno/language";
-    private static final String KOTLIN_PACKAGE = "io.github.jabrena.juno.language.kotlin.";
-    private static final String SCALA_PACKAGE = "io.github.jabrena.juno.language.scala.";
-    private static final String CLOJURE_PACKAGE = "io.github.jabrena.juno.language.clojure.";
     private static final String UNSUPPORTED_FEATURE = UnsupportedFeature.class.getName();
     private static final String MAIN_DESCRIPTOR = "([Ljava/lang/String;)V";
 
@@ -75,7 +73,7 @@ class LanguageExamplesArduinoCliIT {
     @Container
     private static final GenericContainer<?> ARDUINO_CLI = container().withCommand("sleep", "infinity");
 
-    /** One compilable Java language example, with the boards it targets. */
+    /** One compilable language example, with the boards it targets. */
     private record Example(String name, String mainClass, List<Board> boards) {
         @Override
         public String toString() {
@@ -105,7 +103,8 @@ class LanguageExamplesArduinoCliIT {
     /** Every language example with a {@code public static void main}, once per board it targets. */
     static Stream<Arguments> examples() throws IOException {
         List<Arguments> arguments = new ArrayList<>();
-        for (Example example : examples(EXAMPLE_CLASSES.resolve(LANGUAGE_PACKAGE))) {
+        ExampleLanguage language = ExampleLanguage.configured();
+        for (Example example : examples(EXAMPLE_CLASSES.resolve(LANGUAGE_PACKAGE), language)) {
             for (Board board : example.boards()) {
                 arguments.add(Arguments.of(example, board));
             }
@@ -113,7 +112,7 @@ class LanguageExamplesArduinoCliIT {
         return arguments.stream();
     }
 
-    private static List<Example> examples(Path languageClasses) throws IOException {
+    private static List<Example> examples(Path languageClasses, ExampleLanguage language) throws IOException {
         List<Path> classFiles;
         try (Stream<Path> files = Files.walk(languageClasses)) {
             classFiles = files.filter(path -> path.toString().endsWith(".class") && !path.toString().contains("$")
@@ -124,7 +123,8 @@ class LanguageExamplesArduinoCliIT {
         for (Path classFile : classFiles) {
             JavaClass javaClass = new ClassFileReader().read(Files.readAllBytes(classFile));
             String mainClass = className(classFile);
-            if (javaClass.findMethod("main", MAIN_DESCRIPTOR) == null || mainClass.equals(UNSUPPORTED_FEATURE)) {
+            if (javaClass.findMethod("main", MAIN_DESCRIPTOR) == null || mainClass.equals(UNSUPPORTED_FEATURE)
+                    || !language.includes(mainClass)) {
                 continue;
             }
             examples.add(new Example(exampleName(mainClass), mainClass, boardsFor(javaClass)));
@@ -138,13 +138,7 @@ class LanguageExamplesArduinoCliIT {
      */
     private static String exampleName(String mainClass) {
         String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
-        if (mainClass.startsWith(KOTLIN_PACKAGE)) {
-            return "Kotlin" + simpleName;
-        }
-        if (mainClass.startsWith(SCALA_PACKAGE)) {
-            return "Scala" + simpleName;
-        }
-        return mainClass.startsWith(CLOJURE_PACKAGE) ? "Clojure" + simpleName : simpleName;
+        return ExampleLanguage.of(mainClass).sketchPrefix() + simpleName;
     }
 
     private static String className(Path classFile) {

@@ -6,6 +6,7 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.annotations.Watchdog;
 import io.github.jabrena.juno.board.Board;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -39,7 +40,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *
  * <p>Entry points are found by reading their class files, not by loading them: {@code ScopedValuesPrecision} is
  * compiled with preview features, which the test JVM does not enable, so loading it would fail. The Kotlin examples
- * under {@code language.kotlin}, {@code language.scala} and {@code language.clojure} are included: their {@code main} is found the same way.
+ * under {@code language.kotlin}, {@code language.scala} and {@code language.clojure} are included: their {@code main}
+ * is found the same way. Pass {@code -Djuno.language=java|kotlin|scala|clojure} to compile only that language; the
+ * default is all languages.
  */
 class LanguageExamplesCompilationTest {
     private static final String LANGUAGE_PACKAGE = "io/github/jabrena/juno/language";
@@ -57,6 +60,7 @@ class LanguageExamplesCompilationTest {
 
     @Test
     void unsupportedFeatureIsRejectedWithADiagnostic() throws Exception {
+        Assumptions.assumeTrue(ExampleLanguage.configured().includes(UnsupportedFeature.class.getName()));
         assertThatThrownBy(() -> compile(UnsupportedFeature.class.getName(), Board.UNO_R4_WIFI))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("toString");
@@ -66,6 +70,7 @@ class LanguageExamplesCompilationTest {
     static Stream<Arguments> entryPoints() throws IOException, URISyntaxException {
         List<Arguments> arguments = new ArrayList<>();
         Path classesRoot = examplesRoot();
+        ExampleLanguage language = ExampleLanguage.configured();
         try (Stream<Path> files = Files.walk(classesRoot.resolve(LANGUAGE_PACKAGE))) {
             for (Path file : files.filter(LanguageExamplesCompilationTest::isEntryPointCandidate).sorted().toList()) {
                 ClassModel model = ClassFile.of().parse(file);
@@ -73,7 +78,7 @@ class LanguageExamplesCompilationTest {
                     continue;
                 }
                 String mainClass = className(classesRoot, file);
-                if (mainClass.equals(UnsupportedFeature.class.getName())) {
+                if (mainClass.equals(UnsupportedFeature.class.getName()) || !language.includes(mainClass)) {
                     continue;
                 }
                 for (Board board : boardsFor(model)) {

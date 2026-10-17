@@ -1,0 +1,8 @@
+{
+  "common": {
+    "inputProperties": [
+      "java.specification.version",
+      "juno.language"
+    ]
+  }
+}

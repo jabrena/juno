@@ -66,17 +66,18 @@ The Docker profiles run end-to-end tests with Testcontainers:
 
 - `arduino-cli` in `juno-compiler` compiles the small API and shield fixtures in `juno-compiler/src/test/arduino/programs`
   for each board they declare (UNO R4 WiFi and UNO Q) with the real `arduino-cli`.
-- `arduino-cli` in `juno-examples` compiles the Java, Kotlin and Scala language examples in
-  `juno-examples/src/main/{java,kotlin,scala}/.../language` for each board their `@Board` annotation declares (UNO R4 WiFi
-  when none) with the real `arduino-cli`. To run only these, pass
-  `-Dit.test=LanguageExamplesArduinoCliIT -Dfailsafe.failIfNoSpecifiedTests=false`, which skips the fixture tests.
+- `arduino-cli` in `juno-examples` compiles the Java, Kotlin, Scala and Clojure language examples for each board their
+  `@Board` annotation declares (every supported board when none) with the real `arduino-cli`. To run only these, pass
+  `-Dit.test=LanguageExamplesArduinoCliIT -Dfailsafe.failIfNoSpecifiedTests=false`, which skips the fixture tests. Add
+  `-Djuno.language=java`, `kotlin`, `scala` or `clojure` to compile only that language; omitting it compiles all four.
 - `qemu` runs the language fixtures in `juno-compiler/src/test/qemu/programs` on QEMU (Cortex-M4) and compares their serial
   output with a JVM run of the same source.
 
 The `arduino-cli` profile is declared in both modules, so `-P arduino-cli` from the root or with `-am` runs both suites.
 The `juno-examples` suite is the one that builds the example programs; the in-process `LanguageExamplesCompilationTest`
-runs by default with `./mvnw test` and needs no Docker. It compiles every Java, Kotlin and Scala entry point through
-Juno, once per board, and `ExamplesArchitectureTest` keeps all three languages on the Juno API and the JDK.
+runs by default with `./mvnw test` and needs no Docker. It compiles every Java, Kotlin, Scala and Clojure entry point
+through Juno, once per board, and accepts the same `juno.language` selector. `ExamplesArchitectureTest` keeps the
+language examples on the Juno API and the JDK.
 
 ### Local SonarQube Community
 
