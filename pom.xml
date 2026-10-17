@@ -33,6 +33,7 @@
         <logback.version>1.6.5</logback.version>
         <slf4j.version>2.0.20</slf4j.version>
         <maven.version>3.10.0</maven.version>
+        <maven.version.range>[3.9.16,4.0.0)</maven.version.range>
         <maven-plugin-tools.version>3.16.0</maven-plugin-tools.version>
         <maven-plugin-clean.version>3.5.0</maven-plugin-clean.version>
         <maven-plugin-compiler.version>3.16.0</maven-plugin-compiler.version>
@@ -210,7 +211,7 @@
                                 <dependencyConvergence/>
                                 <banDuplicatePomDependencyVersions/>
                                 <requireMavenVersion>
-                                    <version>${maven.version}</version>
+                                    <version>${maven.version.range}</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
                                     <version>${java.version}</version>
