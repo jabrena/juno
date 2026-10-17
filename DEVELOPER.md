@@ -78,8 +78,11 @@ The Docker profiles run end-to-end tests with Testcontainers:
   `avr-gcc`/`libsimavr` toolchain when available and otherwise builds the Testcontainers Docker image.
 
 The GitHub Actions workflow runs both emulator profiles as separate jobs when the change selector requests full
-coverage. The QEMU job uses `-Pqemu`; the simavr job uses `-Psimavr`. Changes limited to documentation do not trigger
-either emulator job.
+coverage. A preceding image phase publishes immutable, content-hashed Arduino CLI, QEMU and simavr toolchains to GHCR,
+and the downstream jobs pull those references instead of rebuilding their Dockerfiles. The QEMU job passes
+`-Djuno.qemuImage`; the simavr job passes `-Djuno.simavrImage`. Without either property, local tests build the named
+Testcontainers image from the corresponding Dockerfile. Changes limited to documentation do not trigger either emulator
+job.
 
 The `arduino-cli` profile is declared in both modules, so `-P arduino-cli` from the root or with `-am` runs both suites.
 The `juno-examples` suite is the one that builds the example programs; the in-process `LanguageExamplesCompilationTest`
