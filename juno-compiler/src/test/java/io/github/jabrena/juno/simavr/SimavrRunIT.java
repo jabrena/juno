@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
@@ -59,6 +60,7 @@ class SimavrRunIT {
     private static final Path OPENJDK_CLASSES = BASEDIR.resolve("target/simavr/openjdk-classes");
     private static final Path LOCAL_HARNESS = BASEDIR.resolve("target/simavr/harness");
     private static final String EXIT_MARKER = "[juno-exit]\n";
+    private static final String PUBLISHED_IMAGE = System.getProperty("juno.simavrImage", "").trim();
     private static final List<String> HARNESS_FILES = List.of("Arduino.h", "WiFiNINA.h", "WiFiUdp.h", "SPI.h",
             "SdFat.h", "startup.cpp", "run.sh");
 
@@ -66,7 +68,12 @@ class SimavrRunIT {
 
     @BeforeAll
     static void prepare() throws Exception {
-        if (!buildLocalHarness()) {
+        if (!PUBLISHED_IMAGE.isEmpty()) {
+            Assumptions.assumeTrue(DockerClientFactory.instance().isDockerAvailable(),
+                    "The published simavr image requires Docker");
+            container = new GenericContainer<>(DockerImageName.parse(PUBLISHED_IMAGE));
+            container.start();
+        } else if (!buildLocalHarness()) {
             Assumptions.assumeTrue(DockerClientFactory.instance().isDockerAvailable(),
                     "Neither a local avr-gcc and libsimavr toolchain nor Docker is available");
             container = new GenericContainer<>(new ImageFromDockerfile("juno-simavr:bookworm-v1", false)
@@ -129,7 +136,9 @@ class SimavrRunIT {
                 }
             }
             for (Path source : javaFiles(SIMAVR.resolve("programs"))) {
-                programs.add(Arguments.of(simpleName(source), board, true));
+                if (Files.readString(source).contains(board.annotationArgument())) {
+                    programs.add(Arguments.of(simpleName(source), board, true));
+                }
             }
         }
         return programs.stream();

@@ -17,6 +17,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
@@ -68,12 +69,20 @@ class QemuRunIT {
     /** Programs whose output differs from OpenJDK because of a known compiler bug, with the reason. */
     private static final Map<String, String> KNOWN_GAPS = Map.of();
     private static final String EXIT_MARKER = "[juno-exit]\n";
+    private static final String PUBLISHED_IMAGE = System.getProperty("juno.qemuImage", "").trim();
 
     @Container
-    private static final GenericContainer<?> QEMU_RUNNER = new GenericContainer<>(
-            // Keep the named toolchain image across Maven JVMs. The heavyweight apt layer is stable and reusable;
-            // a harness change only replaces the small COPY layer at the end of the Dockerfile.
-            new ImageFromDockerfile("juno-qemu:bookworm-v1", false).withFileFromPath(".", QEMU));
+    private static final GenericContainer<?> QEMU_RUNNER = createRunner();
+
+    private static GenericContainer<?> createRunner() {
+        if (!PUBLISHED_IMAGE.isEmpty()) {
+            return new GenericContainer<>(DockerImageName.parse(PUBLISHED_IMAGE));
+        }
+        // Keep the named toolchain image across Maven JVMs. The heavyweight apt layer is stable and reusable;
+        // a harness change only replaces the small COPY layer at the end of the Dockerfile.
+        return new GenericContainer<>(new ImageFromDockerfile("juno-qemu:bookworm-v1", false)
+                .withFileFromPath(".", QEMU));
+    }
 
     @BeforeAll
     static void compilePrograms() throws IOException {

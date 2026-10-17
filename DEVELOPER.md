@@ -44,7 +44,7 @@ This is a multi-module project. The following modules are declared in the root `
 | Module | Artifact ID | Packaging | Commands |
 |--------|-------------|-----------|----------|
 | `juno-api` | `juno-api` | `jar` | `./mvnw clean verify -pl juno-api`<br>`./mvnw clean install -pl juno-api` |
-| `juno-compiler` | `juno-compiler` | `jar` | `./mvnw clean verify -pl juno-compiler -am`<br>`./mvnw clean install -pl juno-compiler -am`<br>`./mvnw clean verify -pl juno-compiler -am -P arduino-cli`<br>`./mvnw clean verify -pl juno-compiler -am -P qemu` |
+| `juno-compiler` | `juno-compiler` | `jar` | `./mvnw clean verify -pl juno-compiler -am`<br>`./mvnw clean install -pl juno-compiler -am`<br>`./mvnw clean verify -pl juno-compiler -am -P arduino-cli`<br>`./mvnw clean verify -pl juno-compiler -am -P qemu`<br>`./mvnw clean verify -pl juno-compiler -am -P simavr` |
 | `juno-maven-plugin` | `juno-maven-plugin` | `maven-plugin` | `./mvnw clean verify -pl juno-maven-plugin`<br>`./mvnw clean install -pl juno-maven-plugin` |
 | `juno-examples` | `juno-examples` | `jar` | `./mvnw clean verify -pl juno-examples`<br>`./mvnw clean verify -pl juno-examples -am -P arduino-cli` |
 | `juno-site` | `juno-site` | `quarkus` | `./mvnw clean verify -pl juno-site`<br>`./mvnw clean verify -pl juno-site -P site` |
@@ -61,6 +61,7 @@ The following profiles are declared in this project. Activate them with `-P <pro
 | `site` (root `pom.xml`, `juno-site/pom.xml`) | `./mvnw clean verify -P site` | manual |
 | `arduino-cli` (`juno-compiler/pom.xml`, `juno-examples/pom.xml`) | `./mvnw -pl juno-compiler -am -Parduino-cli verify` | manual (needs Docker) |
 | `qemu` (`juno-compiler/pom.xml`) | `./mvnw -pl juno-compiler -am -Pqemu verify` | manual (needs Docker) |
+| `simavr` (`juno-compiler/pom.xml`) | `./mvnw -pl juno-compiler -am -Psimavr verify` | manual (needs Docker or local avr-gcc/libsimavr) |
 
 The Docker profiles run end-to-end tests with Testcontainers:
 
@@ -72,6 +73,16 @@ The Docker profiles run end-to-end tests with Testcontainers:
   `-Djuno.language=java`, `kotlin`, `scala` or `clojure` to compile only that language; omitting it compiles all four.
 - `qemu` runs the language fixtures in `juno-compiler/src/test/qemu/programs` on QEMU (Cortex-M4) and compares their serial
   output with a JVM run of the same source.
+- `simavr` runs the AVR-capable QEMU fixtures and the peripheral fixtures in `juno-compiler/src/test/simavr` on the
+  simavr ATmega2560 stand-in, then compares serial output with OpenJDK or the fixture's expected output. It uses a local
+  `avr-gcc`/`libsimavr` toolchain when available and otherwise builds the Testcontainers Docker image.
+
+The GitHub Actions workflow runs both emulator profiles as separate jobs when the change selector requests full
+coverage. A preceding image phase publishes immutable, content-hashed Arduino CLI, QEMU and simavr toolchains to GHCR,
+and the downstream jobs pull those references instead of rebuilding their Dockerfiles. The QEMU job passes
+`-Djuno.qemuImage`; the simavr job passes `-Djuno.simavrImage`. Without either property, local tests build the named
+Testcontainers image from the corresponding Dockerfile. Changes limited to documentation do not trigger either emulator
+job.
 
 The `arduino-cli` profile is declared in both modules, so `-P arduino-cli` from the root or with `-am` runs both suites.
 The `juno-examples` suite is the one that builds the example programs; the in-process `LanguageExamplesCompilationTest`

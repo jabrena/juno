@@ -6,7 +6,10 @@ set -eu
 HARNESS=$(dirname "$0")
 cd "$1"
 MCU="-mmcu=atmega2560"
-FLAGS="$MCU -Os -std=gnu++11 -fpermissive -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -fno-threadsafe-statics -I$HARNESS"
+# avr-g++ from Debian Bookworm ICEs with a register-spill error at -Os in the generated
+# double/BigDecimal formatting shim. -O2 produces the same semantics and remains small
+# enough for this simulator harness.
+FLAGS="$MCU -O2 -std=gnu++11 -fpermissive -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -fno-threadsafe-statics -I$HARNESS"
 avr-gcc $MCU -c program.S -o program.o
 avr-g++ $FLAGS -c shim.cpp -o shim.o
 avr-g++ $FLAGS -DJUNO_ENTRY="$2" -c "$HARNESS/startup.cpp" -o startup.o

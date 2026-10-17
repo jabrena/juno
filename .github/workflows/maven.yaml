@@ -108,10 +108,11 @@ jobs:
             echo "arduino_languages=$arduino_languages"
           } >> "$GITHUB_OUTPUT"
 
+  # Toolchain image phase: downstream build, emulator, and language jobs consume these immutable references.
   arduino-cli-image:
     name: Publish Arduino CLI image
     needs: changes
-    if: needs.changes.outputs.arduino == 'true'
+    if: needs.changes.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -153,9 +154,118 @@ jobs:
           cache-from: type=gha,scope=arduino-cli-image
           cache-to: type=gha,mode=max,scope=arduino-cli-image
 
+  qemu-image:
+    name: Publish QEMU image
+    needs: changes
+    if: needs.changes.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ref: ${{ steps.reference.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          digest="$(git ls-files -z -- \
+            juno-compiler/src/test/qemu/Dockerfile \
+            juno-compiler/src/test/qemu/Arduino.h \
+            juno-compiler/src/test/qemu/Arduino_LED_Matrix.h \
+            juno-compiler/src/test/qemu/Arduino_RouterBridge.h \
+            juno-compiler/src/test/qemu/link.ld \
+            juno-compiler/src/test/qemu/run.sh \
+            juno-compiler/src/test/qemu/startup.cpp \
+            juno-compiler/src/test/qemu/zephyr/kernel.h \
+            | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
+          echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/juno-qemu:sha-$digest" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: image
+        env:
+          IMAGE: ${{ steps.reference.outputs.ref }}
+        shell: bash
+        run: |
+          if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/setup-buildx-action@v4
+        if: steps.image.outputs.exists != 'true'
+      - uses: docker/build-push-action@v7
+        if: steps.image.outputs.exists != 'true'
+        with:
+          context: juno-compiler/src/test/qemu
+          push: true
+          tags: ${{ steps.reference.outputs.ref }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=qemu-image
+          cache-to: type=gha,mode=max,scope=qemu-image
+
+  simavr-image:
+    name: Publish simavr image
+    needs: changes
+    if: needs.changes.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ref: ${{ steps.reference.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          digest="$(git ls-files -z -- \
+            juno-compiler/src/test/simavr/Dockerfile \
+            juno-compiler/src/test/simavr/Arduino.h \
+            juno-compiler/src/test/simavr/SPI.h \
+            juno-compiler/src/test/simavr/SdFat.h \
+            juno-compiler/src/test/simavr/WiFiNINA.h \
+            juno-compiler/src/test/simavr/WiFiUdp.h \
+            juno-compiler/src/test/simavr/run.sh \
+            juno-compiler/src/test/simavr/runner.c \
+            juno-compiler/src/test/simavr/startup.cpp \
+            | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
+          echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/juno-simavr:sha-$digest" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: image
+        env:
+          IMAGE: ${{ steps.reference.outputs.ref }}
+        shell: bash
+        run: |
+          if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/setup-buildx-action@v4
+        if: steps.image.outputs.exists != 'true'
+      - uses: docker/build-push-action@v7
+        if: steps.image.outputs.exists != 'true'
+        with:
+          context: juno-compiler/src/test/simavr
+          push: true
+          tags: ${{ steps.reference.outputs.ref }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=simavr-image
+          cache-to: type=gha,mode=max,scope=simavr-image
+
   build:
     name: Build
-    needs: changes
+    needs: [changes, arduino-cli-image, qemu-image, simavr-image]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -171,9 +281,12 @@ jobs:
 
   qemu:
     name: Run programs under QEMU
-    needs: changes
+    needs: [changes, qemu-image]
     if: needs.changes.outputs.full == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -183,15 +296,54 @@ jobs:
           distribution: temurin
           java-version: 27
           cache: maven
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull QEMU image
+        run: docker pull ${{ needs.qemu-image.outputs.ref }}
       - name: Run programs under QEMU
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pqemu
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
+          -Djuno.qemuImage=${{ needs.qemu-image.outputs.ref }}
+          -b turbo -T1C
+
+  simavr:
+    name: Run programs under simavr
+    needs: [changes, simavr-image]
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 27
+          cache: maven
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull simavr image
+        run: docker pull ${{ needs.simavr-image.outputs.ref }}
+      - name: Run programs under simavr
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Psimavr
+          verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=SimavrRunIT
+          -Djuno.simavrImage=${{ needs.simavr-image.outputs.ref }}
           -b turbo -T1C
 
   integration-build:
     name: Prepare integration build outputs
-    needs: changes
+    needs: [changes, arduino-cli-image, qemu-image, simavr-image]
     if: needs.changes.outputs.arduino == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -227,7 +379,7 @@ jobs:
 
   arduino:
     name: Compile ${{ matrix.language }}
-    needs: [changes, arduino-cli-image, integration-build]
+    needs: [changes, arduino-cli-image, qemu-image, simavr-image, integration-build]
     if: needs.changes.outputs.arduino == 'true'
     runs-on: ubuntu-latest
     permissions:
