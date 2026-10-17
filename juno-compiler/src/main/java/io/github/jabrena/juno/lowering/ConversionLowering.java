@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.lowering;
 
+import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.UnaryOp;
@@ -63,6 +64,21 @@ final class ConversionLowering implements OpcodeGroup {
         stack.push(result);
     }
 
+    /** The {@code l2f} conversion, for the Clojure runtime's {@code (float x)} cast on a long literal. */
+    void longToFloat() {
+        pushFromLong(JunoType.FLOAT32, IrInstruction.LongToFloat::new);
+    }
+
+    /** The {@code d2f} narrowing, for the Clojure runtime's {@code (float x)} cast (see {@link ClojureLowering}). */
+    void doubleToFloat() {
+        push(stack.popDouble(), values.float32(), IrInstruction.DoubleToFloat::new);
+    }
+
+    /** The {@code l2i} narrowing, for the Clojure runtime's int casts (see {@link ClojureLowering}). */
+    void longToInt() {
+        pushFromLong(JunoType.INT32, IrInstruction.LongToInt::new);
+    }
+
     /** A conversion from {@code long}: the operand's halves are popped before the result is allocated. */
     private void pushFromLong(JunoType resultType, LongConversion conversion) {
         OperandStack.LongHalves operand = stack.popHalves();
@@ -77,6 +93,20 @@ final class ConversionLowering implements OpcodeGroup {
         Value high = values.int32();
         context.emit(conversion.apply(low, high, operand));
         stack.pushHalves(low, high);
+    }
+
+    /**
+     * A long comparison that yields a boolean, for the Clojure runtime's {@code Numbers.lt} and friends: {@code lcmp}
+     * of the two longs, then the condition against zero.
+     */
+    void longComparison(Condition condition) {
+        compareLongs();
+        Value order = stack.pop();
+        Value zero = values.int32();
+        context.emit(new IrInstruction.Const(zero, 0));
+        Value result = values.int32();
+        context.emit(new IrInstruction.Compare(result, condition, order, zero));
+        stack.push(result);
     }
 
     private void compareLongs() {

@@ -33,6 +33,7 @@ public final class ClojureSupport {
     private static final String IFN = PACKAGE + "IFn";
     private static final String RT = PACKAGE + "RT";
     private static final String UTIL = PACKAGE + "Util";
+    private static final String NUMBERS = PACKAGE + "Numbers";
     private static final String OBJECT = "Ljava/lang/Object;";
 
     /** {@code Var.internPrivate(ns, name)}: interns a var; its arguments are literals in the {@code <clinit>}. */
@@ -47,10 +48,43 @@ public final class ClojureSupport {
     public static final MethodRef LOAD_WITH_CLASS =
             new MethodRef(UTIL, "loadWithClass", "(Ljava/lang/String;Ljava/lang/Class;)" + OBJECT);
     public static final MethodRef APPLY_TO = new MethodRef(IFN, "applyTo", "(Lclojure/lang/ISeq;)" + OBJECT);
+    /**
+     * {@code (int x)} and {@code (unchecked-int x)}: a long narrowed to an int. Juno does not emit the checked form's
+     * overflow test, so the examples cast only literals that fit an int.
+     */
+    public static final MethodRef RT_INT_CAST = new MethodRef(RT, "intCast", "(J)I");
+    public static final MethodRef RT_UNCHECKED_INT_CAST = new MethodRef(RT, "uncheckedIntCast", "(J)I");
+    /** {@code (float x)} on a double: the {@code d2f} narrowing, unchecked as {@link #RT_INT_CAST} is. */
+    public static final MethodRef RT_FLOAT_CAST = new MethodRef(RT, "floatCast", "(D)F");
+    /** {@code (float x)} on a long, such as a literal: the {@code l2f} conversion. */
+    public static final MethodRef RT_FLOAT_CAST_OF_LONG = new MethodRef(RT, "floatCast", "(J)F");
+
+    /**
+     * The {@code Numbers} arithmetic Clojure emits for primitive {@code long} operands. Overflow wraps as it does for
+     * {@code LADD}; Clojure's own overflow check is not emitted, so the examples avoid overflowing values.
+     */
+    public static final MethodRef NUMBERS_ADD = new MethodRef(NUMBERS, "add", "(JJ)J");
+    public static final MethodRef NUMBERS_MINUS = new MethodRef(NUMBERS, "minus", "(JJ)J");
+    public static final MethodRef NUMBERS_MULTIPLY = new MethodRef(NUMBERS, "multiply", "(JJ)J");
+    public static final MethodRef NUMBERS_QUOTIENT = new MethodRef(NUMBERS, "quotient", "(JJ)J");
+    public static final MethodRef NUMBERS_REMAINDER = new MethodRef(NUMBERS, "remainder", "(JJ)J");
+    public static final MethodRef NUMBERS_INC = new MethodRef(NUMBERS, "inc", "(J)J");
+    public static final MethodRef NUMBERS_DEC = new MethodRef(NUMBERS, "dec", "(J)J");
+    /** {@code (- x)}: the one-argument {@code Numbers.minus}, a negation. */
+    public static final MethodRef NUMBERS_NEGATE = new MethodRef(NUMBERS, "minus", "(J)J");
+
+    /** The boolean comparisons Clojure emits for primitive {@code long} operands, such as {@code (< a b)} as a value. */
+    public static final MethodRef NUMBERS_LT = new MethodRef(NUMBERS, "lt", "(JJ)Z");
+    public static final MethodRef NUMBERS_LTE = new MethodRef(NUMBERS, "lte", "(JJ)Z");
+    public static final MethodRef NUMBERS_GT = new MethodRef(NUMBERS, "gt", "(JJ)Z");
+    public static final MethodRef NUMBERS_GTE = new MethodRef(NUMBERS, "gte", "(JJ)Z");
+    public static final MethodRef NUMBERS_EQUIV = new MethodRef(NUMBERS, "equiv", "(JJ)Z");
 
     /** The calls {@link #isLowered} accepts: lowered in place of linking their bodies, or never reached. */
     private static final Set<MethodRef> LOWERED = Set.of(VAR_INTERN, VAR_IS_BOUND, VAR_GET, VAR_GET_RAW_ROOT,
-            VAR_DEREF, RT_SEQ, LOAD_WITH_CLASS, APPLY_TO);
+            VAR_DEREF, RT_SEQ, LOAD_WITH_CLASS, APPLY_TO, RT_INT_CAST, RT_UNCHECKED_INT_CAST, RT_FLOAT_CAST, RT_FLOAT_CAST_OF_LONG, NUMBERS_ADD,
+            NUMBERS_MINUS, NUMBERS_MULTIPLY, NUMBERS_QUOTIENT, NUMBERS_REMAINDER, NUMBERS_INC, NUMBERS_DEC, NUMBERS_NEGATE,
+            NUMBERS_LT, NUMBERS_LTE, NUMBERS_GT, NUMBERS_GTE, NUMBERS_EQUIV);
 
     /** The internal name of a function's class: the munged namespace, then the munged var name after a {@code $}. */
     public static String functionClass(String namespace, String name) {
@@ -76,13 +110,19 @@ public final class ClojureSupport {
     }
 
     /**
-     * Whether {@code descriptor} is acceptable on a function class: its parameters and return are Clojure values
-     * or {@code Object}, which is how the AOT output types every argument and result.
+     * Whether {@code descriptor} is acceptable on a function class: its parameters and return are Clojure values,
+     * {@code Object} (how the AOT output types most results, including {@code nil}), or a primitive the function's
+     * type hints name.
      */
     public static boolean acceptsFunctionDescriptor(@Nullable String superClassName, Descriptor descriptor) {
         return superClassName != null && superClassName.startsWith(PACKAGE)
-                && descriptor.parameters().stream().allMatch(ClojureSupport::isValue)
-                && isValue(descriptor.returnType());
+                && descriptor.parameters().stream().allMatch(ClojureSupport::isValueOrPrimitive)
+                && (isValueOrPrimitive(descriptor.returnType()) || descriptor.returnsVoid());
+    }
+
+    /** A Clojure value, or a primitive a function's typed arguments and results use ({@code ^long}, {@code ^double}). */
+    private static boolean isValueOrPrimitive(String type) {
+        return isValue(type) || Descriptor.isIntegerLike(type) || Descriptor.isLong(type) || Descriptor.isDouble(type);
     }
 
     /**

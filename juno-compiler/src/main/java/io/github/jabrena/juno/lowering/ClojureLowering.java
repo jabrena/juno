@@ -3,6 +3,8 @@ package io.github.jabrena.juno.lowering;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.ir.BinaryOp;
+import io.github.jabrena.juno.ir.Condition;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.ClojureSupport;
@@ -42,6 +44,14 @@ final class ClojureLowering {
             stack.pop();
             stack.pop();
             stack.pushInt(0);
+        } else if (called.equals(ClojureSupport.RT_FLOAT_CAST)) {
+            new ConversionLowering(context).doubleToFloat();
+        } else if (called.equals(ClojureSupport.RT_FLOAT_CAST_OF_LONG)) {
+            new ConversionLowering(context).longToFloat();
+        } else if (called.equals(ClojureSupport.RT_INT_CAST) || called.equals(ClojureSupport.RT_UNCHECKED_INT_CAST)) {
+            new ConversionLowering(context).longToInt();
+        } else if (called.owner().equals("clojure/lang/Numbers")) {
+            numbers(instruction, called);
         } else if (called.equals(ClojureSupport.APPLY_TO)) {
             applyTo(instruction);
         } else {
@@ -69,6 +79,39 @@ final class ClojureLowering {
             }
         }
         stack.pushInt(handle);
+    }
+
+    /** {@code Numbers} arithmetic on primitive longs, through the same IR as the JVM's {@code LADD}/{@code LDIV}/... */
+    private void numbers(Instruction instruction, MethodRef called) {
+        ArithmeticLowering arithmetic = new ArithmeticLowering(context);
+        switch (called.name()) {
+            case "add" -> arithmetic.longBinary(BinaryOp.ADD);
+            case "minus" -> {
+                if (called.descriptor().equals("(J)J")) {
+                    arithmetic.longNegate();
+                } else {
+                    arithmetic.longBinary(BinaryOp.SUBTRACT);
+                }
+            }
+            case "multiply" -> arithmetic.longBinary(BinaryOp.MULTIPLY);
+            case "quotient" -> arithmetic.longDivision(instruction, BinaryOp.DIVIDE);
+            case "remainder" -> arithmetic.longDivision(instruction, BinaryOp.REMAINDER);
+            case "inc" -> {
+                stack.pushLong(1);
+                arithmetic.longBinary(BinaryOp.ADD);
+            }
+            case "lt" -> new ConversionLowering(context).longComparison(Condition.LESS_THAN);
+            case "lte" -> new ConversionLowering(context).longComparison(Condition.LESS_EQUAL);
+            case "gt" -> new ConversionLowering(context).longComparison(Condition.GREATER_THAN);
+            case "gte" -> new ConversionLowering(context).longComparison(Condition.GREATER_EQUAL);
+            case "equiv" -> new ConversionLowering(context).longComparison(Condition.EQUAL);
+            case "dec" -> {
+                stack.pushLong(1);
+                arithmetic.longBinary(BinaryOp.SUBTRACT);
+            }
+            default -> throw new CompileException(context.at(instruction) + ": Clojure call not supported by Juno: "
+                    + called.displayName());
+        }
     }
 
     /**
