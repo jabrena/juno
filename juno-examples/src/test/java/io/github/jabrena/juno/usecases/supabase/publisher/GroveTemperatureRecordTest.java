@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.publisher;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.publisher;
 
 /**
  * Reusable sensor reading passed from acquisition to persistence. The same instance is updated for every cycle so a

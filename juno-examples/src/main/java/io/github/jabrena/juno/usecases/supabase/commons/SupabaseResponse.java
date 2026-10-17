@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.commons;
 
 /**
  * Reusable result storage for {@link SupabaseClient}. The body, response-header, and two-integer status buffers are

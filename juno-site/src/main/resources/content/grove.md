@@ -116,7 +116,7 @@ turning ADC readings into concentrations or alarm thresholds.
 
 ## Publishing temperatures to Supabase
 
-[`SupabaseGroveTemperatures`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/supabase/SupabaseGroveTemperatures.java)
+[`SupabaseGroveTemperatures`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/supabase/publisher/SupabaseGroveTemperatures.java)
 reads three temperature sensors once a minute and inserts them as one row into a Supabase
 `sensor-data` table through PostgREST:
 
@@ -149,5 +149,5 @@ UNO WiFi Rev2's flash, so this example targets the UNO R4 WiFi and UNO Q:
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.main=io.github.jabrena.juno.usecases.supabase.SupabaseGroveTemperatures
+  -Djuno.main=io.github.jabrena.juno.usecases.supabase.publisher.SupabaseGroveTemperatures
 ```

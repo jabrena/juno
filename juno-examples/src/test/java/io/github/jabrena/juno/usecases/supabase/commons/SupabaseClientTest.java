@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.commons;
 
 import org.junit.jupiter.api.Test;
 
@@ -39,6 +39,23 @@ class SupabaseClientTest {
     }
 
     @Test
+    void buildsAKeysetPageOrderedByIdAfterACallerOwnedCursor() {
+        Fixture fixture = new Fixture();
+        byte[] cursor = "42".getBytes(StandardCharsets.US_ASCII);
+
+        fixture.client.from("sensor-data")
+                .select("id,temp1,temp2,temp3")
+                .filter("id", "gt", cursor, cursor.length)
+                .order("id")
+                .limit(60);
+
+        assertThat(fixture.client.ready()).isTrue();
+        assertThat(text(fixture.path, fixture.client.pathLength()))
+                .isEqualTo("/rest/v1/sensor-data?select=id%2Ctemp1%2Ctemp2%2Ctemp3"
+                        + "&id=gt.42&order=id.asc&limit=60");
+    }
+
+    @Test
     void buildsInsertAndUpdateBodiesWithoutReplacingCallerBuffers() {
         Fixture fixture = new Fixture();
 
@@ -65,6 +82,23 @@ class SupabaseClientTest {
                 .isEqualTo("apikey: sb_publishable_test\r\n"
                         + "Prefer: return=representation\r\n"
                         + "Authorization: Bearer user.jwt\r\n");
+    }
+
+    @Test
+    void requestsAnExactSelectCountWithoutLeakingThatPreferenceToTheNextRequest() {
+        Fixture fixture = new Fixture();
+
+        fixture.client.from("sensor_readings").select("id").countExact();
+
+        assertThat(text(fixture.requestHeaders, fixture.client.requestHeadersLength()))
+                .isEqualTo("apikey: sb_publishable_test\r\n"
+                        + "Prefer: return=representation\r\n"
+                        + "Prefer: count=exact\r\n");
+
+        fixture.client.from("sensor_readings").select("id");
+
+        assertThat(text(fixture.requestHeaders, fixture.client.requestHeadersLength()))
+                .isEqualTo("apikey: sb_publishable_test\r\nPrefer: return=representation\r\n");
     }
 
     @Test
