@@ -8,7 +8,9 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
+import io.github.jabrena.juno.linker.StructuredTaskSupport;
 import io.github.jabrena.juno.linker.ThreadSupport;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -44,17 +46,37 @@ final class EntryPointLowering {
         return IrMethod.withInferredValues(entryMethod, 1, 2, List.of(), List.of(block));
     }
 
+    IrMethod configurationEntry(InterfaceDispatch dispatch) {
+        Value operator = Value.int32(0);
+        Value configuration = Value.int32(1);
+        Value result = Value.int32(2);
+        IrBasicBlock block = new IrBasicBlock(0, List.of(new IrInstruction.LoadLocal(operator, 0),
+                new IrInstruction.LoadLocal(configuration, 1),
+                invoke(dispatch, Optional.of(result), operator, configuration)),
+                new IrTerminator.Return(Optional.of(result)));
+        return IrMethod.withInferredValues(StructuredTaskSupport.CONFIGURATION_ENTRY_METHOD, 2, 3, List.of(),
+                List.of(block));
+    }
+
     private IrInstruction invoke(InterfaceDispatch dispatch, Optional<Value> result, Value receiver) {
+        return invoke(dispatch, result, receiver, null);
+    }
+
+    private IrInstruction invoke(InterfaceDispatch dispatch, Optional<Value> result, Value receiver,
+                                 @Nullable Value argument) {
         if (dispatch.targets().size() == 1) {
             InterfaceDispatch.Target target = dispatch.targets().getFirst();
             return target.isLambda()
-                    ? new IrInstruction.LambdaCall(result, Objects.requireNonNull(target.lambda()), List.of(receiver))
-                    : new IrInstruction.Call(result, target.method(), List.of(receiver));
+                    ? new IrInstruction.LambdaCall(result, Objects.requireNonNull(target.lambda()),
+                            argument == null ? List.of(receiver) : List.of(receiver, argument))
+                    : new IrInstruction.Call(result, target.method(),
+                            argument == null ? List.of(receiver) : List.of(receiver, argument));
         }
         List<InterfaceTarget> targets = dispatch.targets().stream()
                 .map(target -> new InterfaceTarget(Objects.requireNonNull(objectTypeIds.get(target.className())),
                         target.method(), target.lambda()))
                 .toList();
-        return new IrInstruction.InterfaceCall(result, List.of(receiver), targets);
+        return new IrInstruction.InterfaceCall(result, argument == null ? List.of(receiver) : List.of(receiver, argument),
+                targets);
     }
 }

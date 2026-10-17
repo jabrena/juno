@@ -39,7 +39,10 @@ public final class RuntimeLimits {
     public static final int THREAD_OBJECT_BYTES = 28;
 
     /** Arena bytes of one bounded structured-task scope and its active-task table. */
-    public static final int STRUCTURED_TASK_SCOPE_BYTES = 36;
+    public static final int STRUCTURED_TASK_SCOPE_BYTES = 40;
+
+    /** Arena bytes of one structured-task scope configuration handle. */
+    public static final int STRUCTURED_TASK_CONFIGURATION_BYTES = 4;
 
     /** Most distinct monitors that may be held or contended at once. */
     public static final int MAX_MONITORS = 8;

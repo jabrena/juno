@@ -72,7 +72,7 @@ class StructuredTaskScopeTest {
                 "bl juno_task_scope_join");
         assertThat(result.runtimeShim()).contains(
                 "JUNO_JOINER_ALL_SUCCESSFUL", "JUNO_JOINER_ANY_SUCCESSFUL",
-                "JUNO_JOINER_AWAIT_ALL_SUCCESSFUL", "JUNO_JOINER_AWAIT_ALL",
+                "JUNO_JOINER_AWAIT_ALL_SUCCESSFUL",
                 "JUNO_SCOPE_HAS_RESULT",
                 "juno_task_cancel_siblings(scope, task)", "juno_port_cancel(slot)",
                 "juno_task_cancel_owned(slot + 1u)", "juno_task_release_monitors(slot + 1u)");
@@ -115,7 +115,8 @@ class StructuredTaskScopeTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
             CompilationResult result = compile("""
-                    try (var scope = StructuredTaskScope.open()) {
+                    try (var scope = StructuredTaskScope.open(
+                            configuration -> configuration.withTimeout(java.time.Duration.ofMillis(100)))) {
                         var task = scope.fork(() -> "done");
                         scope.join();
                         task.get();
@@ -222,22 +223,31 @@ class StructuredTaskScopeTest {
     }
 
     @Test
-    void rejectsConfigurationOverloadAtCompileTime() throws Exception {
+    void supportsTimeoutConfigurationOverload() throws Exception {
         String source = """
                 package demo;
+                import java.time.Duration;
                 import java.util.concurrent.StructuredTaskScope;
                 public final class Tasks {
-                    public static void main() {
-                        StructuredTaskScope.open(StructuredTaskScope.Joiner.awaitAllSuccessfulOrThrow(), null);
+                    public static void main() throws Exception {
+                        try (var scope = StructuredTaskScope.open(
+                                StructuredTaskScope.Joiner.awaitAllSuccessfulOrThrow(),
+                                configuration -> configuration.withTimeout(Duration.ofMillis(20)))) {
+                            scope.fork(() -> "done");
+                            scope.join();
+                        }
                     }
                 }
                 """;
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Tasks", source);
 
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("JDK 27 StructuredTaskScope subset")
-                .hasMessageContaining("Configuration");
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks");
+        assertThat(result.assembly()).contains(
+                "bl juno_task_scope_open_with_config", "juno_task_configuration_entry",
+                "bl juno_task_configuration_with_timeout", "bl juno_duration_of_millis");
+        assertThat(result.runtimeShim()).contains(
+                "JUNO_SCOPE_TIMED_OUT", "juno_task_scope_timeout_expired",
+                "structured task scope timed out");
     }
 
     @Test

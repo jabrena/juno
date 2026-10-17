@@ -126,6 +126,8 @@ public final class ThreadRuntime {
                   }""" : "";
         String taskEntry = structuredTasks
                 ? (taskCallableEntry ? "extern \"C\" int32_t juno_task_entry(int32_t callable);\n" : "")
+                        + "extern \"C\" int32_t juno_task_configuration_entry(int32_t operatorHandle, "
+                        + "int32_t configuration);\n"
                         + "static void juno_task_complete(JunoThreadObject* task, int32_t result);"
                 : "";
         String ordinaryEntry = threadEntry ? "extern \"C\" void juno_thread_entry(int32_t runnable);" : "";

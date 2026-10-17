@@ -39,7 +39,8 @@ final class InstructionRiskScanner {
     private static final Set<Intrinsic> LAUNCHES = Set.of(
             Intrinsic.THREAD_START_VIRTUAL, Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
     private static final Set<Intrinsic> SCOPE_OPENS = Set.of(
-            Intrinsic.TASK_SCOPE_OPEN_DEFAULT, Intrinsic.TASK_SCOPE_OPEN);
+            Intrinsic.TASK_SCOPE_OPEN_DEFAULT, Intrinsic.TASK_SCOPE_OPEN, Intrinsic.TASK_SCOPE_OPEN_CONFIG,
+            Intrinsic.TASK_SCOPE_OPEN_WITH_CONFIG);
     private static final Set<Intrinsic> THREAD_ENTRY_ARGUMENTS = Set.of(
             Intrinsic.THREAD_START_VIRTUAL, Intrinsic.TASK_SCOPE_FORK_CALLABLE, Intrinsic.TASK_SCOPE_FORK_RUNNABLE);
     private static final Set<Intrinsic> JOINS = Set.of(

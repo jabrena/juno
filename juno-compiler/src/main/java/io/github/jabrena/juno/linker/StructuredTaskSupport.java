@@ -23,16 +23,21 @@ public final class StructuredTaskSupport {
     public static final String LEGACY_SHUTDOWN_ON_FAILURE = SCOPE + "$ShutdownOnFailure";
     public static final String LEGACY_SHUTDOWN_ON_SUCCESS = SCOPE + "$ShutdownOnSuccess";
     public static final String CALLABLE = "java/util/concurrent/Callable";
+    public static final String UNARY_OPERATOR = "java/util/function/UnaryOperator";
 
     public static final int JOINER_ALL_SUCCESSFUL = 1;
     public static final int JOINER_ANY_SUCCESSFUL = 2;
     public static final int JOINER_AWAIT_ALL_SUCCESSFUL = 3;
-    public static final int JOINER_AWAIT_ALL = 4;
 
     public static final MethodRef ENTRY_METHOD =
             new MethodRef(SCOPE, "$junoTaskEntry", "(Ljava/util/concurrent/Callable;)Ljava/lang/Object;");
     public static final InterfaceCallSite ENTRY_SITE = new InterfaceCallSite(ENTRY_METHOD, 0);
     public static final MethodRef CALLABLE_CALL = new MethodRef(CALLABLE, "call", "()Ljava/lang/Object;");
+    public static final MethodRef CONFIGURATION_ENTRY_METHOD = new MethodRef(SCOPE, "$junoConfigurationEntry",
+            "(Ljava/util/function/UnaryOperator;Ljava/lang/Object;)Ljava/lang/Object;");
+    public static final InterfaceCallSite CONFIGURATION_ENTRY_SITE = new InterfaceCallSite(CONFIGURATION_ENTRY_METHOD, 0);
+    public static final MethodRef CONFIGURATION_APPLY = new MethodRef(UNARY_OPERATOR, "apply",
+            "(Ljava/lang/Object;)Ljava/lang/Object;");
 
 
     public boolean needsEntry(MethodRef called) {
@@ -46,7 +51,15 @@ public final class StructuredTaskSupport {
             interfaceCalls.put(ENTRY_SITE, CALLABLE_CALL);
         } else if (needsEntry(called)) {
             interfaceCalls.put(ThreadSupport.ENTRY_SITE, ThreadSupport.RUNNABLE_RUN);
+        } else if (needsConfigurationEntry(called)) {
+            interfaceCalls.put(CONFIGURATION_ENTRY_SITE, CONFIGURATION_APPLY);
         }
+    }
+
+    public boolean needsConfigurationEntry(MethodRef called) {
+        return called.owner().equals(SCOPE) && called.name().equals("open")
+                && (called.descriptor().equals("(Ljava/util/function/UnaryOperator;)L" + SCOPE + ";")
+                || called.descriptor().equals("(L" + JOINER + ";Ljava/util/function/UnaryOperator;)L" + SCOPE + ";"));
     }
 
     public boolean isCallableCall(MethodRef called) {
@@ -55,6 +68,10 @@ public final class StructuredTaskSupport {
 
     public boolean isEntrySite(InterfaceCallSite site) {
         return site.equals(ENTRY_SITE);
+    }
+
+    public boolean isConfigurationEntrySite(InterfaceCallSite site) {
+        return site.equals(CONFIGURATION_ENTRY_SITE);
     }
 
     public boolean isScopeOwner(String owner) {
@@ -80,7 +97,7 @@ public final class StructuredTaskSupport {
         };
     }
 
-    /** Rejects user implementations because Juno lowers only the four built-in policy tokens. */
+    /** Rejects user implementations because Juno lowers only the three built-in policy tokens. */
     public void validateNoCustomJoiners(Set<String> instantiatedClasses, Collection<LambdaSite> lambdaSites,
                                                Map<String, JavaClass> classes) {
         for (String className : instantiatedClasses) {
@@ -111,13 +128,13 @@ public final class StructuredTaskSupport {
                 && implementsInterface(type.superClassName(), interfaceName, classes, visited);
     }
 
-    /** Rejects API calls outside the deliberately small JDK 25 subset with a useful diagnostic. */
+    /** Rejects API calls outside the deliberately small JDK 27 subset with a useful diagnostic. */
     public void validateCall(MethodRef called) {
         if (isStructuredTaskOwner(called.owner()) && !intrinsicRegistry.isIntrinsic(called)) {
             throw new CompileException("Juno's JDK 27 StructuredTaskScope subset supports only open(), "
-                    + "open(Joiner), the four built-in non-predicate Joiner factories, fork(Callable), "
+                    + "open(Joiner), timeout-configured open(), the three built-in non-predicate Joiner factories, fork(Callable), "
                     + "fork(Runnable), join(), isCancelled(), close(), and Subtask.state()/get()/exception(); "
-                    + "custom Joiner implementations, allUntil, Configuration, and the Java 21 policy classes, the Joiner factory overloads that take an exception-mapping Function, "
+                    + "custom Joiner implementations, allUntil, the remaining Configuration methods, and the Java 21 policy classes, the Joiner factory overloads that take an exception-mapping Function, "
                     + "are unsupported: " + called.displayName());
         }
     }
