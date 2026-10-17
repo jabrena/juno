@@ -43,11 +43,29 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
      * {@link #parseBytes}); an empty or blank size keeps the default.
      */
     public static RuntimeConfig of(Optional<String> arenaSize, Optional<String> threadStackSize) {
+        return of(arenaSize, threadStackSize, Optional.empty());
+    }
+
+    /**
+     * The runtime configuration with optional arena, task-stack, and scheduler-slot overrides supplied by a build
+     * integration. An empty scheduler-slot override keeps the runtime default.
+     */
+    public static RuntimeConfig of(
+            Optional<String> arenaSize, Optional<String> threadStackSize, Optional<String> schedulerSlots) {
         Optional<String> arena = arenaSize.filter(size -> !size.isBlank());
         Optional<String> stack = threadStackSize.filter(size -> !size.isBlank());
+        Optional<String> slots = schedulerSlots.filter(size -> !size.isBlank());
         return new RuntimeConfig(arena.map(size -> parseBytes("juno.Xmx", size)).orElse(DEFAULT.arenaBytes()),
-                DEFAULT.maxThreads(),
+                slots.map(RuntimeConfig::parseSchedulerSlots).orElse(DEFAULT.maxThreads()),
                 stack.map(size -> OptionalInt.of(parseBytes("juno.Xss", size))).orElse(DEFAULT.threadStackBytes()));
+    }
+
+    private static int parseSchedulerSlots(String slots) {
+        try {
+            return Integer.parseInt(slots);
+        } catch (NumberFormatException invalid) {
+            throw new CompileException("juno.maxThreads must be a whole number, not '" + slots + "'");
+        }
     }
 
     /** A size as the JVM writes {@code -Xmx}/{@code -Xss}: bytes, or a whole number of {@code k}, {@code m} or {@code g}. */
