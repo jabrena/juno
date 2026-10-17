@@ -7,7 +7,8 @@ layout: page
 A Juno program is compiled ahead of time to Thumb-2 assembly, so there is no JVM, no heap that grows, and no
 operating-system scheduler underneath it. This page explains the two halves of the resulting memory model: **where
 data lives** and **what concurrent tasks can observe**. The [Known Limitations](/limitations) page lists the places
-where the behavior differs from the JVM; this page explains why.
+where the behavior differs from the JVM; this page explains why. The [JLS 17 Conformance](/jls-17-conformance) page
+maps every section of the Java Memory Model to a focused source example and its board coverage.
 
 ## Where data lives
 
