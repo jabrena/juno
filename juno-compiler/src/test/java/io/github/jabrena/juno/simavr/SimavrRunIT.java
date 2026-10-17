@@ -129,7 +129,9 @@ class SimavrRunIT {
                 }
             }
             for (Path source : javaFiles(SIMAVR.resolve("programs"))) {
-                programs.add(Arguments.of(simpleName(source), board, true));
+                if (Files.readString(source).contains(board.annotationArgument())) {
+                    programs.add(Arguments.of(simpleName(source), board, true));
+                }
             }
         }
         return programs.stream();

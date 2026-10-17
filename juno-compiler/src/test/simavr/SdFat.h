@@ -10,6 +10,33 @@
 #define O_WRITE 2
 #define O_CREAT 8
 #define O_APPEND 16
+#define SHARED_SPI 0
+#define SD_SCK_MHZ(value) (static_cast<uint32_t>(value) * 1000000UL)
+
+struct SdSpiConfig {
+  uint8_t chipSelect;
+  uint8_t options;
+  uint32_t maxSpeed;
+  void* spi;
+
+  SdSpiConfig(uint8_t chipSelect, uint8_t options, uint32_t maxSpeed, void* spi)
+      : chipSelect(chipSelect), options(options), maxSpeed(maxSpeed), spi(spi) {}
+};
+
+class SdSpiBaseClass {
+public:
+  virtual ~SdSpiBaseClass() = default;
+  virtual void begin(SdSpiConfig config) { static_cast<void>(config); }
+  virtual uint8_t receive() { return 0; }
+  virtual uint8_t receive(uint8_t* buffer, size_t count) {
+    for (size_t i = 0; i < count; i++) buffer[i] = receive();
+    return 0;
+  }
+  virtual void send(uint8_t value) { static_cast<void>(value); }
+  virtual void send(const uint8_t* buffer, size_t count) {
+    for (size_t i = 0; i < count; i++) send(buffer[i]);
+  }
+};
 
 struct JunoHarnessFile {
   char name[16];
@@ -41,6 +68,10 @@ public:
 class SdFat32 {
 public:
   bool begin(uint8_t chipSelect) { return chipSelect != 0; }
+  bool begin(SdSpiConfig config) {
+    if (config.spi != nullptr) static_cast<SdSpiBaseClass*>(config.spi)->begin(config);
+    return config.chipSelect != 0;
+  }
   bool exists(const char* path) { return find(path) != nullptr; }
   File32 open(const char* path, int flags) {
     File32 file;
