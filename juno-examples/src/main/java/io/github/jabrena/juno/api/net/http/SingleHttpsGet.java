@@ -12,7 +12,7 @@ import io.github.jabrena.juno.api.net.Wifi;
 /** One HTTPS request, used as the serial baseline for {@link ParallelHttpsGet}. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoR3WiFiRev2.class, ArduinoUnoQ.class})
 public final class SingleHttpsGet {
-    private static final String URL = "https://httpbun.com/anything?request=single";
+    private static final String URL = "https://example.com/?request=single";
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);

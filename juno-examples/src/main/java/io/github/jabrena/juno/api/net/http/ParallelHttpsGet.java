@@ -10,11 +10,15 @@ import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
 
-/** Two independently owned HTTPS requests run under one structured task scope. */
+/**
+ * Two independently owned HTTPS requests run under one structured task scope.
+ * UNO WiFi Rev2 queues their transports because a blocking NINA TLS handshake can starve another response;
+ * the structured subtasks remain supported, but this board does not provide wire-level HTTP overlap.
+ */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoR3WiFiRev2.class, ArduinoUnoQ.class})
 public final class ParallelHttpsGet {
-    private static final String FIRST_URL = "https://httpbun.com/anything?request=first";
-    private static final String SECOND_URL = "https://httpbun.com/anything?request=second";
+    private static final String FIRST_URL = "https://example.com/?request=first";
+    private static final String SECOND_URL = "https://example.com/?request=second";
 
     private static final class FirstRequest {
         private final byte[] body = new byte[1];
