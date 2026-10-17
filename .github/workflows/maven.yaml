@@ -189,9 +189,45 @@ jobs:
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
           -b turbo -T1C
 
+  integration-build:
+    name: Prepare integration build outputs
+    needs: changes
+    if: needs.changes.outputs.arduino == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 27
+          cache: maven
+      - name: Install reactor artifacts without integration tests
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -am install
+          -DskipTests -DskipITs -b turbo -T1C
+      - name: Package compiled outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .ci/integration-build/m2/io/github/jabrena
+          cp -a "$HOME/.m2/repository/io/github/jabrena/." .ci/integration-build/m2/io/github/jabrena/
+          for module in juno-compiler juno-examples; do
+            mkdir -p ".ci/integration-build/$module"
+            cp -a "$module/target" ".ci/integration-build/$module/"
+          done
+          tar -czf integration-build.tar.gz -C .ci integration-build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: integration-build-${{ github.sha }}
+          path: integration-build.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
   arduino:
     name: Compile ${{ matrix.language }}
-    needs: [changes, arduino-cli-image]
+    needs: [changes, arduino-cli-image, integration-build]
     if: needs.changes.outputs.arduino == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -217,19 +253,31 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Arduino CLI image
         run: docker pull ${{ needs.arduino-cli-image.outputs.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-build-${{ github.sha }}
+      - name: Restore integration build outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -xzf integration-build.tar.gz -C .
+          cp -a .ci/integration-build/m2/. "$HOME/.m2/repository/"
+          for module in juno-compiler juno-examples; do
+            cp -a ".ci/integration-build/$module/target" "$module/"
+          done
       - name: Compile API and shield fixtures
         if: matrix.language == 'full'
         run: >-
-          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Parduino-cli
-          verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=ArduinoCliIT
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -Parduino-cli
+          failsafe:integration-test failsafe:verify -Dit.test=ArduinoCliIT
           -Dfailsafe.failIfNoSpecifiedTests=false
-          -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }} -b turbo -T1C
+          -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
       - name: Compile language examples
         if: matrix.language != 'full'
         run: >-
-          ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -am -Parduino-cli
-          verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=LanguageExamplesArduinoCliIT
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -Parduino-cli
+          failsafe:integration-test failsafe:verify -Dit.test=LanguageExamplesArduinoCliIT
           -Dfailsafe.failIfNoSpecifiedTests=false
           -Djuno.language=${{ matrix.language }}
           -Djuno.arduinoCliBoardScope=${{ needs.changes.outputs.board_scope }}
-          -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }} -b turbo -T1C
+          -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
