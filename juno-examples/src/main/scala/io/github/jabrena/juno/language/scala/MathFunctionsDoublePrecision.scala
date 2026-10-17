@@ -2,51 +2,32 @@ package io.github.jabrena.juno.language.scala
 
 import scala.annotation.static
 
+import io.github.jabrena.juno.annotations.ArduinoUnoQ
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi
+import io.github.jabrena.juno.annotations.Board
 import io.github.jabrena.juno.api.Delay
 import io.github.jabrena.juno.api.io.serial.BaudRate
 import io.github.jabrena.juno.api.io.serial.Serial
 
-/** Demonstrates java.lang.Math: integer helpers, rounding, powers and roots, and trigonometry. */
-final class MathFunctions
+/**
+ * Demonstrates the double-precision java.lang.Math functions: powers and roots, exponentials and logarithms, and
+ * trigonometry. Double-precision libm is only on the UNO R4 WiFi and UNO Q toolchains, so the other boards cannot
+ * build it; MathFunctionsSinglePrecision covers the rest.
+ */
+@Board(Array(classOf[ArduinoUnoR4WiFi], classOf[ArduinoUnoQ]))
+final class MathFunctionsDoublePrecision
 
-object MathFunctions {
+object MathFunctionsDoublePrecision {
 
     @static
     def main(args: Array[String]): Unit = {
         Serial.begin(BaudRate.BAUD_115200)
         Delay.millis(2000)
 
-        Serial.println("Math functions demo")
+        Serial.println("Math functions, double precision demo")
 
-        integerHelpers()
-        rounding()
         powersAndRoots()
         trigonometry()
-    }
-
-    @static
-    private def integerHelpers(): Unit = {
-        Serial.println("Integer helpers")
-        val temperature = -17
-        Serial.println(s"abs(-17): ${Math.abs(temperature)}")
-        Serial.println(s"min(-17, 4): ${Math.min(temperature, 4)}")
-        Serial.println(s"max(-17, 4): ${Math.max(temperature, 4)}")
-        Serial.println(s"clamp(300, 0, 255): ${Math.clamp(300L, 0, 255)}")
-        // Unlike / and %, floorDiv/floorMod round toward negative infinity.
-        Serial.println(s"-17 / 5: ${temperature / 5}")
-        Serial.println(s"-17 % 5: ${temperature % 5}")
-        Serial.println(s"floorDiv(-17, 5): ${Math.floorDiv(temperature, 5)}")
-        Serial.println(s"floorMod(-17, 5): ${Math.floorMod(temperature, 5)}")
-    }
-
-    @static
-    private def rounding(): Unit = {
-        Serial.println("Rounding")
-        val reading = -2.5
-        Serial.println(s"floor(-2.5): ${Math.floor(reading)}")
-        Serial.println(s"ceil(-2.5): ${Math.ceil(reading)}")
-        Serial.println(s"round(-2.5): ${Math.round(reading)}")
-        Serial.println(s"signum(-2.5): ${Math.signum(reading)}")
     }
 
     @static

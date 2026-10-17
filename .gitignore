@@ -1,5 +1,7 @@
 .DS_Store
 target/
+.scannerwork/
+.sonar/
 .idea/
 .vscode/
 .cursor/
@@ -20,6 +22,7 @@ build/
 *.ino.hex
 
 .env
+sonar.env
 
 HANDOFF.md
 
@@ -28,3 +31,6 @@ juno-site/node_modules/
 # Game data from commercial WADs (e.g. DOOM1.WAD) is never committed
 *.wad
 *.WAD
+
+.lsp
+.clj-kondo

@@ -17,7 +17,7 @@ final class InterfaceCallRegistration {
                          Map<String, JavaClass> classes, Collection<LambdaSite> lambdaSites,
                          Map<InterfaceCallSite, MethodRef> interfaceCalls,
                          InterfaceDispatchResolver resolver) {
-        if (intrinsicRegistry.isIntrinsic(called)) return;
+        if (intrinsicRegistry.isIntrinsic(called) || ClojureSupport.isLowered(called)) return;
         resolver.validateCall(linked, instruction, called, classes, lambdaSites);
         interfaceCalls.put(new InterfaceCallSite(linked.method().reference(), instruction.offset()), called);
     }

@@ -33,6 +33,7 @@
         <logback.version>1.6.5</logback.version>
         <slf4j.version>2.0.20</slf4j.version>
         <maven.version>3.10.0</maven.version>
+        <maven.version.range>[3.9.16,4.0.0)</maven.version.range>
         <maven-plugin-tools.version>3.16.0</maven-plugin-tools.version>
         <maven-plugin-clean.version>3.5.0</maven-plugin-clean.version>
         <maven-plugin-compiler.version>3.16.0</maven-plugin-compiler.version>
@@ -53,6 +54,7 @@
         <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
         <maven-plugin-pitest.version>1.30.0</maven-plugin-pitest.version>
         <maven-plugin-pitest-junit5.version>1.2.3</maven-plugin-pitest-junit5.version>
+        <sonar.maven.plugin.version>5.7.0.6970</sonar.maven.plugin.version>
         <java.version>${maven.compiler.release}</java.version>
     </properties>
 
@@ -210,7 +212,7 @@
                                 <dependencyConvergence/>
                                 <banDuplicatePomDependencyVersions/>
                                 <requireMavenVersion>
-                                    <version>${maven.version}</version>
+                                    <version>${maven.version.range}</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
                                     <version>${java.version}</version>
@@ -266,6 +268,25 @@
     </build>
 
     <profiles>
+        <!-- Local SonarQube Community analysis: ./mvnw -Pjacoco,sonar clean verify sonar:sonar. -->
+        <profile>
+            <id>sonar</id>
+            <properties>
+                <sonar.host.url>http://localhost:9000</sonar.host.url>
+                <sonar.projectKey>juno</sonar.projectKey>
+                <sonar.projectName>Java for Arduino</sonar.projectName>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <version>${sonar.maven.plugin.version}</version>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Code coverage: ./mvnw clean verify -Pjacoco (report in each module's target/site/jacoco). -->
         <profile>
             <id>jacoco</id>

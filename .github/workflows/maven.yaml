@@ -2,7 +2,6 @@ name: CI Builds
 
 on:
   push:
-    # Skip the builds when a push only changes documentation or images; any other file in the push runs them.
     paths-ignore:
       - '**/*.md'
       - '**/*.png'
@@ -11,69 +10,275 @@ on:
       - '**/*.gif'
       - '**/*.svg'
       - '**/*.webp'
-      # The generated site (GitHub Pages); its sources live in juno-site and still trigger a build.
       - 'docs/**'
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+  release:
+    types: [published]
 
 jobs:
-  run:
-    name: ${{ matrix.name }}
+  changes:
+    name: Select integration coverage
     runs-on: ubuntu-latest
-    # The three builds are independent, so they run in parallel on separate runners; one failing does not cancel
-    # the others, so every result is reported.
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # The turbo builder (.mvn/extensions.xml) starts downstream modules once upstream packaging finishes; it
-          # cut the full build from about 2:08 to 1:29 locally.
-          - name: Build
-            command: ./mvnw --batch-mode --no-transfer-progress verify --file pom.xml -b turbo -T1C
-          # The Testcontainers profiles live in the juno-compiler module and are opt-in locally (see AGENTS.md);
-          # Docker is preinstalled on the runner. Their unit tests already run in "Build", so these two jobs skip
-          # them (-Dtest=None) and run only their integration tests.
-          - name: Compile API and shield fixtures with arduino-cli (Testcontainers)
-            # Uses the image the steps below build from the GitHub Actions cache, instead of letting the test
-            # download the Arduino cores and libraries again on every run.
-            arduino-cli-image: juno-arduino-cli:ci
-            command: >-
-              ./mvnw --batch-mode --no-transfer-progress -Parduino-cli verify -pl juno-compiler -am
-              -Djuno.arduinoCliImage=juno-arduino-cli:ci -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false
-          # The language examples have their own arduino-cli profile in juno-examples. -Dit.test selects only
-          # LanguageExamplesArduinoCliIT, so the fixture integration tests above do not run again here.
-          - name: Compile language examples with arduino-cli (Testcontainers)
-            arduino-cli-image: juno-arduino-cli:ci
-            command: >-
-              ./mvnw --batch-mode --no-transfer-progress -Parduino-cli verify -pl juno-examples -am
-              -Djuno.arduinoCliImage=juno-arduino-cli:ci -Dit.test=LanguageExamplesArduinoCliIT
-              -Dfailsafe.failIfNoSpecifiedTests=false
-          - name: Run programs under QEMU (Testcontainers)
-            command: >-
-              ./mvnw --batch-mode --no-transfer-progress -Pqemu verify -pl juno-compiler -am
-              -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false
+    outputs:
+      full: ${{ steps.select.outputs.full }}
+      java: ${{ steps.select.outputs.java }}
+      kotlin: ${{ steps.select.outputs.kotlin }}
+      scala: ${{ steps.select.outputs.scala }}
+      clojure: ${{ steps.select.outputs.clojure }}
+      arduino: ${{ steps.select.outputs.arduino }}
+      board_scope: ${{ steps.select.outputs.board_scope }}
+      arduino_languages: ${{ steps.select.outputs.arduino_languages }}
     steps:
       - uses: actions/checkout@v7
         with:
-          submodules: true  # Fetches all submodules
-      # .sdkmanrc pins 27.0.0.0+35-tem (Temurin 27).
-      - name: Set up JDK
-        uses: actions/setup-java@v6
+          fetch-depth: 0
+          submodules: true
+      - id: select
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          GITHUB_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" != push || "$REF_TYPE" == tag ]]; then
+            changed_files="__full__"
+            full=true
+          elif [[ -n "$PUSH_BEFORE" && "$PUSH_BEFORE" != 0000000000000000000000000000000000000000 ]]; then
+            changed_files="$(git diff --name-only "$PUSH_BEFORE" "$GITHUB_SHA")"
+            full=false
+          else
+            changed_files="$(git show --format= --name-only "$GITHUB_SHA")"
+            full=false
+          fi
+
+          changed() {
+            grep -Eq "$1" <<<"$changed_files"
+          }
+
+          if changed '^(pom.xml|\.mvn/|\.github/workflows/maven\.yaml|juno-api/|juno-compiler/|juno-maven-plugin/|juno-third-parties/|juno-examples/pom.xml|juno-examples/src/test/)'; then
+            full=true
+          fi
+
+          java=false
+          kotlin=false
+          scala=false
+          clojure=false
+          if changed '^juno-examples/src/main/java/io/github/jabrena/juno/language/'; then java=true; fi
+          if changed '^juno-examples/src/main/kotlin/io/github/jabrena/juno/language/kotlin/'; then kotlin=true; fi
+          if changed '^juno-examples/src/main/scala/io/github/jabrena/juno/language/scala/'; then scala=true; fi
+          if changed '^juno-examples/src/main/clojure/io/github/jabrena/juno/language/clojure/'; then clojure=true; fi
+
+          if [[ "$full" == true ]]; then
+            java=true
+            kotlin=true
+            scala=true
+            clojure=true
+            board_scope=all
+            arduino_languages='["full","java","kotlin","scala","clojure"]'
+          else
+            board_scope=representative
+            arduino_languages='['
+            separator=''
+            for language in java kotlin scala clojure; do
+              if [[ "${!language}" == true ]]; then
+                arduino_languages+="${separator}\"$language\""
+                separator=,
+              fi
+            done
+            arduino_languages+=']'
+          fi
+
+          arduino=false
+          if [[ "$java" == true || "$kotlin" == true || "$scala" == true || "$clojure" == true ]]; then
+            arduino=true
+          fi
+
+          {
+            echo "full=$full"
+            echo "java=$java"
+            echo "kotlin=$kotlin"
+            echo "scala=$scala"
+            echo "clojure=$clojure"
+            echo "arduino=$arduino"
+            echo "board_scope=$board_scope"
+            echo "arduino_languages=$arduino_languages"
+          } >> "$GITHUB_OUTPUT"
+
+  arduino-cli-image:
+    name: Publish Arduino CLI image
+    needs: changes
+    if: needs.changes.outputs.arduino == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      ref: ${{ steps.reference.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          digest="$(git ls-files -z -- juno-compiler/src/test/docker/arduino-cli | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
+          echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/juno-arduino-cli:sha-$digest" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v4
         with:
-          distribution: 'temurin'
-          java-version: '27'
-          cache: 'maven'
-      # The arduino-cli image only changes with its Dockerfile, so its layers come from the GitHub Actions cache
-      # and Docker rebuilds only the layers after a change. `load` puts it in the runner's Docker for the test.
-      - name: Set up Docker Buildx
-        if: matrix.arduino-cli-image
-        uses: docker/setup-buildx-action@v4
-      - name: Build arduino-cli image (cached)
-        if: matrix.arduino-cli-image
-        uses: docker/build-push-action@v7
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: image
+        env:
+          IMAGE: ${{ steps.reference.outputs.ref }}
+        shell: bash
+        run: |
+          if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/setup-buildx-action@v4
+        if: steps.image.outputs.exists != 'true'
+      - uses: docker/build-push-action@v7
+        if: steps.image.outputs.exists != 'true'
         with:
           context: juno-compiler/src/test/docker/arduino-cli
-          tags: ${{ matrix.arduino-cli-image }}
-          load: true
-          cache-from: type=gha,scope=arduino-cli
-          cache-to: type=gha,mode=max,scope=arduino-cli
-      - name: ${{ matrix.name }}
-        run: ${{ matrix.command }}
+          push: true
+          tags: ${{ steps.reference.outputs.ref }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=arduino-cli-image
+          cache-to: type=gha,mode=max,scope=arduino-cli-image
+
+  build:
+    name: Build
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 27
+          cache: maven
+      - name: Build
+        run: ./mvnw --batch-mode --no-transfer-progress verify -b turbo -T1C
+
+  qemu:
+    name: Run programs under QEMU
+    needs: changes
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 27
+          cache: maven
+      - name: Run programs under QEMU
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pqemu
+          verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
+          -b turbo -T1C
+
+  integration-build:
+    name: Prepare integration build outputs
+    needs: changes
+    if: needs.changes.outputs.arduino == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 27
+          cache: maven
+      - name: Install reactor artifacts without integration tests
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -am install
+          -DskipTests -DskipITs -b turbo -T1C
+      - name: Package compiled outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .ci/integration-build/m2/io/github/jabrena
+          cp -a "$HOME/.m2/repository/io/github/jabrena/." .ci/integration-build/m2/io/github/jabrena/
+          for module in juno-compiler juno-examples; do
+            mkdir -p ".ci/integration-build/$module"
+            cp -a "$module/target" ".ci/integration-build/$module/"
+          done
+          tar -czf integration-build.tar.gz -C .ci integration-build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: integration-build-${{ github.sha }}
+          path: integration-build.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  arduino:
+    name: Compile ${{ matrix.language }}
+    needs: [changes, arduino-cli-image, integration-build]
+    if: needs.changes.outputs.arduino == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJSON(needs.changes.outputs.arduino_languages) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 27
+          cache: maven
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull Arduino CLI image
+        run: docker pull ${{ needs.arduino-cli-image.outputs.ref }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: integration-build-${{ github.sha }}
+      - name: Restore integration build outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .ci
+          tar -xzf integration-build.tar.gz -C .ci
+          cp -a .ci/integration-build/m2/. "$HOME/.m2/repository/"
+          for module in juno-compiler juno-examples; do
+            cp -a ".ci/integration-build/$module/target" "$module/"
+          done
+      - name: Compile API and shield fixtures
+        if: matrix.language == 'full'
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -Parduino-cli
+          failsafe:integration-test failsafe:verify -Dit.test=ArduinoCliIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+          -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
+      - name: Compile language examples
+        if: matrix.language != 'full'
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -Parduino-cli
+          failsafe:integration-test failsafe:verify -Dit.test=LanguageExamplesArduinoCliIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+          -Djuno.language=${{ matrix.language }}
+          -Djuno.arduinoCliBoardScope=${{ needs.changes.outputs.board_scope }}
+          -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}

@@ -3,6 +3,7 @@ package io.github.jabrena.juno.lowering;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.bytecode.BytecodeDecoder;
 import io.github.jabrena.juno.classfile.JavaClass;
+import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.InterfaceCallSite;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
@@ -25,16 +26,18 @@ import java.util.Map;
  * @param constantTables the flash-resident {@code static final} lookup tables
  * @param divisionByZeroUnwinds whether a division by zero outside a local handler raises an exception for callers
  * @param board the board the program is compiled for, which decides what a URL-based request may use
+ * @param clojureFunctions the Clojure functions the program binds, by handle (see {@code Program#clojureFunctions})
  */
 record ProgramContext(Map<String, JavaClass> classes, List<String> throwableClasses,
                       Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
                       Map<String, Integer> objectTypeIds, Map<LambdaCallSite, LambdaSite> lambdaSites,
                       ThrowingMethods throwing, ConstantTables constantTables, boolean divisionByZeroUnwinds,
-                      BytecodeDecoder decoder, StringConcatResolver stringConcatResolver, Board board) {
+                      BytecodeDecoder decoder, StringConcatResolver stringConcatResolver, Board board,
+                      List<MethodRef> clojureFunctions) {
 
     /** This context once {@code throwing} is known. */
     ProgramContext withThrowing(ThrowingMethods throwing) {
         return new ProgramContext(classes, throwableClasses, interfaceDispatches, objectTypeIds, lambdaSites,
-                throwing, constantTables, divisionByZeroUnwinds, decoder, stringConcatResolver, board);
+                throwing, constantTables, divisionByZeroUnwinds, decoder, stringConcatResolver, board, clojureFunctions);
     }
 }

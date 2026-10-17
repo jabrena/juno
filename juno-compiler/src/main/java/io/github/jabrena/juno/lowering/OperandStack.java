@@ -44,6 +44,7 @@ final class OperandStack {
     void pushInt(int constant) {
         Value value = values.int32();
         code.emit(new IrInstruction.Const(value, constant));
+        facts.markKnownInt(value, constant);
         push(value);
     }
 
@@ -51,6 +52,8 @@ final class OperandStack {
         Value low = values.int32();
         Value high = values.int32();
         code.emit(new IrInstruction.LongConst(low, high, constant));
+        facts.markKnownInt(low, (int) constant);
+        facts.markKnownInt(high, (int) (constant >> 32));
         pushHalves(low, high);
     }
 
@@ -98,9 +101,9 @@ final class OperandStack {
     /** Pushes a {@code long} as its two 32-bit halves. */
     void pushHalves(Value low, Value high) {
         code.emit(new IrInstruction.StoreLocal(slot(depth), low));
-        facts.clearSlot(slot(depth));
+        facts.recordPush(slot(depth), low);
         code.emit(new IrInstruction.StoreLocal(slot(depth) + 1, high));
-        facts.clearSlot(slot(depth) + 1);
+        facts.recordPush(slot(depth) + 1, high);
         depth += 2;
     }
 

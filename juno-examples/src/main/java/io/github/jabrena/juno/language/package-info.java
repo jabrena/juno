@@ -12,7 +12,10 @@
  *   <li>{@link io.github.jabrena.juno.language.Methods} — parameters, return values, and method calls.</li>
  *   <li>{@link io.github.jabrena.juno.language.ControlFlow} — sequence, bifurcation, and iteration.</li>
  *   <li>{@link io.github.jabrena.juno.language.RandomNumbers} — seeded and bounded pseudorandom values.</li>
- *   <li>{@link io.github.jabrena.juno.language.MathFunctions} — {@code java.lang.Math} helpers, rounding, and trigonometry.</li>
+ *   <li>{@link io.github.jabrena.juno.language.MathFunctionsSinglePrecision} — {@code java.lang.Math} helpers and rounding on
+ *       {@code int} and {@code float}, portable to every board.</li>
+ *   <li>{@link io.github.jabrena.juno.language.MathFunctionsDoublePrecision} — double-precision powers, logarithms and
+ *       trigonometry, on the UNO R4 WiFi and UNO Q.</li>
  *   <li>{@link io.github.jabrena.juno.language.Exceptions} — throwing and catching exceptions, {@code finally}, and custom exceptions.</li>
  * </ul>
  *

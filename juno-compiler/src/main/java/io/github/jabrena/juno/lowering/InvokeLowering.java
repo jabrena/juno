@@ -10,6 +10,7 @@ import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.ir.InterfaceTarget;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
+import io.github.jabrena.juno.linker.ClojureSupport;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.InterfaceCallSite;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
@@ -49,6 +50,7 @@ final class InvokeLowering implements InstructionLowering {
     private final LambdaLowering lambdas;
     private final CompileTimeCalls compileTime;
     private final RandomAccessFileReads fileReads;
+    private final ClojureLowering clojure;
 
     InvokeLowering(MethodContext context, CallLowering calls, ObjectCreationLowering objects, LambdaLowering lambdas) {
         this.context = context;
@@ -58,6 +60,7 @@ final class InvokeLowering implements InstructionLowering {
         this.lambdas = lambdas;
         this.compileTime = new CompileTimeCalls(context);
         this.fileReads = new RandomAccessFileReads(context);
+        this.clojure = new ClojureLowering(context);
     }
 
     @Override
@@ -66,6 +69,10 @@ final class InvokeLowering implements InstructionLowering {
         MethodRef called = context.constantPool().methodRef(instruction.operandA());
         if (opcode == INVOKESTATIC && structuredTaskSupport.joinerPolicy(called) != null) {
             pushJoiner(called);
+            return;
+        }
+        if (ClojureSupport.isLowered(called)) {
+            clojure.lower(instruction, called);
             return;
         }
         if (opcode == INVOKEINTERFACE && intrinsicRegistry.isIntrinsic(called)) {

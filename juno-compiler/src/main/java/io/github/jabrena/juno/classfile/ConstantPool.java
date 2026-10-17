@@ -118,6 +118,10 @@ public final class ConstantPool {
         throw new CompileException("Only integer constants are supported by ldc (constant pool entry " + index + ")");
     }
 
+    public boolean isClass(int index) {
+        return entry(index) instanceof ClassEntry;
+    }
+
     public boolean isString(int index) {
         return entry(index) instanceof StringEntry;
     }

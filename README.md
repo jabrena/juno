@@ -83,6 +83,34 @@ Requirements: JDK 27+ and Maven 3.10+.
 ./mvnw clean install
 ```
 
+### Local SonarQube Community
+
+Start the local SonarQube Community instance with Docker Compose:
+
+```bash
+docker compose -f docker-compose.sonar.yml up -d
+```
+
+The one-shot `sonar-init` service creates a local analysis user and writes its credentials and token to the ignored
+`.sonar/sonar.env` file. Wait for that file, load it, and run the Maven analysis from the repository root:
+
+```bash
+until test -s .sonar/sonar.env; do sleep 2; done
+set -a
+. .sonar/sonar.env
+set +a
+./mvnw -Pjacoco,sonar clean verify sonar:sonar
+```
+
+The defaults use the local `admin`/`admin` bootstrap credentials and create `juno-sonar` with password
+`juno-sonar-local`. Override `SONAR_ADMIN_PASSWORD`, `SONAR_ANALYSIS_LOGIN`, `SONAR_ANALYSIS_PASSWORD`, or
+`SONAR_TOKEN_NAME` in `.env` before starting Compose if needed. The `sonar` profile is opt-in, and the `jacoco` profile
+supplies the XML coverage reports used by SonarQube. Stop the instance when it is no longer needed:
+
+```bash
+docker compose -f docker-compose.sonar.yml down
+```
+
 ### Blink
 
 [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) runs unmodified on every
@@ -251,7 +279,8 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`Lambdas`](juno-examples/src/main/java/io/github/jabrena/juno/language/Lambdas.java).
 - **Math and random numbers:** the documented `java.lang.Math` subset and Arduino-backed bounded
   pseudorandom numbers. See
-  [`MathFunctions`](juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctions.java) and
+  [`MathFunctionsSinglePrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsSinglePrecision.java),
+  [`MathFunctionsDoublePrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) and
   [`RandomNumbers`](juno-examples/src/main/java/io/github/jabrena/juno/language/RandomNumbers.java).
 - **Exceptions:** `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
   `finally`, nested handlers, propagation between methods, custom final exception classes, and

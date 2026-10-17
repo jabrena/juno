@@ -19,13 +19,17 @@ import java.util.Optional;
  * board passed to {@link Linker#link(java.util.Map, String, java.util.Optional)}. {@code watchdogTimeoutMillis}
  * is the entry point's {@code @Watchdog} annotation's {@code timeoutMillis} value, or empty when the entry
  * point has no {@code @Watchdog} annotation.
+ *
+ * <p>{@code clojureFunctions} lists the {@code invokeStatic(ISeq)} of each Clojure function a namespace interns, in
+ * the order the linker found them. A Clojure var's handle is its function's position in this list plus one.
  */
 public record Program(MethodRef entryPoint, List<LinkedMethod> methods, Map<String, JavaClass> classes,
                        Board board, Optional<Integer> watchdogTimeoutMillis,
                        Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
-                       Map<LambdaCallSite, LambdaSite> lambdaSites) {
+                       Map<LambdaCallSite, LambdaSite> lambdaSites, List<MethodRef> clojureFunctions) {
     public Program {
         interfaceDispatches = Map.copyOf(interfaceDispatches);
         lambdaSites = Map.copyOf(lambdaSites);
+        clojureFunctions = List.copyOf(clojureFunctions);
     }
 }

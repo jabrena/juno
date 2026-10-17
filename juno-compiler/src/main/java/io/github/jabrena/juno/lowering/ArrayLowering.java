@@ -63,16 +63,26 @@ final class ArrayLowering implements OpcodeGroup {
     private void load(ArrayElementType elementType) {
         Value index = stack.pop();
         Value array = stack.pop();
+        stack.push(loadElement(elementType, array, index));
+    }
+
+    /** The element of {@code array} at {@code index}, bounds-checked; the caller pushes it. */
+    Value loadElement(ArrayElementType elementType, Value array, Value index) {
         checkBounds(array, index);
         Value element = values.of(elementType.valueType());
         context.emit(new IrInstruction.ArrayLoad(element, elementType, array, index));
-        stack.push(element);
+        return element;
     }
 
     private void store(ArrayElementType elementType) {
         Value element = stack.pop(elementType.valueType());
         Value index = stack.pop();
         Value array = stack.pop();
+        storeElement(elementType, array, index, element);
+    }
+
+    /** Stores {@code element} at {@code index} of {@code array}, bounds-checked. */
+    void storeElement(ArrayElementType elementType, Value array, Value index, Value element) {
         checkBounds(array, index);
         context.emit(new IrInstruction.ArrayStore(elementType, array, index, element));
     }
@@ -87,12 +97,16 @@ final class ArrayLowering implements OpcodeGroup {
     }
 
     private void newArray(Instruction instruction, ArrayElementType elementType) {
-        int length = constantLength(instruction);
+        stack.push(allocate(elementType, constantLength(instruction)));
+    }
+
+    /** A new array of a compile-time length; the caller pushes it. */
+    Value allocate(ArrayElementType elementType, int length) {
         Value array = values.int32();
         context.emit(new IrInstruction.NewArray(array, elementType, length));
         context.arrays().add(new ArrayDeclaration(array, elementType, length));
         context.facts().markKnownArray(array, length);
-        stack.push(array);
+        return array;
     }
 
     private void newMultiArray(Instruction instruction) {

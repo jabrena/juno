@@ -126,7 +126,8 @@ final class ArithmeticLowering implements OpcodeGroup {
         stack.push(result);
     }
 
-    private void longBinary(BinaryOp operation) {
+    /** A long binary operation, for the Clojure runtime's {@code Numbers} arithmetic (see {@link ClojureLowering}). */
+    void longBinary(BinaryOp operation) {
         OperandStack.LongHalves right = stack.popHalves();
         OperandStack.LongHalves left = stack.popHalves();
         Value low = values.int32();
@@ -134,6 +135,15 @@ final class ArithmeticLowering implements OpcodeGroup {
         context.emit(new IrInstruction.LongBinary(low, high, operation, left.low(), left.high(), right.low(),
                 right.high()));
         stack.pushHalves(low, high);
+    }
+
+    /**
+     * Clojure's {@code quot} and {@code rem} on longs: the zero-divisor guard of {@code LDIV}/{@code LREM} at the call
+     * site, then the operation.
+     */
+    void longDivision(Instruction instruction, BinaryOp operation) {
+        guardZeroDivisor(instruction, true);
+        longBinary(operation);
     }
 
     /** {@code lshl}/{@code lshr}/{@code lushr}: the shift amount is a plain int, popped before the long value. */
@@ -146,7 +156,8 @@ final class ArithmeticLowering implements OpcodeGroup {
         stack.pushHalves(low, high);
     }
 
-    private void longNegate() {
+    /** A long negation, for the Clojure runtime's one-argument {@code Numbers.minus} (see {@link ClojureLowering}). */
+    void longNegate() {
         OperandStack.LongHalves value = stack.popHalves();
         Value low = values.int32();
         Value high = values.int32();

@@ -130,6 +130,71 @@ class JunoCompilerTest {
     }
 
     @Test
+    void specializesClojureDeftypeErasedReferenceFields() throws Exception {
+        CompilerTestSupport.compileJava(temporaryDirectory, "clojure.lang.IType", """
+                package clojure.lang;
+                public interface IType {
+                }
+                """);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ClojureState", """
+                package demo;
+                import clojure.lang.IType;
+                import java.util.concurrent.atomic.AtomicInteger;
+                import java.util.concurrent.locks.ReentrantLock;
+                public final class ClojureState implements IType {
+                    private final Object lock;
+                    private final Object counter;
+                    ClojureState(Object lock, Object counter) {
+                        this.lock = lock;
+                        this.counter = counter;
+                    }
+                    private void increment() {
+                        AtomicInteger typedCounter = (AtomicInteger) counter;
+                        ReentrantLock typedLock = (ReentrantLock) lock;
+                        typedCounter.incrementAndGet();
+                        typedLock.lock();
+                        if (typedLock.tryLock()) {
+                            typedLock.unlock();
+                        }
+                        typedLock.unlock();
+                    }
+                    public static void main() {
+                        new ClojureState(new ReentrantLock(), new AtomicInteger()).increment();
+                    }
+                }
+                """);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ClojureState");
+
+        assertThat(result.assembly()).contains(
+                "bl juno_atomic_int_increment_and_get",
+                "bl juno_monitor_enter",
+                "bl juno_monitor_try_enter",
+                "bl juno_monitor_exit");
+    }
+
+    @Test
+    void stillRejectsErasedReferenceFieldsOnOrdinaryJavaClasses() throws Exception {
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ErasedState", """
+                package demo;
+                import java.util.concurrent.locks.ReentrantLock;
+                public final class ErasedState {
+                    private final Object lock;
+                    ErasedState(Object lock) {
+                        this.lock = lock;
+                    }
+                    public static void main() {
+                        new ErasedState(new ReentrantLock());
+                    }
+                }
+                """);
+
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ErasedState"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("supported scalar, array, or closed-world reference");
+    }
+
+    @Test
     void lowersGpioDigitalReadToTheCoreFunction() throws Exception {
         String source = """
                 package demo;

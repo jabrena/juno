@@ -1,0 +1,31 @@
+services:
+  sonarqube:
+    image: sonarqube:community
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  sonar-init:
+    image: curlimages/curl:8.21.0
+    depends_on:
+      - sonarqube
+    environment:
+      SONAR_URL: http://sonarqube:9000
+      SONAR_ADMIN_LOGIN: ${SONAR_ADMIN_LOGIN:-admin}
+      SONAR_ADMIN_PASSWORD: ${SONAR_ADMIN_PASSWORD:-admin}
+      SONAR_ANALYSIS_LOGIN: ${SONAR_ANALYSIS_LOGIN:-juno-sonar}
+      SONAR_ANALYSIS_NAME: ${SONAR_ANALYSIS_NAME:-Juno local analysis}
+      SONAR_ANALYSIS_PASSWORD: ${SONAR_ANALYSIS_PASSWORD:-juno-sonar-local}
+      SONAR_TOKEN_NAME: ${SONAR_TOKEN_NAME:-juno-local}
+    volumes:
+      - ./.sonar:/output
+      - ./docker/sonar/initialize.sh:/initialize.sh:ro
+    entrypoint: ["/bin/sh", "/initialize.sh"]
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
