@@ -57,6 +57,7 @@ The following profiles are declared in this project. Activate them with `-P <pro
 |------------|---------|------------|
 | `cyclomatic-complexity` (root `pom.xml`) | `./mvnw clean verify -P cyclomatic-complexity` | default (activeByDefault) |
 | `jacoco` (root and `juno-compiler/pom.xml`) | `./mvnw clean verify -P jacoco` | manual |
+| `sonar` (root `pom.xml`) | `SONAR_TOKEN=<your-token> ./mvnw -Pjacoco,sonar clean verify sonar:sonar` | manual (needs local SonarQube Community) |
 | `site` (root `pom.xml`, `juno-site/pom.xml`) | `./mvnw clean verify -P site` | manual |
 | `arduino-cli` (`juno-compiler/pom.xml`, `juno-examples/pom.xml`) | `./mvnw -pl juno-compiler -am -Parduino-cli verify` | manual (needs Docker) |
 | `qemu` (`juno-compiler/pom.xml`) | `./mvnw -pl juno-compiler -am -Pqemu verify` | manual (needs Docker) |
@@ -76,6 +77,37 @@ The `arduino-cli` profile is declared in both modules, so `-P arduino-cli` from 
 The `juno-examples` suite is the one that builds the example programs; the in-process `LanguageExamplesCompilationTest`
 runs by default with `./mvnw test` and needs no Docker. It compiles every Java, Kotlin and Scala entry point through
 Juno, once per board, and `ExamplesArchitectureTest` keeps all three languages on the Juno API and the JDK.
+
+### Local SonarQube Community
+
+The root `sonar` profile is opt-in and targets the local SonarQube Community instance configured by
+`docker-compose.sonar.yml`. Start SonarQube before running the analysis:
+
+```bash
+docker compose -f docker-compose.sonar.yml up -d
+```
+
+The one-shot `sonar-init` service creates the local `juno-sonar` analysis user and writes its credentials and token to
+the ignored `.sonar/sonar.env` file. Load that file and run the `jacoco` profile with `sonar` so the analysis includes
+XML coverage reports:
+
+```bash
+until test -s .sonar/sonar.env; do sleep 2; done
+set -a
+. .sonar/sonar.env
+set +a
+./mvnw -Pjacoco,sonar clean verify sonar:sonar
+```
+
+The defaults use the local `admin`/`admin` bootstrap credentials and create `juno-sonar` with password
+`juno-sonar-local`. Override `SONAR_ADMIN_PASSWORD`, `SONAR_ANALYSIS_LOGIN`, `SONAR_ANALYSIS_PASSWORD`, or
+`SONAR_TOKEN_NAME` in `.env` before starting Compose if needed.
+
+Stop the local instance when finished:
+
+```bash
+docker compose -f docker-compose.sonar.yml down
+```
 
 The Scala examples (`juno-examples/src/main/scala/.../language/scala`) are compiled to Java 27 bytecode
 (`-java-output-version:27`), the same release as the Java examples. The pinned Scala 3.10.0 is needed: Scala 3.8.1 rejects
@@ -146,6 +178,12 @@ The following sections list useful goals for each plugin configured in this proj
 | `./mvnw pmd:check` | Run PMD analysis and fail on violations |
 | `./mvnw pmd:pmd` | Generate a PMD report |
 | `./mvnw pmd:cpd-check` | Run copy-paste detection and fail on duplicates |
+
+### sonar-maven-plugin
+
+| Goal | Purpose |
+|------|---------|
+| `./mvnw -Psonar sonar:sonar` | Analyze the reactor with the local SonarQube Community instance; run after `verify` and provide `SONAR_TOKEN` |
 
 ### maven-jxr-plugin
 

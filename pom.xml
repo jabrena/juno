@@ -54,6 +54,7 @@
         <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
         <maven-plugin-pitest.version>1.30.0</maven-plugin-pitest.version>
         <maven-plugin-pitest-junit5.version>1.2.3</maven-plugin-pitest-junit5.version>
+        <sonar.maven.plugin.version>5.7.0.6970</sonar.maven.plugin.version>
         <java.version>${maven.compiler.release}</java.version>
     </properties>
 
@@ -267,6 +268,25 @@
     </build>
 
     <profiles>
+        <!-- Local SonarQube Community analysis: ./mvnw -Pjacoco,sonar clean verify sonar:sonar. -->
+        <profile>
+            <id>sonar</id>
+            <properties>
+                <sonar.host.url>http://localhost:9000</sonar.host.url>
+                <sonar.projectKey>juno</sonar.projectKey>
+                <sonar.projectName>Java for Arduino</sonar.projectName>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                        <version>${sonar.maven.plugin.version}</version>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- Code coverage: ./mvnw clean verify -Pjacoco (report in each module's target/site/jacoco). -->
         <profile>
             <id>jacoco</id>
