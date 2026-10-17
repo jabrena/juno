@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.publisher;
 
 /**
  * UTC calendar time from one startup reading plus the monotonic millisecond clock, so the program asks the internet

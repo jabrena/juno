@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.commons;
 
 /** Builds the example client's CRLF-delimited request-header block directly in caller-owned storage. */
 final class SupabaseHeaders {
@@ -12,6 +12,10 @@ final class SupabaseHeaders {
 
     static int appendAuthorization(byte[] buffer, int capacity, int length, String accessToken) {
         return append(buffer, capacity, length, "Authorization: Bearer ", accessToken);
+    }
+
+    static int appendExactCount(byte[] buffer, int capacity, int length) {
+        return append(buffer, capacity, length, "Prefer: ", "count=exact");
     }
 
     private static int append(byte[] buffer, int capacity, int offset, String name, String value) {

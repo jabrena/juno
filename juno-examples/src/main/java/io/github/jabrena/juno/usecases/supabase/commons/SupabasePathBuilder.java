@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.commons;
 
 /** Builds a bounded Supabase REST path and query without allocating. */
 final class SupabasePathBuilder {

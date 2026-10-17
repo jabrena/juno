@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.publisher;
 
 /**
  * Caller-chosen request headers, added as name/value pairs such as {@code add("apikey", key)}, written into a

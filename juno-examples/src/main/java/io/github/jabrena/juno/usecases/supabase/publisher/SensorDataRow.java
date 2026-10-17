@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.publisher;
 
 /**
  * Writes one {@code sensor-data} row as a JSON object into a caller-owned buffer, for example

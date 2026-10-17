@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.supabase;
+package io.github.jabrena.juno.usecases.supabase.commons;
 
 import io.github.jabrena.juno.api.net.http.HttpClient;
 
@@ -36,6 +36,7 @@ public final class SupabaseClient {
     private final int requestBodyCapacity;
     private final SupabaseResponse response;
 
+    private int baseHeadersLength;
     private int requestHeadersLength;
     private int requestBodyLength;
     private int operation;
@@ -68,6 +69,7 @@ public final class SupabaseClient {
         this.response = response;
         requestHeadersLength = SupabaseHeaders.standard(
                 requestHeadersBuffer, requestHeadersCapacity, publishableKey);
+        baseHeadersLength = requestHeadersLength;
         headersValid = requestHeadersLength >= 0;
     }
 
@@ -83,6 +85,7 @@ public final class SupabaseClient {
         authorizationAdded = true;
         requestHeadersLength = SupabaseHeaders.appendAuthorization(
                 requestHeadersBuffer, requestHeadersCapacity, requestHeadersLength, accessToken);
+        baseHeadersLength = requestHeadersLength;
         headersValid = requestHeadersLength >= 0;
         return this;
     }
@@ -90,6 +93,7 @@ public final class SupabaseClient {
     /** Starts a request against {@code /rest/v1/table}. */
     public SupabaseClient from(String table) {
         requestBodyLength = 0;
+        requestHeadersLength = baseHeadersLength;
         operation = NONE;
         filterCount = 0;
         queryStarted = false;
@@ -98,6 +102,18 @@ public final class SupabaseClient {
         path.appendAscii("/rest/v1/");
         path.appendTable(table);
         requestValid = path.valid();
+        return this;
+    }
+
+    /** Requests an exact total in the response's {@code Content-Range} header for the current select. */
+    public SupabaseClient countExact() {
+        if (operation != SELECT) {
+            requestValid = false;
+            return this;
+        }
+        requestHeadersLength = SupabaseHeaders.appendExactCount(
+                requestHeadersBuffer, requestHeadersCapacity, requestHeadersLength);
+        requestValid = requestHeadersLength >= 0;
         return this;
     }
 
@@ -192,6 +208,20 @@ public final class SupabaseClient {
         path.appendEncoded(value, valueLength);
         queryStarted = true;
         filterCount = filterCount + 1;
+        requestValid = path.valid();
+        return this;
+    }
+
+    /** Orders the selected rows ascending by one column, as keyset pagination needs. */
+    public SupabaseClient order(String column) {
+        if (operation != SELECT) {
+            requestValid = false;
+            return this;
+        }
+        path.appendParameterName("order", queryStarted);
+        path.appendEncoded(column);
+        path.appendAscii(".asc");
+        queryStarted = true;
         requestValid = path.valid();
         return this;
     }
