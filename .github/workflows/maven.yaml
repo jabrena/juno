@@ -29,6 +29,7 @@ jobs:
       clojure: ${{ steps.select.outputs.clojure }}
       arduino: ${{ steps.select.outputs.arduino }}
       board_scope: ${{ steps.select.outputs.board_scope }}
+      arduino_languages: ${{ steps.select.outputs.arduino_languages }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -77,8 +78,18 @@ jobs:
             scala=true
             clojure=true
             board_scope=all
+            arduino_languages='["full","java","kotlin","scala","clojure"]'
           else
             board_scope=representative
+            arduino_languages='['
+            separator=''
+            for language in java kotlin scala clojure; do
+              if [[ "${!language}" == true ]]; then
+                arduino_languages+="${separator}\"$language\""
+                separator=,
+              fi
+            done
+            arduino_languages+=']'
           fi
 
           arduino=false
@@ -94,6 +105,7 @@ jobs:
             echo "clojure=$clojure"
             echo "arduino=$arduino"
             echo "board_scope=$board_scope"
+            echo "arduino_languages=$arduino_languages"
           } >> "$GITHUB_OUTPUT"
 
   arduino-cli-image:
@@ -141,24 +153,10 @@ jobs:
           cache-from: type=gha,scope=arduino-cli-image
           cache-to: type=gha,mode=max,scope=arduino-cli-image
 
-  run:
-    name: ${{ matrix.name }}
+  build:
+    name: Build
     needs: changes
-    if: matrix.enabled == 'always' || (matrix.enabled == 'full' && needs.changes.outputs.full == 'true')
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Build
-            enabled: always
-            command: ./mvnw --batch-mode --no-transfer-progress verify -b turbo -T1C
-          - name: Run programs under QEMU
-            enabled: full
-            command: >-
-              ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pqemu
-              verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
-              -b turbo -T1C
     steps:
       - uses: actions/checkout@v7
         with:
@@ -168,18 +166,33 @@ jobs:
           distribution: temurin
           java-version: 27
           cache: maven
-      - name: ${{ matrix.name }}
-        run: ${{ matrix.command }}
+      - name: Build
+        run: ./mvnw --batch-mode --no-transfer-progress verify -b turbo -T1C
+
+  qemu:
+    name: Run programs under QEMU
+    needs: changes
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 27
+          cache: maven
+      - name: Run programs under QEMU
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pqemu
+          verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
+          -b turbo -T1C
 
   arduino:
-    name: Compile ${{ matrix.name }}
+    name: Compile ${{ matrix.language }}
     needs: [changes, arduino-cli-image]
-    if: >-
-      (matrix.language == 'full' && needs.changes.outputs.full == 'true') ||
-      (matrix.language == 'java' && needs.changes.outputs.java == 'true') ||
-      (matrix.language == 'kotlin' && needs.changes.outputs.kotlin == 'true') ||
-      (matrix.language == 'scala' && needs.changes.outputs.scala == 'true') ||
-      (matrix.language == 'clojure' && needs.changes.outputs.clojure == 'true')
+    if: needs.changes.outputs.arduino == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -187,21 +200,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: API and shield fixtures
-            language: full
-            command: >-
-              ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Parduino-cli
-              verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=ArduinoCliIT
-              -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }} -b turbo -T1C
-          - name: Java language examples
-            language: java
-          - name: Kotlin language examples
-            language: kotlin
-          - name: Scala language examples
-            language: scala
-          - name: Clojure language examples
-            language: clojure
+        language: ${{ fromJSON(needs.changes.outputs.arduino_languages) }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -220,7 +219,10 @@ jobs:
         run: docker pull ${{ needs.arduino-cli-image.outputs.ref }}
       - name: Compile API and shield fixtures
         if: matrix.language == 'full'
-        run: ${{ matrix.command }}
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Parduino-cli
+          verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=ArduinoCliIT
+          -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }} -b turbo -T1C
       - name: Compile language examples
         if: matrix.language != 'full'
         run: >-
