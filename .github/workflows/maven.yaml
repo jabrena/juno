@@ -222,6 +222,7 @@ jobs:
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Parduino-cli
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=ArduinoCliIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
           -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }} -b turbo -T1C
       - name: Compile language examples
         if: matrix.language != 'full'
