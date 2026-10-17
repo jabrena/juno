@@ -49,7 +49,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code ./mvnw -pl juno-examples -am -Parduino-cli verify -Dit.test=LanguageExamplesArduinoCliIT}. The image is built
  * from the compiler's {@code juno-compiler/src/test/docker/arduino-cli/Dockerfile}; to use a prebuilt image instead,
  * pass {@code -Djuno.arduinoCliImage=<image>}. Pass {@code -Djuno.language=java|kotlin|scala|clojure} to compile only
- * that language; the default is all languages. Skipped when Docker is not available.
+ * that language; the default is all languages. Pass {@code -Djuno.arduinoCliBoardScope=representative} to compile
+ * unannotated examples for UNO R4 WiFi only; explicitly {@code @Board}-annotated examples retain all their declared
+ * targets. Skipped when Docker is not available.
  *
  * <p>The sketches compile concurrently in the one container; {@code arduino-cli} caches each board's precompiled core
  * and reuses it, so the first sketch of a board compiles alone and the others wait for that archive.
@@ -66,6 +68,7 @@ class LanguageExamplesArduinoCliIT {
     private static final String LANGUAGE_PACKAGE = "io/github/jabrena/juno/language";
     private static final String UNSUPPORTED_FEATURE = UnsupportedFeature.class.getName();
     private static final String MAIN_DESCRIPTOR = "([Ljava/lang/String;)V";
+    private static final ArduinoCliBoardScope BOARD_SCOPE = ArduinoCliBoardScope.configured();
 
     private static final Map<Board, Object> CORE_LOCKS = new ConcurrentHashMap<>();
     private static final Set<Board> CORE_CACHED = ConcurrentHashMap.newKeySet();
@@ -146,11 +149,11 @@ class LanguageExamplesArduinoCliIT {
         return relative.substring(0, relative.length() - ".class".length()).replace('/', '.');
     }
 
-    /** The {@code @Board} targets of the entry point; every board when it declares none. */
+    /** The {@code @Board} targets of the entry point; configured boards when it declares none. */
     private static List<Board> boardsFor(JavaClass javaClass) {
         List<String> apiClassNames = javaClass.boardApiClassNames();
         return apiClassNames.isEmpty()
-                ? List.of(Board.values())
+                ? BOARD_SCOPE.genericBoards()
                 : apiClassNames.stream().map(Board::fromApiClassName).distinct().toList();
     }
 
