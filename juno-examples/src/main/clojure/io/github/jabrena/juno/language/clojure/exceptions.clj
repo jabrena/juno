@@ -15,16 +15,20 @@
 
 (defn- catch-demo []
   (try
-    (Serial/print "10 / 2 = ") (Serial/println (safe-divide 10 2))
-    (Serial/print "10 / 0 = ") (Serial/println (safe-divide 10 0))
-    (catch ArithmeticException e
-      (Serial/print "caught: ") (Serial/println "denominator is zero"))))
+    (Serial/print "10 / 2 = ")
+    (Serial/println (safe-divide 10 2))
+    (Serial/print "10 / 0 = ")
+    (Serial/println (safe-divide 10 0))
+    (catch ArithmeticException _e
+      (Serial/print "caught: ")
+      (Serial/println "denominator is zero"))))
 
 (defn- custom-demo []
   (try
     (throw (SensorException. "sensor offline"))
-    (catch SensorException e
-      (Serial/print "caught: ") (Serial/println "sensor offline on sensor 2"))))
+    (catch SensorException _e
+      (Serial/print "caught: ")
+      (Serial/println "sensor offline on sensor 2"))))
 
 (defn -main [& _args]
   (Serial/begin BaudRate/BAUD_115200)

@@ -1,5 +1,6 @@
-;; Demonstrates closed-world interface dispatch with two reachable implementations. Clojure has no boolean
-;; primitive hint, so the choice is a long flag: 1 selects Half, 0 selects Doubled.
+;; Demonstrates closed-world interface dispatch with two reachable implementations. Juno's Clojure path does
+;; not model the boxed Boolean adapter shape, so the choice is a primitive long flag: 1 selects Half, 0 selects
+;; Doubled.
 (ns io.github.jabrena.juno.language.clojure.interfaces
   (:gen-class)
   (:import [io.github.jabrena.juno.api Delay]

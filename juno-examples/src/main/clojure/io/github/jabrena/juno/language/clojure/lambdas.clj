@@ -1,6 +1,7 @@
-;; Non-capturing and capturing lambdas, plus bound function references. Clojure has no lambda syntax for a
-;; custom functional interface, so each operation is a deftype of IntOperation: a capture is a constructor field.
-;; deftype is used rather than reify, because reify attaches a source-location map that Juno does not model.
+;; Demonstrates the same operations as the Java lambda example through explicit functional-interface adapters.
+;; Each operation is a deftype of IntOperation, and a captured value becomes a constructor field. Plain Clojure
+;; functions require runtime adapter shapes outside Juno's closed-world model; reify also attaches a source-location
+;; map that Juno does not model.
 (ns io.github.jabrena.juno.language.clojure.lambdas
   (:gen-class)
   (:import [io.github.jabrena.juno.api.io.serial BaudRate Serial]))

@@ -1,5 +1,5 @@
-;; Demonstrates sequence, bifurcation, and iteration control-flow structures (for-style iteration). Primitive `long` hints keep the
-;; arithmetic on the JVM's primitive operations, and Serial prints each primitive directly.
+;; Demonstrates sequence, bifurcation, and iteration control-flow structures. Primitive `long` hints keep
+;; the arithmetic on the JVM's primitive operations, and Serial prints each primitive directly.
 (ns io.github.jabrena.juno.language.clojure.control-flow
   (:gen-class)
   (:import [io.github.jabrena.juno.api Delay]
@@ -10,9 +10,12 @@
   (let [initial-value 6
         doubled-value (* initial-value 2)
         final-value (+ doubled-value 3)]
-    (Serial/print "initial value: ") (Serial/println initial-value)
-    (Serial/print "doubled value: ") (Serial/println doubled-value)
-    (Serial/print "final value: ") (Serial/println final-value)))
+    (Serial/print "initial value: ")
+    (Serial/println initial-value)
+    (Serial/print "doubled value: ")
+    (Serial/println doubled-value)
+    (Serial/print "final value: ")
+    (Serial/println final-value)))
 
 (defn- bifurcation-demo []
   (Serial/println "Bifurcation")
@@ -28,10 +31,11 @@
         (Serial/println "remainder is 2")))))
 
 (defn- iteration-demo []
-  (Serial/println "Iteration with for")
+  (Serial/println "Iteration with loop/recur")
   (loop [index 1]
     (when (<= index 3)
-      (Serial/print "for index: ") (Serial/println index)
+      (Serial/print "loop index: ")
+      (Serial/println index)
       (recur (inc index)))))
 
 (defn -main [& _args]

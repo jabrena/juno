@@ -378,7 +378,8 @@ public final class Linker {
                 && descriptor.parameters().equals(List.of("[Ljava/lang/String;"))
                 && descriptor.returnsVoid();
         if (!conventionalMain && !descriptor.usesOnlyV01Types(referenceClassNames)
-                && !ClojureSupport.acceptsFunctionDescriptor(owner.superClassName(), descriptor)) {
+                && !ClojureSupport.acceptsFunctionDescriptor(owner.superClassName(), descriptor)
+                && !ClojureSupport.acceptsDeftypeConstructor(owner, method, referenceClassNames)) {
             throw new CompileException("Juno methods may use only supported scalar, array, or closed-world reference parameters and returns: "
                     + method.reference().displayName());
         }

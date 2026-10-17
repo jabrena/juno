@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESTATIC;
 import static io.github.jabrena.juno.bytecode.Opcodes.LDC;
@@ -40,6 +41,7 @@ public final class ClojureSupport {
     private static final String RT = PACKAGE + "RT";
     private static final String UTIL = PACKAGE + "Util";
     private static final String NUMBERS = PACKAGE + "Numbers";
+    private static final String I_TYPE = PACKAGE + "IType";
     private static final String OBJECT = "Ljava/lang/Object;";
 
     /** {@code Var.internPrivate(ns, name)}: interns a var; its arguments are literals in the {@code <clinit>}. */
@@ -119,10 +121,35 @@ public final class ClojureSupport {
         }
     }
 
-    /** Whether {@code owner} is a class the Clojure compiler generated, from a function or a namespace. */
+    /** Whether {@code owner} is a class the Clojure compiler generated, from a function, namespace, or deftype. */
     public static boolean isClojureClass(JavaClass owner) {
         String superClassName = owner.superClassName();
-        return superClassName != null && superClassName.startsWith(PACKAGE);
+        return (superClassName != null && superClassName.startsWith(PACKAGE))
+                || owner.interfaces().contains(I_TYPE);
+    }
+
+    /**
+     * Whether {@code method} is a {@code deftype} constructor whose parameters exactly mirror its instance fields.
+     * Clojure erases reference fields and their constructor parameters to {@code Object}; the exact positional match
+     * confines that erasure to storage owned by the final generated type instead of admitting {@code Object} in
+     * arbitrary program methods.
+     */
+    public static boolean acceptsDeftypeConstructor(JavaClass owner, JavaMethod method,
+            Set<String> referenceClassNames) {
+        if (!method.name().equals("<init>") || !owner.isFinal() || !owner.interfaces().contains(I_TYPE)) {
+            return false;
+        }
+        Descriptor descriptor = Descriptor.parse(method.descriptor());
+        List<FieldInfo> fields = owner.fields().stream().filter(field -> !field.isStatic()).toList();
+        if (!descriptor.returnsVoid() || descriptor.parameters().size() != fields.size()) {
+            return false;
+        }
+        return IntStream.range(0, fields.size()).allMatch(index -> {
+            String parameter = descriptor.parameters().get(index);
+            return parameter.equals(fields.get(index).descriptor())
+                    && (parameter.equals(OBJECT)
+                            || Descriptor.parse("(" + parameter + ")V").usesOnlyV01Types(referenceClassNames));
+        });
     }
 
     /**

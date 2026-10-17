@@ -1,4 +1,4 @@
-;; Demonstrates constants, static variables, local variables, assignment, and block scope.
+;; Demonstrates immutable local bindings, primitive values, and nested lexical scope.
 (ns io.github.jabrena.juno.language.clojure.variables
   (:gen-class)
   (:import [io.github.jabrena.juno.api Delay]
@@ -16,15 +16,23 @@
         temperature 23.5
         voltage 3.3]
     (Serial/println "Variables demo")
-    (Serial/print "board: ") (Serial/println board)
-    (Serial/print "active: ") (Serial/println (if active "true" "false"))
-    (Serial/print "original counter: ") (Serial/println original-counter)
+    (Serial/print "board: ")
+    (Serial/println board)
+    (Serial/print "active: ")
+    (Serial/println (if active "true" "false"))
+    (Serial/print "original counter: ")
+    (Serial/println original-counter)
 
     (let [updated-counter (+ original-counter step)]
-      (Serial/print "updated counter: ") (Serial/println updated-counter)
-      (Serial/print "distance: ") (Serial/println distance)
-      (Serial/print "temperature: ") (Serial/println temperature)
-      (Serial/print "voltage: ") (Serial/println voltage)
+      (Serial/print "updated counter: ")
+      (Serial/println updated-counter)
+      (Serial/print "distance: ")
+      (Serial/println distance)
+      (Serial/print "temperature: ")
+      (Serial/println temperature)
+      (Serial/print "voltage: ")
+      (Serial/println voltage)
       (when active
         (let [doubled-counter (* updated-counter 2)]
-          (Serial/print "block-scoped value: ") (Serial/println doubled-counter))))))
+          (Serial/print "block-scoped value: ")
+          (Serial/println doubled-counter))))))

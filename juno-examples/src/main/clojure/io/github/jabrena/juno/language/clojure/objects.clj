@@ -37,12 +37,16 @@
         ^Positioned north (Point. (moved-x (.x start) 0 4) (moved-y (.y start) 0 4))
         ^Positioned east (Point. (moved-x (.x north) 1 3) (moved-y (.y north) 1 3))
         ^Positioned position (Point. (moved-x (.x east) 2 6) (moved-y (.y east) 2 6))]
-    (Serial/print "x: ") (Serial/println (.x position))
-    (Serial/print "y: ") (Serial/println (.y position))
-    (Serial/print "distance: ") (Serial/println (.distanceFromOrigin position))
+    (Serial/print "x: ")
+    (Serial/println (.x position))
+    (Serial/print "y: ")
+    (Serial/println (.y position))
+    (Serial/print "distance: ")
+    (Serial/println (.distanceFromOrigin position))
     (loop [index 0
            walker-x 0]
       (if (< index 2000)
         (recur (inc index) (moved-x walker-x 1 1))
         (do
-          (Serial/print "walker x: ") (Serial/println walker-x))))))
+          (Serial/print "walker x: ")
+          (Serial/println walker-x))))))

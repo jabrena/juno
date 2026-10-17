@@ -1,5 +1,5 @@
-;; Demonstrates defining functions with parameters and return values, reporting each result with Serial. Clojure
-;; return hints are long or double, so the even test returns 1 or 0 rather than a boolean.
+;; Demonstrates defining functions with parameters and return values, reporting each result with Serial. Juno's
+;; Clojure path uses a primitive long flag for the even test to avoid a boxed Boolean adapter shape.
 (ns io.github.jabrena.juno.language.clojure.methods
   (:gen-class)
   (:import [io.github.jabrena.juno.api Delay]
@@ -11,7 +11,7 @@
 (defn- square ^long [^long value]
   (* value value))
 
-(defn- is-even ^long [^long value]
+(defn- even-flag ^long [^long value]
   (if (== (rem value 2) 0) 1 0))
 
 (defn- multiply ^long [^long first ^long second]
@@ -34,9 +34,20 @@
         right 5
         sum (add left right)
         squared (square sum)]
-    (Serial/print left) (Serial/print " + ") (Serial/print right) (Serial/print " = ") (Serial/println sum)
-    (Serial/print sum) (Serial/print " squared = ") (Serial/println squared)
-    (Serial/print sum) (Serial/print " is even: ") (Serial/println (if (== (is-even sum) 1) "true" "false"))
-    (Serial/print "long product: ") (Serial/println (multiply 123456 1000))
-    (Serial/print "average: ") (Serial/println (average 12.5 7.5))
-    (Serial/print "add then double: ") (Serial/println (add-then-double left right))))
+    (Serial/print left)
+    (Serial/print " + ")
+    (Serial/print right)
+    (Serial/print " = ")
+    (Serial/println sum)
+    (Serial/print sum)
+    (Serial/print " squared = ")
+    (Serial/println squared)
+    (Serial/print sum)
+    (Serial/print " is even: ")
+    (Serial/println (if (== (even-flag sum) 1) "true" "false"))
+    (Serial/print "long product: ")
+    (Serial/println (multiply 123456 1000))
+    (Serial/print "average: ")
+    (Serial/println (average 12.5 7.5))
+    (Serial/print "add then double: ")
+    (Serial/println (add-then-double left right))))
