@@ -5,7 +5,7 @@ import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 
 /**
- * Demonstrates {@code java.lang.Math} on {@code int} and {@code float} values. Every call here builds on every board:
+ * Demonstrates {@code java.lang.Math} on {@code float} values. Every call here builds on every board:
  * it avoids the double-precision libm functions that {@link MathFunctionsDoublePrecision} uses, which the UNO R3 and
  * UNO WiFi Rev2 toolchains do not provide.
  */
@@ -19,23 +19,8 @@ public final class MathFunctionsSinglePrecision {
 
         Serial.println("Math functions, single precision demo");
 
-        functions.integerHelpers();
         functions.floatHelpers();
         functions.rounding();
-    }
-
-    private void integerHelpers() {
-        Serial.println("Integer helpers");
-        int temperature = -17;
-        Serial.println("abs(-17): " + Math.abs(temperature));
-        Serial.println("min(-17, 4): " + Math.min(temperature, 4));
-        Serial.println("max(-17, 4): " + Math.max(temperature, 4));
-        Serial.println("clamp(300, 0, 255): " + Math.clamp(300, 0, 255));
-        // Unlike / and %, floorDiv/floorMod round toward negative infinity.
-        Serial.println("-17 / 5: " + temperature / 5);
-        Serial.println("-17 % 5: " + temperature % 5);
-        Serial.println("floorDiv(-17, 5): " + Math.floorDiv(temperature, 5));
-        Serial.println("floorMod(-17, 5): " + Math.floorMod(temperature, 5));
     }
 
     private void floatHelpers() {
