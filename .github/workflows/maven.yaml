@@ -189,6 +189,26 @@ jobs:
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
           -b turbo -T1C
 
+  simavr:
+    name: Run programs under simavr
+    needs: changes
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 27
+          cache: maven
+      - name: Run programs under simavr
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Psimavr
+          verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=SimavrRunIT
+          -b turbo -T1C
+
   integration-build:
     name: Prepare integration build outputs
     needs: changes
