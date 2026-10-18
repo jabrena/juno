@@ -485,6 +485,31 @@ class JunoCompilerTest {
     }
 
     @Test
+    void drawTextUnrollsIntoOneDrawCharPerCharacter() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.led.LedCanvas;
+                import io.github.jabrena.juno.api.led.LedMatrix;
+                public final class ScrollingText {
+                    public static void main(String[] args) {
+                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+                        LedCanvas.drawText(frame, "Hi", 0, 0);
+                        LedMatrix.loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ScrollingText", source);
+
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ScrollingText");
+
+        // drawText itself is native (no body); the linker substitutes drawChar, the method the two
+        // unrolled calls actually reach, as what's linked and reported reachable.
+        assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame");
+        assertThat(result.assembly())
+                .contains("juno_table_io_github_jabrena_juno_api_led_LedMatrixFontAscii_ROWS__B:");
+    }
+
+    @Test
     void lowersTftTouchShieldToGpioWithoutExtraShimLibraries() throws Exception {
         String source = """
                 package demo;

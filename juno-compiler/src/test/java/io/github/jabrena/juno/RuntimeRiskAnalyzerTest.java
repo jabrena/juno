@@ -166,6 +166,76 @@ class RuntimeRiskAnalyzerTest {
     }
 
     @Test
+    void reportsAStoreThroughACompileTimeNullReceiver() throws Exception {
+        RuntimeRiskReport report = compileReport("demo.NullStoreReceiver", """
+                package demo;
+                public final class NullStoreReceiver {
+                    static final class Box { int value; }
+                    public static void main() {
+                        Box box = null;
+                        box.value = 5;
+                    }
+                }
+                """);
+
+        assertThat(hasCode(report, "JUNO-RISK-006")).isTrue();
+    }
+
+    @Test
+    void reportsACompileTimeNullArrayLoadAndStore() throws Exception {
+        RuntimeRiskReport loadReport = compileReport("demo.NullArrayLoad", """
+                package demo;
+                public final class NullArrayLoad {
+                    public static void main() {
+                        int[] values = null;
+                        int ignored = values[0];
+                    }
+                }
+                """);
+        RuntimeRiskReport storeReport = compileReport("demo.NullArrayStore", """
+                package demo;
+                public final class NullArrayStore {
+                    public static void main() {
+                        int[] values = null;
+                        values[0] = 1;
+                    }
+                }
+                """);
+
+        assertThat(hasCode(loadReport, "JUNO-RISK-006")).isTrue();
+        assertThat(hasCode(storeReport, "JUNO-RISK-006")).isTrue();
+    }
+
+    @Test
+    void reportsLongDivisionOnlyForAnUnknownOrLiteralZeroDivisor() throws Exception {
+        RuntimeRiskReport literalZero = compileReport("demo.LiteralZeroLongDiv", """
+                package demo;
+                public final class LiteralZeroLongDiv {
+                    static long divide(long value) { return value / 0L; }
+                    public static void main() { divide(10L); }
+                }
+                """);
+        RuntimeRiskReport unknownDivisor = compileReport("demo.UnknownLongDivisor", """
+                package demo;
+                public final class UnknownLongDivisor {
+                    static long divide(long value, long divisor) { return value / divisor; }
+                    public static void main() { divide(10L, 4L); }
+                }
+                """);
+        RuntimeRiskReport safe = compileReport("demo.SafeLongDiv", """
+                package demo;
+                public final class SafeLongDiv {
+                    static long divide(long value) { return value / 4L; }
+                    public static void main() { divide(10L); }
+                }
+                """);
+
+        assertThat(hasCode(literalZero, "JUNO-RISK-005")).isTrue();
+        assertThat(hasCode(unknownDivisor, "JUNO-RISK-005")).isTrue();
+        assertThat(hasCode(safe, "JUNO-RISK-005")).isFalse();
+    }
+
+    @Test
     void reportsAStringBuilderCapacityThatCanOverflowTheRuntimeStringSlotAtToString() throws Exception {
         RuntimeRiskReport report = compileReport("demo.OversizedBuilder", """
                 package demo;
