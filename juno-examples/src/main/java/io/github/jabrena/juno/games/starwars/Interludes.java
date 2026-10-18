@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.starwars;
 
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * The scenes between the flying: the film's opening and the title, the approach to the Death Star

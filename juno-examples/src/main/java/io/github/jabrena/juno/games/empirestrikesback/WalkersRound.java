@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Random;
 
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ATAT_HEAD_Y;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ATAT_HITS;

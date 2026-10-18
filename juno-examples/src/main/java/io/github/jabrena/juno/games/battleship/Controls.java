@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.battleship;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
 
 import static io.github.jabrena.juno.games.battleship.AutopilotBattleship.*;
 import static io.github.jabrena.juno.games.battleship.Battleship.*;

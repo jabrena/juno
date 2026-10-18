@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.api;
 
-import io.github.jabrena.juno.api.io.DigitalOutput;
-import io.github.jabrena.juno.api.io.Gpio;
+import io.github.jabrena.juno.api.io.gpio.DigitalOutput;
+import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * Blinks the linked board's built-in LED indefinitely: on for 500 milliseconds, off for 500

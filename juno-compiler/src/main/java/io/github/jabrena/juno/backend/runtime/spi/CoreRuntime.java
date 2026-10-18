@@ -69,6 +69,11 @@ public interface CoreRuntime {
     /** Declaration of the core's single UDP transport instance. */
     String udpDeclaration();
 
+    /** Optional adapter for the generic {@code Tcp} transport's {@code JunoTcpClient}. */
+    default String tcpClientHelpers() {
+        return "";
+    }
+
     /** Core-specific header required by the HTTPS client implementation. */
     String httpsInclude();
 

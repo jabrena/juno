@@ -17,7 +17,7 @@ with GPIO, the LED matrix, or an LCD — which is rarely enough to tell *why* so
 `Serial` is how you:
 
 - confirm a program actually reached a given line (`Serial.println` markers between steps, the
-  same way [`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java)
+  same way [`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/LcdKeypadDemo.java)
   prints `1`, `2`, `3` after each setup call);
 - watch live sensor/state values (button reads, `Wifi.status()`, HTTP result codes — see
   [docs/INTERNET.md](../internet)) instead of guessing from final behavior;

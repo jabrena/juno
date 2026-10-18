@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.api.net.wifi;
 
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.SdCard;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
-import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.api.net.Wifi;
+import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
+import io.github.jabrena.juno.api.util.Delay;
 
 import java.io.IOException;
 import java.io.InputStream;

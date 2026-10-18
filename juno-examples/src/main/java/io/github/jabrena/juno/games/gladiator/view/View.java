@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.gladiator.view;
 
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.games.gladiator.arena.Body;
 import io.github.jabrena.juno.games.gladiator.arena.Coliseum;
 import io.github.jabrena.juno.games.gladiator.arena.GladiatorClass;

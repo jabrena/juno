@@ -105,12 +105,6 @@ public record Descriptor(List<String> parameters, String returnType) {
         return arrayType.charAt(1);
     }
 
-    /** Whether {@code type} is an object-type descriptor (e.g. {@code Lcom/foo/Direction;}) for a known enum. */
-    public static boolean isEnumType(String type, Set<String> enumClassNames) {
-        return type.length() > 2 && type.charAt(0) == 'L' && type.endsWith(";")
-                && enumClassNames.contains(type.substring(1, type.length() - 1));
-    }
-
     public static boolean isReferenceType(String type, Set<String> referenceClassNames) {
         return type.length() > 2 && type.charAt(0) == 'L' && type.endsWith(";")
                 && referenceClassNames.contains(type.substring(1, type.length() - 1));

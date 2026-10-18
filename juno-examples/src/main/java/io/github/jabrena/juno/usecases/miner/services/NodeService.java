@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
-import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Task;
+import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2State;
 
 /**

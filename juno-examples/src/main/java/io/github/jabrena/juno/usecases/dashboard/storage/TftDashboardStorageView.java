@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.usecases.dashboard.storage;
 
-import io.github.jabrena.juno.api.Memory;
+import io.github.jabrena.juno.api.hardware.Memory;
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.SdCapacity;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;

@@ -18,6 +18,11 @@ final class NetworkShimLibraries {
         return runtimeSource.load("common/udp.cpp").replace("${JUNO_UDP_DECLARATION}", declaration);
     }
 
+    /** One caller-owned TCP connection with exact-length reads for application protocols. */
+    String tcpHelpers(String clientHelpers) {
+        return runtimeSource.load("common/tcp.cpp").replace("${JUNO_TCP_CLIENT_HELPERS}", clientHelpers);
+    }
+
     /**
      * Backs the HTTP/HTTPS APIs with a shared HTTP/1.1 codec over plain or TLS WiFi clients. Each request is a job
      * for {@code juno_io_offload} (see {@link IoRuntime}): run in place, or on the I/O worker while the caller is

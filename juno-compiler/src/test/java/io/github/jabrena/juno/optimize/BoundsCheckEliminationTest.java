@@ -88,7 +88,7 @@ class BoundsCheckEliminationTest {
     private int runtimeChecks(String body) throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.Gpio;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Ranges {
                     public static void main(String[] args) {
                         int total = 0;

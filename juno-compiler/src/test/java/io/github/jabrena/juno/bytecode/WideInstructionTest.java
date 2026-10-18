@@ -18,7 +18,7 @@ class WideInstructionTest {
     void aLargeIncrementCompiles() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.util.Delay;
                 public final class WideIncrement {
                     public static void main(String[] args) {
                         int next = 0;

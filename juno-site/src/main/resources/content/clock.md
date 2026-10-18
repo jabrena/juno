@@ -4,12 +4,12 @@ description: "Timing intrinsics: Delay and Clock."
 layout: page
 ---
 
-[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/Clock.java)
+[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/time/Clock.java)
 (`io.github.jabrena.juno.api`) is a compiler intrinsic that reads the board's monotonic uptime
 clock, backed directly by the Arduino core's `millis()`/`micros()`.
 
 ```java
-import io.github.jabrena.juno.api.Clock;
+import io.github.jabrena.juno.api.time.Clock;
 
 int uptimeMillis = Clock.millis();
 int uptimeMicros = Clock.micros();
@@ -26,7 +26,7 @@ with `<`/`>`.
 
 ## `Clock` vs. `Delay`
 
-[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/Delay.java) (`millis`/`micros`) blocks
+[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/util/Delay.java) (`millis`/`micros`) blocks
 the program for a fixed duration and does nothing else meanwhile. `Clock` instead reports elapsed
 time, so a program built around it can do other work — polling a button, updating a display,
 handling network I/O — while still acting on a schedule. Reach for `Clock` whenever a loop needs
@@ -38,9 +38,9 @@ the classic single-LED blink.
 ```java
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.io.DigitalOutput;
-import io.github.jabrena.juno.api.io.Gpio;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.io.gpio.DigitalOutput;
+import io.github.jabrena.juno.api.io.gpio.Gpio;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class ClockBlink {
@@ -72,7 +72,7 @@ Unlike a `Delay.millis(500)` blink, this loop never stops watching the button, b
 only measures time — it never pauses execution.
 
 The repository's
-[Pomodoro timer](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/pomodoro/RunPomodoro.java)
+[Pomodoro timer](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/pomodoro/RunPomodoro.java)
 uses the same pattern for real: `Clock.millis()` is its sole time source for a countdown displayed
 on an [`LcdKeypadShield`](../lcd-keypad-shield), so the displayed time stays accurate regardless of
 how long each tick's own display/print work takes.

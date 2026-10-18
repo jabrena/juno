@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.mvc;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * The controller of a multi-view TFT program: it owns the views, runs the frame loop and switches the active view

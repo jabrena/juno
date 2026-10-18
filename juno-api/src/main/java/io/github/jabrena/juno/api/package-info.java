@@ -9,38 +9,32 @@
  * runtime reflection, dependency injection, or driver discovery: the mapping from a Java call to
  * generated hardware code is fixed and closed-world.
  *
- * <p>This package holds simple, cross-cutting operations directly:
- * <ul>
- *   <li>{@link io.github.jabrena.juno.api.Delay} — blocking millisecond/microsecond delays.</li>
- *   <li>{@link io.github.jabrena.juno.api.Clock} — the monotonic uptime clock, for measuring
- *       elapsed time without blocking.</li>
- *   <li>{@link io.github.jabrena.juno.api.InternetClock} — optional endpoint configuration for the
- *       internet-backed {@link java.time.LocalDateTime#now()} subset.</li>
- *   <li>{@link io.github.jabrena.juno.api.Random} — seeded, bounded pseudorandom numbers backed by
- *       Arduino's generator.</li>
- *   <li>{@link io.github.jabrena.juno.api.UuidCodec} — conversion between supported
- *       {@link java.util.UUID} values and caller-owned 16-byte network representations.</li>
- *   <li>{@link io.github.jabrena.juno.api.PortNoise} — explicitly non-cryptographic sampling from a
- *       user-provided physical noise circuit.</li>
- * </ul>
- *
- * <p>Board-specific or peripheral-specific operations live in subpackages instead, grouped by the
- * hardware they address:
+ * <p>The API lives in subpackages, grouped by the hardware or concern they address:
  * <ul>
  *   <li>{@code io} — general-purpose I/O
- *       ({@link io.github.jabrena.juno.api.io.Gpio}, {@link io.github.jabrena.juno.api.io.DigitalOutput}),
- *       serial port I/O ({@code io.serial}).</li>
+ *       ({@link io.github.jabrena.juno.api.io.gpio.Gpio}, {@link io.github.jabrena.juno.api.io.gpio.DigitalOutput}),
+ *       I2C ({@code io.i2c}) and serial port I/O ({@code io.serial}).</li>
+ *   <li>{@code hardware} — program-wide introspection: arena and flash usage
+ *       ({@link io.github.jabrena.juno.api.hardware.Memory}) and the board the program was compiled for
+ *       ({@link io.github.jabrena.juno.api.hardware.BoardRuntime}).</li>
  *   <li>{@code hid} — USB HID mouse control.</li>
  *   <li>{@code net} — the Wi-Fi/UDP/HTTP/JSON/email networking stack ({@code net.http},
- *       {@code net.email}).</li>
+ *       {@code net.email}) and the
+ *       {@link io.github.jabrena.juno.api.net.InternetClock} configuration for the internet-backed
+ *       {@link java.time.LocalDateTime#now()} subset.</li>
  *   <li>{@code led} — the UNO R4 WiFi's built-in LED matrix, its frame/canvas helpers, and bitmap
  *       fonts.</li>
- *   <li>{@code lcd} — drivers for character LCD shields, built entirely from {@code io} and
- *       {@link io.github.jabrena.juno.api.Delay} rather than a new compiler intrinsic.</li>
-   *   <li>{@code thirdparty.grove} — the passive Grove Base Shield pin map and allocation-free
-   *       drivers for Grove sensors such as Seeed's
-   *       <a href="https://wiki.seeedstudio.com/Grove-Temperature_and_Humidity_Sensor_Pro/">Grove
-   *       Temperature and Humidity Sensor Pro</a>.</li>
+ *   <li>{@code thirdparty} — shields, sensors and devices from other vendors: {@code grove}
+ *       (the passive Grove Base Shield pin map and allocation-free Grove sensor drivers), {@code lcd}
+ *       (character LCD shields), {@code tft} (the ELEGOO 2.8" TFT touch shield and its parallel bus),
+ *       {@code imu}, {@code servo}, {@code ir}, {@code sd} and {@code lego} (Powered Up, RCX, Scout and
+ *       Power Functions).</li>
+ *   <li>{@code time} — the monotonic uptime clock ({@link io.github.jabrena.juno.api.time.Clock}),
+ *       for measuring elapsed time without blocking.</li>
+ *   <li>{@code util} — general-purpose utilities: blocking millisecond/microsecond delays
+ *       ({@link io.github.jabrena.juno.api.util.Delay}), seeded pseudorandom numbers
+ *       ({@link io.github.jabrena.juno.api.util.Random}) and UUID byte conversion
+ *       ({@link io.github.jabrena.juno.api.util.UuidCodec}).</li>
  *   <li>{@code mvc} — views, navigation and a frame-loop controller for multi-screen TFT programs.</li>
  * </ul>
  *

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.util.Random;
 
 /**
  * The map's monsters and the imps' fireballs, after DOOM's thinkers. A monster sleeps until it sees

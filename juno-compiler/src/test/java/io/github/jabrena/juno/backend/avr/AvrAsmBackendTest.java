@@ -74,7 +74,7 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.annotations.%s;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.Watchdog;
-                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.util.Delay;
                 @Board(%s.class)
                 @Watchdog(timeoutMillis = %d)
                 public final class %s {
@@ -112,14 +112,21 @@ class AvrAsmBackendTest {
     }
 
     @Test
+    void rejectsANonAvrBoard() {
+        assertThatThrownBy(() -> new AvrAsmBackend(false, Board.UNO_R4_WIFI, RuntimeConfig.DEFAULT))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("is not an AVR board");
+    }
+
+    @Test
     void compilesBasicGpioForTheClassicUnoR3() throws Exception {
         CompilationResult result = compileR3("demo.R3Blink", """
                         Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
                         Gpio.digitalWrite(Gpio.builtinLed(), true);
                         Delay.millis(500);
                 """, """
-                import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.io.Gpio;
+                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
                 """);
 
         assertThat(result.assembly())
@@ -244,9 +251,111 @@ class AvrAsmBackendTest {
     }
 
     @Test
+    void lowersIntBitwiseAndMultiplyByAConstant() throws Exception {
+        CompilationResult result = compile("demo.AvrBitwise", """
+                        int value = Gpio.analogRead(0);
+                        Serial.println(value & 0x0F);
+                        Serial.println(value | 0xF0);
+                        Serial.println(value * 8);
+                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+
+        assertThat(result.assembly()).contains("    andi r22, 15\n", "    ori r22, 240\n");
+        // value * 8 is a power-of-two constant: lowered as a left shift, never a call to juno_avr_imul.
+        assertThat(result.assembly()).doesNotContain("call juno_avr_imul");
+    }
+
+    @Test
+    void lowersConstantShiftsByte_AlignedAndBitAligned() throws Exception {
+        CompilationResult result = compile("demo.AvrShifts", """
+                        int value = Gpio.analogRead(0);
+                        Serial.println(value << 10);
+                        Serial.println(value >> 10);
+                        Serial.println(value >>> 10);
+                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+
+        // A constant shift never calls the variable-shift helpers; it's always whole-byte moves plus
+        // bit-by-bit rotates.
+        assertThat(result.assembly()).doesNotContain("call juno_avr_ishl", "call juno_avr_ishr",
+                "call juno_avr_iushr");
+        assertThat(result.assembly()).contains("    lsl r22\n    rol r23\n    rol r24\n    rol r25\n")
+                .contains("    asr r25\n    ror r24\n    ror r23\n    ror r22\n")
+                .contains("    lsr r25\n    ror r24\n    ror r23\n    ror r22\n");
+    }
+
+    @Test
+    void lowersNarrowingCastsToByteCharAndShort() throws Exception {
+        CompilationResult result = compile("demo.AvrNarrowing", """
+                        int value = Gpio.analogRead(0);
+                        Serial.println((byte) value);
+                        Serial.println((char) value);
+                        Serial.println((short) value);
+                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+
+        assertThat(result.assembly())
+                .contains("    mov r23, r22\n    lsl r23\n    sbc r23, r23\n")
+                .contains("    ldi r24, 0\n    ldi r25, 0\n")
+                .contains("    mov r24, r23\n    lsl r24\n    sbc r24, r24\n    mov r25, r24\n");
+    }
+
+    @Test
+    void comparesWithGreaterThanAndLessOrEqualOnAvr() throws Exception {
+        CompilationResult result = compile("demo.AvrCompare", """
+                        int value = Gpio.analogRead(0);
+                        if (value > 10) {
+                            Serial.println("big");
+                        }
+                        if (value <= 10) {
+                            Serial.println("small");
+                        }
+                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+
+        // GREATER_THAN/LESS_EQUAL swap their operands and reuse brlt/brge, AVR having only signed
+        // less-than/greater-or-equal.
+        assertThat(result.assembly()).contains("brlt").contains("brge");
+    }
+
+    @Test
+    void lowersLongAndFloatingPointWideOperationsOnAvr() throws Exception {
+        CompilationResult result = compile("demo.AvrWide", """
+                        long left = Gpio.analogRead(0);
+                        long right = Gpio.analogRead(1);
+                        Serial.println(-left);
+                        Serial.println(left > right);
+                        int narrowed = (int) left;
+                        long widened = narrowed;
+                        Serial.println(widened);
+
+                        float fa = Gpio.analogRead(2);
+                        float fb = Gpio.analogRead(3);
+                        Serial.println(fa + fb);
+                        Serial.println(fa == fb);
+                        Serial.println((int) fa);
+
+                        double da = Gpio.analogRead(4);
+                        Serial.println(-da);
+                        Serial.println(da == fb);
+                        Serial.println((float) da);
+                        Serial.println((long) fa);
+                        Serial.println((float) left);
+                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+
+        assertThat(result.assembly())
+                .contains("call juno_avr_thunk_juno_lneg")
+                .contains("call juno_avr_thunk_juno_lcmp")
+                .contains("call juno_avr_thunk_juno_fadd")
+                .contains("call juno_avr_thunk_juno_fcmp")
+                .contains("call juno_avr_thunk_juno_f2i")
+                .contains("    subi r25, 0x80\n") // DoubleNegate's sign flip, shared text with FloatNegate.
+                .contains("call juno_avr_thunk_juno_dcmp")
+                .contains("call juno_avr_thunk_juno_d2f")
+                .contains("call juno_avr_thunk_juno_f2l")
+                .contains("call juno_avr_thunk_juno_l2f");
+    }
+
+    @Test
     void usesSoftwareSpiForShieldSdCards() throws Exception {
         CompilationResult result = compile("demo.AvrSd", "SdCard.begin();",
-                "import io.github.jabrena.juno.api.io.SdCard;");
+                "import io.github.jabrena.juno.api.thirdparty.sd.SdCard;");
 
         assertThat(result.runtimeShim())
                 .contains("class JunoSdSoftSpiDriver : public SdSpiBaseClass")
@@ -525,8 +634,8 @@ class AvrAsmBackendTest {
                         Gpio.digitalWrite(Gpio.builtinLed(), true);
                         Delay.millis(500);
                 """, """
-                import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.io.Gpio;
+                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
                 """);
         assertThat(result.assembly())
                 .contains("call juno_avr_thunk_juno_pin_mode")

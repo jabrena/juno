@@ -1,14 +1,14 @@
 package io.github.jabrena.juno.games.lunarlander;
 
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static io.github.jabrena.juno.api.tft.Internals.call;
-import static io.github.jabrena.juno.api.tft.Internals.callBoolean;
-import static io.github.jabrena.juno.api.tft.Internals.callInt;
-import static io.github.jabrena.juno.api.tft.Internals.set;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.call;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.callBoolean;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.callInt;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Terrain, touchdown rules, pilot choice, and CPU landings. */
@@ -87,14 +87,14 @@ class LunarLanderTest {
             Random.seed(40 + descent);
             set(Flight.class, "fuel", 3000);
             int landed = callInt(Flight.class, "fly", ground, pads);
-            int x = Math.round((float) io.github.jabrena.juno.api.tft.Internals.get(Flight.class, "x"));
+            int x = Math.round((float) io.github.jabrena.juno.api.thirdparty.tft.Internals.get(Flight.class, "x"));
             assertThat(landed)
                     .as("descent %d at x %.2f (pads %d/%d) with velocity %.2f, %.2f and tilt %d", descent,
-                            (float) io.github.jabrena.juno.api.tft.Internals.get(Flight.class, "x"),
+                            (float) io.github.jabrena.juno.api.thirdparty.tft.Internals.get(Flight.class, "x"),
                             pads[x - 6], pads[x + 6],
-                            (float) io.github.jabrena.juno.api.tft.Internals.get(Flight.class, "vx"),
-                            (float) io.github.jabrena.juno.api.tft.Internals.get(Flight.class, "vy"),
-                            io.github.jabrena.juno.api.tft.Internals.getInt(Flight.class, "tilt"))
+                            (float) io.github.jabrena.juno.api.thirdparty.tft.Internals.get(Flight.class, "vx"),
+                            (float) io.github.jabrena.juno.api.thirdparty.tft.Internals.get(Flight.class, "vy"),
+                            io.github.jabrena.juno.api.thirdparty.tft.Internals.getInt(Flight.class, "tilt"))
                     .isPositive();
         }
     }

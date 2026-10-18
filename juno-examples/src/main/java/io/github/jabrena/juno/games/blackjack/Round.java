@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.games.blackjack;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.api.util.Random;
 
 import static io.github.jabrena.juno.games.blackjack.Blackjack.*;
 import static io.github.jabrena.juno.games.blackjack.Cards.*;

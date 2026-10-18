@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * A full-screen list to tap, as DOOM's own menus: a red title, a question, then one row per choice with a name and

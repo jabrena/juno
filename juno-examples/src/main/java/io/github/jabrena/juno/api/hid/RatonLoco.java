@@ -2,9 +2,9 @@ package io.github.jabrena.juno.api.hid;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.DigitalOutput;
+import io.github.jabrena.juno.api.io.gpio.DigitalOutput;
 import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * Demonstrates USB HID mouse control on the Arduino UNO R4 WiFi. At startup, the program displays

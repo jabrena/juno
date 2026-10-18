@@ -121,7 +121,7 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
         }
-        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.SMTP_TLS,
+        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.TCP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.SMTP_TLS,
                 ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
         }
@@ -181,80 +181,47 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.STRING_BUILDER)) {
             shim.append(shimLibraries.stringBuilderHelpers());
         }
-        if (uses(ShimFeature.SERVO)) {
-            shim.append(shimLibraries.servoHelpers());
-        }
-        if (uses(ShimFeature.PARALLEL_BUS)) {
-            shim.append(core.parallelBusHelpers());
-        }
-        if (uses(ShimFeature.INFRARED)) {
-            shim.append(shimLibraries.infraredHelpers());
-        }
-        if (uses(ShimFeature.I2C)) {
-            shim.append(shimLibraries.i2cHelpers());
-        }
-        if (uses(ShimFeature.MEMORY)) {
-            shim.append(shimLibraries.memoryHelpers());
-        }
-        if (uses(ShimFeature.FLASH)) {
-            shim.append(core.flashHelpers());
-        }
-        if (uses(ShimFeature.RANDOM)) {
-            shim.append(shimLibraries.randomHelpers());
-        }
+        ShimFeatureBlock.appendUsed(shim, features, List.of(
+                new ShimFeatureBlock(ShimFeature.SERVO, shimLibraries::servoHelpers),
+                new ShimFeatureBlock(ShimFeature.PARALLEL_BUS, core::parallelBusHelpers),
+                new ShimFeatureBlock(ShimFeature.INFRARED, shimLibraries::infraredHelpers),
+                new ShimFeatureBlock(ShimFeature.I2C, shimLibraries::i2cHelpers),
+                new ShimFeatureBlock(ShimFeature.MEMORY, shimLibraries::memoryHelpers),
+                new ShimFeatureBlock(ShimFeature.FLASH, core::flashHelpers),
+                new ShimFeatureBlock(ShimFeature.RANDOM, shimLibraries::randomHelpers)));
         shim.append(ioRuntime.preludeFor(core, features));
-        if (uses(ShimFeature.SD)) {
-            shim.append(core.sdHelpers(SD_OPEN_FILES, PROPERTIES_ENTRIES, PROPERTIES_KEY_BYTES,
-                    PROPERTIES_VALUE_BYTES, PROPERTIES_LINE_BYTES));
-        }
-        if (uses(ShimFeature.SD_CAPACITY)) {
-            shim.append(shimLibraries.sdCapacityHelpers());
-        }
-        if (uses(ShimFeature.LONG)) {
-            shim.append(shimLibraries.longHelpers());
-        }
-        if (uses(ShimFeature.FLOAT)) {
-            shim.append(floatHelpers());
-        }
-        if (uses(ShimFeature.DOUBLE)) {
-            shim.append(doubleHelpers());
-        }
+        ShimFeatureBlock.appendUsed(shim, features, List.of(
+                new ShimFeatureBlock(ShimFeature.SD, () -> core.sdHelpers(SD_OPEN_FILES, PROPERTIES_ENTRIES,
+                        PROPERTIES_KEY_BYTES, PROPERTIES_VALUE_BYTES, PROPERTIES_LINE_BYTES)),
+                new ShimFeatureBlock(ShimFeature.SD_CAPACITY, shimLibraries::sdCapacityHelpers),
+                new ShimFeatureBlock(ShimFeature.LONG, shimLibraries::longHelpers),
+                new ShimFeatureBlock(ShimFeature.FLOAT, this::floatHelpers),
+                new ShimFeatureBlock(ShimFeature.DOUBLE, this::doubleHelpers)));
         if (!usedMath.isEmpty()) {
             shim.append(mathHelpers());
         }
-        if (uses(ShimFeature.EXCEPTIONS)) {
-            shim.append(shimLibraries.exceptionHelpers(throwableClasses));
-        }
-        if (uses(ShimFeature.RANDOM_ACCESS_FILE)) {
-            shim.append(shimLibraries.randomAccessFileHelpers(
-                    throwableClasses.indexOf("java/io/IOException"),
-                    throwableClasses.indexOf("java/io/FileNotFoundException"),
-                    throwableClasses.indexOf("java/io/EOFException"),
-                    throwableClasses.indexOf("java/lang/IndexOutOfBoundsException")));
-        }
+        ShimFeatureBlock.appendUsed(shim, features, List.of(
+                new ShimFeatureBlock(ShimFeature.EXCEPTIONS, () -> shimLibraries.exceptionHelpers(throwableClasses)),
+                new ShimFeatureBlock(ShimFeature.RANDOM_ACCESS_FILE, () -> shimLibraries.randomAccessFileHelpers(
+                        throwableClasses.indexOf("java/io/IOException"),
+                        throwableClasses.indexOf("java/io/FileNotFoundException"),
+                        throwableClasses.indexOf("java/io/EOFException"),
+                        throwableClasses.indexOf("java/lang/IndexOutOfBoundsException")))));
         appendNetworkHelpers(shim);
-        if (uses(ShimFeature.ATOMICS)) {
-            shim.append(atomicRuntime.helpers());
-        }
-        if (uses(ShimFeature.UUID_RANDOM)) {
-            shim.append(core.uuidRandomHelpers());
-        }
-        if (uses(ShimFeature.UUID)) {
-            shim.append(uuidRuntime.helpers(throwableClasses.indexOf("java/lang/IllegalArgumentException"),
-                    uses(ShimFeature.UUID_RANDOM)));
-        }
-        if (uses(ShimFeature.LOCAL_DATE_TIME)) {
-            shim.append(localDateTimeRuntime.helpers(uses(ShimFeature.LOCAL_DATE_TIME_NOW),
-                    uses(ShimFeature.LOCAL_DATE_TIME_CONFIG)));
-        }
-        if (uses(ShimFeature.BIG_NUMBERS)) {
-            shim.append(bigNumberRuntime.handleHelpers())
-                    .append(bigNumberRuntime.helpersWithoutDoubles(
-                            throwableClasses.indexOf("java/lang/ArithmeticException"),
-                            throwableClasses.indexOf("java/lang/NumberFormatException"),
-                            throwableClasses.indexOf("java/lang/IllegalArgumentException")))
-                    .append(bigNumberDoubles(uses(ShimFeature.BIG_DECIMAL_DOUBLE)));
-        }
+        ShimFeatureBlock.appendUsed(shim, features, List.of(
+                new ShimFeatureBlock(ShimFeature.ATOMICS, atomicRuntime::helpers),
+                new ShimFeatureBlock(ShimFeature.UUID_RANDOM, core::uuidRandomHelpers),
+                new ShimFeatureBlock(ShimFeature.UUID, () -> uuidRuntime.helpers(
+                        throwableClasses.indexOf("java/lang/IllegalArgumentException"),
+                        uses(ShimFeature.UUID_RANDOM))),
+                new ShimFeatureBlock(ShimFeature.LOCAL_DATE_TIME, () -> localDateTimeRuntime.helpers(
+                        uses(ShimFeature.LOCAL_DATE_TIME_NOW), uses(ShimFeature.LOCAL_DATE_TIME_CONFIG))),
+                new ShimFeatureBlock(ShimFeature.BIG_NUMBERS, () -> bigNumberRuntime.handleHelpers()
+                        + bigNumberRuntime.helpersWithoutDoubles(
+                                throwableClasses.indexOf("java/lang/ArithmeticException"),
+                                throwableClasses.indexOf("java/lang/NumberFormatException"),
+                                throwableClasses.indexOf("java/lang/IllegalArgumentException"))
+                        + bigNumberDoubles(uses(ShimFeature.BIG_DECIMAL_DOUBLE)))));
         appendConcurrencyHelpers(shim);
     }
 
@@ -305,6 +272,9 @@ public final class AvrRuntimeShim {
         }
         if (uses(ShimFeature.UDP)) {
             shim.append(networkShimLibraries.udpHelpers(core.udpDeclaration()));
+        }
+        if (uses(ShimFeature.TCP)) {
+            shim.append(networkShimLibraries.tcpHelpers(core.tcpClientHelpers()));
         }
         if (uses(ShimFeature.STRING_FROM_BYTES)) {
             shim.append(shimLibraries.stringFromBytesHelpers());

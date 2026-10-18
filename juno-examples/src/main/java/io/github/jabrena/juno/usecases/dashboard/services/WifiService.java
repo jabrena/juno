@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.usecases.dashboard.services;
 
-import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
+import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiCredentials;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiStatus;

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.pacman;
 
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Delay;
 
 /** The animated title screen and the non-gameplay cards: ready, death, level-clear and game over. */
 final class Interludes {

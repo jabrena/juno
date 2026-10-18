@@ -4,15 +4,15 @@ description: "The ELEGOO 2.8-inch ILI9341 touch shield API: drawing, touch input
 layout: page
 ---
 
-[`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java)
+[`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/tft/TftTouchShield.java)
 drives the ELEGOO 2.8" TFT touch screen shield for UNO ("Pantalla Táctil TFT de 2,8 pulgadas"): a
 240x320 ILI9341 color display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a
 microSD socket.
 
 It needs no extra Arduino library. Control lines and the touch panel use
-[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/Gpio.java) pin operations and
-[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/Delay.java); the display's bytes go
-through [`ParallelBus`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/ParallelBus.java),
+[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/gpio/Gpio.java) pin operations and
+[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/util/Delay.java); the display's bytes go
+through [`ParallelBus`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/tft/ParallelBus.java),
 a compiler intrinsic that resolves the eight data pins and the write strobe to their GPIO ports once and then
 writes a whole port per store (the UNO R4's port set/reset registers, the UNO Q's Zephyr raw port API). A run of
 one color is a single call, so pixels stream from the runtime instead of costing a `digitalWrite` per pin. Solid
@@ -40,7 +40,7 @@ and restores the bus before it returns. The SD socket shares nothing with the di
 ## API
 
 ```java
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
 TftTouchShield.begin();                                // pins + reset + ILI9341 init, portrait
 TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);  // PORTRAIT, LANDSCAPE, *_FLIPPED
@@ -102,10 +102,10 @@ For every game at a glance, sorted by category with screenshots, see [GAMES.md](
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.TouchPaintTFT
+  -Djuno.main=io.github.jabrena.juno.api.thirdparty.tft.TouchPaintTFT
 ```
 
-[`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/tft/TouchPaintTFT.java)
+[`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/tft/TouchPaintTFT.java)
 is a minimal finger-paint program in `PORTRAIT_FLIPPED` rotation: pick a color from the palette
 along the top, then draw; the white swatch with a black center at the end of the palette clears the
 canvas. Each touch is logged to Serial with screen and raw coordinates, for

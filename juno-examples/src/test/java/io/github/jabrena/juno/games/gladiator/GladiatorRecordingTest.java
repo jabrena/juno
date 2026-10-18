@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.gladiator;
 
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.io.Gpio;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.gladiator.arena.Body;
 import io.github.jabrena.juno.games.gladiator.arena.Coliseum;
 import io.github.jabrena.juno.games.gladiator.arena.Match;

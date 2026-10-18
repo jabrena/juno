@@ -112,6 +112,11 @@ final class ZephyrCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String tcpClientHelpers() {
+        return runtimeSource.load("zephyr/tcp.cpp");
+    }
+
+    @Override
     public String httpsInclude() {
         return "";
     }

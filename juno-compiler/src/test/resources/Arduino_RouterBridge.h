@@ -22,6 +22,7 @@ class BridgeTCPClient : public WiFiClient {
 public:
   explicit BridgeTCPClient(BridgeClass&) {}
   bool begin() { return true; }
+  int connect(IPAddress, uint16_t) { return 0; }
   int connectSSL(const char*, uint16_t, const char*) { return 0; }
 };
 

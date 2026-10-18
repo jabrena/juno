@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.gladiator.arena;
 
-import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
 
 /**

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.chess;
 
 import io.github.jabrena.juno.api.io.serial.Serial;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
 import static io.github.jabrena.juno.games.chess.BishopSprite.*;
 import static io.github.jabrena.juno.games.chess.Chess.*;

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.starwars;
 
-import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.util.Random;
 
 import static io.github.jabrena.juno.games.starwars.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.starwars.Entities.E_SR;

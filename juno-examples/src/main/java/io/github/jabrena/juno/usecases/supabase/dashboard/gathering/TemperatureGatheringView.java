@@ -2,7 +2,7 @@ package io.github.jabrena.juno.usecases.supabase.dashboard.gathering;
 
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.supabase.dashboard.commons.TemperatureDashboardState;
 import io.github.jabrena.juno.usecases.supabase.dashboard.services.SupabaseTemperatureService;
 

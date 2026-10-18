@@ -37,6 +37,29 @@
 jwebserver -p 8005 -d "$(pwd)/target/site/"
 ```
 
+## Coverage report
+
+JaCoCo runs in every build. The `coverage-aggregator` module merges the coverage of `juno-api`, `juno-compiler`,
+`juno-maven-plugin` and `juno-rcx-firmware`; `juno-examples` and `juno-site` are excluded. Build the project, then serve
+the aggregated report:
+
+```bash
+./mvnw clean verify -T1C
+jwebserver -p 9000 -d "$(pwd)/coverage-aggregator/target/site/jacoco-aggregate/"
+```
+
+Then open http://127.0.0.1:9000/. If the report shows no coverage, the surefire cache skipped the tests on that run
+(a repeat build with no source changes is treated as a cache hit, so no test runs and no coverage is recorded).
+Clear it with the `clearTestCache` profile instead of deleting it by hand:
+
+```bash
+./mvnw clean verify -Pjacoco,clearTestCache -T1C
+```
+
+`clearTestCache` must be combined with `jacoco` explicitly: passing any profile with `-P` turns off every
+`activeByDefault` profile (`jacoco`, `cyclomatic-complexity`) unless it is also named, so `-PclearTestCache` alone
+would silently build without coverage instrumentation at all.
+
 ## Submodules
 
 This is a multi-module project. The following modules are declared in the root `pom.xml`.
@@ -56,8 +79,9 @@ The following profiles are declared in this project. Activate them with `-P <pro
 | Profile ID | Command | Activation |
 |------------|---------|------------|
 | `cyclomatic-complexity` (root `pom.xml`) | `./mvnw clean verify -P cyclomatic-complexity` | default (activeByDefault) |
-| `jacoco` (root and `juno-compiler/pom.xml`) | `./mvnw clean verify -P jacoco` | manual |
+| `jacoco` (root `pom.xml`) | `./mvnw clean verify -P jacoco` | default (activeByDefault) |
 | `sonar` (root `pom.xml`) | `SONAR_TOKEN=<your-token> ./mvnw -Pjacoco,sonar clean verify sonar:sonar` | manual (needs local SonarQube Community) |
+| `clearTestCache` (root `pom.xml`) | `./mvnw clean verify -Pjacoco,clearTestCache` (must include `jacoco`; see [Coverage report](#coverage-report)) | manual |
 | `site` (root `pom.xml`, `juno-site/pom.xml`) | `./mvnw clean verify -P site` | manual |
 | `arduino-cli` (`juno-compiler/pom.xml`, `juno-examples/pom.xml`) | `./mvnw -pl juno-compiler -am -Parduino-cli verify` | manual (needs Docker) |
 | `qemu` (`juno-compiler/pom.xml`) | `./mvnw -pl juno-compiler -am -Pqemu verify` | manual (needs Docker) |

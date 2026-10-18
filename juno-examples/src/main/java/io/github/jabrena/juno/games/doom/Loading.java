@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
 
 /**
  * Times a map's loading and its route planning, and shows their progress. The work is known before it starts: the

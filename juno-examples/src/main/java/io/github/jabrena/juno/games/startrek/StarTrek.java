@@ -2,10 +2,10 @@ package io.github.jabrena.juno.games.startrek;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.api.util.Random;
 
 /**
  * Star Trek on the ELEGOO 2.8" TFT touch screen shield, after Sega's 1982 color vector arcade game,

@@ -15,6 +15,7 @@
         <module>juno-examples</module>
         <module>juno-site</module>
         <module>juno-third-parties</module>
+        <module>coverage-aggregator</module>
     </modules>
 
     <properties>
@@ -291,7 +292,7 @@
         <profile>
             <id>jacoco</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -312,6 +313,56 @@
                                 <goals>
                                     <goal>report</goal>
                                 </goals>
+                            </execution>
+                            <execution>
+                                <id>check</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Reports violations as warnings instead of failing the build, so ./mvnw
+                                         verify can be used to generate the report and track coverage evolution
+                                         across modules that are still below ${coverage.level}. -->
+                                    <haltOnFailure>false</haltOnFailure>
+                                    <rules>
+                                        <rule>
+                                            <element>BUNDLE</element>
+                                            <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.level}%</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.level}%</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>METHOD</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.level}%</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>CLASS</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.level}%</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.level}%</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>COMPLEXITY</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>${coverage.level}%</minimum>
+                                        </limit>
+                                            </limits>
+                                        </rule>
+                                    </rules>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -428,6 +479,41 @@
                                     <filesets>
                                         <fileset>
                                             <directory>${project.basedir}/docs</directory>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Clears the surefire-cached-extension's (.mvn/extensions.xml) result cache before a clean build, so a
+             run that would otherwise report a cache hit (no tests executed, no jacoco.exec written) actually
+             re-runs the tests: ./mvnw clean -PclearTestCache verify. The cache lives outside the reactor, keyed
+             by groupId, so this clears it for every module in one place rather than per module. -->
+        <profile>
+            <id>clearTestCache</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <!-- Profiles are inherited by every child POM; without this, each reactor module would
+                             run its own copy of this execution. -->
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>clear-surefire-cache</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${settings.localRepository}/../test-cache/surefire-cached/io.github.jabrena</directory>
                                         </fileset>
                                     </filesets>
                                 </configuration>

@@ -4,9 +4,7 @@ import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 
@@ -189,25 +187,5 @@ class ArduinoCliTest {
 
     private static Command interactive(List<String> arguments) {
         return new Command(arguments, Command.Mode.INTERACTIVE);
-    }
-
-    private static final class FakeExecutor implements CommandExecutor {
-        private final Deque<CommandResult> responses = new ArrayDeque<>();
-        private final List<Command> invocations = new ArrayList<>();
-
-        FakeExecutor respond(int exitCode, String output) {
-            responses.addLast(new CommandResult(exitCode, output));
-            return this;
-        }
-
-        @Override
-        public CommandResult execute(Command command) {
-            invocations.add(command);
-            return responses.removeFirst();
-        }
-
-        List<Command> invocations() {
-            return List.copyOf(invocations);
-        }
     }
 }

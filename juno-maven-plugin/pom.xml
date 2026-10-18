@@ -25,6 +25,14 @@
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-compiler</artifactId>
         </dependency>
+        <!-- Only juno-compiler's transitive compile dependency in production code; declared explicitly, test
+             scope, because CompileMojoTest/VerifyMojoTest/UploadMojoTest's fixture entry point imports it
+             directly. -->
+        <dependency>
+            <groupId>io.github.jabrena</groupId>
+            <artifactId>juno-api</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
@@ -52,10 +60,50 @@
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- lookupMojo/configureMojo + setVariableValueToObject: sets a Mojo's @Parameter fields the way Maven
+             itself does, from a unit-test plugin-config.xml, instead of reflection written in test code. -->
+        <dependency>
+            <groupId>org.apache.maven.plugin-testing</groupId>
+            <artifactId>maven-plugin-testing-harness</artifactId>
+            <version>3.5.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- AbstractMojoTestCase's PlexusTestCase superclass is junit.framework.TestCase (JUnit 3); the harness
+             declares this optional, so it must be supplied here. Not used for test discovery: tests run as
+             ordinary JUnit Jupiter classes with @Test/@BeforeEach. -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Only a transitive dependency of the harness above (it provides the Plexus container); declared
+             explicitly, test scope, because MojoConfig builds each Mojo's configuration directly from its
+             DefaultPlexusConfiguration/PlexusConfiguration, in pure Java, instead of an XML fixture file. -->
+        <dependency>
+            <groupId>org.eclipse.sisu</groupId>
+            <artifactId>org.eclipse.sisu.plexus</artifactId>
+            <version>1.1.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <!-- EnvMojoTest exercises the real reflective export into java.lang.ProcessEnvironment, which needs
+                 the same add-opens flags EnvMojo's own javadoc documents for the real Maven JVM (.mvn/jvm.config),
+                 here applied to the forked Surefire JVM instead. @{argLine} keeps JaCoCo's instrumentation
+                 argument (set by prepare-agent) rather than replacing it. Passing any other profile with -P
+                 (e.g. -PclearTestCache) deactivates jacoco's activeByDefault profile, so prepare-agent never
+                 runs and this placeholder is left unresolved; -Pjacoco,<otherProfile> keeps both active. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens
+                        java.base/java.util=ALL-UNNAMED</argLine>
+                </configuration>
+            </plugin>
             <!-- NullAway (via Error Prone) fails the build on nullness errors; settings live in the root pom. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

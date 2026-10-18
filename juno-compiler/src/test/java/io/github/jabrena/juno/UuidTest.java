@@ -98,8 +98,8 @@ class UuidTest {
     void lowersExplicitPortNoiseSamplingWithoutTreatingItAsSecureEntropy() throws Exception {
         CompilationResult result = compile("""
                 public static void main() {
-                    int seed = io.github.jabrena.juno.api.PortNoise.collectSeed(14, 2, 64);
-                    io.github.jabrena.juno.api.Random.seed(seed);
+                    int seed = io.github.jabrena.juno.api.io.gpio.PortNoise.collectSeed(14, 2, 64);
+                    io.github.jabrena.juno.api.util.Random.seed(seed);
                 }
                 """);
 
@@ -113,8 +113,8 @@ class UuidTest {
                 public static void main() {
                     byte[] bytes = new byte[20];
                     java.util.UUID original = new java.util.UUID(0x123456789abcdef0L, 0x0fedcba987654321L);
-                    io.github.jabrena.juno.api.UuidCodec.toBytes(original, bytes, 2);
-                    java.util.UUID copy = io.github.jabrena.juno.api.UuidCodec.fromBytes(bytes, 2);
+                    io.github.jabrena.juno.api.util.UuidCodec.toBytes(original, bytes, 2);
+                    java.util.UUID copy = io.github.jabrena.juno.api.util.UuidCodec.fromBytes(bytes, 2);
                     boolean equal = original.equals(copy);
                 }
                 """);

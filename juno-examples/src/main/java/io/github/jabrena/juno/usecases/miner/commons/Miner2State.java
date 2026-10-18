@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.miner.commons;
 
-import io.github.jabrena.juno.api.UuidCodec;
+import io.github.jabrena.juno.api.util.UuidCodec;
 import io.github.jabrena.juno.usecases.miner.chain.BlockPool;
 import io.github.jabrena.juno.usecases.miner.peers.NodeId;
 import io.github.jabrena.juno.usecases.miner.peers.PeerTable;

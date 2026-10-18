@@ -147,7 +147,7 @@ class MainTest {
     private void compileFixture() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.Gpio;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Fixture {
                     public static void main(String[] args) {
                         Gpio.pinMode(13, Gpio.OUTPUT);

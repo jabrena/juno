@@ -75,7 +75,7 @@ class ExceptionsTest {
     void selectsTheHandlerPerThrownClassWithASwitch() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.time.Clock;
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Selector {
                     public static void main(String[] args) {
@@ -223,7 +223,7 @@ class ExceptionsTest {
     void integerDivisionByZeroThrowsACatchableArithmeticException() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Clock;
+                import io.github.jabrena.juno.api.time.Clock;
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Division {
                     static int ratio(int total, int count) {
