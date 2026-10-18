@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.util.Random;
 
 /**
  * How the CPU marine fights, like a person rather than an aimbot: it needs a moment to react to a new monster, swings

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.gladiator.view;
 
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.games.gladiator.arena.GladiatorClass;
 
 /** A rotating 3D line model with class-specific helmet, shield and weapons, built into a {@link ViewList}. */

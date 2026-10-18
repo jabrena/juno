@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.net.weather;
 
-import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.util.Delay;
 
 /** Displays time and weather data on the UNO R4 WiFi LED matrix. */
 public final class DisplayData {

@@ -1,12 +1,12 @@
 package io.github.jabrena.juno.api.net.http;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Memory;
+import io.github.jabrena.juno.api.hardware.Memory;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
-import io.github.jabrena.juno.api.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.api.net.Wifi;
+import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * Demonstrates {@link HttpServer}'s {@code POST} handling: connects to WiFi with build-time

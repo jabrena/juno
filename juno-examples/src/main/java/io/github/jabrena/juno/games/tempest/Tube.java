@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.tempest;
 
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
 /**
  * The tube's perspective geometry, its lane spokes, and the shared line rasterizer.

@@ -36,8 +36,8 @@ Java source -> javac -> .class -> Juno linker/AOT -> .S + Shim.cpp + .ino -> Ard
 This is a multi-module Maven build:
 
 - [`juno-api/`](https://github.com/jabrena/juno/tree/main/juno-api) — the programming model: the small Java-facing hardware API Juno recognizes as compiler intrinsics
-  (`io.github.jabrena.juno.api`: `Delay`, `Clock`, `Random`, `LedMatrix`, `api.io.Gpio`,
-  `api.io.DigitalOutput`, `api.lcd.LcdKeypadShield`, `api.tft.TftTouchShield`, `api.hid.Mouse`, `api.io.serial.Serial`, …) and the
+  (`io.github.jabrena.juno.api`: `Delay`, `Clock`, `Random`, `LedMatrix`, `api.io.gpio.Gpio`,
+  `api.io.gpio.DigitalOutput`, `api.thirdparty.lcd.LcdKeypadShield`, `api.thirdparty.tft.TftTouchShield`, `api.hid.Mouse`, `api.io.serial.Serial`, …) and the
   `io.github.jabrena.juno.annotations` package
   (`Board`, `ArduinoBoard`, `ArduinoUnoR4WiFi`, `ArduinoUnoQ`) that entry-point classes use to select a
   compilation target. This is the only artifact programs compile against.
@@ -95,8 +95,8 @@ at link time:
 ```java
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.DigitalOutput;
+import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.api.io.gpio.DigitalOutput;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class Blink {

@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.usecases.miner.peers;
 
-import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Header;

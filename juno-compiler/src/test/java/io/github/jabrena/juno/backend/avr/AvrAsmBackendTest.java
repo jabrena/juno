@@ -74,7 +74,7 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.annotations.%s;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.Watchdog;
-                import io.github.jabrena.juno.api.Delay;
+                import io.github.jabrena.juno.api.util.Delay;
                 @Board(%s.class)
                 @Watchdog(timeoutMillis = %d)
                 public final class %s {
@@ -118,8 +118,8 @@ class AvrAsmBackendTest {
                         Gpio.digitalWrite(Gpio.builtinLed(), true);
                         Delay.millis(500);
                 """, """
-                import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.io.Gpio;
+                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
                 """);
 
         assertThat(result.assembly())
@@ -246,7 +246,7 @@ class AvrAsmBackendTest {
     @Test
     void usesSoftwareSpiForShieldSdCards() throws Exception {
         CompilationResult result = compile("demo.AvrSd", "SdCard.begin();",
-                "import io.github.jabrena.juno.api.io.SdCard;");
+                "import io.github.jabrena.juno.api.thirdparty.sd.SdCard;");
 
         assertThat(result.runtimeShim())
                 .contains("class JunoSdSoftSpiDriver : public SdSpiBaseClass")
@@ -525,8 +525,8 @@ class AvrAsmBackendTest {
                         Gpio.digitalWrite(Gpio.builtinLed(), true);
                         Delay.millis(500);
                 """, """
-                import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.io.Gpio;
+                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
                 """);
         assertThat(result.assembly())
                 .contains("call juno_avr_thunk_juno_pin_mode")

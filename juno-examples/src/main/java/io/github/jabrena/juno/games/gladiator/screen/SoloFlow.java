@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.games.gladiator.arena.Match;
 import io.github.jabrena.juno.games.gladiator.gladiator.Report;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;

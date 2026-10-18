@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
-import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.i2c.I2c;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * Probes Seeed's Grove 3-Axis Digital Compass V2.0, which uses a BMM150, and reads its raw axes

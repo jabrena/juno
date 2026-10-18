@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.chess;
 
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Delay;
 
 /** Animated chessboard cover shown again after every completed match. */
 final class Interludes {

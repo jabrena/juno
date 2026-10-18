@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.led;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * Scrolls "Juno, Java for Arduino ONE R4" across the built-in LED matrix from right to

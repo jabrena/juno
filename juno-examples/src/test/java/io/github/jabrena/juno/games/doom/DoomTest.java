@@ -1,15 +1,15 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.io.Gpio;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static io.github.jabrena.juno.api.tft.Internals.getInt;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.getInt;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

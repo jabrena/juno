@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * The touch panel: the pilot screen, then in flight the crosshair. Drag moves the crosshair; a short

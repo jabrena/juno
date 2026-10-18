@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom2.commons;
 
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
 /**
  * A DOOM-style menu: a column of full-width rows, each with a title and a one-line detail, that can be greyed out or

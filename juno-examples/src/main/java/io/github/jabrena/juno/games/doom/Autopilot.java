@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.util.Random;
 
 /**
  * The CPU marine: walks the map's route (turn toward the next waypoint, stride to it, loop): on a WAD map the walk

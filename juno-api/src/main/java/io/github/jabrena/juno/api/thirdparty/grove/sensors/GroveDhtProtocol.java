@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.Gpio;
+import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
 
 /** Shared allocation-free one-wire reader for DHT-family Grove modules. */
 final class GroveDhtProtocol {

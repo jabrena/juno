@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.lunarlander;
 
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Delay;
 
 /** Human buttons, pilot choice, header switching, and an automatic landing controller. */
 final class Controls {

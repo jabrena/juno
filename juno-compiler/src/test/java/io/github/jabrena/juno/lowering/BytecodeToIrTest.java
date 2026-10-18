@@ -30,7 +30,7 @@ class BytecodeToIrTest {
     void lowersStraightLineArithmeticAndAnIntrinsicCall() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.Gpio;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;

@@ -1,7 +1,7 @@
 package demo;
 
-import io.github.jabrena.juno.api.io.Gpio;
-import io.github.jabrena.juno.api.io.ir.Infrared;
+import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 

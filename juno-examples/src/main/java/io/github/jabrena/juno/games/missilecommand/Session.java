@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Random;
 
 /** Score, wave progress, targets and ammo, and the rules governing missiles, shots and blasts. */
 final class Session {

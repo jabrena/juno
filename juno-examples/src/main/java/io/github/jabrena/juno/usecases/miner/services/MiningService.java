@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
-import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
+import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.games.blockchain.Bytes;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
 import io.github.jabrena.juno.games.blockchain.Sha256;
@@ -10,7 +10,6 @@ import io.github.jabrena.juno.usecases.miner.chain.BlockFormat;
 import io.github.jabrena.juno.usecases.miner.chain.BlockPool;
 import io.github.jabrena.juno.usecases.miner.chain.ChainProtocol;
 import io.github.jabrena.juno.usecases.miner.chain.Miner;
-
 import io.github.jabrena.juno.usecases.miner.commons.Miner2State;
 
 /**

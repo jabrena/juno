@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
-import io.github.jabrena.juno.api.io.SdCard;
+import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

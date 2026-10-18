@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.redbaron;
 
-import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.util.Random;
 
 /** Packed entity records and the shared per-frame movement loop. */
 final class Entities {

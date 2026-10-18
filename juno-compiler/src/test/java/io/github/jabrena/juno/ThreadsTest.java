@@ -396,7 +396,7 @@ class ThreadsTest {
 
     @Test
     void delayBecomesASleepThatLetsOtherThreadsRun() throws Exception {
-        String body = START_AND_JOIN + "io.github.jabrena.juno.api.Delay.millis(10);\n";
+        String body = START_AND_JOIN + "io.github.jabrena.juno.api.util.Delay.millis(10);\n";
 
         CompilationResult result = compile("ArduinoUnoR4WiFi", body);
 

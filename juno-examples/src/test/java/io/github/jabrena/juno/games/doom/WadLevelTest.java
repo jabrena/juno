@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.io.SdCard;
+import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
+import io.github.jabrena.juno.api.util.Random;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

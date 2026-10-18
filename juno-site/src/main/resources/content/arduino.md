@@ -154,40 +154,40 @@ built-in 12x8 LED matrix.
 
 ### LCD Keypad Shield examples
 
-[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadShield.java)
+[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/LcdKeypadShield.java)
 drives a common 16x2 HD44780-compatible "LCD Keypad Shield" (LCD on digital pins 4-9, backlight on
 pin 10, 5 buttons on `A0`) — no new compiler intrinsic, built entirely from `Gpio`/`Delay` the same
 way `LedCanvas` is built from `LedMatrix`.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.lcd.LcdKeypadDemo
+  -Djuno.main=io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadDemo
 ```
 
-[`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/LcdKeypadDemo.java)
+[`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/LcdKeypadDemo.java)
 prints a header and shows which button is currently held. Assembled, linked, uploaded to, and
 confirmed working on a real UNO R4 WiFi with this exact shield.
 
-[`Pomodoro`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lcd/pomodoro/Pomodoro.java)
+[`Pomodoro`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/pomodoro/Pomodoro.java)
 is a standalone (no network) Pomodoro timer: pick a session length (5-60 minutes) with UP/DOWN,
 confirm with SELECT, and a live `MM:SS` countdown runs on the LCD, logged to Serial every tick; the
 alarm blinks until any button is pressed, then returns to minute selection.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.lcd.pomodoro.Pomodoro
+  -Djuno.main=io.github.jabrena.juno.api.thirdparty.lcd.pomodoro.Pomodoro
 ```
 
 ### TFT touch screen shield examples
 
-[`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/tft/TftTouchShield.java)
+[`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/tft/TftTouchShield.java)
 drives the ELEGOO 2.8" TFT touch screen shield (ILI9341 on an 8-bit parallel bus on D2-D9/`A0`-`A4`,
 resistive touch, microSD on D10-D13), built from `Gpio`/`Delay` plus the `ParallelBus` intrinsic for the
 display's bytes. See [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.tft.TouchPaintTFT
+  -Djuno.main=io.github.jabrena.juno.api.thirdparty.tft.TouchPaintTFT
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.net.wifi.WifiStatusSDTFT
 ```
@@ -236,9 +236,9 @@ to the plugin with `-Djuno.port=...`.
 
 ### Example: ServoSweep (hobby servo control)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/motors/ServoSweep.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/motors/ServoSweep.java)
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/servo/ServoSweep.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/servo/ServoSweep.java)
 sweeps a 3-wire hobby servo back and forth between 0 and 180 degrees using
-[`Servo`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/motors/Servo.java) — see its wiring
+[`Servo`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/servo/Servo.java) — see its wiring
 diagram in the class Javadoc for how to connect the servo's signal/power/ground wires.
 
 It needs the `Servo` library (not bundled with the `arduino:renesas_uno` core, installed by
@@ -246,23 +246,23 @@ It needs the `Servo` library (not bundled with the `arduino:renesas_uno` core, i
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.motors.ServoSweep
+  -Djuno.main=io.github.jabrena.juno.api.thirdparty.servo.ServoSweep
 ```
 
 ### Example: LegoTrain (LEGO Powered Up over Bluetooth LE)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/lego/LegoTrain.java)
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lego/LegoTrain.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lego/LegoTrain.java)
 connects to a LEGO Powered Up hub and shuttles a train motor on port A back and forth using
-[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/lego/poweredup/PoweredUpHubRemote.java) —
+[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/lego/poweredup/PoweredUpHubRemote.java) —
 see [the LEGO Powered Up guide](../lego) for the full API. `MagicSquarePoweredUpHub` in
-`io.github.jabrena.juno.api.lego.poweredup` drives a two-motor vehicle around a square.
+`io.github.jabrena.juno.api.thirdparty.lego.poweredup` drives a two-motor vehicle around a square.
 
 It needs the `ArduinoBLE` library (not bundled with the `arduino:renesas_uno` core, installed by
 `juno:install-deps` above, or on its own with `arduino-cli lib install ArduinoBLE`):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.lego.LegoTrain \
+  -Djuno.main=io.github.jabrena.juno.api.thirdparty.lego.LegoTrain \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 

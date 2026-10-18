@@ -41,7 +41,7 @@ arguments within that range — a larger value wraps around instead of clamping.
 ```java
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.Delay;
+import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.api.hid.Mouse;
 
 @Board(ArduinoUnoR4WiFi.class)

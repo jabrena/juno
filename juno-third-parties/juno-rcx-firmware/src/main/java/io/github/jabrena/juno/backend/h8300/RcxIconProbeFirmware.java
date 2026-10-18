@@ -38,7 +38,7 @@ public final class RcxIconProbeFirmware {
     private static final Path SRECORD_OUTPUT =
             Path.of("juno-third-parties/juno-rcx-firmware/src/main/resources/rcx/firmware.srec");
     private static final Path JAVA_OUTPUT = Path.of(
-            "juno-third-parties/juno-rcx-firmware/src/main/java/io/github/jabrena/juno/api/lego/rcxfirmware/RcxFirmwareImage.java");
+            "juno-third-parties/juno-rcx-firmware/src/main/java/io/github/jabrena/juno/api/thirdparty/lego/rcxfirmware/RcxFirmwareImage.java");
 
     private final H8Assembler assembler = new H8Assembler(RcxRom.FIRMWARE_START);
     private final RcxRom rom = new RcxRom(assembler);

@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.gladiator;
 
-import io.github.jabrena.juno.api.BoardRuntime;
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.hardware.BoardRuntime;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.gladiator.arena.Arms;
 import io.github.jabrena.juno.games.gladiator.arena.Body;
 import io.github.jabrena.juno.games.gladiator.arena.Braziers;

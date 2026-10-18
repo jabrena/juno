@@ -1,15 +1,15 @@
 package io.github.jabrena.juno.games.starwars;
 
-import io.github.jabrena.juno.api.Random;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static io.github.jabrena.juno.api.tft.Internals.call;
-import static io.github.jabrena.juno.api.tft.Internals.callBoolean;
-import static io.github.jabrena.juno.api.tft.Internals.get;
-import static io.github.jabrena.juno.api.tft.Internals.getInt;
-import static io.github.jabrena.juno.api.tft.Internals.set;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.call;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.callBoolean;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.get;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.getInt;
+import static io.github.jabrena.juno.api.thirdparty.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

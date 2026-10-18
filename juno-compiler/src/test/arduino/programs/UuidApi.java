@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.api.UuidCodec;
+import io.github.jabrena.juno.api.util.UuidCodec;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import java.util.UUID;
 

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.miner.peers;
 
-import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.usecases.miner.chain.ChainProtocol;
 import org.junit.jupiter.api.Test;
 

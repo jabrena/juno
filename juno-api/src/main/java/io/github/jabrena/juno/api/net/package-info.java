@@ -6,6 +6,8 @@
  * {@link io.github.jabrena.juno.api.net.http} subpackage for HTTP(S) client/server support and
  * JSON reading, and {@link io.github.jabrena.juno.api.net.email} for basic SMTP send / POP3S
  * read, all built on top of this connection.
+ * {@link io.github.jabrena.juno.api.net.InternetClock} configures the endpoint behind the
+ * internet-backed {@link java.time.LocalDateTime#now()} subset.
  */
 @NullMarked
 package io.github.jabrena.juno.api.net;

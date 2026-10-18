@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.usecases.dashboard.commons.ux;
 
-import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
 
 /**
  * The frame-rate label every screen shows in its bottom-left corner. One instance is shared by all the screens: the

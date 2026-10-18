@@ -2,7 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
-import io.github.jabrena.juno.api.imu.NineAxisMotionShield;
+import io.github.jabrena.juno.api.thirdparty.imu.NineAxisMotionShield;
 
 /** The BNO055 orientation sensor over I2C. */
 public final class NineAxisMotionShieldApi {

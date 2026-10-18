@@ -74,7 +74,7 @@ class LocalDateTimeTest {
         CompilationResult result = compile("""
                 public static void main() {
                     java.util.Properties properties = new java.util.Properties();
-                    boolean configured = io.github.jabrena.juno.api.InternetClock.configure(properties);
+                    boolean configured = io.github.jabrena.juno.api.net.InternetClock.configure(properties);
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                 }
                 """);

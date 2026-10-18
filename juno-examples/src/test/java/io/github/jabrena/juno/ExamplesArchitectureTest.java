@@ -6,7 +6,7 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.Location;
 import io.github.jabrena.juno.annotations.Watchdog;
-import io.github.jabrena.juno.api.lego.rcxfirmware.RcxFirmwareImage;
+import io.github.jabrena.juno.api.thirdparty.lego.rcxfirmware.RcxFirmwareImage;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;

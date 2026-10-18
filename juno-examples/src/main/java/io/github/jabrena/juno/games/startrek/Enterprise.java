@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.startrek;
 
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.Delay;
 
 import static io.github.jabrena.juno.games.startrek.Geometry.FIX;
 import static io.github.jabrena.juno.games.startrek.Geometry.SECTOR_FIX;

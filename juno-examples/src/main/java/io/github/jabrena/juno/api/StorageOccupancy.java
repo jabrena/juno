@@ -5,9 +5,11 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.io.SdCard;
+import io.github.jabrena.juno.api.hardware.Memory;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * Reports how full the board's storage is over USB serial: the program flash, the Juno arena, and an SD card

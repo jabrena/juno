@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.net.http;
 /**
  * Named HTTP status codes for {@link HttpServer#respond}'s {@code status} parameter, which stays
  * a plain {@code int} — these are ordinary compile-time-constant {@code int} fields, not a new
- * intrinsic or type, exactly like {@link io.github.jabrena.juno.api.io.Gpio#OUTPUT}.
+ * intrinsic or type, exactly like {@link io.github.jabrena.juno.api.io.gpio.Gpio#OUTPUT}.
  */
 public final class HttpStatus {
     public static final int OK = 200;

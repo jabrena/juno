@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.games.doom2.death;
 
-import io.github.jabrena.juno.api.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.games.doom2.commons.Doom2Views;
 import io.github.jabrena.juno.games.doom2.commons.Screen;
 

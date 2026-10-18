@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.gladiator.arena;
 
-import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.util.Random;
 
 /**
  * The arena's map: an elliptical wall around a sand floor with {@link #PILLAR_COUNT} round pillars standing at random,

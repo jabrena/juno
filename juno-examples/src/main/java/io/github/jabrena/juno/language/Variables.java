@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.util.Delay;
 
 /** Demonstrates constants, static variables, local variables, assignment, and block scope. */
 public class Variables {

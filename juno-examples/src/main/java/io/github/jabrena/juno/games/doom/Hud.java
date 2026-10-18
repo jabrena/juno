@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
 /**
  * DOOM's status bar under the view: ammo for the weapon in hand, health, the arms grid, the marine's face, armor and a

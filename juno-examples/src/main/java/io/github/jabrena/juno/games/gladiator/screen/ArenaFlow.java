@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.games.gladiator.arena.Coliseum;
 import io.github.jabrena.juno.games.gladiator.arena.ColiseumMap;
 import io.github.jabrena.juno.games.gladiator.arena.Match;

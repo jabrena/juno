@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.pacman;
 
-import io.github.jabrena.juno.api.Random;
+import io.github.jabrena.juno.api.util.Random;
 
 /**
  * The ghosts' own rules: leaving the house, stepping through the maze, and the arcade's targeting

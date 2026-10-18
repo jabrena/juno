@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.api.Clock;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.Random;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.api.util.Random;
 
 /** Demonstrates seeding and generating pseudorandom values within bounded ranges. */
 public final class RandomNumbers {

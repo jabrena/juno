@@ -101,8 +101,8 @@ class InliningAndScalarReplacementTest {
     private String compile(String members) throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.Delay;
-                import io.github.jabrena.juno.api.io.Gpio;
+                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Inlining {
                 %s
                 }

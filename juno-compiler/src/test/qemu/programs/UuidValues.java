@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.UuidCodec;
+import io.github.jabrena.juno.api.util.UuidCodec;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import java.util.UUID;
 

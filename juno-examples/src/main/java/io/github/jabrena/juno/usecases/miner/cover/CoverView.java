@@ -3,7 +3,7 @@ package io.github.jabrena.juno.usecases.miner.cover;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
-import io.github.jabrena.juno.api.tft.TftTouchShield;
+import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Header;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Views;

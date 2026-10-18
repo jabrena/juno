@@ -2,10 +2,10 @@ package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * Diagnoses a Grove compass on I2C, an analog gas sensor on A0, and a PIR on D3. A compass on D8

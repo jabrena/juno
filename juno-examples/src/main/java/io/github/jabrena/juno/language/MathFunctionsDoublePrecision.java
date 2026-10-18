@@ -3,9 +3,9 @@ package io.github.jabrena.juno.language;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.Delay;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * Demonstrates the double-precision {@code java.lang.Math} functions: powers and roots, exponentials and logarithms,
