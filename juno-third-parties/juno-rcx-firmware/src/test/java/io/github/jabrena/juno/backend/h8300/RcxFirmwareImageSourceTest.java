@@ -53,4 +53,14 @@ class RcxFirmwareImageSourceTest {
                 .isInstanceOf(FirmwareGenerationException.class)
                 .hasMessageContaining("entry is outside");
     }
+
+    @Test
+    void rejectsAnImageTooLongForTheRomArea() {
+        assertThatThrownBy(() -> new RcxFirmwareImageSource(new H8Image(0x8000, 0x8000, new byte[28_673])))
+                .isInstanceOf(FirmwareGenerationException.class)
+                .hasMessageContaining("28672");
+        assertThatThrownBy(() -> new RcxFirmwareImageSource(new H8Image(0x8000, 0x7FFF, new byte[] {1})))
+                .isInstanceOf(FirmwareGenerationException.class)
+                .hasMessageContaining("entry is outside");
+    }
 }
