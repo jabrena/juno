@@ -25,6 +25,9 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
     @Parameter(property = "juno.port")
     private @Nullable String port;
 
+    /** Runs {@code arduino-cli} itself, except in tests, which substitute a fake so no real process is touched. */
+    private CommandExecutor commandExecutor = new SystemCommandExecutor();
+
     @Override
     public final void execute() throws MojoFailureException {
         try {
@@ -38,7 +41,12 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
     abstract void run();
 
     final ArduinoCli arduinoCli() {
-        return new ArduinoCli(arduinoCli, message -> getLog().info(message));
+        return new ArduinoCli(arduinoCli, commandExecutor, message -> getLog().info(message));
+    }
+
+    /** Test seam: substitutes the executor {@link #arduinoCli()} builds its {@link ArduinoCli} with. */
+    void useExecutor(CommandExecutor executor) {
+        this.commandExecutor = executor;
     }
 
     /** The configured FQBN override, else {@code detectedFqbn}. */
