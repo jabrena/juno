@@ -51,6 +51,17 @@ final class H8Simulator {
         throw new AssertionError("still running after " + maxSteps + " instructions, pc 0x" + Integer.toHexString(pc));
     }
 
+    /** Runs at most {@code steps} instructions, allowing firmware whose intended steady state is an infinite loop. */
+    void runFor(int steps) {
+        try {
+            for (int step = 0; step < steps; step++) {
+                step();
+            }
+        } catch (Stop stop) {
+            // A simulated ROM event may finish a bounded diagnostic run early.
+        }
+    }
+
     int register(int number) {
         return registers[number];
     }
@@ -78,6 +89,10 @@ final class H8Simulator {
     }
 
     private void step() {
+        if (pc % 2 != 0) {
+            // The H8/300 fetches instructions as words; one at an odd address never runs as written.
+            throw new AssertionError("instruction at odd address 0x" + Integer.toHexString(pc));
+        }
         int first = fetch();
         int second = fetch();
         int high = second >> 4;
@@ -116,6 +131,7 @@ final class H8Simulator {
             case 0x0B -> registers[low & 7] = (registers[low & 7] + (high == 8 ? 2 : 1)) & 0xFFFF;
             case 0x1B -> registers[low & 7] = (registers[low & 7] - (high == 8 ? 2 : 1)) & 0xFFFF;
             case 0x5E -> call(fetchWord());
+            case 0x5D -> call(registers[high]);
             case 0x5A -> pc = fetchWord();
             case 0x54 -> {
                 pc = readWord(registers[7]);

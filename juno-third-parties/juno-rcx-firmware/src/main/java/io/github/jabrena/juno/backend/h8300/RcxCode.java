@@ -17,6 +17,8 @@ final class RcxCode {
     static final String SEND_REPLY = "send_reply";
     /** The main loop, for messages that get no reply. */
     static final String LOOP = "loop";
+    /** Subroutine: draws the display's number, or {@code JUno} before the first command, without refreshing. */
+    static final String DRAW_NUMBER = "draw_number";
 
     private final H8Assembler assembler;
     private final RcxRom rom;

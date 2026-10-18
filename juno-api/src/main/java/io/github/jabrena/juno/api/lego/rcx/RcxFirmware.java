@@ -34,10 +34,13 @@ public final class RcxFirmware {
     private static final int OPCODE_TOGGLE = 0x08;
     private static final int RETRIES = 5;
     private static final int REPLY_MILLIS = 150;
+    private static final int TRANSFER_REPLY_MILLIS = 500;
     private static final int UNLOCK_MILLIS = 1000;
 
     private static int frameSum;
     private static boolean toggle;
+    private static int lastTransferIndex = -1;
+    private static int transferCode;
 
     /**
      * Asks the brick for its versions: {@code 1} when it runs firmware, {@code 0} when only its boot ROM runs (so
@@ -91,7 +94,8 @@ public final class RcxFirmware {
             sendPair((checksum >> 8) & 0xFF);
             sendPair(0);
             endFrame();
-            if (RcxLink.awaitReply(OPCODE_START, REPLY_MILLIS) >= 0) {
+            if (RcxLink.awaitReply(OPCODE_START, REPLY_MILLIS) == 1 && RcxLink.argument0 == 0) {
+                lastTransferIndex = -1;
                 return true;
             }
         }
@@ -102,12 +106,16 @@ public final class RcxFirmware {
      * Sends block number {@code index} (1 for the first) holding the first {@code length} bytes of {@code block}
      * (at most {@value #BLOCK_SIZE}), once; a full block takes about two seconds. Returns the brick's status,
      * {@code 0} when it stored the block, {@link #NO_REPLY} when no answer came, or the brick's error code. The
-     * caller retries: the toggle bit of the opcode follows the block number, so the brick ignores a resend straight
-     * after it stored the block and answers the one after that.
+     * caller may retry the identical block, but the boot ROM mishandles duplicate firmware transfers: repeated
+     * missing replies require restarting the download, never assuming the block was stored. Use index {@code 0}
+     * for the final block; it finalizes the image checksum and cannot be retransmitted.
      */
     public static int transfer(int index, byte[] block, int length) {
-        int code = (index & 1) != 0 ? OPCODE_TRANSFER | OPCODE_TOGGLE : OPCODE_TRANSFER;
-        beginFrame(code);
+        if (index != lastTransferIndex) {
+            transferCode = toggled(OPCODE_TRANSFER);
+            lastTransferIndex = index;
+        }
+        beginFrame(transferCode);
         sendPair(index & 0xFF);
         sendPair((index >> 8) & 0xFF);
         sendPair(length & 0xFF);
@@ -120,7 +128,7 @@ public final class RcxFirmware {
         }
         sendPair(blockSum & 0xFF);
         endFrame();
-        if (RcxLink.awaitReply(OPCODE_TRANSFER, REPLY_MILLIS) < 1) {
+        if (RcxLink.awaitReply(OPCODE_TRANSFER, TRANSFER_REPLY_MILLIS) < 1) {
             return NO_REPLY;
         }
         return RcxLink.argument0;

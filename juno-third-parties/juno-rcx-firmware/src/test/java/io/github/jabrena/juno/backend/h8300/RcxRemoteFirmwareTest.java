@@ -42,6 +42,58 @@ class RcxRemoteFirmwareTest {
     }
 
     @Test
+    void redrawsIconsOnAClearedDisplayWithoutClearingThemOneByOne() {
+        // On the brick, clearing icons one by one and lighting them again every 0.3 s left only the standing figure;
+        // a cleared display followed by the lit icons shows them all.
+        rcx.receive(0x10);
+        rcx.receive(0x21, 0x80 | 0x1);
+
+        run();
+
+        assertThat(rcx.displayCalls()).noneMatch(call -> call.startsWith("clear 3"));
+        boolean cleared = false;
+        for (String call : rcx.displayCalls()) {
+            if (call.equals("refresh") || call.equals("reply")) {
+                cleared = false;
+            } else if (call.equals("clear display")) {
+                cleared = true;
+            } else {
+                assertThat(cleared).as("an icon lit without clearing the display first: %s", rcx.displayCalls())
+                        .isTrue();
+            }
+        }
+        assertThat(rcx.icons()).containsExactlyInAnyOrder(RcxRom.LCD_ICONS + 0x07, RcxRom.LCD_ICONS + 0x10);
+        assertThat(rcx.displayed()).isEqualTo(-1);
+    }
+
+    @Test
+    void repliesOnlyOnceTheDisplayIsRedrawn() {
+        // The Arduino sends its next command as soon as the reply arrives; on the brick, a command that came while the
+        // display was still being redrawn after the reply was lost.
+        rcx.receive(0xB2, 0x0E, 1);
+
+        run();
+
+        List<String> calls = rcx.displayCalls();
+        assertThat(calls.subList(calls.size() - 2, calls.size())).containsExactly("refresh", "reply");
+        assertThat(rcx.icons()).contains(RcxRom.LCD_ICONS + 0x0E);
+    }
+
+    @Test
+    void showsJunoWhenTheFirmwareStarts() {
+        H8Simulator cpu = run();
+
+        assertThat(new int[] {
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY), cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 1),
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 2), cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 3),
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 4), cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 5),
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 6), cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 7),
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 8)
+                })
+                .containsExactly(0xA0, 0x02, 0x00, 0x88, 0x08, 0x88, 0x80, 0x8A, 0xAA);
+    }
+
+    @Test
     void answersAliveWithTheComplementedOpcode() {
         rcx.receive(0x10);
         rcx.receive(0x18);
@@ -49,7 +101,7 @@ class RcxRemoteFirmwareTest {
         run();
 
         assertThat(rcx.replies()).containsExactly(new int[] {0xEF}, new int[] {0xE7});
-        assertThat(rcx.displayed()).isEqualTo(2);
+        assertThat(rcx.displayed()).as("JUno stays until a number is set").isEqualTo(-1);
     }
 
     @Test
@@ -132,7 +184,7 @@ class RcxRemoteFirmwareTest {
         run();
 
         assertThat(rcx.replies()).containsExactly(new int[] {0xEF});
-        assertThat(rcx.displayed()).isEqualTo(1);
+        assertThat(rcx.displayed()).isEqualTo(-1);
     }
 
     @Test
@@ -219,6 +271,64 @@ class RcxRemoteFirmwareTest {
     }
 
     @Test
+    void wakingRunsTheWholeColdStartAgain() {
+        rcx.idleElapses();
+        rcx.wakeAfterSleep();
+        rcx.receive(0x21, 0x80 | 0x1);
+        H8Simulator cpu = new H8Simulator(new RcxRemoteFirmware().image(), rcx);
+
+        cpu.runFor(MAX_STEPS);
+
+        assertThat(callsAfterBoot()).containsSubsequence("motor 2000 1 7", "sleep", "clear memory", BOOT_BEEP);
+    }
+
+    @Test
+    void sleepsWithAClearDisplayOnceTheRomHandlersAreStopped() {
+        // The ROM's handlers draw some icons by themselves: clearing before stopping them left stray segments.
+        rcx.idleElapses();
+        rcx.receive(0xB2, 0x0E, 1);
+
+        run();
+
+        List<String> calls = rcx.displayCalls();
+        assertThat(calls.subList(calls.size() - 3, calls.size())).containsExactly("timer off", "clear display", "refresh");
+        assertThat(rcx.icons()).isEmpty();
+        assertThat(rcx.calls()).endsWith("sleep");
+    }
+
+    @Test
+    void aShortOnOffPressSleepsWithoutDeletingTheFirmware() {
+        rcx.pressPowerButton();
+
+        H8Simulator cpu = run();
+
+        assertThat(callsAfterBoot()).containsSubsequence("motor 2000 4 7", "motor 2001 4 7", "motor 2002 4 7", "sleep");
+        assertThat(cpu.readByte(RcxRom.DELETE_FIRMWARE_FLAG)).isZero();
+        assertThat(rcx.calls()).doesNotContain("reset");
+    }
+
+    @Test
+    void ignoresOnOffContactBounce() {
+        rcx.bounceOnOff();
+        H8Simulator cpu = new H8Simulator(new RcxRemoteFirmware().image(), rcx);
+
+        cpu.runFor(MAX_STEPS);
+
+        assertThat(rcx.calls()).doesNotContain("sleep", "reset");
+    }
+
+    @Test
+    void aTwoSecondOnOffHoldReturnsToTheBootLoader() {
+        rcx.holdPowerButton();
+
+        H8Simulator cpu = run();
+
+        assertThat(callsAfterBoot()).containsSubsequence("motor 2000 4 7", "motor 2001 4 7", "motor 2002 4 7", "reset");
+        assertThat(cpu.readByte(RcxRom.DELETE_FIRMWARE_FLAG)).isEqualTo(1);
+        assertThat(rcx.calls()).doesNotContain("sleep");
+    }
+
+    @Test
     void restartsTheIdleCountdownOnEveryCommand() {
         rcx.countdownAtMessage(1);
         rcx.receive(0x10);
@@ -235,7 +345,7 @@ class RcxRemoteFirmwareTest {
     }
 
     @Test
-    void showsASignedNumberInPlaceOfTheCommandCounter() {
+    void showsASignedNumberInPlaceOfJuno() {
         rcx.receive(0x10);
         rcx.receive(0x72, -42 & 0xFF, (-42 >> 8) & 0xFF);
         rcx.receive(0x18);
@@ -249,21 +359,21 @@ class RcxRemoteFirmwareTest {
 
     @Test
     void lightsAndHandsBackIconsOnRequest() {
-        rcx.receive(0xA2, 0x18, 1);
-        rcx.receive(0xAA, 0x1C, 1);
-        rcx.receive(0xA2, 0x18, 0);
+        rcx.receive(0xB2, 0x18, 1);
+        rcx.receive(0xBA, 0x1C, 1);
+        rcx.receive(0xB2, 0x18, 0);
 
         run();
 
         assertThat(rcx.icons()).contains(0x301C).doesNotContain(0x3018);
         assertThat(rcx.everLit()).contains(0x3018);
-        assertThat(rcx.replies()).containsExactly(new int[] {0x5D}, new int[] {0x55}, new int[] {0x5D});
+        assertThat(rcx.replies()).containsExactly(new int[] {0x4D}, new int[] {0x45}, new int[] {0x4D});
     }
 
     @Test
     void lightsEverySegmentUntilAskedToStop() {
-        rcx.receive(0xA2, 0x20, 1);
-        rcx.receive(0xAA, 0x20, 0);
+        rcx.receive(0xB2, 0x20, 1);
+        rcx.receive(0xBA, 0x20, 0);
 
         run();
 
@@ -273,12 +383,12 @@ class RcxRemoteFirmwareTest {
 
     @Test
     void acknowledgesButIgnoresIconsOutOfRange() {
-        rcx.receive(0xA2, 0x05, 1);
-        rcx.receive(0xAA, 0x21, 1);
+        rcx.receive(0xB2, 0x05, 1);
+        rcx.receive(0xBA, 0x21, 1);
 
         run();
 
-        assertThat(rcx.replies()).containsExactly(new int[] {0x5D}, new int[] {0x55});
+        assertThat(rcx.replies()).containsExactly(new int[] {0x4D}, new int[] {0x45});
         assertThat(rcx.everLit()).doesNotContain(0x3005, 0x3021);
     }
 
@@ -358,7 +468,7 @@ class RcxRemoteFirmwareTest {
     @Test
     void leavesTheIconsOutWhenAskedTo() {
         rcx.idlePolls(20);
-        rcx.receive(0xA2, 0x18, 1);
+        rcx.receive(0xB2, 0x18, 1);
         rcx.receive(0x21, 0x80 | 0x1);
 
         run(new RcxRemoteFirmware(RcxRemoteFirmware.DEFAULT_AUTO_OFF_MINUTES, false));

@@ -866,11 +866,33 @@ class GeneratedAsmToolchainTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLoopback", source);
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLoopback");
-        assertThat(result.runtimeShim()).contains("juno_ir_echo_byte");
+        assertThat(result.runtimeShim())
+                .contains("juno_ir_echo_byte", "juno_ir_timer2_until", "juno_ir_wait_timer1", "_BV(COM2B1)", "cli()");
         Path shim = temporaryDirectory.resolve("AsmLoopbackShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
         syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
+    void assemblesRcxFirmwareTransfersIncludingRetryAndFinalBlock() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        assembleAndCompile(armGcc, "demo.AsmRcxFirmware", """
+                package demo;
+                import io.github.jabrena.juno.api.lego.rcx.RcxFirmware;
+                import io.github.jabrena.juno.api.lego.rcx.RcxRemote;
+                public final class AsmRcxFirmware {
+                    public static void main(String[] args) {
+                        RcxRemote.begin(2, 3);
+                        byte[] block = new byte[64];
+                        if (RcxFirmware.installed() != 0) return;
+                        if (!RcxFirmware.delete() || !RcxFirmware.start(0x8000, 0)) return;
+                        if (RcxFirmware.transfer(1, block, 64) < 0) RcxFirmware.transfer(1, block, 64);
+                        if (RcxFirmware.transfer(0, block, 1) == 0) RcxFirmware.unlock();
+                    }
+                }
+                """);
     }
 
     /** Reading the RCX's sensors is a request and reply over the same library-free {@code Infrared} shim. */

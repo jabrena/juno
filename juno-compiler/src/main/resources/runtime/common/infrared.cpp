@@ -2,6 +2,51 @@
 static int32_t juno_ir_rx_pin = -1;
 static int32_t juno_ir_tx_pin = -1;
 static uint32_t juno_ir_bit_us = 417;
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
+static bool juno_ir_timer2_carrier = false;
+static uint16_t juno_ir_bit_ticks = 833;
+
+static void juno_ir_configure_timer2_carrier() {
+  // UNO R3 pin 3 is OC2B. Fast PWM with OCR2A as TOP, a /8 prescaler and TOP 52 produces
+  // 37.7 kHz at 16 MHz. OCR2B 26 gives the RCX receiver the expected 50% duty cycle.
+  TCCR2A = _BV(WGM20) | _BV(WGM21);
+  TCCR2B = _BV(WGM22) | _BV(CS21);
+  OCR2A = 52;
+  OCR2B = 26;
+  TCNT2 = 0;
+
+  // Timer1 runs freely at 2 MHz. The transmitter uses it as a hardware timebase while interrupts
+  // are disabled, so Serial and Timer0 cannot move a UART edge on the slower AVR core.
+  TCCR1A = 0;
+  TCCR1B = _BV(CS11);
+  TCNT1 = 0;
+}
+
+static void juno_ir_set_timer2_carrier(bool enabled) {
+  bool active = (TCCR2A & _BV(COM2B1)) != 0;
+  if (enabled && !active) {
+    // The disconnected PWM output remains low. Start at TOP so the next timer tick reaches BOTTOM
+    // and raises OC2B immediately; starting at zero would lose almost one 26.5 us carrier cycle.
+    TCNT2 = OCR2A;
+    TCCR2A |= _BV(COM2B1);
+  } else if (!enabled && active) {
+    TCCR2A &= ~_BV(COM2B1);
+    digitalWrite(juno_ir_tx_pin, LOW);
+  }
+}
+
+static void juno_ir_timer2_until(uint32_t at) {
+  juno_ir_set_timer2_carrier(true);
+  while (static_cast<int32_t>(micros() - at) < 0) {
+  }
+  juno_ir_set_timer2_carrier(false);
+}
+
+static void juno_ir_wait_timer1(uint16_t at) {
+  while (static_cast<int16_t>(TCNT1 - at) < 0) {
+  }
+}
+#endif
 // Waits around each edge of one carrier cycle, tuned by juno_ir_calibrate_carrier so that a cycle,
 // pin writes and the caller's micros() check included, lasts one 38 kHz period on this board.
 static uint32_t juno_ir_high_us = 8;
@@ -48,14 +93,26 @@ static void juno_ir_calibrate_carrier() {
 extern "C" void juno_ir_begin(int32_t receivePin, int32_t transmitPin, int32_t baud) {
   juno_ir_rx_pin = receivePin;
   juno_ir_tx_pin = transmitPin;
-  juno_ir_bit_us = baud > 0 ? static_cast<uint32_t>(1000000 / baud) : 417;
+  juno_ir_bit_us = baud > 0 ? static_cast<uint32_t>((1000000 + baud / 2) / baud) : 417;
   if (receivePin >= 0) {
     pinMode(receivePin, INPUT);
   }
   if (transmitPin >= 0) {
     pinMode(transmitPin, OUTPUT);
     digitalWrite(transmitPin, LOW);
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
+    juno_ir_timer2_carrier = transmitPin == 3;
+    if (juno_ir_timer2_carrier) {
+      juno_ir_bit_ticks = baud > 0
+          ? static_cast<uint16_t>(((F_CPU / 8UL) + static_cast<uint32_t>(baud) / 2) / static_cast<uint32_t>(baud))
+          : 833;
+      juno_ir_configure_timer2_carrier();
+    } else {
+      juno_ir_calibrate_carrier();
+    }
+#else
     juno_ir_calibrate_carrier();
+#endif
   }
 }
 
@@ -71,8 +128,33 @@ static void juno_ir_wait_until(uint32_t at) {
 // Modulates the IR LED until micros() reaches at. Every carrier goes through this loop, whose
 // per-cycle cost juno_ir_calibrate_carrier measured, so callers do their bookkeeping between calls.
 static void juno_ir_carrier_until(uint32_t at) {
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
+  if (juno_ir_timer2_carrier) {
+    juno_ir_timer2_until(at);
+    return;
+  }
+#endif
   while (static_cast<int32_t>(micros() - at) < 0) {
     juno_ir_cycle(HIGH);
+  }
+}
+
+// Unlike juno_ir_carrier_until, this leaves the hardware carrier in its requested state. The echo
+// sampler calls it several times within one bit; disconnecting PWM at every sample would fragment
+// an otherwise continuous mark and make the diagnostic observe a waveform writeByte never sends.
+static void juno_ir_hold_bit_until(int bit, uint32_t at) {
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
+  if (juno_ir_timer2_carrier) {
+    juno_ir_set_timer2_carrier(bit == 0);
+    juno_ir_wait_until(at);
+    return;
+  }
+#endif
+  if (bit == 0) {
+    juno_ir_carrier_until(at);
+  } else {
+    digitalWrite(juno_ir_tx_pin, LOW);
+    juno_ir_wait_until(at);
   }
 }
 
@@ -150,12 +232,7 @@ extern "C" int32_t juno_ir_echo_byte(int32_t value, int32_t latencyMicros) {
     if (sampled < 11 && nextSample < next) {
       next = nextSample;
     }
-    if (index < 11 && sent[index] == 0) {
-      juno_ir_carrier_until(start + next);
-    } else {
-      digitalWrite(juno_ir_tx_pin, LOW);
-      juno_ir_wait_until(start + next);
-    }
+    juno_ir_hold_bit_until(index < 11 ? sent[index] : 1, start + next);
     elapsed = micros() - start;
     while (index < 11 && elapsed >= nextBit) {
       index++;
@@ -167,6 +244,11 @@ extern "C" int32_t juno_ir_echo_byte(int32_t value, int32_t latencyMicros) {
       nextSample += juno_ir_bit_us;
     }
   }
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
+  if (juno_ir_timer2_carrier) {
+    juno_ir_set_timer2_carrier(false);
+  }
+#endif
   digitalWrite(juno_ir_tx_pin, LOW);
   if (heard[0] != 0) {
     return -1;
@@ -206,6 +288,30 @@ extern "C" void juno_ir_write_byte(int32_t value) {
   }
   int ones = 0;
   uint32_t start = micros();
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
+  if (juno_ir_timer2_carrier) {
+    uint8_t savedStatus = SREG;
+    cli();
+    uint16_t end = TCNT1 + juno_ir_bit_ticks;
+    juno_ir_set_timer2_carrier(true);
+    juno_ir_wait_timer1(end);
+    for (int bit = 0; bit < 8; bit++) {
+      int level = (value >> bit) & 1;
+      ones += level;
+      juno_ir_set_timer2_carrier(level == 0);
+      end += juno_ir_bit_ticks;
+      juno_ir_wait_timer1(end);
+    }
+    juno_ir_set_timer2_carrier((ones & 1) != 0);
+    end += juno_ir_bit_ticks;
+    juno_ir_wait_timer1(end);
+    juno_ir_set_timer2_carrier(false);
+    end += juno_ir_bit_ticks;
+    juno_ir_wait_timer1(end);
+    SREG = savedStatus;
+    return;
+  }
+#endif
   juno_ir_send_bit(0, start + juno_ir_bit_us);
   for (int bit = 0; bit < 8; bit++) {
     int level = (value >> bit) & 1;

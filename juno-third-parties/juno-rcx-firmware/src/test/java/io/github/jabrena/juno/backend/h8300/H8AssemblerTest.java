@@ -36,9 +36,11 @@ class H8AssemblerTest {
         assembler.compare(H8Register.R3, H8Register.R4);
         assembler.adds(1, H8Register.R5);
         assembler.call(0x0436);
+        assembler.call(H8Register.R6);
         assembler.returnFromSubroutine();
 
-        assertThat(hex(assembler.assemble("start"))).isEqualTo("0912" + "1910" + "1d34" + "0b05" + "5e000436" + "5470");
+        assertThat(hex(assembler.assemble("start")))
+                .isEqualTo("0912" + "1910" + "1d34" + "0b05" + "5e000436" + "5d60" + "5470");
     }
 
     @Test
@@ -146,6 +148,28 @@ class H8AssemblerTest {
                 .isInstanceOf(FirmwareGenerationException.class);
         assertThatThrownBy(() -> assembler.adds(4, H8Register.R0))
                 .isInstanceOf(FirmwareGenerationException.class);
+    }
+
+    @Test
+    void padsDataTablesSoTheCodeAfterThemStaysAligned() {
+        assembler.label("start");
+        assembler.data(1, 2, 3);
+        assembler.returnFromSubroutine();
+
+        assertThat(hex(assembler.assemble("start"))).isEqualTo("010203" + "00" + "5470");
+    }
+
+    @Test
+    void rejectsCodeLabelsAtOddAddresses() {
+        // The H8/300 fetches instructions as words: a routine at an odd address never runs as written.
+        assembler.label("start");
+        assembler.call("routine");
+        assembler.string("ab");
+        assembler.label("routine");
+        assembler.returnFromSubroutine();
+
+        assertThatThrownBy(() -> assembler.assemble("start")).isInstanceOf(FirmwareGenerationException.class)
+                .hasMessageContaining("odd address: routine");
     }
 
     private static String hex(H8Image image) {
