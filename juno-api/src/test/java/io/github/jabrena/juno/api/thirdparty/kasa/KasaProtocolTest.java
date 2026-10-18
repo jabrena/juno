@@ -55,6 +55,78 @@ class KasaProtocolTest {
     }
 
     @Test
+    void framesAStringLiteralCommandLikeItsByteArrayForm() {
+        String command = "{\"system\":{\"get_sysinfo\":null}}";
+        byte[] fromString = new byte[command.length() + KasaProtocol.FRAME_HEADER_SIZE];
+        byte[] fromBytes = new byte[fromString.length];
+        byte[] commandBytes = command.getBytes(StandardCharsets.US_ASCII);
+
+        int stringLength = KasaProtocol.encode(command, fromString, fromString.length);
+        int bytesLength = KasaProtocol.encode(commandBytes, commandBytes.length, fromBytes, fromBytes.length);
+
+        assertThat(stringLength).isEqualTo(bytesLength).isEqualTo(fromString.length);
+        assertThat(fromString).containsExactly(fromBytes);
+    }
+
+    @Test
+    void encodesAStringDatagramLikeItsByteArrayForm() {
+        String command = "{\"system\":{\"get_sysinfo\":null}}";
+        byte[] fromString = new byte[command.length()];
+        byte[] fromBytes = new byte[command.length()];
+        byte[] commandBytes = command.getBytes(StandardCharsets.US_ASCII);
+
+        int stringLength = KasaProtocol.encodeDatagram(command, fromString, fromString.length);
+        int bytesLength = KasaProtocol.encodeDatagram(commandBytes, commandBytes.length, fromBytes, fromBytes.length);
+
+        assertThat(stringLength).isEqualTo(command.length());
+        assertThat(bytesLength).isEqualTo(stringLength);
+        assertThat(fromString).containsExactly(fromBytes);
+    }
+
+    @Test
+    void rejectsFramesThatDoNotFitOrAreMissing() {
+        byte[] frame = new byte[8];
+        byte[] command = "abcde".getBytes(StandardCharsets.US_ASCII);
+
+        assertThat(KasaProtocol.encode((byte[]) null, 0, frame, frame.length)).isEqualTo(-1);
+        assertThat(KasaProtocol.encode(command, command.length, null, 8)).isEqualTo(-1);
+        assertThat(KasaProtocol.encode(command, -1, frame, frame.length)).isEqualTo(-1);
+        assertThat(KasaProtocol.encode(command, 6, frame, frame.length)).as("longer than the command").isEqualTo(-1);
+        assertThat(KasaProtocol.encode(command, command.length, frame, 3)).as("no room for the header").isEqualTo(-1);
+        assertThat(KasaProtocol.encode(command, command.length, frame, 9)).as("frame longer than the buffer").isEqualTo(-1);
+        assertThat(KasaProtocol.encode(command, command.length, frame, 7)).as("payload does not fit").isEqualTo(-1);
+
+        assertThat(KasaProtocol.encode((String) null, frame, frame.length)).isEqualTo(-1);
+        assertThat(KasaProtocol.encode("abcde", null, 8)).isEqualTo(-1);
+        assertThat(KasaProtocol.encode("abcde", frame, 3)).isEqualTo(-1);
+        assertThat(KasaProtocol.encode("abcde", frame, 9)).isEqualTo(-1);
+        assertThat(KasaProtocol.encode("abcde", frame, 7)).isEqualTo(-1);
+
+        assertThat(KasaProtocol.encodeDatagram((String) null, frame, frame.length)).isEqualTo(-1);
+        assertThat(KasaProtocol.encodeDatagram("abcde", null, 8)).isEqualTo(-1);
+        assertThat(KasaProtocol.encodeDatagram("abcde", frame, 4)).as("shorter than the command").isEqualTo(-1);
+        assertThat(KasaProtocol.encodeDatagram("abcde", frame, 9)).as("longer than the buffer").isEqualTo(-1);
+        assertThat(KasaProtocol.encodeDatagram((byte[]) null, 0, frame, 8)).isEqualTo(-1);
+        assertThat(KasaProtocol.encodeDatagram(command, command.length, frame, 4)).isEqualTo(-1);
+        assertThat(KasaProtocol.encodeDatagram(command, -1, frame, 8)).isEqualTo(-1);
+        assertThat(KasaProtocol.encodeDatagram(command, 6, frame, 8)).isEqualTo(-1);
+
+        assertThat(KasaProtocol.decode(null, 4)).isEqualTo(-1);
+        assertThat(KasaProtocol.decode(frame, 3)).isEqualTo(-1);
+        assertThat(KasaProtocol.decode(frame, 9)).isEqualTo(-1);
+        assertThat(KasaProtocol.payloadLength(new byte[3])).isEqualTo(-1);
+        assertThat(KasaProtocol.decodeDatagram(null, 0)).isEqualTo(-1);
+        assertThat(KasaProtocol.decodeDatagram(frame, -1)).isEqualTo(-1);
+        assertThat(KasaProtocol.decodeDatagram(frame, 9)).isEqualTo(-1);
+    }
+
+    @Test
+    void readsTheLengthPrefixOfAReplyFrame() {
+        assertThat(KasaProtocol.payloadLength(new byte[] {0, 0, 1, 0})).isEqualTo(256);
+        assertThat(KasaProtocol.payloadLength(new byte[] {(byte) 0xFF, 0, 0, 0})).isEqualTo(-16777216);
+    }
+
+    @Test
     void recognizesOnlyHs100AndHs110DiscoveryReplies() {
         byte[] hs100 = "{\"system\":{\"get_sysinfo\":{\"model\":\"HS100(US)\"}}}".getBytes(StandardCharsets.US_ASCII);
         byte[] hs110 = "{\"system\":{\"get_sysinfo\":{\"model\":\"HS110(EU)\"}}}".getBytes(StandardCharsets.US_ASCII);

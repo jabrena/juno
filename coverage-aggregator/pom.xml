@@ -63,7 +63,8 @@
                 <executions>
                     <execution>
                         <id>merge-exec</id>
-                        <phase>verify</phase>
+                        <!-- Before verify: the inherited check execution also runs in verify and reads this file. -->
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>merge</goal>
                         </goals>

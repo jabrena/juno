@@ -81,4 +81,10 @@ class RcxFirmwareImageTest {
 
     private record SRecordImage(byte[] bytes, int entry) {
     }
+
+    @Test
+    void addressesOutsideTheFirstChunkReadAsZero() {
+        assertThat(RcxFirmwareImage.byteAt(4096)).isZero();
+        assertThat(RcxFirmwareImage.byteAt(RcxFirmwareImage.LENGTH + 10_000)).isZero();
+    }
 }

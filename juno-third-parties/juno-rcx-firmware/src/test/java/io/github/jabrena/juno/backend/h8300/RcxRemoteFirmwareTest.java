@@ -478,4 +478,16 @@ class RcxRemoteFirmwareTest {
         assertThat(new RcxRemoteFirmware(RcxRemoteFirmware.DEFAULT_AUTO_OFF_MINUTES, false).image().bytes().length)
                 .isLessThan(new RcxRemoteFirmware().image().bytes().length);
     }
+
+    @Test
+    void autoPowerOffAcceptsOneToTheMaximumMinutesOnly() {
+        assertThatThrownBy(() -> new RcxRemoteFirmware(0))
+                .isInstanceOf(FirmwareGenerationException.class)
+                .hasMessageContaining("1 to 32767");
+        assertThatThrownBy(() -> new RcxRemoteFirmware(0x8000))
+                .isInstanceOf(FirmwareGenerationException.class)
+                .hasMessageContaining("1 to 32767");
+        assertThat(new RcxRemoteFirmware(1, false).image().bytes()).isNotEmpty();
+        assertThat(new RcxRemoteFirmware(0x7FFF).image().bytes()).isNotEmpty();
+    }
 }

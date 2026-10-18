@@ -175,4 +175,49 @@ class H8AssemblerTest {
     private static String hex(H8Image image) {
         return HexFormat.of().formatHex(image.bytes());
     }
+
+    @Test
+    void rejectsByteImmediatesOutsideEightBits() {
+        assertThatThrownBy(() -> assembler.moveImmediate(0x100, H8ByteRegister.R2L))
+                .isInstanceOf(FirmwareGenerationException.class);
+        assertThatThrownBy(() -> assembler.moveImmediate(-0x81, H8ByteRegister.R2L))
+                .isInstanceOf(FirmwareGenerationException.class);
+
+        assembler.label("start");
+        assembler.moveImmediate(-0x80, H8ByteRegister.R2L);
+        assertThat(hex(assembler.assemble("start"))).isEqualTo("fa80");
+    }
+
+    @Test
+    void rejectsWordImmediatesOutsideSixteenBits() {
+        assertThatThrownBy(() -> assembler.moveImmediate(0x10000, H8Register.R0))
+                .isInstanceOf(FirmwareGenerationException.class);
+        assertThatThrownBy(() -> assembler.moveImmediate(-0x8001, H8Register.R0))
+                .isInstanceOf(FirmwareGenerationException.class);
+    }
+
+    @Test
+    void rejectsBranchesThatReachFurtherThanEightBits() {
+        assembler.label("back");
+        for (int i = 0; i < 130; i++) {
+            assembler.push(H8Register.R0);
+        }
+        assembler.branch(H8Condition.EQUAL, "back");
+
+        assertThatThrownBy(() -> assembler.assemble("back"))
+                .isInstanceOf(FirmwareGenerationException.class)
+                .hasMessageContaining("out of range");
+
+        H8Assembler forward = new H8Assembler(0x8000);
+        forward.label("start");
+        forward.branch(H8Condition.EQUAL, "far");
+        for (int i = 0; i < 130; i++) {
+            forward.push(H8Register.R0);
+        }
+        forward.label("far");
+
+        assertThatThrownBy(() -> forward.assemble("start"))
+                .isInstanceOf(FirmwareGenerationException.class)
+                .hasMessageContaining("out of range");
+    }
 }
