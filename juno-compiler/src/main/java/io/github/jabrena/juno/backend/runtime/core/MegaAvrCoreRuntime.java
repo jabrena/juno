@@ -117,6 +117,11 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
         return "static WiFiUDP juno_udp;";
     }
 
+    @Override
+    public String tcpClientHelpers() {
+        return "using JunoTcpClient = WiFiClient;\n";
+    }
+
     /** {@code WiFiNINA.h} already declares {@code WiFiSSLClient}. */
     @Override
     public String httpsInclude() {

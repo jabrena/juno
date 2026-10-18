@@ -103,7 +103,7 @@ public final class RuntimeShim {
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
         }
-        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
+        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.TCP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
         }
@@ -230,6 +230,7 @@ public final class RuntimeShim {
                 new ShimFeatureBlock(ShimFeature.RANDOM, shimLibraries::randomHelpers),
                 new ShimFeatureBlock(ShimFeature.WIFI, core::wifiHelpers),
                 new ShimFeatureBlock(ShimFeature.UDP, () -> networkShimLibraries.udpHelpers(core.udpDeclaration())),
+                new ShimFeatureBlock(ShimFeature.TCP, () -> networkShimLibraries.tcpHelpers(core.tcpClientHelpers())),
                 new ShimFeatureBlock(ShimFeature.SD, shimLibraries::sdHelpers),
                 new ShimFeatureBlock(ShimFeature.SD_CAPACITY, shimLibraries::sdCapacityHelpers),
                 new ShimFeatureBlock(ShimFeature.LONG, shimLibraries::longHelpers),

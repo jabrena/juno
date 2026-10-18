@@ -7,11 +7,13 @@
 class WiFiClient {
 public:
   bool connect(const char*, uint16_t) { return true; }
+  bool connect(IPAddress, uint16_t) { return true; }
   void print(const char*) {}
   void print(char) {}
   void print(int) {}
   void print(unsigned long) {}
   size_t write(const uint8_t*, size_t size) { return size; }
+  void setTimeout(uint32_t) {}
   int available() { return 0; }
   bool connected() { return false; }
   int read() { return -1; }

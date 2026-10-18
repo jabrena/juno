@@ -93,6 +93,11 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String tcpClientHelpers() {
+        throw unsupported("TCP networking");
+    }
+
+    @Override
     public String httpsInclude() {
         throw unsupported("TLS networking");
     }
