@@ -20,7 +20,7 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
     public static final RuntimeConfig DEFAULT = new RuntimeConfig(RuntimeLimits.ARENA_CAPACITY_BYTES,
             RuntimeLimits.MAX_THREADS, OptionalInt.empty());
 
-    static final int MIN_ARENA_BYTES = 1024;
+    static final int MIN_ARENA_BYTES = 512;
     static final int MIN_STACK_BYTES = 512;
 
     public RuntimeConfig {

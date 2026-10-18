@@ -866,7 +866,8 @@ class GeneratedAsmToolchainTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLoopback", source);
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLoopback");
-        assertThat(result.runtimeShim()).contains("juno_ir_echo_byte");
+        assertThat(result.runtimeShim())
+                .contains("juno_ir_echo_byte", "juno_ir_timer2_until", "juno_ir_wait_timer1", "_BV(COM2B1)", "cli()");
         Path shim = temporaryDirectory.resolve("AsmLoopbackShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 

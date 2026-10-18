@@ -25,10 +25,15 @@ class RuntimeConfigTest {
 
     @Test
     void rejectsAnArenaThatIsTooSmallOrMisaligned() {
-        assertThatThrownBy(() -> new RuntimeConfig(512, 4, OptionalInt.empty()))
+        assertThatThrownBy(() -> new RuntimeConfig(256, 4, OptionalInt.empty()))
                 .isInstanceOf(CompileException.class).hasMessageContaining("arena");
         assertThatThrownBy(() -> new RuntimeConfig(8190, 4, OptionalInt.empty()))
                 .isInstanceOf(CompileException.class).hasMessageContaining("multiple of 8");
+    }
+
+    @Test
+    void acceptsAHalfKilobyteArenaForMemoryConstrainedPrograms() {
+        assertThat(new RuntimeConfig(512, 4, OptionalInt.empty()).arenaBytes()).isEqualTo(512);
     }
 
     @Test
