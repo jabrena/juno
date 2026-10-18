@@ -321,10 +321,9 @@
                                     <goal>check</goal>
                                 </goals>
                                 <configuration>
-                                    <!-- Reports violations as warnings instead of failing the build, so ./mvnw
-                                         verify can be used to generate the report and track coverage evolution
-                                         across modules that are still below ${coverage.level}. -->
-                                    <haltOnFailure>false</haltOnFailure>
+                                    <!-- A module below ${coverage.level} fails the build. juno-examples opts out
+                                         with jacoco.skip, since its board programs need hardware to run. -->
+                                    <haltOnFailure>true</haltOnFailure>
                                     <rules>
                                         <rule>
                                             <element>BUNDLE</element>

@@ -16,6 +16,8 @@
 
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
+        <!-- Board programs run on hardware; the JaCoCo gate in the root pom does not apply to them. -->
+        <jacoco.skip>true</jacoco.skip>
         <juno.main>io.github.jabrena.juno.api.Blink</juno.main>
         <juno.envFile>${maven.multiModuleProjectDirectory}/.env</juno.envFile>
         <kotlin.version>2.2.20</kotlin.version>
