@@ -218,6 +218,10 @@
         <!-- Run core-feature programs and the exception example under QEMU in Docker (src/test/qemu/programs). -->
         <profile>
             <id>qemu</id>
+            <properties>
+                <!-- QEMU runs only QemuRunIT (-Dtest=None), so its JaCoCo data is partial and the gate does not apply. -->
+                <jacoco.skip>true</jacoco.skip>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -250,6 +254,10 @@
         -->
         <profile>
             <id>simavr</id>
+            <properties>
+                <!-- simavr runs only SimavrRunIT (-Dtest=None), so its JaCoCo data is partial and the gate does not apply. -->
+                <jacoco.skip>true</jacoco.skip>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
