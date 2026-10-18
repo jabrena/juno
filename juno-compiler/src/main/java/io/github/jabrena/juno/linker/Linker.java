@@ -288,7 +288,7 @@ public final class Linker {
                 Intrinsic.LED_MATRIX_COLUMNS, Intrinsic.LED_MATRIX_CLEAR);
         require(required, Capability.WIFI, Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_BEGIN_AP, Intrinsic.WIFI_STATUS, Intrinsic.WIFI_LOCAL_IP,
                 Intrinsic.WIFI_GATEWAY_IP, Intrinsic.WIFI_MAC_ADDRESS, Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
-                Intrinsic.UDP_STOP);
+                Intrinsic.UDP_STOP, Intrinsic.TCP_OPEN, Intrinsic.TCP_WRITE, Intrinsic.TCP_READ, Intrinsic.TCP_CLOSE);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
                 Intrinsic.HTTPS_POST, Intrinsic.HTTPS_POST_BUFFER, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH,
                 Intrinsic.HTTPS_QUERY,

@@ -121,7 +121,7 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
         }
-        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.SMTP_TLS,
+        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.TCP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.SMTP_TLS,
                 ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
         }
@@ -272,6 +272,9 @@ public final class AvrRuntimeShim {
         }
         if (uses(ShimFeature.UDP)) {
             shim.append(networkShimLibraries.udpHelpers(core.udpDeclaration()));
+        }
+        if (uses(ShimFeature.TCP)) {
+            shim.append(networkShimLibraries.tcpHelpers(core.tcpClientHelpers()));
         }
         if (uses(ShimFeature.STRING_FROM_BYTES)) {
             shim.append(shimLibraries.stringFromBytesHelpers());

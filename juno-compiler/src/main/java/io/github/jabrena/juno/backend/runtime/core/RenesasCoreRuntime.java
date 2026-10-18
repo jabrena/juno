@@ -100,6 +100,11 @@ final class RenesasCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String tcpClientHelpers() {
+        return "using JunoTcpClient = WiFiClient;\n";
+    }
+
+    @Override
     public String httpsInclude() {
         return "#include <WiFiSSLClient.h>\n";
     }

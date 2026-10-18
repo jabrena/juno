@@ -578,6 +578,11 @@ public final class IntrinsicLowering {
         shim(Intrinsic.UDP_RECEIVE, "juno_udp_receive", Result.WORD,
                 List.of(arg(0), arg(1), arg(2)), ShimFeature.UDP);
         shim(Intrinsic.UDP_STOP, "juno_udp_stop", Result.NONE, List.of(), ShimFeature.UDP);
+        shim(Intrinsic.TCP_OPEN, "juno_tcp_open", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.TCP);
+        shim(Intrinsic.TCP_WRITE, "juno_tcp_write", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.TCP);
+        shim(Intrinsic.TCP_READ, "juno_tcp_read", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.TCP);
+        shim(Intrinsic.TCP_CLOSE, "juno_tcp_close", Result.NONE, List.of(), ShimFeature.TCP);
     }
 
     /**
