@@ -20,6 +20,8 @@ public final class H8Assembler {
     private final ByteArrayOutputStream code = new ByteArrayOutputStream();
     private final Map<String, Integer> labels = new HashMap<>();
     private final List<Fixup> fixups = new ArrayList<>();
+    /** Labels that execution reaches, which the H8/300 needs at even addresses. */
+    private final List<String> codeTargets = new ArrayList<>();
 
     public H8Assembler(int origin) {
         this.origin = checkedWord(origin, "origin");
@@ -187,6 +189,7 @@ public final class H8Assembler {
 
     /** {@code bcc label}, reaching -128 to +127 bytes from the next instruction. */
     public void branch(H8Condition condition, String target) {
+        codeTargets.add(target);
         bytes(condition.opcode(), 0);
         fixups.add(new Fixup(code.size() - 1, target, FixupKind.RELATIVE_8));
     }
@@ -204,12 +207,14 @@ public final class H8Assembler {
 
     /** {@code jsr @label:16}. */
     public void call(String target) {
+        codeTargets.add(target);
         bytes(0x5E, 0);
         absolute(target);
     }
 
     /** {@code jmp @label:16}. */
     public void jump(String target) {
+        codeTargets.add(target);
         bytes(0x5A, 0);
         absolute(target);
     }
@@ -219,10 +224,16 @@ public final class H8Assembler {
         bytes(0x54, 0x70);
     }
 
-    /** Constant bytes, as the assemblers' {@code .byte}. */
+    /**
+     * Constant bytes, as the assemblers' {@code .byte}, padded with a zero to an even length: instructions placed
+     * after a table must start at an even address, or the H8/300 cannot execute them.
+     */
     public void data(int... values) {
         for (int value : values) {
             code.write(checkedByte(value));
+        }
+        if (code.size() % 2 != 0) {
+            code.write(0);
         }
     }
 
@@ -235,6 +246,13 @@ public final class H8Assembler {
     /** The machine code with every label resolved, starting at {@code entry}. */
     public H8Image assemble(String entry) {
         byte[] bytes = code.toByteArray();
+        codeTargets.add(entry);
+        for (String target : codeTargets) {
+            if (addressOf(target) % 2 != 0) {
+                throw new FirmwareGenerationException(
+                        "H8/300 code label at an odd address: " + target + " (0x" + Integer.toHexString(addressOf(target)) + ")");
+            }
+        }
         for (Fixup fixup : fixups) {
             fixup.kind().patch(bytes, fixup.offset(), origin, addressOf(fixup.label()));
         }

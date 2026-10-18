@@ -89,6 +89,10 @@ final class H8Simulator {
     }
 
     private void step() {
+        if (pc % 2 != 0) {
+            // The H8/300 fetches instructions as words; one at an odd address never runs as written.
+            throw new AssertionError("instruction at odd address 0x" + Integer.toHexString(pc));
+        }
         int first = fetch();
         int second = fetch();
         int high = second >> 4;
