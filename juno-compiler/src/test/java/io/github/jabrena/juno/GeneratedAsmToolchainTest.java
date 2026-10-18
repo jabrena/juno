@@ -873,6 +873,27 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
+    @Test
+    void assemblesRcxFirmwareTransfersIncludingRetryAndFinalBlock() throws Exception {
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        assembleAndCompile(armGcc, "demo.AsmRcxFirmware", """
+                package demo;
+                import io.github.jabrena.juno.api.lego.rcx.RcxFirmware;
+                import io.github.jabrena.juno.api.lego.rcx.RcxRemote;
+                public final class AsmRcxFirmware {
+                    public static void main(String[] args) {
+                        RcxRemote.begin(2, 3);
+                        byte[] block = new byte[64];
+                        if (RcxFirmware.installed() != 0) return;
+                        if (!RcxFirmware.delete() || !RcxFirmware.start(0x8000, 0)) return;
+                        if (RcxFirmware.transfer(1, block, 64) < 0) RcxFirmware.transfer(1, block, 64);
+                        if (RcxFirmware.transfer(0, block, 1) == 0) RcxFirmware.unlock();
+                    }
+                }
+                """);
+    }
+
     /** Reading the RCX's sensors is a request and reply over the same library-free {@code Infrared} shim. */
     @Test
     void compilesAnRcxBrickSensorProgramsShimWithACppCompiler() throws Exception {

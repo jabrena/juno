@@ -11,22 +11,23 @@ import io.github.jabrena.juno.api.lego.rcxfirmware.RcxFirmwareImage;
  * 10 to 50 cm, and keep them still for about ten minutes. A brick that already runs firmware is left alone, so
  * resetting the board afterwards (opening the serial monitor does) cannot delete it.
  *
- * <p>The brick ignores a block that repeats one it already stored, so when a reply is lost the next block
- * goes out as if the brick had stored it; if that one is not answered either, the earlier block is sent
- * again. A wrong guess cannot slip through: the brick checks the whole image before it unlocks it.
+ * <p>Only acknowledged bytes count as progress. Missing replies are retried with a quiet gap; if the boot ROM
+ * loses its block sequence, the download starts again with smaller blocks. Five sessions bound recovery time.
  */
 public final class RcxFirmwareDownload {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int RETRY_MILLIS = 1000;
-    private static final int ATTEMPTS = 10;
-    private static final int START_MILLIS = 2000;
+    private static final int BLOCK_GAP_MILLIS = 100;
+    private static final int RETRY_GAP_MILLIS = 300;
+    private static final int START_MILLIS = 5000;
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
         RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
         byte[] block = new byte[RcxFirmware.BLOCK_SIZE];
+        RcxDownloadProgress progress = new RcxDownloadProgress(RcxFirmwareImage.LENGTH);
         Serial.print("RCX firmware bytes: ");
         Serial.println(RcxFirmwareImage.LENGTH);
         int installed = RcxFirmware.installed();
@@ -38,64 +39,65 @@ public final class RcxFirmwareDownload {
         if (installed == 1) {
             stop("The RCX already runs firmware: nothing to do");
         }
-        Serial.println("Deleting the old firmware");
-        if (!RcxFirmware.delete()) {
-            stop("Delete firmware: no answer");
+        while (progress.restart()) {
+            Serial.print("Download session ");
+            Serial.print(progress.session());
+            Serial.print("; block bytes ");
+            Serial.println(progress.size());
+            Delay.millis(RETRY_MILLIS);
+            if (!RcxFirmware.delete()) {
+                Serial.println("Delete: no acknowledgement");
+                continue;
+            }
+            Delay.millis(BLOCK_GAP_MILLIS);
+            if (!RcxFirmware.start(RcxFirmwareImage.ENTRY, RcxFirmwareImage.CHECKSUM)) {
+                Serial.println("Start: no acknowledgement");
+                continue;
+            }
+            if (!download(block, progress)) {
+                Serial.println("Restarting transfer");
+                continue;
+            }
+            Serial.println("Unlocking");
+            Serial.println(RcxFirmware.unlock() ? "Unlock answered" : "Unlock: no answer");
+            Delay.millis(RETRY_MILLIS);
+            if (RcxFirmware.installed() == 1) {
+                Serial.println(RcxBrick.playSound(RcxBrick.SOUND_FAST_SWEEP_UP)
+                        ? "Firmware running; sound acknowledged" : "Firmware running; sound unconfirmed");
+                stop("Done");
+            }
+            // An unlock reply can be lost even though the firmware starts. Do not erase an uncertain state.
+            stop("Firmware start unconfirmed");
         }
-        Serial.println("Old firmware deleted");
-        Serial.println("Starting the download");
-        if (!RcxFirmware.start(RcxFirmwareImage.ENTRY, RcxFirmwareImage.CHECKSUM)) {
-            stop("Start download: no answer");
-        }
-        int index = 1;
-        int address = 0;
-        boolean unconfirmed = false;
-        int failures = 0;
-        while (address < RcxFirmwareImage.LENGTH) {
-            int size = Math.min(RcxFirmware.BLOCK_SIZE, RcxFirmwareImage.LENGTH - address);
+        stop("Download stopped after 5 sessions");
+    }
+
+    private static boolean download(byte[] block, RcxDownloadProgress progress) {
+        while (!progress.complete()) {
+            int size = progress.size();
             for (int i = 0; i < size; i++) {
-                block[i] = RcxFirmwareImage.byteAt(address + i);
+                block[i] = RcxFirmwareImage.byteAt(progress.offset() + i);
             }
             Serial.print("Sending block ");
-            Serial.println(index);
-            int status = RcxFirmware.transfer(index, block, size);
+            Serial.print(progress.index());
+            Serial.print(" at byte ");
+            Serial.println(progress.offset());
+            Delay.millis(BLOCK_GAP_MILLIS);
+            int status = RcxFirmware.transfer(progress.index(), block, size);
+            boolean resume = progress.accept(status);
             if (status == 0) {
-                Serial.print("Block ");
-                Serial.print(index);
-                Serial.print(" ok, bytes ");
-                Serial.println(address + size);
-                unconfirmed = false;
-                failures = 0;
-                address += size;
-                index++;
-            } else if (status == RcxFirmware.NO_REPLY && !unconfirmed) {
-                Serial.print("Block ");
-                Serial.print(index);
-                Serial.println(" no reply: assuming stored");
-                unconfirmed = true;
-                address += size;
-                index++;
+                Serial.print("Confirmed bytes: ");
+                Serial.println(progress.offset());
             } else {
-                if (unconfirmed) {
-                    index--;
-                    address -= RcxFirmware.BLOCK_SIZE;
-                    unconfirmed = false;
-                }
-                failures++;
-                Serial.print("  block ");
-                Serial.print(index);
-                Serial.print(" again, status ");
+                Serial.print("No progress; status ");
                 Serial.println(status);
-                if (failures >= ATTEMPTS) {
-                    stop("Download stopped");
-                }
+                Delay.millis(RETRY_GAP_MILLIS);
+            }
+            if (!resume) {
+                return false;
             }
         }
-        Serial.println("Unlocking");
-        Serial.println(RcxFirmware.unlock() ? "Unlock answered" : "Unlock: no answer");
-        Delay.millis(RETRY_MILLIS);
-        Serial.println(RcxBrick.playSound(RcxBrick.SOUND_FAST_SWEEP_UP) ? "Firmware running" : "No answer");
-        stop("Done");
+        return true;
     }
 
     private static void stop(String message) {
