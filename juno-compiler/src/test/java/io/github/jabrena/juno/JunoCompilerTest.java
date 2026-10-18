@@ -1003,6 +1003,56 @@ class JunoCompilerTest {
     }
 
     @Test
+    void lowersLegacyKasaHs100AndHs110RequestsForUnoR4WifiAndUnoQ() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.thirdparty.kasa.KasaSmartPlug;
+                @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+                public final class KasaPlug {
+                    public static void main(String[] args) {
+                        int[] address = new int[4];
+                        address[0] = 192;
+                        address[1] = 168;
+                        address[2] = 1;
+                        address[3] = 20;
+                        byte[] request = new byte[KasaSmartPlug.REQUEST_BUFFER_SIZE];
+                        byte[] response = new byte[KasaSmartPlug.DEFAULT_RESPONSE_BUFFER_SIZE];
+                        if (KasaSmartPlug.openDiscovery()) {
+                            KasaSmartPlug.broadcastDiscovery(request, request.length);
+                            KasaSmartPlug.receiveDiscovery(response, response.length, address);
+                        }
+                        KasaSmartPlug.getSystemInfo(address, request, response, response.length);
+                        KasaSmartPlug.turnOn(address, request, response, response.length);
+                        KasaSmartPlug.turnOff(address, request, response, response.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.KasaPlug", source);
+        List<Path> classpath = CompilerTestSupport.classpath(temporaryDirectory);
+        JunoCompiler compiler = new JunoCompiler();
+
+        CompilationResult r4 = compiler.compile(classpath, "demo.KasaPlug", false,
+                Optional.of(Board.UNO_R4_WIFI.id()));
+        CompilationResult q = compiler.compile(classpath, "demo.KasaPlug", false,
+                Optional.of(Board.UNO_Q.id()));
+
+        assertThat(r4.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast", "bl juno_udp_receive",
+                "bl juno_tcp_open", "bl juno_tcp_write", "bl juno_tcp_read", "bl juno_tcp_close");
+        assertThat(r4.runtimeShim()).contains("#include <WiFiS3.h>", "using JunoTcpClient = WiFiClient;",
+                "extern \"C\" int32_t juno_tcp_open(")
+                .doesNotContain("juno_kasa");
+        assertThat(q.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast", "bl juno_udp_receive",
+                "bl juno_tcp_open", "bl juno_tcp_write", "bl juno_tcp_read", "bl juno_tcp_close");
+        assertThat(q.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
+                "class JunoBridgeTcpClient : public BridgeTCPClient<1024>",
+                "using JunoTcpClient = JunoBridgeTcpClient;")
+                .doesNotContain("#include <WiFiS3.h>", "juno_kasa");
+    }
+
+    @Test
     void resolvesWifiCredentialsFromACompileTimeEnvironmentVariable() throws Exception {
         String pathValue = System.getenv("PATH");
         assertThat(pathValue != null && !pathValue.isEmpty()).as("test environment must define PATH").isTrue();

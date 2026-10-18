@@ -709,6 +709,52 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, qShim);
     }
 
+    @Test
+    void compilesKasaHs100AndHs110ShimsForBothArduinoCores() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.thirdparty.kasa.KasaSmartPlug;
+                @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+                public final class AsmKasa {
+                    public static void main(String[] args) {
+                        int[] endpoint = new int[5];
+                        endpoint[0] = 192;
+                        endpoint[1] = 168;
+                        endpoint[2] = 1;
+                        endpoint[3] = 20;
+                        byte[] request = new byte[KasaSmartPlug.REQUEST_BUFFER_SIZE];
+                        byte[] response = new byte[KasaSmartPlug.DEFAULT_RESPONSE_BUFFER_SIZE];
+                        KasaSmartPlug.openDiscovery();
+                        KasaSmartPlug.broadcastDiscovery(request, request.length);
+                        KasaSmartPlug.receiveDiscovery(response, response.length, endpoint);
+                        KasaSmartPlug.getSystemInfo(endpoint, request, response, response.length);
+                        KasaSmartPlug.turnOn(endpoint, request, response, response.length);
+                        KasaSmartPlug.turnOff(endpoint, request, response, response.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmKasa", source);
+        List<Path> classpath = CompilerTestSupport.classpath(temporaryDirectory);
+        JunoCompiler juno = new JunoCompiler();
+
+        CompilationResult r4 = juno.compile(classpath, "demo.AsmKasa", false,
+                Optional.of(Board.UNO_R4_WIFI.id()));
+        Path r4Shim = temporaryDirectory.resolve("AsmKasaR4Shim.cpp");
+        Files.writeString(r4Shim, r4.runtimeShim(), StandardCharsets.UTF_8);
+        syntaxCheckCpp(compiler, r4Shim);
+
+        CompilationResult q = juno.compile(classpath, "demo.AsmKasa", false,
+                Optional.of(Board.UNO_Q.id()));
+        Path qShim = temporaryDirectory.resolve("AsmKasaQShim.cpp");
+        Files.writeString(qShim, q.runtimeShim(), StandardCharsets.UTF_8);
+        syntaxCheckCpp(compiler, qShim);
+    }
+
     /**
      * The LEGO Powered Up shim drives {@code ArduinoBLE}'s central API directly, so compile it for real
      * against the module's mock {@code ArduinoBLE.h}, which mirrors the library's signatures.
