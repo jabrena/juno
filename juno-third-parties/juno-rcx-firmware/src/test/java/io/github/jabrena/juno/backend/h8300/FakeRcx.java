@@ -36,6 +36,7 @@ final class FakeRcx implements H8Simulator.Rom {
     private int receivedFlagAddress = -1;
     private final Set<Integer> icons = new TreeSet<>();
     private final Set<Integer> everLit = new TreeSet<>();
+    private final List<String> displayCalls = new ArrayList<>();
 
     /** Queues a message: the opcode and its arguments; the checksum is added as the ROM would receive it. */
     void receive(int... message) {
@@ -102,6 +103,11 @@ final class FakeRcx implements H8Simulator.Rom {
     /** The display icons lit now, as ROM opcodes such as {@code 0x3006}. */
     Set<Integer> icons() {
         return icons;
+    }
+
+    /** The display calls, replies and timer shutdown in order: "clear display", "set 3006", "refresh", "reply", "timer off". */
+    List<String> displayCalls() {
+        return displayCalls;
     }
 
     /** Every display icon lit at some point of the run. */
@@ -197,6 +203,7 @@ final class FakeRcx implements H8Simulator.Rom {
                 }
             }
             case RcxRom.SEND_DATA -> {
+                displayCalls.add("reply");
                 int data = cpu.stackArgument(1);
                 int[] reply = new int[cpu.stackArgument(2)];
                 for (int i = 0; i < reply.length; i++) {
@@ -210,6 +217,11 @@ final class FakeRcx implements H8Simulator.Rom {
             case RcxRom.PLAY_SYSTEM_SOUND -> calls.add("sound " + cpu.stackArgument(0));
             case RcxRom.PLAY_SOUND_OR_SET_DATA_POINTER -> calls.add("tone %d %d".formatted(cpu.stackArgument(0),
                     cpu.stackArgument(1)));
+            case RcxRom.CLEAR_DISPLAY -> {
+                icons.clear();
+                displayed = -1;
+                displayCalls.add("clear display");
+            }
             case RcxRom.SET_LCD_NUMBER -> {
                 displayStyle = r6;
                 displayed = cpu.stackArgument(0);
@@ -217,8 +229,14 @@ final class FakeRcx implements H8Simulator.Rom {
             case RcxRom.SET_LCD_SEGMENT -> {
                 icons.add(r6);
                 everLit.add(r6);
+                displayCalls.add("set " + Integer.toHexString(r6));
             }
-            case RcxRom.CLEAR_LCD_SEGMENT -> icons.remove(r6);
+            case RcxRom.CLEAR_LCD_SEGMENT -> {
+                icons.remove(r6);
+                displayCalls.add("clear " + Integer.toHexString(r6));
+            }
+            case RcxRom.REFRESH_DISPLAY -> displayCalls.add("refresh");
+            case RcxRom.SHUTDOWN_TIMER -> displayCalls.add("timer off");
             case RcxRom.SET_SENSOR_ACTIVE -> calls.add("active %X".formatted(r6));
             case RcxRom.SET_SENSOR_PASSIVE -> calls.add("passive %X".formatted(r6));
             case RcxRom.READ_SENSOR -> {

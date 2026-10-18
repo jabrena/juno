@@ -4,13 +4,13 @@ import io.github.jabrena.juno.backend.h8300.RcxRom.Argument;
 
 /**
  * The display icons of {@link RcxRemoteFirmware}. Each icon, numbered as the ROM numbers it ({@link RcxRom#LCD_ICONS}
- * plus 0x06-0x20), is lit when the Arduino set it with command 0xA2 or when the brick's own state calls for it: the
+ * plus 0x06-0x20), is lit when the Arduino set it with command 0xB2 or when the brick's own state calls for it: the
  * motor arrows of running outputs (from {@link RcxMotorCommands}), the pressed marker of touch sensors (from
  * {@link RcxSensorCommands}), the battery-low warning below about 6.5 V, and the minifigure, which stands, and walks
  * while any motor runs. {@link #UPDATE} recomputes and redraws them all.
  */
 final class RcxDisplayIcons {
-    /** Command 0xA2: icon 0x06-0x20, then 1 to light it or 0 to leave it to the brick's own state. */
+    /** Command 0xB2: icon 0x06-0x20, then 1 to light it or 0 to leave it to the brick's own state. */
     static final String SET_ICON = "set_icon";
     /** Subroutine: recomputes the brick's own icons and redraws every icon. */
     static final String UPDATE = "update_icons";
@@ -68,9 +68,8 @@ final class RcxDisplayIcons {
         assembler.data(DRAWN);
     }
 
-    /** Stores the Arduino's choice for the icon; darkening one clears it at once, as "every segment" needs. */
+    /** Stores the Arduino's choice for the icon; the reply redraws the display. */
     private void setIcon() {
-        String redraw = code.newLabel();
         assembler.label(SET_ICON);
         assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R2L);
         assembler.moveImmediate(0, H8ByteRegister.R2H);
@@ -80,11 +79,6 @@ final class RcxDisplayIcons {
         code.jumpIf(H8Condition.CARRY_CLEAR, RcxCode.REPLY_ACK);
         assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R0L);
         assembler.storeByteIndexed(H8ByteRegister.R0L, MANUAL, H8Register.R2);
-        assembler.branch(H8Condition.NOT_EQUAL, redraw);
-        iconOpcode();
-        code.rom().call(RcxRom.CLEAR_LCD_SEGMENT, Argument.register(H8Register.R5));
-        assembler.label(redraw);
-        assembler.call(UPDATE);
         code.replyWith(1);
     }
 
@@ -138,14 +132,19 @@ final class RcxDisplayIcons {
     }
 
     /**
-     * Lights or darkens every icon in {@link #DRAWN} by its two bytes, keeping the position in memory since the ROM
-     * calls change the registers, then lights every segment if the Arduino asked for that.
+     * Redraws the whole display: clears it, draws the number ({@link RcxCode#DRAW_NUMBER}), lights every icon in
+     * {@link #DRAWN} that should be on, then every segment if the Arduino asked for that. The ROM's
+     * {@code clear_lcd_segment} is never used: on the brick, clearing icons one by one and lighting them again every
+     * 0.3 s left only the standing figure, while a cleared display followed by the icons shows them all.
+     * The position lives in memory since the ROM calls change the registers.
      */
     private void redraw() {
-        String next = code.newLabel();
         String loop = code.newLabel();
         String lit = code.newLabel();
+        String next = code.newLabel();
         String done = code.newLabel();
+        code.rom().call(RcxRom.CLEAR_DISPLAY);
+        assembler.call(RcxCode.DRAW_NUMBER);
         code.clearWord(CURSOR);
         assembler.label(loop);
         assembler.load(CURSOR, H8Register.R4);
@@ -155,9 +154,7 @@ final class RcxDisplayIcons {
         assembler.loadByteIndexed(MANUAL, H8Register.R2, H8ByteRegister.R0L);
         assembler.branch(H8Condition.NOT_EQUAL, lit);
         assembler.loadByteIndexed(AUTOMATIC, H8Register.R2, H8ByteRegister.R0L);
-        assembler.branch(H8Condition.NOT_EQUAL, lit);
-        code.rom().call(RcxRom.CLEAR_LCD_SEGMENT, Argument.register(H8Register.R5));
-        assembler.branch(H8Condition.ALWAYS, next);
+        assembler.branch(H8Condition.EQUAL, next);
         assembler.label(lit);
         code.rom().call(RcxRom.SET_LCD_SEGMENT, Argument.register(H8Register.R5));
         assembler.label(next);

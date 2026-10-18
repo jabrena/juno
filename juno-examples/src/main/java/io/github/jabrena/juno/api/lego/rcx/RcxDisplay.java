@@ -7,7 +7,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
 /**
  * Writes numbers on the RCX's display from the Arduino: a countdown from 10 to -10, one number a second, then the
  * light sensor on input 3 in percent, twice a second, forever, echoing each number over Serial. Needs Juno's own RCX
- * firmware ({@code RcxRemoteFirmware}), which shows the numbers in place of its command counter; LEGO's firmware does
+ * firmware ({@code RcxRemoteFirmware}), which shows the numbers in place of {@code JUno}; LEGO's firmware does
  * not know the command.
  *
  * <p>Wiring: the IR transmitter module's DAT to pin 3 and the IR receiver module's OUT to pin 2, both with

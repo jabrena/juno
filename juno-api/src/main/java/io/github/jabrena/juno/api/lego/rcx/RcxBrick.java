@@ -90,7 +90,8 @@ public final class RcxBrick {
     /** Juno's firmware only: an opcode LEGO's firmware does not use, whose low bits give it two arguments. */
     private static final int OPCODE_SHOW_NUMBER = 0x72;
     /** Juno's firmware only, like {@link #OPCODE_SHOW_NUMBER}. */
-    private static final int OPCODE_SET_ICON = 0xA2;
+    /** Juno's firmware's icon command; the brick never delivers a frame whose opcode byte is exactly 0xA2. */
+    private static final int OPCODE_SET_ICON = 0xB2;
     private static final int OPCODE_SET_INPUT_TYPE = 0x32;
     private static final int OPCODE_SET_INPUT_MODE = 0x42;
     private static final int SOURCE_SENSOR_VALUE = 9;
@@ -225,7 +226,7 @@ public final class RcxBrick {
 
     /**
      * Shows {@code value}, limited to {@link #MIN_DISPLAY}..{@link #MAX_DISPLAY}, on the brick's display in place of
-     * the command counter, until the next call. Needs Juno's own RCX firmware ({@code RcxRemoteFirmware}); LEGO's
+     * {@code JUno}, until the next call. Needs Juno's own RCX firmware ({@code RcxRemoteFirmware}); LEGO's
      * firmware does not know the command and does not answer. Returns whether the brick acknowledged.
      */
     public static boolean showNumber(int value) {

@@ -16,7 +16,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
 public class RcxIcons {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
-    private static final int ICON_MILLIS = 400;
+    private static final int ICON_MILLIS = 2000;
     private static final int ALL_SECONDS = 2;
     private static final int MOTOR_SECONDS = 3;
     private static final int START_MILLIS = 2000;
@@ -74,9 +74,9 @@ public class RcxIcons {
 
     /** Lights {@code icon} for a moment, then hands it back to the brick. */
     private static void flash(String name, int icon) {
-        Serial.println(name);
-        RcxBrick.showIcon(icon, true);
+        Serial.print(name);
+        Serial.println(RcxBrick.showIcon(icon, true) ? ": lit" : ": no answer");
         Delay.millis(ICON_MILLIS);
-        RcxBrick.showIcon(icon, false);
+        Serial.println(RcxBrick.showIcon(icon, false) ? "  back" : "  back: no answer");
     }
 }
