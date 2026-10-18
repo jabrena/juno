@@ -42,6 +42,20 @@ class RcxRemoteFirmwareTest {
     }
 
     @Test
+    void showsJunoWhenTheFirmwareStarts() {
+        H8Simulator cpu = run();
+
+        assertThat(new int[] {
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY), cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 1),
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 2), cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 3),
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 4), cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 5),
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 6), cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 7),
+                    cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + 8)
+                })
+                .containsExactly(0xA0, 0x02, 0x00, 0x88, 0x08, 0x88, 0x80, 0x8A, 0xAA);
+    }
+
+    @Test
     void answersAliveWithTheComplementedOpcode() {
         rcx.receive(0x10);
         rcx.receive(0x18);
@@ -216,6 +230,50 @@ class RcxRemoteFirmwareTest {
         run();
 
         assertThat(callsAfterBoot()).containsSubsequence("motor 2000 1 7", "motor 2000 4 7", "sound 0", "sleep");
+    }
+
+    @Test
+    void wakingRunsTheWholeColdStartAgain() {
+        rcx.idleElapses();
+        rcx.wakeAfterSleep();
+        rcx.receive(0x21, 0x80 | 0x1);
+        H8Simulator cpu = new H8Simulator(new RcxRemoteFirmware().image(), rcx);
+
+        cpu.runFor(MAX_STEPS);
+
+        assertThat(callsAfterBoot()).containsSubsequence("motor 2000 1 7", "sleep", "clear memory", BOOT_BEEP);
+    }
+
+    @Test
+    void aShortOnOffPressSleepsWithoutDeletingTheFirmware() {
+        rcx.pressPowerButton();
+
+        H8Simulator cpu = run();
+
+        assertThat(callsAfterBoot()).containsSubsequence("motor 2000 4 7", "motor 2001 4 7", "motor 2002 4 7", "sleep");
+        assertThat(cpu.readByte(RcxRom.DELETE_FIRMWARE_FLAG)).isZero();
+        assertThat(rcx.calls()).doesNotContain("reset");
+    }
+
+    @Test
+    void ignoresOnOffContactBounce() {
+        rcx.bounceOnOff();
+        H8Simulator cpu = new H8Simulator(new RcxRemoteFirmware().image(), rcx);
+
+        cpu.runFor(MAX_STEPS);
+
+        assertThat(rcx.calls()).doesNotContain("sleep", "reset");
+    }
+
+    @Test
+    void aTwoSecondOnOffHoldReturnsToTheBootLoader() {
+        rcx.holdPowerButton();
+
+        H8Simulator cpu = run();
+
+        assertThat(callsAfterBoot()).containsSubsequence("motor 2000 4 7", "motor 2001 4 7", "motor 2002 4 7", "reset");
+        assertThat(cpu.readByte(RcxRom.DELETE_FIRMWARE_FLAG)).isEqualTo(1);
+        assertThat(rcx.calls()).doesNotContain("sleep");
     }
 
     @Test

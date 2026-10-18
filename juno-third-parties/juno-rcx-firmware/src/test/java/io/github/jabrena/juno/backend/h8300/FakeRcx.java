@@ -9,10 +9,10 @@ import java.util.TreeSet;
 
 /**
  * The RCX boot ROM as {@link H8Simulator} sees it: infrared messages are queued by the test and handed over through
- * {@code check_for_data}/{@code receive_data}, replies are captured from {@code send_data}, and motor, sound, sensor
- * and sleep calls are recorded as text. A sensor read reports the reading the test set, or for a counting input adds
- * its step to the previous value, as rotation counting does. The run stops when the firmware polls for a message and
- * none is left, or when it goes to sleep.
+ * {@code check_for_data} (or the receive flag given to {@code init_serial}) and {@code receive_data}, replies are captured from {@code send_data}, and motor, sound,
+ * sensor and sleep calls are recorded as text. A sensor read reports the reading the test set, or for a counting input
+ * adds its step to the previous value, as rotation counting does. The run stops when the firmware begins an idle loop
+ * with no message left, or when it goes to sleep.
  */
 final class FakeRcx implements H8Simulator.Rom {
     private final Deque<int[]> messages = new ArrayDeque<>();
@@ -23,9 +23,17 @@ final class FakeRcx implements H8Simulator.Rom {
     private int displayed = -1;
     private int displayStyle;
     private boolean idleElapses;
+    private boolean wakesAfterSleep;
+    private boolean idleTriggered;
+    private boolean powerButtonPressed;
+    private boolean mainLoopRunning;
+    private int powerButtonHeldReads;
+    private boolean buttonHandlingInProgress;
+    private boolean startupOnOffRead = true;
     private boolean analogReady;
     private int countdownAtMessage = -1;
     private int idlePolls;
+    private int receivedFlagAddress = -1;
     private final Set<Integer> icons = new TreeSet<>();
     private final Set<Integer> everLit = new TreeSet<>();
 
@@ -53,6 +61,29 @@ final class FakeRcx implements H8Simulator.Rom {
     /** Once the messages run out, the auto power-off countdown reaches zero instead of the run ending. */
     void idleElapses() {
         idleElapses = true;
+    }
+
+    /** Makes the next sleep end with an On-Off press instead of ending the run. */
+    void wakeAfterSleep() {
+        wakesAfterSleep = true;
+    }
+
+    /** Presses On-Off once the main loop runs, for three polls, then releases it. */
+    void pressPowerButton() {
+        powerButtonPressed = true;
+        powerButtonHeldReads = 3;
+    }
+
+    /** Reports On-Off pressed for a single poll once the main loop runs, as contact bounce does. */
+    void bounceOnOff() {
+        powerButtonPressed = true;
+        powerButtonHeldReads = 1;
+    }
+
+    /** Holds On-Off past the firmware's deliberate downloader threshold, then releases it. */
+    void holdPowerButton() {
+        powerButtonPressed = true;
+        powerButtonHeldReads = 22;
     }
 
     /** The A/D handler flags fresh readings once, at the first poll for a message. */
@@ -109,34 +140,48 @@ final class FakeRcx implements H8Simulator.Rom {
         int r6 = cpu.register(6);
         switch (routine) {
             case RcxRom.CLEAR_MEMORY -> {
+                calls.add("clear memory");
                 for (int address = cpu.register(0); address < cpu.register(1); address++) {
                     cpu.writeByte(address, 0);
                 }
             }
-            case RcxRom.GET_POWER_STATUS -> cpu.writeWord(cpu.stackArgument(0),
-                    r6 == RcxRom.POWER_STATUS_BATTERY ? batteryReading : 0x20);
-            case RcxRom.CHECK_FOR_DATA -> {
-                if (analogReady) {
-                    analogReady = false;
-                    cpu.writeByte(RcxRemoteFirmware.DISPATCH, 1);
+            case RcxRom.GET_POWER_STATUS -> {
+                boolean onOff = r6 == RcxRom.POWER_STATUS_ON_OFF;
+                boolean startupRead = onOff && startupOnOffRead;
+                if (startupRead) {
+                    startupOnOffRead = false;
                 }
-                if (messages.isEmpty() && idlePolls > 0) {
-                    idlePolls--;
-                    cpu.writeWord(RcxRemoteFirmware.TENTHS, cpu.readWord(RcxRemoteFirmware.TENTHS) + 1);
-                    return r6;
-                }
-                if (messages.isEmpty()) {
-                    if (!idleElapses) {
-                        throw new H8Simulator.Stop();
+                boolean pressed = onOff
+                        && powerButtonPressed
+                        && mainLoopRunning
+                        && powerButtonHeldReads > 0;
+                cpu.writeWord(cpu.stackArgument(0), r6 == RcxRom.POWER_STATUS_BATTERY ? batteryReading : pressed ? 0 : 0x20);
+                if (pressed) {
+                    if (buttonHandlingInProgress) {
+                        cpu.writeWord(RcxRemoteFirmware.TENTHS, cpu.readWord(RcxRemoteFirmware.TENTHS) + 1);
                     }
-                    idleElapses = false;
-                    cpu.writeWord(RcxRemoteFirmware.SHUTOFF_MINUTES, 0);
-                    return r6;
+                    powerButtonHeldReads--;
+                    buttonHandlingInProgress = true;
+                } else if (onOff && buttonHandlingInProgress) {
+                    powerButtonPressed = false;
                 }
-                if (countdownAtMessage >= 0) {
-                    cpu.writeWord(RcxRemoteFirmware.SHUTOFF_MINUTES, countdownAtMessage);
+                if (onOff && !pressed && !buttonHandlingInProgress) {
+                    // Time passes between On-Off polls; the firmware waits for a quiet button by the tenths timer.
+                    cpu.writeWord(RcxRemoteFirmware.TENTHS, cpu.readWord(RcxRemoteFirmware.TENTHS) + 1);
                 }
-                cpu.writeByte(r6, 1);
+                if (onOff && !startupRead && !buttonHandlingInProgress) {
+                    pollMainLoop(cpu);
+                }
+            }
+            case RcxRom.INIT_SERIAL -> {
+                receivedFlagAddress = r6;
+                signalNextMessage(cpu);
+            }
+            case RcxRom.CHECK_FOR_DATA -> {
+                mainLoopRunning = true;
+                if (!messages.isEmpty()) {
+                    cpu.writeByte(r6, 1);
+                }
             }
             case RcxRom.RECEIVE_DATA -> {
                 int[] message = messages.remove();
@@ -146,6 +191,10 @@ final class FakeRcx implements H8Simulator.Rom {
                 }
                 int lengthAddress = cpu.stackArgument(1);
                 cpu.writeByte(lengthAddress, cpu.readByte(lengthAddress) + message.length);
+                if (receivedFlagAddress >= 0) {
+                    cpu.writeByte(receivedFlagAddress, 0);
+                    signalNextMessage(cpu);
+                }
             }
             case RcxRom.SEND_DATA -> {
                 int data = cpu.stackArgument(1);
@@ -183,11 +232,53 @@ final class FakeRcx implements H8Simulator.Rom {
             }
             case RcxRom.SHUTDOWN_POWER -> {
                 calls.add("sleep");
-                throw new H8Simulator.Stop();
+                if (!wakesAfterSleep) {
+                    throw new H8Simulator.Stop();
+                }
+                wakesAfterSleep = false;
+            }
+            case RcxRom.RESET_VECTOR -> {
+                if (cpu.readByte(RcxRom.DELETE_FIRMWARE_FLAG) == 1) {
+                    calls.add("reset");
+                    throw new H8Simulator.Stop();
+                }
             }
             default -> {
             }
         }
         return r6;
+    }
+
+    private void signalNextMessage(H8Simulator cpu) {
+        if (receivedFlagAddress >= 0 && !messages.isEmpty()) {
+            cpu.writeByte(receivedFlagAddress, 1);
+        }
+    }
+
+    private void pollMainLoop(H8Simulator cpu) {
+        if (analogReady) {
+            analogReady = false;
+            cpu.writeByte(RcxRemoteFirmware.DISPATCH, 1);
+        }
+        if (messages.isEmpty() && idlePolls > 0) {
+            idlePolls--;
+            cpu.writeWord(RcxRemoteFirmware.TENTHS, cpu.readWord(RcxRemoteFirmware.TENTHS) + 1);
+            return;
+        }
+        if (messages.isEmpty()) {
+            if (idleTriggered || powerButtonPressed) {
+                return;
+            }
+            if (!idleElapses) {
+                throw new H8Simulator.Stop();
+            }
+            idleElapses = false;
+            idleTriggered = true;
+            cpu.writeWord(RcxRemoteFirmware.SHUTOFF_MINUTES, 0);
+            return;
+        }
+        if (countdownAtMessage >= 0) {
+            cpu.writeWord(RcxRemoteFirmware.SHUTOFF_MINUTES, countdownAtMessage);
+        }
     }
 }

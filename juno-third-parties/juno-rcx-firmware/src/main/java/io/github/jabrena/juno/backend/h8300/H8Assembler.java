@@ -11,7 +11,7 @@ import java.util.Map;
  * Encodes H8/300 instructions into machine code placed from a fixed origin, the subset a replacement RCX firmware
  * needs so far: word and byte moves between registers, immediates, absolute addresses and the stack; word arithmetic;
  * byte logic, compares and an unsigned divide; conditional branches; and calls, including calls into the brick's ROM
- * at fixed addresses. Labels may be used before
+ * at fixed addresses or through a register. Labels may be used before
  * they are defined; {@link #assemble} resolves them. The H8/300 is big-endian: every 16-bit field is written high
  * byte first.
  */
@@ -195,6 +195,11 @@ public final class H8Assembler {
     public void call(int address) {
         bytes(0x5E, 0);
         word(checkedWord(address, "address"));
+    }
+
+    /** {@code jsr @register}, used to enter a ROM vector loaded from memory. */
+    public void call(H8Register register) {
+        bytes(0x5D, register.number() << 4);
     }
 
     /** {@code jsr @label:16}. */

@@ -37,13 +37,16 @@ import java.util.Objects;
  * own</td><td>none</td></tr>
  * </table>
  *
- * <p>Other messages get no reply. The display counts the commands answered until a number is shown, and lights its
- * icons from the brick's state as well as on request (see {@code RcxDisplayIcons}): running motors' arrows, pressed
- * touch sensors, low battery, and the minifigure, walking while a motor runs. Outputs start floating, forward, at
- * full power, as LEGO's firmware leaves them. On-Off, or {@link #DEFAULT_AUTO_OFF_MINUTES} minutes without a command
- * (as LEGO's firmware), floats the outputs, stops powering the sensors and puts the brick to sleep; the next On-Off
- * press wakes it. Like any firmware that does not implement the delete command, it stays until the brick loses power:
- * take a battery out for a minute before downloading other firmware.
+ * <p>Other messages get no reply. The display starts with {@code JUno}, then counts the commands answered until a
+ * number is shown, and lights its icons from the brick's state as well as on request (see {@code RcxDisplayIcons}):
+ * running motors' arrows, pressed touch sensors, low battery, and the minifigure, walking while a motor runs. Outputs
+ * start floating, forward, at full power, as LEGO's firmware leaves them. After
+ * {@link #DEFAULT_AUTO_OFF_MINUTES} minutes without a command (as LEGO's firmware), it floats the outputs, stops
+ * powering the sensors and puts the brick to sleep; On-Off wakes it without losing the firmware,
+ * starting it afresh as after the download. A normal On-Off press
+ * does the same immediately. Holding On-Off for two seconds instead floats the outputs, deletes the downloaded
+ * firmware and returns the brick to its ROM downloader, so another firmware can be installed without removing a
+ * battery.
  *
  * <pre>
  * java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware [minutes]
@@ -95,8 +98,12 @@ public final class RcxRemoteFirmware {
     private static final int OPCODE_SET_ICON = 0xA2;
     /** Tenths of a second between icon redraws, the walking figure's step. */
     private static final int ICON_TICK_TENTHS = 3;
-    /** The command-line flag that leaves the display icons out. */
-    private static final String NO_ICONS = "--no-icons";
+    /** Holding On-Off this long deliberately returns the brick to its ROM downloader. */
+    private static final int DELETE_HOLD_TENTHS = 20;
+    /** On-Off must read released this long after a wake-up before a press counts, so release bounce is ignored. */
+    private static final int SETTLE_TENTHS = 3;
+    /** The command-line flag that adds the display icons, which still hang the brick on hardware. */
+    private static final String ICONS = "--icons";
     private static final Path SRECORD_OUTPUT =
             Path.of("juno-third-parties/juno-rcx-firmware/src/main/resources/rcx/firmware.srec");
     private static final Path JAVA_OUTPUT = Path.of(
@@ -106,6 +113,8 @@ public final class RcxRemoteFirmware {
     private static final int SOUND_BEEP_BEEP = 1;
     private static final int SOUND_CLICK = 0;
     private static final int SOUND_VALUES = 0x07;
+    /** LCD bytes for {@code JUno}, left to right, using the four numeric seven-segment positions. */
+    private static final int[] JUNO_DISPLAY = {0xA0, 0x02, 0x00, 0x88, 0x08, 0x88, 0x80, 0x8A, 0xAA};
 
     private final int autoOffMinutes;
     private final boolean withIcons;
@@ -139,10 +148,10 @@ public final class RcxRemoteFirmware {
     }
 
     public static void main(String[] args) throws IOException {
-        boolean withIcons = !List.of(args).contains(NO_ICONS);
-        List<String> rest = List.of(args).stream().filter(arg -> !arg.equals(NO_ICONS)).toList();
+        boolean withIcons = List.of(args).contains(ICONS);
+        List<String> rest = List.of(args).stream().filter(arg -> !arg.equals(ICONS)).toList();
         if (rest.size() > 1) {
-            System.err.println("usage: RcxRemoteFirmware [auto-off minutes] [" + NO_ICONS + "]");
+            System.err.println("usage: RcxRemoteFirmware [auto-off minutes] [" + ICONS + "]");
             System.exit(2);
         }
         int minutes = rest.isEmpty() ? DEFAULT_AUTO_OFF_MINUTES : Integer.parseInt(rest.get(0));
@@ -171,6 +180,7 @@ public final class RcxRemoteFirmware {
         battery();
         showNumber();
         reply();
+        showBrand();
         updateDisplay();
         powerOff();
         motors.handlers();
@@ -182,7 +192,7 @@ public final class RcxRemoteFirmware {
         return assembler.assemble("start");
     }
 
-    /** Clears the data area and sets the outputs' defaults; runs once, after the download. */
+    /** Clears the data area and sets the outputs' defaults; runs after the download and every wake-up. */
     private void startUp() {
         assembler.label("start");
         assembler.moveImmediate(DISPATCH, H8Register.R0);
@@ -193,7 +203,7 @@ public final class RcxRemoteFirmware {
         motors.setDefaults();
     }
 
-    /** Starts the ROM's handlers in the order LEGO's firmware does; runs after the download and every wake-up. */
+    /** Starts the ROM's handlers in the order LEGO's firmware does, right after {@link #startUp}. */
     private void powerOn() {
         assembler.label("power_on");
         rom.call(RcxRom.INIT_TIMER, COUNTERS, DISPATCH);
@@ -202,12 +212,12 @@ public final class RcxRemoteFirmware {
         rom.call(RcxRom.INIT_SERIAL, RECEIVED_FLAG, COUNTERS, 1, 1);
         assembler.call(RcxSensorCommands.POWER_ALL);
         restartAutoOff();
-        assembler.call("update_display");
+        assembler.call("show_brand");
         if (withIcons) {
             assembler.call(RcxDisplayIcons.UPDATE);
         }
         rom.call(RcxRom.PLAY_SYSTEM_SOUND, RcxRom.SOUND_PLAY, SOUND_BEEP_BEEP);
-        waitWhileOnOffHeld();
+        waitUntilOnOffSettles();
     }
 
     /**
@@ -218,7 +228,7 @@ public final class RcxRemoteFirmware {
         assembler.label(RcxCode.LOOP);
         rom.call(RcxRom.GET_POWER_STATUS, RcxRom.POWER_STATUS_ON_OFF, STATUS);
         assembler.load(STATUS, H8Register.R6);
-        code.jumpIf(H8Condition.EQUAL, "power_off");
+        code.jumpIf(H8Condition.EQUAL, "power_button");
         assembler.load(SHUTOFF_MINUTES, H8Register.R6);
         code.jumpIf(H8Condition.LESS_OR_EQUAL, "power_off");
         String received = code.newLabel();
@@ -365,6 +375,23 @@ public final class RcxRemoteFirmware {
 
     /** Floats the outputs, waits for On-Off to be let go, and sleeps until the next press. */
     private void powerOff() {
+        assembler.label("power_button");
+        code.clearWord(TENTHS);
+        assembler.label("power_button_held");
+        rom.call(RcxRom.GET_POWER_STATUS, RcxRom.POWER_STATUS_ON_OFF, STATUS);
+        assembler.load(STATUS, H8Register.R6);
+        assembler.branch(H8Condition.NOT_EQUAL, "power_released");
+        assembler.moveImmediate(DELETE_HOLD_TENTHS, H8Register.R5);
+        assembler.load(TENTHS, H8Register.R6);
+        assembler.compare(H8Register.R5, H8Register.R6);
+        assembler.branch(H8Condition.CARRY_SET, "power_button_held");
+        assembler.jump("delete_firmware");
+
+        // A press released before the timer ticked once is contact bounce, not a press.
+        assembler.label("power_released");
+        assembler.load(TENTHS, H8Register.R6);
+        code.jumpIf(H8Condition.EQUAL, RcxCode.LOOP);
+
         assembler.label("power_off");
         motors.floatAll();
         waitWhileOnOffHeld();
@@ -380,13 +407,41 @@ public final class RcxRemoteFirmware {
         rom.call(RcxRom.SHUTDOWN_SENSORS);
         rom.call(RcxRom.SHUTDOWN_TIMER);
         rom.call(RcxRom.SHUTDOWN_POWER);
-        assembler.jump("power_on");
+        // Waking re-runs the whole cold start, clearing the ROM's serial and display state too: resuming at
+        // power_on with the state left from before the sleep left the brick unstable on hardware.
+        assembler.jump("start");
+
+        assembler.label("delete_firmware");
+        motors.floatAll();
+        waitWhileOnOffHeld();
+        rom.call(RcxRom.CLEAR_DISPLAY);
+        rom.call(RcxRom.REFRESH_DISPLAY);
+        rom.call(RcxRom.SHUTDOWN_SERIAL);
+        rom.call(RcxRom.SHUTDOWN_SENSORS);
+        rom.call(RcxRom.SHUTDOWN_TIMER);
+        assembler.moveImmediate(1, H8ByteRegister.R6L);
+        assembler.storeByte(H8ByteRegister.R6L, RcxRom.DELETE_FIRMWARE_FLAG);
+        assembler.load(RcxRom.RESET_VECTOR, H8Register.R6);
+        assembler.call(H8Register.R6);
+        assembler.jump("delete_firmware");
     }
 
     /** Sets the ROM's power-off countdown back to the full idle time. */
     private void restartAutoOff() {
         assembler.moveImmediate(autoOffMinutes, H8Register.R6);
         assembler.store(H8Register.R6, SHUTOFF_MINUTES);
+    }
+
+    /** Subroutine: writes {@code JUno} into the four full seven-segment positions and refreshes the LCD. */
+    private void showBrand() {
+        assembler.label("show_brand");
+        rom.call(RcxRom.CLEAR_DISPLAY);
+        for (int i = 0; i < JUNO_DISPLAY.length; i++) {
+            assembler.moveImmediate(JUNO_DISPLAY[i], H8ByteRegister.R6L);
+            assembler.storeByte(H8ByteRegister.R6L, RcxRom.LCD_DISPLAY_MEMORY + i);
+        }
+        rom.call(RcxRom.REFRESH_DISPLAY);
+        assembler.returnFromSubroutine();
     }
 
     /** Subroutine: shows the number 0x72 set, signed, or else the command counter, unsigned. */
@@ -409,6 +464,22 @@ public final class RcxRemoteFirmware {
     }
 
     /** Polls On-Off until it is let go: its status is 0 while held down. */
+    /** Waits until On-Off has read released for {@link #SETTLE_TENTHS} tenths in a row. */
+    private void waitUntilOnOffSettles() {
+        String restart = code.newLabel();
+        String poll = code.newLabel();
+        assembler.label(restart);
+        code.clearWord(TENTHS);
+        assembler.label(poll);
+        rom.call(RcxRom.GET_POWER_STATUS, RcxRom.POWER_STATUS_ON_OFF, STATUS);
+        assembler.load(STATUS, H8Register.R6);
+        assembler.branch(H8Condition.EQUAL, restart);
+        assembler.moveImmediate(SETTLE_TENTHS, H8Register.R5);
+        assembler.load(TENTHS, H8Register.R6);
+        assembler.compare(H8Register.R5, H8Register.R6);
+        assembler.branch(H8Condition.CARRY_SET, poll);
+    }
+
     private void waitWhileOnOffHeld() {
         String poll = code.newLabel();
         assembler.label(poll);

@@ -18,6 +18,8 @@ public final class RcxRom {
     public static final int RESET_VECTOR = 0x0000;
     /** The RAM vector the ROM jumps through after a reset once firmware is loaded. */
     public static final int FIRMWARE_RESET_VECTOR = 0xFD90;
+    /** Set to one before entering the ROM reset vector to delete downloaded firmware. */
+    public static final int DELETE_FIRMWARE_FLAG = 0xFFCC;
 
     /** {@code void clear_memory(r0 = from, r1 = to)}: zeroes RAM from {@code from} up to {@code to}. */
     public static final int CLEAR_MEMORY = 0x0436;
@@ -57,6 +59,8 @@ public final class RcxRom {
     public static final int CLEAR_DISPLAY = 0x27AC;
     /** {@code void refresh_display(void)}: sends the display state set since the last refresh to the LCD. */
     public static final int REFRESH_DISPLAY = 0x27C8;
+    /** The first of the nine bytes whose bits control the LCD segments directly. */
+    public static final int LCD_DISPLAY_MEMORY = 0xEF43;
     /** {@code void play_system_sound(0x4003, short sound)}. */
     public static final int PLAY_SYSTEM_SOUND = 0x299A;
     /** {@code void play_sound_or_set_data_pointer(short code, short param0, short param1)}. */

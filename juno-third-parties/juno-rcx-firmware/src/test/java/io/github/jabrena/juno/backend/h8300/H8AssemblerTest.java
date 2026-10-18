@@ -36,9 +36,11 @@ class H8AssemblerTest {
         assembler.compare(H8Register.R3, H8Register.R4);
         assembler.adds(1, H8Register.R5);
         assembler.call(0x0436);
+        assembler.call(H8Register.R6);
         assembler.returnFromSubroutine();
 
-        assertThat(hex(assembler.assemble("start"))).isEqualTo("0912" + "1910" + "1d34" + "0b05" + "5e000436" + "5470");
+        assertThat(hex(assembler.assemble("start")))
+                .isEqualTo("0912" + "1910" + "1d34" + "0b05" + "5e000436" + "5d60" + "5470");
     }
 
     @Test
