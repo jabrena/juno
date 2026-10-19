@@ -74,7 +74,7 @@ calls) is the single place that bridges the two:
 | `Delay.millis(int ms)`                     | `bl delay` (calls Arduino's `delay` directly, no shim) | Arduino's `delay` takes `unsigned long`; the raw `int32_t` register value is reinterpreted as `unsigned long` at the call boundary itself, with no explicit cast anywhere in generated code |
 | `Serial.begin(BaudRate baudRate)`           | resolves the enum to an `int`, then `bl juno_serial_begin` | shim casts to `unsigned long`; type-safe convenience overload for the five common rates in `BaudRate` |
 | `Serial.println(int value)`                | `bl juno_serial_println`         | prints a signed decimal `int32_t`; the `boolean` overload prints `true`/`false` through the string intrinsic, `long`/`float`/`double` use type-specific shims, and `String` values compile to `bl juno_serial_println_str` |
-| `LedMatrix.loadFrame(int, int, int)`       | `bl juno_led_matrix_load_frame`  | the shim reinterprets each Java `int` bit-for-bit as `uint32_t` (a packed pixel bitmask, not a numeric value) |
+| `matrix.loadFrame(int, int, int)`          | `bl juno_led_matrix_load_frame`  | the shim reinterprets each Java `int` bit-for-bit as `uint32_t` (a packed pixel bitmask, not a numeric value) |
 | `mouse.move(int x, int y)`                 | `bl juno_mouse_move`             | the shim narrows each Java `int` to Arduino's `signed char` (-128..127), sign-extended — out-of-range values wrap instead of clamping |
 
 The recurring pattern: Java's type system has no `unsigned` and no distinct `bool` at the ABI
