@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.blocks;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -20,6 +22,7 @@ import io.github.jabrena.juno.usecases.miner.services.NodeService;
  * redrawn.
  */
 public final class BlocksView implements View {
+    private static final Clock CLOCK = MCU.getClock();
     static final int COLUMNS = 8;
     static final int ROWS = (BitBoard.SIZE + COLUMNS - 1) / COLUMNS;
     static final int PITCH_X = 30;
@@ -76,7 +79,7 @@ public final class BlocksView implements View {
             shownStatus = status;
             showStatus(board);
         }
-        int now = Clock.millis();
+        int now = CLOCK.millis();
         for (int bit = BitBoard.FIRST; bit <= BitBoard.LAST; bit++) {
             int key = cellKey(board, bit, now);
             if (key != shown[bit - BitBoard.FIRST]) {

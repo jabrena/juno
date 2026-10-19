@@ -2,7 +2,6 @@ package io.github.jabrena.juno.games.doom;
 
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.time.Clock;
 
 /**
  * Times a map's loading and its route planning, and shows their progress. The work is known before it starts: the
@@ -68,7 +67,7 @@ final class Loading {
         barLoadRate = loadRate;
         barPlanRate = planRate;
         estimateMillis = (loadUnits * barLoadRate + planUnits * barPlanRate) / 1000;
-        started = Clock.millis();
+        started = DoomEngine.CLOCK.millis();
         redraw();
     }
 
@@ -86,18 +85,18 @@ final class Loading {
             return;
         }
         loading = false;
-        int elapsed = Clock.millis() - started;
+        int elapsed = DoomEngine.CLOCK.millis() - started;
         int rate = (int) ((long) elapsed * 1000 / loadUnits);
         loadRate = (loadRate + rate) / 2;
         report(" read ", loadUnits, " units in ", elapsed, (loadUnits * LOAD_MICROS_PER_UNIT) / 1000, rate);
-        started = Clock.millis();
+        started = DoomEngine.CLOCK.millis();
     }
 
     /** The route is about to be planned for the map just read. */
     static void beginPlan() {
         planning = true;
         planDone = 0;
-        started = Clock.millis();
+        started = DoomEngine.CLOCK.millis();
         loadDone = loadUnits;
         redraw();
     }
@@ -116,7 +115,7 @@ final class Loading {
             return;
         }
         planning = false;
-        int elapsed = Clock.millis() - started;
+        int elapsed = DoomEngine.CLOCK.millis() - started;
         int rate = (int) ((long) elapsed * 1000 / planUnits);
         planRate = (planRate + rate) / 2;
         report(" planned over ", planUnits, " subsectors in ", elapsed,

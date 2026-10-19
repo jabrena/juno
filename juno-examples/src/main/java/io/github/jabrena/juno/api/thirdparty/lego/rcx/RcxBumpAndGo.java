@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -16,6 +18,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class RcxBumpAndGo {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int LEFT_BUMPER = RcxBrick.INPUT_1;
@@ -24,11 +27,24 @@ public class RcxBumpAndGo {
     private static final int TURN_MILLIS = 700;
     private static final int STOP_MILLIS = 500;
 
+    private final RcxLink link;
+    private final RcxRemote remote;
+    private final RcxBrick brick;
+
+    RcxBumpAndGo(RcxLink link, RcxRemote remote, RcxBrick brick) {
+        this.link = link;
+        this.remote = remote;
+        this.brick = brick;
+    }
+
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
-        RcxBumpAndGo app = new RcxBumpAndGo();
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        if (!RcxBrick.setTouchSensor(LEFT_BUMPER) || !RcxBrick.setTouchSensor(RIGHT_BUMPER)) {
+        RcxBumpAndGo app = new RcxBumpAndGo(link, remote, brick);
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        if (!brick.setTouchSensor(LEFT_BUMPER) || !brick.setTouchSensor(RIGHT_BUMPER)) {
             Serial.println("The RCX did not answer: is it in range, with the IR receiver wired?");
             return;
         }
@@ -46,10 +62,10 @@ public class RcxBumpAndGo {
     /** Which bumper is pressed: 0 none, 1 left, 2 right, 3 both. */
     private int bumped() {
         int pressed = 0;
-        if (RcxBrick.isPressed(LEFT_BUMPER)) {
+        if (brick.isPressed(LEFT_BUMPER)) {
             pressed += 1;
         }
-        if (RcxBrick.isPressed(RIGHT_BUMPER)) {
+        if (brick.isPressed(RIGHT_BUMPER)) {
             pressed += 2;
         }
         return pressed;
@@ -70,8 +86,8 @@ public class RcxBumpAndGo {
     }
 
     private void moveFor(int left, int right, int millis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < millis) {
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < millis) {
             move(left, right);
         }
     }
@@ -89,6 +105,6 @@ public class RcxBumpAndGo {
         } else if (right < 0) {
             buttons |= RcxRemote.B_BACKWARD;
         }
-        RcxRemote.sendButtons(buttons);
+        remote.sendButtons(buttons);
     }
 }

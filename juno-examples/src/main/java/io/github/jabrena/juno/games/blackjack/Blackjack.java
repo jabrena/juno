@@ -6,10 +6,16 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Delay;
 
-import static io.github.jabrena.juno.games.blackjack.Cards.*;
-import static io.github.jabrena.juno.games.blackjack.Controls.*;
-import static io.github.jabrena.juno.games.blackjack.Round.*;
-import static io.github.jabrena.juno.games.blackjack.SceneRenderer.*;
+import static io.github.jabrena.juno.games.blackjack.Cards.handValue;
+import static io.github.jabrena.juno.games.blackjack.Controls.waitForButton;
+import static io.github.jabrena.juno.games.blackjack.Round.canDouble;
+import static io.github.jabrena.juno.games.blackjack.Round.deal;
+import static io.github.jabrena.juno.games.blackjack.Round.dealerTurn;
+import static io.github.jabrena.juno.games.blackjack.Round.doubleDown;
+import static io.github.jabrena.juno.games.blackjack.Round.hit;
+import static io.github.jabrena.juno.games.blackjack.SceneRenderer.drawButtons;
+import static io.github.jabrena.juno.games.blackjack.SceneRenderer.drawHeader;
+import static io.github.jabrena.juno.games.blackjack.SceneRenderer.showMessage;
 
 /**
  * Blackjack against the dealer on the ELEGOO 2.8" TFT touch screen shield.

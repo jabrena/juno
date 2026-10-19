@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.lowering;
 
+
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
@@ -34,11 +35,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Gpio.pinMode(13, value);
+                        MCU.getGpio().pinMode(13, value);
                     }
                 }
                 """;
@@ -58,11 +60,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Gpio.pinMode(13, value);
+                        MCU.getGpio().pinMode(13, value);
                     }
                 }
                 """;
@@ -79,11 +82,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Gpio.pinMode(13, value);
+                        MCU.getGpio().pinMode(13, value);
                     }
                 }
                 """;
@@ -104,11 +108,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Gpio.pinMode(13, value);
+                        MCU.getGpio().pinMode(13, value);
                     }
                 }
                 """;
@@ -127,11 +132,11 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.util.Delay;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Gpio.pinMode(13, value);
+                        Delay.millis(value);
                     }
                 }
                 """;
@@ -144,8 +149,8 @@ class BytecodeToIrTest {
                 .stream().findFirst().orElseThrow();
 
         // Then
-        assertThat(call.intrinsic()).isEqualTo(Intrinsic.GPIO_PIN_MODE);
-        assertThat(call.arguments()).hasSize(2);
+        assertThat(call.intrinsic()).isEqualTo(Intrinsic.DELAY_MILLIS);
+        assertThat(call.arguments()).hasSize(1);
         assertThat(call.target()).isEmpty();
         assertThat(call.receiver()).isEmpty();
     }
@@ -156,11 +161,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Gpio.pinMode(13, value);
+                        MCU.getGpio().pinMode(13, value);
                     }
                 }
                 """;

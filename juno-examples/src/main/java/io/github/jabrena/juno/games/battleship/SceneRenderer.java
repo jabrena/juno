@@ -2,11 +2,25 @@ package io.github.jabrena.juno.games.battleship;
 
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
-import static io.github.jabrena.juno.games.battleship.AutopilotBattleship.*;
-import static io.github.jabrena.juno.games.battleship.Battleship.*;
-import static io.github.jabrena.juno.games.battleship.Controls.*;
-import static io.github.jabrena.juno.games.battleship.Fleet.*;
-import static io.github.jabrena.juno.games.battleship.SceneRenderer.*;
+import static io.github.jabrena.juno.games.battleship.Battleship.CELL;
+import static io.github.jabrena.juno.games.battleship.Battleship.GRID_LINE;
+import static io.github.jabrena.juno.games.battleship.Battleship.GRID_X;
+import static io.github.jabrena.juno.games.battleship.Battleship.GRID_Y;
+import static io.github.jabrena.juno.games.battleship.Battleship.HEADER_BACKGROUND;
+import static io.github.jabrena.juno.games.battleship.Battleship.HEADER_HEIGHT;
+import static io.github.jabrena.juno.games.battleship.Battleship.HIT;
+import static io.github.jabrena.juno.games.battleship.Battleship.INFO_X;
+import static io.github.jabrena.juno.games.battleship.Battleship.MINI_CELL;
+import static io.github.jabrena.juno.games.battleship.Battleship.MINI_X;
+import static io.github.jabrena.juno.games.battleship.Battleship.MINI_Y;
+import static io.github.jabrena.juno.games.battleship.Battleship.MISS;
+import static io.github.jabrena.juno.games.battleship.Battleship.SEA;
+import static io.github.jabrena.juno.games.battleship.Battleship.SHIP;
+import static io.github.jabrena.juno.games.battleship.Battleship.SHIPS;
+import static io.github.jabrena.juno.games.battleship.Battleship.SIZE;
+import static io.github.jabrena.juno.games.battleship.Battleship.SUNK;
+import static io.github.jabrena.juno.games.battleship.Battleship.SUNK_COLOR;
+import static io.github.jabrena.juno.games.battleship.Fleet.isSunk;
 
 final class SceneRenderer {
     private SceneRenderer() {

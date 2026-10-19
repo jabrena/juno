@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.api.thirdparty.lcd.pomodoro;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
@@ -11,6 +12,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * local monotonic clock), so accuracy doesn't depend on how long each tick's own work takes.
  */
 final class RunPomodoro {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int SECONDS_PER_MINUTE = 60;
     private static final int MILLIS_PER_SECOND = 1000;
     private static final int TICK_MILLIS = 200;
@@ -21,11 +23,11 @@ final class RunPomodoro {
     /** Counts down from {@code durationMinutes} to zero, returning once the session ends. */
     static void run(int durationMinutes) {
         int totalSeconds = durationMinutes * SECONDS_PER_MINUTE;
-        int startMillis = Clock.millis();
+        int startMillis = CLOCK.millis();
 
         int lastRemainingSeconds = -1;
         while (true) {
-            int elapsedSeconds = (Clock.millis() - startMillis) / MILLIS_PER_SECOND;
+            int elapsedSeconds = (CLOCK.millis() - startMillis) / MILLIS_PER_SECOND;
             int remainingSeconds = totalSeconds - elapsedSeconds;
             if (remainingSeconds < 0) {
                 break;
@@ -56,20 +58,20 @@ final class RunPomodoro {
      * applied consistently.
      */
     private static void show(int minutes, int seconds) {
-        LcdKeypadShield.clear();
-        LcdKeypadShield.setCursor(0, 0);
-        LcdKeypadShield.print("Pomodoro");
-        LcdKeypadShield.setCursor(0, 1);
-        LcdKeypadShield.print("Time left: ");
+        Pomodoro.LCD_SHIELD.clear();
+        Pomodoro.LCD_SHIELD.setCursor(0, 0);
+        Pomodoro.LCD_SHIELD.print("Pomodoro");
+        Pomodoro.LCD_SHIELD.setCursor(0, 1);
+        Pomodoro.LCD_SHIELD.print("Time left: ");
         printTwoDigits(minutes);
-        LcdKeypadShield.print(":");
+        Pomodoro.LCD_SHIELD.print(":");
         printTwoDigits(seconds);
     }
 
     private static void printTwoDigits(int value) {
         if (value < 10) {
-            LcdKeypadShield.print("0");
+            Pomodoro.LCD_SHIELD.print("0");
         }
-        LcdKeypadShield.print(value);
+        Pomodoro.LCD_SHIELD.print(value);
     }
 }

@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.api.mvc;
 
 import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.testing.SimulatedTime;
 import io.github.jabrena.juno.api.testing.Wire;
 import io.github.jabrena.juno.api.thirdparty.tft.ParallelBus;
+import io.github.jabrena.juno.api.thirdparty.tft.TftPins;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Delay;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DisplayName("View router frame loop")
 class ViewRouterTest {
@@ -28,6 +32,7 @@ class ViewRouterTest {
         }
     }
 
+    private final Gpio pins = mock(Gpio.class);
     private final List<String> log = new ArrayList<>();
     private final Deque<Consumer<ViewRouter>> script = new ArrayDeque<>();
     private ViewRouter router;
@@ -36,10 +41,9 @@ class ViewRouterTest {
     void startWithAnIdleTouchPanel() {
         Wire.resetBoard();
         ParallelBus.reset();
+        TftPins.use(pins);
         TftTouchShield.begin();
-        Gpio.analogValues[16] = 0;
-        Gpio.analogValues[17] = 0;
-        router = new ViewRouter(10);
+        router = new ViewRouter(10, SimulatedTime.clock());
         for (int id = 0; id < 4; id++) {
             router.register(id, new Recorder(id));
         }
@@ -131,8 +135,8 @@ class ViewRouterTest {
     @DisplayName("A touch is delivered once per press")
     void shouldDeliverATouchOncePerPress() {
         // Given
-        Gpio.analogValues[16] = 523;
-        Gpio.analogValues[17] = 600;
+        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
+        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
         script.add(r -> { });
         script.add(r -> { });
         script.add(r -> { throw new Stop(); });

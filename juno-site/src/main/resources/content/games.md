@@ -301,15 +301,17 @@ The emulator runs one board at a time with no network, so the picture above come
 
 ## Testing without the board
 
-`./mvnw test` plays every game on an emulated shield, on any machine and in CI. The tests in
-`juno-examples/src/test/java` replace the handful of `native` hardware classes with plain Java test
-doubles, which come first on the test classpath (the `juno:compile`/`juno:upload` goals still use
-the real ones):
+`./mvnw test` plays every game on an emulated shield, on any machine and in CI. Before any test
+runs, `EmulatedBoardExtension` points every `MCU.getGpio()` and `MCU.getClock()` at plain Java ports
+instead of the board's (the `juno:compile`/`juno:upload` goals still use the real ones). The other
+`native` hardware classes are replaced by test doubles that come first on the test classpath:
 
-- `Gpio` decodes the ILI9341 bus that the real `TftTouchShield` driver bit-bangs into a
-  framebuffer, and answers the touch panel's analog reads, so tests can tap the screen.
-- `Clock` and `Delay` run on simulated time: waiting is instant and each clock reading costs a
-  millisecond, so frame loops and time-budgeted searches behave the same on every run.
+- `EmulatedShield`, a `Gpio`, decodes the ILI9341 bus that the real `TftTouchShield` driver
+  bit-bangs into a framebuffer, and answers the touch panel's analog reads, so tests can tap the
+  screen.
+- `SimulatedClock`, a `Clock`, and the `Delay` double run on simulated time: waiting is instant
+  and each clock reading costs a millisecond, so frame loops and time-budgeted searches behave the
+  same on every run.
 - `Random` is a seeded `java.util.Random`, and `Serial` discards its output.
 - `Wifi` is always connected, and `Udp` is a network with no other boards: sends go nowhere and
   nothing arrives.

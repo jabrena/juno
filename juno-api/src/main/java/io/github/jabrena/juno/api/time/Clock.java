@@ -1,11 +1,15 @@
 package io.github.jabrena.juno.api.time;
 
-/** Monotonic clock operations recognized as compiler intrinsics by Juno. */
-public final class Clock {
-    private Clock() {
-    }
+/**
+ * The board's monotonic clock. {@link io.github.jabrena.juno.api.hardware.MCU#getClock()} is the board's own timer,
+ * which the compiler lowers to the Arduino core calls; a unit test passes {@code mock(Clock.class)} instead. Get it
+ * once, at startup, and pass it to the classes that need it.
+ */
+public interface Clock {
 
-    public static native int millis();
+    /** Milliseconds since the board started, wrapping after about 24.8 days. */
+    int millis();
 
-    public static native int micros();
+    /** Microseconds since the board started, wrapping after about 35.8 minutes. */
+    int micros();
 }

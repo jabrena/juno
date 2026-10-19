@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend.avr;
 
+
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilerTestSupport;
@@ -38,6 +39,7 @@ class AvrAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
                 import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 %s
                 @Board(ArduinoUnoR3WiFiRev2.class)
                 public final class %s {
@@ -56,6 +58,7 @@ class AvrAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR3;
                 import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 %s
                 @Board(ArduinoUnoR3.class)
                 public final class %s {
@@ -170,8 +173,8 @@ class AvrAsmBackendTest {
     void shouldCompileBasicGpioForTheClassicUnoR3() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
-                        Gpio.digitalWrite(Gpio.builtinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;
@@ -189,8 +192,8 @@ class AvrAsmBackendTest {
     void shouldOmitWifiSdSoftSpiAndContextSwitchFromTheClassicUnoR3Shim() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
-                        Gpio.digitalWrite(Gpio.builtinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;
@@ -206,8 +209,8 @@ class AvrAsmBackendTest {
     void shouldWrapThePinAndDigitalWriteCallsInTheClassicUnoR3Shim() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
-                        Gpio.digitalWrite(Gpio.builtinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;
@@ -413,7 +416,7 @@ class AvrAsmBackendTest {
     void shouldLowerIntBitwiseAndMultiplyByAConstant() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBitwise", """
-                        int value = Gpio.analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println(value & 0x0F);
                         Serial.println(value | 0xF0);
                         Serial.println(value * 8);
@@ -428,7 +431,7 @@ class AvrAsmBackendTest {
     void shouldLowerMultiplyByAPowerOfTwoConstantAsAShift() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBitwise", """
-                        int value = Gpio.analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println(value & 0x0F);
                         Serial.println(value | 0xF0);
                         Serial.println(value * 8);
@@ -444,7 +447,7 @@ class AvrAsmBackendTest {
     void shouldLowerConstantShiftsWithoutTheVariableShiftHelpers() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrShifts", """
-                        int value = Gpio.analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println(value << 10);
                         Serial.println(value >> 10);
                         Serial.println(value >>> 10);
@@ -462,7 +465,7 @@ class AvrAsmBackendTest {
     void shouldLowerTheConstantShiftsToRotateSequences() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrShifts", """
-                        int value = Gpio.analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println(value << 10);
                         Serial.println(value >> 10);
                         Serial.println(value >>> 10);
@@ -479,7 +482,7 @@ class AvrAsmBackendTest {
     void shouldLowerNarrowingCastsToByteCharAndShort() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrNarrowing", """
-                        int value = Gpio.analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println((byte) value);
                         Serial.println((char) value);
                         Serial.println((short) value);
@@ -497,7 +500,7 @@ class AvrAsmBackendTest {
     void shouldCompareWithGreaterThanAndLessOrEqualOnAvr() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrCompare", """
-                        int value = Gpio.analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         if (value > 10) {
                             Serial.println("big");
                         }
@@ -517,21 +520,21 @@ class AvrAsmBackendTest {
     void shouldLowerLongAndFloatingPointWideOperationsOnAvr() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrWide", """
-                        long left = Gpio.analogRead(0);
-                        long right = Gpio.analogRead(1);
+                        long left = MCU.getGpio().analogRead(0);
+                        long right = MCU.getGpio().analogRead(1);
                         Serial.println(-left);
                         Serial.println(left > right);
                         int narrowed = (int) left;
                         long widened = narrowed;
                         Serial.println(widened);
 
-                        float fa = Gpio.analogRead(2);
-                        float fb = Gpio.analogRead(3);
+                        float fa = MCU.getGpio().analogRead(2);
+                        float fb = MCU.getGpio().analogRead(3);
                         Serial.println(fa + fb);
                         Serial.println(fa == fb);
                         Serial.println((int) fa);
 
-                        double da = Gpio.analogRead(4);
+                        double da = MCU.getGpio().analogRead(4);
                         Serial.println(-da);
                         Serial.println(da == fb);
                         Serial.println((float) da);
@@ -1069,8 +1072,8 @@ class AvrAsmBackendTest {
     void shouldReachTheCorePinFunctionsThroughJavaWidthWrappers() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBlink", """
-                        Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
-                        Gpio.digitalWrite(Gpio.builtinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;
@@ -1091,8 +1094,8 @@ class AvrAsmBackendTest {
     void shouldWrapThePinModeCallWithAPinModeCastInTheShim() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBlink", """
-                        Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
-                        Gpio.digitalWrite(Gpio.builtinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;

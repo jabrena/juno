@@ -3,6 +3,7 @@ package io.github.jabrena.juno.games.chess;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -10,18 +11,18 @@ import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.api.util.Random;
 
-import static io.github.jabrena.juno.games.chess.BishopSprite.*;
-import static io.github.jabrena.juno.games.chess.ChessEngine.*;
-import static io.github.jabrena.juno.games.chess.ChessRules.*;
-import static io.github.jabrena.juno.games.chess.Controls.*;
-import static io.github.jabrena.juno.games.chess.KingSprite.*;
-import static io.github.jabrena.juno.games.chess.KnightSprite.*;
-import static io.github.jabrena.juno.games.chess.MoveGenerator.*;
-import static io.github.jabrena.juno.games.chess.PawnSprite.*;
-import static io.github.jabrena.juno.games.chess.PieceSprites.*;
-import static io.github.jabrena.juno.games.chess.QueenSprite.*;
-import static io.github.jabrena.juno.games.chess.RookSprite.*;
-import static io.github.jabrena.juno.games.chess.SceneRenderer.*;
+import static io.github.jabrena.juno.games.chess.ChessEngine.countLegalMoves;
+import static io.github.jabrena.juno.games.chess.ChessEngine.isLegal;
+import static io.github.jabrena.juno.games.chess.ChessEngine.negamax;
+import static io.github.jabrena.juno.games.chess.ChessRules.inCheck;
+import static io.github.jabrena.juno.games.chess.ChessRules.makeMove;
+import static io.github.jabrena.juno.games.chess.ChessRules.unmakeMove;
+import static io.github.jabrena.juno.games.chess.Controls.squareAt;
+import static io.github.jabrena.juno.games.chess.Controls.waitForRelease;
+import static io.github.jabrena.juno.games.chess.SceneRenderer.printSquare;
+import static io.github.jabrena.juno.games.chess.SceneRenderer.refresh;
+import static io.github.jabrena.juno.games.chess.SceneRenderer.showLastMove;
+import static io.github.jabrena.juno.games.chess.SceneRenderer.showStatus;
 
 /**
  * Chess on the ELEGOO 2.8" TFT touch screen shield. An animated cover leads to a HUMAN/CPU
@@ -50,6 +51,7 @@ import static io.github.jabrena.juno.games.chess.SceneRenderer.*;
  */
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
 public final class Chess {
+    private static final Clock CLOCK = MCU.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;
     static final int SEARCH_DEPTH = 3;
 
@@ -308,8 +310,8 @@ public final class Chess {
     static void engineMove(byte[] board, byte[] shownPiece, byte[] shownDeco, byte[] deco, int[] moves,
             int[] historyMoves, int[] historyUndos) {
         showStatus("Thinking...", TftTouchShield.YELLOW);
-        int started = Clock.millis();
-        Random.seed(Clock.micros());
+        int started = CLOCK.millis();
+        Random.seed(CLOCK.micros());
         bestMove = -1;
         negamax(board, moves, SEARCH_DEPTH, 0, -INFINITY, INFINITY);
         if (bestMove < 0) {
@@ -319,7 +321,7 @@ public final class Chess {
         printSquare(bestMove & 63);
         printSquare((bestMove >> 6) & 63);
         Serial.print(" in ");
-        Serial.print(Clock.millis() - started);
+        Serial.print(CLOCK.millis() - started);
         Serial.println(" ms");
 
         playMove(board, historyMoves, historyUndos, bestMove);

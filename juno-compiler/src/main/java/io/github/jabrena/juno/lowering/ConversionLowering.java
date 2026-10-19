@@ -8,7 +8,26 @@ import io.github.jabrena.juno.ir.Value;
 
 import java.util.function.BiFunction;
 
-import static io.github.jabrena.juno.bytecode.Opcodes.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.D2F;
+import static io.github.jabrena.juno.bytecode.Opcodes.D2I;
+import static io.github.jabrena.juno.bytecode.Opcodes.D2L;
+import static io.github.jabrena.juno.bytecode.Opcodes.DCMPG;
+import static io.github.jabrena.juno.bytecode.Opcodes.DCMPL;
+import static io.github.jabrena.juno.bytecode.Opcodes.F2D;
+import static io.github.jabrena.juno.bytecode.Opcodes.F2I;
+import static io.github.jabrena.juno.bytecode.Opcodes.F2L;
+import static io.github.jabrena.juno.bytecode.Opcodes.FCMPG;
+import static io.github.jabrena.juno.bytecode.Opcodes.FCMPL;
+import static io.github.jabrena.juno.bytecode.Opcodes.I2B;
+import static io.github.jabrena.juno.bytecode.Opcodes.I2C;
+import static io.github.jabrena.juno.bytecode.Opcodes.I2D;
+import static io.github.jabrena.juno.bytecode.Opcodes.I2F;
+import static io.github.jabrena.juno.bytecode.Opcodes.I2L;
+import static io.github.jabrena.juno.bytecode.Opcodes.I2S;
+import static io.github.jabrena.juno.bytecode.Opcodes.L2D;
+import static io.github.jabrena.juno.bytecode.Opcodes.L2F;
+import static io.github.jabrena.juno.bytecode.Opcodes.L2I;
+import static io.github.jabrena.juno.bytecode.Opcodes.LCMP;
 
 /** Numeric conversions ({@code i2l}..{@code i2s}) and the {@code long}/{@code float}/{@code double} comparisons. */
 final class ConversionLowering implements OpcodeGroup {

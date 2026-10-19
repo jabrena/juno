@@ -1,11 +1,14 @@
 package io.github.jabrena.juno.games.redbaron;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
 /** Touch joystick, pilot selection, and switching between human and CPU flight. */
 final class Controls {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int TAP_FRAMES = 7;
     private static final int DRAG_PIXELS = 14;
     private static final int STICK_TRAVEL = 70;
@@ -136,9 +139,9 @@ final class Controls {
 
     /** Waits for a tap, giving up and returning {@code false} if none arrives within {@code timeoutMillis}. */
     static boolean waitForTap(int timeoutMillis) {
-        int start = Clock.millis();
+        int start = CLOCK.millis();
         while (!TftTouchShield.readTouch()) {
-            if (Clock.millis() - start >= timeoutMillis) {
+            if (CLOCK.millis() - start >= timeoutMillis) {
                 return false;
             }
             Delay.millis(10);

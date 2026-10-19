@@ -11,7 +11,24 @@ import io.github.jabrena.juno.ir.Value;
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.jabrena.juno.bytecode.Opcodes.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.ARETURN;
+import static io.github.jabrena.juno.bytecode.Opcodes.ATHROW;
+import static io.github.jabrena.juno.bytecode.Opcodes.DRETURN;
+import static io.github.jabrena.juno.bytecode.Opcodes.FRETURN;
+import static io.github.jabrena.juno.bytecode.Opcodes.GOTO;
+import static io.github.jabrena.juno.bytecode.Opcodes.IFEQ;
+import static io.github.jabrena.juno.bytecode.Opcodes.IFLE;
+import static io.github.jabrena.juno.bytecode.Opcodes.IFNONNULL;
+import static io.github.jabrena.juno.bytecode.Opcodes.IFNULL;
+import static io.github.jabrena.juno.bytecode.Opcodes.IF_ACMPEQ;
+import static io.github.jabrena.juno.bytecode.Opcodes.IF_ACMPNE;
+import static io.github.jabrena.juno.bytecode.Opcodes.IF_ICMPEQ;
+import static io.github.jabrena.juno.bytecode.Opcodes.IF_ICMPLE;
+import static io.github.jabrena.juno.bytecode.Opcodes.IRETURN;
+import static io.github.jabrena.juno.bytecode.Opcodes.LOOKUPSWITCH;
+import static io.github.jabrena.juno.bytecode.Opcodes.LRETURN;
+import static io.github.jabrena.juno.bytecode.Opcodes.RETURN;
+import static io.github.jabrena.juno.bytecode.Opcodes.TABLESWITCH;
 
 /** Branches, {@code goto}, switches, the return family and {@code athrow}: the instructions that end a block. */
 final class ControlFlowLowering implements OpcodeGroup {

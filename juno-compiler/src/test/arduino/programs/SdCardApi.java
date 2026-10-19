@@ -1,9 +1,11 @@
 package demo;
 
+import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
-import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
@@ -26,7 +28,7 @@ public final class SdCardApi {
     private static final int SAMPLES = 3;
 
     public static void main(String[] args) throws IOException {
-        SdCard.begin(Gpio.D10);
+        SdCard.begin(Gpio.getD10());
 
         SdCardApi app = new SdCardApi();
         app.saveAndReadState();
@@ -44,7 +46,7 @@ public final class SdCardApi {
         SdCard.appendText(STATE_FILE, "level=3\n");
         // One record written piece by piece: each runtime string stays under 32 bytes, whatever the data type.
         int score = 42;
-        long uptime = Clock.millis() * 1000L;
+        long uptime = MCU.getClock().millis() * 1000L;
         float ratio = 0.75f;
         double temperature = 21.5;
         boolean armed = score > 0;
@@ -68,7 +70,7 @@ public final class SdCardApi {
     /** Log: one entry per call with appendLine(), which ends each entry with a newline; the file only grows. */
     private void logEvents() {
         SdCard.appendLine(LOG_FILE, "boot");
-        SdCard.appendLine(LOG_FILE, "uptime=" + Clock.millis());
+        SdCard.appendLine(LOG_FILE, "uptime=" + MCU.getClock().millis());
         SdCard.appendLine(LOG_FILE, "done");
         // size() is -1 when the file is missing; a log that grew past a limit can be started afresh.
         int logBytes = SdCard.size(LOG_FILE);
@@ -89,8 +91,8 @@ public final class SdCardApi {
             SdCard.appendLine(CSV_FILE, "sample,millis,raw,volts,armed");
         }
         for (int sample = 0; sample < SAMPLES; sample++) {
-            int millis = Clock.millis();
-            int raw = Gpio.analogRead(Gpio.A0);
+            int millis = MCU.getClock().millis();
+            int raw = MCU.getGpio().analogRead(Gpio.getA0());
             double volts = raw * 5.0 / 1023.0;
             boolean armed = raw > 512;
             SdCard.appendText(CSV_FILE, String.valueOf(sample) + ",");

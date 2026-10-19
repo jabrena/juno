@@ -21,10 +21,13 @@ public class RcxTouchBeep {
     private static final int RETRY_MILLIS = 1000;
 
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        while (!RcxBrick.setTouchSensor(TOUCH)) {
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        while (!brick.setTouchSensor(TOUCH)) {
             Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
             Delay.millis(RETRY_MILLIS);
         }
@@ -33,12 +36,12 @@ public class RcxTouchBeep {
         boolean wasPressed = false;
         int presses = 0;
         while (true) {
-            int reading = RcxBrick.readSensor(TOUCH);
+            int reading = brick.readSensor(TOUCH);
             if (reading >= 0) {
                 boolean pressed = reading == 1;
                 if (pressed && !wasPressed) {
                     presses++;
-                    RcxBrick.playSound(RcxBrick.SOUND_BEEP);
+                    brick.playSound(RcxBrick.SOUND_BEEP);
                     Serial.print("Pressed: beep ");
                     Serial.println(presses);
                 }

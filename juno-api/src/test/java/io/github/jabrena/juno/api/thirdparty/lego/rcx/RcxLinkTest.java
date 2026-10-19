@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.testing.SimulatedTime;
 import io.github.jabrena.juno.api.testing.Wire;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,18 +14,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("RCX infrared link")
 class RcxLinkTest {
+    private RcxLink link;
 
     @BeforeEach
     void startWithAnEmptyLink() {
         Wire.resetBoard();
         Infrared.reset();
+        link = new RcxLink(SimulatedTime.clock());
     }
 
     @Test
     @DisplayName("Send starts each frame with the header")
     void shouldStartEachFrameWithTheHeader() {
         // When
-        RcxLink.send(0x13, 1, 2, 2);
+        link.send(0x13, 1, 2, 2);
 
         // Then
         assertThat(Infrared.written).startsWith(0x55, 0xFF, 0x00);
@@ -34,7 +37,7 @@ class RcxLinkTest {
     @DisplayName("Send carries the command and its arguments with complements and a checksum")
     void shouldCarryTheCommandAndArgumentsWithComplementsAndAChecksum() {
         // Given
-        RcxLink.send(0x13, 1, 2, 2);
+        link.send(0x13, 1, 2, 2);
         int code = Infrared.written.get(3);
 
         // When
@@ -52,7 +55,7 @@ class RcxLinkTest {
     @DisplayName("Send masks the toggle bit out of the command code")
     void shouldMaskTheToggleBitOutOfTheCommandCode() {
         // Given
-        RcxLink.send(0x13, 1, 2, 2);
+        link.send(0x13, 1, 2, 2);
         int code = Infrared.written.get(3);
 
         // When
@@ -66,12 +69,12 @@ class RcxLinkTest {
     @DisplayName("Send alternates the toggle between frames")
     void shouldAlternateTheToggleBetweenFrames() {
         // Given
-        RcxLink.send(0x13, 0, 0, 0);
+        link.send(0x13, 0, 0, 0);
         int first = Infrared.written.get(3);
         Infrared.written.clear();
 
         // When
-        RcxLink.send(0x13, 0, 0, 0);
+        link.send(0x13, 0, 0, 0);
         int second = Infrared.written.get(3);
 
         // Then
@@ -86,7 +89,7 @@ class RcxLinkTest {
         Infrared.replies.addAll(frame(0xD2, 0x05));
 
         // When
-        int received = RcxLink.receive();
+        int received = link.receive();
 
         // Then
         assertThat(received).isEqualTo(1);
@@ -98,10 +101,10 @@ class RcxLinkTest {
         // Given
         Infrared.receivingFrame = true;
         Infrared.replies.addAll(frame(0xD2, 0x05));
-        RcxLink.receive();
+        link.receive();
 
         // When
-        int opcode = RcxLink.opcode;
+        int opcode = link.opcode;
 
         // Then
         assertThat(opcode).isEqualTo(0xD2);
@@ -113,10 +116,10 @@ class RcxLinkTest {
         // Given
         Infrared.receivingFrame = true;
         Infrared.replies.addAll(frame(0xD2, 0x05));
-        RcxLink.receive();
+        link.receive();
 
         // When
-        int argument = RcxLink.argument0;
+        int argument = link.argument0;
 
         // Then
         assertThat(argument).isEqualTo(0x05);
@@ -129,7 +132,7 @@ class RcxLinkTest {
         Infrared.receivingFrame = false;
 
         // When
-        int received = RcxLink.receive();
+        int received = link.receive();
 
         // Then
         assertThat(received).isEqualTo(-1);
@@ -143,7 +146,7 @@ class RcxLinkTest {
         Infrared.replies.addAll(List.of(0x55, 0xFF, 0x00, 0xD2, 0x2D, 0x05, 0xFA, 0xD8, 0x27, Infrared.TIMEOUT));
 
         // When
-        int received = RcxLink.receive();
+        int received = link.receive();
 
         // Then
         assertThat(received).isEqualTo(-1);
@@ -161,7 +164,7 @@ class RcxLinkTest {
         Infrared.replies.add(0xD2);
 
         // When
-        int received = RcxLink.receive();
+        int received = link.receive();
 
         // Then
         assertThat(received).isEqualTo(-1);
@@ -175,7 +178,7 @@ class RcxLinkTest {
         Infrared.replies.add(0x12);
 
         // When
-        int received = RcxLink.receive();
+        int received = link.receive();
 
         // Then
         assertThat(received).isEqualTo(-1);
@@ -188,7 +191,7 @@ class RcxLinkTest {
         Infrared.replies.addAll(frame(0xE4, 0x07));
 
         // When
-        int reply = RcxLink.request(0x13, 1, 2, 2);
+        int reply = link.request(0x13, 1, 2, 2);
 
         // Then
         assertThat(reply).isEqualTo(1);
@@ -199,10 +202,10 @@ class RcxLinkTest {
     void shouldExposeTheFirstArgumentOfTheReply() {
         // Given
         Infrared.replies.addAll(frame(0xE4, 0x07));
-        RcxLink.request(0x13, 1, 2, 2);
+        link.request(0x13, 1, 2, 2);
 
         // When
-        int argument = RcxLink.argument0;
+        int argument = link.argument0;
 
         // Then
         assertThat(argument).isEqualTo(0x07);
@@ -215,7 +218,7 @@ class RcxLinkTest {
         Infrared.replies.addAll(frame(0xD2, 0x01));
 
         // When
-        int reply = RcxLink.request(0x13, 1, 2, 2);
+        int reply = link.request(0x13, 1, 2, 2);
 
         // Then
         assertThat(reply).isEqualTo(-1);

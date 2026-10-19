@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -30,6 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * configuration analysis suggests. Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubScanWhileBlinking {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int STARTUP_MILLIS = 5_000;
     private static final int SCAN_TIMEOUT_MILLIS = 30_000;
     private static final int PROGRESS_MILLIS = 500;
@@ -58,22 +61,22 @@ public class PoweredUpHubScanWhileBlinking {
 
     /** The blocking call; the shim yields while it waits for a hub to advertise. */
     private void connect() {
-        found.set(PoweredUpHubRemote.connect(SCAN_TIMEOUT_MILLIS));
+        found.set(HUB.connect(SCAN_TIMEOUT_MILLIS));
         scanning.set(false);
     }
 
     /** Runs until the scan is over; {@code Delay.millis} is a switch point on both boards. */
     private void showProgress() {
-        int started = Clock.millis();
+        int started = CLOCK.millis();
         while (scanning.get()) {
-            Serial.println("Scanning... " + (Clock.millis() - started) / 1000 + " s");
+            Serial.println("Scanning... " + (CLOCK.millis() - started) / 1000 + " s");
             Delay.millis(PROGRESS_MILLIS);
         }
     }
 
     private void report() {
         if (found.get()) {
-            Serial.println("Connected, battery " + PoweredUpHubRemote.batteryPercent() + " %");
+            Serial.println("Connected, battery " + HUB.batteryPercent() + " %");
         } else {
             Serial.println("No hub found");
         }

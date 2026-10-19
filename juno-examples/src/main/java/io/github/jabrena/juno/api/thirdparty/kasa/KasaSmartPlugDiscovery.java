@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.thirdparty.kasa;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
@@ -19,6 +20,7 @@ import io.github.jabrena.juno.api.util.Delay;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class KasaSmartPlugDiscovery {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int DISCOVERY_INTERVAL_MILLIS = 3000;
     private static final int WIFI_POLL_MILLIS = 500;
     private static final int LISTEN_RETRY_MILLIS = 1000;
@@ -58,9 +60,9 @@ public final class KasaSmartPlugDiscovery {
         private int nextDiscovery;
 
         void run() {
-            startWifi(Clock.millis());
+            startWifi(CLOCK.millis());
             while (true) {
-                int now = Clock.millis();
+                int now = CLOCK.millis();
                 stepLink(now);
                 if (state == READY) {
                     discover(now);

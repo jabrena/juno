@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.ir;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -18,6 +20,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * reporting interference, not the transmitter. Pick the board with {@code -Djuno.board}.
  */
 public class InfraredBurstEcho {
+    private final Clock clock = MCU.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int BAUD = 2400;
@@ -29,8 +32,11 @@ public class InfraredBurstEcho {
     private static final int START_MILLIS = 2000;
 
     public static void main(String[] args) {
+        new InfraredBurstEcho().run();
+    }
+
+    private void run() {
         Serial.begin(BaudRate.BAUD_115200);
-        InfraredBurstEcho app = new InfraredBurstEcho();
         int[] lengths = {200, 400, 600, 1000};
         Infrared.begin(RECEIVE_PIN, TRANSMIT_PIN, BAUD);
         Delay.millis(START_MILLIS);
@@ -39,11 +45,11 @@ public class InfraredBurstEcho {
             Serial.println("Infrared burst echo");
             Infrared.space(GAP_MICROS);
             Infrared.mark(417);
-            int started = Clock.micros();
+            int started = clock.micros();
             int firstLow = -1;
             int lastLow = -1;
-            while (Clock.micros() - started < 2000) {
-                int elapsed = Clock.micros() - started;
+            while (clock.micros() - started < 2000) {
+                int elapsed = clock.micros() - started;
                 if (Infrared.receiving()) {
                     if (firstLow < 0) {
                         firstLow = elapsed;
@@ -57,12 +63,12 @@ public class InfraredBurstEcho {
             Serial.print(lastLow);
             Serial.println(" us after mark");
             Serial.print("noise: ");
-            Serial.print(app.countHits(0));
+            Serial.print(countHits(0));
             Serial.println("/100");
             for (int i = 0; i < LENGTHS; i++) {
                 Serial.print(lengths[i]);
                 Serial.print(" us: ");
-                Serial.print(app.countHits(lengths[i]));
+                Serial.print(countHits(lengths[i]));
                 Serial.println("/100");
             }
             Delay.seconds(ROUND_PAUSE_SECONDS);
@@ -86,8 +92,8 @@ public class InfraredBurstEcho {
 
     /** Whether the receiver reports a burst at any point in the next {@value #LISTEN_MICROS} microseconds. */
     private boolean heard() {
-        int started = Clock.micros();
-        while (Clock.micros() - started < LISTEN_MICROS) {
+        int started = clock.micros();
+        while (clock.micros() - started < LISTEN_MICROS) {
             if (Infrared.receiving()) {
                 return true;
             }

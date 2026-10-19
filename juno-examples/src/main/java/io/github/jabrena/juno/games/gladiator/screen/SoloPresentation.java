@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
@@ -10,6 +12,7 @@ import io.github.jabrena.juno.games.gladiator.view.ViewList;
 
 /** The CPU-opponent reveal and the final result screens around a Solo bout. */
 public final class SoloPresentation {
+    private static final Clock CLOCK = MCU.getClock();
     public static final int RESULT_MILLIS = 5000;
 
     private static final int FRAME_MILLIS = 50;
@@ -25,10 +28,10 @@ public final class SoloPresentation {
     /** Rotates the selected player and random CPU opponent together, drawn into {@code list}, until PLAY is tapped. */
     public static void showOpponent(ViewList list, ClassWireframe wireframe, FighterProfile player, FighterProfile opponent) {
         drawVersus(list, player, opponent);
-        int started = Clock.millis();
+        int started = CLOCK.millis();
         boolean touching = true;
         while (true) {
-            wireframe.buildVersus(player.kind(), opponent.kind(), (Clock.millis() - started) * 0.0025f);
+            wireframe.buildVersus(player.kind(), opponent.kind(), (CLOCK.millis() - started) * 0.0025f);
             list.present();
             if (TftTouchShield.readTouch()) {
                 if (!touching && onPlay(TftTouchShield.touchX(), TftTouchShield.touchY())) {

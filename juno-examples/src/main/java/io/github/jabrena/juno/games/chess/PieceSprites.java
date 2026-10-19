@@ -1,17 +1,22 @@
 package io.github.jabrena.juno.games.chess;
 
-import static io.github.jabrena.juno.games.chess.BishopSprite.*;
-import static io.github.jabrena.juno.games.chess.Chess.*;
-import static io.github.jabrena.juno.games.chess.ChessEngine.*;
-import static io.github.jabrena.juno.games.chess.ChessRules.*;
-import static io.github.jabrena.juno.games.chess.Controls.*;
-import static io.github.jabrena.juno.games.chess.KingSprite.*;
-import static io.github.jabrena.juno.games.chess.KnightSprite.*;
-import static io.github.jabrena.juno.games.chess.PawnSprite.*;
-import static io.github.jabrena.juno.games.chess.PieceSprites.*;
-import static io.github.jabrena.juno.games.chess.QueenSprite.*;
-import static io.github.jabrena.juno.games.chess.RookSprite.*;
-import static io.github.jabrena.juno.games.chess.SceneRenderer.*;
+import static io.github.jabrena.juno.games.chess.BishopSprite.bishopDetail;
+import static io.github.jabrena.juno.games.chess.BishopSprite.bishopShape;
+import static io.github.jabrena.juno.games.chess.Chess.BISHOP;
+import static io.github.jabrena.juno.games.chess.Chess.KNIGHT;
+import static io.github.jabrena.juno.games.chess.Chess.PAWN;
+import static io.github.jabrena.juno.games.chess.Chess.QUEEN;
+import static io.github.jabrena.juno.games.chess.Chess.ROOK;
+import static io.github.jabrena.juno.games.chess.KingSprite.kingDetail;
+import static io.github.jabrena.juno.games.chess.KingSprite.kingShape;
+import static io.github.jabrena.juno.games.chess.KnightSprite.knightDetail;
+import static io.github.jabrena.juno.games.chess.KnightSprite.knightShape;
+import static io.github.jabrena.juno.games.chess.PawnSprite.pawnDetail;
+import static io.github.jabrena.juno.games.chess.PawnSprite.pawnShape;
+import static io.github.jabrena.juno.games.chess.QueenSprite.queenDetail;
+import static io.github.jabrena.juno.games.chess.QueenSprite.queenShape;
+import static io.github.jabrena.juno.games.chess.RookSprite.rookDetail;
+import static io.github.jabrena.juno.games.chess.RookSprite.rookShape;
 
 final class PieceSprites {
     private PieceSprites() {

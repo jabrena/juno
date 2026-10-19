@@ -23,7 +23,7 @@ AVR output for the UNO R3 and UNO WiFi Rev2.
 
 This repository contains a working v0.1 compiler, not a JVM interpreter. The first milestone
 supports 32-bit integer code, static methods, branches, loops, and GPIO/time intrinsics. It can
-compile [`juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java) all the way to a
+compile [`juno-examples/src/main/java/io/github/jabrena/juno/api/io/gpio/Blink.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/gpio/Blink.java) all the way to a
 sketch (`.S` assembly + `Shim.cpp` runtime + `.ino` wrapper).
 
 ```text
@@ -70,12 +70,12 @@ Use the following commands for the complete `Blink` workflow. Pick one target wi
 ```bash
 # Generate and verify with arduino-cli
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Upload
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Monitor

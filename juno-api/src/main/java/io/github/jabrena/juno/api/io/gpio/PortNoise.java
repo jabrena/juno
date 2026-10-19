@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.io.gpio;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.time.Clock;
 
 /**
@@ -11,7 +12,18 @@ import io.github.jabrena.juno.api.time.Clock;
  * checks rejected the sampled stream.
  */
 public final class PortNoise {
-    private PortNoise() {
+    private final Gpio gpio;
+    private final Clock clock;
+
+    /** Samples the board's own pins and timer. */
+    public PortNoise() {
+        this(MCU.getGpio(), MCU.getClock());
+    }
+
+    /** Samples {@code gpio} and {@code clock}: mocked ones in a unit test. */
+    public PortNoise(Gpio gpio, Clock clock) {
+        this.gpio = gpio;
+        this.clock = clock;
     }
 
     /**
@@ -22,7 +34,7 @@ public final class PortNoise {
      * @param samples number of samples; must be at least 32
      * @return a mixed seed, or zero when the repetition or proportion health check fails
      */
-    public static int collectSeed(int analogPin, int digitalPin, int samples) {
+    public int collectSeed(int analogPin, int digitalPin, int samples) {
         if (samples < 32) {
             throw new IllegalArgumentException("samples must be at least 32");
         }
@@ -31,9 +43,9 @@ public final class PortNoise {
         int repetitions = 0;
         int ones = 0;
         for (int index = 0; index < samples; index++) {
-            int analog = Gpio.analogRead(analogPin);
-            int digital = Gpio.digitalRead(digitalPin) ? 1 : 0;
-            int sample = (analog & 3) | (digital << 2) | ((Clock.micros() & 31) << 3);
+            int analog = gpio.analogRead(analogPin);
+            int digital = gpio.digitalRead(digitalPin) ? 1 : 0;
+            int sample = (analog & 3) | (digital << 2) | ((clock.micros() & 31) << 3);
             if (sample == previous) {
                 repetitions++;
                 if (repetitions == 32) {

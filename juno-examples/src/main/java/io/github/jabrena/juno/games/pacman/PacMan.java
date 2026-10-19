@@ -2,6 +2,7 @@ package io.github.jabrena.juno.games.pacman;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
@@ -37,6 +38,7 @@ import io.github.jabrena.juno.api.util.Random;
  */
 @Board(ArduinoUnoQ.class)
 public final class PacMan {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int COVER_TIMEOUT_MILLIS = 60_000;
 
     private PacMan() {
@@ -55,7 +57,7 @@ public final class PacMan {
                 tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
             }
             Controls.choosePilot();
-            Random.seed(Clock.micros());
+            Random.seed(CLOCK.micros());
             Session.newGame();
             TftTouchShield.fillScreen(SceneRenderer.SPACE);
             while (Session.lives > 0) {
@@ -90,9 +92,9 @@ public final class PacMan {
         Interludes.readyCard();
         SceneRenderer.redrawArea(tiles, ghosts, 80, 17 * Maze.TILE, 72, Maze.TILE);
 
-        int next = Clock.millis();
+        int next = CLOCK.millis();
         while (true) {
-            while (Clock.millis() - next < 0) {
+            while (CLOCK.millis() - next < 0) {
                 Delay.millis(1);
             }
             next = next + Session.FRAME_MILLIS;
@@ -116,7 +118,7 @@ public final class PacMan {
             }
             if (collision > 0) {
                 // Eating a ghost paused the game: do not rush to catch up.
-                next = Clock.millis();
+                next = CLOCK.millis();
             }
             if (Session.dotsEaten == Maze.TOTAL_DOTS) {
                 Delay.millis(1000);

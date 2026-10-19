@@ -2,6 +2,7 @@ package io.github.jabrena.juno.games.redbaron;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
@@ -21,6 +22,7 @@ import io.github.jabrena.juno.api.util.Random;
  */
 @Board(ArduinoUnoQ.class)
 public final class RedBaron {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int FRAME_MILLIS = 40;
     private static final int COVER_TIMEOUT_MILLIS = 60_000;
 
@@ -42,7 +44,7 @@ public final class RedBaron {
                 Interludes.drawTitle(lines, letter);
                 tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
             }
-            Random.seed(Clock.micros());
+            Random.seed(CLOCK.micros());
             Controls.choosePilot();
             Session.newGame();
             boolean alive = true;
@@ -72,14 +74,14 @@ public final class RedBaron {
         Delay.millis(1400);
         DisplayList.clearView();
 
-        int next = Clock.millis();
+        int next = CLOCK.millis();
         while (true) {
-            while (Clock.millis() - next < 0) {
+            while (CLOCK.millis() - next < 0) {
                 Delay.millis(1);
             }
             next = next + FRAME_MILLIS;
-            if (Clock.millis() - next > 4 * FRAME_MILLIS) {
-                next = Clock.millis();
+            if (CLOCK.millis() - next > 4 * FRAME_MILLIS) {
+                next = CLOCK.millis();
             }
             Session.frame = Session.frame + 1;
             Controls.handleTouch(ents);
@@ -94,7 +96,7 @@ public final class RedBaron {
                 if (!Session.loseAPlane(ents)) {
                     return false;
                 }
-                next = Clock.millis();
+                next = CLOCK.millis();
             }
             if (roundOver(ents)) {
                 if (which == Round.GROUND_ATTACK) {

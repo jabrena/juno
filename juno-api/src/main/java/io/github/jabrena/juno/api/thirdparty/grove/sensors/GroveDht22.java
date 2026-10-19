@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
+import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.time.Clock;
+
 /**
  * Reads Seeed's <a href="https://wiki.seeedstudio.com/Grove-Temperature_and_Humidity_Sensor_Pro/">
  * Grove Temperature and Humidity Sensor Pro</a> using its DHT22 (AM2302) frame format. The first
@@ -10,12 +13,21 @@ package io.github.jabrena.juno.api.thirdparty.grove.sensors;
  * the physical sensor, but DHT22-format readings should also be within its measurement range.
  */
 public final class GroveDht22 {
-    public static final int FRAME_LENGTH = GroveDhtProtocol.FRAME_LENGTH;
+    public static final int FRAME_LENGTH = 5;
     public static final int READING_LENGTH = 2;
     public static final int TEMPERATURE_TENTHS_CELSIUS = 0;
     public static final int HUMIDITY_TENTHS_PERCENT = 1;
 
-    private GroveDht22() {
+    private final GroveDhtProtocol protocol;
+
+    /** A sensor on the board's own pins and timer. Create it once, at startup. */
+    public GroveDht22() {
+        this.protocol = new GroveDhtProtocol();
+    }
+
+    /** A sensor on {@code gpio} and {@code clock}: mocked or simulated ones in a unit test. */
+    public GroveDht22(Gpio gpio, Clock clock) {
+        this.protocol = new GroveDhtProtocol(gpio, clock);
     }
 
     /**
@@ -30,14 +42,14 @@ public final class GroveDht22 {
      * @param frameLength writable frame slots, at least {@link #FRAME_LENGTH}
      * @return whether a plausible, checksum-valid DHT22 frame was read
      */
-    public static boolean read(int signalPin, int[] reading, int readingLength,
+    public boolean read(int signalPin, int[] reading, int readingLength,
             int[] frame, int frameLength) {
         if (readingLength < READING_LENGTH || readingLength > reading.length) {
             throw new IllegalArgumentException("readingLength must be at least 2 and fit reading");
         }
         int previousTemperature = reading[TEMPERATURE_TENTHS_CELSIUS];
         int previousHumidity = reading[HUMIDITY_TENTHS_PERCENT];
-        if (!GroveDhtProtocol.read(signalPin, frame, frameLength)) {
+        if (!protocol.read(signalPin, frame, frameLength)) {
             return false;
         }
         if (!decode(frame, frameLength, reading, readingLength)) {
@@ -48,7 +60,7 @@ public final class GroveDht22 {
         return true;
     }
 
-    static boolean decode(int[] frame, int frameLength, int[] reading, int readingLength) {
+    boolean decode(int[] frame, int frameLength, int[] reading, int readingLength) {
         if (frameLength < FRAME_LENGTH || frameLength > frame.length
                 || readingLength < READING_LENGTH || readingLength > reading.length) {
             throw new IllegalArgumentException("DHT22 frame or reading buffer is too short");

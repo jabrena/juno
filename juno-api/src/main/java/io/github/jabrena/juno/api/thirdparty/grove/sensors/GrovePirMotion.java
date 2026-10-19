@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 
 /**
@@ -7,16 +8,25 @@ import io.github.jabrena.juno.api.io.gpio.Gpio;
  * with {@link #begin(int)}, then poll {@link #motionDetected(int)} without allocating.
  */
 public final class GrovePirMotion {
-    private GrovePirMotion() {
+    private final Gpio gpio;
+
+    /** A sensor on the board's own pins. Create it once, at startup. */
+    public GrovePirMotion() {
+        this(MCU.getGpio());
+    }
+
+    /** A sensor read through {@code gpio}: a mocked one in a unit test. */
+    public GrovePirMotion(Gpio gpio) {
+        this.gpio = gpio;
     }
 
     /** Configures the signal pin as a digital input. */
-    public static void begin(int signalPin) {
-        Gpio.pinMode(signalPin, Gpio.INPUT);
+    public void begin(int signalPin) {
+        gpio.pinMode(signalPin, Gpio.getInput());
     }
 
     /** Returns {@code true} while the sensor's signal is high. */
-    public static boolean motionDetected(int signalPin) {
-        return Gpio.digitalRead(signalPin);
+    public boolean motionDetected(int signalPin) {
+        return gpio.digitalRead(signalPin);
     }
 }

@@ -3,6 +3,7 @@ package io.github.jabrena.juno.games.tempest;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
@@ -42,6 +43,7 @@ import io.github.jabrena.juno.api.util.Random;
  */
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
 public final class Tempest {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int FRAME_MILLIS = 25;
 
     private Tempest() {
@@ -59,7 +61,7 @@ public final class Tempest {
             Interludes.cover(tube);
             Controls.waitForTap();
             Controls.choosePilot();
-            Random.seed(Clock.micros());
+            Random.seed(CLOCK.micros());
             Session.newGame();
             boolean playing = true;
             while (playing) {
@@ -82,12 +84,12 @@ public final class Tempest {
         SceneRenderer.drawClaw(tube, Session.playerLane, SceneRenderer.CLAW);
         Interludes.levelCard(tube, Session.level, Session.playerLane);
 
-        int next = Clock.millis();
+        int next = CLOCK.millis();
         int frame = 0;
         int shownScore = Session.score;
         boolean shownPilot = Controls.autopilot;
         while (true) {
-            while (Clock.millis() - next < 0) {
+            while (CLOCK.millis() - next < 0) {
                 Delay.millis(1);
             }
             next = next + FRAME_MILLIS;
@@ -118,7 +120,7 @@ public final class Tempest {
                 if (Session.lives == 0) {
                     return false;
                 }
-                next = Clock.millis();
+                next = CLOCK.millis();
             }
             if (Session.levelCleared(enemies)) {
                 int bonus = Session.finishLevel();

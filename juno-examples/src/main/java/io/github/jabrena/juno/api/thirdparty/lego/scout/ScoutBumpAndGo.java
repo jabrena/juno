@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.scout;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxRemote;
@@ -17,6 +19,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class ScoutBumpAndGo {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int LEFT_BUMPER = ScoutRemote.INPUT_1;
@@ -26,12 +29,19 @@ public class ScoutBumpAndGo {
     private static final int TURN_MILLIS = 700;
     private static final int STOP_MILLIS = 500;
 
+    private final ScoutRemote scout;
+
+    ScoutBumpAndGo(ScoutRemote scout) {
+        this.scout = scout;
+    }
+
     public static void main(String[] args) {
+        ScoutRemote scout = new ScoutRemote();
         Serial.begin(BaudRate.BAUD_115200);
-        ScoutBumpAndGo app = new ScoutBumpAndGo();
-        ScoutRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        ScoutRemote.setMode(ScoutRemote.MODE_POWER);
-        if (!ScoutRemote.setTouchSensor(LEFT_BUMPER) || !ScoutRemote.setTouchSensor(RIGHT_BUMPER)) {
+        ScoutBumpAndGo app = new ScoutBumpAndGo(scout);
+        scout.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        scout.setMode(ScoutRemote.MODE_POWER);
+        if (!scout.setTouchSensor(LEFT_BUMPER) || !scout.setTouchSensor(RIGHT_BUMPER)) {
             Serial.println("The Scout did not answer: is it in range, with the IR receiver wired?");
             return;
         }
@@ -49,10 +59,10 @@ public class ScoutBumpAndGo {
     /** Which bumper is pressed: 0 none, 1 left, 2 right, 3 both. */
     private int bumped() {
         int pressed = 0;
-        if (ScoutRemote.isPressed(LEFT_BUMPER)) {
+        if (scout.isPressed(LEFT_BUMPER)) {
             pressed += 1;
         }
-        if (ScoutRemote.isPressed(RIGHT_BUMPER)) {
+        if (scout.isPressed(RIGHT_BUMPER)) {
             pressed += 2;
         }
         return pressed;
@@ -62,7 +72,7 @@ public class ScoutBumpAndGo {
     private void avoid(int bumped) {
         Serial.println(bumped == 1 ? "Bumped left" : bumped == 2 ? "Bumped right" : "Bumped both");
         move(0, 0);
-        ScoutRemote.playSound(BUMP_SOUND);
+        scout.playSound(BUMP_SOUND);
         Delay.millis(STOP_MILLIS);
         moveFor(-1, -1, BACK_MILLIS);
         if (bumped == 1) {
@@ -74,8 +84,8 @@ public class ScoutBumpAndGo {
     }
 
     private void moveFor(int left, int right, int millis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < millis) {
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < millis) {
             move(left, right);
         }
     }
@@ -93,6 +103,6 @@ public class ScoutBumpAndGo {
         } else if (right < 0) {
             buttons |= RcxRemote.B_BACKWARD;
         }
-        ScoutRemote.sendButtons(buttons);
+        scout.sendButtons(buttons);
     }
 }

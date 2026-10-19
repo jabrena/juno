@@ -14,19 +14,19 @@ final class TimeUpView {
     /** Shows the alarm and blinks the backlight until any button is pressed, then returns. */
     static void run() {
         Serial.println("ALARM: Pomodoro time is up");
-        LcdKeypadShield.clear();
-        LcdKeypadShield.setCursor(0, 0);
-        LcdKeypadShield.print("TIME'S UP!");
-        LcdKeypadShield.setCursor(0, 1);
-        LcdKeypadShield.print("Take a break!");
+        Pomodoro.LCD_SHIELD.clear();
+        Pomodoro.LCD_SHIELD.setCursor(0, 0);
+        Pomodoro.LCD_SHIELD.print("TIME'S UP!");
+        Pomodoro.LCD_SHIELD.setCursor(0, 1);
+        Pomodoro.LCD_SHIELD.print("Take a break!");
 
         boolean backlightOn = true;
-        while (LcdKeypadShield.readButton() == LcdKeypadShield.NONE) {
+        while (Pomodoro.LCD_SHIELD.readButton() == LcdKeypadShield.NONE) {
             backlightOn = !backlightOn;
-            LcdKeypadShield.backlight(backlightOn);
+            Pomodoro.LCD_SHIELD.backlight(backlightOn);
             Delay.millis(BLINK_MILLIS);
         }
-        LcdKeypadShield.backlight(true);
+        Pomodoro.LCD_SHIELD.backlight(true);
         Serial.println("Button pressed; returning to minute selection");
     }
 }

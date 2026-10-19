@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.testing.SimulatedTime;
 import io.github.jabrena.juno.api.testing.Wire;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,11 +17,13 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @DisplayName("RCX brick commands")
 class RcxBrickTest {
+    private RcxBrick brick;
 
     @BeforeEach
     void startWithAnEmptyLink() {
         Wire.resetBoard();
         Infrared.reset();
+        brick = new RcxBrick(new RcxLink(SimulatedTime.clock()));
     }
 
     static Stream<Arguments> motorDirections() {
@@ -33,7 +36,7 @@ class RcxBrickTest {
     @DisplayName("Motor on sends its outputs in the on-off opcode")
     void shouldSendMotorOnOutputsInTheOnOffOpcode() {
         // When
-        RcxBrick.motorOn(RcxBrick.OUTPUT_A | RcxBrick.OUTPUT_C);
+        brick.motorOn(RcxBrick.OUTPUT_A | RcxBrick.OUTPUT_C);
 
         // Then
         assertThat(argumentPair(0)).isEqualTo(0x85);
@@ -43,7 +46,7 @@ class RcxBrickTest {
     @DisplayName("Motor off uses the off mode")
     void shouldUseTheOffModeWhenMotorIsOff() {
         // When
-        RcxBrick.motorOff(RcxBrick.OUTPUT_B);
+        brick.motorOff(RcxBrick.OUTPUT_B);
 
         // Then
         assertThat(argumentPair(0)).isEqualTo(0x42);
@@ -53,7 +56,7 @@ class RcxBrickTest {
     @DisplayName("Motor float uses the float mode")
     void shouldUseTheFloatModeWhenMotorFloats() {
         // When
-        RcxBrick.motorFloat(RcxBrick.OUTPUT_B);
+        brick.motorFloat(RcxBrick.OUTPUT_B);
 
         // Then
         assertThat(argumentPair(0)).isEqualTo(0x02);
@@ -64,7 +67,7 @@ class RcxBrickTest {
     @DisplayName("Set motor direction encodes forward and backward")
     void shouldEncodeForwardAndBackwardMotorDirections(boolean reversed, int expected) {
         // When
-        RcxBrick.setMotorDirection(RcxBrick.OUTPUT_A, reversed);
+        brick.setMotorDirection(RcxBrick.OUTPUT_A, reversed);
 
         // Then
         assertThat(argumentPair(0)).isEqualTo(expected);
@@ -74,7 +77,7 @@ class RcxBrickTest {
     @DisplayName("Set motor power clamps the level to the brick range")
     void shouldClampTheMotorPowerLevelToTheBrickRange() {
         // When
-        RcxBrick.setMotorPower(RcxBrick.OUTPUT_B, 9);
+        brick.setMotorPower(RcxBrick.OUTPUT_B, 9);
 
         // Then
         assertThat(new int[] {argumentPair(0), argumentPair(1), argumentPair(2)})
@@ -85,7 +88,7 @@ class RcxBrickTest {
     @DisplayName("Drive stops a motor at zero speed")
     void shouldStopAMotorAtZeroSpeed() {
         // When
-        RcxBrick.drive(RcxBrick.OUTPUT_A, 0);
+        brick.drive(RcxBrick.OUTPUT_A, 0);
 
         // Then
         assertThat(argumentPair(0)).isEqualTo(0x41);
@@ -95,7 +98,7 @@ class RcxBrickTest {
     @DisplayName("Drive reverses a motor at negative speed with the direction first")
     void shouldReverseAMotorAtNegativeSpeedWithTheDirectionFirst() {
         // When
-        RcxBrick.drive(RcxBrick.OUTPUT_A, -3);
+        brick.drive(RcxBrick.OUTPUT_A, -3);
 
         // Then
         assertThat(argumentPair(0)).as("direction first").isEqualTo(0x01);
@@ -106,7 +109,7 @@ class RcxBrickTest {
     @DisplayName("Drive forward sets the forward direction first")
     void shouldSetTheForwardDirectionFirstWhenDrivingForward() {
         // When
-        RcxBrick.drive(RcxBrick.OUTPUT_A, 3);
+        brick.drive(RcxBrick.OUTPUT_A, 3);
 
         // Then
         assertThat(Infrared.written).containsSubsequence(0x81, 0x7E);
@@ -120,7 +123,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x42));
 
         // When
-        boolean configured = RcxBrick.setTouchSensor(RcxBrick.INPUT_1);
+        boolean configured = brick.setTouchSensor(RcxBrick.INPUT_1);
 
         // Then
         assertThat(configured).isTrue();
@@ -130,7 +133,7 @@ class RcxBrickTest {
     @DisplayName("Touch sensor configuration reports failure when the brick is silent")
     void shouldReportFailureWhenTheBrickIsSilentForTheTouchSensor() {
         // When
-        boolean configured = RcxBrick.setTouchSensor(RcxBrick.INPUT_1);
+        boolean configured = brick.setTouchSensor(RcxBrick.INPUT_1);
 
         // Then
         assertThat(configured).isFalse();
@@ -140,7 +143,7 @@ class RcxBrickTest {
     @DisplayName("Light sensor configuration reports failure when the brick does not answer")
     void shouldReportFailureWhenTheBrickDoesNotAnswerForTheLightSensor() {
         // When
-        boolean configured = RcxBrick.setLightSensor(RcxBrick.INPUT_2);
+        boolean configured = brick.setLightSensor(RcxBrick.INPUT_2);
 
         // Then
         assertThat(configured).isFalse();
@@ -154,7 +157,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x42));
 
         // When
-        boolean configured = RcxBrick.setRotationSensor(RcxBrick.INPUT_3);
+        boolean configured = brick.setRotationSensor(RcxBrick.INPUT_3);
 
         // Then
         assertThat(configured).isTrue();
@@ -168,7 +171,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x42));
 
         // When
-        boolean configured = RcxBrick.setTemperatureSensor(RcxBrick.INPUT_1);
+        boolean configured = brick.setTemperatureSensor(RcxBrick.INPUT_1);
 
         // Then
         assertThat(configured).isTrue();
@@ -181,7 +184,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0xFF, 0xFF));
 
         // When
-        int steps = RcxBrick.rotationSteps(RcxBrick.INPUT_3);
+        int steps = brick.rotationSteps(RcxBrick.INPUT_3);
 
         // Then
         assertThat(steps).isEqualTo(-1);
@@ -194,7 +197,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0x08, 0x00));
 
         // When
-        int degrees = RcxBrick.rotationDegrees(RcxBrick.INPUT_3);
+        int degrees = brick.rotationDegrees(RcxBrick.INPUT_3);
 
         // Then
         assertThat(degrees).isEqualTo(180);
@@ -207,7 +210,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0x2B, 0x01));
 
         // When
-        int tenths = RcxBrick.temperatureTenths(RcxBrick.INPUT_1);
+        int tenths = brick.temperatureTenths(RcxBrick.INPUT_1);
 
         // Then
         assertThat(tenths).isEqualTo(299);
@@ -220,7 +223,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0x34, 0x12));
 
         // When
-        int reading = RcxBrick.readSensor(RcxBrick.INPUT_2);
+        int reading = brick.readSensor(RcxBrick.INPUT_2);
 
         // Then
         assertThat(reading).isEqualTo(0x1234);
@@ -233,7 +236,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x30, 0x20, 0x03));
 
         // When
-        int millivolts = RcxBrick.batteryMillivolts();
+        int millivolts = brick.batteryMillivolts();
 
         // Then
         assertThat(millivolts).isEqualTo(0x0320);
@@ -246,7 +249,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x30));
 
         // When
-        int millivolts = RcxBrick.batteryMillivolts();
+        int millivolts = brick.batteryMillivolts();
 
         // Then
         assertThat(millivolts).as("no reading").isEqualTo(-1);
@@ -259,7 +262,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0x01, 0x00));
 
         // When
-        boolean pressed = RcxBrick.isPressed(RcxBrick.INPUT_1);
+        boolean pressed = brick.isPressed(RcxBrick.INPUT_1);
 
         // Then
         assertThat(pressed).isTrue();
@@ -272,7 +275,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0x00, 0x00));
 
         // When
-        boolean pressed = RcxBrick.isPressed(RcxBrick.INPUT_1);
+        boolean pressed = brick.isPressed(RcxBrick.INPUT_1);
 
         // Then
         assertThat(pressed).isFalse();
@@ -285,7 +288,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x51));
 
         // When
-        boolean played = RcxBrick.playSound(RcxBrick.SOUND_BEEP);
+        boolean played = brick.playSound(RcxBrick.SOUND_BEEP);
 
         // Then
         assertThat(played).isTrue();
@@ -298,7 +301,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x72));
 
         // When
-        boolean shown = RcxBrick.showNumber(-12_345);
+        boolean shown = brick.showNumber(-12_345);
 
         // Then
         assertThat(shown).isTrue();
@@ -313,7 +316,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0xB2));
 
         // When
-        boolean shown = RcxBrick.showIcon(RcxBrick.ICON_WALKING, true);
+        boolean shown = brick.showIcon(RcxBrick.ICON_WALKING, true);
 
         // Then
         assertThat(shown).isTrue();
@@ -326,7 +329,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x23));
 
         // When
-        boolean played = RcxBrick.playTone(440, 10);
+        boolean played = brick.playTone(440, 10);
 
         // Then
         assertThat(played).isTrue();
@@ -336,7 +339,7 @@ class RcxBrickTest {
     @DisplayName("Playing a sound reports no acknowledgement when the brick is silent")
     void shouldReportNoAcknowledgementWhenTheBrickIsSilentForASound() {
         // When
-        boolean played = RcxBrick.playSound(RcxBrick.SOUND_ERROR);
+        boolean played = brick.playSound(RcxBrick.SOUND_ERROR);
 
         // Then
         assertThat(played).as("no acknowledgement").isFalse();
@@ -346,7 +349,7 @@ class RcxBrickTest {
     @DisplayName("Clear sensor sends its input without waiting for a reply")
     void shouldSendTheClearSensorInputWithoutWaitingForAReply() {
         // When
-        RcxBrick.clearSensor(RcxBrick.INPUT_1);
+        brick.clearSensor(RcxBrick.INPUT_1);
 
         // Then
         assertThat(argumentPair(0)).isEqualTo(RcxBrick.INPUT_1);
@@ -359,7 +362,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x72));
 
         // When
-        boolean shown = RcxBrick.showNumber(99_999);
+        boolean shown = brick.showNumber(99_999);
 
         // Then
         assertThat(shown).isTrue();
@@ -373,7 +376,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0xB2));
 
         // When
-        boolean shown = RcxBrick.showIcon(RcxBrick.ICON_WALKING, false);
+        boolean shown = brick.showIcon(RcxBrick.ICON_WALKING, false);
 
         // Then
         assertThat(shown).isTrue();

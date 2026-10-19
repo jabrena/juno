@@ -28,6 +28,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * <p>Pick the board with {@code -Djuno.board}.
  */
 public final class NineAxisMotionShieldSerial {
+    private final NineAxisMotionShield imu = new NineAxisMotionShield();
     private static final int PRINT_MILLIS = 200;
     private static final int UNITS_PER_DEGREE = 16;
 
@@ -41,12 +42,16 @@ public final class NineAxisMotionShieldSerial {
      * @param args ignored; Juno programs do not receive command-line arguments
      */
     public static void main(String[] args) {
+        new NineAxisMotionShieldSerial().run();
+    }
+
+    private void run() {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
 
-        if (NineAxisMotionShield.begin()) {
+        if (imu.begin()) {
             Serial.println("BNO055 ready at 0x28");
-        } else if (NineAxisMotionShield.begin(NineAxisMotionShield.ADDRESS_ALTERNATE)) {
+        } else if (imu.begin(imu.getAddressAlternate())) {
             Serial.println("BNO055 ready at 0x29");
         } else {
             Serial.println("BNO055 not found at 0x28 or 0x29");
@@ -57,13 +62,13 @@ public final class NineAxisMotionShieldSerial {
 
         while (true) {
             Serial.print("heading=");
-            Serial.print(NineAxisMotionShield.headingDegrees());
+            Serial.print(imu.headingDegrees());
             Serial.print(" pitch=");
-            Serial.print(NineAxisMotionShield.pitchRaw() / UNITS_PER_DEGREE);
+            Serial.print(imu.pitchRaw() / UNITS_PER_DEGREE);
             Serial.print(" gyroX=");
-            Serial.print(NineAxisMotionShield.gyroXRaw());
+            Serial.print(imu.gyroXRaw());
             Serial.print(" cal=");
-            Serial.println(NineAxisMotionShield.calibration());
+            Serial.println(imu.calibration());
             Delay.millis(PRINT_MILLIS);
         }
     }

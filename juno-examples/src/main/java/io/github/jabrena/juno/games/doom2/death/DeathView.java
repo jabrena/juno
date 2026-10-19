@@ -4,7 +4,7 @@ import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.games.doom.DoomEngine;
 import io.github.jabrena.juno.games.doom2.commons.Doom2Views;
 import io.github.jabrena.juno.games.doom2.commons.Screen;
 
@@ -34,7 +34,7 @@ public final class DeathView implements View {
     public void enter() {
         Screen.plaque(PLAQUE_X, PLAQUE_Y, PLAQUE_WIDTH, PLAQUE_HEIGHT);
         Screen.showCentered("YOU DIED", PLAQUE_Y + 12, 4, TftTouchShield.RED);
-        enteredAt = Clock.millis();
+        enteredAt = DoomEngine.CLOCK.millis();
         frame = 0;
         Serial.println("Doom2: death view active");
     }
@@ -61,7 +61,7 @@ public final class DeathView implements View {
     }
 
     private boolean held() {
-        return Clock.millis() - enteredAt >= HOLD_MILLIS;
+        return DoomEngine.CLOCK.millis() - enteredAt >= HOLD_MILLIS;
     }
 
 }

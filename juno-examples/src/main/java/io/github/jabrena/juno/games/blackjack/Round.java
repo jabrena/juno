@@ -1,28 +1,47 @@
 package io.github.jabrena.juno.games.blackjack;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.api.util.Random;
 
-import static io.github.jabrena.juno.games.blackjack.Blackjack.*;
-import static io.github.jabrena.juno.games.blackjack.Cards.*;
-import static io.github.jabrena.juno.games.blackjack.ClubSprite.*;
-import static io.github.jabrena.juno.games.blackjack.Controls.*;
-import static io.github.jabrena.juno.games.blackjack.DiamondSprite.*;
-import static io.github.jabrena.juno.games.blackjack.HeartSprite.*;
-import static io.github.jabrena.juno.games.blackjack.Round.*;
-import static io.github.jabrena.juno.games.blackjack.SceneRenderer.*;
-import static io.github.jabrena.juno.games.blackjack.SpadeSprite.*;
-import static io.github.jabrena.juno.games.blackjack.SuitSprites.*;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BETTING;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.DEALER_CARDS_Y;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.DEALER_LABEL_Y;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.MAX_CARDS;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.MIN_BET;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.PLAYER_CARDS_Y;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.PLAYER_LABEL_Y;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.PLAYING;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.RESHUFFLE_BELOW;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.bank;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.bet;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.dealerCount;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.deckPosition;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.gameOver;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.handBet;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.holeHidden;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.phase;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.playerCount;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.seeded;
+import static io.github.jabrena.juno.games.blackjack.Cards.draw;
+import static io.github.jabrena.juno.games.blackjack.Cards.handValue;
+import static io.github.jabrena.juno.games.blackjack.Cards.shuffle;
+import static io.github.jabrena.juno.games.blackjack.SceneRenderer.clearHands;
+import static io.github.jabrena.juno.games.blackjack.SceneRenderer.drawButtons;
+import static io.github.jabrena.juno.games.blackjack.SceneRenderer.drawHand;
+import static io.github.jabrena.juno.games.blackjack.SceneRenderer.drawHeader;
+import static io.github.jabrena.juno.games.blackjack.SceneRenderer.showMessage;
 
 final class Round {
+    private static final Clock CLOCK = MCU.getClock();
     private Round() {
     }
 
     static void deal(byte[] deck, byte[] player, byte[] dealer) {
         if (!seeded) {
-            Random.seed(Clock.micros());
+            Random.seed(CLOCK.micros());
             seeded = true;
         }
         bet = Math.min(bet, bank);

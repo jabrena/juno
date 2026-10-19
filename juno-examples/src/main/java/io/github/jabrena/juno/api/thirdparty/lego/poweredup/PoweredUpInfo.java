@@ -2,10 +2,12 @@ package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
-import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.*;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.CONTENT_Y;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.MARGIN;
 
 /** The INFO view of {@link PoweredUpHubTFT}. */
 final class PoweredUpInfo {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private PoweredUpInfo() {
     }
 
@@ -17,18 +19,18 @@ final class PoweredUpInfo {
         printHubType(s);
         TftTouchShield.setCursor(MARGIN, infoLine(1));
         TftTouchShield.print("Battery ");
-        TftTouchShield.print(PoweredUpHubRemote.batteryPercent());
+        TftTouchShield.print(HUB.batteryPercent());
         TftTouchShield.print(" %    ");
         TftTouchShield.setCursor(MARGIN, infoLine(2));
         TftTouchShield.print("RSSI ");
-        TftTouchShield.print(PoweredUpHubRemote.rssi());
+        TftTouchShield.print(HUB.rssi());
         TftTouchShield.print(" dB    ");
         TftTouchShield.setCursor(MARGIN, infoLine(3));
         TftTouchShield.print("Firmware ");
-        printVersion(PoweredUpHubRemote.firmwareVersion());
+        printVersion(HUB.firmwareVersion());
         TftTouchShield.setCursor(MARGIN, infoLine(4));
         TftTouchShield.print("Hardware ");
-        printVersion(PoweredUpHubRemote.hardwareVersion());
+        printVersion(HUB.hardwareVersion());
         drawTilt(s);
     }
 
@@ -37,11 +39,11 @@ final class PoweredUpInfo {
     }
 
     private static void printVersion(int version) {
-        TftTouchShield.print(PoweredUpHubRemote.versionMajor(version));
+        TftTouchShield.print(HUB.versionMajor(version));
         TftTouchShield.print(".");
-        TftTouchShield.print(PoweredUpHubRemote.versionMinor(version));
+        TftTouchShield.print(HUB.versionMinor(version));
         TftTouchShield.print(".");
-        TftTouchShield.print(PoweredUpHubRemote.versionBugfix(version));
+        TftTouchShield.print(HUB.versionBugfix(version));
         TftTouchShield.print("   ");
     }
 
@@ -67,9 +69,9 @@ final class PoweredUpInfo {
             return;
         }
         TftTouchShield.print("Tilt ");
-        TftTouchShield.print(PoweredUpHubRemote.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_TILT, 0, 2));
+        TftTouchShield.print(HUB.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_TILT, 0, 2));
         TftTouchShield.print(" ");
-        TftTouchShield.print(PoweredUpHubRemote.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_TILT, 1, 2));
+        TftTouchShield.print(HUB.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_TILT, 1, 2));
         TftTouchShield.print("    ");
     }
 }

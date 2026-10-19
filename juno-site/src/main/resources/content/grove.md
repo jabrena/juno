@@ -20,9 +20,11 @@ DHT22 (AM2302) frame format. Plug the module into the shield's D4 socket: the sh
 import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
 import io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveDht22;
 
+GroveDht22 dht22 = new GroveDht22();   // create once, at startup
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];
-if (GroveDht22.read(GroveBaseShield.D4, reading, reading.length, frame, frame.length)) {
+GroveBaseShield shield = new GroveBaseShield();   // the socket map: one object, created once
+if (dht22.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
     int humidityTenths = reading[GroveDht22.HUMIDITY_TENTHS_PERCENT];
     int temperatureTenths = reading[GroveDht22.TEMPERATURE_TENTHS_CELSIUS];
 }
@@ -34,7 +36,11 @@ out-of-range value returns `false` without changing the previous result. Wait at
 between reads. The complete serial example is
 [`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveDht22Monitor.java).
 
-This driver is implemented in Java over `Gpio`, `Clock.micros()` and `Delay`; it adds no Arduino
+`new GroveDht22(gpio, clock)` (and the same for `GroveDht11`) runs the driver on a given `Gpio` and
+`Clock` instead of the board's, which is how its unit tests feed it a scripted sensor reply through a
+mocked `Gpio`.
+
+This driver is implemented in Java over `Gpio`, `Clock`'s `micros()` and `Delay`; it adds no Arduino
 library or compiler intrinsic and therefore works on the UNO R3, UNO WiFi Rev2, UNO R4 WiFi and
 UNO Q targets.
 
@@ -58,12 +64,15 @@ is:
 
 All three analog modules expose a voltage on `SIG`; they cannot be read from D7 or D8. The
 temperature driver applies Seeed's v1.2 thermistor equation through the float-returning
-`GroveTemperatureSensorV12.celsius(int)`, using the documented 100 kΩ nominal resistance and
+`celsius(int)` of a `GroveTemperatureSensorV12` created once at startup, using the documented 100 kΩ nominal resistance and
 `B = 4275 K` constants. Its allocation-free float logarithm keeps the driver compatible with
 the UNO WiFi Rev2, whose toolchain does not provide Juno's double-precision Math intrinsics.
 `rawValue(int)` and `celsiusFromRaw(int)` are also available when an application needs to retain
 the sample or inspect the calibration. The sound module is an amplified microphone signal, not a
-calibrated dB meter, and the light module's ADC count is not automatically lux.
+calibrated dB meter, and the light module's ADC count is not automatically lux. Each sensor is an
+object: `new GroveLightSensorV12()` reads the board's pins, and `new GroveLightSensorV12(gpio)` reads
+a given `Gpio`, which is how the unit tests mock the analog pin; the same holds for
+`GroveSoundSensorV16`, `GroveTemperatureSensorV12` and `GrovePirMotion`.
 
 Run the dedicated monitor with:
 

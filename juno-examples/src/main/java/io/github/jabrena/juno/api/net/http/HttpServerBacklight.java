@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.net.http;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.hardware.Memory;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -24,16 +26,22 @@ import io.github.jabrena.juno.api.util.Delay;
  * are compile-time literals).
  */
 public final class HttpServerBacklight {
+    private final LcdKeypadShield lcd = new LcdKeypadShield();
+    private final Clock clock = MCU.getClock();
     private static final int BACKLIGHT_ON_MILLIS = 200;
     private static final int HEARTBEAT_INTERVAL_MS = 5000;
 
     public static void main(String[] args) {
+        new HttpServerBacklight().run();
+    }
+
+    private void run() {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        LcdKeypadShield.begin();
-        LcdKeypadShield.backlight(false);
-        LcdKeypadShield.print("POST to flash");
+        lcd.begin();
+        lcd.backlight(false);
+        lcd.print("POST to flash");
 
         connectWifi();
         printLocalIP();
@@ -44,7 +52,7 @@ public final class HttpServerBacklight {
         byte[] body = new byte[128];
         int flashCount = 0;
         int requestCount = 0;
-        int lastHeartbeat = Clock.millis();
+        int lastHeartbeat = clock.millis();
         while (true) {
             int bodyLength = HttpServer.accept(body, body.length);
             if (bodyLength >= 0) {
@@ -63,7 +71,7 @@ public final class HttpServerBacklight {
                 }
                 requestCount = requestCount + 1;
             }
-            int now = Clock.millis();
+            int now = clock.millis();
             if (now - lastHeartbeat >= HEARTBEAT_INTERVAL_MS) {
                 printHeartbeat(now, requestCount);
                 lastHeartbeat = now;
@@ -71,7 +79,7 @@ public final class HttpServerBacklight {
         }
     }
 
-    private static void printHeartbeat(int nowMillis, int requestCount) {
+    private void printHeartbeat(int nowMillis, int requestCount) {
         Serial.print("heartbeat uptime_ms=");
         Serial.print(nowMillis);
         Serial.print(" requests=");
@@ -80,19 +88,19 @@ public final class HttpServerBacklight {
         Serial.println(Memory.arenaUsedBytes());
     }
 
-    private static void flashBacklight() {
-        LcdKeypadShield.backlight(true);
+    private void flashBacklight() {
+        lcd.backlight(true);
         Delay.millis(BACKLIGHT_ON_MILLIS);
-        LcdKeypadShield.backlight(false);
+        lcd.backlight(false);
     }
 
-    private static void showFlashCount(int flashCount) {
-        LcdKeypadShield.setCursor(0, 1);
-        LcdKeypadShield.print("Flashes: ");
-        LcdKeypadShield.print(flashCount);
+    private void showFlashCount(int flashCount) {
+        lcd.setCursor(0, 1);
+        lcd.print("Flashes: ");
+        lcd.print(flashCount);
     }
 
-    private static void connectWifi() {
+    private void connectWifi() {
         Serial.println("Starting WiFi");
         Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         while (Wifi.status() != Wifi.STATUS_CONNECTED) {
@@ -101,7 +109,7 @@ public final class HttpServerBacklight {
         Serial.println("WiFi connected");
     }
 
-    private static void printLocalIP() {
+    private void printLocalIP() {
         int[] ip = new int[4];
         Wifi.localIP(ip);
         Serial.print("IP: ");

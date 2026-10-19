@@ -15,7 +15,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static io.github.jabrena.juno.bytecode.Opcodes.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.ALOAD_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.GETSTATIC;
+import static io.github.jabrena.juno.bytecode.Opcodes.IASTORE;
+import static io.github.jabrena.juno.bytecode.Opcodes.ILOAD;
+import static io.github.jabrena.juno.bytecode.Opcodes.ILOAD_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.ILOAD_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESPECIAL;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEVIRTUAL;
+import static io.github.jabrena.juno.bytecode.Opcodes.PUTFIELD;
+import static io.github.jabrena.juno.bytecode.Opcodes.PUTSTATIC;
 
 /**
  * Resolves enums at compile time. Juno never constructs an enum object: a constant is its ordinal, an associated

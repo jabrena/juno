@@ -1,39 +1,44 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
 import io.github.jabrena.juno.api.io.gpio.Gpio;
-import io.github.jabrena.juno.api.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Grove PIR motion sensor")
 class GrovePirMotionTest {
+    private Gpio pins;
+    private GrovePirMotion pir;
 
     @BeforeEach
-    void startWithAQuietBoard() {
-        Wire.resetBoard();
+    void wireTheSensorToAMockedPin() {
+        pins = mock(Gpio.class);
+        pir = new GrovePirMotion(pins);
     }
 
     @Test
     @DisplayName("Begin configures the signal pin as an input")
     void shouldConfigureTheSignalPinAsAnInputWhenBegun() {
         // When
-        GrovePirMotion.begin(Gpio.D2);
+        pir.begin(Gpio.getD2());
 
         // Then
-        assertThat(Gpio.lastPinMode[Gpio.D2]).isEqualTo(Gpio.INPUT);
+        verify(pins).pinMode(Gpio.getD2(), Gpio.getInput());
     }
 
     @Test
     @DisplayName("Reports motion when the signal is high")
     void shouldReportMotionWhenTheSignalIsHigh() {
         // Given
-        Gpio.highAt = time -> true;
+        when(pins.digitalRead(Gpio.getD2())).thenReturn(true);
 
         // When
-        boolean motion = GrovePirMotion.motionDetected(Gpio.D2);
+        boolean motion = pir.motionDetected(Gpio.getD2());
 
         // Then
         assertThat(motion).isTrue();
@@ -43,10 +48,10 @@ class GrovePirMotionTest {
     @DisplayName("Reports no motion when the signal is low")
     void shouldReportNoMotionWhenTheSignalIsLow() {
         // Given
-        Gpio.highAt = time -> false;
+        when(pins.digitalRead(Gpio.getD2())).thenReturn(false);
 
         // When
-        boolean motion = GrovePirMotion.motionDetected(Gpio.D2);
+        boolean motion = pir.motionDetected(Gpio.getD2());
 
         // Then
         assertThat(motion).isFalse();

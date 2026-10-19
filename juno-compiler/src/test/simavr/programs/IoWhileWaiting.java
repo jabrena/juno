@@ -2,6 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
@@ -19,6 +20,7 @@ import java.util.concurrent.StructuredTaskScope;
  */
 @Board(ArduinoUnoR3WiFiRev2.class)
 public final class IoWhileWaiting {
+    static final Clock CLOCK = MCU.getClock();
     static volatile boolean stop;
     static volatile boolean inRequest;
     static volatile int started;
@@ -29,7 +31,7 @@ public final class IoWhileWaiting {
     static void watch() {
         while (!stop) {
             if (inRequest) {
-                int seen = Clock.millis() - started;
+                int seen = CLOCK.millis() - started;
                 if (seen > longestSeen) {
                     longestSeen = seen;
                 }
@@ -44,7 +46,7 @@ public final class IoWhileWaiting {
         int[] status = new int[2];
 
         Thread watcher = Thread.startVirtualThread(IoWhileWaiting::watch);
-        started = Clock.millis();
+        started = CLOCK.millis();
         inRequest = true;
         int length = HttpClient.get("http://example.com:8080/slow", body, body.length, headers, headers.length, status);
         inRequest = false;

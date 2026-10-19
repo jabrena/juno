@@ -1,11 +1,14 @@
 package io.github.jabrena.juno.games.lunarlander;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.api.util.Random;
 
 /** Owns one lander's state and advances its flight physics. */
 final class Flight {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int FRAME_MILLIS = 30;
     private static final int BURN_PER_FRAME = 3;
     private static final float GRAVITY = 0.010f;
@@ -45,7 +48,7 @@ final class Flight {
         Hud.drawButtons();
         Hud.drawHeader();
         int rotateWait = 0;
-        int next = Clock.millis();
+        int next = CLOCK.millis();
         while (true) {
             next = awaitFrame(next);
             frame = frame + 1;
@@ -81,7 +84,7 @@ final class Flight {
     }
 
     private static int awaitFrame(int next) {
-        while (Clock.millis() < next) {
+        while (CLOCK.millis() < next) {
             Delay.millis(1);
         }
         return next + FRAME_MILLIS;

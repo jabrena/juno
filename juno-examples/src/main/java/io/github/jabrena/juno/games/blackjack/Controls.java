@@ -1,21 +1,18 @@
 package io.github.jabrena.juno.games.blackjack;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
-import static io.github.jabrena.juno.games.blackjack.Blackjack.*;
-import static io.github.jabrena.juno.games.blackjack.Cards.*;
-import static io.github.jabrena.juno.games.blackjack.ClubSprite.*;
-import static io.github.jabrena.juno.games.blackjack.Controls.*;
-import static io.github.jabrena.juno.games.blackjack.DiamondSprite.*;
-import static io.github.jabrena.juno.games.blackjack.HeartSprite.*;
-import static io.github.jabrena.juno.games.blackjack.Round.*;
-import static io.github.jabrena.juno.games.blackjack.SceneRenderer.*;
-import static io.github.jabrena.juno.games.blackjack.SpadeSprite.*;
-import static io.github.jabrena.juno.games.blackjack.SuitSprites.*;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON_HEIGHT;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON_SPACING;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON_Y;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.HAND_X;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.HEADER_HEIGHT;
 
 final class Controls {
+    private static final Clock CLOCK = MCU.getClock();
     static boolean autopilot;
 
     private Controls() {
@@ -54,8 +51,8 @@ final class Controls {
     }
 
     static boolean waitForTap(int timeoutMillis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < timeoutMillis) {
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < timeoutMillis) {
             if (TftTouchShield.readTouch()) {
                 waitForRelease();
                 return true;

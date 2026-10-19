@@ -3,6 +3,7 @@ package io.github.jabrena.juno.language;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -17,8 +18,9 @@ public final class Interfaces {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
 
+        Gpio gpio = MCU.getGpio();
         Interfaces interfaces = new Interfaces();
-        Scale scale = interfaces.choose(Gpio.analogRead(0) > 512);
+        Scale scale = interfaces.choose(gpio.analogRead(0) > 512);
         int result = scale.apply(100);
         while (true) {
             Serial.print("Interface dispatch result: ");

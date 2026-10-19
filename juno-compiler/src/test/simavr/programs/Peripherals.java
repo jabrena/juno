@@ -109,9 +109,10 @@ public final class Peripherals {
         log.close();
         Serial.println(line.toString());
 
-        LcdKeypadShield.begin();
-        LcdKeypadShield.print("Juno on Rev2");
-        Serial.println(LcdKeypadShield.readButton());
+        LcdKeypadShield lcd = new LcdKeypadShield();
+        lcd.begin();
+        lcd.print("Juno on Rev2");
+        Serial.println(lcd.readButton());
 
         TftTouchShield.begin();
         TftTouchShield.fillRect(0, 0, 8, 8, TftTouchShield.GREEN);

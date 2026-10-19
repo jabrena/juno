@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.io.gpio.EmulatedShield;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Random;
 import org.junit.jupiter.api.BeforeEach;
@@ -112,7 +112,7 @@ class MissileCommandTest {
         int pixelsBelowHeader = 0;
         for (int y = Session.HEADER; y < Session.HEADER + 8; y++) {
             for (int x = 0; x < Session.WIDTH; x++) {
-                if (Gpio.FRAMEBUFFER[y * Gpio.STRIDE + x] != TftTouchShield.BLACK) {
+                if (EmulatedShield.FRAMEBUFFER[y * EmulatedShield.STRIDE + x] != TftTouchShield.BLACK) {
                     pixelsBelowHeader = pixelsBelowHeader + 1;
                 }
             }

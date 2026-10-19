@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.net.http;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.hardware.Memory;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -13,7 +15,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * io.github.jabrena.juno.api.net.wifi.WifiStatus}), prints its {@link Wifi#localIP} once connected
  * so the endpoint can actually be found on the network, then serves {@code GET /status} as JSON
  * ({@code
- * {"uptime_ms":<Clock.millis()>}}) on port 80, and replies to everything else with an RFC 7807
+ * {"uptime_ms":<clock.millis()>}}) on port 80, and replies to everything else with an RFC 7807
  * problem detail ({@code application/problem+json}). Demonstrates {@link HttpServer}'s
  * non-blocking {@code accept()}/{@code respond()} pair, {@link String#equals} route matching, and
  * building a runtime JSON body in a {@link StringBuilder} (a literal part appended whole, a
@@ -26,10 +28,15 @@ import io.github.jabrena.juno.api.util.Delay;
  * (arena usage that only ever grows) versus healthy reclamation (usage that rises and falls).
  */
 public final class HttpServerStatus {
+    private final Clock clock = MCU.getClock();
     /** How often to print an arena-usage heartbeat over Serial, in milliseconds. */
     private static final int HEARTBEAT_INTERVAL_MS = 5000;
 
     public static void main(String[] args) {
+        new HttpServerStatus().run();
+    }
+
+    private void run() {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         connectWifi();
@@ -40,7 +47,7 @@ public final class HttpServerStatus {
 
         byte[] body = new byte[128];
         int requestCount = 0;
-        int lastHeartbeat = Clock.millis();
+        int lastHeartbeat = clock.millis();
         while (true) {
             int bodyLength = HttpServer.accept(body, body.length);
             if (bodyLength >= 0) {
@@ -51,7 +58,7 @@ public final class HttpServerStatus {
                 getStatusHandler(method, path);
                 requestCount = requestCount + 1;
             }
-            int now = Clock.millis();
+            int now = clock.millis();
             if (now - lastHeartbeat >= HEARTBEAT_INTERVAL_MS) {
                 printHeartbeat(now, requestCount);
                 lastHeartbeat = now;
@@ -65,7 +72,7 @@ public final class HttpServerStatus {
      * shouldn't); one that rises and falls as requests are served and reclaimed by the collector
      * is healthy. See {@link Memory#arenaUsedBytes}.
      */
-    private static void printHeartbeat(int nowMillis, int requestCount) {
+    private void printHeartbeat(int nowMillis, int requestCount) {
         Serial.print("heartbeat uptime_ms=");
         Serial.print(nowMillis);
         Serial.print(" requests=");
@@ -74,7 +81,7 @@ public final class HttpServerStatus {
         Serial.println(Memory.arenaUsedBytes());
     }
 
-    private static void getStatusHandler(String method, String path) {
+    private void getStatusHandler(String method, String path) {
         if (method.equals(HttpMethod.GET) && path.equals("/status")) {
             HttpServer.respond(HttpStatus.OK, "application/json", buildStatusResponse());
         } else {
@@ -82,10 +89,10 @@ public final class HttpServerStatus {
         }
     }
 
-    private static String buildStatusResponse() {
+    private String buildStatusResponse() {
         StringBuilder json = new StringBuilder(48);
         json.append("{\"uptime_ms\":");
-        String uptime = String.valueOf(Clock.millis());
+        String uptime = String.valueOf(clock.millis());
         for (int i = 0; i < uptime.length(); i++) {
             json.append(uptime.charAt(i));
         }
@@ -100,7 +107,7 @@ public final class HttpServerStatus {
      * which panics instead of truncating past that pool size. Returning the {@link StringBuilder}
      * itself for {@link HttpServer#respond(int, String, StringBuilder)} to stream has no such cap.
      */
-    private static StringBuilder buildNotFoundProblem(String path) {
+    private StringBuilder buildNotFoundProblem(String path) {
         StringBuilder problem = new StringBuilder(128);
         problem.append("{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"instance\":\"");
         for (int i = 0; i < path.length(); i++) {
@@ -110,7 +117,7 @@ public final class HttpServerStatus {
         return problem;
     }
 
-    private static void connectWifi() {
+    private void connectWifi() {
         Serial.println("Starting WiFi");
         Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         while (Wifi.status() != Wifi.STATUS_CONNECTED) {
@@ -119,7 +126,7 @@ public final class HttpServerStatus {
         Serial.println("WiFi connected");
     }
 
-    private static void printLocalIP() {
+    private void printLocalIP() {
         int[] ip = new int[4];
         Wifi.localIP(ip);
         Serial.print("IP: ");

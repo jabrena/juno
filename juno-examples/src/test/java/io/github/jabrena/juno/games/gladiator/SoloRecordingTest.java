@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.gladiator;
 
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.io.gpio.EmulatedShield;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.gladiator.arena.GladiatorClass;
@@ -122,7 +122,7 @@ class SoloRecordingTest {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int color = Gpio.FRAMEBUFFER[y * Gpio.STRIDE + x];
+                int color = EmulatedShield.FRAMEBUFFER[y * EmulatedShield.STRIDE + x];
                 int red = (color >> 11) & 31;
                 int green = (color >> 5) & 63;
                 int blue = color & 31;

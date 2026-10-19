@@ -19,6 +19,7 @@ import io.github.jabrena.juno.api.util.Delay;
  */
 @Board(ArduinoUnoR4WiFi.class)
 public final class InboxCount {
+    private final LcdKeypadShield lcd = new LcdKeypadShield();
     private static final int POP3_PORT = 995;
     private static final int POLL_INTERVAL_SECONDS = 30;
     // Wifi#status can report STATUS_CONNECTED slightly before the module's TCP/IP stack (DHCP
@@ -29,15 +30,19 @@ public final class InboxCount {
     private static final int CONNECT_RETRY_DELAY_SECONDS = 2;
 
     public static void main(String[] args) {
+        new InboxCount().run();
+    }
+
+    private void run() {
         Serial.begin(BaudRate.BAUD_115200);
 
-        LcdKeypadShield.begin();
-        LcdKeypadShield.print("Connecting...");
+        lcd.begin();
+        lcd.print("Connecting...");
 
         connectWifi();
 
-        LcdKeypadShield.clear();
-        LcdKeypadShield.print("Inbox: ?");
+        lcd.clear();
+        lcd.print("Inbox: ?");
 
         while (true) {
             showCount(pollMessageCount());
@@ -45,7 +50,7 @@ public final class InboxCount {
         }
     }
 
-    private static int pollMessageCount() {
+    private int pollMessageCount() {
         int count = -1;
         for (int attempt = 0; attempt < CONNECT_RETRY_ATTEMPTS; attempt++) {
             count = Pop3Client.messageCount(
@@ -59,23 +64,23 @@ public final class InboxCount {
         return count;
     }
 
-    private static void showCount(int count) {
-        LcdKeypadShield.setCursor(0, 0);
+    private void showCount(int count) {
+        lcd.setCursor(0, 0);
         if (count >= 0) {
-            LcdKeypadShield.print("Inbox: ");
-            LcdKeypadShield.print(count);
-            LcdKeypadShield.print("     ");
+            lcd.print("Inbox: ");
+            lcd.print(count);
+            lcd.print("     ");
             Serial.print("Inbox count: ");
             Serial.println(count);
         } else {
-            LcdKeypadShield.print("Inbox: err ");
-            LcdKeypadShield.print(count);
+            lcd.print("Inbox: err ");
+            lcd.print(count);
             Serial.print("Inbox count failed: ");
             Serial.println(count);
         }
     }
 
-    private static void connectWifi() {
+    private void connectWifi() {
         Serial.println("Starting WiFi");
         Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         while (Wifi.status() != Wifi.STATUS_CONNECTED) {

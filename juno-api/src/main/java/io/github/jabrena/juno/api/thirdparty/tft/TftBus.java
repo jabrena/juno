@@ -59,9 +59,9 @@ final class TftBus {
 
     // Leaves RS high, so the parameter/pixel bytes that follow are sent as data.
     static void command(int value) {
-        Gpio.digitalWrite(TftTouchShield.PIN_RS, false);
+        TftTouchShield.gpio.digitalWrite(TftTouchShield.PIN_RS, false);
         ParallelBus.write(value);
-        Gpio.digitalWrite(TftTouchShield.PIN_RS, true);
+        TftTouchShield.gpio.digitalWrite(TftTouchShield.PIN_RS, true);
     }
 
     // Configuration commands (rotation, power, reset) may move the controller's window: send it afresh next time.
@@ -84,7 +84,7 @@ final class TftBus {
 
     static void restoreDataPins() {
         for (int i = 0; i < ParallelBus.WIDTH; i++) {
-            Gpio.pinMode(DATA_PINS[i], Gpio.OUTPUT);
+            TftTouchShield.gpio.pinMode(DATA_PINS[i], Gpio.getOutput());
         }
     }
 }

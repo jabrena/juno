@@ -1,23 +1,24 @@
 package io.github.jabrena.juno.api.testing;
 
 import io.github.jabrena.juno.api.io.gpio.Gpio;
-import io.github.jabrena.juno.api.time.Clock;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.when;
+
 /**
- * A scripted single-wire signal for the test-only {@link Gpio} stand-in: a run of levels, one per simulated
- * microsecond, starting at the simulated time when {@link #install()} is called. Build it with {@link #hold}, then
- * install it; every later sample past the script keeps the last level.
+ * A scripted single-wire signal for a mocked {@link Gpio}: a run of levels, one per simulated microsecond,
+ * starting at the {@link SimulatedTime} when {@link #install} is called. Build it with {@link #hold}, then install it;
+ * every later sample past the script keeps the last level.
  */
 public final class Wire {
     private final List<Boolean> levels = new ArrayList<>();
 
-    /** Clears the simulated clock and pin state so a test starts from time zero. */
+    /** Starts the simulated board at time zero, so a test's waveform and timeouts begin from a known clock. */
     public static void resetBoard() {
-        Clock.reset();
-        Gpio.reset();
+        SimulatedTime.reset();
     }
 
     /** Appends {@code micros} microseconds of the given level. */
@@ -43,17 +44,21 @@ public final class Wire {
         return wire.hold(false, 50);
     }
 
-    /** Makes the scripted levels the pin's waveform, sampled from the current simulated time. */
-    public void install() {
+    /**
+     * Makes the scripted levels what {@code port} reads on every pin, sampled from the current simulated time; each
+     * read takes one simulated microsecond, so code that times edges sees the clock move.
+     */
+    public void install(Gpio port) {
         boolean[] samples = new boolean[levels.size()];
         for (int index = 0; index < samples.length; index++) {
             samples[index] = levels.get(index);
         }
-        int start = Clock.now;
+        int start = SimulatedTime.now;
         boolean last = samples[samples.length - 1];
-        Gpio.highAt = time -> {
-            int index = time - start;
+        when(port.digitalRead(anyInt())).thenAnswer(invocation -> {
+            int index = SimulatedTime.now - start;
+            SimulatedTime.now++;
             return index >= 0 && index < samples.length ? samples[index] : last;
-        };
+        });
     }
 }

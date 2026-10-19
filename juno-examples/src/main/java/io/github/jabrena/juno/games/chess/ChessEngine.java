@@ -2,19 +2,20 @@ package io.github.jabrena.juno.games.chess;
 
 import io.github.jabrena.juno.api.util.Random;
 
-import static io.github.jabrena.juno.games.chess.BishopSprite.*;
-import static io.github.jabrena.juno.games.chess.Chess.*;
-import static io.github.jabrena.juno.games.chess.ChessEngine.*;
-import static io.github.jabrena.juno.games.chess.ChessRules.*;
-import static io.github.jabrena.juno.games.chess.Controls.*;
-import static io.github.jabrena.juno.games.chess.KingSprite.*;
-import static io.github.jabrena.juno.games.chess.KnightSprite.*;
-import static io.github.jabrena.juno.games.chess.MoveGenerator.*;
-import static io.github.jabrena.juno.games.chess.PawnSprite.*;
-import static io.github.jabrena.juno.games.chess.PieceSprites.*;
-import static io.github.jabrena.juno.games.chess.QueenSprite.*;
-import static io.github.jabrena.juno.games.chess.RookSprite.*;
-import static io.github.jabrena.juno.games.chess.SceneRenderer.*;
+import static io.github.jabrena.juno.games.chess.Chess.BISHOP;
+import static io.github.jabrena.juno.games.chess.Chess.KING;
+import static io.github.jabrena.juno.games.chess.Chess.KNIGHT;
+import static io.github.jabrena.juno.games.chess.Chess.MATE;
+import static io.github.jabrena.juno.games.chess.Chess.MOVES_PER_PLY;
+import static io.github.jabrena.juno.games.chess.Chess.PAWN;
+import static io.github.jabrena.juno.games.chess.Chess.QUEEN;
+import static io.github.jabrena.juno.games.chess.Chess.ROOK;
+import static io.github.jabrena.juno.games.chess.Chess.bestMove;
+import static io.github.jabrena.juno.games.chess.Chess.side;
+import static io.github.jabrena.juno.games.chess.ChessRules.inCheck;
+import static io.github.jabrena.juno.games.chess.ChessRules.makeMove;
+import static io.github.jabrena.juno.games.chess.ChessRules.unmakeMove;
+import static io.github.jabrena.juno.games.chess.MoveGenerator.generateMoves;
 
 final class ChessEngine {
     private ChessEngine() {

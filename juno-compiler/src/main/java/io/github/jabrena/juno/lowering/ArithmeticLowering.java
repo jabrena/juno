@@ -15,7 +15,42 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import static io.github.jabrena.juno.bytecode.Opcodes.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.DADD;
+import static io.github.jabrena.juno.bytecode.Opcodes.DDIV;
+import static io.github.jabrena.juno.bytecode.Opcodes.DMUL;
+import static io.github.jabrena.juno.bytecode.Opcodes.DNEG;
+import static io.github.jabrena.juno.bytecode.Opcodes.DREM;
+import static io.github.jabrena.juno.bytecode.Opcodes.DSUB;
+import static io.github.jabrena.juno.bytecode.Opcodes.FADD;
+import static io.github.jabrena.juno.bytecode.Opcodes.FDIV;
+import static io.github.jabrena.juno.bytecode.Opcodes.FMUL;
+import static io.github.jabrena.juno.bytecode.Opcodes.FNEG;
+import static io.github.jabrena.juno.bytecode.Opcodes.FREM;
+import static io.github.jabrena.juno.bytecode.Opcodes.FSUB;
+import static io.github.jabrena.juno.bytecode.Opcodes.IADD;
+import static io.github.jabrena.juno.bytecode.Opcodes.IAND;
+import static io.github.jabrena.juno.bytecode.Opcodes.IDIV;
+import static io.github.jabrena.juno.bytecode.Opcodes.IMUL;
+import static io.github.jabrena.juno.bytecode.Opcodes.INEG;
+import static io.github.jabrena.juno.bytecode.Opcodes.IOR;
+import static io.github.jabrena.juno.bytecode.Opcodes.IREM;
+import static io.github.jabrena.juno.bytecode.Opcodes.ISHL;
+import static io.github.jabrena.juno.bytecode.Opcodes.ISHR;
+import static io.github.jabrena.juno.bytecode.Opcodes.ISUB;
+import static io.github.jabrena.juno.bytecode.Opcodes.IUSHR;
+import static io.github.jabrena.juno.bytecode.Opcodes.IXOR;
+import static io.github.jabrena.juno.bytecode.Opcodes.LADD;
+import static io.github.jabrena.juno.bytecode.Opcodes.LAND;
+import static io.github.jabrena.juno.bytecode.Opcodes.LDIV;
+import static io.github.jabrena.juno.bytecode.Opcodes.LMUL;
+import static io.github.jabrena.juno.bytecode.Opcodes.LNEG;
+import static io.github.jabrena.juno.bytecode.Opcodes.LOR;
+import static io.github.jabrena.juno.bytecode.Opcodes.LREM;
+import static io.github.jabrena.juno.bytecode.Opcodes.LSHL;
+import static io.github.jabrena.juno.bytecode.Opcodes.LSHR;
+import static io.github.jabrena.juno.bytecode.Opcodes.LSUB;
+import static io.github.jabrena.juno.bytecode.Opcodes.LUSHR;
+import static io.github.jabrena.juno.bytecode.Opcodes.LXOR;
 
 /** Arithmetic, negation, shifts and bitwise operators ({@code iadd}..{@code lxor}) for every numeric type. */
 final class ArithmeticLowering implements OpcodeGroup {

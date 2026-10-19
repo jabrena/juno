@@ -17,8 +17,11 @@ public final class GroveSensorWiringMonitor {
     }
 
     public static void main(String[] args) {
+        GroveBaseShield shield = new GroveBaseShield();
         Serial.begin(BaudRate.BAUD_115200);
-        GrovePirMotion.begin(GroveBaseShield.D3);
+        GrovePirMotion pir = new GrovePirMotion();
+        GroveAnalogGas gas = new GroveAnalogGas();
+        pir.begin(shield.getD3());
         Delay.millis(1000);
         int compass = GroveCompassProbe.detect();
         Serial.print("Compass chip: ");
@@ -41,9 +44,9 @@ public final class GroveSensorWiringMonitor {
                 Serial.println("read failed");
             }
             Serial.print("Gas ADC A0: ");
-            Serial.println(GroveAnalogGas.rawValue(GroveBaseShield.A0));
+            Serial.println(gas.rawValue(shield.getA0()));
             Serial.print("PIR D3: ");
-            Serial.println(GrovePirMotion.motionDetected(GroveBaseShield.D3));
+            Serial.println(pir.motionDetected(shield.getD3()));
             Delay.millis(2000);
         }
     }

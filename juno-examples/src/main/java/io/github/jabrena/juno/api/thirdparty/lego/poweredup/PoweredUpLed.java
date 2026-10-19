@@ -2,10 +2,15 @@ package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
-import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.*;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.MARGIN;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.SWATCH_GAP;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.SWATCH_HEIGHT;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.SWATCH_TOP;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.SWATCH_WIDTH;
 
 /** The LED view of {@link PoweredUpHubTFT}: a 3x3 grid of color swatches. */
 final class PoweredUpLed {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     static final int[] LED_COLORS = {
         PoweredUpHubRemote.COLOR_RED,
         PoweredUpHubRemote.COLOR_ORANGE,
@@ -25,7 +30,7 @@ final class PoweredUpLed {
         for (int i = 0; i < LED_COLORS.length; i++) {
             if (PoweredUpUi.inBox(x, y, swatchX(i), swatchY(i), SWATCH_WIDTH, SWATCH_HEIGHT)) {
                 s.ledIndex = i;
-                PoweredUpHubRemote.setLedColor(LED_COLORS[i]);
+                HUB.setLedColor(LED_COLORS[i]);
                 draw(s);
             }
         }

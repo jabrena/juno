@@ -27,13 +27,18 @@ import java.util.Properties;
  * the shields. This program never changes the LCD backlight after SD-card initialization.
  */
 public final class WifiStatusSDLcd {
+    private final LcdKeypadShield lcd = new LcdKeypadShield();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
     public static void main(String[] args) throws IOException {
+        new WifiStatusSDLcd().run();
+    }
+
+    private void run() throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
 
-        LcdKeypadShield.begin();
-        LcdKeypadShield.print("Wifi connection");
+        lcd.begin();
+        lcd.print("Wifi connection");
         showStatus("Connecting      ");
 
         Delay.millis(2000);
@@ -70,12 +75,12 @@ public final class WifiStatusSDLcd {
         }
     }
 
-    private static void showStatus(String status) {
-        LcdKeypadShield.setCursor(0, 1);
-        LcdKeypadShield.print(status);
+    private void showStatus(String status) {
+        lcd.setCursor(0, 1);
+        lcd.print(status);
     }
 
-    private static WifiCredentials loadCredentials() throws IOException {
+    private WifiCredentials loadCredentials() throws IOException {
         if (!SdCard.begin()) {
             Serial.println("SD card initialization failed");
             return null;

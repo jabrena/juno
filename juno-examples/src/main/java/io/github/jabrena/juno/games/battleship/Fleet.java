@@ -2,11 +2,11 @@ package io.github.jabrena.juno.games.battleship;
 
 import io.github.jabrena.juno.api.util.Random;
 
-import static io.github.jabrena.juno.games.battleship.AutopilotBattleship.*;
-import static io.github.jabrena.juno.games.battleship.Battleship.*;
-import static io.github.jabrena.juno.games.battleship.Controls.*;
-import static io.github.jabrena.juno.games.battleship.Fleet.*;
-import static io.github.jabrena.juno.games.battleship.SceneRenderer.*;
+import static io.github.jabrena.juno.games.battleship.Battleship.CELLS;
+import static io.github.jabrena.juno.games.battleship.Battleship.HIT;
+import static io.github.jabrena.juno.games.battleship.Battleship.SHIPS;
+import static io.github.jabrena.juno.games.battleship.Battleship.SIZE;
+import static io.github.jabrena.juno.games.battleship.Battleship.SUNK;
 
 final class Fleet {
     private Fleet() {

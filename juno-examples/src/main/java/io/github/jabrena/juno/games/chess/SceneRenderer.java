@@ -3,19 +3,31 @@ package io.github.jabrena.juno.games.chess;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
-import static io.github.jabrena.juno.games.chess.BishopSprite.*;
-import static io.github.jabrena.juno.games.chess.Chess.*;
-import static io.github.jabrena.juno.games.chess.ChessEngine.*;
-import static io.github.jabrena.juno.games.chess.ChessRules.*;
-import static io.github.jabrena.juno.games.chess.Controls.*;
-import static io.github.jabrena.juno.games.chess.KingSprite.*;
-import static io.github.jabrena.juno.games.chess.KnightSprite.*;
-import static io.github.jabrena.juno.games.chess.MoveGenerator.*;
-import static io.github.jabrena.juno.games.chess.PawnSprite.*;
-import static io.github.jabrena.juno.games.chess.PieceSprites.*;
-import static io.github.jabrena.juno.games.chess.QueenSprite.*;
-import static io.github.jabrena.juno.games.chess.RookSprite.*;
-import static io.github.jabrena.juno.games.chess.SceneRenderer.*;
+import static io.github.jabrena.juno.games.chess.Chess.BLACK_PIECE_EDGE;
+import static io.github.jabrena.juno.games.chess.Chess.BOARD_X;
+import static io.github.jabrena.juno.games.chess.Chess.BOARD_Y;
+import static io.github.jabrena.juno.games.chess.Chess.BUTTON_HEIGHT;
+import static io.github.jabrena.juno.games.chess.Chess.CAPTURE_TARGET;
+import static io.github.jabrena.juno.games.chess.Chess.CELL;
+import static io.github.jabrena.juno.games.chess.Chess.DARK;
+import static io.github.jabrena.juno.games.chess.Chess.DARK_LAST;
+import static io.github.jabrena.juno.games.chess.Chess.DECO_LAST;
+import static io.github.jabrena.juno.games.chess.Chess.DECO_SELECTED;
+import static io.github.jabrena.juno.games.chess.Chess.DECO_TARGET;
+import static io.github.jabrena.juno.games.chess.Chess.FOOTER_Y;
+import static io.github.jabrena.juno.games.chess.Chess.HEADER_BACKGROUND;
+import static io.github.jabrena.juno.games.chess.Chess.LIGHT;
+import static io.github.jabrena.juno.games.chess.Chess.LIGHT_LAST;
+import static io.github.jabrena.juno.games.chess.Chess.PIECE_SIZE;
+import static io.github.jabrena.juno.games.chess.Chess.SELECTED;
+import static io.github.jabrena.juno.games.chess.Chess.TARGET;
+import static io.github.jabrena.juno.games.chess.Chess.UNDO_X;
+import static io.github.jabrena.juno.games.chess.Chess.lastFrom;
+import static io.github.jabrena.juno.games.chess.Chess.lastTo;
+import static io.github.jabrena.juno.games.chess.ChessEngine.isLegalMove;
+import static io.github.jabrena.juno.games.chess.MoveGenerator.generateMoves;
+import static io.github.jabrena.juno.games.chess.PieceSprites.detailRow;
+import static io.github.jabrena.juno.games.chess.PieceSprites.shapeRow;
 
 final class SceneRenderer {
     private SceneRenderer() {

@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.dashboard.commons.ux;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
@@ -10,10 +12,11 @@ import io.github.jabrena.juno.api.time.Clock;
  * the rate is recomputed and printed over serial; the label is redrawn only when the number changes.
  */
 public final class TftFpsWidget {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int WINDOW_MS = 1000;
     private static final int UNSHOWN = -1;
 
-    private int windowStart = Clock.millis();
+    private int windowStart = CLOCK.millis();
     private int framesInWindow;
     private int framesPerSecond;
     private int shownFramesPerSecond = UNSHOWN;
@@ -26,7 +29,7 @@ public final class TftFpsWidget {
     /** Counts this frame, and redraws the label if the rate changed. */
     public void update() {
         framesInWindow = framesInWindow + 1;
-        int now = Clock.millis();
+        int now = CLOCK.millis();
         if (now - windowStart >= WINDOW_MS) {
             framesPerSecond = framesInWindow;
             framesInWindow = 0;

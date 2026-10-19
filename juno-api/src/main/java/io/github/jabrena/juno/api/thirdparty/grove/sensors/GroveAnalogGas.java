@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
 
@@ -9,11 +10,20 @@ import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
  * requires the particular sensor's warm-up and calibration procedure. This class allocates nothing.
  */
 public final class GroveAnalogGas {
-    private GroveAnalogGas() {
+    private final Gpio gpio;
+
+    /** A sensor on the board's own pins. Create it once, at startup. */
+    public GroveAnalogGas() {
+        this(MCU.getGpio());
     }
 
-    /** Reads the board's raw ADC value from an analog socket such as {@link GroveBaseShield#A0}. */
-    public static int rawValue(int analogPin) {
-        return Gpio.analogRead(analogPin);
+    /** A sensor read through {@code gpio}: a mocked one in a unit test. */
+    public GroveAnalogGas(Gpio gpio) {
+        this.gpio = gpio;
+    }
+
+    /** Reads the board's raw ADC value from an analog socket such as {@link GroveBaseShield#getA0()}. */
+    public int rawValue(int analogPin) {
+        return gpio.analogRead(analogPin);
     }
 }

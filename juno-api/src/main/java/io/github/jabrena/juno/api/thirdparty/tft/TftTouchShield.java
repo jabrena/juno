@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.tft;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.led.LedMatrixFontAscii;
 import io.github.jabrena.juno.api.util.Delay;
@@ -27,6 +28,12 @@ import io.github.jabrena.juno.api.util.Delay;
  * the screen's edges) if a particular panel reports offset or mirrored positions.
  */
 public final class TftTouchShield {
+    /**
+     * The pins the whole driver drives, {@code TftTouch} and {@code TftBus} included; a unit test in this package swaps
+     * in {@code mock}.
+     */
+    static Gpio gpio = MCU.getGpio();
+
     /** Native (portrait) width in pixels. */
     public static final int NATIVE_WIDTH = 240;
     /** Native (portrait) height in pixels. */
@@ -128,25 +135,25 @@ public final class TftTouchShield {
      * calibration. The screen contents are undefined until the first {@link #fillScreen}.
      */
     public static void begin() {
-        Gpio.pinMode(PIN_RD, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_WR, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_RS, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_CS, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_RESET, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_RD, true);
-        Gpio.digitalWrite(PIN_WR, true);
-        Gpio.digitalWrite(PIN_RS, true);
-        Gpio.digitalWrite(PIN_CS, true);
+        gpio.pinMode(PIN_RD, Gpio.getOutput());
+        gpio.pinMode(PIN_WR, Gpio.getOutput());
+        gpio.pinMode(PIN_RS, Gpio.getOutput());
+        gpio.pinMode(PIN_CS, Gpio.getOutput());
+        gpio.pinMode(PIN_RESET, Gpio.getOutput());
+        gpio.digitalWrite(PIN_RD, true);
+        gpio.digitalWrite(PIN_WR, true);
+        gpio.digitalWrite(PIN_RS, true);
+        gpio.digitalWrite(PIN_CS, true);
         TftBus.restoreDataPins();
         TftBus.begin();
 
-        Gpio.digitalWrite(PIN_RESET, true);
+        gpio.digitalWrite(PIN_RESET, true);
         Delay.millis(5);
-        Gpio.digitalWrite(PIN_RESET, false);
+        gpio.digitalWrite(PIN_RESET, false);
         Delay.millis(20);
-        Gpio.digitalWrite(PIN_RESET, true);
+        gpio.digitalWrite(PIN_RESET, true);
         Delay.millis(150);
-        Gpio.digitalWrite(PIN_CS, false);
+        gpio.digitalWrite(PIN_CS, false);
 
         TftBus.command(SOFT_RESET);
         Delay.millis(50);

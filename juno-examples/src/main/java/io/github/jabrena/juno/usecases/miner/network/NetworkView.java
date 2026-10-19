@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.network;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -18,6 +20,7 @@ import io.github.jabrena.juno.usecases.miner.services.NodeService;
  * refreshes them once a second rather than on every change.
  */
 public final class NetworkView implements View {
+    private static final Clock CLOCK = MCU.getClock();
     static final int REFRESH_MILLIS = 1000;
 
     private final Navigator navigator;
@@ -40,7 +43,7 @@ public final class NetworkView implements View {
         TabBar.draw(Miner2Views.NETWORK);
         GameScreen.row(1, 1, TftTouchShield.GRAY);
         TftTouchShield.print("UDP port " + NodeIo.PORT);
-        refreshedAt = Clock.millis();
+        refreshedAt = CLOCK.millis();
         hashesAtRefresh = model.hashes();
         showCounters(-1);
     }
@@ -48,7 +51,7 @@ public final class NetworkView implements View {
     @Override
     public void render() {
         header.render();
-        int now = Clock.millis();
+        int now = CLOCK.millis();
         int elapsed = now - refreshedAt;
         if (elapsed < REFRESH_MILLIS) {
             return;

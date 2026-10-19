@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.doom;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.hardware.Memory;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -12,6 +14,8 @@ import io.github.jabrena.juno.api.util.Random;
  * there is one engine per program; the renderer's buffers are allocated here, once, after the WAD-sized tables.
  */
 public final class DoomEngine {
+    /** The engine's clock, shared with {@link Loading} and Doom2's views so the program allocates one. */
+    public static final Clock CLOCK = MCU.getClock();
     public static final int PLAYING = 0;
     public static final int WON = 1;
     public static final int DIED = 2;
@@ -99,7 +103,7 @@ public final class DoomEngine {
         Controls.autopilot = autopilot;
         if (newGame) {
             Weapon.reset();
-            Random.seed(Clock.micros());
+            Random.seed(CLOCK.micros());
         }
         Lifts.reset();
         Player.spawn(World.ceilings);
@@ -112,7 +116,7 @@ public final class DoomEngine {
         Hud.drawBar();
         DisplayList.clearView();
         frame = 0;
-        mapStarted = Clock.millis();
+        mapStarted = CLOCK.millis();
     }
 
     /**
@@ -125,7 +129,7 @@ public final class DoomEngine {
         short[] monsters = World.monsterStates;
         byte[] taken = World.taken;
         frame = frame + 1;
-        int started = Clock.micros();
+        int started = CLOCK.micros();
         Weapon.tick();
         if (Player.hurt > 0) {
             Player.hurt = Player.hurt - 1;
@@ -144,16 +148,16 @@ public final class DoomEngine {
         Player.settle();
         Items.pickUp(taken);
         Monsters.think(monsters, shots, ceilings, frame);
-        int building = Clock.micros();
+        int building = CLOCK.micros();
         Renderer.build(lines, clips, depths, stack, ceilings, monsters, shots, taken);
-        int presenting = Clock.micros();
+        int presenting = CLOCK.micros();
         DisplayList.present(lines, changes);
-        FrameStats.record(started, building, presenting, Clock.micros());
+        FrameStats.record(started, building, presenting, CLOCK.micros());
         if ((frame & 3) == 0) {
             Hud.drawStatus();
         }
         if (Campaign.mapWon(monsters)) {
-            elapsedMillis = Clock.millis() - mapStarted;
+            elapsedMillis = CLOCK.millis() - mapStarted;
             return WON;
         }
         if (Player.health == 0) {
@@ -164,7 +168,7 @@ public final class DoomEngine {
     }
 
     private int pause() {
-        int pausedAt = Clock.millis();
+        int pausedAt = CLOCK.millis();
         if (Interludes.paused()) {
             return QUIT;
         }
@@ -172,7 +176,7 @@ public final class DoomEngine {
         FrameStats.reset();
         Hud.drawBar();
         DisplayList.clearView();
-        mapStarted = mapStarted + Clock.millis() - pausedAt;
+        mapStarted = mapStarted + CLOCK.millis() - pausedAt;
         return PLAYING;
     }
 

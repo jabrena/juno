@@ -1,30 +1,45 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
-/** Shared allocation-free one-wire reader for DHT-family Grove modules. */
+/**
+ * Allocation-free one-wire reader for DHT-family Grove modules. It drives the signal pin through its {@link Gpio} and
+ * times the sensor's pulses with its {@link Clock}, so a unit test can hand it a mocked or simulated pair of each.
+ * Create one at startup; {@link #read} allocates nothing.
+ */
 final class GroveDhtProtocol {
-    static final int FRAME_LENGTH = 5;
-
+    private static final int FRAME_LENGTH = 5;
     private static final int RESPONSE_TIMEOUT_MICROS = 100;
     private static final int BIT_ONE_THRESHOLD_MICROS = 50;
     private static final int START_LOW_MILLIS = 20;
     private static final int START_RELEASE_MICROS = 40;
 
-    private GroveDhtProtocol() {
+    private final Gpio gpio;
+    private final Clock clock;
+
+    /** A reader on the board's own pins and timer. */
+    GroveDhtProtocol() {
+        this(MCU.getGpio(), MCU.getClock());
     }
 
-    static boolean read(int signalPin, int[] frame, int frameLength) {
+    /** A reader on {@code gpio} and {@code clock}: mocked or simulated ones in a unit test. */
+    GroveDhtProtocol(Gpio gpio, Clock clock) {
+        this.gpio = gpio;
+        this.clock = clock;
+    }
+
+    boolean read(int signalPin, int[] frame, int frameLength) {
         if (frameLength < FRAME_LENGTH || frameLength > frame.length) {
             throw new IllegalArgumentException("frameLength must be at least 5 and fit frame");
         }
 
-        Gpio.pinMode(signalPin, Gpio.OUTPUT);
-        Gpio.digitalWrite(signalPin, false);
+        gpio.pinMode(signalPin, Gpio.getOutput());
+        gpio.digitalWrite(signalPin, false);
         Delay.millis(START_LOW_MILLIS);
-        Gpio.pinMode(signalPin, Gpio.INPUT_PULLUP);
+        gpio.pinMode(signalPin, Gpio.getInputPullup());
         Delay.micros(START_RELEASE_MICROS);
 
         if (!waitForLevel(signalPin, false) || !waitForLevel(signalPin, true)
@@ -41,11 +56,11 @@ final class GroveDhtProtocol {
             if (!waitForLevel(signalPin, true)) {
                 return false;
             }
-            int highStarted = Clock.micros();
+            int highStarted = clock.micros();
             if (!waitForLevel(signalPin, false)) {
                 return false;
             }
-            int pulseMicros = Clock.micros() - highStarted;
+            int pulseMicros = clock.micros() - highStarted;
             if (pulseMicros >= BIT_ONE_THRESHOLD_MICROS) {
                 int mask = 1 << (7 - (bit & 7));
                 switch (bit >>> 3) {
@@ -66,10 +81,10 @@ final class GroveDhtProtocol {
         return ((byte0 + byte1 + byte2 + byte3) & 0xFF) == checksum;
     }
 
-    private static boolean waitForLevel(int pin, boolean high) {
-        int started = Clock.micros();
-        while (Gpio.digitalRead(pin) != high) {
-            if (Clock.micros() - started >= RESPONSE_TIMEOUT_MICROS) {
+    private boolean waitForLevel(int pin, boolean high) {
+        int started = clock.micros();
+        while (gpio.digitalRead(pin) != high) {
+            if (clock.micros() - started >= RESPONSE_TIMEOUT_MICROS) {
                 return false;
             }
         }

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
 import io.github.jabrena.juno.api.time.Clock;
 
@@ -14,8 +15,8 @@ import io.github.jabrena.juno.api.time.Clock;
  * 16 KB image takes about three minutes at 2400 baud.
  */
 public final class RcxFirmware {
-    private RcxFirmware() {
-    }
+    private final RcxLink link;
+    private final Clock clock;
 
     /** The largest block {@link #transfer} sends. */
     public static final int BLOCK_SIZE = 200;
@@ -37,17 +38,33 @@ public final class RcxFirmware {
     private static final int TRANSFER_REPLY_MILLIS = 500;
     private static final int UNLOCK_MILLIS = 1000;
 
-    private static int frameSum;
-    private static boolean toggle;
-    private static int lastTransferIndex = -1;
-    private static int transferCode;
+    private int frameSum;
+    private boolean toggle;
+    private int lastTransferIndex = -1;
+    private int transferCode;
+
+    /** A firmware loader on the board's own infrared link and timer. Create it once, at startup. */
+    public RcxFirmware() {
+        this(new RcxLink(), MCU.getClock());
+    }
+
+    /** A firmware loader on a link shared with other RCX classes, so they share one toggle bit. */
+    public RcxFirmware(RcxLink link) {
+        this(link, MCU.getClock());
+    }
+
+    /** A firmware loader on {@code link}, timing its waits on {@code clock}: a simulated clock in a unit test. */
+    public RcxFirmware(RcxLink link, Clock clock) {
+        this.link = link;
+        this.clock = clock;
+    }
 
     /**
      * Asks the brick for its versions: {@code 1} when it runs firmware, {@code 0} when only its boot ROM runs (so
      * it ignores motor, sensor and sound commands until firmware is loaded), or {@link #NO_REPLY}. The boot ROM
      * answers this too, so it tells a brick without firmware from one out of range.
      */
-    public static int installed() {
+    public int installed() {
         for (int attempt = 0; attempt < RETRIES; attempt++) {
             beginFrame(toggled(OPCODE_VERSIONS));
             sendPair(1);
@@ -56,8 +73,8 @@ public final class RcxFirmware {
             sendPair(7);
             sendPair(11);
             endFrame();
-            if (RcxLink.awaitReply(OPCODE_VERSIONS, REPLY_MILLIS) >= 8) {
-                int firmware = RcxLink.argument(4) | RcxLink.argument(5) | RcxLink.argument(6) | RcxLink.argument(7);
+            if (link.awaitReply(OPCODE_VERSIONS, REPLY_MILLIS) >= 8) {
+                int firmware = link.argument(4) | link.argument(5) | link.argument(6) | link.argument(7);
                 return firmware != 0 ? 1 : 0;
             }
         }
@@ -65,7 +82,7 @@ public final class RcxFirmware {
     }
 
     /** Deletes the firmware the brick holds, if any. Returns whether the brick acknowledged. */
-    public static boolean delete() {
+    public boolean delete() {
         for (int attempt = 0; attempt < RETRIES; attempt++) {
             beginFrame(toggled(OPCODE_DELETE));
             sendPair(1);
@@ -74,7 +91,7 @@ public final class RcxFirmware {
             sendPair(7);
             sendPair(11);
             endFrame();
-            if (RcxLink.awaitReply(OPCODE_DELETE, REPLY_MILLIS) >= 0) {
+            if (link.awaitReply(OPCODE_DELETE, REPLY_MILLIS) >= 0) {
                 return true;
             }
         }
@@ -85,7 +102,7 @@ public final class RcxFirmware {
      * Announces an image that will run from {@code entryAddress}, whose bytes below {@link #CHECKSUM_END} add
      * up to {@code checksum} (modulo 65536). Returns whether the brick acknowledged.
      */
-    public static boolean start(int entryAddress, int checksum) {
+    public boolean start(int entryAddress, int checksum) {
         for (int attempt = 0; attempt < RETRIES; attempt++) {
             beginFrame(toggled(OPCODE_START));
             sendPair(entryAddress & 0xFF);
@@ -94,7 +111,7 @@ public final class RcxFirmware {
             sendPair((checksum >> 8) & 0xFF);
             sendPair(0);
             endFrame();
-            if (RcxLink.awaitReply(OPCODE_START, REPLY_MILLIS) == 1 && RcxLink.argument0 == 0) {
+            if (link.awaitReply(OPCODE_START, REPLY_MILLIS) == 1 && link.argument0 == 0) {
                 lastTransferIndex = -1;
                 return true;
             }
@@ -110,7 +127,7 @@ public final class RcxFirmware {
      * missing replies require restarting the download, never assuming the block was stored. Use index {@code 0}
      * for the final block; it finalizes the image checksum and cannot be retransmitted.
      */
-    public static int transfer(int index, byte[] block, int length) {
+    public int transfer(int index, byte[] block, int length) {
         if (index != lastTransferIndex) {
             transferCode = toggled(OPCODE_TRANSFER);
             lastTransferIndex = index;
@@ -128,10 +145,10 @@ public final class RcxFirmware {
         }
         sendPair(blockSum & 0xFF);
         endFrame();
-        if (RcxLink.awaitReply(OPCODE_TRANSFER, TRANSFER_REPLY_MILLIS) < 1) {
+        if (link.awaitReply(OPCODE_TRANSFER, TRANSFER_REPLY_MILLIS) < 1) {
             return NO_REPLY;
         }
-        return RcxLink.argument0;
+        return link.argument0;
     }
 
     /**
@@ -139,7 +156,7 @@ public final class RcxFirmware {
      * receiver does not decode, so the call only reports whether any answer arrived; that the firmware runs shows
      * on the brick's display (program {@code 1}) and in {@link RcxBrick} commands being acknowledged.
      */
-    public static boolean unlock() {
+    public boolean unlock() {
         beginFrame(toggled(OPCODE_UNLOCK));
         sendPair('L');
         sendPair('E');
@@ -147,8 +164,8 @@ public final class RcxFirmware {
         sendPair('O');
         sendPair(0xAE);
         endFrame();
-        int started = Clock.millis();
-        while (Clock.millis() - started < UNLOCK_MILLIS) {
+        int started = clock.millis();
+        while (clock.millis() - started < UNLOCK_MILLIS) {
             if (Infrared.receiving()) {
                 return true;
             }
@@ -160,12 +177,12 @@ public final class RcxFirmware {
      * The opcode with its toggle bit flipped from the last message: the brick ignores a message whose opcode
      * equals the previous one as a repeat, so a retry after a lost reply must differ.
      */
-    private static int toggled(int opcode) {
+    private int toggled(int opcode) {
         toggle = !toggle;
         return toggle ? opcode | OPCODE_TOGGLE : opcode;
     }
 
-    private static void beginFrame(int code) {
+    private void beginFrame(int code) {
         Infrared.writeByte(0x55);
         Infrared.writeByte(0xFF);
         Infrared.writeByte(0x00);
@@ -173,13 +190,13 @@ public final class RcxFirmware {
         sendPair(code);
     }
 
-    private static void sendPair(int value) {
+    private void sendPair(int value) {
         frameSum += value;
         Infrared.writeByte(value);
         Infrared.writeByte(~value & 0xFF);
     }
 
-    private static void endFrame() {
+    private void endFrame() {
         int sum = frameSum & 0xFF;
         Infrared.writeByte(sum);
         Infrared.writeByte(~sum & 0xFF);

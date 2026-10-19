@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
 import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.testing.SimulatedTime;
 import io.github.jabrena.juno.api.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,12 +14,18 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 @DisplayName("Grove DHT22 temperature and humidity sensor")
 class GroveDht22Test {
+    private Gpio pins;
+    private GroveDht22 dht22;
+
     @BeforeEach
-    void startAtTimeZero() {
+    void startAtTimeZeroWithAMockedSensor() {
         Wire.resetBoard();
+        pins = mock(Gpio.class);
+        dht22 = new GroveDht22(pins, SimulatedTime.clock());
     }
 
     static Stream<Arguments> invalidFrames() {
@@ -34,12 +41,12 @@ class GroveDht22Test {
     @DisplayName("Reads a checksum-valid frame from the wire")
     void shouldReadAChecksumValidFrameFromTheWire() {
         // Given
-        Wire.dhtReply(2, 120, 0, 242, 108).install();
+        Wire.dhtReply(2, 120, 0, 242, 108).install(pins);
         int[] reading = new int[2];
         int[] frame = new int[5];
 
         // When
-        boolean read = GroveDht22.read(Gpio.D2, reading, reading.length, frame, frame.length);
+        boolean read = dht22.read(Gpio.getD2(), reading, reading.length, frame, frame.length);
 
         // Then
         assertThat(read).isTrue();
@@ -50,12 +57,12 @@ class GroveDht22Test {
     @DisplayName("Keeps the previous reading when the sensor stays silent")
     void shouldKeepThePreviousReadingWhenTheSensorStaysSilent() {
         // Given
-        new Wire().hold(true, 20_040).hold(true, 400).install();
+        new Wire().hold(true, 20_040).hold(true, 400).install(pins);
         int[] reading = {42, 44};
         int[] frame = new int[5];
 
         // When
-        boolean read = GroveDht22.read(Gpio.D2, reading, reading.length, frame, frame.length);
+        boolean read = dht22.read(Gpio.getD2(), reading, reading.length, frame, frame.length);
 
         // Then
         assertThat(read).isFalse();
@@ -70,7 +77,7 @@ class GroveDht22Test {
         int[] reading = {42, 44};
 
         // When
-        boolean decoded = GroveDht22.decode(frame, frame.length, reading, reading.length);
+        boolean decoded = dht22.decode(frame, frame.length, reading, reading.length);
 
         // Then
         assertThat(decoded).isFalse();
@@ -84,7 +91,7 @@ class GroveDht22Test {
         int[] reading = new int[2];
 
         // When & Then
-        assertThatThrownBy(() -> GroveDht22.decode(new int[5], 4, reading, reading.length))
+        assertThatThrownBy(() -> dht22.decode(new int[5], 4, reading, reading.length))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -106,7 +113,7 @@ class GroveDht22Test {
     @DisplayName("Rejects a reading buffer that is too short")
     void shouldRejectAReadingBufferThatIsTooShort() {
         // When & Then
-        assertThatThrownBy(() -> GroveDht22.read(2, new int[1], 1, new int[5], 5))
+        assertThatThrownBy(() -> dht22.read(2, new int[1], 1, new int[5], 5))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -114,7 +121,7 @@ class GroveDht22Test {
     @DisplayName("Rejects a frame buffer that is too short")
     void shouldRejectAFrameBufferThatIsTooShort() {
         // When & Then
-        assertThatThrownBy(() -> GroveDht22.read(2, new int[2], 2, new int[4], 4))
+        assertThatThrownBy(() -> dht22.read(2, new int[2], 2, new int[4], 4))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -126,7 +133,7 @@ class GroveDht22Test {
         int[] reading = new int[2];
 
         // When
-        boolean decoded = GroveDht22.decode(frame, frame.length, reading, reading.length);
+        boolean decoded = dht22.decode(frame, frame.length, reading, reading.length);
 
         // Then
         assertThat(decoded).isTrue();
@@ -141,7 +148,7 @@ class GroveDht22Test {
         int[] reading = new int[2];
 
         // When
-        boolean decoded = GroveDht22.decode(frame, frame.length, reading, reading.length);
+        boolean decoded = dht22.decode(frame, frame.length, reading, reading.length);
 
         // Then
         assertThat(decoded).isTrue();

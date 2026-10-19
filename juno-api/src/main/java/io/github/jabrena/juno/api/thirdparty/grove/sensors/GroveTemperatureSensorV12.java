@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
 
@@ -15,12 +16,21 @@ public final class GroveTemperatureSensorV12 {
     private static final float KELVIN_TO_CELSIUS = 273.15f;
     private static final float NATURAL_LOG_TWO = 0.6931472f;
 
-    private GroveTemperatureSensorV12() {
+    private final Gpio gpio;
+
+    /** A sensor on the board's own pins. Create it once, at startup. */
+    public GroveTemperatureSensorV12() {
+        this(MCU.getGpio());
     }
 
-    /** Reads the raw ADC value from an analog socket such as {@link GroveBaseShield#A0}. */
-    public static int rawValue(int analogPin) {
-        return Gpio.analogRead(analogPin);
+    /** A sensor read through {@code gpio}: a mocked one in a unit test. */
+    public GroveTemperatureSensorV12(Gpio gpio) {
+        this.gpio = gpio;
+    }
+
+    /** Reads the raw ADC value from an analog socket such as {@link GroveBaseShield#getA0()}. */
+    public int rawValue(int analogPin) {
+        return gpio.analogRead(analogPin);
     }
 
     /**
@@ -28,12 +38,12 @@ public final class GroveTemperatureSensorV12 {
      * Returns {@link Float#NaN} when the ADC is at either rail, where the divider resistance is
      * undefined.
      */
-    public static float celsius(int analogPin) {
+    public float celsius(int analogPin) {
         return celsiusFromRaw(rawValue(analogPin));
     }
 
     /** Converts one previously sampled v1.2 ADC value to degrees Celsius. */
-    public static float celsiusFromRaw(int adcValue) {
+    public float celsiusFromRaw(int adcValue) {
         if (adcValue <= 0 || adcValue >= ADC_MAXIMUM) {
             return Float.NaN;
         }
@@ -43,7 +53,7 @@ public final class GroveTemperatureSensorV12 {
     }
 
     /* Natural log after range reduction to [1, 2); the odd-power series converges quickly there. */
-    private static float naturalLog(float value) {
+    private float naturalLog(float value) {
         int exponent = 0;
         while (value >= 2.0f) {
             value *= 0.5f;

@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -18,6 +20,8 @@ import io.github.jabrena.juno.api.util.Delay;
  * them on your hub. Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquarePoweredUpHubWithImu {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int LEFT = PoweredUpHubRemote.PORT_A;
     private static final int RIGHT = PoweredUpHubRemote.PORT_B;
     private static final int TILT = PoweredUpHubRemote.PORT_TECHNIC_TILT;
@@ -38,18 +42,18 @@ public class MagicSquarePoweredUpHubWithImu {
         MagicSquarePoweredUpHubWithImu app = new MagicSquarePoweredUpHubWithImu();
 
         while (true) {
-            if (!PoweredUpHubRemote.isConnected()) {
+            if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                PoweredUpHubRemote.connect(0);
-                PoweredUpHubRemote.enableSensor(TILT, PoweredUpHubRemote.MODE_IMU_VALUES);
+                HUB.connect(0);
+                HUB.enableSensor(TILT, PoweredUpHubRemote.MODE_IMU_VALUES);
                 app.waitForTilt();
             }
             Serial.println("Straight");
-            PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+            HUB.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
             app.drive(POWER, POWER, STRAIGHT_MILLIS);
             app.stop();
             Serial.println("Turn left");
-            PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
+            HUB.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
             app.turnLeft();
             app.stop();
         }
@@ -57,16 +61,16 @@ public class MagicSquarePoweredUpHubWithImu {
 
     /** Gives the hub a moment to send its first tilt report, so the yaw is not read as 0 before it exists. */
     private void waitForTilt() {
-        int started = Clock.millis();
-        while (PoweredUpHubRemote.sensorReportSize(TILT) < TILT_REPORT_BYTES
-                && Clock.millis() - started < SENSOR_WAIT_MILLIS) {
-            PoweredUpHubRemote.readSensor(TILT);
+        int started = CLOCK.millis();
+        while (HUB.sensorReportSize(TILT) < TILT_REPORT_BYTES
+                && CLOCK.millis() - started < SENSOR_WAIT_MILLIS) {
+            HUB.readSensor(TILT);
         }
     }
 
     /** The tilt sensor's yaw angle in degrees, {@code -180..180} (the first of its three values). */
     private int yaw() {
-        return PoweredUpHubRemote.readSensorValue(TILT, 0, VALUE_BYTES);
+        return HUB.readSensorValue(TILT, 0, VALUE_BYTES);
     }
 
     /** How many degrees the yaw has moved since {@code start}, as a signed angle {@code -180..180}. */
@@ -77,23 +81,23 @@ public class MagicSquarePoweredUpHubWithImu {
     /** Spins on the spot until the yaw has moved TURN_DEGREES either way, or the safety timeout. */
     private void turnLeft() {
         int startYaw = yaw();
-        PoweredUpHubRemote.setMotorPower(LEFT, -TURN_POWER);
-        PoweredUpHubRemote.setMotorPower(RIGHT, TURN_POWER);
-        int started = Clock.millis();
-        while (PoweredUpHubRemote.isConnected() && Math.abs(turnedSince(startYaw)) < TURN_DEGREES
-                && Clock.millis() - started < TURN_TIMEOUT_MILLIS) {
+        HUB.setMotorPower(LEFT, -TURN_POWER);
+        HUB.setMotorPower(RIGHT, TURN_POWER);
+        int started = CLOCK.millis();
+        while (HUB.isConnected() && Math.abs(turnedSince(startYaw)) < TURN_DEGREES
+                && CLOCK.millis() - started < TURN_TIMEOUT_MILLIS) {
         }
     }
 
     private void drive(int left, int right, int millis) {
-        PoweredUpHubRemote.setMotorPower(LEFT, left);
-        PoweredUpHubRemote.setMotorPower(RIGHT, right);
+        HUB.setMotorPower(LEFT, left);
+        HUB.setMotorPower(RIGHT, right);
         Delay.millis(millis);
     }
 
     private void stop() {
-        PoweredUpHubRemote.brakeMotor(LEFT);
-        PoweredUpHubRemote.brakeMotor(RIGHT);
+        HUB.brakeMotor(LEFT);
+        HUB.brakeMotor(RIGHT);
         Delay.millis(STOP_MILLIS);
     }
 }

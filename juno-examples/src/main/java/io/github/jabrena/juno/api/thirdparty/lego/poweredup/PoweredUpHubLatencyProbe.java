@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -19,6 +21,8 @@ import io.github.jabrena.juno.api.util.Delay;
  * under 50 ms. Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubLatencyProbe {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int LEFT = PoweredUpHubRemote.PORT_A;
     private static final int RIGHT = PoweredUpHubRemote.PORT_B;
     private static final int GYRO = PoweredUpHubRemote.PORT_TECHNIC_GYRO;
@@ -35,11 +39,11 @@ public class PoweredUpHubLatencyProbe {
         PoweredUpHubLatencyProbe app = new PoweredUpHubLatencyProbe();
 
         while (true) {
-            if (!PoweredUpHubRemote.isConnected()) {
+            if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                PoweredUpHubRemote.connect(0);
-                PoweredUpHubRemote.enableSensor(GYRO, PoweredUpHubRemote.MODE_IMU_VALUES);
-                PoweredUpHubRemote.enableSensor(LEFT, PoweredUpHubRemote.MODE_MOTOR_POSITION);
+                HUB.connect(0);
+                HUB.enableSensor(GYRO, PoweredUpHubRemote.MODE_IMU_VALUES);
+                HUB.enableSensor(LEFT, PoweredUpHubRemote.MODE_MOTOR_POSITION);
                 Delay.millis(SENSOR_SETTLE_MILLIS);
             }
             app.measureReports();
@@ -50,41 +54,41 @@ public class PoweredUpHubLatencyProbe {
     }
 
     private void measureReports() {
-        int before = PoweredUpHubRemote.sensorReportCount(GYRO);
-        int started = Clock.millis();
-        while (Clock.millis() - started < REPORT_WINDOW_MILLIS) {
-            PoweredUpHubRemote.readSensor(GYRO);
+        int before = HUB.sensorReportCount(GYRO);
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < REPORT_WINDOW_MILLIS) {
+            HUB.readSensor(GYRO);
         }
-        int elapsed = Clock.millis() - started;
-        int reports = PoweredUpHubRemote.sensorReportCount(GYRO) - before;
+        int elapsed = CLOCK.millis() - started;
+        int reports = HUB.sensorReportCount(GYRO) - before;
         Serial.println("Gyro reports: " + reports * 1000 / elapsed + " per second");
     }
 
     private void measureCommands() {
-        int pair = PoweredUpHubRemote.linkMotors(LEFT, RIGHT);
+        int pair = HUB.linkMotors(LEFT, RIGHT);
         if (pair < 0) {
             Serial.println("Could not pair motors A and B");
             return;
         }
-        int started = Clock.micros();
+        int started = CLOCK.micros();
         for (int command = 0; command < COMMANDS; command++) {
-            PoweredUpHubRemote.setLinkedMotorPower(pair, 0, 0);
+            HUB.setLinkedMotorPower(pair, 0, 0);
         }
-        int perCommand = (Clock.micros() - started) / COMMANDS;
+        int perCommand = (CLOCK.micros() - started) / COMMANDS;
         Serial.println("Motor command: " + perCommand + " us each, " + 1000000 / Math.max(perCommand, 1) + " per second");
     }
 
     private void measureMotion() {
-        int rest = PoweredUpHubRemote.readSensor(LEFT);
-        int started = Clock.millis();
-        PoweredUpHubRemote.setMotorPower(LEFT, MOTOR_POWER);
+        int rest = HUB.readSensor(LEFT);
+        int started = CLOCK.millis();
+        HUB.setMotorPower(LEFT, MOTOR_POWER);
         int moved = -1;
-        while (moved < 0 && Clock.millis() - started < MOTION_TIMEOUT_MILLIS) {
-            if (Math.abs(PoweredUpHubRemote.readSensor(LEFT) - rest) >= MOTION_DEGREES) {
-                moved = Clock.millis() - started;
+        while (moved < 0 && CLOCK.millis() - started < MOTION_TIMEOUT_MILLIS) {
+            if (Math.abs(HUB.readSensor(LEFT) - rest) >= MOTION_DEGREES) {
+                moved = CLOCK.millis() - started;
             }
         }
-        PoweredUpHubRemote.brakeMotor(LEFT);
+        HUB.brakeMotor(LEFT);
         Serial.println(moved < 0 ? "Motor A did not move: is a tacho motor on port A?"
                 : "Motor A started moving after " + moved + " ms");
     }

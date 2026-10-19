@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.pf;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -14,6 +16,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * vehicle. Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquarePowerFunctions {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final int CHANNEL = PowerFunctionsRemote.CHANNEL_1;
     private static final int SPEED = 5;
@@ -38,8 +41,8 @@ public class MagicSquarePowerFunctions {
 
     /** Repeats the command, as a receiver stops a motor about a second after the last one it heard. */
     private void drive(int left, int right, int millis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < millis) {
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < millis) {
             PowerFunctionsRemote.setSpeeds(CHANNEL, left, right);
         }
     }

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.net;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.http.HttpMethod;
 import io.github.jabrena.juno.api.net.http.HttpServer;
@@ -29,6 +30,9 @@ import io.github.jabrena.juno.api.util.Delay;
  * unencrypted; on UNO R4 WiFi the access point's own WPA2 passphrase is what protects it.
  */
 public final class WifiProvisioner {
+    /** The clock this class reads; a unit test in this package swaps in {@code mock}. */
+    static Clock clock = MCU.getClock();
+
     private static final int CONNECT_TIMEOUT_MS = 15000;
     private static final int MAX_FIELD = 31;
 
@@ -107,8 +111,8 @@ public final class WifiProvisioner {
         }
 
         Wifi.begin(ssid.toString(), password.toString());
-        int deadline = Clock.millis() + CONNECT_TIMEOUT_MS;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && Clock.millis() < deadline) {
+        int deadline = clock.millis() + CONNECT_TIMEOUT_MS;
+        while (Wifi.status() != Wifi.STATUS_CONNECTED && clock.millis() < deadline) {
             Delay.millis(250);
         }
         if (Wifi.status() != Wifi.STATUS_CONNECTED) {

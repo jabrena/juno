@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.time.Clock;
@@ -19,6 +21,7 @@ import io.github.jabrena.juno.usecases.miner.commons.Miner2State;
  * rest of the frame to the views and the network.
  */
 final class MiningService {
+    private static final Clock CLOCK = MCU.getClock();
     /** Nonces tried between two looks at the clock. */
     static final int SLICE = 32;
     /** How long one step mines; the frame is a little longer. */
@@ -45,7 +48,7 @@ final class MiningService {
     }
 
     void step() {
-        int start = Clock.millis();
+        int start = CLOCK.millis();
         // Peers that announced more work than our tip holds: wait for that chain instead of mining a rival.
         boolean behind = model.peers().bestWork(start) > pool.work(pool.tip());
         boolean waiting = gate.shouldWait(behind, pool.tipChanges(), start);
@@ -77,7 +80,7 @@ final class MiningService {
                 publish();
                 return;
             }
-        } while (Clock.millis() - start < BUDGET_MILLIS);
+        } while (CLOCK.millis() - start < BUDGET_MILLIS);
     }
 
     /** Adds the block just mined to the pool and, as it is the new tip, broadcasts it. */
@@ -97,7 +100,7 @@ final class MiningService {
 
     /** Network time in seconds: this board's uptime, moved forward to never lag the chain's tip. */
     private int now() {
-        return Clock.millis() / 1000 + clockOffset;
+        return CLOCK.millis() / 1000 + clockOffset;
     }
 
     private void followNetworkTime(int tipTime) {

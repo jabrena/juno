@@ -2,15 +2,13 @@ package io.github.jabrena.juno.games.texasholdem;
 
 import io.github.jabrena.juno.api.util.Random;
 
-import static io.github.jabrena.juno.games.texasholdem.CardsRenderer.*;
-import static io.github.jabrena.juno.games.texasholdem.Controls.*;
-import static io.github.jabrena.juno.games.texasholdem.Deck.*;
-import static io.github.jabrena.juno.games.texasholdem.HandEvaluator.*;
-import static io.github.jabrena.juno.games.texasholdem.Players.*;
-import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.*;
-import static io.github.jabrena.juno.games.texasholdem.SuitSprites.*;
-import static io.github.jabrena.juno.games.texasholdem.Table.*;
-import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.*;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.CHIPS;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.DECK;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.OUT;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.SEATS;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.STATE;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.TOTAL;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.deckPosition;
 
 final class Deck {
     private Deck() {

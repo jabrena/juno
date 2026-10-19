@@ -1,14 +1,11 @@
 package io.github.jabrena.juno.games.texasholdem;
 
-import static io.github.jabrena.juno.games.texasholdem.CardsRenderer.*;
-import static io.github.jabrena.juno.games.texasholdem.Controls.*;
-import static io.github.jabrena.juno.games.texasholdem.Deck.*;
-import static io.github.jabrena.juno.games.texasholdem.HandEvaluator.*;
-import static io.github.jabrena.juno.games.texasholdem.Players.*;
-import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.*;
-import static io.github.jabrena.juno.games.texasholdem.SuitSprites.*;
-import static io.github.jabrena.juno.games.texasholdem.Table.*;
-import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.*;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.BOARD;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.CATEGORY;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.COUNTS;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.HAND;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.HOLE;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.SUITS;
 
 final class HandEvaluator {
     private HandEvaluator() {

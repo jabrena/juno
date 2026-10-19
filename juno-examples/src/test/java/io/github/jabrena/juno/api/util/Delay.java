@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.api.util;
 
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.time.SimulatedClock;
 
 /**
  * Test double shadowing the {@code juno} artifact's native {@code Delay}: waiting advances
- * {@link Clock}'s simulated time instantly and then runs {@link #afterAdvance}, which the TFT
+ * {@link SimulatedClock}'s simulated time instantly and then runs {@link #afterAdvance}, which the TFT
  * emulator uses to script touches and to stop a program at a chosen moment.
  *
  * <p>Simulated time belongs to the program's main thread. On the board, virtual threads take turns on one core and share
@@ -26,7 +26,7 @@ public final class Delay {
             pauseVirtualThread();
             return;
         }
-        Clock.advance(milliseconds);
+        SimulatedClock.advance(milliseconds);
         afterAdvance.run();
     }
 
@@ -41,7 +41,7 @@ public final class Delay {
     public static void micros(int microseconds) {
         pendingMicros = pendingMicros + microseconds;
         if (pendingMicros >= 1000) {
-            Clock.advance(pendingMicros / 1000);
+            SimulatedClock.advance(pendingMicros / 1000);
             pendingMicros = pendingMicros % 1000;
             afterAdvance.run();
         }

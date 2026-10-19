@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Powered Up hub version word")
 class PoweredUpHubRemoteTest {
+    private final PoweredUpHubRemote hub = new PoweredUpHubRemote();
 
     @Test
     @DisplayName("Unpacks major, minor, BCD bug-fix and build from a version word")
@@ -16,10 +17,10 @@ class PoweredUpHubRemoteTest {
 
         // When
         int[] parts = {
-                PoweredUpHubRemote.versionMajor(version),
-                PoweredUpHubRemote.versionMinor(version),
-                PoweredUpHubRemote.versionBugfix(version),
-                PoweredUpHubRemote.versionBuild(version)};
+                hub.versionMajor(version),
+                hub.versionMinor(version),
+                hub.versionBugfix(version),
+                hub.versionBuild(version)};
 
         // Then
         assertThat(parts)
@@ -32,10 +33,10 @@ class PoweredUpHubRemoteTest {
     void shouldHaveNoPartsWhenTheVersionIsZero() {
         // When
         int[] parts = {
-                PoweredUpHubRemote.versionMajor(0),
-                PoweredUpHubRemote.versionMinor(0),
-                PoweredUpHubRemote.versionBugfix(0),
-                PoweredUpHubRemote.versionBuild(0)};
+                hub.versionMajor(0),
+                hub.versionMinor(0),
+                hub.versionBugfix(0),
+                hub.versionBuild(0)};
 
         // Then
         assertThat(parts).containsOnly(0);

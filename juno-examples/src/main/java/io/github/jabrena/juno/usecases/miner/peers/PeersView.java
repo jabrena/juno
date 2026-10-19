@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.peers;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -18,6 +20,7 @@ import io.github.jabrena.juno.usecases.miner.services.NodeService;
  * only when what it shows changes; a peer moves from alive to suspect on its own, as heartbeats stop arriving.
  */
 public final class PeersView implements View {
+    private static final Clock CLOCK = MCU.getClock();
     /** The status row of the first peer slot; the slots take the rows below it. */
     static final int FIRST_PEER_ROW = 2;
 
@@ -54,7 +57,7 @@ public final class PeersView implements View {
     public void render() {
         header.render();
         PeerTable peers = model.peers();
-        int now = Clock.millis();
+        int now = CLOCK.millis();
         boolean none = true;
         for (int slot = 0; slot < PeerTable.CAPACITY; slot++) {
             int state = peers.state(slot, now);

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.optimize;
 
+
 import io.github.jabrena.juno.CompilerTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ class InliningAndScalarReplacementTest {
         // Given
         String assembly = compile("""
                 static int clamp(int value) { return value < 0 ? 0 : value > 99 ? 99 : value; }
-                public static void main(String[] args) { Delay.millis(clamp(Gpio.analogRead(0))); }
+                public static void main(String[] args) { Delay.millis(clamp(Random.nextInt(1024))); }
                 """);
 
         // When & Then
@@ -33,7 +34,7 @@ class InliningAndScalarReplacementTest {
     void shouldKeepACallToAMethodThatCallsSomethingElse() throws Exception {
         // Given
         String assembly = compile("""
-                static void blink(int pin) { Gpio.digitalWrite(pin, true); Delay.millis(5); }
+                static void blink(int pin) { MCU.getGpio().digitalWrite(pin, true); Delay.millis(5); }
                 public static void main(String[] args) { blink(13); blink(12); }
                 """);
 
@@ -49,7 +50,7 @@ class InliningAndScalarReplacementTest {
                 static int mix(int a, int b) {
                     return (a * 3 + b) ^ (a >> 2) ^ (b << 5) ^ (a - b) ^ (a | b) ^ (a & 7) ^ (b % 11);
                 }
-                public static void main(String[] args) { Delay.millis(mix(Gpio.analogRead(0), Gpio.analogRead(1))); }
+                public static void main(String[] args) { Delay.millis(mix(Random.nextInt(1024), Random.nextInt(1024))); }
                 """);
 
         // When & Then
@@ -62,7 +63,7 @@ class InliningAndScalarReplacementTest {
         // Given
         String assembly = compile("""
                 static int low(long value) { return (int) value; }
-                public static void main(String[] args) { Delay.millis(low(Gpio.analogRead(0))); }
+                public static void main(String[] args) { Delay.millis(low(Random.nextInt(1024))); }
                 """);
 
         // When & Then
@@ -78,7 +79,7 @@ class InliningAndScalarReplacementTest {
                 public static void main(String[] args) {
                     int total = 0;
                     for (int i = 0; i < 10; i++) {
-                        Pair pair = new Pair(i, Gpio.analogRead(0));
+                        Pair pair = new Pair(i, Random.nextInt(1024));
                         total += pair.left() * pair.right();
                     }
                     Delay.millis(total);
@@ -97,7 +98,7 @@ class InliningAndScalarReplacementTest {
                 record Pair(int left, int right) {}
                 static Pair last;
                 public static void main(String[] args) {
-                    Pair pair = new Pair(1, Gpio.analogRead(0));
+                    Pair pair = new Pair(1, Random.nextInt(1024));
                     last = pair;
                     Delay.millis(pair.right());
                 }
@@ -114,7 +115,7 @@ class InliningAndScalarReplacementTest {
         String assembly = compile("""
                 static final class Holder { int value; }
                 static void fill(Holder holder) {
-                    holder.value = Gpio.analogRead(0);
+                    holder.value = Random.nextInt(1024);
                     Delay.millis(1);
                 }
                 public static void main(String[] args) {
@@ -131,8 +132,10 @@ class InliningAndScalarReplacementTest {
     private String compile(String members) throws Exception {
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.util.Delay;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.util.Random;
                 public final class Inlining {
                 %s
                 }

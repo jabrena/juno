@@ -63,6 +63,7 @@ sketch:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
@@ -79,6 +80,7 @@ Verify it with the real Arduino toolchain without touching a connected board:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
@@ -89,13 +91,14 @@ connected matching board:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
 If more than one matching board is connected, or a specific port is required, select it explicitly:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.port=/dev/cu.YOUR_PORT
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink -Djuno.port=/dev/cu.YOUR_PORT
 ```
 
 Uploading overwrites the board's current firmware. The built-in LED (pin 13) should then blink once
@@ -148,7 +151,7 @@ supported hook into TinyUSB's `tud_task()`.
 ### LED matrix examples
 
 Any of the `LedMatrix*` example classes (see the main README's Java API section for the full
-list) follow the same pattern as `Blink` above — override `juno.main`, for example
+list) follow the same pattern as `Blink` above — pass it as `juno.main`, for example
 `-Djuno.main=io.github.jabrena.juno.api.led.LedMatrixHeart`. They all draw on the UNO R4 WiFi's
 built-in 12x8 LED matrix.
 
@@ -316,7 +319,7 @@ register, so this doesn't run out of registers regardless of how large or branch
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 

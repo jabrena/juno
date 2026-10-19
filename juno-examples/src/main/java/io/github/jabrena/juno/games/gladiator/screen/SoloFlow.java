@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
@@ -13,6 +15,7 @@ import io.github.jabrena.juno.games.gladiator.view.ViewList;
 
 /** A complete local CPU-versus-CPU match using the selected player profile and a random opponent on an UNO Q. */
 public final class SoloFlow {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int FRAME_MILLIS = 40;
     private static final int SWING_FRAMES = 6;
     private static final int HURT_FRAMES = 4;
@@ -26,7 +29,7 @@ public final class SoloFlow {
         FighterProfile opponent = FighterProfile.randomOpponent(profile);
         SoloPresentation.showOpponent(list, wireframe, profile, opponent);
         SoloDuel duel = new SoloDuel(profile.behaviour(), profile.kind(), opponent.behaviour(), opponent.kind(),
-                Clock.millis());
+                CLOCK.millis());
         Report report = new Report(duel.coliseum());
         View view = new View(list, duel.coliseum(), report);
         Hud hud = new Hud(list);
@@ -35,16 +38,16 @@ public final class SoloFlow {
         int hurt = 0;
         int thrust = 0;
         boolean touching = true;
-        int next = Clock.millis();
+        int next = CLOCK.millis();
         int fpsSince = next;
         int frames = 0;
         hud.bar();
         while (true) {
-            while (Clock.millis() - next < 0) {
+            while (CLOCK.millis() - next < 0) {
                 Delay.millis(1);
             }
             next = next + FRAME_MILLIS;
-            int now = Clock.millis();
+            int now = CLOCK.millis();
             frames = frames + 1;
             if (now - fpsSince >= 1000) {
                 hud.fps(frames * 1000 / (now - fpsSince));

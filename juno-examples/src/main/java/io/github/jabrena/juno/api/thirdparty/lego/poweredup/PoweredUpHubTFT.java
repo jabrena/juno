@@ -1,11 +1,29 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 
-import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.*;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BOTTOM_HEIGHT;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BOTTOM_Y;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.CONNECT_MILLIS;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.CONTENT_HEIGHT;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.CONTENT_Y;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.HEADER_HEIGHT;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.MARGIN;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.PORTS;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.REFRESH_MILLIS;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.TAB_HEIGHT;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.TAB_WIDTH;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.TAB_Y;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.TOUCH_LOCKOUT_MILLIS;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.VIEW_INFO;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.VIEW_LED;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.VIEW_MOTORS;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.VIEW_PAIR;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.WIDTH;
 
 /**
  * A touch screen remote for a LEGO Powered Up hub (Technic Hub, Move Hub or City Hub), drawn on the
@@ -32,6 +50,8 @@ import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpStat
  * Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubTFT {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final Clock CLOCK = MCU.getClock();
 
     private final PoweredUpState s = new PoweredUpState();
 
@@ -42,15 +62,15 @@ public class PoweredUpHubTFT {
         PoweredUpHubTFT app = new PoweredUpHubTFT();
         app.drawScreen();
 
-        int lastTouch = Clock.millis();
-        int lastRefresh = Clock.millis();
+        int lastTouch = CLOCK.millis();
+        int lastRefresh = CLOCK.millis();
         while (true) {
-            if (TftTouchShield.readTouch() && Clock.millis() - lastTouch > TOUCH_LOCKOUT_MILLIS) {
-                lastTouch = Clock.millis();
+            if (TftTouchShield.readTouch() && CLOCK.millis() - lastTouch > TOUCH_LOCKOUT_MILLIS) {
+                lastTouch = CLOCK.millis();
                 app.onTouch(TftTouchShield.touchX(), TftTouchShield.touchY());
             }
-            if (Clock.millis() - lastRefresh > REFRESH_MILLIS) {
-                lastRefresh = Clock.millis();
+            if (CLOCK.millis() - lastRefresh > REFRESH_MILLIS) {
+                lastRefresh = CLOCK.millis();
                 app.checkLink();
                 app.refresh();
             }
@@ -62,7 +82,7 @@ public class PoweredUpHubTFT {
             toggleConnection();
         } else if (y >= TAB_Y && y < TAB_Y + TAB_HEIGHT) {
             selectView(x / TAB_WIDTH);
-        } else if (PoweredUpHubRemote.isConnected()) {
+        } else if (HUB.isConnected()) {
             if (s.view == VIEW_LED) {
                 PoweredUpLed.onTouch(s, x, y);
             } else if (s.view == VIEW_MOTORS) {
@@ -83,13 +103,13 @@ public class PoweredUpHubTFT {
     }
 
     private void toggleConnection() {
-        if (PoweredUpHubRemote.isConnected()) {
-            PoweredUpHubRemote.disconnect();
+        if (HUB.isConnected()) {
+            HUB.disconnect();
             Serial.println("Disconnected");
             linkLost();
         } else {
             PoweredUpUi.drawStatus("Scanning...", TftTouchShield.YELLOW);
-            if (PoweredUpHubRemote.connect(CONNECT_MILLIS)) {
+            if (HUB.connect(CONNECT_MILLIS)) {
                 onConnected();
             } else {
                 Serial.println("No hub found");
@@ -100,18 +120,18 @@ public class PoweredUpHubTFT {
 
     private void onConnected() {
         Serial.println("Connected");
-        s.hubType = PoweredUpHubRemote.hubType();
+        s.hubType = HUB.hubType();
         resetPorts();
         if (s.hubType == PoweredUpHubRemote.TYPE_TECHNIC_HUB) {
-            PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_TILT, PoweredUpHubRemote.MODE_IMU_VALUES);
+            HUB.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_TILT, PoweredUpHubRemote.MODE_IMU_VALUES);
         }
-        PoweredUpHubRemote.setLedColor(PoweredUpLed.LED_COLORS[s.ledIndex]);
+        HUB.setLedColor(PoweredUpLed.LED_COLORS[s.ledIndex]);
         drawScreen();
     }
 
     /** If the hub went away on its own, show it the same way as a disconnect. */
     private void checkLink() {
-        if (s.hubType != 0 && !PoweredUpHubRemote.isConnected()) {
+        if (s.hubType != 0 && !HUB.isConnected()) {
             Serial.println("Link lost");
             linkLost();
         }
@@ -144,13 +164,13 @@ public class PoweredUpHubTFT {
     private boolean detectDevices() {
         boolean changed = false;
         for (int port = 0; port < PORTS; port++) {
-            int type = PoweredUpHubRemote.portDevice(port);
+            int type = HUB.portDevice(port);
             if (type != s.device[port]) {
                 s.device[port] = type;
                 s.power[port] = 0;
                 s.zero[port] = 0;
                 if (PoweredUpUi.isMotor(type)) {
-                    PoweredUpHubRemote.enableSensor(port, PoweredUpHubRemote.MODE_MOTOR_POSITION);
+                    HUB.enableSensor(port, PoweredUpHubRemote.MODE_MOTOR_POSITION);
                 }
                 changed = true;
             }
@@ -168,7 +188,7 @@ public class PoweredUpHubTFT {
         TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
         TftTouchShield.setCursor(MARGIN, 4);
         TftTouchShield.print("Powered Up");
-        boolean connected = PoweredUpHubRemote.isConnected();
+        boolean connected = HUB.isConnected();
         PoweredUpUi.drawStatus(connected ? "Connected" : "Not connected",
                 connected ? TftTouchShield.GREEN : TftTouchShield.RED);
         PoweredUpUi.drawTabs(s);
@@ -179,7 +199,7 @@ public class PoweredUpHubTFT {
     /** Clears the area between the tabs and the connect button and draws the selected view. */
     private void drawContent() {
         TftTouchShield.fillRect(0, CONTENT_Y, WIDTH, CONTENT_HEIGHT, TftTouchShield.BLACK);
-        if (!PoweredUpHubRemote.isConnected()) {
+        if (!HUB.isConnected()) {
             TftTouchShield.setTextSize(2);
             TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
             TftTouchShield.setCursor(MARGIN, CONTENT_Y + 8);
@@ -198,7 +218,7 @@ public class PoweredUpHubTFT {
 
     /** Redraws only what changes by itself: the info values or the tacho values. */
     private void refresh() {
-        if (!PoweredUpHubRemote.isConnected()) {
+        if (!HUB.isConnected()) {
             return;
         }
         boolean changed = detectDevices();

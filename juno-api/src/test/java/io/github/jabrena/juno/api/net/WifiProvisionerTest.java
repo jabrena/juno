@@ -3,8 +3,8 @@ package io.github.jabrena.juno.api.net;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.http.HttpMethod;
 import io.github.jabrena.juno.api.net.http.HttpServer;
+import io.github.jabrena.juno.api.testing.SimulatedTime;
 import io.github.jabrena.juno.api.testing.Wire;
-import io.github.jabrena.juno.api.time.Clock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +18,7 @@ class WifiProvisionerTest {
     @BeforeEach
     void startWithAnIdleBoard() {
         Wire.resetBoard();
+        WifiProvisioner.clock = SimulatedTime.clock();
         Wifi.reset();
         HttpServer.reset();
         Serial.reset();
@@ -208,7 +209,7 @@ class WifiProvisionerTest {
         WifiProvisioner.run("Juno-Setup", "juno1234");
 
         // Then
-        assertThat(Clock.now).as("one 200 ms wait: the loop reads the status twice per pass, so both warm-up reads take one pass")
+        assertThat(SimulatedTime.now).as("one 200 ms wait: the loop reads the status twice per pass, so both warm-up reads take one pass")
                 .isEqualTo(200_000);
     }
 

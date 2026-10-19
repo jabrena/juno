@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.maven;
 
+import io.github.jabrena.juno.maven.fixture.TinyProgramClasspath;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +32,7 @@ class UploadMojoTest extends AbstractMojoTestCase {
                 .set("mainClass", "io.github.jabrena.juno.maven.fixture.TinyProgram")
                 .set("board", "arduino-uno-r4-wifi")
                 .set("outputDirectory", "target/juno-mojo-test/upload")
-                .list("classpathElements", "classpathElement", "target/test-classes")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
                 .build());
         mojo.setLog(new RecordingLog());
         FakeExecutor executor = new FakeExecutor()

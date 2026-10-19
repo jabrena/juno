@@ -10,7 +10,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static io.github.jabrena.juno.bytecode.Opcodes.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.CHECKCAST;
+import static io.github.jabrena.juno.bytecode.Opcodes.GETSTATIC;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEDYNAMIC;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEINTERFACE;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEVIRTUAL;
+import static io.github.jabrena.juno.bytecode.Opcodes.MONITORENTER;
+import static io.github.jabrena.juno.bytecode.Opcodes.MONITOREXIT;
+import static io.github.jabrena.juno.bytecode.Opcodes.NEW;
+import static io.github.jabrena.juno.bytecode.Opcodes.PUTFIELD;
 
 /**
  * Lowers one method: walks its basic blocks and hands each instruction to the lowering its {@link OpcodeTable}

@@ -9,11 +9,12 @@ public final class NineAxisMotionShieldApi {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
 
-        NineAxisMotionShield.begin();
+        NineAxisMotionShield imu = new NineAxisMotionShield();
+        imu.begin();
 
-        Serial.println(NineAxisMotionShield.headingDegrees());
-        Serial.println(NineAxisMotionShield.pitchRaw());
-        Serial.println(NineAxisMotionShield.gyroXRaw());
-        Serial.println(NineAxisMotionShield.calibration());
+        Serial.println(imu.headingDegrees());
+        Serial.println(imu.pitchRaw());
+        Serial.println(imu.gyroXRaw());
+        Serial.println(imu.calibration());
     }
 }

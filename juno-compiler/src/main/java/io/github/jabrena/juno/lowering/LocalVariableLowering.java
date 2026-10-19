@@ -4,7 +4,37 @@ import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
 
-import static io.github.jabrena.juno.bytecode.Opcodes.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.ALOAD;
+import static io.github.jabrena.juno.bytecode.Opcodes.ALOAD_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.ALOAD_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.ASTORE;
+import static io.github.jabrena.juno.bytecode.Opcodes.ASTORE_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.ASTORE_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.DLOAD;
+import static io.github.jabrena.juno.bytecode.Opcodes.DLOAD_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.DLOAD_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.DSTORE;
+import static io.github.jabrena.juno.bytecode.Opcodes.DSTORE_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.DSTORE_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.FLOAD;
+import static io.github.jabrena.juno.bytecode.Opcodes.FLOAD_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.FLOAD_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.FSTORE;
+import static io.github.jabrena.juno.bytecode.Opcodes.FSTORE_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.FSTORE_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.IINC;
+import static io.github.jabrena.juno.bytecode.Opcodes.ILOAD;
+import static io.github.jabrena.juno.bytecode.Opcodes.ILOAD_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.ILOAD_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.ISTORE;
+import static io.github.jabrena.juno.bytecode.Opcodes.ISTORE_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.ISTORE_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.LLOAD;
+import static io.github.jabrena.juno.bytecode.Opcodes.LLOAD_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.LLOAD_3;
+import static io.github.jabrena.juno.bytecode.Opcodes.LSTORE;
+import static io.github.jabrena.juno.bytecode.Opcodes.LSTORE_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.LSTORE_3;
 
 /** Local-variable loads and stores ({@code *load*}, {@code *store*}) and {@code iinc}. */
 final class LocalVariableLowering implements OpcodeGroup {

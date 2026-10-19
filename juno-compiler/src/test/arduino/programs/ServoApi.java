@@ -10,7 +10,7 @@ import io.github.jabrena.juno.api.thirdparty.servo.Servo;
 @Board(ArduinoUnoR4WiFi.class)
 public final class ServoApi {
     public static void main(String[] args) {
-        Servo servo = Servo.of(Gpio.D10);
+        Servo servo = Servo.of(Gpio.getD10());
         
         for (int angle = 0; angle <= 180; angle += 30) {
             servo.write(angle);

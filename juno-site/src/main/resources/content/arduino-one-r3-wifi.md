@@ -191,7 +191,7 @@ Operations that run out of memory panic loudly; they never return a wrong value.
 
 | Juno API or feature | UNO WiFi Rev2 | Notes |
 |---|---:|---|
-| `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | Yes | `Gpio.builtinLed()` is logical pin 25 |
+| `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | Yes | `getBuiltinLed()` is logical pin 25 |
 | `Serial` | Yes | |
 | `Wifi`, `Udp` | Yes | Through WiFiNINA |
 | `HttpClient` with `http://` URLs, `Json` | Yes | |

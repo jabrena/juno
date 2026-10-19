@@ -1,11 +1,14 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
 /** Touch input: steering, the three buttons, the header that hands the helm over, and the pilot screen. */
 final class Controls {
+    private static final Clock CLOCK = MCU.getClock();
     /** The HUMAN and CPU buttons of the pilot screen. */
     private static final int CHOICE_X = 20;
     private static final int CHOICE_Y = 104;
@@ -128,9 +131,9 @@ final class Controls {
 
     /** Waits for a tap, giving up and returning {@code false} if none arrives within {@code timeoutMillis}. */
     static boolean waitForTap(int timeoutMillis) {
-        int start = Clock.millis();
+        int start = CLOCK.millis();
         while (!TftTouchShield.readTouch()) {
-            if (Clock.millis() - start >= timeoutMillis) {
+            if (CLOCK.millis() - start >= timeoutMillis) {
                 return false;
             }
             Delay.millis(10);

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.ir;
 
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.testing.SimulatedTime;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * Test-only stand-in for the infrared UART intrinsic. Written bytes are recorded in {@link #written}; received bytes
- * come from {@link #replies}, and an empty queue times out, advancing the simulated {@link Clock} by the timeout.
+ * come from {@link #replies}, and an empty queue times out, advancing the simulated {@link SimulatedTime} clock by the timeout.
  * Carrier pulses from {@link #mark} and {@link #space} are recorded as positive and negative microseconds.
  */
 public final class Infrared {
@@ -42,10 +42,10 @@ public final class Infrared {
 
     public static int readByte(int timeoutMicros) {
         if (replies.isEmpty()) {
-            Clock.now += timeoutMicros;
+            SimulatedTime.now += timeoutMicros;
             return TIMEOUT;
         }
-        Clock.now++;
+        SimulatedTime.now++;
         return replies.poll();
     }
 

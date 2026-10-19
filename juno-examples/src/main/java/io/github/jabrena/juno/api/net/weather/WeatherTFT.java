@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.net.weather;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
@@ -38,6 +39,7 @@ import java.util.Properties;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class WeatherTFT {
+    private final Clock clock = MCU.getClock();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int REFRESH_MILLIS = 10 * 60 * 1000;
     private static final int RETRY_MILLIS = 60 * 1000;
@@ -48,21 +50,25 @@ public final class WeatherTFT {
     private static final int HTTP_STATUS_OK = 200;
 
     // Latest weather.
-    private static int temperature;
-    private static int humidity;
-    private static int windSpeed;
-    private static int condition;
-    private static boolean isDay;
+    private int temperature;
+    private int humidity;
+    private int windSpeed;
+    private int condition;
+    private boolean isDay;
 
     // Local time: seconds since the Unix epoch at the location, as of clockBaseMillis.
-    private static int clockBaseSeconds;
-    private static int clockBaseMillis;
-    private static boolean clockSet;
+    private int clockBaseSeconds;
+    private int clockBaseMillis;
+    private boolean clockSet;
 
     private WeatherTFT() {
     }
 
     public static void main(String[] args) throws IOException {
+        new WeatherTFT().run();
+    }
+
+    private void run() throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
@@ -105,7 +111,7 @@ public final class WeatherTFT {
         int shownDay = -1;
         boolean colonOn = false;
         while (true) {
-            int now = Clock.millis();
+            int now = clock.millis();
             boolean due = !haveWeather || now - lastFetchMillis >= REFRESH_MILLIS;
             if (!haveWeather && lastFetchMillis != 0 && now - lastFetchMillis < RETRY_MILLIS) {
                 due = false;
@@ -122,14 +128,14 @@ public final class WeatherTFT {
                 } else {
                     WeatherScreen.showStatus("Weather error     ");
                 }
-                lastFetchMillis = Clock.millis();
+                lastFetchMillis = clock.millis();
                 if (lastFetchMillis == 0) {
                     lastFetchMillis = 1;
                 }
             }
 
             if (clockSet) {
-                int localSeconds = clockBaseSeconds + (Clock.millis() - clockBaseMillis) / 1000;
+                int localSeconds = clockBaseSeconds + (clock.millis() - clockBaseMillis) / 1000;
                 int days = CivilCalendar.floorDiv(localSeconds, CivilCalendar.SECONDS_PER_DAY);
                 int secondOfDay = localSeconds - days * CivilCalendar.SECONDS_PER_DAY;
                 int minuteOfDay = secondOfDay / 60;
@@ -153,7 +159,7 @@ public final class WeatherTFT {
 
     // ---- Network ----
 
-    private static boolean connectWifi() throws IOException {
+    private boolean connectWifi() throws IOException {
         if (!SdCard.begin()) {
             Serial.println("SD card initialization failed");
             return false;
@@ -188,7 +194,7 @@ public final class WeatherTFT {
      * NUL-terminated public IP address ipinfo.io saw into {@code publicIp}. Returns the city's
      * length, or -1 on failure.
      */
-    private static int locate(byte[] response, byte[] headers, int[] statusAndHeaders,
+    private int locate(byte[] response, byte[] headers, int[] statusAndHeaders,
             byte[] city, byte[] location, byte[] publicIp) {
         int bodyLength = HttpClient.get("https://ipinfo.io/json", response, 1024,
                 headers, 512, statusAndHeaders);
@@ -225,7 +231,7 @@ public final class WeatherTFT {
      * Writes the Open-Meteo request path for the NUL-terminated {@code "lat,lon"} in
      * {@code location} into {@code path}, returning its length.
      */
-    private static int buildWeatherPath(byte[] path, byte[] location) {
+    private int buildWeatherPath(byte[] path, byte[] location) {
         int length = append(path, 0, "/v1/forecast?latitude=");
         int i = 0;
         while (location[i] != 0 && location[i] != ',') {
@@ -246,7 +252,7 @@ public final class WeatherTFT {
         return append(path, length, "weather_code,is_day&timezone=auto");
     }
 
-    private static int append(byte[] buffer, int offset, String text) {
+    private int append(byte[] buffer, int offset, String text) {
         int length = text.length();
         for (int i = 0; i < length; i++) {
             buffer[offset + i] = (byte) text.charAt(i);
@@ -254,7 +260,7 @@ public final class WeatherTFT {
         return offset + length;
     }
 
-    private static boolean fetchWeather(byte[] path, int pathLength, byte[] response, byte[] headers,
+    private boolean fetchWeather(byte[] path, int pathLength, byte[] response, byte[] headers,
             int[] statusAndHeaders) {
         int bodyLength = HttpClient.get("https://api.open-meteo.com", path, pathLength,
                 response, 1024, headers, 512, statusAndHeaders);
@@ -275,7 +281,7 @@ public final class WeatherTFT {
         int utcSeconds = HttpDate.parseDateHeader(headers, statusAndHeaders[1]);
         if (utcSeconds != 0) {
             clockBaseSeconds = utcSeconds + Json.getInt(response, bodyLength, "utc_offset_seconds");
-            clockBaseMillis = Clock.millis();
+            clockBaseMillis = clock.millis();
             clockSet = true;
         }
 
@@ -289,7 +295,7 @@ public final class WeatherTFT {
         return true;
     }
 
-    private static int round(double value) {
+    private int round(double value) {
         return (int) Math.floor(value + 0.5);
     }
 }

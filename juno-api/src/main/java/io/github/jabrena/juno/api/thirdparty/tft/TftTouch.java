@@ -23,53 +23,53 @@ final class TftTouch {
 
     // Adafruit TouchScreen's approach: X+ to ground, Y- to VCC, then compare the two floating plates.
     static int readTouchPressure() {
-        Gpio.pinMode(PIN_TOUCH_XP, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_TOUCH_XP, false);
-        Gpio.pinMode(PIN_TOUCH_YM, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_TOUCH_YM, true);
-        Gpio.digitalWrite(PIN_TOUCH_XM, false);
-        Gpio.pinMode(PIN_TOUCH_XM, Gpio.INPUT);
-        Gpio.digitalWrite(PIN_TOUCH_YP, false);
-        Gpio.pinMode(PIN_TOUCH_YP, Gpio.INPUT);
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_XP, Gpio.getOutput());
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_XP, false);
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_YM, Gpio.getOutput());
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_YM, true);
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_XM, false);
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_XM, Gpio.getInput());
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_YP, false);
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_YP, Gpio.getInput());
         Delay.micros(TOUCH_SETTLE_MICROS);
-        int z1 = Gpio.analogRead(PIN_TOUCH_XM);
-        int z2 = Gpio.analogRead(PIN_TOUCH_YP);
+        int z1 = TftTouchShield.gpio.analogRead(PIN_TOUCH_XM);
+        int z2 = TftTouchShield.gpio.analogRead(PIN_TOUCH_YP);
         return 1023 - (z2 - z1);
     }
 
     // Drive the X plate end to end and read its voltage through the floating Y plate.
     static int readTouchRawX() {
-        Gpio.pinMode(PIN_TOUCH_YP, Gpio.INPUT);
-        Gpio.pinMode(PIN_TOUCH_YM, Gpio.INPUT);
-        Gpio.digitalWrite(PIN_TOUCH_YM, false);
-        Gpio.pinMode(PIN_TOUCH_XP, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_TOUCH_XM, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_TOUCH_XP, true);
-        Gpio.digitalWrite(PIN_TOUCH_XM, false);
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_YP, Gpio.getInput());
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_YM, Gpio.getInput());
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_YM, false);
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_XP, Gpio.getOutput());
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_XM, Gpio.getOutput());
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_XP, true);
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_XM, false);
         Delay.micros(TOUCH_SETTLE_MICROS);
-        return 1023 - Gpio.analogRead(PIN_TOUCH_YP);
+        return 1023 - TftTouchShield.gpio.analogRead(PIN_TOUCH_YP);
     }
 
     // Drive the Y plate end to end and read its voltage through the floating X plate.
     static int readTouchRawY() {
-        Gpio.pinMode(PIN_TOUCH_XP, Gpio.INPUT);
-        Gpio.pinMode(PIN_TOUCH_XM, Gpio.INPUT);
-        Gpio.digitalWrite(PIN_TOUCH_XP, false);
-        Gpio.pinMode(PIN_TOUCH_YP, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_TOUCH_YM, Gpio.OUTPUT);
-        Gpio.digitalWrite(PIN_TOUCH_YP, true);
-        Gpio.digitalWrite(PIN_TOUCH_YM, false);
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_XP, Gpio.getInput());
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_XM, Gpio.getInput());
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_XP, false);
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_YP, Gpio.getOutput());
+        TftTouchShield.gpio.pinMode(PIN_TOUCH_YM, Gpio.getOutput());
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_YP, true);
+        TftTouchShield.gpio.digitalWrite(PIN_TOUCH_YM, false);
         Delay.micros(TOUCH_SETTLE_MICROS);
-        return 1023 - Gpio.analogRead(PIN_TOUCH_XM);
+        return 1023 - TftTouchShield.gpio.analogRead(PIN_TOUCH_XM);
     }
 
     // The touch pins double as RS, CS, and data bits 0-1; hand them back to the display bus.
     static void restoreBusAfterTouch() {
-        Gpio.pinMode(TftTouchShield.PIN_RS, Gpio.OUTPUT);
-        Gpio.pinMode(TftTouchShield.PIN_CS, Gpio.OUTPUT);
-        Gpio.digitalWrite(TftTouchShield.PIN_RS, true);
-        Gpio.digitalWrite(TftTouchShield.PIN_CS, false);
-        Gpio.digitalWrite(TftTouchShield.PIN_WR, true);
+        TftTouchShield.gpio.pinMode(TftTouchShield.PIN_RS, Gpio.getOutput());
+        TftTouchShield.gpio.pinMode(TftTouchShield.PIN_CS, Gpio.getOutput());
+        TftTouchShield.gpio.digitalWrite(TftTouchShield.PIN_RS, true);
+        TftTouchShield.gpio.digitalWrite(TftTouchShield.PIN_CS, false);
+        TftTouchShield.gpio.digitalWrite(TftTouchShield.PIN_WR, true);
         TftBus.restoreDataPins();
     }
 

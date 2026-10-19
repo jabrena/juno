@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.io.gpio.EmulatedShield;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Random;
 import org.junit.jupiter.api.BeforeEach;
@@ -542,7 +542,7 @@ class DoomTest {
         boolean[] lit = new boolean[DisplayList.WIDTH * DisplayList.VIEW_BOTTOM];
         for (int y = DisplayList.VIEW_TOP; y < DisplayList.VIEW_BOTTOM; y++) {
             for (int x = 0; x < DisplayList.WIDTH; x++) {
-                lit[y * DisplayList.WIDTH + x] = Gpio.FRAMEBUFFER[y * Gpio.STRIDE + x] != DisplayList.BACKGROUND;
+                lit[y * DisplayList.WIDTH + x] = EmulatedShield.FRAMEBUFFER[y * EmulatedShield.STRIDE + x] != DisplayList.BACKGROUND;
             }
         }
         return lit;

@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.pf;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.imu.NineAxisMotionShield;
@@ -17,6 +19,8 @@ import io.github.jabrena.juno.api.util.Delay;
  * the sensor starts. Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquarePowerFunctionsWithImu {
+    private static final NineAxisMotionShield IMU = new NineAxisMotionShield();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final int CHANNEL = PowerFunctionsRemote.CHANNEL_1;
     private static final int SPEED = 5;
@@ -28,7 +32,7 @@ public class MagicSquarePowerFunctionsWithImu {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         MagicSquarePowerFunctionsWithImu app = new MagicSquarePowerFunctionsWithImu();
-        if (!NineAxisMotionShield.begin()) {
+        if (!IMU.begin()) {
             Serial.println("No BNO055 found: is the 9 Axis Motion Shield attached?");
             return;
         }
@@ -46,17 +50,17 @@ public class MagicSquarePowerFunctionsWithImu {
 
     /** Repeats the command, as a receiver stops a motor about a second after the last one it heard. */
     private void drive(int millis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < millis) {
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < millis) {
             PowerFunctionsRemote.setSpeeds(CHANNEL, SPEED, SPEED);
         }
     }
 
     /** Spins left, sending commands until the sensor reports TURN_DEGREES anticlockwise, or the safety timeout. */
     private void turnLeft() {
-        int startHeading = NineAxisMotionShield.headingDegrees();
-        int started = Clock.millis();
-        while (NineAxisMotionShield.turnedSince(startHeading) > -TURN_DEGREES && Clock.millis() - started < TURN_TIMEOUT_MILLIS) {
+        int startHeading = IMU.headingDegrees();
+        int started = CLOCK.millis();
+        while (IMU.turnedSince(startHeading) > -TURN_DEGREES && CLOCK.millis() - started < TURN_TIMEOUT_MILLIS) {
             PowerFunctionsRemote.setSpeeds(CHANNEL, -SPEED, SPEED);
         }
     }

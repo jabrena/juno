@@ -22,49 +22,63 @@ public class RcxIcons {
     private static final int START_MILLIS = 2000;
     private static final int RETRY_MILLIS = 1000;
 
+    private final RcxLink link;
+    private final RcxRemote remote;
+    private final RcxBrick brick;
+
+    RcxIcons(RcxLink link, RcxRemote remote, RcxBrick brick) {
+        this.link = link;
+        this.remote = remote;
+        this.brick = brick;
+    }
+
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
+        RcxIcons app = new RcxIcons(link, remote, brick);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        while (!RcxBrick.showIcon(RcxBrick.ICON_STANDING, false)) {
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        while (!brick.showIcon(RcxBrick.ICON_STANDING, false)) {
             Serial.println("No answer: is Juno's firmware on the RCX, and is it on and in range?");
             Delay.millis(RETRY_MILLIS);
         }
 
         Serial.println("Each icon in turn");
-        flash("standing figure", RcxBrick.ICON_STANDING);
-        flash("walking figure", RcxBrick.ICON_WALKING);
-        flash("sensor 1 view", RcxBrick.ICON_SENSOR_1_VIEW);
-        flash("sensor 1 pressed", RcxBrick.ICON_SENSOR_1_PRESSED);
-        flash("sensor 2 view", RcxBrick.ICON_SENSOR_2_VIEW);
-        flash("sensor 2 pressed", RcxBrick.ICON_SENSOR_2_PRESSED);
-        flash("sensor 3 view", RcxBrick.ICON_SENSOR_3_VIEW);
-        flash("sensor 3 pressed", RcxBrick.ICON_SENSOR_3_PRESSED);
-        flash("motor A view", RcxBrick.ICON_MOTOR_A_VIEW);
-        flash("motor A backward", RcxBrick.ICON_MOTOR_A_BACKWARD);
-        flash("motor A forward", RcxBrick.ICON_MOTOR_A_FORWARD);
-        flash("motor B view", RcxBrick.ICON_MOTOR_B_VIEW);
-        flash("motor B backward", RcxBrick.ICON_MOTOR_B_BACKWARD);
-        flash("motor B forward", RcxBrick.ICON_MOTOR_B_FORWARD);
-        flash("motor C view", RcxBrick.ICON_MOTOR_C_VIEW);
-        flash("motor C backward", RcxBrick.ICON_MOTOR_C_BACKWARD);
-        flash("motor C forward", RcxBrick.ICON_MOTOR_C_FORWARD);
-        flash("datalog", RcxBrick.ICON_DATALOG);
-        flash("download", RcxBrick.ICON_DOWNLOAD);
-        flash("upload", RcxBrick.ICON_UPLOAD);
-        flash("battery low", RcxBrick.ICON_BATTERY_LOW);
-        flash("short range", RcxBrick.ICON_RANGE_SHORT);
-        flash("long range", RcxBrick.ICON_RANGE_LONG);
+        app.flash("standing figure", RcxBrick.ICON_STANDING);
+        app.flash("walking figure", RcxBrick.ICON_WALKING);
+        app.flash("sensor 1 view", RcxBrick.ICON_SENSOR_1_VIEW);
+        app.flash("sensor 1 pressed", RcxBrick.ICON_SENSOR_1_PRESSED);
+        app.flash("sensor 2 view", RcxBrick.ICON_SENSOR_2_VIEW);
+        app.flash("sensor 2 pressed", RcxBrick.ICON_SENSOR_2_PRESSED);
+        app.flash("sensor 3 view", RcxBrick.ICON_SENSOR_3_VIEW);
+        app.flash("sensor 3 pressed", RcxBrick.ICON_SENSOR_3_PRESSED);
+        app.flash("motor A view", RcxBrick.ICON_MOTOR_A_VIEW);
+        app.flash("motor A backward", RcxBrick.ICON_MOTOR_A_BACKWARD);
+        app.flash("motor A forward", RcxBrick.ICON_MOTOR_A_FORWARD);
+        app.flash("motor B view", RcxBrick.ICON_MOTOR_B_VIEW);
+        app.flash("motor B backward", RcxBrick.ICON_MOTOR_B_BACKWARD);
+        app.flash("motor B forward", RcxBrick.ICON_MOTOR_B_FORWARD);
+        app.flash("motor C view", RcxBrick.ICON_MOTOR_C_VIEW);
+        app.flash("motor C backward", RcxBrick.ICON_MOTOR_C_BACKWARD);
+        app.flash("motor C forward", RcxBrick.ICON_MOTOR_C_FORWARD);
+        app.flash("datalog", RcxBrick.ICON_DATALOG);
+        app.flash("download", RcxBrick.ICON_DOWNLOAD);
+        app.flash("upload", RcxBrick.ICON_UPLOAD);
+        app.flash("battery low", RcxBrick.ICON_BATTERY_LOW);
+        app.flash("short range", RcxBrick.ICON_RANGE_SHORT);
+        app.flash("long range", RcxBrick.ICON_RANGE_LONG);
 
         Serial.println("Every segment");
-        RcxBrick.showIcon(RcxBrick.ICON_ALL, true);
+        brick.showIcon(RcxBrick.ICON_ALL, true);
         Delay.seconds(ALL_SECONDS);
-        RcxBrick.showIcon(RcxBrick.ICON_ALL, false);
+        brick.showIcon(RcxBrick.ICON_ALL, false);
 
         Serial.println("Motor A forward: arrow and walking figure");
-        RcxBrick.drive(RcxBrick.OUTPUT_A, RcxBrick.MAX_POWER);
+        brick.drive(RcxBrick.OUTPUT_A, RcxBrick.MAX_POWER);
         Delay.seconds(MOTOR_SECONDS);
-        RcxBrick.drive(RcxBrick.OUTPUT_A, 0);
+        brick.drive(RcxBrick.OUTPUT_A, 0);
         Serial.println("Done");
 
         while (true) {
@@ -73,10 +87,10 @@ public class RcxIcons {
     }
 
     /** Lights {@code icon} for a moment, then hands it back to the brick. */
-    private static void flash(String name, int icon) {
+    private void flash(String name, int icon) {
         Serial.print(name);
-        Serial.println(RcxBrick.showIcon(icon, true) ? ": lit" : ": no answer");
+        Serial.println(brick.showIcon(icon, true) ? ": lit" : ": no answer");
         Delay.millis(ICON_MILLIS);
-        Serial.println(RcxBrick.showIcon(icon, false) ? "  back" : "  back: no answer");
+        Serial.println(brick.showIcon(icon, false) ? "  back" : "  back: no answer");
     }
 }

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.mvc;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
@@ -21,6 +22,7 @@ public final class ViewRouter implements Navigator {
 
     private final View[] views = new View[MAX_VIEWS];
     private final int framePeriodMs;
+    private final Clock clock;
     private final int[] history = new int[HISTORY_DEPTH];
     private int historySize;
     private int active = NONE;
@@ -30,9 +32,15 @@ public final class ViewRouter implements Navigator {
     /** Until {@link #background} sets one, a task that does nothing: Juno needs a linked implementation to call. */
     private Task task = new Idle();
 
-    /** A router that renders a frame every {@code framePeriodMs}. */
+    /** A router that renders a frame every {@code framePeriodMs} of the board's clock. */
     public ViewRouter(int framePeriodMs) {
+        this(framePeriodMs, MCU.getClock());
+    }
+
+    /** A router that renders a frame every {@code framePeriodMs} of {@code clock}: a mocked one in a unit test. */
+    public ViewRouter(int framePeriodMs, Clock clock) {
         this.framePeriodMs = framePeriodMs;
+        this.clock = clock;
     }
 
     public void register(int viewId, View view) {
@@ -70,18 +78,18 @@ public final class ViewRouter implements Navigator {
      * schedule rather than rushing to catch up.
      */
     public void run() {
-        int next = Clock.millis();
+        int next = clock.millis();
         while (true) {
             handleTouch();
             task.step();
             switchIfRequested();
             views[active].render();
             next = next + framePeriodMs;
-            int wait = next - Clock.millis();
+            int wait = next - clock.millis();
             if (wait > 0) {
                 Delay.millis(wait);
             } else if (wait < -4 * framePeriodMs) {
-                next = Clock.millis();
+                next = clock.millis();
             }
         }
     }

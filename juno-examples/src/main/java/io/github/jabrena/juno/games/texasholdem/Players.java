@@ -4,15 +4,33 @@ import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.api.util.Random;
 
-import static io.github.jabrena.juno.games.texasholdem.CardsRenderer.*;
-import static io.github.jabrena.juno.games.texasholdem.Controls.*;
-import static io.github.jabrena.juno.games.texasholdem.Deck.*;
-import static io.github.jabrena.juno.games.texasholdem.HandEvaluator.*;
-import static io.github.jabrena.juno.games.texasholdem.Players.*;
-import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.*;
-import static io.github.jabrena.juno.games.texasholdem.SuitSprites.*;
-import static io.github.jabrena.juno.games.texasholdem.Table.*;
-import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.*;
+import static io.github.jabrena.juno.games.texasholdem.Controls.waitForButton;
+import static io.github.jabrena.juno.games.texasholdem.Deck.countState;
+import static io.github.jabrena.juno.games.texasholdem.HandEvaluator.evaluate;
+import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.clearControls;
+import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.drawActionButtons;
+import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.showMessage;
+import static io.github.jabrena.juno.games.texasholdem.Table.checkOrCall;
+import static io.github.jabrena.juno.games.texasholdem.Table.fold;
+import static io.github.jabrena.juno.games.texasholdem.Table.raise;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.BET;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.BOARD;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.CHIPS;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.FOLDED;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.HAND;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.HOLE;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.MAX_RAISES;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.OUT;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.REST;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.SEATS;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.SIMULATIONS;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.TOTAL;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.boardCount;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.currentBet;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.minRaise;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.raiseTo;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.raises;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.smallBlind;
 
 final class Players {
     private Players() {

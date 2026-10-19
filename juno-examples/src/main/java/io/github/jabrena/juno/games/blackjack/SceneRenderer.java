@@ -2,16 +2,34 @@ package io.github.jabrena.juno.games.blackjack;
 
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
-import static io.github.jabrena.juno.games.blackjack.Blackjack.*;
-import static io.github.jabrena.juno.games.blackjack.Cards.*;
-import static io.github.jabrena.juno.games.blackjack.ClubSprite.*;
-import static io.github.jabrena.juno.games.blackjack.Controls.*;
-import static io.github.jabrena.juno.games.blackjack.DiamondSprite.*;
-import static io.github.jabrena.juno.games.blackjack.HeartSprite.*;
-import static io.github.jabrena.juno.games.blackjack.Round.*;
-import static io.github.jabrena.juno.games.blackjack.SceneRenderer.*;
-import static io.github.jabrena.juno.games.blackjack.SpadeSprite.*;
-import static io.github.jabrena.juno.games.blackjack.SuitSprites.*;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BETTING;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON_DISABLED;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON_HEIGHT;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON_SPACING;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON_WIDTH;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON_Y;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.CARD_BACK;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.CARD_HEIGHT;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.CARD_WIDTH;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.DEALER_LABEL_Y;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.DIAMONDS;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.FELT;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.HAND_X;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.HEADER_BACKGROUND;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.HEADER_HEIGHT;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.HEARTS;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.MESSAGE_Y;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.MIN_BET;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.PLAYER_LABEL_Y;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.PLAYING;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.bank;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.bet;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.handBet;
+import static io.github.jabrena.juno.games.blackjack.Blackjack.phase;
+import static io.github.jabrena.juno.games.blackjack.Cards.handValue;
+import static io.github.jabrena.juno.games.blackjack.Round.canDouble;
+import static io.github.jabrena.juno.games.blackjack.SuitSprites.suitRow;
 
 final class SceneRenderer {
     private SceneRenderer() {

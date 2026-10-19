@@ -2,7 +2,18 @@ package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
-import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.*;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BOTTOM_HEIGHT;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BOTTOM_Y;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BUTTON_HEIGHT_MOTOR;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.MARGIN;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.TAB_HEIGHT;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.TAB_WIDTH;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.TAB_Y;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.VIEW_INFO;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.VIEW_LED;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.VIEW_MOTORS;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.VIEW_PAIR;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.WIDTH;
 
 /** Small drawing and lookup helpers shared by the views of {@link PoweredUpHubTFT}. */
 final class PoweredUpUi {

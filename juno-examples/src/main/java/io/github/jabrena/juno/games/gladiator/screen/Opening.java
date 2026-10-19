@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
@@ -11,6 +13,7 @@ import io.github.jabrena.juno.games.gladiator.view.ViewList;
 
 /** The laurel title and rotating wireframe class gallery shown before the game connects. */
 public final class Opening {
+    private static final Clock CLOCK = MCU.getClock();
 
     public static final int INTRO_MILLIS = 5000;
     /** The quotes the title picks one of at random, each time it is shown ({@link #quoteLine}). */
@@ -36,7 +39,7 @@ public final class Opening {
     /** Plays the title, drawing the class gallery's models with {@code wireframe} into {@code list}, until PLAY. */
     public static void play(ViewList list, ClassWireframe wireframe) {
         while (true) {
-            int started = Clock.millis();
+            int started = CLOCK.millis();
             laurel();
             if (waitForPlay(started, INTRO_MILLIS)) {
                 return;
@@ -123,11 +126,11 @@ public final class Opening {
 
     /** Shows every class once, returning whether PLAY was tapped. */
     private static boolean gallery(ViewList list, ClassWireframe wireframe) {
-        int started = Clock.millis();
+        int started = CLOCK.millis();
         int shownClass = -1;
         boolean touching = true;
-        while (Clock.millis() - started < GALLERY_MILLIS) {
-            int elapsed = Clock.millis() - started;
+        while (CLOCK.millis() - started < GALLERY_MILLIS) {
+            int elapsed = CLOCK.millis() - started;
             int kind = classAt(elapsed);
             if (kind != shownClass) {
                 shownClass = kind;
@@ -171,7 +174,7 @@ public final class Opening {
 
     private static boolean waitForPlay(int started, int duration) {
         boolean touching = true;
-        while (Clock.millis() - started < duration) {
+        while (CLOCK.millis() - started < duration) {
             if (TftTouchShield.readTouch()) {
                 if (!touching && onPlay(TftTouchShield.touchX(), TftTouchShield.touchY())) {
                     waitForRelease();

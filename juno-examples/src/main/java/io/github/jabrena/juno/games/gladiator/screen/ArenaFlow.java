@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -32,6 +34,7 @@ import io.github.jabrena.juno.games.gladiator.view.Figure;
  * </pre>
  */
 public final class ArenaFlow {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int WORLD_MILLIS = 100;
     private static final int PACKETS_PER_PASS = 8;
 
@@ -59,7 +62,7 @@ public final class ArenaFlow {
             } else {
                 touching = false;
             }
-            int now = Clock.millis();
+            int now = CLOCK.millis();
             for (int i = 0; i < PACKETS_PER_PASS; i++) {
                 int length = Udp.receive(incoming, GladiatorProtocol.PACKET_SIZE, source);
                 if (length <= 0) {

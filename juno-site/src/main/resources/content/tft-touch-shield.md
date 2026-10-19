@@ -134,7 +134,7 @@ the SD-card credentials, it geolocates the board's public IP with [ipinfo.io](ht
 passes the returned coordinates to [Open-Meteo](https://open-meteo.com), and shows the city, wind
 speed, a large seven-segment clock, the condition with an icon, the temperature, the date and
 weekday, and temperature/humidity bars. The clock is set from the HTTPS `Date` response header plus
-Open-Meteo's `utc_offset_seconds` and kept running with `Clock.millis()`. Weather refreshes every
+Open-Meteo's `utc_offset_seconds` and kept running with `Clock`'s `millis()`. Weather refreshes every
 ten minutes, or immediately when the screen is tapped. The footer shows the public IP ipinfo.io saw
 and the coordinates sent to Open-Meteo. The first HTTPS request right after WiFi connects can fail,
 so the location lookup waits two seconds and then retries every five (the status line counts the
