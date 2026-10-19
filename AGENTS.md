@@ -57,8 +57,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - **`juno-api`, the generated `RcxFirmwareImage`, and `juno-examples` run on the board: write them for zero
   allocation.** The board has one fixed
   arena (8 KiB, 1 KiB on AVR) and no `OutOfMemoryError`, so the API stays `final` classes of static intrinsics over
-  primitives and caller-owned buffers (`Gpio` and `Clock` are the exception: interfaces whose
-  board instances come from `MCU.getGpio()`/`MCU.getClock()`, so code using them can be unit-tested with a mock), and an example allocates its buffers and objects once at startup and never
+  primitives and caller-owned buffers (`Gpio`, `I2c` and `Clock` are the exception: interfaces whose
+  board instances come from `MCU.getGpio()`/`MCU.getI2c()`/`MCU.getClock()`, so code using them can be unit-tested with a mock), and an example allocates its buffers and objects once at startup and never
   inside its main loop. Follow `skills/juno-zero-allocation` when adding an API entry or an example, and
   `skills/juno-debugging` when a program misbehaves between the source and the board.
 

@@ -35,9 +35,10 @@ a method), but treat that as a bonus: write the program so it does not depend on
 1. **Shape the class like the existing API**: a `final`, non-instantiable class of `static native` intrinsics, or
    static methods over primitives. A handle is a zero-cost wrapper around a primitive (as `DigitalOutput` wraps a
    pin number), never an object graph. The exception is hardware that code under test must be able to fake:
-   `Gpio` and `Clock` are interfaces whose board instances, `MCU.getGpio()` and `MCU.getClock()`, are
-   `hardware.internal.NativeGpio`/`NativeClock` with the `native` intrinsics. A program takes them once, at startup,
-   and passes them in; tests pass `mock(Gpio.class)`/`mock(Clock.class)`.
+   `Gpio`, `I2c` and `Clock` are interfaces whose board instances, `MCU.getGpio()`, `MCU.getI2c()` and
+   `MCU.getClock()`, are `hardware.internal.NativeGpio`/`NativeI2c`/`NativeClock` with the `native` intrinsics. A
+   program takes them once, at startup, and passes them in; tests pass
+   `mock(Gpio.class)`/`mock(I2c.class)`/`mock(Clock.class)`.
 2. **Let the caller own every buffer.** Take a `byte[]`/`int[]` plus an offset or length and fill it; never return a
    new array or a `String` built at run time. `Udp` (`int[5]` endpoint, caller-owned payload) and the bounded
    `Json` reader are the reference designs.
