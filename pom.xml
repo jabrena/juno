@@ -57,7 +57,7 @@
         <!-- PIT parallelism per module; a mutant's test run is slow, so the default single thread takes hours. -->
         <pitest.threads>4</pitest.threads>
         <maven-plugin-pitest-junit5.version>1.2.3</maven-plugin-pitest-junit5.version>
-        <sonar.maven.plugin.version>5.7.0.6970</sonar.maven.plugin.version>
+        <sonar.maven.plugin.version>5.8.0.7211</sonar.maven.plugin.version>
         <java.version>${maven.compiler.release}</java.version>
     </properties>
 
