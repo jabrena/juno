@@ -1,8 +1,7 @@
 package io.github.jabrena.juno.api.net.http;
 
+import io.github.jabrena.juno.api.hardware.BoardMemory;
 import io.github.jabrena.juno.api.hardware.MCU;
-
-import io.github.jabrena.juno.api.hardware.Memory;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
@@ -28,6 +27,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * (arena usage that only ever grows) versus healthy reclamation (usage that rises and falls).
  */
 public final class HttpServerStatus {
+    private static final BoardMemory MEMORY = MCU.getBoardMemory();
     private final Clock clock = MCU.getClock();
     /** How often to print an arena-usage heartbeat over Serial, in milliseconds. */
     private static final int HEARTBEAT_INTERVAL_MS = 5000;
@@ -78,7 +78,7 @@ public final class HttpServerStatus {
         Serial.print(" requests=");
         Serial.print(requestCount);
         Serial.print(" arenaUsedBytes=");
-        Serial.println(Memory.arenaUsedBytes());
+        Serial.println(MEMORY.arenaUsedBytes());
     }
 
     private void getStatusHandler(String method, String path) {

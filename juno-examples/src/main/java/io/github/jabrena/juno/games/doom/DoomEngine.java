@@ -1,8 +1,7 @@
 package io.github.jabrena.juno.games.doom;
 
+import io.github.jabrena.juno.api.hardware.BoardMemory;
 import io.github.jabrena.juno.api.hardware.MCU;
-
-import io.github.jabrena.juno.api.hardware.Memory;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Random;
@@ -14,6 +13,7 @@ import io.github.jabrena.juno.api.util.Random;
  * there is one engine per program; the renderer's buffers are allocated here, once, after the WAD-sized tables.
  */
 public final class DoomEngine {
+    private static final BoardMemory MEMORY = MCU.getBoardMemory();
     /** The engine's clock, shared with {@link Loading} and Doom2's views so the program allocates one. */
     public static final Clock CLOCK = MCU.getClock();
     public static final int PLAYING = 0;
@@ -39,7 +39,7 @@ public final class DoomEngine {
      * call once at startup, before other large allocations. The SD card must already be started.
      */
     public DoomEngine() {
-        boolean room = Memory.arenaCapacityBytes() - Memory.arenaUsedBytes()
+        boolean room = MEMORY.arenaCapacityBytes() - MEMORY.arenaUsedBytes()
                 >= World.WAD_ARENA_BYTES + World.PLAN_ARENA_BYTES + World.RENDER_ARENA_BYTES;
         if (room) {
             World.allocateForWad();
@@ -57,9 +57,9 @@ public final class DoomEngine {
         depths = new short[DisplayList.WIDTH];
         shots = new short[Monsters.SHOTS * Monsters.SHOT_STRIDE];
         Serial.print("DOOM: arena ");
-        Serial.print(Memory.arenaUsedBytes());
+        Serial.print(MEMORY.arenaUsedBytes());
         Serial.print("/");
-        Serial.println(Memory.arenaCapacityBytes());
+        Serial.println(MEMORY.arenaCapacityBytes());
     }
 
     /** Whether the arena held the WAD-sized tables, so maps can be loaded. */

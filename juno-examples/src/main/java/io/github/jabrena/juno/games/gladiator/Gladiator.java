@@ -3,7 +3,7 @@ package io.github.jabrena.juno.games.gladiator;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.BoardRuntime;
+import io.github.jabrena.juno.api.hardware.BoardModel;
 import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -50,6 +50,7 @@ import io.github.jabrena.juno.games.gladiator.view.ViewList;
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
 public final class Gladiator {
     private static final Clock CLOCK = MCU.getClock();
+    private static final BoardModel BOARD = MCU.getBoardModel();
     private static final int ARENA = 0;
 
     /** The screen's line list, which every role draws into, and the class models of the title and the Solo screens. */
@@ -72,7 +73,7 @@ public final class Gladiator {
         Opening.play(list, wireframe);
         Random.seed(CLOCK.micros());
         while (true) {
-            int mode = ModeMenu.choose(BoardRuntime.isQ());
+            int mode = ModeMenu.choose(BOARD.isQ());
             if (mode == ModeMenu.SOLO) {
                 SoloFlow.run(list, wireframe, FighterSetup.choose());
                 Opening.play(list, wireframe);
@@ -115,7 +116,7 @@ public final class Gladiator {
         }
         WifiSettings settings = WifiSettings.load();
         if (settings == null) {
-            if (!BoardRuntime.isQ()) {
+            if (!BOARD.isQ()) {
                 Hud.message("NO WIFI SETTINGS", "Put application.properties on the SD card", TftTouchShield.ORANGE);
                 waitForMenu();
                 return false;

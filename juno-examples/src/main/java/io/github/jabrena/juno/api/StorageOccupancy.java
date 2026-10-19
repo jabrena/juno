@@ -5,7 +5,8 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.Memory;
+import io.github.jabrena.juno.api.hardware.BoardMemory;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
@@ -24,6 +25,7 @@ import io.github.jabrena.juno.api.util.Delay;
  */
 @Board({ArduinoUnoR3.class, ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
 public final class StorageOccupancy {
+    private static final BoardMemory MEMORY = MCU.getBoardMemory();
     private static final int REPORT_PERIOD_MS = 2000;
 
     private StorageOccupancy() {
@@ -33,8 +35,8 @@ public final class StorageOccupancy {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        int flashUsed = Memory.flashUsedBytes();
-        int flashCapacity = Memory.flashCapacityBytes();
+        int flashUsed = MEMORY.flashUsedBytes();
+        int flashCapacity = MEMORY.flashCapacityBytes();
         int sdTotalKiB = -1;
         int sdUsedKiB = -1;
         if (SdCard.begin()) {
@@ -44,7 +46,7 @@ public final class StorageOccupancy {
 
         while (true) {
             report("flash B ", flashUsed, flashCapacity);
-            report("arena B ", Memory.arenaUsedBytes(), Memory.arenaCapacityBytes());
+            report("arena B ", MEMORY.arenaUsedBytes(), MEMORY.arenaCapacityBytes());
             if (sdTotalKiB > 0) {
                 report("sd KiB ", sdUsedKiB, sdTotalKiB);
             } else {

@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.usecases.dashboard.storage;
 
-import io.github.jabrena.juno.api.hardware.Memory;
+import io.github.jabrena.juno.api.hardware.BoardMemory;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -13,6 +14,7 @@ import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftOccupancyBar;
 
 /** Shows flash, RAM-arena and SD-card occupancy as three {@link TftOccupancyBar} rows; the SD row reads the model. */
 public final class TftDashboardStorageView implements View {
+    private static final BoardMemory MEMORY = MCU.getBoardMemory();
     private static final int FIRST_ROW_Y = 44;
     private static final int ROW_HEIGHT = 52;
 
@@ -44,12 +46,12 @@ public final class TftDashboardStorageView implements View {
         flashBar.reset();
         ramBar.reset();
         sdBar.reset();
-        flashBar.update(Memory.flashUsedBytes(), Memory.flashCapacityBytes());
+        flashBar.update(MEMORY.flashUsedBytes(), MEMORY.flashCapacityBytes());
     }
 
     @Override
     public void render() {
-        ramBar.update(Memory.arenaUsedBytes(), Memory.arenaCapacityBytes());
+        ramBar.update(MEMORY.arenaUsedBytes(), MEMORY.arenaCapacityBytes());
         SdCapacity capacity = model.sdCapacity();
         if (!model.cardReady() || capacity != null && !capacity.known()) {
             sdBar.showUnavailable();

@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hid;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.gpio.DigitalOutput;
 import io.github.jabrena.juno.api.led.LedMatrix;
 import io.github.jabrena.juno.api.util.Delay;
@@ -35,7 +36,8 @@ public final class RatonLoco {
      */
     public static void main(String[] args) {
         DigitalOutput led = DigitalOutput.of(LED);
-        Mouse.begin();
+        Mouse mouse = MCU.getMouse();
+        mouse.begin();
 
         LedMatrix.begin();
         MouseIcon.draw();
@@ -50,28 +52,28 @@ public final class RatonLoco {
             int i = 0;
             while (i < STEPS_PER_SIDE) {
                 Delay.millis(MOVE_DELAY);
-                Mouse.move(STEP, 0);
+                mouse.move(STEP, 0);
                 i = i + 1;
             }
             // Down
             i = 0;
             while (i < STEPS_PER_SIDE) {
                 Delay.millis(MOVE_DELAY);
-                Mouse.move(0, STEP);
+                mouse.move(0, STEP);
                 i = i + 1;
             }
             // Left
             i = 0;
             while (i < STEPS_PER_SIDE) {
                 Delay.millis(MOVE_DELAY);
-                Mouse.move(-STEP, 0);
+                mouse.move(-STEP, 0);
                 i = i + 1;
             }
             // Up
             i = 0;
             while (i < STEPS_PER_SIDE) {
                 Delay.millis(MOVE_DELAY);
-                Mouse.move(0, -STEP);
+                mouse.move(0, -STEP);
                 i = i + 1;
             }
         }

@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.hardware.Memory;
+import io.github.jabrena.juno.api.hardware.BoardMemory;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
 
@@ -18,6 +19,7 @@ import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
  * or no WAD, the built-in map is played instead, sized by its own counts.
  */
 final class World {
+    private static final BoardMemory MEMORY = MCU.getBoardMemory();
     // The largest figure among E1M1-E4M9 for each table, rounded up; monsters and pickups as Ultra-Violence places them.
     static final int MAX_VERTICES = 1632;
     static final int MAX_LINES = 1776;
@@ -153,7 +155,7 @@ final class World {
     static void load() {
         fromWad = false;
         boolean card = SdCard.begin();
-        boolean room = card && Memory.arenaCapacityBytes() - Memory.arenaUsedBytes()
+        boolean room = card && MEMORY.arenaCapacityBytes() - MEMORY.arenaUsedBytes()
                 >= WAD_ARENA_BYTES + PLAN_ARENA_BYTES + RENDER_ARENA_BYTES;
         episodesInWad = room ? WadLevel.episodes() : 0;
         if (episodesInWad != 0) {
@@ -235,9 +237,9 @@ final class World {
     }
 
     private static void printArena() {
-        Serial.print(Memory.arenaUsedBytes());
+        Serial.print(MEMORY.arenaUsedBytes());
         Serial.print("/");
-        Serial.println(Memory.arenaCapacityBytes());
+        Serial.println(MEMORY.arenaCapacityBytes());
     }
 
     private static void printMapName() {

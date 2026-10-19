@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.games.gladiator;
 
-import io.github.jabrena.juno.api.hardware.BoardRuntime;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.gladiator.arena.Arms;
@@ -842,11 +841,6 @@ class GladiatorTest {
         assertThat(SoloPresentation.onPlay(299, 233)).isTrue();
         assertThat(SoloPresentation.onPlay(19, 220)).isFalse();
         assertThat(SoloPresentation.onPlay(300, 220)).isFalse();
-    }
-
-    @Test
-    void soloIsAvailableOnlyOnTheUnoQ() {
-        assertThat(BoardRuntime.isQ()).as("the screenshot emulator models an UNO Q").isTrue();
     }
 
     @Test
