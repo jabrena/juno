@@ -127,4 +127,4 @@ Limits:
 Every byte array, like any other `new` object, lives in Juno's garbage-collected arena, 8 KB by default. A program
 that keeps large tables in RAM, such as data loaded from a file at startup, can raise it with the Maven plugin's
 JVM-style `-Djuno.Xmx` (for example `-Djuno.Xmx=32k`), and check the room left at run time with
-`Memory.arenaCapacityBytes() - Memory.arenaUsedBytes()`. `-Djuno.Xss` sets each extra task's stack the same way.
+`MCU.getBoardMemory().arenaCapacityBytes() - MCU.getBoardMemory().arenaUsedBytes()`. `-Djuno.Xss` sets each extra task's stack the same way.
