@@ -2,7 +2,6 @@ package io.github.jabrena.juno.api.thirdparty.imu;
 
 import io.github.jabrena.juno.api.io.i2c.I2c;
 import io.github.jabrena.juno.api.testing.Wire;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("BNO055 nine-axis motion shield")
 class NineAxisMotionShieldTest {
     private static final int DEVICE = NineAxisMotionShield.ADDRESS_DEFAULT;

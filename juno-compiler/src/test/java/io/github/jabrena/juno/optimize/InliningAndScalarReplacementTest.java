@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.optimize;
 
 import io.github.jabrena.juno.CompilerTestSupport;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,7 +10,6 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Which calls the inliner removes and which allocations scalar replacement removes, compiled from real Java. */
-@NullMarked
 @DisplayName("Inlining and scalar replacement")
 class InliningAndScalarReplacementTest {
     @TempDir

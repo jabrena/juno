@@ -1,7 +1,6 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.board.Board;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +17,6 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("Command-line entry point")
 class MainTest {
     @TempDir

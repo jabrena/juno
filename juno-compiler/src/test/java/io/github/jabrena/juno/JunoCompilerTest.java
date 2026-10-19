@@ -8,7 +8,6 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.linker.Program;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * {@code .rodata}. Every assertion below was checked against the real backend output for its fixture
  * (see the ASM/backend/Thumb2AsmBackend.java class doc) before being written.
  */
-@NullMarked
 @DisplayName("End-to-end compiler: Java to Thumb-2 assembly")
 class JunoCompilerTest {
 

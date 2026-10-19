@@ -8,7 +8,6 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.linker.Program;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * caller's poll routes it to a {@code catch}/{@code finally} handler or keeps unwinding. Also try-with-resources,
  * whose {@code close()} and {@code addSuppressed} calls ride on the same mechanism.
  */
-@NullMarked
 @DisplayName("Exceptions across method boundaries")
 class CrossMethodExceptionsTest {
     @TempDir

@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.backend.runtime;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * operations against the JDK classes (results, scales, rounding, text and the exception class). The shim's own
  * handle helpers are replaced by index-based ones so 64-bit hosts work.
  */
-@NullMarked
 @DisplayName("Big-number runtime against the JDK")
 class BigNumberRuntimeTest {
     private final BigNumberRuntime bigNumberRuntime = new BigNumberRuntime();

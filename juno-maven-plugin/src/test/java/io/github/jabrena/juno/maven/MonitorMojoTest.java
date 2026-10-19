@@ -2,7 +2,6 @@ package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** {@code juno:monitor} through a real, Maven-configured {@link MonitorMojo}; never touches a real board. */
-@NullMarked
 @DisplayName("juno:monitor goal")
 class MonitorMojoTest extends AbstractMojoTestCase {
     @BeforeEach

@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.linker;
 
 import io.github.jabrena.juno.bytecode.Instruction;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +9,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Array initializers as compilers emit them: javac stores every element, the Eclipse compiler only non-zero ones. */
-@NullMarked
 @DisplayName("Array initializer bytecode")
 class TableBytecodeTest {
     private final TableBytecode tableBytecode = new TableBytecode();

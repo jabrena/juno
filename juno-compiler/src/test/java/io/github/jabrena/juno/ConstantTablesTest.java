@@ -2,7 +2,6 @@ package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.analysis.RiskSeverity;
 import io.github.jabrena.juno.analysis.RuntimeRisk;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -18,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code <clinit>}, and kept on the old arena path, with a {@code JUNO-RISK-012} note, when any read could let
  * the array be written. Runtime values of every element type are checked under QEMU ({@code ConstantTables}).
  */
-@NullMarked
 @DisplayName("Constant primitive array tables")
 class ConstantTablesTest {
     @TempDir

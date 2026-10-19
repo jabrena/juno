@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.backend.runtime;
 
 import io.github.jabrena.juno.CompileException;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +9,6 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("Local date-time endpoint configuration")
 class LocalDateTimeEndpointTest {
     @Test

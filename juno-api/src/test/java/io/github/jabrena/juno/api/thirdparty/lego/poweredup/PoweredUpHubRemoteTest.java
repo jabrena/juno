@@ -1,12 +1,10 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("Powered Up hub version word")
 class PoweredUpHubRemoteTest {
 

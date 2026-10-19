@@ -14,7 +14,6 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.Value;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code pinMode}/{@code digitalWrite}/{@code delay}/{@code yield} all resolving to the core's real
  * addresses (see {@link Thumb2AsmBackend}'s class doc) — this test only re-checks the generated text.
  */
-@NullMarked
 @DisplayName("Thumb-2 assembly backend")
 class Thumb2AsmBackendTest {
     @Test

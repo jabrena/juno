@@ -5,14 +5,12 @@ import io.github.jabrena.juno.api.net.http.HttpMethod;
 import io.github.jabrena.juno.api.net.http.HttpServer;
 import io.github.jabrena.juno.api.testing.Wire;
 import io.github.jabrena.juno.api.time.Clock;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("Wi-Fi provisioning access point")
 class WifiProvisionerTest {
     private static final String FORM_BODY = "ssid=Home+Net&password=p%40ss";

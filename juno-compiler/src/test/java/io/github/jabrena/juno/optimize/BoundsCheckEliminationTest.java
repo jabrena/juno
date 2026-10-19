@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.optimize;
 
 import io.github.jabrena.juno.CompilerTestSupport;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /** Which bounds checks the range analysis proves redundant in real loops, and which it must keep. */
-@NullMarked
 @DisplayName("Bounds check elimination in real loops")
 class BoundsCheckEliminationTest {
     @TempDir

@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.backend.h8300;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 /** Runs the firmware in {@link H8Simulator} against a {@link FakeRcx} that delivers LEGO direct commands. */
-@NullMarked
 @DisplayName("RCX remote firmware")
 class RcxRemoteFirmwareTest {
     private static final int MAX_STEPS = 200_000;

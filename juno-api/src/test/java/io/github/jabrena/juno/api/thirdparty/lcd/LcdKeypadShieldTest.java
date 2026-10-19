@@ -2,7 +2,6 @@ package io.github.jabrena.juno.api.thirdparty.lcd;
 
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.testing.Wire;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("LCD keypad shield")
 class LcdKeypadShieldTest {
     private static final int PIN_RS = 8;

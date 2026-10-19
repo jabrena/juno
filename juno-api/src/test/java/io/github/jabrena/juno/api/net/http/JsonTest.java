@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.net.http;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.withinPercentage;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-@NullMarked
 @DisplayName("Minimal JSON reader")
 class JsonTest {
     private static final byte[] DOCUMENT = bytes("""

@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.backend.runtime;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("Local date-time runtime helpers, compiled and run as C++")
 class LocalDateTimeRuntimeTest {
     @TempDir

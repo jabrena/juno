@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.maven;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * build even though monitoring never actually happened. These tests use plain {@code sh -c} in place
  * of {@code arduino-cli} so they don't depend on the toolchain being installed.
  */
-@NullMarked
 @DisplayName("System command execution")
 class SystemCommandExecutorTest {
     private final SystemCommandExecutor executor = new SystemCommandExecutor();

@@ -6,7 +6,6 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.linker.Program;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * method; anything else (no matching handler, or a throw outside any {@code try}) reports the exception
  * and panics.
  */
-@NullMarked
 @DisplayName("Local try, catch and finally lowering")
 class ExceptionsTest {
     @TempDir

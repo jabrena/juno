@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** {@code juno:env} through a real, Maven-configured {@link EnvMojo}. Exports into the real process environment
  * (as the goal is documented to do), under keys unique to this test so other tests are unaffected. */
-@NullMarked
 @DisplayName("juno:env goal")
 class EnvMojoTest extends AbstractMojoTestCase {
     @BeforeEach

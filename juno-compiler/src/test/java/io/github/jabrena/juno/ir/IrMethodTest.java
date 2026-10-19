@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.ir;
 
 import io.github.jabrena.juno.classfile.MethodRef;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +10,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("IR method invariants")
 class IrMethodTest {
     private final MethodRef method = new MethodRef("demo/Typed", "main", "()V");
