@@ -63,7 +63,7 @@ sketch:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
@@ -80,7 +80,7 @@ Verify it with the real Arduino toolchain without touching a connected board:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
@@ -91,14 +91,14 @@ connected matching board:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
 If more than one matching board is connected, or a specific port is required, select it explicitly:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink -Djuno.port=/dev/cu.YOUR_PORT
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink -Djuno.port=/dev/cu.YOUR_PORT
 ```
 
 Uploading overwrites the board's current firmware. The built-in LED (pin 13) should then blink once
@@ -108,7 +108,7 @@ To compile another example, override the configured entry point. For example, `S
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.serial.SerialCounter
 ```
 
 Open an interactive serial monitor (115200 baud by default, matching every juno-examples program's
@@ -124,13 +124,13 @@ Press `Ctrl+C` to exit.
 
 ### Example: SerialCounter (reading Serial output)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/io/serial/SerialCounter.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/io/serial/SerialCounter.java) counts
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/serial/SerialCounter.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/serial/SerialCounter.java) counts
 up once a second over USB serial, so it doubles as a check that the toolchain and the board's
 serial port both work end to end:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.serial.SerialCounter
 ```
 
 Then open the serial monitor at the same baud rate the sketch uses
@@ -152,7 +152,7 @@ supported hook into TinyUSB's `tud_task()`.
 
 Any of the `LedMatrix*` example classes (see the main README's Java API section for the full
 list) follow the same pattern as `Blink` above — pass it as `juno.main`, for example
-`-Djuno.main=io.github.jabrena.juno.api.led.LedMatrixHeart`. They all draw on the UNO R4 WiFi's
+`-Djuno.main=io.github.jabrena.juno.api.hardware.led.LedMatrixHeart`. They all draw on the UNO R4 WiFi's
 built-in 12x8 LED matrix.
 
 ### LCD Keypad Shield examples
@@ -209,7 +209,7 @@ mapping are confirmed working.
 
 ### Example: RatonLoco (USB mouse control)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java) is a
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) is a
 port of [raton-loco.ino](https://github.com/jabrena/raton-loco/blob/main/arduino/raton-loco.ino):
 it blinks the built-in LED, then drags the host computer's mouse cursor in a square (right, down,
 left, up) over USB HID.
@@ -224,7 +224,7 @@ native USB (UNO R4 WiFi):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.hid.RatonLoco
+  -Djuno.main=io.github.jabrena.juno.api.hardware.hid.RatonLoco
 ```
 
 **Re-uploading over a running HID sketch:** `arduino-cli upload` normally resets the board into
@@ -319,7 +319,7 @@ register, so this doesn't run out of registers regardless of how large or branch
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 

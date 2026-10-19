@@ -9,9 +9,9 @@ drives the common "LCD Keypad Shield" — a 16x2 HD44780-compatible character LC
 plus 5 buttons wired through a single resistor ladder into one analog pin — using its standard
 pinout, as used by e.g. [dzindra/lcdkeypad](https://github.com/dzindra/lcdkeypad).
 
-Unlike the [LED matrix](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/led/LedMatrix.java), this
+Unlike the [LED matrix](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrix.java), this
 shield needs no new compiler intrinsic: every operation is built entirely from
-[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/gpio/Gpio.java) pin operations and
+[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/io/gpio/Gpio.java) pin operations and
 [`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/util/Delay.java), so it works today on any
 board Juno's ASM backend targets.
 

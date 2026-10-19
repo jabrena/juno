@@ -45,8 +45,8 @@ the classic single-LED blink.
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.time.Clock;
-import io.github.jabrena.juno.api.io.gpio.DigitalOutput;
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.io.gpio.DigitalOutput;
+import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class ClockBlink {
