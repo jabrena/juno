@@ -1,12 +1,14 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.i2c.I2c;
 import io.github.jabrena.juno.api.util.Delay;
 
 /**
  * Probes Seeed's Grove 3-Axis Digital Compass V2.0, which uses a BMM150, and reads its raw axes
  * without allocating. The module must be plugged into one of the shield's I2C sockets, never a D
- * socket.
+ * socket. {@code new GroveCompassProbe(i2c)} probes through a given {@link I2c} instead of the board's, which is
+ * how a unit test mocks it.
  */
 public final class GroveCompassProbe {
     public static final int NOT_FOUND = 0;
@@ -24,30 +26,39 @@ public final class GroveCompassProbe {
     private static final int BMM150_DATA_Y_LSB = 0x44;
     private static final int BMM150_DATA_Z_LSB = 0x46;
 
-    private GroveCompassProbe() {
+    private final I2c i2c;
+
+    /** A probe on the board's own I2C bus. Create it once, at startup. */
+    public GroveCompassProbe() {
+        this(MCU.getI2c());
+    }
+
+    /** A probe that talks to the compass through {@code i2c}: a mocked one in a unit test. */
+    public GroveCompassProbe(I2c i2c) {
+        this.i2c = i2c;
     }
 
     /** Starts I2C, probes the BMM150 and returns its chip identifier when present. */
-    public static int detect() {
-        I2c.begin();
+    public int detect() {
+        i2c.begin();
         // BMM150 starts suspended; the power-control bit makes its chip ID readable.
-        I2c.writeRegister(BMM150_ADDRESS, BMM150_POWER_CONTROL, 0x01);
+        i2c.writeRegister(BMM150_ADDRESS, BMM150_POWER_CONTROL, 0x01);
         Delay.millis(3);
-        if (I2c.readRegister(BMM150_ADDRESS, BMM150_CHIP_ID) == 0x32) {
-            I2c.writeRegister(BMM150_ADDRESS, BMM150_OPERATION_MODE, 0x00);
+        if (i2c.readRegister(BMM150_ADDRESS, BMM150_CHIP_ID) == 0x32) {
+            i2c.writeRegister(BMM150_ADDRESS, BMM150_OPERATION_MODE, 0x00);
             return BMM150;
         }
         return NOT_FOUND;
     }
 
     /** Reads uncalibrated BMM150 magnetic-field counts into {@code axes}: X, Y and Z. */
-    public static boolean readRaw(int[] axes, int axesLength) {
+    public boolean readRaw(int[] axes, int axesLength) {
         if (axesLength < AXIS_LENGTH || axesLength > axes.length) {
             throw new IllegalArgumentException("axesLength must be at least 3 and fit axes");
         }
-        int x = I2c.readRegister16(BMM150_ADDRESS, BMM150_DATA_X_LSB);
-        int y = I2c.readRegister16(BMM150_ADDRESS, BMM150_DATA_Y_LSB);
-        int z = I2c.readRegister16(BMM150_ADDRESS, BMM150_DATA_Z_LSB);
+        int x = i2c.readRegister16(BMM150_ADDRESS, BMM150_DATA_X_LSB);
+        int y = i2c.readRegister16(BMM150_ADDRESS, BMM150_DATA_Y_LSB);
+        int z = i2c.readRegister16(BMM150_ADDRESS, BMM150_DATA_Z_LSB);
         if (x < 0 || y < 0 || z < 0) {
             return false;
         }

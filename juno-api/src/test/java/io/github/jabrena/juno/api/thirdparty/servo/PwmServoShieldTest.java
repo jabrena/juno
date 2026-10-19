@@ -1,130 +1,159 @@
 package io.github.jabrena.juno.api.thirdparty.servo;
 
+import io.github.jabrena.juno.api.hardware.internal.NativeI2c;
 import io.github.jabrena.juno.api.io.i2c.I2c;
 import io.github.jabrena.juno.api.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @DisplayName("PWM servo shield")
 class PwmServoShieldTest {
+    private I2c bus;
+    private PwmServoShield shield;
 
     @BeforeEach
     void startWithAnEmptyBus() {
         Wire.resetBoard();
-        I2c.reset();
-        PwmServoShield.begin();
+        bus = mock(I2c.class);
+        shield = new PwmServoShield(bus);
+        shield.begin();
     }
 
     @Test
     @DisplayName("Begin opens the I2C bus once")
     void shouldOpenTheI2cBusOnce() {
         // When & Then
-        assertThat(I2c.begins).isEqualTo(1);
+        verify(bus, times(1)).begin();
     }
 
     @Test
     @DisplayName("Begin sleeps the oscillator while it sets the 50 Hz prescaler")
     void shouldSleepTheOscillatorWhileSettingTheFiftyHertzPrescaler() {
         // When & Then
-        assertThat(flat(I2c.writes.subList(0, 3))).containsExactly(
-                0x40, 0x00, 0x10,
-                0x40, 0xFE, 121,
-                0x40, 0x00, 0x00);
+        InOrder order = inOrder(bus);
+        order.verify(bus).writeRegister(0x40, 0x00, 0x10);
+        order.verify(bus).writeRegister(0x40, 0xFE, 121);
+        order.verify(bus).writeRegister(0x40, 0x00, 0x00);
     }
 
     @Test
     @DisplayName("Write maps an angle to its pulse width ticks")
     void shouldMapAnAngleToItsPulseWidthTicks() {
         // Given
-        I2c.writes.clear();
+        clearInvocations(bus);
 
         // When
-        PwmServoShield.write(0, 90);
+        shield.write(0, 90);
 
         // Then
-        assertThat(flat(I2c.writes)).containsExactly(
-                0x40, 0x06, 0x00,
-                0x40, 0x07, 0x00,
-                0x40, 0x08, 301 & 0xFF,
-                0x40, 0x09, 301 >> 8);
+        InOrder order = inOrder(bus);
+        order.verify(bus).writeRegister(0x40, 0x06, 0x00);
+        order.verify(bus).writeRegister(0x40, 0x07, 0x00);
+        order.verify(bus).writeRegister(0x40, 0x08, 301 & 0xFF);
+        order.verify(bus).writeRegister(0x40, 0x09, 301 >> 8);
+        verifyNoMoreInteractions(bus);
     }
 
     @Test
     @DisplayName("Angles above the servo range are clamped")
     void shouldClampAnglesAboveTheServoRange() {
         // Given
-        I2c.writes.clear();
-        PwmServoShield.write(0, 200);
-        int clampedHigh = I2c.writes.get(2)[2];
-        I2c.writes.clear();
+        clearInvocations(bus);
+        shield.write(0, 200);
+        int clampedHigh = offTickLow(0x08);
+        clearInvocations(bus);
 
         // When
-        PwmServoShield.write(0, 180);
+        shield.write(0, 180);
 
         // Then
-        assertThat(I2c.writes.get(2)[2]).isEqualTo(clampedHigh);
+        assertThat(offTickLow(0x08)).isEqualTo(clampedHigh);
     }
 
     @Test
     @DisplayName("Write micros uses the channel registers and clamps to the frame")
     void shouldUseTheChannelRegistersAndClampToTheFrameForWriteMicros() {
         // Given
-        I2c.writes.clear();
+        clearInvocations(bus);
 
         // When
-        PwmServoShield.writeMicros(1, 30_000);
+        shield.writeMicros(1, 30_000);
 
         // Then
-        assertThat(flat(I2c.writes)).containsExactly(
-                0x40, 0x0A, 0x00,
-                0x40, 0x0B, 0x00,
-                0x40, 0x0C, 0xFF,
-                0x40, 0x0D, 0x0F);
+        InOrder order = inOrder(bus);
+        order.verify(bus).writeRegister(0x40, 0x0A, 0x00);
+        order.verify(bus).writeRegister(0x40, 0x0B, 0x00);
+        order.verify(bus).writeRegister(0x40, 0x0C, 0xFF);
+        order.verify(bus).writeRegister(0x40, 0x0D, 0x0F);
+        verifyNoMoreInteractions(bus);
     }
 
     @Test
     @DisplayName("Release turns the channel fully off")
     void shouldTurnTheChannelFullyOffWhenReleased() {
         // Given
-        I2c.writes.clear();
+        clearInvocations(bus);
 
         // When
-        PwmServoShield.release(2);
+        shield.release(2);
 
         // Then
-        assertThat(flat(I2c.writes)).containsExactly(
-                0x40, 0x0E, 0x00,
-                0x40, 0x0F, 0x00,
-                0x40, 0x10, 0x00,
-                0x40, 0x11, 0x10);
+        InOrder order = inOrder(bus);
+        order.verify(bus).writeRegister(0x40, 0x0E, 0x00);
+        order.verify(bus).writeRegister(0x40, 0x0F, 0x00);
+        order.verify(bus).writeRegister(0x40, 0x10, 0x00);
+        order.verify(bus).writeRegister(0x40, 0x11, 0x10);
+        verifyNoMoreInteractions(bus);
     }
 
     @Test
     @DisplayName("Begin can use an alternate address")
     void shouldUseAnAlternateAddressWhenBegunWithOne() {
         // Given
-        I2c.writes.clear();
+        clearInvocations(bus);
 
         // When
-        PwmServoShield.begin(0x41);
+        shield.begin(0x41);
 
         // Then
-        assertThat(I2c.writes.get(0)[0]).isEqualTo(0x41);
+        verify(bus).writeRegister(0x41, 0x00, 0x10);
     }
 
-    private static List<Integer> flat(List<int[]> writes) {
-        List<Integer> values = new ArrayList<>();
-        for (int[] write : writes) {
-            for (int value : write) {
-                values.add(value);
-            }
+    @Test
+    @DisplayName("A shield created without a bus talks over the board's I2C bus")
+    void shouldTalkOverTheBoardsBusByDefault() {
+        // Given
+        I2c board = mock(I2c.class);
+        NativeI2c.setI2c(board);
+
+        // When
+        try {
+            new PwmServoShield().begin();
+        } finally {
+            NativeI2c.setI2c(NativeI2c.INSTANCE);
         }
-        return values;
+
+        // Then
+        verify(board).begin();
+    }
+
+    /** The value last written to {@code register}, the low byte of a channel's off tick. */
+    private int offTickLow(int register) {
+        ArgumentCaptor<Integer> value = ArgumentCaptor.forClass(Integer.class);
+        verify(bus).writeRegister(anyInt(), eq(register), value.capture());
+        return value.getValue();
     }
 }

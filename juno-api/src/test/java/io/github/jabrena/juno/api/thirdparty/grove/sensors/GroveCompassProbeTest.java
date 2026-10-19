@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
+import io.github.jabrena.juno.api.hardware.internal.NativeI2c;
 import io.github.jabrena.juno.api.io.i2c.I2c;
 import io.github.jabrena.juno.api.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,11 +9,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InOrder;
 
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Grove compass probe (BMM150)")
 class GroveCompassProbeTest {
@@ -21,11 +28,20 @@ class GroveCompassProbeTest {
     private static final int BMM150_DATA_X_LSB = 0x42;
     private static final int BMM150_DATA_Y_LSB = 0x44;
     private static final int BMM150_DATA_Z_LSB = 0x46;
+    private static final int BMM150_POWER_CONTROL = 0x4B;
+    private static final int BMM150_OPERATION_MODE = 0x4C;
+
+    private I2c bus;
+    private GroveCompassProbe probe;
 
     @BeforeEach
     void startWithAnEmptyBus() {
         Wire.resetBoard();
-        I2c.reset();
+        bus = mock(I2c.class);
+        // A register a test does not set answers -1, like a device that does not acknowledge.
+        when(bus.readRegister(anyInt(), anyInt())).thenReturn(-1);
+        when(bus.readRegister16(anyInt(), anyInt())).thenReturn(-1);
+        probe = new GroveCompassProbe(bus);
     }
 
     static Stream<Arguments> axisEncodings() {
@@ -51,24 +67,26 @@ class GroveCompassProbeTest {
     @DisplayName("Detects the BMM150 and wakes it up")
     void shouldDetectTheBmm150AndWakeItUp() {
         // Given
-        I2c.device(BMM150_ADDRESS, BMM150_CHIP_ID, 0x32);
+        when(bus.readRegister(BMM150_ADDRESS, BMM150_CHIP_ID)).thenReturn(0x32);
 
         // When
-        int detected = GroveCompassProbe.detect();
+        int detected = probe.detect();
 
         // Then
         assertThat(detected).isEqualTo(GroveCompassProbe.BMM150);
-        assertThat(I2c.writes).extracting(write -> write[2]).containsExactly(0x01, 0x00);
+        InOrder order = inOrder(bus);
+        order.verify(bus).writeRegister(BMM150_ADDRESS, BMM150_POWER_CONTROL, 0x01);
+        order.verify(bus).writeRegister(BMM150_ADDRESS, BMM150_OPERATION_MODE, 0x00);
     }
 
     @Test
     @DisplayName("Reports no compass when the chip ID is wrong")
     void shouldReportNoCompassWhenTheChipIdIsWrong() {
         // Given
-        I2c.device(BMM150_ADDRESS, BMM150_CHIP_ID, 0x00);
+        when(bus.readRegister(BMM150_ADDRESS, BMM150_CHIP_ID)).thenReturn(0x00);
 
         // When
-        int detected = GroveCompassProbe.detect();
+        int detected = probe.detect();
 
         // Then
         assertThat(detected).isEqualTo(GroveCompassProbe.NOT_FOUND);
@@ -78,13 +96,13 @@ class GroveCompassProbeTest {
     @DisplayName("Reads the three axes from the data registers")
     void shouldReadTheThreeAxesFromTheDataRegisters() {
         // Given
-        I2c.device(BMM150_ADDRESS, BMM150_DATA_X_LSB, 123 << 3);
-        I2c.device(BMM150_ADDRESS, BMM150_DATA_Y_LSB, (0x2000 - 123) << 3);
-        I2c.device(BMM150_ADDRESS, BMM150_DATA_Z_LSB, 456 << 1);
+        when(bus.readRegister16(BMM150_ADDRESS, BMM150_DATA_X_LSB)).thenReturn(123 << 3);
+        when(bus.readRegister16(BMM150_ADDRESS, BMM150_DATA_Y_LSB)).thenReturn((0x2000 - 123) << 3);
+        when(bus.readRegister16(BMM150_ADDRESS, BMM150_DATA_Z_LSB)).thenReturn(456 << 1);
         int[] axes = new int[GroveCompassProbe.AXIS_LENGTH];
 
         // When
-        boolean read = GroveCompassProbe.readRaw(axes, axes.length);
+        boolean read = probe.readRaw(axes, axes.length);
 
         // Then
         assertThat(read).isTrue();
@@ -95,22 +113,41 @@ class GroveCompassProbeTest {
     @DisplayName("Reports a failed read when an axis does not answer")
     void shouldReportAFailedReadWhenAnAxisDoesNotAnswer() {
         // Given
-        I2c.device(BMM150_ADDRESS, BMM150_DATA_X_LSB, 0);
-        I2c.device(BMM150_ADDRESS, BMM150_DATA_Y_LSB, 0);
+        when(bus.readRegister16(BMM150_ADDRESS, BMM150_DATA_X_LSB)).thenReturn(0);
+        when(bus.readRegister16(BMM150_ADDRESS, BMM150_DATA_Y_LSB)).thenReturn(0);
         int[] axes = new int[GroveCompassProbe.AXIS_LENGTH];
 
         // When
-        boolean read = GroveCompassProbe.readRaw(axes, axes.length);
+        boolean read = probe.readRaw(axes, axes.length);
 
         // Then
         assertThat(read).isFalse();
     }
 
     @Test
+    @DisplayName("A probe created without a bus talks over the board's I2C bus")
+    void shouldTalkOverTheBoardsBusByDefault() {
+        // Given
+        NativeI2c.setI2c(bus);
+
+        // When
+        int detected;
+        try {
+            detected = new GroveCompassProbe().detect();
+        } finally {
+            NativeI2c.setI2c(NativeI2c.INSTANCE);
+        }
+
+        // Then
+        assertThat(detected).isEqualTo(GroveCompassProbe.NOT_FOUND);
+        verify(bus).begin();
+    }
+
+    @Test
     @DisplayName("Rejects an axis buffer that is too short")
     void shouldRejectAnAxisBufferThatIsTooShort() {
         // When & Then
-        assertThatThrownBy(() -> GroveCompassProbe.readRaw(new int[2], 2))
+        assertThatThrownBy(() -> probe.readRaw(new int[2], 2))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

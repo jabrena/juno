@@ -769,10 +769,11 @@ class JunoCompilerTest {
                             GrovePirMotion pir = new GrovePirMotion();
                             GroveAnalogGas gasSensor = new GroveAnalogGas();
                             pir.begin(shield.getD3());
-                            int compass = GroveCompassProbe.detect();
+                            GroveCompassProbe compassProbe = new GroveCompassProbe();
+                            int compass = compassProbe.detect();
                             int[] axes = new int[3];
                             boolean compassReading = compass == GroveCompassProbe.BMM150
-                                    && GroveCompassProbe.readRaw(axes, axes.length);
+                                    && compassProbe.readRaw(axes, axes.length);
                             int gas = gasSensor.rawValue(shield.getA0());
                             boolean motion = pir.motionDetected(shield.getD3());
                             if (motion && gas > 100 && compassReading) {
