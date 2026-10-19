@@ -624,8 +624,8 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects capabilities the board lacks")
     void shouldRejectCapabilitiesTheBoardLacks() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.AvrMatrix", "LedMatrix.begin();",
-                "import io.github.jabrena.juno.api.led.LedMatrix;"))
+        assertThatThrownBy(() -> compile("demo.AvrMatrix", "MCU.getLedMatrix().begin();",
+                "import io.github.jabrena.juno.api.hardware.MCU;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO WiFi Rev2 has no onboard LED matrix");
     }

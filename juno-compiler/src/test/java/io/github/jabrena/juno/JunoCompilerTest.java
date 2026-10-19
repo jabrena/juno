@@ -592,12 +592,12 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.led.LedMatrix;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     public final class Heart {
                         public static void main(String[] args) {
-                            LedMatrix.begin();
-                            LedMatrix.loadFrame(0x3184a444, 0x44042081, 0x100a0040);
-                            LedMatrix.clear();
+                            MCU.getLedMatrix().begin();
+                            MCU.getLedMatrix().loadFrame(0x3184a444, 0x44042081, 0x100a0040);
+                            MCU.getLedMatrix().clear();
                         }
                     }
                     """;
@@ -644,12 +644,12 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.led.LedCanvas;
-                    import io.github.jabrena.juno.api.led.LedMatrix;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     public final class Digits {
                         public static void main(String[] args) {
                             boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                             LedCanvas.drawDigit(frame, 7, 4, 0);
-                            LedMatrix.loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                            MCU.getLedMatrix().loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
                         }
                     }
                     """;
@@ -661,9 +661,11 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame");
             // The glyphs are one constant table read by index, so drawing a digit reaches no per-glyph
-            // code: locked at 10 (main, drawDigit/packWord/setPixel and their helpers, digitPixel,
-            // charPixel and the 3-word LedMatrix.loadFrame wrapper), where a function per glyph took 22.
-            assertThat(result.report().reachableMethods()).isEqualTo(10);
+            // code: locked at 14 (main, drawDigit/packWord/setPixel and their helpers, digitPixel,
+            // charPixel, the 3-word NativeLedMatrix.loadFrame wrapper, and MCU.getLedMatrix with
+            // NativeLedMatrix's getter, constructor and static initializer); before the matrix moved behind
+            // MCU it was 10, where a function per glyph took 22.
+            assertThat(result.report().reachableMethods()).isEqualTo(14);
         }
 
         @Test
@@ -673,12 +675,12 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.led.LedCanvas;
-                    import io.github.jabrena.juno.api.led.LedMatrix;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     public final class Digits {
                         public static void main(String[] args) {
                             boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                             LedCanvas.drawDigit(frame, 7, 4, 0);
-                            LedMatrix.loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                            MCU.getLedMatrix().loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
                         }
                     }
                     """;
@@ -697,12 +699,12 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.led.LedCanvas;
-                    import io.github.jabrena.juno.api.led.LedMatrix;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     public final class ScrollingText {
                         public static void main(String[] args) {
                             boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                             LedCanvas.drawText(frame, "Hi", 0, 0);
-                            LedMatrix.loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                            MCU.getLedMatrix().loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
                         }
                     }
                     """;

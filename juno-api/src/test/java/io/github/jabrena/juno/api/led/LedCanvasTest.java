@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.led;
 
+import io.github.jabrena.juno.api.hardware.internal.NativeLedMatrix;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,13 +13,23 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @DisplayName("LED matrix canvas")
 class LedCanvasTest {
+    private final LedMatrix matrix = mock(LedMatrix.class);
 
     @BeforeEach
     void useTheUnoR4Matrix() {
-        LedMatrix.columns = 12;
+        when(matrix.columns()).thenReturn(12);
+        NativeLedMatrix.setLedMatrix(matrix);
+    }
+
+    @AfterEach
+    void restoreTheBoardMatrix() {
+        NativeLedMatrix.setLedMatrix(NativeLedMatrix.INSTANCE);
     }
 
     @Test
@@ -48,7 +60,7 @@ class LedCanvasTest {
     @DisplayName("The UNO Q width reaches the thirteenth column")
     void shouldLightTheThirteenthColumnOnTheUnoQ() {
         // Given
-        LedMatrix.columns = 13;
+        when(matrix.columns()).thenReturn(13);
         boolean[][] frame = newFrame();
 
         // When
@@ -62,7 +74,7 @@ class LedCanvasTest {
     @DisplayName("The width is thirteen columns on the UNO Q")
     void shouldReportAThirteenColumnWidthOnTheUnoQ() {
         // Given
-        LedMatrix.columns = 13;
+        when(matrix.columns()).thenReturn(13);
 
         // When & Then
         assertThat(LedCanvas.width()).isEqualTo(13);
@@ -127,7 +139,7 @@ class LedCanvasTest {
         LedCanvas.show(frame);
 
         // Then
-        assertThat(LedMatrix.lastFrame).containsExactly(0x80000000, 0, 0, 0);
+        verify(matrix).loadFrame(0x80000000, 0, 0, 0);
     }
 
     @Test

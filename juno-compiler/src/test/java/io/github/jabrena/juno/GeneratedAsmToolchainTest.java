@@ -208,7 +208,6 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 import io.github.jabrena.juno.api.io.serial.BaudRate;
                 import io.github.jabrena.juno.api.io.serial.Serial;
-                import io.github.jabrena.juno.api.led.LedMatrix;
                 public final class AsmSmoke {
                     static int mix(int value) { return (value << 2) ^ 7; }
                     public static void main(String[] args) {
@@ -219,9 +218,9 @@ class GeneratedAsmToolchainTest {
                         Random.seed(42);
                         int randomValue = Random.nextInt(1, 7);
                         gpio.digitalWrite(12, randomValue > 0);
-                        LedMatrix.begin();
-                        LedMatrix.loadFrame(0x3184a444, 0x44042081, 0x100a0040);
-                        LedMatrix.clear();
+                        MCU.getLedMatrix().begin();
+                        MCU.getLedMatrix().loadFrame(0x3184a444, 0x44042081, 0x100a0040);
+                        MCU.getLedMatrix().clear();
                         Serial.begin(BaudRate.BAUD_9600);
                         Serial.print(randomValue > 0);
                         Serial.println(randomValue <= 0);

@@ -1,19 +1,20 @@
 package io.github.jabrena.juno.api.led;
 
 /**
- * The board's built-in LED matrix operations, recognized as compiler intrinsics by Juno: 12x8 on the UNO R4
- * WiFi and 13x8 on the UNO Q. {@link #columns()} tells a program which one it was compiled for; frames are
- * packed row by row, MSB first, into 32-bit words ({@code columns() * 8} pixels: three words on the R4, four
- * on the Q).
+ * The board's built-in LED matrix: 12x8 on the UNO R4 WiFi and 13x8 on the UNO Q.
+ * {@link io.github.jabrena.juno.api.hardware.MCU#getLedMatrix()} is the board's own matrix, which the compiler lowers
+ * to the {@code Arduino_LED_Matrix} library; a unit test passes {@code mock(LedMatrix.class)} instead. {@link #columns()}
+ * tells a program which matrix it was compiled for; frames are packed row by row, MSB first, into 32-bit words
+ * ({@code columns() * 8} pixels: three words on the R4, four on the Q). Get the board's matrix once, at startup, and
+ * pass it to the classes that need it.
  */
-public final class LedMatrix {
-    private LedMatrix() {
-    }
+public interface LedMatrix {
 
-    public static native void begin();
+    /** Starts the matrix. */
+    void begin();
 
     /** The number of columns of the matrix on the board this program is compiled for: 12 or 13. */
-    public static native int columns();
+    int columns();
 
     /**
      * Loads a frame packed MSB-first into four 32-bit words, exactly as the underlying
@@ -21,12 +22,13 @@ public final class LedMatrix {
      * the UNO R4's 96 pixels use the first three words and ignore {@code word3}; the UNO Q's 104 pixels use
      * all four, the last holding the final 8 pixels in its top bits.
      */
-    public static native void loadFrame(int word0, int word1, int word2, int word3);
+    void loadFrame(int word0, int word1, int word2, int word3);
 
     /** Loads a frame of at most 96 pixels using {@link #loadFrame(int, int, int, int)} with its fourth word set to zero. */
-    public static void loadFrame(int word0, int word1, int word2) {
+    default void loadFrame(int word0, int word1, int word2) {
         loadFrame(word0, word1, word2, 0);
     }
 
-    public static native void clear();
+    /** Turns every pixel off. */
+    void clear();
 }

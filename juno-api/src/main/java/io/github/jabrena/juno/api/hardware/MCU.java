@@ -5,19 +5,21 @@ import io.github.jabrena.juno.api.hardware.internal.NativeBoardModel;
 import io.github.jabrena.juno.api.hardware.internal.NativeClock;
 import io.github.jabrena.juno.api.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.api.hardware.internal.NativeI2c;
+import io.github.jabrena.juno.api.hardware.internal.NativeLedMatrix;
 import io.github.jabrena.juno.api.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.api.hid.Mouse;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.io.i2c.I2c;
+import io.github.jabrena.juno.api.led.LedMatrix;
 import io.github.jabrena.juno.api.time.Clock;
 
 /**
  * The board's microcontroller unit (MCU): its {@link Gpio} pins, its {@link I2c} bus, its USB {@link Mouse}, its
- * {@link Clock}, which board it is ({@link BoardModel}) and its arena and flash figures ({@link BoardMemory}). Each
- * getter returns the same instance every call, backed by the compiler's intrinsics. Get them once, at startup, and pass
- * them to the classes that need them; a unit test passes {@code mock(Gpio.class)}, {@code mock(I2c.class)},
- * {@code mock(Mouse.class)}, {@code mock(Clock.class)}, {@code mock(BoardModel.class)} or
- * {@code mock(BoardMemory.class)} instead.
+ * built-in {@link LedMatrix}, its {@link Clock}, which board it is ({@link BoardModel}) and its arena and flash figures
+ * ({@link BoardMemory}). Each getter returns the same instance every call, backed by the compiler's intrinsics. Get
+ * them once, at startup, and pass them to the classes that need them; a unit test passes {@code mock(Gpio.class)},
+ * {@code mock(I2c.class)}, {@code mock(Mouse.class)}, {@code mock(LedMatrix.class)}, {@code mock(Clock.class)},
+ * {@code mock(BoardModel.class)} or {@code mock(BoardMemory.class)} instead.
  */
 public final class MCU {
     private MCU() {
@@ -36,6 +38,11 @@ public final class MCU {
     /** The board acting as a USB HID mouse; only boards with native USB (UNO R4 WiFi) support it. */
     public static Mouse getMouse() {
         return NativeMouse.mouse();
+    }
+
+    /** The board's built-in LED matrix; only the UNO R4 WiFi and the UNO Q have one. */
+    public static LedMatrix getLedMatrix() {
+        return NativeLedMatrix.ledMatrix();
     }
 
     /** The board's monotonic clock. */

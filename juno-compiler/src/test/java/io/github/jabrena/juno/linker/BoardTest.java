@@ -124,14 +124,14 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 @Board(ArduinoUnoQ.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
-                        LedMatrix.begin();
-                        LedMatrix.loadFrame(1, 2, 3, 4);
-                        int columns = LedMatrix.columns();
-                        LedMatrix.clear();
+                        MCU.getLedMatrix().begin();
+                        MCU.getLedMatrix().loadFrame(1, 2, 3, 4);
+                        int columns = MCU.getLedMatrix().columns();
+                        MCU.getLedMatrix().clear();
                     }
                 }
                 """;
@@ -153,14 +153,14 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 @Board(ArduinoUnoQ.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
-                        LedMatrix.begin();
-                        LedMatrix.loadFrame(1, 2, 3, 4);
-                        int columns = LedMatrix.columns();
-                        LedMatrix.clear();
+                        MCU.getLedMatrix().begin();
+                        MCU.getLedMatrix().loadFrame(1, 2, 3, 4);
+                        int columns = MCU.getLedMatrix().columns();
+                        MCU.getLedMatrix().clear();
                     }
                 }
                 """;
@@ -380,11 +380,11 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
-                        LedMatrix.begin();
+                        MCU.getLedMatrix().begin();
                     }
                 }
                 """;
@@ -405,11 +405,11 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
-                        LedMatrix.begin();
+                        MCU.getLedMatrix().begin();
                     }
                 }
                 """;
@@ -556,13 +556,13 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.led.LedMatrix;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 @Board(ArduinoUnoR4WiFi.class)
                 public final class OnUnoR4 {
                     public static void main(String[] args) {
                         Delay.millis(1);
-                        LedMatrix.begin();
-                        int columns = LedMatrix.columns();
+                        MCU.getLedMatrix().begin();
+                        int columns = MCU.getLedMatrix().columns();
                     }
                 }
                 """;
