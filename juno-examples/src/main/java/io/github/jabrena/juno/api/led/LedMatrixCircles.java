@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.led;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.util.Delay;
 
 /**
@@ -16,7 +17,8 @@ public final class LedMatrixCircles {
     private static final int RADIUS = 3;
 
     public static void main(String[] args) {
-        LedMatrix.begin();
+        LedMatrix matrix = MCU.getLedMatrix();
+        matrix.begin();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {
@@ -24,13 +26,13 @@ public final class LedMatrixCircles {
             LedCanvas.fillCircle(frame, CENTER_X, CENTER_Y, RADIUS);
             LedCanvas.show(frame);
             Delay.millis(800);
-            LedMatrix.clear();
+            matrix.clear();
 
             LedCanvas.clear(frame);
             LedCanvas.drawCircle(frame, CENTER_X, CENTER_Y, RADIUS);
             LedCanvas.show(frame);
             Delay.millis(800);
-            LedMatrix.clear();
+            matrix.clear();
         }
     }
 }

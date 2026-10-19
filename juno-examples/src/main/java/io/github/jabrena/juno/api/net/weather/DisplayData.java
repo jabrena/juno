@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.net.weather;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.led.LedCanvas;
 import io.github.jabrena.juno.api.led.LedMatrix;
 import io.github.jabrena.juno.api.util.Delay;
@@ -9,18 +10,20 @@ public final class DisplayData {
     private static final int CHAR_SPACING = 6;
     private static final int MAX_MESSAGE_CHARS = 24;
 
+    private final LedMatrix matrix;
     private final boolean[][] frame;
     private final int[] message;
 
-    /** Creates the fixed display buffers once for reuse throughout the application. */
+    /** Takes the board's LED matrix and creates the fixed display buffers once for reuse throughout the application. */
     public DisplayData() {
+        matrix = MCU.getLedMatrix();
         frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
         message = new int[MAX_MESSAGE_CHARS];
     }
 
     /** Initializes the board's LED matrix. */
     public void begin() {
-        LedMatrix.begin();
+        matrix.begin();
     }
 
     /** Displays {@code message} as a scrolling message, verbatim. */
@@ -85,7 +88,7 @@ public final class DisplayData {
             }
             LedCanvas.show(frame);
             Delay.millis(80);
-            LedMatrix.clear();
+            matrix.clear();
             offset = offset - 1;
         }
     }

@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.led;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.util.Delay;
 
 /**
@@ -12,7 +13,8 @@ import io.github.jabrena.juno.api.util.Delay;
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LedMatrixRectangles {
     public static void main(String[] args) {
-        LedMatrix.begin();
+        LedMatrix matrix = MCU.getLedMatrix();
+        matrix.begin();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {
@@ -20,25 +22,25 @@ public final class LedMatrixRectangles {
             LedCanvas.fillRect(frame, 3, 1, 6, 6);
             LedCanvas.show(frame);
             Delay.millis(800);
-            LedMatrix.clear();
+            matrix.clear();
 
             LedCanvas.clear(frame);
             LedCanvas.drawRect(frame, 3, 1, 6, 6);
             LedCanvas.show(frame);
             Delay.millis(800);
-            LedMatrix.clear();
+            matrix.clear();
 
             LedCanvas.clear(frame);
             LedCanvas.fillRect(frame, 1, 2, 10, 4);
             LedCanvas.show(frame);
             Delay.millis(800);
-            LedMatrix.clear();
+            matrix.clear();
 
             LedCanvas.clear(frame);
             LedCanvas.drawRect(frame, 1, 2, 10, 4);
             LedCanvas.show(frame);
             Delay.millis(800);
-            LedMatrix.clear();
+            matrix.clear();
         }
     }
 }

@@ -6,7 +6,6 @@ import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.hid.Mouse;
 import io.github.jabrena.juno.api.hid.MouseIcon;
 import io.github.jabrena.juno.api.io.gpio.DigitalOutput;
-import io.github.jabrena.juno.api.led.LedMatrix;
 import io.github.jabrena.juno.api.util.Delay;
 
 /**
@@ -61,7 +60,7 @@ public final class RatonLocoTFT {
         Mouse mouse = MCU.getMouse();
         mouse.begin();
 
-        LedMatrix.begin();
+        MCU.getLedMatrix().begin();
         MouseIcon.draw();
 
         TftTouchShield.begin();
