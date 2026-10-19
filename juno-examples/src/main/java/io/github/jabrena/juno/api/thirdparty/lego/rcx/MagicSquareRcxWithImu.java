@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.imu.NineAxisMotionShield;
@@ -15,6 +17,8 @@ import io.github.jabrena.juno.api.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquareRcxWithImu {
+    private static final NineAxisMotionShield IMU = new NineAxisMotionShield();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final int STRAIGHT_MILLIS = 3000;
     private static final int TURN_DEGREES = 90;
@@ -22,14 +26,21 @@ public class MagicSquareRcxWithImu {
     private static final int STOP_MILLIS = 2000;
     private static final int REPEAT_MILLIS = 100;
 
+    private final RcxRemote remote;
+
+    MagicSquareRcxWithImu(RcxRemote remote) {
+        this.remote = remote;
+    }
+
     public static void main(String[] args) {
+        RcxRemote remote = new RcxRemote();
         Serial.begin(BaudRate.BAUD_115200);
-        MagicSquareRcxWithImu app = new MagicSquareRcxWithImu();
-        if (!NineAxisMotionShield.begin()) {
+        MagicSquareRcxWithImu app = new MagicSquareRcxWithImu(remote);
+        if (!IMU.begin()) {
             Serial.println("No BNO055 found: is the 9 Axis Motion Shield attached?");
             return;
         }
-        RcxRemote.begin(-1, TRANSMIT_PIN);
+        remote.begin(-1, TRANSMIT_PIN);
 
         while (true) {
             Serial.println("Straight");
@@ -43,24 +54,24 @@ public class MagicSquareRcxWithImu {
 
     /** Holds buttons on the virtual remote the way a real one does: a command every 100 ms. */
     private void drive(int buttons, int millis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < millis) {
-            RcxRemote.sendButtons(buttons);
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < millis) {
+            remote.sendButtons(buttons);
             Delay.millis(REPEAT_MILLIS);
         }
     }
 
     /** Spins left, sending commands until the sensor reports TURN_DEGREES anticlockwise, or the safety timeout. */
     private void turnLeft() {
-        int startHeading = NineAxisMotionShield.headingDegrees();
-        int started = Clock.millis();
-        while (NineAxisMotionShield.turnedSince(startHeading) > -TURN_DEGREES && Clock.millis() - started < TURN_TIMEOUT_MILLIS) {
-            RcxRemote.sendButtons(RcxRemote.A_BACKWARD | RcxRemote.B_FORWARD);
+        int startHeading = IMU.headingDegrees();
+        int started = CLOCK.millis();
+        while (IMU.turnedSince(startHeading) > -TURN_DEGREES && CLOCK.millis() - started < TURN_TIMEOUT_MILLIS) {
+            remote.sendButtons(RcxRemote.A_BACKWARD | RcxRemote.B_FORWARD);
         }
     }
 
     private void stop() {
-        RcxRemote.sendButtons(0);
+        remote.sendButtons(0);
         Delay.millis(STOP_MILLIS);
     }
 }

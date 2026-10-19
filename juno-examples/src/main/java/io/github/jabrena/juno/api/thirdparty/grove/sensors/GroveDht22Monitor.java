@@ -14,12 +14,14 @@ public final class GroveDht22Monitor {
     }
 
     public static void main(String[] args) {
+        GroveBaseShield shield = new GroveBaseShield();
         Serial.begin(BaudRate.BAUD_115200);
+        GroveDht22 dht22 = new GroveDht22();
         int[] reading = new int[GroveDht22.READING_LENGTH];
         int[] frame = new int[GroveDht22.FRAME_LENGTH];
         Delay.millis(1000);
         while (true) {
-            if (GroveDht22.read(GroveBaseShield.D4, reading, reading.length, frame, frame.length)) {
+            if (dht22.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
                 Serial.print("Temperature C: ");
                 printTenths(reading[GroveDht22.TEMPERATURE_TENTHS_CELSIUS]);
                 Serial.print("  Humidity %: ");

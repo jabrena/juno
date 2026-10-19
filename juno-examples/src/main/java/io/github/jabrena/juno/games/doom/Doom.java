@@ -2,6 +2,7 @@ package io.github.jabrena.juno.games.doom;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -33,6 +34,7 @@ import io.github.jabrena.juno.api.util.Random;
  */
 @Board(ArduinoUnoQ.class)
 public final class Doom {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int FRAME_MILLIS = 40;
 
     private Doom() {
@@ -58,22 +60,22 @@ public final class Doom {
         Interludes.waitForTap();
         Controls.choosePilot();
         chooseGame();
-        Random.seed(Clock.micros());
+        Random.seed(CLOCK.micros());
         enterLevel(ceilings, monsters, shots, taken, false);
 
-        int next = Clock.millis();
+        int next = CLOCK.millis();
         int mapStarted = next;
         int frame = 0;
         while (true) {
-            while (Clock.millis() - next < 0) {
+            while (CLOCK.millis() - next < 0) {
                 Delay.millis(1);
             }
             next = next + FRAME_MILLIS;
-            if (Clock.millis() - next > 4 * FRAME_MILLIS) {
-                next = Clock.millis();
+            if (CLOCK.millis() - next > 4 * FRAME_MILLIS) {
+                next = CLOCK.millis();
             }
             frame = frame + 1;
-            int started = Clock.micros();
+            int started = CLOCK.micros();
             Weapon.tick();
             if (Player.hurt > 0) {
                 Player.hurt = Player.hurt - 1;
@@ -82,7 +84,7 @@ public final class Doom {
                 Hud.drawBar();
             }
             if (Controls.pauseTapped()) {
-                int pausedAt = Clock.millis();
+                int pausedAt = CLOCK.millis();
                 boolean quit = Interludes.paused();
                 if (quit) {
                     Interludes.title();
@@ -95,7 +97,7 @@ public final class Doom {
                     Hud.drawBar();
                     DisplayList.clearView();
                 }
-                next = Clock.millis();
+                next = CLOCK.millis();
                 mapStarted = quit ? next : mapStarted + next - pausedAt;
                 continue;
             }
@@ -107,17 +109,17 @@ public final class Doom {
             Player.settle();
             Items.pickUp(taken);
             Monsters.think(monsters, shots, ceilings, frame);
-            int building = Clock.micros();
+            int building = CLOCK.micros();
             Renderer.build(lines, clips, depths, stack, ceilings, monsters, shots, taken);
-            int presenting = Clock.micros();
+            int presenting = CLOCK.micros();
             DisplayList.present(lines, changes);
-            FrameStats.record(started, building, presenting, Clock.micros());
+            FrameStats.record(started, building, presenting, CLOCK.micros());
             if ((frame & 3) == 0) {
                 Hud.drawStatus();
             }
             if (Campaign.mapWon(monsters)) {
                 // The next map is read and its route planned while the tally shows; a tap then starts it.
-                Interludes.complete(Clock.millis() - mapStarted, taken);
+                Interludes.complete(CLOCK.millis() - mapStarted, taken);
                 boolean ready = !World.fromWad || !Campaign.episodeFinished() && nextMap(true);
                 if (ready) {
                     World.planRoute();
@@ -131,7 +133,7 @@ public final class Doom {
                     chooseGame();
                 }
                 enterLevel(ceilings, monsters, shots, taken, false);
-                next = Clock.millis();
+                next = CLOCK.millis();
                 mapStarted = next;
             } else if (Player.health == 0) {
                 // As in DOOM the map can restart where the marine died, or the player quits to the title.
@@ -142,7 +144,7 @@ public final class Doom {
                     chooseGame();
                 }
                 enterLevel(ceilings, monsters, shots, taken, restart);
-                next = Clock.millis();
+                next = CLOCK.millis();
                 mapStarted = next;
             }
         }

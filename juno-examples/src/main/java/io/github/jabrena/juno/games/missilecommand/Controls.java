@@ -1,11 +1,14 @@
 package io.github.jabrena.juno.games.missilecommand;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
 /** Touch input and pilot selection; the CPU player itself lives in {@link AutopilotMissileCommand}. */
 final class Controls {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int CHOICE_WIDTH = 100;
     private static final int CHOICE_HEIGHT = 60;
     private static final int CHOICE_GAP = 16;
@@ -105,9 +108,9 @@ final class Controls {
 
     /** Waits for a tap, giving up and returning {@code false} if none arrives within {@code timeoutMillis}. */
     static boolean waitForTap(int timeoutMillis) {
-        int start = Clock.millis();
+        int start = CLOCK.millis();
         while (!TftTouchShield.readTouch()) {
-            if (Clock.millis() - start >= timeoutMillis) {
+            if (CLOCK.millis() - start >= timeoutMillis) {
                 return false;
             }
             Delay.millis(10);

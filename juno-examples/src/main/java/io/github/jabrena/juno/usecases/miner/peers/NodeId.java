@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.peers;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.time.Clock;
@@ -15,6 +17,7 @@ import io.github.jabrena.juno.games.blockchain.Bytes;
  * never draw the same sequence, however close their boot times are.
  */
 public final class NodeId {
+    private static final Clock CLOCK = MCU.getClock();
     public static final int SIZE = 16;
 
     private static final String HEX = "0123456789abcdef";
@@ -26,10 +29,10 @@ public final class NodeId {
     public static void generate(byte[] uuid) {
         int[] address = new int[4];
         Wifi.localIP(address);
-        Random.seed(Clock.micros() ^ (address[0] << 24 | address[1] << 16 | address[2] << 8 | address[3]));
+        Random.seed(CLOCK.micros() ^ (address[0] << 24 | address[1] << 16 | address[2] << 8 | address[3]));
         for (int i = 0; i < SIZE; i++) {
             // More boot-clock jitter goes into every byte, on top of the seeded sequence.
-            uuid[i] = (byte) (Random.nextInt(256) ^ Clock.micros());
+            uuid[i] = (byte) (Random.nextInt(256) ^ CLOCK.micros());
         }
         uuid[6] = (byte) (uuid[6] & 0x0f | 0x40);
         uuid[8] = (byte) (uuid[8] & 0x3f | 0x80);

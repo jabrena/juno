@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.chain;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -20,6 +22,7 @@ import io.github.jabrena.juno.usecases.miner.services.NodeService;
  * the tip moves, and the nodes row only when its counts change.
  */
 public final class ChainView implements View {
+    private static final Clock CLOCK = MCU.getClock();
     private final Navigator navigator;
     private final Miner2State model;
     private final Miner2Header header;
@@ -50,7 +53,7 @@ public final class ChainView implements View {
             shownTip = pool.tipChanges();
             showTip(pool);
         }
-        int now = Clock.millis();
+        int now = CLOCK.millis();
         int nodes = nodesKey(model.peers(), model.syncing(), now);
         if (nodes != shownNodes) {
             shownNodes = nodes;

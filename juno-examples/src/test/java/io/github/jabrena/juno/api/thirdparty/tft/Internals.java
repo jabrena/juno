@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.tft;
 
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.io.gpio.EmulatedShield;
 import io.github.jabrena.juno.api.util.Delay;
 
 import java.lang.reflect.Field;
@@ -79,13 +79,13 @@ public final class Internals {
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT);
         int[] step = {0};
         Delay.afterAdvance = () -> {
-            Gpio.touch = step[0] % period == 0 ? taps.get() : null;
+            EmulatedShield.touch = step[0] % period == 0 ? taps.get() : null;
             step[0] = step[0] + 1;
         };
     }
 
     public static void stopTapping() {
         Delay.afterAdvance = () -> { };
-        Gpio.touch = null;
+        EmulatedShield.touch = null;
     }
 }

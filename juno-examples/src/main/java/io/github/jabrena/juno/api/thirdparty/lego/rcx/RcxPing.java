@@ -21,13 +21,16 @@ public class RcxPing {
     private static final int START_MILLIS = 2000;
 
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
         Delay.millis(START_MILLIS);
         Serial.println("RCX ping: switch the RCX on");
 
         while (true) {
-            int battery = RcxBrick.batteryMillivolts();
+            int battery = brick.batteryMillivolts();
             if (battery < 0) {
                 Serial.println("battery: no answer");
             } else {

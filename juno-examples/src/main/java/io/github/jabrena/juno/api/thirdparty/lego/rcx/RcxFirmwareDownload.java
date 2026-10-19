@@ -23,18 +23,22 @@ public final class RcxFirmwareDownload {
     private static final int START_MILLIS = 5000;
 
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxFirmware firmware = new RcxFirmware(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
         byte[] block = new byte[RcxFirmware.BLOCK_SIZE];
         RcxDownloadProgress progress = new RcxDownloadProgress(RcxFirmwareImage.LENGTH);
         Serial.print("RCX firmware bytes: ");
         Serial.println(RcxFirmwareImage.LENGTH);
-        int installed = RcxFirmware.installed();
+        int installed = firmware.installed();
         while (installed == RcxFirmware.NO_REPLY) {
             Serial.println("Waiting for the RCX: is it on, facing the IR modules?");
             Delay.millis(RETRY_MILLIS);
-            installed = RcxFirmware.installed();
+            installed = firmware.installed();
         }
         if (installed == 1) {
             stop("The RCX already runs firmware: nothing to do");
@@ -45,24 +49,24 @@ public final class RcxFirmwareDownload {
             Serial.print("; block bytes ");
             Serial.println(progress.size());
             Delay.millis(RETRY_MILLIS);
-            if (!RcxFirmware.delete()) {
+            if (!firmware.delete()) {
                 Serial.println("Delete: no acknowledgement");
                 continue;
             }
             Delay.millis(BLOCK_GAP_MILLIS);
-            if (!RcxFirmware.start(RcxFirmwareImage.ENTRY, RcxFirmwareImage.CHECKSUM)) {
+            if (!firmware.start(RcxFirmwareImage.ENTRY, RcxFirmwareImage.CHECKSUM)) {
                 Serial.println("Start: no acknowledgement");
                 continue;
             }
-            if (!download(block, progress)) {
+            if (!download(block, progress, firmware)) {
                 Serial.println("Restarting transfer");
                 continue;
             }
             Serial.println("Unlocking");
-            Serial.println(RcxFirmware.unlock() ? "Unlock answered" : "Unlock: no answer");
+            Serial.println(firmware.unlock() ? "Unlock answered" : "Unlock: no answer");
             Delay.millis(RETRY_MILLIS);
-            if (RcxFirmware.installed() == 1) {
-                Serial.println(RcxBrick.playSound(RcxBrick.SOUND_FAST_SWEEP_UP)
+            if (firmware.installed() == 1) {
+                Serial.println(brick.playSound(RcxBrick.SOUND_FAST_SWEEP_UP)
                         ? "Firmware running; sound acknowledged" : "Firmware running; sound unconfirmed");
                 stop("Done");
             }
@@ -72,7 +76,7 @@ public final class RcxFirmwareDownload {
         stop("Download stopped after 5 sessions");
     }
 
-    private static boolean download(byte[] block, RcxDownloadProgress progress) {
+    private static boolean download(byte[] block, RcxDownloadProgress progress, RcxFirmware firmware) {
         while (!progress.complete()) {
             int size = progress.size();
             for (int i = 0; i < size; i++) {
@@ -83,7 +87,7 @@ public final class RcxFirmwareDownload {
             Serial.print(" at byte ");
             Serial.println(progress.offset());
             Delay.millis(BLOCK_GAP_MILLIS);
-            int status = RcxFirmware.transfer(progress.index(), block, size);
+            int status = firmware.transfer(progress.index(), block, size);
             boolean resume = progress.accept(status);
             if (status == 0) {
                 Serial.print("Confirmed bytes: ");

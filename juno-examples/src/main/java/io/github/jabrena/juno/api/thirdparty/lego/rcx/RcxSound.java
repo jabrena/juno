@@ -22,21 +22,24 @@ public class RcxSound {
     private static final int G4 = 392;
 
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
         Serial.println("Playing five tones");
         Delay.millis(SERIAL_DRAIN_MILLIS);
-        play(E4);
-        play(E4);
-        play(F4);
-        play(G4);
-        play(G4);
+        play(E4, brick);
+        play(E4, brick);
+        play(F4, brick);
+        play(G4, brick);
+        play(G4, brick);
         Serial.println("Five-tone sequence finished");
     }
 
-    private static void play(int frequency) {
-        boolean acknowledged = RcxBrick.playTone(frequency, NOTE_CENTISECONDS);
+    private static void play(int frequency, RcxBrick brick) {
+        boolean acknowledged = brick.playTone(frequency, NOTE_CENTISECONDS);
         Serial.print("Tone ");
         Serial.print(frequency);
         Serial.println(acknowledged ? " Hz: acknowledged" : " Hz: no acknowledgement");

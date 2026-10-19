@@ -12,6 +12,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * with {@code -Djuno.board}.
  */
 public class MagicSquarePoweredUpHub {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int LEFT = PoweredUpHubRemote.PORT_A;
     private static final int RIGHT = PoweredUpHubRemote.PORT_B;
     private static final int POWER = 40;
@@ -24,30 +25,30 @@ public class MagicSquarePoweredUpHub {
         MagicSquarePoweredUpHub app = new MagicSquarePoweredUpHub();
 
         while (true) {
-            if (!PoweredUpHubRemote.isConnected()) {
+            if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                PoweredUpHubRemote.connect(0);
+                HUB.connect(0);
             }
             Serial.println("Straight");
-            PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+            HUB.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
             app.drive(POWER, POWER, STRAIGHT_MILLIS);
             app.stop();
             Serial.println("Turn left");
-            PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
+            HUB.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
             app.drive(-POWER, POWER, TURN_MILLIS);
             app.stop();
         }
     }
 
     private void drive(int left, int right, int millis) {
-        PoweredUpHubRemote.setMotorPower(LEFT, left);
-        PoweredUpHubRemote.setMotorPower(RIGHT, right);
+        HUB.setMotorPower(LEFT, left);
+        HUB.setMotorPower(RIGHT, right);
         Delay.millis(millis);
     }
 
     private void stop() {
-        PoweredUpHubRemote.brakeMotor(LEFT);
-        PoweredUpHubRemote.brakeMotor(RIGHT);
+        HUB.brakeMotor(LEFT);
+        HUB.brakeMotor(RIGHT);
         Delay.millis(STOP_MILLIS);
     }
 }

@@ -1,20 +1,19 @@
 package io.github.jabrena.juno.games.texasholdem;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
-import static io.github.jabrena.juno.games.texasholdem.CardsRenderer.*;
-import static io.github.jabrena.juno.games.texasholdem.Controls.*;
-import static io.github.jabrena.juno.games.texasholdem.Deck.*;
-import static io.github.jabrena.juno.games.texasholdem.HandEvaluator.*;
-import static io.github.jabrena.juno.games.texasholdem.Players.*;
-import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.*;
-import static io.github.jabrena.juno.games.texasholdem.SuitSprites.*;
-import static io.github.jabrena.juno.games.texasholdem.Table.*;
-import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.*;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.BUTTON_HEIGHT;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.HEADER_HEIGHT;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.NEW_X;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.ROW1_Y;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.ROW2_Y;
+import static io.github.jabrena.juno.games.texasholdem.TexasHoldem.WIDTH;
 
 final class Controls {
+    private static final Clock CLOCK = MCU.getClock();
     static boolean autopilot;
 
     private Controls() {
@@ -79,8 +78,8 @@ final class Controls {
     }
 
     static boolean waitForTap(int timeoutMillis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < timeoutMillis) {
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < timeoutMillis) {
             if (TftTouchShield.readTouch()) {
                 waitForRelease();
                 return true;

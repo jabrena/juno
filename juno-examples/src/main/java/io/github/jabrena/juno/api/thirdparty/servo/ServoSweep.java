@@ -28,7 +28,7 @@ public final class ServoSweep {
 
     public static void main(String[] args) {
 
-        Servo servo = Servo.of(Gpio.D10);
+        Servo servo = Servo.of(Gpio.getD10());
 
         while (true) {
             for (int angle = MIN_ANGLE; angle <= MAX_ANGLE; angle += STEP_DEGREES) {

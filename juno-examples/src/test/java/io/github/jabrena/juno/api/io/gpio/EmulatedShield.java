@@ -1,8 +1,11 @@
 package io.github.jabrena.juno.api.io.gpio;
 
+
+import io.github.jabrena.juno.api.hardware.internal.NativeGpio;
+
 /**
- * Test double for the ELEGOO 2.8" TFT touch shield's hardware, shadowing the {@code juno}
- * artifact's native {@code Gpio} on the test classpath (test classes come first).
+ * The ELEGOO 2.8" TFT touch shield's hardware for whole-program tests: a {@link Gpio} that every
+ * {@code MCU.getGpio()} uses once {@link #install()} has run.
  *
  * <p>The real {@code TftTouchShield} driver bit-bangs an ILI9341 display controller over an 8-bit
  * parallel bus and reads a resistive touch panel through the same pins. This double decodes that
@@ -10,10 +13,9 @@ package io.github.jabrena.juno.api.io.gpio;
  * {@link #FRAMEBUFFER}, and answers the panel's analog reads from {@link #touch}, so the driver and
  * the games run unmodified. It models only what the driver uses.
  */
-public final class Gpio {
-    public static final int INPUT = 0;
-    public static final int OUTPUT = 1;
-    public static final int INPUT_PULLUP = 2;
+public final class EmulatedShield implements Gpio {
+    /** The one emulated shield; its state is static so every program class and test sees the same panel. */
+    public static final EmulatedShield INSTANCE = new EmulatedShield();
 
     /** Framebuffer stride: large enough for either orientation of the 240x320 panel. */
     public static final int STRIDE = 320;
@@ -58,25 +60,40 @@ public final class Gpio {
     private static int page;
     private static int pixelHighByte = -1;
 
-    private Gpio() {
+    private EmulatedShield() {
     }
 
-    public static void pinMode(int pin, int mode) {
+    /** Makes {@code MCU.getGpio()} from now on drive this emulated shield instead of the board's pins. */
+    public static void install() {
+        NativeGpio.setGpio(INSTANCE);
+    }
+
+    @Override
+    public int getBuiltinLed() {
+        return Gpio.getD13();
+    }
+
+    @Override
+    public void pinMode(int pin, int mode) {
         MODE[pin] = mode;
     }
 
-    public static boolean digitalRead(int pin) {
+    @Override
+    public boolean digitalRead(int pin) {
         return LEVEL[pin];
     }
 
-    public static void analogWrite(int pin, int value) {
+    @Override
+    public void analogWrite(int pin, int value) {
     }
 
-    public static void toggle(int pin) {
+    @Override
+    public void toggle(int pin) {
         digitalWrite(pin, !LEVEL[pin]);
     }
 
-    public static void digitalWrite(int pin, boolean high) {
+    @Override
+    public void digitalWrite(int pin, boolean high) {
         boolean wasHigh = LEVEL[pin];
         LEVEL[pin] = high;
         // The controller latches the data pins on WR's rising edge while CS is low.
@@ -95,7 +112,7 @@ public final class Gpio {
         }
     }
 
-    private static void command(int value) {
+    private void command(int value) {
         command = value;
         parameterCount = 0;
         pixelHighByte = -1;
@@ -105,7 +122,7 @@ public final class Gpio {
         }
     }
 
-    private static void data(int value) {
+    private void data(int value) {
         if (command == COLUMN_ADDRESS_SET || command == PAGE_ADDRESS_SET) {
             if (parameterCount < 4) {
                 PARAMETERS[parameterCount] = value;
@@ -144,17 +161,18 @@ public final class Gpio {
      * plates: X+ high means it is measuring X through Y+, Y+ driven high means Y through X-, and
      * otherwise it is measuring pressure.
      */
-    public static int analogRead(int pin) {
+    @Override
+    public int analogRead(int pin) {
         int[] finger = touch;
         if (pin == PIN_TOUCH_YP) {
-            if (LEVEL[PIN_TOUCH_XP] && MODE[PIN_TOUCH_XP] == OUTPUT) {
+            if (LEVEL[PIN_TOUCH_XP] && MODE[PIN_TOUCH_XP] == Gpio.getOutput()) {
                 return finger == null ? 512 : 1023 - (RAW_LEFT + finger[0] * (RAW_RIGHT - RAW_LEFT) / 240);
             }
             // Pressure is 1023 - (z2 - z1): 500 while touched, 0 (released) otherwise.
             return finger == null ? 1023 : 523;
         }
         if (pin == PIN_TOUCH_XM) {
-            if (LEVEL[PIN_TOUCH_YP] && MODE[PIN_TOUCH_YP] == OUTPUT) {
+            if (LEVEL[PIN_TOUCH_YP] && MODE[PIN_TOUCH_YP] == Gpio.getOutput()) {
                 return finger == null ? 512 : 1023 - (RAW_TOP + finger[1] * (RAW_BOTTOM - RAW_TOP) / 320);
             }
             return 0;

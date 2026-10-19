@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
@@ -8,6 +10,7 @@ import io.github.jabrena.juno.api.util.Delay;
 
 /** Sends the RCX firmware-independent alive packet and prints the raw reply. */
 public class RcxRawSoundProbe {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int BAUD = 2400;
@@ -33,11 +36,11 @@ public class RcxRawSoundProbe {
         Infrared.writeByte(0x18);
         Infrared.writeByte(0xE7);
 
-        int started = Clock.micros();
+        int started = CLOCK.micros();
         for (int i = 0; i < REPLY_READS; i++) {
             REPLIES[i] = Infrared.readByte(REPLY_POLL_MICROS);
         }
-        int elapsed = Clock.micros() - started;
+        int elapsed = CLOCK.micros() - started;
 
         Serial.print("Reply:");
         for (int i = 0; i < REPLY_READS; i++) {

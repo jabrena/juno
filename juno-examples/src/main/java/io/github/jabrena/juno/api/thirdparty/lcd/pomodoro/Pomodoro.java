@@ -17,9 +17,11 @@ import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
  */
 @Board(ArduinoUnoR4WiFi.class)
 public final class Pomodoro {
+    /** The program's one LCD shield, shared by every Pomodoro view. */
+    static final LcdKeypadShield LCD_SHIELD = new LcdKeypadShield();
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        LcdKeypadShield.begin();
+        LCD_SHIELD.begin();
 
         while (true) {
             int selectedMinutes = ConfigurePomodoroView.run();

@@ -3,10 +3,28 @@ package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
-import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.*;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BUTTON_HEIGHT_MOTOR;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.CONTENT_HEIGHT;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.CONTENT_Y;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.LEVEL_GAP;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.LEVEL_WIDTH;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.MARGIN;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.PAIR_ROW_A;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.PAIR_ROW_B;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.PAIR_ROW_SYNC;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.PORTS;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.ROW_LEVELS;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.ROW_STOP;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.SMALL_BUTTON_WIDTH;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.STOP_BRAKE;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.STOP_COAST;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.STOP_HOLD;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.WIDE_BUTTON_WIDTH;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.WIDTH;
 
 /** The PAIR view of {@link PoweredUpHubTFT}: the first two motors driven together. */
 final class PoweredUpPair {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private PoweredUpPair() {
     }
 
@@ -19,8 +37,8 @@ final class PoweredUpPair {
         } else if (PoweredUpUi.inBox(x, y, MARGIN, ROW_STOP, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT_MOTOR)) {
             stop(s);
         } else if (PoweredUpUi.inBox(x, y, WIDTH - MARGIN - WIDE_BUTTON_WIDTH, ROW_STOP, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT_MOTOR)) {
-            s.zero[s.pairA] = PoweredUpHubRemote.readSensor(s.pairA);
-            s.zero[s.pairB] = PoweredUpHubRemote.readSensor(s.pairB);
+            s.zero[s.pairA] = HUB.readSensor(s.pairA);
+            s.zero[s.pairB] = HUB.readSensor(s.pairB);
         } else if (y >= ROW_LEVELS && y < ROW_LEVELS + BUTTON_HEIGHT_MOTOR) {
             int level = (x - MARGIN) / (LEVEL_WIDTH + LEVEL_GAP);
             if (level >= STOP_COAST && level <= STOP_HOLD) {
@@ -38,16 +56,16 @@ final class PoweredUpPair {
             int shared = PoweredUpUi.clamp(s.power[s.pairA] + (deltaA != 0 ? deltaA : deltaB));
             s.power[s.pairA] = shared;
             s.power[s.pairB] = shared;
-            PoweredUpHubRemote.setLinkedMotorPower(s.link, shared, shared);
+            HUB.setLinkedMotorPower(s.link, shared, shared);
             return;
         }
         if (deltaA != 0) {
             s.power[s.pairA] = PoweredUpUi.clamp(s.power[s.pairA] + deltaA);
-            PoweredUpHubRemote.setMotorPower(s.pairA, s.power[s.pairA]);
+            HUB.setMotorPower(s.pairA, s.power[s.pairA]);
         }
         if (deltaB != 0) {
             s.power[s.pairB] = PoweredUpUi.clamp(s.power[s.pairB] + deltaB);
-            PoweredUpHubRemote.setMotorPower(s.pairB, s.power[s.pairB]);
+            HUB.setMotorPower(s.pairB, s.power[s.pairB]);
         }
     }
 
@@ -56,11 +74,11 @@ final class PoweredUpPair {
             dropSync(s);
             return;
         }
-        s.link = PoweredUpHubRemote.linkMotors(s.pairA, s.pairB);
+        s.link = HUB.linkMotors(s.pairA, s.pairB);
         s.pairSync = s.link >= 0;
         if (s.pairSync) {
             s.power[s.pairB] = s.power[s.pairA];
-            PoweredUpHubRemote.setLinkedMotorPower(s.link, s.power[s.pairA], s.power[s.pairA]);
+            HUB.setLinkedMotorPower(s.link, s.power[s.pairA], s.power[s.pairA]);
         } else {
             Serial.println("The hub did not link the motors");
         }
@@ -68,7 +86,7 @@ final class PoweredUpPair {
 
     private static void dropSync(PoweredUpState s) {
         if (s.pairSync) {
-            PoweredUpHubRemote.unlinkMotors(s.link);
+            HUB.unlinkMotors(s.link);
         }
         s.pairSync = false;
         s.link = -1;
@@ -77,18 +95,18 @@ final class PoweredUpPair {
     /** Stops both motors of the pair with the chosen level. */
     private static void stop(PoweredUpState s) {
         if (s.stopLevel == STOP_HOLD) {
-            PoweredUpHubRemote.holdMotor(s.pairA);
-            PoweredUpHubRemote.holdMotor(s.pairB);
+            HUB.holdMotor(s.pairA);
+            HUB.holdMotor(s.pairB);
         } else if (s.pairSync && s.stopLevel == STOP_BRAKE) {
-            PoweredUpHubRemote.brakeLinkedMotors(s.link);
+            HUB.brakeLinkedMotors(s.link);
         } else if (s.stopLevel == STOP_BRAKE) {
-            PoweredUpHubRemote.brakeMotor(s.pairA);
-            PoweredUpHubRemote.brakeMotor(s.pairB);
+            HUB.brakeMotor(s.pairA);
+            HUB.brakeMotor(s.pairB);
         } else if (s.pairSync) {
-            PoweredUpHubRemote.setLinkedMotorPower(s.link, 0, 0);
+            HUB.setLinkedMotorPower(s.link, 0, 0);
         } else {
-            PoweredUpHubRemote.setMotorPower(s.pairA, 0);
-            PoweredUpHubRemote.setMotorPower(s.pairB, 0);
+            HUB.setMotorPower(s.pairA, 0);
+            HUB.setMotorPower(s.pairB, 0);
         }
         s.power[s.pairA] = 0;
         s.power[s.pairB] = 0;

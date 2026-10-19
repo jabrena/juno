@@ -22,6 +22,7 @@ import io.github.jabrena.juno.api.util.Delay;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class EmailHelloWorldLCD {
+    private final LcdKeypadShield lcd = new LcdKeypadShield();
     private static final int POP3_PORT = 995;
     private static final int SMTP_PORT = 465;
     // See InboxCount's identical constants: Wifi#status can report STATUS_CONNECTED slightly
@@ -34,10 +35,14 @@ public final class EmailHelloWorldLCD {
     private static final int BUTTON_POLL_MILLIS = 50;
 
     public static void main(String[] args) {
+        new EmailHelloWorldLCD().run();
+    }
+
+    private void run() {
         Serial.begin(BaudRate.BAUD_115200);
 
-        LcdKeypadShield.begin();
-        LcdKeypadShield.print("Connecting...");
+        lcd.begin();
+        lcd.print("Connecting...");
 
         connectWifi();
 
@@ -47,18 +52,18 @@ public final class EmailHelloWorldLCD {
         sendAndVerifyView();
     }
 
-    private static void showPromptView() {
-        LcdKeypadShield.clear();
-        LcdKeypadShield.print("Ready to send");
-        LcdKeypadShield.setCursor(0, 1);
-        LcdKeypadShield.print("Press any key");
+    private void showPromptView() {
+        lcd.clear();
+        lcd.print("Ready to send");
+        lcd.setCursor(0, 1);
+        lcd.print("Press any key");
     }
 
     /** Waits for a button to go from not-pressed to pressed, debounced by {@link #BUTTON_POLL_MILLIS}. */
-    private static void awaitAnyButtonPress() {
-        int lastButton = LcdKeypadShield.readButton();
+    private void awaitAnyButtonPress() {
+        int lastButton = lcd.readButton();
         while (true) {
-            int button = LcdKeypadShield.readButton();
+            int button = lcd.readButton();
             if (button != LcdKeypadShield.NONE && button != lastButton) {
                 return;
             }
@@ -67,15 +72,15 @@ public final class EmailHelloWorldLCD {
         }
     }
 
-    private static void sendAndVerifyView() {
-        LcdKeypadShield.clear();
+    private void sendAndVerifyView() {
+        lcd.clear();
         int before = pollMessageCount();
         showRow(0, "Before: ", before);
         Serial.print("Inbox count before send: ");
         Serial.println(before);
 
-        LcdKeypadShield.setCursor(0, 1);
-        LcdKeypadShield.print("Sending...");
+        lcd.setCursor(0, 1);
+        lcd.print("Sending...");
         int sent = Smtp.sendTls(
                 System.getenv("SMTP_HOST"), SMTP_PORT,
                 System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
@@ -94,7 +99,7 @@ public final class EmailHelloWorldLCD {
     }
 
     /** Polls {@link Pop3Client#messageCount} until it exceeds {@code before}, or gives up. */
-    private static int awaitDelivery(int before) {
+    private int awaitDelivery(int before) {
         int after = before;
         for (int attempt = 0; attempt < DELIVERY_POLL_ATTEMPTS; attempt++) {
             Delay.seconds(DELIVERY_POLL_DELAY_SECONDS);
@@ -112,7 +117,7 @@ public final class EmailHelloWorldLCD {
         return after;
     }
 
-    private static int pollMessageCount() {
+    private int pollMessageCount() {
         int count = -1;
         for (int attempt = 0; attempt < CONNECT_RETRY_ATTEMPTS; attempt++) {
             count = Pop3Client.messageCount(
@@ -126,14 +131,14 @@ public final class EmailHelloWorldLCD {
         return count;
     }
 
-    private static void showRow(int row, String label, int value) {
-        LcdKeypadShield.setCursor(0, row);
-        LcdKeypadShield.print(label);
-        LcdKeypadShield.print(value);
-        LcdKeypadShield.print("     ");
+    private void showRow(int row, String label, int value) {
+        lcd.setCursor(0, row);
+        lcd.print(label);
+        lcd.print(value);
+        lcd.print("     ");
     }
 
-    private static void connectWifi() {
+    private void connectWifi() {
         Serial.println("Starting WiFi");
         Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         while (Wifi.status() != Wifi.STATUS_CONNECTED) {

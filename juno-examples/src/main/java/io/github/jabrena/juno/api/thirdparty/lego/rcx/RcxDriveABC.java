@@ -21,23 +21,26 @@ public class RcxDriveABC {
     private static final int RETRY_MILLIS = 1000;
 
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        int battery = RcxBrick.batteryMillivolts();
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        int battery = brick.batteryMillivolts();
         while (battery < 0) {
             Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
             Delay.millis(RETRY_MILLIS);
-            battery = RcxBrick.batteryMillivolts();
+            battery = brick.batteryMillivolts();
         }
         printBattery(battery);
 
         Serial.println("A+B+C forward for 5 seconds");
-        RcxBrick.drive(ALL_OUTPUTS, RcxBrick.MAX_POWER);
+        brick.drive(ALL_OUTPUTS, RcxBrick.MAX_POWER);
         Delay.seconds(RUN_SECONDS);
-        RcxBrick.drive(ALL_OUTPUTS, 0);
+        brick.drive(ALL_OUTPUTS, 0);
         Serial.println("Stopped");
-        printBattery(RcxBrick.batteryMillivolts());
+        printBattery(brick.batteryMillivolts());
 
         while (true) {
             Delay.seconds(RUN_SECONDS);

@@ -11,15 +11,16 @@ import io.github.jabrena.juno.api.util.Delay;
 public final class LcdKeypadDemo {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        LcdKeypadShield.begin();
-        LcdKeypadShield.print("Press a button");
+        LcdKeypadShield lcd = new LcdKeypadShield();
+        lcd.begin();
+        lcd.print("Press a button");
 
         int lastButton = -1;
         while (true) {
-            int button = LcdKeypadShield.readButton();
+            int button = lcd.readButton();
             Serial.println(button);
             if (button != lastButton) {
-                LcdKeypadShield.setCursor(0, 1);
+                lcd.setCursor(0, 1);
                 String label = "NONE  ";
                 if (button == LcdKeypadShield.RIGHT) {
                     label = "RIGHT ";
@@ -32,7 +33,7 @@ public final class LcdKeypadDemo {
                 } else if (button == LcdKeypadShield.SELECT) {
                     label = "SELECT";
                 }
-                LcdKeypadShield.print(label);
+                lcd.print(label);
                 lastButton = button;
             }
             Delay.millis(50);

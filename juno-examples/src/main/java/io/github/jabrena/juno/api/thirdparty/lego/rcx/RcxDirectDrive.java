@@ -21,12 +21,25 @@ public class RcxDirectDrive {
     private static final int STEP_MILLIS = 800;
     private static final int PAUSE_SECONDS = 2;
 
+    private final RcxLink link;
+    private final RcxRemote remote;
+    private final RcxBrick brick;
+
+    RcxDirectDrive(RcxLink link, RcxRemote remote, RcxBrick brick) {
+        this.link = link;
+        this.remote = remote;
+        this.brick = brick;
+    }
+
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
-        RcxDirectDrive app = new RcxDirectDrive();
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        Serial.println("RCX battery: " + RcxBrick.batteryMillivolts() + " mV");
-        if (!RcxBrick.setLightSensor(LIGHT_INPUT)) {
+        RcxDirectDrive app = new RcxDirectDrive(link, remote, brick);
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        Serial.println("RCX battery: " + brick.batteryMillivolts() + " mV");
+        if (!brick.setLightSensor(LIGHT_INPUT)) {
             Serial.println("The RCX did not answer: is it in range, with the IR receiver wired?");
             return;
         }
@@ -46,12 +59,12 @@ public class RcxDirectDrive {
         for (int level = RcxBrick.MAX_POWER - 1; level >= 1; level--) {
             step(direction * level);
         }
-        RcxBrick.drive(MOTORS, 0);
+        brick.drive(MOTORS, 0);
     }
 
     private void step(int speed) {
-        RcxBrick.drive(MOTORS, speed);
-        Serial.println("Speed " + speed + ", light " + RcxBrick.readSensor(LIGHT_INPUT) + " %");
+        brick.drive(MOTORS, speed);
+        Serial.println("Speed " + speed + ", light " + brick.readSensor(LIGHT_INPUT) + " %");
         Delay.millis(STEP_MILLIS);
     }
 }

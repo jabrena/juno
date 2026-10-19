@@ -27,26 +27,39 @@ public class RcxDriveAC {
     private static final int START_MILLIS = 2000;
     private static final int RETRY_MILLIS = 1000;
 
+    private final RcxLink link;
+    private final RcxRemote remote;
+    private final RcxBrick brick;
+
+    RcxDriveAC(RcxLink link, RcxRemote remote, RcxBrick brick) {
+        this.link = link;
+        this.remote = remote;
+        this.brick = brick;
+    }
+
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        RcxDriveAC app = new RcxDriveAC();
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        int battery = RcxBrick.batteryMillivolts();
+        RcxDriveAC app = new RcxDriveAC(link, remote, brick);
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        int battery = brick.batteryMillivolts();
         while (battery < 0) {
             Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
             Delay.millis(RETRY_MILLIS);
-            battery = RcxBrick.batteryMillivolts();
+            battery = brick.batteryMillivolts();
         }
         app.printBattery(battery);
-        RcxBrick.motorOff(ALL_OUTPUTS);
+        brick.motorOff(ALL_OUTPUTS);
 
         while (true) {
             app.move("Forward", SPEED, SPEED);
             app.move("Backward", -SPEED, -SPEED);
             app.move("Spin left", -SPEED, SPEED);
             app.move("Spin right", SPEED, -SPEED);
-            app.printBattery(RcxBrick.batteryMillivolts());
+            app.printBattery(brick.batteryMillivolts());
             Delay.seconds(PAUSE_SECONDS);
         }
     }
@@ -62,13 +75,13 @@ public class RcxDriveAC {
     private void move(String name, int left, int right) {
         Serial.println(name);
         if (left == right) {
-            RcxBrick.drive(LEFT | RIGHT, left);
+            brick.drive(LEFT | RIGHT, left);
         } else {
-            RcxBrick.drive(LEFT, left);
-            RcxBrick.drive(RIGHT, right);
+            brick.drive(LEFT, left);
+            brick.drive(RIGHT, right);
         }
         Delay.millis(MOVE_MILLIS);
-        RcxBrick.drive(LEFT | RIGHT, 0);
+        brick.drive(LEFT | RIGHT, 0);
         Delay.millis(STOP_MILLIS);
     }
 }

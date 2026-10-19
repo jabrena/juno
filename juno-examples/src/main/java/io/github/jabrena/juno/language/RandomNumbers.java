@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.language;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -8,6 +10,7 @@ import io.github.jabrena.juno.api.util.Random;
 
 /** Demonstrates seeding and generating pseudorandom values within bounded ranges. */
 public final class RandomNumbers {
+    private static final Clock CLOCK = MCU.getClock();
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
@@ -24,7 +27,7 @@ public final class RandomNumbers {
     }
 
     private void seed() {
-        Random.seed(Clock.micros());
+        Random.seed(CLOCK.micros());
     }
 
     private void diceRolls() {

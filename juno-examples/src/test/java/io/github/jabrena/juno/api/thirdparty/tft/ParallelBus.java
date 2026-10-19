@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.api.thirdparty.tft;
 
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.io.gpio.EmulatedShield;
 
 /**
  * Test double for the {@code juno} artifact's native {@code ParallelBus}, shadowing it on the test classpath (test
- * classes come first). It drives the bus pin by pin through {@link Gpio}'s double, the same levels and strobes the
+ * classes come first). It drives the bus pin by pin through {@link EmulatedShield}, the same levels and strobes the
  * runtime writes a port at a time, so the emulated display decodes them unchanged.
  */
 public final class ParallelBus {
@@ -22,15 +22,15 @@ public final class ParallelBus {
         }
         System.arraycopy(dataPins, 0, PINS, 0, WIDTH);
         strobe = strobePin;
-        Gpio.digitalWrite(strobe, true);
+        EmulatedShield.INSTANCE.digitalWrite(strobe, true);
     }
 
     public static void write(int value) {
         for (int bit = 0; bit < WIDTH; bit++) {
-            Gpio.digitalWrite(PINS[bit], ((value >> bit) & 1) != 0);
+            EmulatedShield.INSTANCE.digitalWrite(PINS[bit], ((value >> bit) & 1) != 0);
         }
-        Gpio.digitalWrite(strobe, false);
-        Gpio.digitalWrite(strobe, true);
+        EmulatedShield.INSTANCE.digitalWrite(strobe, false);
+        EmulatedShield.INSTANCE.digitalWrite(strobe, true);
     }
 
     public static void repeat16(int value, int count) {

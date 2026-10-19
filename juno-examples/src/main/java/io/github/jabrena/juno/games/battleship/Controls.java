@@ -1,16 +1,13 @@
 package io.github.jabrena.juno.games.battleship;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
-import static io.github.jabrena.juno.games.battleship.AutopilotBattleship.*;
-import static io.github.jabrena.juno.games.battleship.Battleship.*;
-import static io.github.jabrena.juno.games.battleship.Controls.*;
-import static io.github.jabrena.juno.games.battleship.Fleet.*;
-import static io.github.jabrena.juno.games.battleship.SceneRenderer.*;
 
 final class Controls {
+    private static final Clock CLOCK = MCU.getClock();
     static boolean autopilot;
 
     private Controls() {
@@ -29,8 +26,8 @@ final class Controls {
     }
 
     static boolean waitForTap(int timeoutMillis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < timeoutMillis) {
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < timeoutMillis) {
             if (TftTouchShield.readTouch()) {
                 waitForRelease();
                 return true;

@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -35,6 +37,7 @@ import io.github.jabrena.juno.games.gladiator.view.ViewList;
  * the gladius. CPU/HUMAN in the status bar switches between the two at any time; MENU returns to the role menu.
  */
 public final class FighterFlow {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int FRAME_MILLIS = 40;
     private static final int JOIN_MILLIS = 1000;
     private static final int STATE_MILLIS = 100;
@@ -85,7 +88,7 @@ public final class FighterFlow {
 
     /** Fights until MENU is tapped. */
     public void run(byte[] incoming, byte[] outgoing, int[] source) {
-        nodeId = Clock.micros();
+        nodeId = CLOCK.micros();
         if (nodeId == 0) {
             nodeId = 1;
         }
@@ -98,18 +101,18 @@ public final class FighterFlow {
         touching = true;
         searchArena();
 
-        int lastJoin = Clock.millis() - JOIN_MILLIS;
+        int lastJoin = CLOCK.millis() - JOIN_MILLIS;
         int lastState = 0;
-        int next = Clock.millis();
+        int next = CLOCK.millis();
         while (true) {
-            while (Clock.millis() - next < 0) {
+            while (CLOCK.millis() - next < 0) {
                 Delay.millis(1);
             }
             next = next + FRAME_MILLIS;
-            if (Clock.millis() - next > 4 * FRAME_MILLIS) {
-                next = Clock.millis();
+            if (CLOCK.millis() - next > 4 * FRAME_MILLIS) {
+                next = CLOCK.millis();
             }
-            int now = Clock.millis();
+            int now = CLOCK.millis();
             receive(incoming, source, now);
             if (screen != IN_ARENA) {
                 if (now - lastJoin >= JOIN_MILLIS) {

@@ -8,8 +8,12 @@ import io.github.jabrena.juno.api.io.serial.Serial;
  * address windows and pixels {@link DisplayList} sent per frame and the lines it dropped for want of room.
  */
 final class FrameStats {
-    /** Whether to print; the counting itself is a few additions per frame. */
-    private static final boolean ENABLED = true;
+    /**
+     * Whether to print; the counting itself is a few additions per frame. Off by default: the printing code costs
+     * about 576 B of the UNO Q's RAM, which Doom2 at {@code -Djuno.Xmx=92k} does not have to spare. Set it to
+     * {@code true} to profile.
+     */
+    private static final boolean ENABLED = false;
     private static final int PERIOD = 64;
     private static final int FPS_PERIOD = 8;
 

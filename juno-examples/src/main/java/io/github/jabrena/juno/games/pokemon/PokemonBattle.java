@@ -3,6 +3,7 @@ package io.github.jabrena.juno.games.pokemon;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
@@ -28,6 +29,7 @@ import io.github.jabrena.juno.api.util.Delay;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class PokemonBattle {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int DISCOVERY_INTERVAL_MILLIS = 700;
     private static final int RESEND_MILLIS = 1000;
 
@@ -51,7 +53,7 @@ public final class PokemonBattle {
         TftTouchShield.begin();
         TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         connectWifi();
-        int nodeId = Clock.micros();
+        int nodeId = CLOCK.micros();
         if (nodeId == 0) {
             nodeId = 1;
         }
@@ -112,9 +114,9 @@ public final class PokemonBattle {
     private static boolean discover(int port, int selected, int nodeId, int[] peer, int[] opponent,
                                     byte[] incoming, int[] source, byte[] outgoing) {
         drawWaiting(selected, port);
-        int lastBroadcast = Clock.millis() - DISCOVERY_INTERVAL_MILLIS;
+        int lastBroadcast = CLOCK.millis() - DISCOVERY_INTERVAL_MILLIS;
         while (true) {
-            int now = Clock.millis();
+            int now = CLOCK.millis();
             if (now - lastBroadcast >= DISCOVERY_INTERVAL_MILLIS) {
                 PokemonProtocol.write(outgoing, PokemonProtocol.DISCOVER, selected, 0, 0, nodeId);
                 Udp.broadcast(port, outgoing, PokemonProtocol.PACKET_SIZE);
@@ -171,7 +173,7 @@ public final class PokemonBattle {
             PokemonProtocol.write(outgoing, PokemonProtocol.ATTACK, selected, sequence,
                     PokemonProtocol.attack(selected), nodeId);
             Udp.send(peer, peer[Udp.PORT], outgoing, PokemonProtocol.PACKET_SIZE);
-            lastSent = Clock.millis();
+            lastSent = CLOCK.millis();
             haveReply = true;
             opponentHitPoints = opponentHitPoints - PokemonProtocol.damage(
                     PokemonProtocol.attack(selected), PokemonProtocol.defense(opponent));
@@ -215,12 +217,12 @@ public final class PokemonBattle {
                     }
                     if (haveReply) {
                         Udp.send(peer, peer[Udp.PORT], outgoing, PokemonProtocol.PACKET_SIZE);
-                        lastSent = Clock.millis();
+                        lastSent = CLOCK.millis();
                     }
                 }
             }
 
-            int now = Clock.millis();
+            int now = CLOCK.millis();
             if (haveReply && now - lastSent >= RESEND_MILLIS) {
                 Udp.send(peer, peer[Udp.PORT], outgoing, PokemonProtocol.PACKET_SIZE);
                 lastSent = now;

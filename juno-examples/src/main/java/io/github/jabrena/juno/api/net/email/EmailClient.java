@@ -23,6 +23,7 @@ import io.github.jabrena.juno.api.util.Delay;
  */
 @Board(ArduinoUnoR4WiFi.class)
 public final class EmailClient {
+    private final LcdKeypadShield lcd = new LcdKeypadShield();
     private static final int POP3_PORT = 995;
     private static final int SMTP_PORT = 587;
     // See InboxCount's identical constants: Wifi#status can report STATUS_CONNECTED slightly
@@ -47,10 +48,14 @@ public final class EmailClient {
     private static final int LIST_PAGE_SIZE = 2;
 
     public static void main(String[] args) {
+        new EmailClient().run();
+    }
+
+    private void run() {
         Serial.begin(BaudRate.BAUD_115200);
 
-        LcdKeypadShield.begin();
-        LcdKeypadShield.print("Connecting...");
+        lcd.begin();
+        lcd.print("Connecting...");
 
         connectWifi();
 
@@ -67,13 +72,13 @@ public final class EmailClient {
     }
 
     /** Runs the menu until SELECT is pressed, returning the chosen {@code MENU_*} option. */
-    private static int menuView() {
+    private int menuView() {
         int selected = MENU_INBOX;
         int lastButton = LcdKeypadShield.NONE;
         showMenu(selected);
 
         while (true) {
-            int button = LcdKeypadShield.readButton();
+            int button = lcd.readButton();
             if (button != lastButton) {
                 if (button == LcdKeypadShield.UP) {
                     selected = (selected + MENU_OPTION_COUNT - 1) % MENU_OPTION_COUNT;
@@ -90,21 +95,21 @@ public final class EmailClient {
         }
     }
 
-    private static void showMenu(int selected) {
-        LcdKeypadShield.clear();
-        LcdKeypadShield.print("UP/DOWN Select");
-        LcdKeypadShield.setCursor(0, 1);
+    private void showMenu(int selected) {
+        lcd.clear();
+        lcd.print("UP/DOWN Select");
+        lcd.setCursor(0, 1);
         if (selected == MENU_INBOX) {
-            LcdKeypadShield.print("Inbox");
+            lcd.print("Inbox");
         } else if (selected == MENU_SEND_EMAIL) {
-            LcdKeypadShield.print("Send Email");
+            lcd.print("Send Email");
         } else {
-            LcdKeypadShield.print("About");
+            lcd.print("About");
         }
     }
 
     /** Runs the Inbox submenu until LEFT returns to the main menu. */
-    private static void inboxView() {
+    private void inboxView() {
         while (true) {
             int selected = inboxMenuView();
             if (selected == INBOX_MENU_BACK) {
@@ -119,13 +124,13 @@ public final class EmailClient {
     }
 
     /** Like {@link #menuView}, plus LEFT to signal "back" via {@link #INBOX_MENU_BACK}. */
-    private static int inboxMenuView() {
+    private int inboxMenuView() {
         int selected = INBOX_MENU_COUNT;
         int lastButton = LcdKeypadShield.NONE;
         showInboxMenu(selected);
 
         while (true) {
-            int button = LcdKeypadShield.readButton();
+            int button = lcd.readButton();
             if (button != lastButton) {
                 if (button == LcdKeypadShield.UP) {
                     selected = (selected + INBOX_MENU_OPTION_COUNT - 1) % INBOX_MENU_OPTION_COUNT;
@@ -144,19 +149,19 @@ public final class EmailClient {
         }
     }
 
-    private static void showInboxMenu(int selected) {
-        LcdKeypadShield.clear();
-        LcdKeypadShield.print("UP/DOWN Select");
-        LcdKeypadShield.setCursor(0, 1);
+    private void showInboxMenu(int selected) {
+        lcd.clear();
+        lcd.print("UP/DOWN Select");
+        lcd.setCursor(0, 1);
         if (selected == INBOX_MENU_COUNT) {
-            LcdKeypadShield.print("Count");
+            lcd.print("Count");
         } else {
-            LcdKeypadShield.print("List");
+            lcd.print("List");
         }
     }
 
-    private static void inboxCountView() {
-        LcdKeypadShield.clear();
+    private void inboxCountView() {
+        lcd.clear();
         int count = pollMessageCount();
         showRow(0, "Inbox: ", count);
         Serial.print("Inbox count: ");
@@ -171,18 +176,18 @@ public final class EmailClient {
      * the first/last page); SELECT returns to the Inbox submenu — not "any button", since UP/DOWN
      * mean something different here than in every other view.
      */
-    private static void inboxListView() {
+    private void inboxListView() {
         int count = pollMessageCount();
         if (count < 0) {
-            LcdKeypadShield.clear();
+            lcd.clear();
             showRow(0, "Inbox err ", count);
             Delay.seconds(BRIEF_DISPLAY_SECONDS);
             return;
         }
         int listed = count < LIST_MAX_MESSAGES ? count : LIST_MAX_MESSAGES;
         if (listed == 0) {
-            LcdKeypadShield.clear();
-            LcdKeypadShield.print("Inbox empty");
+            lcd.clear();
+            lcd.print("Inbox empty");
             Delay.seconds(BRIEF_DISPLAY_SECONDS);
             return;
         }
@@ -193,7 +198,7 @@ public final class EmailClient {
 
         int lastButton = LcdKeypadShield.NONE;
         while (true) {
-            int button = LcdKeypadShield.readButton();
+            int button = lcd.readButton();
             if (button != lastButton) {
                 if (button == LcdKeypadShield.UP && page > 0) {
                     page = page - 1;
@@ -210,35 +215,35 @@ public final class EmailClient {
         }
     }
 
-    private static void showListPage(int page, int listed) {
-        LcdKeypadShield.clear();
+    private void showListPage(int page, int listed) {
+        lcd.clear();
         int firstMessageNumber = page * LIST_PAGE_SIZE + 1;
         showSubjectRow(0, firstMessageNumber, listed);
         showSubjectRow(1, firstMessageNumber + 1, listed);
     }
 
     /** Shows message {@code messageNumber}'s subject on {@code row}, or nothing past {@code listed}. */
-    private static void showSubjectRow(int row, int messageNumber, int listed) {
+    private void showSubjectRow(int row, int messageNumber, int listed) {
         if (messageNumber > listed) {
             return;
         }
-        LcdKeypadShield.setCursor(0, row);
+        lcd.setCursor(0, row);
         byte[] subject = new byte[LcdKeypadShield.COLUMNS];
         int length = Pop3Client.readSubject(
                 System.getenv("SMTP_HOST"), POP3_PORT,
                 System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
                 messageNumber, subject, subject.length);
         if (length < 0) {
-            LcdKeypadShield.print("err ");
-            LcdKeypadShield.print(length);
+            lcd.print("err ");
+            lcd.print(length);
             return;
         }
-        LcdKeypadShield.print(subject, length);
+        lcd.print(subject, length);
     }
 
-    private static void sendEmailView() {
-        LcdKeypadShield.clear();
-        LcdKeypadShield.print("Sending...");
+    private void sendEmailView() {
+        lcd.clear();
+        lcd.print("Sending...");
 
         int sent = Smtp.send(
                 System.getenv("SMTP_HOST"), SMTP_PORT,
@@ -248,30 +253,30 @@ public final class EmailClient {
         Serial.print("Smtp.send: ");
         Serial.println(sent);
 
-        LcdKeypadShield.setCursor(0, 1);
+        lcd.setCursor(0, 1);
         if (sent == 0) {
-            LcdKeypadShield.print("Sent!");
+            lcd.print("Sent!");
         } else {
-            LcdKeypadShield.print("Send err ");
-            LcdKeypadShield.print(sent);
+            lcd.print("Send err ");
+            lcd.print(sent);
         }
         Delay.seconds(BRIEF_DISPLAY_SECONDS);
     }
 
-    private static void aboutView() {
-        LcdKeypadShield.clear();
-        LcdKeypadShield.print("Arduino One R4");
-        LcdKeypadShield.setCursor(0, 1);
-        LcdKeypadShield.print("Email Client");
+    private void aboutView() {
+        lcd.clear();
+        lcd.print("Arduino One R4");
+        lcd.setCursor(0, 1);
+        lcd.print("Email Client");
 
         awaitAnyButtonPress();
     }
 
     /** Waits for a button to go from not-pressed to pressed, debounced by {@link #BUTTON_POLL_MILLIS}. */
-    private static void awaitAnyButtonPress() {
-        int lastButton = LcdKeypadShield.readButton();
+    private void awaitAnyButtonPress() {
+        int lastButton = lcd.readButton();
         while (true) {
-            int button = LcdKeypadShield.readButton();
+            int button = lcd.readButton();
             if (button != LcdKeypadShield.NONE && button != lastButton) {
                 return;
             }
@@ -280,7 +285,7 @@ public final class EmailClient {
         }
     }
 
-    private static int pollMessageCount() {
+    private int pollMessageCount() {
         int count = -1;
         for (int attempt = 0; attempt < CONNECT_RETRY_ATTEMPTS; attempt++) {
             count = Pop3Client.messageCount(
@@ -294,14 +299,14 @@ public final class EmailClient {
         return count;
     }
 
-    private static void showRow(int row, String label, int value) {
-        LcdKeypadShield.setCursor(0, row);
-        LcdKeypadShield.print(label);
-        LcdKeypadShield.print(value);
-        LcdKeypadShield.print("     ");
+    private void showRow(int row, String label, int value) {
+        lcd.setCursor(0, row);
+        lcd.print(label);
+        lcd.print(value);
+        lcd.print("     ");
     }
 
-    private static void connectWifi() {
+    private void connectWifi() {
         Serial.println("Starting WiFi");
         Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         while (Wifi.status() != Wifi.STATUS_CONNECTED) {

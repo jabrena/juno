@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.scout;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.imu.NineAxisMotionShield;
@@ -16,6 +18,8 @@ import io.github.jabrena.juno.api.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquareScoutWithImu {
+    private static final NineAxisMotionShield IMU = new NineAxisMotionShield();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final int STRAIGHT_MILLIS = 3000;
     private static final int TURN_DEGREES = 90;
@@ -23,15 +27,22 @@ public class MagicSquareScoutWithImu {
     private static final int STOP_MILLIS = 2000;
     private static final int REPEAT_MILLIS = 100;
 
+    private final ScoutRemote scout;
+
+    MagicSquareScoutWithImu(ScoutRemote scout) {
+        this.scout = scout;
+    }
+
     public static void main(String[] args) {
+        ScoutRemote scout = new ScoutRemote();
         Serial.begin(BaudRate.BAUD_115200);
-        MagicSquareScoutWithImu app = new MagicSquareScoutWithImu();
-        if (!NineAxisMotionShield.begin()) {
+        MagicSquareScoutWithImu app = new MagicSquareScoutWithImu(scout);
+        if (!IMU.begin()) {
             Serial.println("No BNO055 found: is the 9 Axis Motion Shield attached?");
             return;
         }
-        ScoutRemote.begin(-1, TRANSMIT_PIN);
-        ScoutRemote.setMode(ScoutRemote.MODE_POWER);
+        scout.begin(-1, TRANSMIT_PIN);
+        scout.setMode(ScoutRemote.MODE_POWER);
 
         while (true) {
             Serial.println("Straight");
@@ -45,25 +56,25 @@ public class MagicSquareScoutWithImu {
 
     /** Holds buttons on the virtual remote the way a real one does: a command every 100 ms. */
     private void drive(int buttons, int millis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < millis) {
-            ScoutRemote.sendButtons(buttons);
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < millis) {
+            scout.sendButtons(buttons);
             Delay.millis(REPEAT_MILLIS);
         }
     }
 
     /** Spins left, sending commands until the sensor reports TURN_DEGREES anticlockwise, or the safety timeout. */
     private void turnLeft() {
-        int startHeading = NineAxisMotionShield.headingDegrees();
-        int started = Clock.millis();
-        while (NineAxisMotionShield.turnedSince(startHeading) > -TURN_DEGREES && Clock.millis() - started < TURN_TIMEOUT_MILLIS) {
-            ScoutRemote.sendButtons(RcxRemote.A_BACKWARD | RcxRemote.B_FORWARD);
+        int startHeading = IMU.headingDegrees();
+        int started = CLOCK.millis();
+        while (IMU.turnedSince(startHeading) > -TURN_DEGREES && CLOCK.millis() - started < TURN_TIMEOUT_MILLIS) {
+            scout.sendButtons(RcxRemote.A_BACKWARD | RcxRemote.B_FORWARD);
         }
     }
 
     private void stop() {
-        ScoutRemote.sendButtons(0);
-        ScoutRemote.stopAll();
+        scout.sendButtons(0);
+        scout.stopAll();
         Delay.millis(STOP_MILLIS);
     }
 }

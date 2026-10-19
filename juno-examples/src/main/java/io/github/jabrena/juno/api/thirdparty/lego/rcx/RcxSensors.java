@@ -23,22 +23,25 @@ public class RcxSensors {
     private static final int RETRY_MILLIS = 1000;
 
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        while (!(RcxBrick.setTemperatureSensor(TEMPERATURE) && RcxBrick.setTouchSensor(TOUCH)
-                && RcxBrick.setLightSensor(LIGHT))) {
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        while (!(brick.setTemperatureSensor(TEMPERATURE) && brick.setTouchSensor(TOUCH)
+                && brick.setLightSensor(LIGHT))) {
             Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
             Delay.millis(RETRY_MILLIS);
         }
         Serial.println("Sensors set: temperature 1, touch 2, light 3");
 
         while (true) {
-            printTemperature(RcxBrick.temperatureTenths(TEMPERATURE));
+            printTemperature(brick.temperatureTenths(TEMPERATURE));
             Serial.print("  touch ");
-            Serial.print(RcxBrick.readSensor(TOUCH));
+            Serial.print(brick.readSensor(TOUCH));
             Serial.print("  light ");
-            Serial.print(RcxBrick.readSensor(LIGHT));
+            Serial.print(brick.readSensor(LIGHT));
             Serial.println(" %");
             Delay.millis(PERIOD_MILLIS);
         }

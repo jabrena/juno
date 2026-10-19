@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Task;
 import io.github.jabrena.juno.api.time.Clock;
@@ -12,6 +14,7 @@ import io.github.jabrena.juno.usecases.miner.commons.Miner2State;
  * the cover keeps drawing while the node connects; the network and the miner wait until the link is up.
  */
 public final class NodeService implements Task {
+    private static final Clock CLOCK = MCU.getClock();
     private final Miner2State model;
     private final NetworkService network;
     private final MiningService mining;
@@ -25,7 +28,7 @@ public final class NodeService implements Task {
         this.model = model;
         this.persistence = persistence;
         this.claims = new ClaimService(model);
-        this.network = new NetworkService(model, link, claims, Clock.millis());
+        this.network = new NetworkService(model, link, claims, CLOCK.millis());
         this.mining = new MiningService(model, persistence, claims);
     }
 
@@ -34,7 +37,7 @@ public final class NodeService implements Task {
      */
     public void connect() {
         if (link.state() == WifiLink.IDLE) {
-            link.start(Clock.millis());
+            link.start(CLOCK.millis());
         }
     }
 
@@ -50,7 +53,7 @@ public final class NodeService implements Task {
      */
     public void toggleWifi() {
         if (link.state() == WifiLink.IDLE) {
-            link.start(Clock.millis());
+            link.start(CLOCK.millis());
         } else {
             link.disconnect();
             networkStarted = false;
@@ -59,7 +62,7 @@ public final class NodeService implements Task {
 
     @Override
     public void step() {
-        int now = Clock.millis();
+        int now = CLOCK.millis();
         link.step(now);
         model.publishWifiConnected(link.connected());
         if (!started || !link.ready()) {

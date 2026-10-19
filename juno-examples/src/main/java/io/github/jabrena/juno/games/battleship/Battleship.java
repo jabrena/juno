@@ -3,15 +3,25 @@ package io.github.jabrena.juno.games.battleship;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.api.util.Random;
 
-import static io.github.jabrena.juno.games.battleship.AutopilotBattleship.*;
-import static io.github.jabrena.juno.games.battleship.Controls.*;
-import static io.github.jabrena.juno.games.battleship.Fleet.*;
-import static io.github.jabrena.juno.games.battleship.SceneRenderer.*;
+import static io.github.jabrena.juno.games.battleship.AutopilotBattleship.chooseTarget;
+import static io.github.jabrena.juno.games.battleship.Controls.waitForRelease;
+import static io.github.jabrena.juno.games.battleship.Fleet.fleetDestroyed;
+import static io.github.jabrena.juno.games.battleship.Fleet.isSunk;
+import static io.github.jabrena.juno.games.battleship.Fleet.markSunk;
+import static io.github.jabrena.juno.games.battleship.Fleet.placeFleet;
+import static io.github.jabrena.juno.games.battleship.Fleet.shipName;
+import static io.github.jabrena.juno.games.battleship.SceneRenderer.drawEnemyCell;
+import static io.github.jabrena.juno.games.battleship.SceneRenderer.drawMyCell;
+import static io.github.jabrena.juno.games.battleship.SceneRenderer.drawShipsLeft;
+import static io.github.jabrena.juno.games.battleship.SceneRenderer.drawShipsLeftCounts;
+import static io.github.jabrena.juno.games.battleship.SceneRenderer.showStatus;
+import static io.github.jabrena.juno.games.battleship.SceneRenderer.showStatus2;
 
 /**
  * Battleship against the computer on the ELEGOO 2.8" TFT touch screen shield. Each side hides a
@@ -33,6 +43,7 @@ import static io.github.jabrena.juno.games.battleship.SceneRenderer.*;
  */
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
 public final class Battleship {
+    private static final Clock CLOCK = MCU.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;
     static final int SIZE = 10;
     static final int CELLS = SIZE * SIZE;
@@ -140,7 +151,7 @@ public final class Battleship {
 
     static void newGame(byte[] myFleet, byte[] enemyFleet, byte[] myShots, byte[] enemyShots) {
         if (!seeded) {
-            Random.seed(Clock.micros());
+            Random.seed(CLOCK.micros());
             seeded = true;
         }
         placeFleet(myFleet);

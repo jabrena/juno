@@ -4,6 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.BoardRuntime;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
@@ -48,6 +49,7 @@ import io.github.jabrena.juno.games.gladiator.view.ViewList;
  */
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
 public final class Gladiator {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int ARENA = 0;
 
     /** The screen's line list, which every role draws into, and the class models of the title and the Solo screens. */
@@ -66,9 +68,9 @@ public final class Gladiator {
     /** The title, then the game menu for ever. */
     private void play() {
         // Seeded before the title too, so even its first quote is picked at random.
-        Random.seed(Clock.micros());
+        Random.seed(CLOCK.micros());
         Opening.play(list, wireframe);
-        Random.seed(Clock.micros());
+        Random.seed(CLOCK.micros());
         while (true) {
             int mode = ModeMenu.choose(BoardRuntime.isQ());
             if (mode == ModeMenu.SOLO) {

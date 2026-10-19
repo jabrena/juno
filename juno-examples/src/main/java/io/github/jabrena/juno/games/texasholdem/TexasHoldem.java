@@ -3,15 +3,19 @@ package io.github.jabrena.juno.games.texasholdem;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.api.util.Random;
 
-import static io.github.jabrena.juno.games.texasholdem.Controls.*;
-import static io.github.jabrena.juno.games.texasholdem.Deck.*;
-import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.*;
-import static io.github.jabrena.juno.games.texasholdem.Table.*;
+import static io.github.jabrena.juno.games.texasholdem.Controls.waitForDeal;
+import static io.github.jabrena.juno.games.texasholdem.Deck.alive;
+import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.drawDealButtons;
+import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.drawTable;
+import static io.github.jabrena.juno.games.texasholdem.SceneRenderer.showMessage;
+import static io.github.jabrena.juno.games.texasholdem.Table.newGame;
+import static io.github.jabrena.juno.games.texasholdem.Table.playHand;
 
 /**
  * No-limit Texas Hold'em on the ELEGOO 2.8" TFT touch screen shield: you against three computer
@@ -41,6 +45,7 @@ import static io.github.jabrena.juno.games.texasholdem.Table.*;
  */
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
 public final class TexasHoldem {
+    private static final Clock CLOCK = MCU.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;
     static final int SEATS = 4;
     static final int START_CHIPS = 1000;
@@ -170,7 +175,7 @@ public final class TexasHoldem {
                 newGame(seats);
             }
             if (!seeded) {
-                Random.seed(Clock.micros());
+                Random.seed(CLOCK.micros());
                 seeded = true;
             }
             playHand(cards, seats, work);

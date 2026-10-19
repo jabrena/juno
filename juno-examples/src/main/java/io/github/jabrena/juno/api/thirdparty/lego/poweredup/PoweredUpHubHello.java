@@ -13,6 +13,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubHello {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int COLOR_MILLIS = 600;
     private static final int[] COLORS = {
         PoweredUpHubRemote.COLOR_RED,
@@ -29,13 +30,13 @@ public class PoweredUpHubHello {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         while (true) {
-            if (!PoweredUpHubRemote.isConnected()) {
+            if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                PoweredUpHubRemote.connect(0);
-                Serial.println("Connected, battery " + PoweredUpHubRemote.batteryPercent() + " %");
+                HUB.connect(0);
+                Serial.println("Connected, battery " + HUB.batteryPercent() + " %");
             }
             for (int i = 0; i < COLORS.length; i++) {
-                PoweredUpHubRemote.setLedColor(COLORS[i]);
+                HUB.setLedColor(COLORS[i]);
                 Delay.millis(COLOR_MILLIS);
             }
         }

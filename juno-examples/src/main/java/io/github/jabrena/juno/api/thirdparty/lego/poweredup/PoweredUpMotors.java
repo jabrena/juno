@@ -2,23 +2,33 @@ package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 
-import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.*;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BUTTON_HEIGHT_MOTOR;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.MARGIN;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.PORTS;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.POWER_STEP;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.ROW_FIRST;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.ROW_PITCH;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.ROW_STOP;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.SMALL_BUTTON_WIDTH;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.WIDE_BUTTON_WIDTH;
+import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.WIDTH;
 
 /** The MOTORS view of {@link PoweredUpHubTFT}. */
 final class PoweredUpMotors {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private PoweredUpMotors() {
     }
 
     static void onTouch(PoweredUpState s, int x, int y) {
         if (PoweredUpUi.inBox(x, y, WIDTH - MARGIN - WIDE_BUTTON_WIDTH, ROW_STOP, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT_MOTOR)) {
             for (int port = 0; port < PORTS; port++) {
-                s.zero[port] = PoweredUpHubRemote.readSensor(port);
+                s.zero[port] = HUB.readSensor(port);
             }
         } else if (PoweredUpUi.inBox(x, y, MARGIN, ROW_STOP, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT_MOTOR)) {
             for (int port = 0; port < PORTS; port++) {
                 if (PoweredUpUi.isMotor(s.device[port])) {
                     s.power[port] = 0;
-                    PoweredUpHubRemote.brakeMotor(port);
+                    HUB.brakeMotor(port);
                 }
             }
         } else {
@@ -26,7 +36,7 @@ final class PoweredUpMotors {
                 int delta = PoweredUpUi.isMotor(s.device[port]) ? motorDelta(x, y, rowOf(port)) : 0;
                 if (delta != 0) {
                     s.power[port] = PoweredUpUi.clamp(s.power[port] + delta);
-                    PoweredUpHubRemote.setMotorPower(port, s.power[port]);
+                    HUB.setMotorPower(port, s.power[port]);
                 }
             }
         }
@@ -95,7 +105,7 @@ final class PoweredUpMotors {
         TftTouchShield.setTextSize(1);
         TftTouchShield.setCursor(x, row + 26);
         TftTouchShield.print("tacho ");
-        TftTouchShield.print(PoweredUpHubRemote.readSensor(port) - s.zero[port]);
+        TftTouchShield.print(HUB.readSensor(port) - s.zero[port]);
         TftTouchShield.print("     ");
     }
 }

@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.scout;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxRemote;
@@ -14,17 +16,25 @@ import io.github.jabrena.juno.api.util.Delay;
  * {@code TURN_MILLIS}, which you tune for your vehicle. Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquareScout {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final int STRAIGHT_MILLIS = 3000;
     private static final int TURN_MILLIS = 700;
     private static final int STOP_MILLIS = 2000;
     private static final int REPEAT_MILLIS = 100;
 
+    private final ScoutRemote scout;
+
+    MagicSquareScout(ScoutRemote scout) {
+        this.scout = scout;
+    }
+
     public static void main(String[] args) {
+        ScoutRemote scout = new ScoutRemote();
         Serial.begin(BaudRate.BAUD_115200);
-        MagicSquareScout app = new MagicSquareScout();
-        ScoutRemote.begin(-1, TRANSMIT_PIN);
-        ScoutRemote.setMode(ScoutRemote.MODE_POWER);
+        MagicSquareScout app = new MagicSquareScout(scout);
+        scout.begin(-1, TRANSMIT_PIN);
+        scout.setMode(ScoutRemote.MODE_POWER);
 
         while (true) {
             Serial.println("Straight");
@@ -38,16 +48,16 @@ public class MagicSquareScout {
 
     /** Holds buttons on the virtual remote the way a real one does: a command every 100 ms. */
     private void drive(int buttons, int millis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < millis) {
-            ScoutRemote.sendButtons(buttons);
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < millis) {
+            scout.sendButtons(buttons);
             Delay.millis(REPEAT_MILLIS);
         }
     }
 
     private void stop() {
-        ScoutRemote.sendButtons(0);
-        ScoutRemote.stopAll();
+        scout.sendButtons(0);
+        scout.stopAll();
         Delay.millis(STOP_MILLIS);
     }
 }

@@ -26,16 +26,23 @@ public class ScoutSound {
     private static final int F4 = 349;
     private static final int G4 = 392;
 
+    private final ScoutRemote scout;
+
+    ScoutSound(ScoutRemote scout) {
+        this.scout = scout;
+    }
+
     public static void main(String[] args) {
+        ScoutRemote scout = new ScoutRemote();
         Serial.begin(BaudRate.BAUD_115200);
-        ScoutSound app = new ScoutSound();
-        ScoutRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        Serial.println("Scout battery: " + ScoutRemote.batteryMillivolts() + " mV");
+        ScoutSound app = new ScoutSound(scout);
+        scout.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        Serial.println("Scout battery: " + scout.batteryMillivolts() + " mV");
 
         while (true) {
             for (int sound = 0; sound < SOUNDS; sound++) {
                 Serial.println("Built-in sound " + sound);
-                ScoutRemote.playSound(sound);
+                scout.playSound(sound);
                 Delay.millis(SOUND_PAUSE_MILLIS);
             }
             Serial.println("Ode to Joy");
@@ -48,7 +55,7 @@ public class ScoutSound {
     private void playTune() {
         int[] notes = {E4, E4, F4, G4, G4, F4, E4, D4, C4, C4, D4, E4, E4, D4, D4};
         for (int i = 0; i < NOTES; i++) {
-            ScoutRemote.playTone(notes[i], NOTE_CENTISECONDS);
+            scout.playTone(notes[i], NOTE_CENTISECONDS);
             Delay.millis(NOTE_CENTISECONDS * 10 + NOTE_GAP_MILLIS);
         }
     }

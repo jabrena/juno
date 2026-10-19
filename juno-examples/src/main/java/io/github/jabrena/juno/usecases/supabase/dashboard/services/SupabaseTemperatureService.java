@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.services;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Task;
 import io.github.jabrena.juno.api.net.Wifi;
@@ -19,6 +20,7 @@ import java.util.concurrent.StructuredTaskScope;
  * preference, avoiding a standalone count request.
  */
 public final class SupabaseTemperatureService implements Task {
+    private static final Clock CLOCK = MCU.getClock();
     public static final int PAGE_ROWS = 50;
 
     private static final int WIFI_ATTEMPTS = 30;
@@ -66,7 +68,7 @@ public final class SupabaseTemperatureService implements Task {
         started = true;
         Serial.println("Connecting WiFi");
         Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
-        nextWifiCheck = Clock.millis() + RETRY_DELAY_MILLIS;
+        nextWifiCheck = CLOCK.millis() + RETRY_DELAY_MILLIS;
     }
 
     /** Advances Wi-Fi setup, a delayed TLS retry, or one page read. */
@@ -91,7 +93,7 @@ public final class SupabaseTemperatureService implements Task {
             Serial.println("WiFi connected");
             return;
         }
-        int now = Clock.millis();
+        int now = CLOCK.millis();
         if (now - nextWifiCheck < 0) {
             return;
         }
@@ -153,7 +155,7 @@ public final class SupabaseTemperatureService implements Task {
     private void processPagePair() {
         if (tlsFailed(response, supabase) || tlsFailed(nextResponse, nextSupabase)) {
             retrying = true;
-            retryAt = Clock.millis() + RETRY_DELAY_MILLIS;
+            retryAt = CLOCK.millis() + RETRY_DELAY_MILLIS;
             Serial.println("TLS connection failed; retrying once");
             return;
         }
@@ -174,7 +176,7 @@ public final class SupabaseTemperatureService implements Task {
     }
 
     private void retryStep() {
-        if (Clock.millis() - retryAt < 0) {
+        if (CLOCK.millis() - retryAt < 0) {
             return;
         }
         retrying = false;

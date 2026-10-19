@@ -3,6 +3,7 @@ package io.github.jabrena.juno.usecases.supabase.publisher;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
@@ -34,9 +35,11 @@ import java.time.LocalDateTime;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class SupabaseGroveTemperatures {
-    private static final int DHT22_PIN = GroveBaseShield.D4;
-    private static final int DHT11_PIN = GroveBaseShield.D2;
-    private static final int THERMISTOR_PIN = GroveBaseShield.A0;
+    private static final GroveBaseShield SHIELD = new GroveBaseShield();
+    private static final Clock CLOCK = MCU.getClock();
+    private static final int DHT22_PIN = SHIELD.getD4();
+    private static final int DHT11_PIN = SHIELD.getD2();
+    private static final int THERMISTOR_PIN = SHIELD.getA0();
     private static final int THERMISTOR_ADC_MAXIMUM = 1023;
     private static final int REQUEST_HEADERS_CAPACITY = 144;
     private static final int REQUEST_BODY_CAPACITY = 96;
@@ -46,6 +49,9 @@ public final class SupabaseGroveTemperatures {
     private static final int TIME_ATTEMPTS = 120;
     private static final int UPLOAD_INTERVAL_MILLIS = 60_000;
 
+    private final GroveDht22 dht22 = new GroveDht22();
+    private final GroveDht11 dht11 = new GroveDht11();
+    private final GroveTemperatureSensorV12 thermistor = new GroveTemperatureSensorV12();
     private final int[] dht22Reading = new int[GroveDht22.READING_LENGTH];
     private final int[] dht11Reading = new int[GroveDht11.READING_LENGTH];
     private final int[] frame = new int[GroveDht22.FRAME_LENGTH];
@@ -113,7 +119,7 @@ public final class SupabaseGroveTemperatures {
             return false;
         }
         clock.start(start.getYear(), start.getMonthValue(), start.getDayOfMonth(),
-                start.getHour(), start.getMinute(), start.getSecond(), Clock.millis());
+                start.getHour(), start.getMinute(), start.getSecond(), CLOCK.millis());
 
         return true;
     }
@@ -121,20 +127,20 @@ public final class SupabaseGroveTemperatures {
     /** Reads all Grove sensors into and returns the reusable current reading record. */
     private GroveTemperatureRecord retrieveData() {
         float temp1 = SensorDataRow.NO_READING;
-        if (GroveDht22.read(DHT22_PIN, dht22Reading, dht22Reading.length, frame, frame.length)) {
+        if (dht22.read(DHT22_PIN, dht22Reading, dht22Reading.length, frame, frame.length)) {
             temp1 = dht22Reading[GroveDht22.TEMPERATURE_TENTHS_CELSIUS] / 10.0f;
         }
         float temp2 = SensorDataRow.NO_READING;
-        if (GroveDht11.read(DHT11_PIN, dht11Reading, dht11Reading.length, frame, frame.length)) {
+        if (dht11.read(DHT11_PIN, dht11Reading, dht11Reading.length, frame, frame.length)) {
             temp2 = dht11Reading[GroveDht11.TEMPERATURE_CELSIUS];
         }
         float temp3 = SensorDataRow.NO_READING;
-        int adc = GroveTemperatureSensorV12.rawValue(THERMISTOR_PIN);
+        int adc = thermistor.rawValue(THERMISTOR_PIN);
         if (adc > 0 && adc < THERMISTOR_ADC_MAXIMUM) {
-            temp3 = GroveTemperatureSensorV12.celsiusFromRaw(adc);
+            temp3 = thermistor.celsiusFromRaw(adc);
         }
 
-        clock.update(Clock.millis());
+        clock.update(CLOCK.millis());
         record.set(temp1, temp2, temp3,
                 clock.year(), clock.month(), clock.day(),
                 clock.hour(), clock.minute(), clock.second());

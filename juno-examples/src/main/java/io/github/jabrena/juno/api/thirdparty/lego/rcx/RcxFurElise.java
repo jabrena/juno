@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -19,6 +21,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * with {@code -Djuno.board}.
  */
 public class RcxFurElise {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     /** One sixteenth note, the melody's shortest step. */
@@ -97,18 +100,31 @@ public class RcxFurElise {
             1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 6,
     };
 
+    private final RcxLink link;
+    private final RcxRemote remote;
+    private final RcxBrick brick;
+
+    RcxFurElise(RcxLink link, RcxRemote remote, RcxBrick brick) {
+        this.link = link;
+        this.remote = remote;
+        this.brick = brick;
+    }
+
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        RcxFurElise app = new RcxFurElise();
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        int battery = RcxBrick.batteryMillivolts();
+        RcxFurElise app = new RcxFurElise(link, remote, brick);
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        int battery = brick.batteryMillivolts();
         while (battery < 0) {
             Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
             Delay.millis(1000);
-            battery = RcxBrick.batteryMillivolts();
+            battery = brick.batteryMillivolts();
         }
-        RcxBrick.motorOff(ALL_OUTPUTS);
+        brick.motorOff(ALL_OUTPUTS);
 
         while (true) {
             Serial.println("Fur Elise, Ludwig van Beethoven");
@@ -119,14 +135,14 @@ public class RcxFurElise {
 
     /** Plays the melody once, each note starting on its step whatever the infrared round trip took. */
     private void play() {
-        int noteStart = Clock.millis();
+        int noteStart = CLOCK.millis();
         for (int i = 0; i < NOTES.length; i++) {
             int length = STEPS[i] * STEP_MILLIS;
             if (NOTES[i] != REST) {
-                RcxBrick.playTone(NOTES[i], (length - GAP_MILLIS) / 10);
+                brick.playTone(NOTES[i], (length - GAP_MILLIS) / 10);
             }
             noteStart += length;
-            int remaining = noteStart - Clock.millis();
+            int remaining = noteStart - CLOCK.millis();
             if (remaining > 0) {
                 Delay.millis(remaining);
             }

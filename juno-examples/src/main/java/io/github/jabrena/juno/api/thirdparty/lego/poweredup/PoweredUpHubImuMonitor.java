@@ -12,6 +12,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubImuMonitor {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int REPORT_MILLIS = 500;
     private static final int VALUE_BYTES = 2;
 
@@ -20,13 +21,13 @@ public class PoweredUpHubImuMonitor {
         PoweredUpHubImuMonitor app = new PoweredUpHubImuMonitor();
 
         while (true) {
-            if (!PoweredUpHubRemote.isConnected()) {
+            if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                PoweredUpHubRemote.connect(0);
-                PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_ACCELEROMETER, PoweredUpHubRemote.MODE_IMU_VALUES);
-                PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_GYRO, PoweredUpHubRemote.MODE_IMU_VALUES);
-                PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_TILT, PoweredUpHubRemote.MODE_IMU_VALUES);
-                Serial.println("Battery: " + PoweredUpHubRemote.batteryPercent() + " %");
+                HUB.connect(0);
+                HUB.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_ACCELEROMETER, PoweredUpHubRemote.MODE_IMU_VALUES);
+                HUB.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_GYRO, PoweredUpHubRemote.MODE_IMU_VALUES);
+                HUB.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_TILT, PoweredUpHubRemote.MODE_IMU_VALUES);
+                Serial.println("Battery: " + HUB.batteryPercent() + " %");
             }
             app.print("accelerometer", PoweredUpHubRemote.PORT_TECHNIC_ACCELEROMETER);
             app.print("gyro", PoweredUpHubRemote.PORT_TECHNIC_GYRO);
@@ -36,9 +37,9 @@ public class PoweredUpHubImuMonitor {
     }
 
     private void print(String name, int port) {
-        Serial.println(name + " (" + PoweredUpHubRemote.sensorReportSize(port) + " bytes): "
-                + PoweredUpHubRemote.readSensorValue(port, 0, VALUE_BYTES) + ", "
-                + PoweredUpHubRemote.readSensorValue(port, 1, VALUE_BYTES) + ", "
-                + PoweredUpHubRemote.readSensorValue(port, 2, VALUE_BYTES));
+        Serial.println(name + " (" + HUB.sensorReportSize(port) + " bytes): "
+                + HUB.readSensorValue(port, 0, VALUE_BYTES) + ", "
+                + HUB.readSensorValue(port, 1, VALUE_BYTES) + ", "
+                + HUB.readSensorValue(port, 2, VALUE_BYTES));
     }
 }

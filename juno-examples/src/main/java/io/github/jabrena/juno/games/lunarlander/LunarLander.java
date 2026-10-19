@@ -2,6 +2,7 @@ package io.github.jabrena.juno.games.lunarlander;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
@@ -13,6 +14,7 @@ import io.github.jabrena.juno.api.util.Random;
  */
 @Board(ArduinoUnoR4WiFi.class)
 public final class LunarLander {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int START_FUEL = 1500;
     private static final int CPU_START_FUEL = 3000;
     private static final int CRASH_PENALTY = 250;
@@ -29,7 +31,7 @@ public final class LunarLander {
             Interludes.cover();
             Controls.waitForTap();
             Controls.choosePilot();
-            Random.seed(Clock.micros());
+            Random.seed(CLOCK.micros());
             Flight.newGame(Controls.autopilot ? CPU_START_FUEL : START_FUEL);
             while (Flight.fuel > 0) {
                 Flight.descent = Flight.descent + 1;

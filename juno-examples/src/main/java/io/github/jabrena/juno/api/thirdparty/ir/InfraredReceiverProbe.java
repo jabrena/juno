@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.ir;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.time.Clock;
@@ -14,6 +16,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * ground. Pick the board with {@code -Djuno.board}.
  */
 public class InfraredReceiverProbe {
+    private static final Clock CLOCK = MCU.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int NO_PIN = -1;
     private static final int BAUD = 2400;
@@ -37,8 +40,8 @@ public class InfraredReceiverProbe {
     private int countBursts() {
         int bursts = 0;
         boolean previous = false;
-        int started = Clock.millis();
-        while (Clock.millis() - started < WINDOW_MILLIS) {
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < WINDOW_MILLIS) {
             boolean current = Infrared.receiving();
             if (current && !previous) {
                 bursts++;

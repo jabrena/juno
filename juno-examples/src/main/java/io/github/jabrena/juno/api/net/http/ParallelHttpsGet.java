@@ -4,6 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
@@ -24,6 +25,7 @@ import java.util.concurrent.StructuredTaskScope;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoR3WiFiRev2.class, ArduinoUnoQ.class})
 public final class ParallelHttpsGet {
+    private final Clock clock = MCU.getClock();
     private static final String FIRST_URL = "https://example.com/?request=first";
     private static final String SECOND_URL = "https://example.com/?request=second";
 
@@ -85,6 +87,10 @@ public final class ParallelHttpsGet {
     }
 
     public static void main(String[] args) throws Exception {
+        new ParallelHttpsGet().run();
+    }
+
+    private void run() throws Exception {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         if (!connectWifi()) {
@@ -99,7 +105,7 @@ public final class ParallelHttpsGet {
 
     /** Both requests must succeed; a failing request cancels its still-running sibling. */
     private void allSuccessful() {
-        int startedAt = Clock.millis();
+        int startedAt = clock.millis();
         try (var scope = StructuredTaskScope.open(StructuredTaskScope.Joiner.<String>allSuccessfulOrThrow())) {
             var firstTask = scope.fork(() -> first.execute());
             var secondTask = scope.fork(() -> second.execute());
@@ -118,7 +124,7 @@ public final class ParallelHttpsGet {
 
     /** The first successful request wins and the other request is cancelled. */
     private void anySuccessful() {
-        int startedAt = Clock.millis();
+        int startedAt = clock.millis();
         try (var scope = StructuredTaskScope.open(StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
             scope.fork(() -> first.execute());
             scope.fork(() -> second.execute());
@@ -133,7 +139,7 @@ public final class ParallelHttpsGet {
 
     /** This request must succeed before the 20-second scope timeout expires. */
     private void awaitAllSuccessfulWithTimeout() {
-        int startedAt = Clock.millis();
+        int startedAt = clock.millis();
         try (var scope = StructuredTaskScope.open(
                 StructuredTaskScope.Joiner.<String>awaitAllSuccessfulOrThrow(),
                 configuration -> configuration.withTimeout(Duration.ofSeconds(20)))) {
@@ -148,21 +154,21 @@ public final class ParallelHttpsGet {
         }
     }
 
-    private static void printRound(String policy, boolean cancelled, int startedAt) {
+    private void printRound(String policy, boolean cancelled, int startedAt) {
         Serial.print(policy);
         Serial.print(" cancelled=");
         Serial.print(cancelled);
         Serial.print(" elapsed_ms=");
-        Serial.println(Clock.millis() - startedAt);
+        Serial.println(clock.millis() - startedAt);
     }
 
-    private static void printFailure(String policy, String failureMessage) {
+    private void printFailure(String policy, String failureMessage) {
         Serial.print(policy);
         Serial.print(" failed: ");
         Serial.println(failureMessage);
     }
 
-    private static boolean connectWifi() {
+    private boolean connectWifi() {
         Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         int attempts = 0;
         while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < 30) {

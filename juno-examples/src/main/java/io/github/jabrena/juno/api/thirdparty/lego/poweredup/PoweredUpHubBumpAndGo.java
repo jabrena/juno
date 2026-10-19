@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -16,6 +18,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubBumpAndGo {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int LEFT_BUMPER_PIN = 4;
     private static final int RIGHT_BUMPER_PIN = 5;
     private static final int LEFT = PoweredUpHubRemote.PORT_A;
@@ -26,13 +29,21 @@ public class PoweredUpHubBumpAndGo {
     private static final int TURN_MILLIS = 700;
     private static final int STOP_MILLIS = 500;
 
+    private final Gpio gpio;
+    private final Clock clock;
+
+    PoweredUpHubBumpAndGo(Gpio gpio, Clock clock) {
+        this.gpio = gpio;
+        this.clock = clock;
+    }
+
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        PoweredUpHubBumpAndGo app = new PoweredUpHubBumpAndGo();
-        Gpio.pinMode(LEFT_BUMPER_PIN, Gpio.INPUT_PULLUP);
-        Gpio.pinMode(RIGHT_BUMPER_PIN, Gpio.INPUT_PULLUP);
+        PoweredUpHubBumpAndGo app = new PoweredUpHubBumpAndGo(MCU.getGpio(), MCU.getClock());
+        app.gpio.pinMode(LEFT_BUMPER_PIN, Gpio.getInputPullup());
+        app.gpio.pinMode(RIGHT_BUMPER_PIN, Gpio.getInputPullup());
         Serial.println("Waiting for a Powered Up hub...");
-        PoweredUpHubRemote.connect(0);
+        HUB.connect(0);
 
         while (true) {
             int bumped = app.bumped();
@@ -47,10 +58,10 @@ public class PoweredUpHubBumpAndGo {
     /** Which bumper is pressed: 0 none, 1 left, 2 right, 3 both. */
     private int bumped() {
         int pressed = 0;
-        if (!Gpio.digitalRead(LEFT_BUMPER_PIN)) {
+        if (!gpio.digitalRead(LEFT_BUMPER_PIN)) {
             pressed += 1;
         }
-        if (!Gpio.digitalRead(RIGHT_BUMPER_PIN)) {
+        if (!gpio.digitalRead(RIGHT_BUMPER_PIN)) {
             pressed += 2;
         }
         return pressed;
@@ -71,8 +82,8 @@ public class PoweredUpHubBumpAndGo {
     }
 
     private void moveFor(int left, int right, int millis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < millis) {
+        int started = clock.millis();
+        while (clock.millis() - started < millis) {
             move(left, right);
         }
     }
@@ -80,11 +91,11 @@ public class PoweredUpHubBumpAndGo {
     /** Drives each side {@code -1} (backwards), {@code 0} (stopped) or {@code 1} (forwards) at the cruising power. */
     private void move(int left, int right) {
         if (left == 0 && right == 0) {
-            PoweredUpHubRemote.brakeMotor(LEFT);
-            PoweredUpHubRemote.brakeMotor(RIGHT);
+            HUB.brakeMotor(LEFT);
+            HUB.brakeMotor(RIGHT);
         } else {
-            PoweredUpHubRemote.setMotorPower(LEFT, left * POWER);
-            PoweredUpHubRemote.setMotorPower(RIGHT, right * POWER);
+            HUB.setMotorPower(LEFT, left * POWER);
+            HUB.setMotorPower(RIGHT, right * POWER);
         }
         Delay.millis(POLL_MILLIS);
     }

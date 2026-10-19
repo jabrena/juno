@@ -26,7 +26,7 @@ final class ConfigurePomodoroView {
         show(minutes);
 
         while (true) {
-            int button = LcdKeypadShield.readButton();
+            int button = Pomodoro.LCD_SHIELD.readButton();
             if (button != lastButton) {
                 if (button == LcdKeypadShield.UP && minutes < MAX_MINUTES) {
                     minutes = minutes + MINUTES_STEP;
@@ -47,12 +47,12 @@ final class ConfigurePomodoroView {
     }
 
     private static void show(int minutes) {
-        LcdKeypadShield.clear();
-        LcdKeypadShield.setCursor(0, 0);
-        LcdKeypadShield.print("Pomodoro ");
-        LcdKeypadShield.print(minutes);
-        LcdKeypadShield.print("m");
-        LcdKeypadShield.setCursor(0, 1);
-        LcdKeypadShield.print("UP/DOWN, SELECT");
+        Pomodoro.LCD_SHIELD.clear();
+        Pomodoro.LCD_SHIELD.setCursor(0, 0);
+        Pomodoro.LCD_SHIELD.print("Pomodoro ");
+        Pomodoro.LCD_SHIELD.print(minutes);
+        Pomodoro.LCD_SHIELD.print("m");
+        Pomodoro.LCD_SHIELD.setCursor(0, 1);
+        Pomodoro.LCD_SHIELD.print("UP/DOWN, SELECT");
     }
 }

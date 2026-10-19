@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
+import io.github.jabrena.juno.api.hardware.MCU;
+
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.imu.NineAxisMotionShield;
@@ -27,6 +29,9 @@ import io.github.jabrena.juno.api.util.Delay;
  * not verified on a particular chassis. Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpGyroBoy {
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final NineAxisMotionShield IMU = new NineAxisMotionShield();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int LEFT = PoweredUpHubRemote.PORT_A;
     private static final int RIGHT = PoweredUpHubRemote.PORT_B;
 
@@ -61,23 +66,23 @@ public class PoweredUpGyroBoy {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         PoweredUpGyroBoy app = new PoweredUpGyroBoy();
-        if (!NineAxisMotionShield.begin()) {
+        if (!IMU.begin()) {
             Serial.println("No BNO055 found on the I2C bus");
             return;
         }
 
         while (true) {
-            if (!PoweredUpHubRemote.isConnected()) {
+            if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                PoweredUpHubRemote.connect(0);
-                app.motors = PoweredUpHubRemote.linkMotors(LEFT, RIGHT);
+                HUB.connect(0);
+                app.motors = HUB.linkMotors(LEFT, RIGHT);
                 app.sentPower = 0;
                 if (app.motors < 0) {
                     Serial.println("The hub did not link motors A and B");
-                    PoweredUpHubRemote.disconnect();
+                    HUB.disconnect();
                     continue;
                 }
-                PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+                HUB.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
             }
             app.waitForUpright();
             Serial.println("Balancing");
@@ -93,19 +98,19 @@ public class PoweredUpGyroBoy {
     private void waitForUpright() {
         drive(0);
         Serial.println("Hold the robot upright...");
-        int steadySince = Clock.millis();
-        int reference = NineAxisMotionShield.pitchRaw();
-        while (Clock.millis() - steadySince < CALIBRATE_MILLIS) {
+        int steadySince = CLOCK.millis();
+        int reference = IMU.pitchRaw();
+        while (CLOCK.millis() - steadySince < CALIBRATE_MILLIS) {
             Delay.millis(LOOP_MILLIS);
-            int pitch = NineAxisMotionShield.pitchRaw();
+            int pitch = IMU.pitchRaw();
             if (Math.abs(pitch - reference) > UPRIGHT_DEGREES * UNITS_PER_DEGREE) {
                 reference = pitch;
-                steadySince = Clock.millis();
+                steadySince = CLOCK.millis();
             }
         }
         int sum = 0;
         for (int i = 0; i < CALIBRATE_SAMPLES; i++) {
-            sum += NineAxisMotionShield.pitchRaw();
+            sum += IMU.pitchRaw();
             Delay.millis(LOOP_MILLIS);
         }
         balancePoint = sum / CALIBRATE_SAMPLES;
@@ -115,14 +120,14 @@ public class PoweredUpGyroBoy {
 
     /** Runs the balance loop until the robot tips over, then stops the motors. */
     private void balance() {
-        int next = Clock.millis();
+        int next = CLOCK.millis();
         boolean upright = true;
         while (upright) {
-            if (!PoweredUpHubRemote.isConnected()) {
+            if (!HUB.isConnected()) {
                 return;
             }
-            int angle = ANGLE_SIGN * (NineAxisMotionShield.pitchRaw() - balancePoint);
-            int rate = ANGLE_SIGN * NineAxisMotionShield.gyroXRaw();
+            int angle = ANGLE_SIGN * (IMU.pitchRaw() - balancePoint);
+            int rate = ANGLE_SIGN * IMU.gyroXRaw();
             if (Math.abs(angle) > FALL_DEGREES * UNITS_PER_DEGREE) {
                 upright = false;
             } else {
@@ -130,7 +135,7 @@ public class PoweredUpGyroBoy {
                 drive(power);
             }
             next += LOOP_MILLIS;
-            while (Clock.millis() - next < 0) {
+            while (CLOCK.millis() - next < 0) {
                 // Wait for the next tick; a slow iteration just runs the next one straight away.
             }
         }
@@ -158,9 +163,9 @@ public class PoweredUpGyroBoy {
         }
         sentPower = output;
         if (output == 0) {
-            PoweredUpHubRemote.brakeLinkedMotors(motors);
+            HUB.brakeLinkedMotors(motors);
         } else {
-            PoweredUpHubRemote.setLinkedMotorPower(motors, MOTOR_SIGN * output, MOTOR_SIGN * output);
+            HUB.setLinkedMotorPower(motors, MOTOR_SIGN * output, MOTOR_SIGN * output);
         }
     }
 }

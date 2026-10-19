@@ -1,23 +1,16 @@
 package io.github.jabrena.juno.games.chess;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
-import static io.github.jabrena.juno.games.chess.BishopSprite.*;
-import static io.github.jabrena.juno.games.chess.Chess.*;
-import static io.github.jabrena.juno.games.chess.ChessEngine.*;
-import static io.github.jabrena.juno.games.chess.ChessRules.*;
-import static io.github.jabrena.juno.games.chess.Controls.*;
-import static io.github.jabrena.juno.games.chess.KingSprite.*;
-import static io.github.jabrena.juno.games.chess.KnightSprite.*;
-import static io.github.jabrena.juno.games.chess.PawnSprite.*;
-import static io.github.jabrena.juno.games.chess.PieceSprites.*;
-import static io.github.jabrena.juno.games.chess.QueenSprite.*;
-import static io.github.jabrena.juno.games.chess.RookSprite.*;
-import static io.github.jabrena.juno.games.chess.SceneRenderer.*;
+import static io.github.jabrena.juno.games.chess.Chess.BOARD_X;
+import static io.github.jabrena.juno.games.chess.Chess.BOARD_Y;
+import static io.github.jabrena.juno.games.chess.Chess.CELL;
 
 final class Controls {
+    private static final Clock CLOCK = MCU.getClock();
     static boolean autopilot;
 
     private Controls() {
@@ -45,8 +38,8 @@ final class Controls {
     }
 
     static boolean waitForTap(int timeoutMillis) {
-        int started = Clock.millis();
-        while (Clock.millis() - started < timeoutMillis) {
+        int started = CLOCK.millis();
+        while (CLOCK.millis() - started < timeoutMillis) {
             if (TftTouchShield.readTouch()) {
                 waitForRelease();
                 return true;

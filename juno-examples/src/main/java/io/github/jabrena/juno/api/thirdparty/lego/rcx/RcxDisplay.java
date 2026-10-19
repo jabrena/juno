@@ -24,27 +24,30 @@ public class RcxDisplay {
     private static final int RETRY_MILLIS = 1000;
 
     public static void main(String[] args) {
+        RcxLink link = new RcxLink();
+        RcxRemote remote = new RcxRemote(link);
+        RcxBrick brick = new RcxBrick(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        RcxRemote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        while (!RcxBrick.showNumber(COUNTDOWN_FROM)) {
+        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        while (!brick.showNumber(COUNTDOWN_FROM)) {
             Serial.println("No answer: is Juno's firmware on the RCX, and is it on and in range?");
             Delay.millis(RETRY_MILLIS);
         }
 
         for (int number = COUNTDOWN_FROM; number >= -COUNTDOWN_FROM; number--) {
-            RcxBrick.showNumber(number);
+            brick.showNumber(number);
             Serial.print("display ");
             Serial.println(number);
             Delay.millis(COUNT_MILLIS);
         }
 
-        RcxBrick.setLightSensor(LIGHT);
+        brick.setLightSensor(LIGHT);
         Serial.println("Showing the light sensor on input 3");
         while (true) {
-            int light = RcxBrick.readSensor(LIGHT);
+            int light = brick.readSensor(LIGHT);
             if (light >= 0) {
-                RcxBrick.showNumber(light);
+                brick.showNumber(light);
                 Serial.print("display light ");
                 Serial.print(light);
                 Serial.println(" %");
