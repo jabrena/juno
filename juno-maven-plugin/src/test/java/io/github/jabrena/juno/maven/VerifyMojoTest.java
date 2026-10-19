@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** {@code juno:verify} through a real, Maven-configured {@link VerifyMojo}: a real Juno compile of
  * {@link io.github.jabrena.juno.maven.fixture.TinyProgram}, followed by a faked {@code arduino-cli compile}. */
-@NullMarked
 @DisplayName("juno:verify goal")
 class VerifyMojoTest extends AbstractMojoTestCase {
     @BeforeEach

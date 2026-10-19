@@ -1,6 +1,5 @@
 package io.github.jabrena.juno;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
  * atomics does not pay for, and the rejection of everything outside the subset. Behavior of the compiled code is
  * covered under QEMU ({@code juno-examples}' {@code Atomics} program).
  */
-@NullMarked
 @DisplayName("Atomic integer, boolean and long support")
 class AtomicsTest {
     @TempDir

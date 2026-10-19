@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.backend.h8300;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +8,6 @@ import java.util.HexFormat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("RCX ROM calls")
 class RcxRomTest {
 

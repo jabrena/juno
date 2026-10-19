@@ -2,7 +2,6 @@ package io.github.jabrena.juno.bytecode;
 
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompilerTestSupport;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,7 +10,6 @@ import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("Wide bytecode instructions")
 class WideInstructionTest {
     @TempDir

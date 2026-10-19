@@ -2,7 +2,6 @@ package io.github.jabrena.juno.api.thirdparty.tft;
 
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.testing.Wire;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INT_ARRAY;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-@NullMarked
 @DisplayName("ELEGOO TFT touch shield")
 class TftTouchShieldTest {
 

@@ -1,13 +1,11 @@
 package io.github.jabrena.juno.backend.h8300;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Steps the icon probe through {@link H8Simulator}, standing in for the ROM timer by setting its tenths counter. */
-@NullMarked
 @DisplayName("RCX icon probe firmware")
 class RcxIconProbeFirmwareTest {
     /** Enough instructions to reach the next wait and spin in it. */

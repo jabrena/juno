@@ -1,6 +1,5 @@
 package io.github.jabrena.juno;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** The {@code java.math} subset ({@code BigInteger}, {@code BigDecimal}, {@code MathContext}) lowered onto the shim. */
-@NullMarked
 @DisplayName("Bounded java.math subset")
 class BigNumberTest {
     @TempDir

@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.linker;
 
 import io.github.jabrena.juno.CompileException;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,7 +11,6 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("Method descriptor parsing")
 class DescriptorTest {
 

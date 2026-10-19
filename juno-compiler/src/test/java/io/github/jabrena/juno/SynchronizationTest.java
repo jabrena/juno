@@ -2,7 +2,6 @@ package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.classfile.ClassPath;
 import io.github.jabrena.juno.classfile.JavaClass;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Restricted Java synchronization primitives over Juno's preemptive thread scheduler. */
-@NullMarked
 @DisplayName("Restricted synchronization primitives")
 class SynchronizationTest {
     @TempDir

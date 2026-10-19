@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.backend.h8300;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,7 +10,6 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("RCX firmware image source")
 class RcxFirmwareImageSourceTest {
     @TempDir

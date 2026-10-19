@@ -4,7 +4,6 @@ import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 /** The RCX firmware toolchain is independent of the Java-to-Arduino compiler and API. */
-@NullMarked
 @DisplayName("RCX firmware architecture rules")
 class RcxFirmwareArchitectureTest {
 

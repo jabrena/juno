@@ -1,6 +1,5 @@
 package io.github.jabrena.juno;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -11,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** The deliberately bounded {@code java.time.LocalDateTime} subset lowered onto the runtime shim. */
-@NullMarked
 @DisplayName("Bounded LocalDateTime subset")
 class LocalDateTimeTest {
     @TempDir

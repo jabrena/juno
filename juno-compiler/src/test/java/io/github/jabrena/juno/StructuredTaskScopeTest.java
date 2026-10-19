@@ -1,6 +1,5 @@
 package io.github.jabrena.juno;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** The JDK 25 preview {@code StructuredTaskScope} subset lowered onto Juno's task runtime. */
-@NullMarked
 @DisplayName("Restricted StructuredTaskScope subset")
 class StructuredTaskScopeTest {
     @TempDir

@@ -9,7 +9,6 @@ import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.backend.runtime.AvrShimThunks;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -23,7 +22,6 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("AVR assembly backend")
 class AvrAsmBackendTest {
     private final AvrShimThunks avrShimThunks = new AvrShimThunks();

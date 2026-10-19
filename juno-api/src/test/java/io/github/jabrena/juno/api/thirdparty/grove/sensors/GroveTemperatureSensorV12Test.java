@@ -1,13 +1,11 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-@NullMarked
 @DisplayName("Grove temperature sensor v1.2")
 class GroveTemperatureSensorV12Test {
 

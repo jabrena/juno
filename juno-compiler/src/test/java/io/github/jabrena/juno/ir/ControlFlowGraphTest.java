@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.ir;
 
 import io.github.jabrena.juno.classfile.MethodRef;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +9,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("Control-flow graph of IR methods")
 class ControlFlowGraphTest {
     private static final MethodRef METHOD = new MethodRef("demo/Program", "main", "()V");

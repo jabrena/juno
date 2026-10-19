@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcxfirmware;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +12,6 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("Generated RCX firmware Java image")
 class RcxFirmwareImageTest {
     private static final int CHECKSUM_END = 0xCC00;

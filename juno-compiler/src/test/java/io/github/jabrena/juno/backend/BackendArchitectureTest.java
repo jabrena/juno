@@ -6,7 +6,6 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 
 import static com.tngtech.archunit.base.DescribedPredicate.describe;
@@ -20,7 +19,6 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
  * the backend. Code generation reaches a board's Arduino core only through {@code CoreRuntime}, so adding a board is
  * adding one core implementation, never a branch in the code generator.
  */
-@NullMarked
 @DisplayName("Backend package dependency rules")
 @AnalyzeClasses(packages = "io.github.jabrena.juno", importOptions = ImportOption.DoNotIncludeTests.class)
 class BackendArchitectureTest {

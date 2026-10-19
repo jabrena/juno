@@ -4,7 +4,6 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -13,7 +12,6 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
  * Keeps juno-api a self-contained programming model: programs compile against it alone, so it must not reach into the
  * compiler (or anything else) and the compiler's packages must not move into it.
  */
-@NullMarked
 @DisplayName("juno-api architecture rules")
 @AnalyzeClasses(packages = "io.github.jabrena.juno", importOptions = ImportOption.DoNotIncludeTests.class)
 class ApiArchitectureTest {

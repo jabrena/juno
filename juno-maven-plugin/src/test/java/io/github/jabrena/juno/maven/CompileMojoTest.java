@@ -2,7 +2,6 @@ package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Juno compiler against {@link io.github.jabrena.juno.maven.fixture.TinyProgram} on this module's own test
  * classpath, never touching {@code arduino-cli}. Every Mojo parameter is set in pure Java through
  * {@link MojoConfig}, not an XML fixture file. */
-@NullMarked
 @DisplayName("juno:compile goal")
 class CompileMojoTest extends AbstractMojoTestCase {
     @BeforeEach

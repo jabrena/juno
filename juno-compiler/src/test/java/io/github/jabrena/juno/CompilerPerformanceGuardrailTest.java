@@ -1,6 +1,5 @@
 package io.github.jabrena.juno;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -10,7 +9,6 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Stable generated-code guardrails for the optimization roadmap; no host wall-clock thresholds. */
-@NullMarked
 @DisplayName("Generated-code performance guardrails")
 class CompilerPerformanceGuardrailTest {
     @TempDir

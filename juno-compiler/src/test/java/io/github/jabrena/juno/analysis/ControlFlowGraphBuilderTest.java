@@ -2,7 +2,6 @@ package io.github.jabrena.juno.analysis;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.Instruction;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +10,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("Control-flow graph builder")
 class ControlFlowGraphBuilderTest {
     private final ControlFlowGraphBuilder builder = new ControlFlowGraphBuilder();

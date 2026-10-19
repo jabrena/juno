@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.backend.h8300;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Checks representative H8/300 machine-code encodings. */
-@NullMarked
 @DisplayName("H8/300 assembler")
 class H8AssemblerTest {
     private final H8Assembler assembler = new H8Assembler(0x8000);

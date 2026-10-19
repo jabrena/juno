@@ -1,12 +1,10 @@
 package io.github.jabrena.juno.api.io.serial;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("Serial baud rates")
 class BaudRateTest {
 

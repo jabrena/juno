@@ -1,6 +1,5 @@
 package io.github.jabrena.juno;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
  * code is covered under QEMU and simavr ({@code src/test/qemu/programs}, notably {@code Preemption} and
  * {@code PreemptionStress}); this checks the generated text.
  */
-@NullMarked
 @DisplayName("Thread runtime and cooperative subtasks")
 class ThreadsTest {
     @TempDir

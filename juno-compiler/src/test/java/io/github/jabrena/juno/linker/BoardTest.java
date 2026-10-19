@@ -6,7 +6,6 @@ import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.board.ArduinoCore;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.board.Capability;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -22,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-@NullMarked
 @DisplayName("Board selection and capabilities")
 class BoardTest {
     @TempDir

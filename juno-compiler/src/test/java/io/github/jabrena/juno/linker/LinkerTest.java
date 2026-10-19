@@ -4,7 +4,6 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.classfile.ClassPath;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -15,7 +14,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("Linker main class and native method validation")
 class LinkerTest {
     @TempDir

@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.led;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +8,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("LED matrix font")
 class LedMatrixFontTest {
 

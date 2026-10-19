@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.maven;
 
 import io.github.jabrena.juno.board.Board;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +9,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@NullMarked
 @DisplayName("Arduino CLI board list JSON parsing")
 class BoardListJsonParserTest {
     private final BoardListJsonParser parser = new BoardListJsonParser();

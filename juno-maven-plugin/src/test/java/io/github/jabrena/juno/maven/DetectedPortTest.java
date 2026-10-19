@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.maven;
 
 import io.github.jabrena.juno.board.Board;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +8,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@NullMarked
 @DisplayName("Detected serial port")
 class DetectedPortTest {
     private static final String UNO_R4_WIFI = Board.UNO_R4_WIFI.fqbn();

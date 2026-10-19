@@ -1,7 +1,6 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.board.Board;
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * real payload with the retired test's original edge cases (unicode escapes, array roots, truncated/
  * malformed input, int64 boundaries) -- runtime behavior, not just syntax.
  */
-@NullMarked
 @DisplayName("Offline toolchain verification of generated ASM and shims")
 class GeneratedAsmToolchainTest {
     @TempDir

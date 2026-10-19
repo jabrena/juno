@@ -1,13 +1,11 @@
 package io.github.jabrena.juno.backend.runtime;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** A runtime String that outgrows its slot stops the program, but says why on Serial before the bare panic. */
-@NullMarked
 @DisplayName("Runtime String overflow diagnostic")
 class RuntimeStringOverflowTest {
     private final ShimLibraries shimLibraries = new ShimLibraries();
