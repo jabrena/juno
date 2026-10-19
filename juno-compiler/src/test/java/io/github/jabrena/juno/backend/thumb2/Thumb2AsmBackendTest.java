@@ -601,7 +601,7 @@ class Thumb2AsmBackendTest {
     }
 
     /**
-     * Mirrors {@code RatonLoco}'s {@code Mouse.begin()}/{@code Mouse.move(x, y)} usage.
+     * Mirrors {@code RatonLoco}'s {@code mouse.begin()}/{@code mouse.move(x, y)} usage.
      * {@code Mouse} is an optional Arduino library (unlike the core-bundled LED matrix/Serial), so
      * the {@code #include <Mouse.h>} and the wrapper functions must only appear when a program
      * actually uses it — otherwise every other generated sketch would need that library installed

@@ -1,8 +1,7 @@
 package io.github.jabrena.juno.api.net.http;
 
+import io.github.jabrena.juno.api.hardware.BoardMemory;
 import io.github.jabrena.juno.api.hardware.MCU;
-
-import io.github.jabrena.juno.api.hardware.Memory;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
@@ -26,6 +25,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * are compile-time literals).
  */
 public final class HttpServerBacklight {
+    private static final BoardMemory MEMORY = MCU.getBoardMemory();
     private final LcdKeypadShield lcd = new LcdKeypadShield();
     private final Clock clock = MCU.getClock();
     private static final int BACKLIGHT_ON_MILLIS = 200;
@@ -85,7 +85,7 @@ public final class HttpServerBacklight {
         Serial.print(" requests=");
         Serial.print(requestCount);
         Serial.print(" arenaUsedBytes=");
-        Serial.println(Memory.arenaUsedBytes());
+        Serial.println(MEMORY.arenaUsedBytes());
     }
 
     private void flashBacklight() {

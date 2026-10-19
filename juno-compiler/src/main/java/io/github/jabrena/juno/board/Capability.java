@@ -73,6 +73,9 @@ public enum Capability {
     USB_HID("Mouse") {
         @Override
         public String unsupportedReason(Board board) {
+            if (board == Board.UNO_Q) {
+                return "UNO Q's Zephyr core has no HID.h, which the Mouse library needs";
+            }
             return board.displayName() + " has no native USB port to act as a HID device";
         }
     },

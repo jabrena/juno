@@ -1426,13 +1426,13 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.Memory;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class AsmStorageOccupancy {
                     public static void main(String[] args) {
-                        Serial.println(Memory.flashUsedBytes());
-                        Serial.println(Memory.flashCapacityBytes());
+                        Serial.println(MCU.getBoardMemory().flashUsedBytes());
+                        Serial.println(MCU.getBoardMemory().flashCapacityBytes());
                         if (!SdCard.begin()) return;
                         Serial.println(SdCard.totalKiB());
                         Serial.println(SdCard.freeKiB());

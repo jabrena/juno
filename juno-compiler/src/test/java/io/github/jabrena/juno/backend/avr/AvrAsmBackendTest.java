@@ -644,7 +644,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects Mouse on a board without a native USB port")
     void shouldRejectMouseOnABoardWithoutANativeUsbPort() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.AvrMouse", "Mouse.begin();",
+        assertThatThrownBy(() -> compile("demo.AvrMouse", "MCU.getMouse().begin();",
                 "import io.github.jabrena.juno.api.hid.Mouse;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("no native USB port");

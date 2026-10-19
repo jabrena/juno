@@ -28,8 +28,8 @@ public enum Board {
     UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
             ArduinoCore.ZEPHYR, UnoGeneration.Q, EnumSet.of(Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
-                    Capability.HTTP_SERVER, Capability.BLUETOOTH_LE, Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY,
-                    Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
+                    Capability.HTTP_SERVER, Capability.BLUETOOTH_LE, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS,
+                    Capability.DOUBLE_MATH)),
     /**
      * The ATmega4809 board: Wi-Fi, UDP, HTTP, HTTPS and TLS email through its NINA-W102 module ({@code WiFiNINA}), and the
      * GPIO, SPI and analog pins shields such as the SD card, TFT touch and LCD keypad shields use.
@@ -106,7 +106,7 @@ public enum Board {
         return core;
     }
 
-    /** The UNO generation {@code BoardRuntime.isR3()}/{@code isR4()}/{@code isQ()} report. */
+    /** The UNO generation {@code BoardModel.isR3()}/{@code isR4()}/{@code isQ()} report. */
     public UnoGeneration generation() {
         return generation;
     }

@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.thirdparty.tft;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.hid.Mouse;
 import io.github.jabrena.juno.api.hid.MouseIcon;
 import io.github.jabrena.juno.api.io.gpio.DigitalOutput;
@@ -57,7 +58,8 @@ public final class RatonLocoTFT {
      */
     public static void main(String[] args) {
         DigitalOutput led = DigitalOutput.of(LED);
-        Mouse.begin();
+        Mouse mouse = MCU.getMouse();
+        mouse.begin();
 
         LedMatrix.begin();
         MouseIcon.draw();
@@ -84,29 +86,29 @@ public final class RatonLocoTFT {
                 continue;
             }
 
-            if (!walkSide(STEP, 0)) { // Right
+            if (!walkSide(mouse, STEP, 0)) { // Right
                 continue;
             }
-            if (!walkSide(0, STEP)) { // Down
+            if (!walkSide(mouse, 0, STEP)) { // Down
                 continue;
             }
-            if (!walkSide(-STEP, 0)) { // Left
+            if (!walkSide(mouse, -STEP, 0)) { // Left
                 continue;
             }
-            if (!walkSide(0, -STEP)) { // Up
+            if (!walkSide(mouse, 0, -STEP)) { // Up
                 continue;
             }
         }
     }
 
     /** Moves the pointer {@link #STEPS_PER_SIDE} times by ({@code dx}, {@code dy}), pausable between steps. */
-    private static boolean walkSide(int dx, int dy) {
+    private static boolean walkSide(Mouse mouse, int dx, int dy) {
         int i = 0;
         while (i < STEPS_PER_SIDE) {
             if (!pausableDelay(MOVE_DELAY)) {
                 return false;
             }
-            Mouse.move(dx, dy);
+            mouse.move(dx, dy);
             i = i + 1;
         }
         return true;

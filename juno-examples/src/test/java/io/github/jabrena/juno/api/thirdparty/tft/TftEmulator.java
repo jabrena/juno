@@ -12,8 +12,9 @@ import java.util.List;
 
 /**
  * Runs a TFT program's real {@code main()} against the shield emulated by the test doubles in
- * {@code io.github.jabrena.juno.api} (see {@code EmulatedShield} and {@code SimulatedClock}), taps the screen on a script and
- * returns what is on the screen at a chosen moment of simulated time.
+ * {@code io.github.jabrena.juno.api} (see {@code EmulatedShield}, {@code SimulatedClock}, {@code EmulatedUnoQ} and
+ * {@code EmulatedMemory}), taps the screen on a script and returns what is on the screen at a chosen moment of
+ * simulated time.
  *
  * <p>Each run gets its own class loader, so the program, the {@code TftTouchShield} driver and the
  * emulated hardware all start from fresh static state, whatever ran before.
@@ -35,9 +36,14 @@ final class TftEmulator {
             Class<?> delay = loader.loadClass("io.github.jabrena.juno.api.util.Delay");
             Class<?> gpio = loader.loadClass("io.github.jabrena.juno.api.io.gpio.EmulatedShield");
             Class<?> shield = loader.loadClass("io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield");
-            // Stand the emulated shield and simulated clock in for the board before the program creates its Gpio/Clock.
+            Class<?> board = loader.loadClass("io.github.jabrena.juno.api.hardware.EmulatedUnoQ");
+            Class<?> memory = loader.loadClass("io.github.jabrena.juno.api.hardware.EmulatedMemory");
+            // Stand the emulated shield, simulated clock, UNO Q and arena in for the board before the program creates
+            // its Gpio/Clock/BoardModel/BoardMemory.
             clock.getMethod("install").invoke(null);
             gpio.getMethod("install").invoke(null);
+            board.getMethod("install").invoke(null);
+            memory.getMethod("install").invoke(null);
             Method elapsed = clock.getMethod("elapsed");
             Field touch = gpio.getField("touch");
             Field rotation = shield.getDeclaredField("rotation");
@@ -81,9 +87,14 @@ final class TftEmulator {
             Class<?> delay = loader.loadClass("io.github.jabrena.juno.api.util.Delay");
             Class<?> gpio = loader.loadClass("io.github.jabrena.juno.api.io.gpio.EmulatedShield");
             Class<?> shield = loader.loadClass("io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield");
-            // Stand the emulated shield and simulated clock in for the board before the program creates its Gpio/Clock.
+            Class<?> board = loader.loadClass("io.github.jabrena.juno.api.hardware.EmulatedUnoQ");
+            Class<?> memory = loader.loadClass("io.github.jabrena.juno.api.hardware.EmulatedMemory");
+            // Stand the emulated shield, simulated clock, UNO Q and arena in for the board before the program creates
+            // its Gpio/Clock/BoardModel/BoardMemory.
             clock.getMethod("install").invoke(null);
             gpio.getMethod("install").invoke(null);
+            board.getMethod("install").invoke(null);
+            memory.getMethod("install").invoke(null);
             Method elapsed = clock.getMethod("elapsed");
             Field touch = gpio.getField("touch");
             Field rotation = shield.getDeclaredField("rotation");

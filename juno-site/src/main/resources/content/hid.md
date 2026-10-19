@@ -6,8 +6,10 @@ layout: page
 
 [`Mouse`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hid/Mouse.java)
 (`io.github.jabrena.juno.api.hid`) lets a Juno program act as a USB HID mouse, moving the
-pointer of whatever computer the board's USB port is plugged into. It is a compiler intrinsic
-backed by the Arduino `Mouse` library.
+pointer of whatever computer the board's USB port is plugged into. `MCU.getMouse()` hands out the
+board's mouse, whose methods are compiler intrinsics backed by the Arduino `Mouse` library; a unit
+test passes `mock(Mouse.class)` instead (see [Injectable APIs](../apis)). Get it once, at startup,
+and pass it to the code that moves the pointer.
 
 ## Requirements
 
@@ -26,10 +28,12 @@ backed by the Arduino `Mouse` library.
 ## API
 
 ```java
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.hid.Mouse;
 
-Mouse.begin();
-Mouse.move(10, -5);   // relative move: (x, y) pixels from the current pointer position
+Mouse mouse = MCU.getMouse();
+mouse.begin();
+mouse.move(10, -5);   // relative move: (x, y) pixels from the current pointer position
 ```
 
 `move(x, y)` narrows each argument to a `signed char` (`-128..127`, low 8 bits, sign-extended) to
@@ -41,6 +45,7 @@ arguments within that range — a larger value wraps around instead of clamping.
 ```java
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.api.hid.Mouse;
 
@@ -51,21 +56,22 @@ public final class MouseSquare {
     private static final int MOVE_DELAY = 1000;
 
     public static void main(String[] args) {
-        Mouse.begin();
+        Mouse mouse = MCU.getMouse();
+        mouse.begin();
 
         while (true) {
-            moveSide(STEP, 0);   // right
-            moveSide(0, STEP);   // down
-            moveSide(-STEP, 0);  // left
-            moveSide(0, -STEP);  // up
+            moveSide(mouse, STEP, 0);   // right
+            moveSide(mouse, 0, STEP);   // down
+            moveSide(mouse, -STEP, 0);  // left
+            moveSide(mouse, 0, -STEP);  // up
         }
     }
 
-    private static void moveSide(int dx, int dy) {
+    private static void moveSide(Mouse mouse, int dx, int dy) {
         int i = 0;
         while (i < STEPS_PER_SIDE) {
             Delay.millis(MOVE_DELAY);
-            Mouse.move(dx, dy);
+            mouse.move(dx, dy);
             i = i + 1;
         }
     }
@@ -86,7 +92,7 @@ on the LED matrix first. Build, flash, and run it with `juno-maven-plugin` (see
 
 ## Warning
 
-Once uploaded, a program that calls `Mouse.begin()`/`Mouse.move(...)` in a loop takes control of
+Once uploaded, a program that calls `mouse.begin()`/`mouse.move(...)` in a loop takes control of
 the pointer on the connected computer and keeps moving it indefinitely — including possibly
 interfering with clicking into another terminal to re-flash the board. Before uploading such a
 sketch, know how to recover: disconnect the USB cable, or use a physical reset/bootloader

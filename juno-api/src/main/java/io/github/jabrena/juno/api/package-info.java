@@ -15,8 +15,8 @@
  *       ({@link io.github.jabrena.juno.api.io.gpio.Gpio}, {@link io.github.jabrena.juno.api.io.gpio.DigitalOutput}),
  *       I2C ({@code io.i2c}) and serial port I/O ({@code io.serial}).</li>
  *   <li>{@code hardware} — program-wide introspection: arena and flash usage
- *       ({@link io.github.jabrena.juno.api.hardware.Memory}) and the board the program was compiled for
- *       ({@link io.github.jabrena.juno.api.hardware.BoardRuntime}).</li>
+ *       ({@link io.github.jabrena.juno.api.hardware.BoardMemory}) and the board the program was compiled for
+ *       ({@link io.github.jabrena.juno.api.hardware.BoardModel}).</li>
  *   <li>{@code hid} — USB HID mouse control.</li>
  *   <li>{@code net} — the Wi-Fi/UDP/HTTP/JSON/email networking stack ({@code net.http},
  *       {@code net.email}) and the

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.board;
 
 /**
- * The UNO generation a {@link Board} belongs to: the answer to {@code io.github.jabrena.juno.api.hardware.BoardRuntime}'s
+ * The UNO generation a {@link Board} belongs to: the answer to {@code io.github.jabrena.juno.api.hardware.BoardModel}'s
  * {@code isR3()}/{@code isR4()}/{@code isQ()}. It is board data, so the backend folds those queries to constants by
  * comparing values, never by asking which board or core it is generating for.
  */
