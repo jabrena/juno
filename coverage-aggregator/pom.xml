@@ -144,4 +144,47 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Mutation testing across the modules: ./mvnw verify -Ppitest -fae writes one PIT report for every module
+             that ran mutationCoverage, and gates the combined score on coverage.level. This module has no tests of
+             its own, so it skips the per-module mutationCoverage that the root profile adds. -->
+        <profile>
+            <id>pitest</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <version>${maven-plugin-pitest.version}</version>
+                        <executions>
+                            <execution>
+                                <id>pitest-mutation-testing</id>
+                                <configuration>
+                                    <skip>true</skip>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>pitest-aggregate</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>report-aggregate</goal>
+                                </goals>
+                                <configuration>
+                                    <aggregatedMutationThreshold>${coverage.level}</aggregatedMutationThreshold>
+                                    <outputFormats>
+                                        <outputFormat>HTML</outputFormat>
+                                        <outputFormat>XML</outputFormat>
+                                    </outputFormats>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

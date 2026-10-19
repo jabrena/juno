@@ -54,6 +54,8 @@
         <coverage.level>80</coverage.level>
         <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
         <maven-plugin-pitest.version>1.30.0</maven-plugin-pitest.version>
+        <!-- PIT parallelism per module; a mutant's test run is slow, so the default single thread takes hours. -->
+        <pitest.threads>4</pitest.threads>
         <maven-plugin-pitest-junit5.version>1.2.3</maven-plugin-pitest-junit5.version>
         <sonar.maven.plugin.version>5.7.0.6970</sonar.maven.plugin.version>
         <java.version>${maven.compiler.release}</java.version>
@@ -516,6 +518,70 @@
                                         </fileset>
                                     </filesets>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Mutation testing: ./mvnw verify -Ppitest (reports in <module>/target/pit-reports). Runs in every module
+             that has unit tests and fails below ${coverage.level}% mutation score or line coverage. juno-site and
+             juno-examples opt out with skipPitest, and the Docker-based *IT suites are not unit tests. -->
+        <profile>
+            <id>pitest</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <!-- Activating this profile turns off the activeByDefault jacoco profile, so no argLine is set and
+                     surefire's @{argLine} stays literal and the forked JVM cannot start. PIT needs no agent. -->
+                <argLine></argLine>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-maven</artifactId>
+                        <version>${maven-plugin-pitest.version}</version>
+                        <configuration>
+                            <targetClasses>
+                                <param>io.github.jabrena.juno.*</param>
+                            </targetClasses>
+                            <targetTests>
+                                <param>io.github.jabrena.juno.*</param>
+                            </targetTests>
+                            <!-- ArchUnit rules scan all bytecode and never kill a mutant; running them per mutant
+                                 is what made the minions time out. -->
+                            <excludedTestClasses>
+                                <param>io.github.jabrena.juno.**.*IT</param>
+                                <param>io.github.jabrena.juno.**.*ArchitectureTest</param>
+                            </excludedTestClasses>
+                            <threads>${pitest.threads}</threads>
+                            <outputFormats>
+                                <outputFormat>HTML</outputFormat>
+                                <outputFormat>XML</outputFormat>
+                            </outputFormats>
+                            <mutationThreshold>${coverage.level}</mutationThreshold>
+                            <coverageThreshold>${coverage.level}</coverageThreshold>
+                            <timestampedReports>false</timestampedReports>
+                            <!-- Writes linecoverage.xml next to mutations.xml; the coverage-aggregator needs it. -->
+                            <exportLineCoverage>true</exportLineCoverage>
+                            <verbose>false</verbose>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.pitest</groupId>
+                                <artifactId>pitest-junit5-plugin</artifactId>
+                                <version>${maven-plugin-pitest-junit5.version}</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>pitest-mutation-testing</id>
+                                <goals>
+                                    <goal>mutationCoverage</goal>
+                                </goals>
+                                <phase>verify</phase>
                             </execution>
                         </executions>
                     </plugin>
