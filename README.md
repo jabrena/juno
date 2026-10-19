@@ -113,11 +113,11 @@ docker compose -f docker-compose.sonar.yml down
 
 ### Blink
 
-[`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/gpio/Blink.java) runs unmodified on every
+[`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/gpio/Blink.java) runs unmodified on every
 supported board. Its built-in LED alternates on and off every 500 ms (one full cycle per second).
 
 ```java
-package io.github.jabrena.juno.api.io.gpio;
+package io.github.jabrena.juno.api.hardware.io.gpio;
 
 import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.util.Delay;
@@ -144,7 +144,7 @@ The project provides a `Maven plugin` to help the user with the common operation
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
   -Djuno.board=arduino-uno-q
   #-Djuno.board=arduino-uno-r4-wifi
   #-Djuno.board=arduino-uno-r3-wifi-rev2
@@ -182,17 +182,17 @@ add `-Djuno.main=<fully-qualified-class-name>` and `-Djuno.board=<id>` when the 
     <tr>
       <td><code>juno:compile</code></td>
       <td>Generates the assembly, C++ runtime shim, and Arduino sketch wrapper.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:verify</code></td>
       <td>Generates the sketch and compiles it with Arduino CLI without using physical hardware.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:upload</code></td>
       <td>Generates, verifies, and uploads the sketch to the selected or detected board.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:monitor</code></td>
@@ -298,10 +298,10 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   (a scoped `MathContext` shared by three parallel subtasks).
 - **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
   HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
-  See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/gpio/Blink.java) (GPIO and delays),
-  [`SerialCounter`](juno-examples/src/main/java/io/github/jabrena/juno/api/io/serial/SerialCounter.java) (serial I/O),
+  See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/gpio/Blink.java) (GPIO and delays),
+  [`SerialCounter`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/serial/SerialCounter.java) (serial I/O),
   [`HttpServerStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/HttpServerStatus.java) (clocks),
-  [`LedMatrixHeart`](juno-examples/src/main/java/io/github/jabrena/juno/api/led/LedMatrixHeart.java) (LED matrix),
+  [`LedMatrixHeart`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixHeart.java) (LED matrix),
   [`WifiStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatus.java) (Wi-Fi),
   [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSD.java) (Wi-Fi credentials loaded from an SD card),
   [`WifiStatusSDLcd`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSDLcd.java) (the same, with an LCD Keypad Shield),

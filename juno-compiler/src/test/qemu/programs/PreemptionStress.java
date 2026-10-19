@@ -3,7 +3,7 @@ package demo;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.io.serial.Serial;
 
 /**
  * Everything a thread preempted part-way through an expression must get back intact. Several threads run long,

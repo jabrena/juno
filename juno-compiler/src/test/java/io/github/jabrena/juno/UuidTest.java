@@ -166,7 +166,7 @@ class UuidTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    int seed = new io.github.jabrena.juno.api.io.gpio.PortNoise().collectSeed(14, 2, 64);
+                    int seed = new io.github.jabrena.juno.api.hardware.io.gpio.PortNoise().collectSeed(14, 2, 64);
                     io.github.jabrena.juno.api.util.Random.seed(seed);
                 }
                 """);
@@ -181,7 +181,7 @@ class UuidTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    int seed = new io.github.jabrena.juno.api.io.gpio.PortNoise().collectSeed(14, 2, 64);
+                    int seed = new io.github.jabrena.juno.api.hardware.io.gpio.PortNoise().collectSeed(14, 2, 64);
                     io.github.jabrena.juno.api.util.Random.seed(seed);
                 }
                 """);

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.api.io.gpio.EmulatedShield;
+import io.github.jabrena.juno.api.hardware.io.gpio.EmulatedShield;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Random;
 import org.junit.jupiter.api.BeforeEach;

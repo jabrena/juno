@@ -1,0 +1,122 @@
+package io.github.jabrena.juno.api.hardware.io.serial;
+
+/** USB serial output recognized as compiler intrinsics by Juno. */
+public final class Serial {
+    private Serial() {
+    }
+
+    /**
+     * Starts serial communication at a standard Arduino CLI monitor rate.
+     *
+     * @param baudRate the data rate to use
+     */
+    public static void begin(BaudRate baudRate) {
+        begin(baudRate.bitsPerSecond());
+    }
+
+    /**
+     * Starts serial communication at a custom data rate. Prefer {@link #begin(BaudRate)} when the
+     * rate is represented by {@link BaudRate}.
+     *
+     * @param baudRate the data rate in bits per second
+     */
+    public static native void begin(int baudRate);
+
+    /**
+     * Prints a boolean as {@code true} or {@code false} without a trailing line ending.
+     *
+     * @param value the boolean to print
+     */
+    public static void print(boolean value) {
+        if (value) {
+            print("true");
+        } else {
+            print("false");
+        }
+    }
+
+    /**
+     * Prints a boolean as {@code true} or {@code false} followed by a line ending.
+     *
+     * @param value the boolean to print
+     */
+    public static void println(boolean value) {
+        if (value) {
+            println("true");
+        } else {
+            println("false");
+        }
+    }
+
+    /**
+     * Prints an integer without a trailing line ending.
+     *
+     * @param value the integer to print
+     */
+    public static native void print(int value);
+
+    /**
+     * Prints an integer followed by a line ending.
+     *
+     * @param value the integer to print
+     */
+    public static native void println(int value);
+
+    /**
+     * Prints a 64-bit integer without a trailing line ending.
+     *
+     * @param value the integer to print
+     */
+    public static native void print(long value);
+
+    /**
+     * Prints a 64-bit integer followed by a line ending.
+     *
+     * @param value the integer to print
+     */
+    public static native void println(long value);
+
+    /**
+     * Prints a single-precision floating-point value without a trailing line ending.
+     *
+     * @param value the value to print
+     */
+    public static native void print(float value);
+
+    /**
+     * Prints a single-precision floating-point value followed by a line ending.
+     *
+     * @param value the value to print
+     */
+    public static native void println(float value);
+
+    /**
+     * Prints a double-precision floating-point value without a trailing line ending.
+     *
+     * @param value the value to print
+     */
+    public static native void print(double value);
+
+    /**
+     * Prints a double-precision floating-point value followed by a line ending.
+     *
+     * @param value the value to print
+     */
+    public static native void println(double value);
+
+    /**
+     * Prints a compile-time string literal without a trailing line ending. Juno has no heap for a
+     * runtime string value.
+     *
+     * @param message the compile-time string literal to print
+     */
+    public static native void print(String message);
+
+    /**
+     * Prints a compile-time string literal followed by a line ending. Juno has no heap for a runtime
+     * string value.
+     *
+     * @param message the compile-time string literal to print
+     */
+    public static native void println(String message);
+}

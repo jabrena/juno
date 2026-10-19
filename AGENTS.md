@@ -57,8 +57,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - **`juno-api`, the generated `RcxFirmwareImage`, and `juno-examples` run on the board: write them for zero
   allocation.** The board has one fixed
   arena (8 KiB, 1 KiB on AVR) and no `OutOfMemoryError`, so the API stays `final` classes of static intrinsics over
-  primitives and caller-owned buffers (`Gpio`, `I2c`, `Mouse`, `Clock`, `BoardModel` and `BoardMemory` are the exception: interfaces whose
-  board instances come from `MCU.getGpio()`/`MCU.getI2c()`/`MCU.getMouse()`/`MCU.getClock()`/`MCU.getBoardModel()`/`MCU.getBoardMemory()`, so code using them can be unit-tested with a mock), and an example allocates its buffers and objects once at startup and never
+  primitives and caller-owned buffers (`Gpio`, `I2c`, `Mouse`, `LedMatrix`, `Clock`, `BoardModel` and `BoardMemory` are the exception: interfaces whose
+  board instances come from `MCU.getGpio()`/`MCU.getI2c()`/`MCU.getMouse()`/`MCU.getLedMatrix()`/`MCU.getClock()`/`MCU.getBoardModel()`/`MCU.getBoardMemory()`, so code using them can be unit-tested with a mock), and an example allocates its buffers and objects once at startup and never
   inside its main loop. Follow `skills/juno-zero-allocation` when adding an API entry or an example, and
   `skills/juno-debugging` when a program misbehaves between the source and the board.
 
@@ -91,14 +91,14 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware
 
 # Generate Blink. The plugin has no default program: always pass -Djuno.main.
-./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
 
 # Generate Blink and compile it with the real Arduino toolchain (safe: does not touch hardware)
-./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
 
 # Select another example by fully qualified class name
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.serial.SerialCounter \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.serial.SerialCounter \
   -Djuno.board=arduino-uno-r4-wifi
 
 # Compile the small API/shield fixtures (juno-compiler/src/test/arduino/programs) for each board with the real
@@ -110,7 +110,7 @@ java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.j
 ./mvnw -pl juno-compiler -am -Pqemu verify
 
 # Flash the generated program; auto-detects one matching board, or accepts -Djuno.port=<PORT>
-./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
 
 # Attach the serial monitor at 9600 baud (override with -Djuno.baudRate=<RATE>)
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi

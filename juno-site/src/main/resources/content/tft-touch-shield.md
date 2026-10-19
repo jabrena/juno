@@ -10,7 +10,7 @@ drives the ELEGOO 2.8" TFT touch screen shield for UNO ("Pantalla Táctil TFT de
 microSD socket.
 
 It needs no extra Arduino library. Control lines and the touch panel use
-[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/io/gpio/Gpio.java) pin operations and
+[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/io/gpio/Gpio.java) pin operations and
 [`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/util/Delay.java); the display's bytes go
 through [`ParallelBus`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/tft/ParallelBus.java),
 a compiler intrinsic that resolves the eight data pins and the write strobe to their GPIO ports once and then
@@ -77,7 +77,7 @@ if (TftTouchShield.readTouch()) {                      // true while the panel i
 ```
 
 Text uses the same 5x7 ASCII font as the LED matrix
-([`LedMatrixFontAscii`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/led/LedMatrixFontAscii.java)).
+([`LedMatrixFontAscii`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixFontAscii.java)).
 Each character paints its whole cell in the background color, so printing over older text
 replaces it; pad shorter strings with spaces to erase leftovers.
 

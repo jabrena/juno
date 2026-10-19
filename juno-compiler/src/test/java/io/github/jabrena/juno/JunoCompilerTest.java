@@ -49,7 +49,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class Blink {
                         public static void main(String[] args) {
                             Gpio gpio = MCU.getGpio();
@@ -83,7 +83,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.util.Delay;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class R3Blink {
                         public static void main(String[] args) {
                             MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), Gpio.getOutput());
@@ -111,7 +111,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public class NonFinalApp {
                         public static void main(String[] args) {
                             NonFinalApp app = new NonFinalApp();
@@ -237,7 +237,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class Bumper {
                         public static void main(String[] args) {
                             MCU.getGpio().pinMode(4, Gpio.getInputPullup());
@@ -493,7 +493,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class Main {
                         public static int addTo(int limit) {
                             int value = 0;
@@ -527,7 +527,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class Main {
                         public static int addTo(int limit) {
                             int value = 0;
@@ -556,7 +556,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.io.gpio.DigitalOutput;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.DigitalOutput;
                     public final class ObjectStyleApi {
                         public static void main(String[] args) {
                             DigitalOutput led = DigitalOutput.of(13);
@@ -592,12 +592,12 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.led.LedMatrix;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     public final class Heart {
                         public static void main(String[] args) {
-                            LedMatrix.begin();
-                            LedMatrix.loadFrame(0x3184a444, 0x44042081, 0x100a0040);
-                            LedMatrix.clear();
+                            MCU.getLedMatrix().begin();
+                            MCU.getLedMatrix().loadFrame(0x3184a444, 0x44042081, 0x100a0040);
+                            MCU.getLedMatrix().clear();
                         }
                     }
                     """;
@@ -620,7 +620,7 @@ class JunoCompilerTest {
             String plainSource = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class Plain {
                         public static void main(String[] args) {
                             MCU.getGpio().pinMode(13, Gpio.getOutput());
@@ -643,13 +643,13 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.led.LedCanvas;
-                    import io.github.jabrena.juno.api.led.LedMatrix;
+                    import io.github.jabrena.juno.api.hardware.led.LedCanvas;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     public final class Digits {
                         public static void main(String[] args) {
                             boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                             LedCanvas.drawDigit(frame, 7, 4, 0);
-                            LedMatrix.loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                            MCU.getLedMatrix().loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
                         }
                     }
                     """;
@@ -661,9 +661,11 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame");
             // The glyphs are one constant table read by index, so drawing a digit reaches no per-glyph
-            // code: locked at 10 (main, drawDigit/packWord/setPixel and their helpers, digitPixel,
-            // charPixel and the 3-word LedMatrix.loadFrame wrapper), where a function per glyph took 22.
-            assertThat(result.report().reachableMethods()).isEqualTo(10);
+            // code: locked at 14 (main, drawDigit/packWord/setPixel and their helpers, digitPixel,
+            // charPixel, the 3-word NativeLedMatrix.loadFrame wrapper, and MCU.getLedMatrix with
+            // NativeLedMatrix's getter, constructor and static initializer); before the matrix moved behind
+            // MCU it was 10, where a function per glyph took 22.
+            assertThat(result.report().reachableMethods()).isEqualTo(14);
         }
 
         @Test
@@ -672,13 +674,13 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.led.LedCanvas;
-                    import io.github.jabrena.juno.api.led.LedMatrix;
+                    import io.github.jabrena.juno.api.hardware.led.LedCanvas;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     public final class Digits {
                         public static void main(String[] args) {
                             boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                             LedCanvas.drawDigit(frame, 7, 4, 0);
-                            LedMatrix.loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                            MCU.getLedMatrix().loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
                         }
                     }
                     """;
@@ -687,7 +689,7 @@ class JunoCompilerTest {
             // When & Then
             assertThat(CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Digits").assembly())
                     .as("the table stays in flash")
-                    .contains("juno_table_io_github_jabrena_juno_api_led_LedMatrixFontAscii_ROWS__B:");
+                    .contains("juno_table_io_github_jabrena_juno_api_hardware_led_LedMatrixFontAscii_ROWS__B:");
         }
 
         @Test
@@ -696,13 +698,13 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.led.LedCanvas;
-                    import io.github.jabrena.juno.api.led.LedMatrix;
+                    import io.github.jabrena.juno.api.hardware.led.LedCanvas;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     public final class ScrollingText {
                         public static void main(String[] args) {
                             boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                             LedCanvas.drawText(frame, "Hi", 0, 0);
-                            LedMatrix.loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                            MCU.getLedMatrix().loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
                         }
                     }
                     """;
@@ -715,7 +717,7 @@ class JunoCompilerTest {
             // drawText itself is native (no body); the linker substitutes drawChar, the method the two
             // unrolled calls actually reach, as what's linked and reported reachable.
             assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame",
-                    "juno_table_io_github_jabrena_juno_api_led_LedMatrixFontAscii_ROWS__B:");
+                    "juno_table_io_github_jabrena_juno_api_hardware_led_LedMatrixFontAscii_ROWS__B:");
         }
 
         @Test
@@ -809,7 +811,7 @@ class JunoCompilerTest {
                             int gas = gasSensor.rawValue(shield.getA0());
                             boolean motion = pir.motionDetected(shield.getD3());
                             if (motion && gas > 100 && compassReading) {
-                                io.github.jabrena.juno.api.io.serial.Serial.println(gas);
+                                io.github.jabrena.juno.api.hardware.io.serial.Serial.println(gas);
                             }
                         }
                     }
@@ -849,7 +851,7 @@ class JunoCompilerTest {
                             int sound = new GroveSoundSensorV16().rawValue(shield.getA1());
                             int light = new GroveLightSensorV12().rawValue(shield.getA2());
                             if (valid && temperature + sound + light > 0) {
-                                io.github.jabrena.juno.api.io.serial.Serial.println(celsius);
+                                io.github.jabrena.juno.api.hardware.io.serial.Serial.println(celsius);
                             }
                         }
                     }
@@ -878,8 +880,8 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.io.serial.BaudRate;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class Counter {
                         public static void main(String[] args) {
                             Serial.begin(BaudRate.BAUD_9600);
@@ -905,7 +907,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.time.Clock;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class BooleanSerial {
                         public static void main(String[] args) {
                             boolean value = MCU.getClock().millis() > 0;
@@ -931,7 +933,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class NumericSerial {
                         public static void main(String[] args) {
                             Serial.print(Long.MIN_VALUE);
@@ -965,7 +967,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class CustomBaudRate {
                         public static void main(String[] args) {
                             Serial.begin(74880);
@@ -1018,8 +1020,8 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.io.serial.BaudRate;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class Greeting {
                         public static void main(String[] args) {
                             Serial.begin(BaudRate.BAUD_9600);
@@ -1103,7 +1105,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.time.Clock;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class RuntimeConcat {
                         public static void main(String[] args) {
                             String state = MCU.getClock().millis() > 0 ? "running" : "stopped";
@@ -1139,7 +1141,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.time.Clock;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class NumericConcat {
                         public static void main(String[] args) {
                             String optional = MCU.getClock().millis() > 0 ? null : "ok";
@@ -1178,7 +1180,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.time.Clock;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class ConcatRecipeConstant {
                         public static void main(String[] args) {
                             int value = MCU.getClock().millis();
@@ -1207,8 +1209,8 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.time.Clock;
-                    import io.github.jabrena.juno.api.io.serial.BaudRate;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class DynamicGreeting {
                         public static void main(String[] args) {
                             Serial.begin(BaudRate.BAUD_9600);
@@ -1586,7 +1588,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class LogSize {
                         public static void main(String[] args) {
                             SdCard.begin();
@@ -1643,7 +1645,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     import java.io.EOFException;
                     import java.io.FileNotFoundException;
                     import java.io.IOException;
@@ -1694,7 +1696,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     import java.io.IOException;
                     import java.io.RandomAccessFile;
                     public final class WadLumps {
@@ -1790,7 +1792,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class ArenaRoom {
                         public static void main(String[] args) {
                             Serial.println(MCU.getBoardMemory().arenaCapacityBytes() - MCU.getBoardMemory().arenaUsedBytes());
@@ -1814,7 +1816,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class FlashRoom {
                         public static void main(String[] args) {
                             Serial.println(MCU.getBoardMemory().flashCapacityBytes() - MCU.getBoardMemory().flashUsedBytes());
@@ -1840,7 +1842,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class SdRoom {
                         public static void main(String[] args) {
                             SdCard.begin();
@@ -2466,7 +2468,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class StringBuilderDemo {
                         public static void main(String[] args) {
                             StringBuilder builder = new StringBuilder(8);
@@ -2652,7 +2654,7 @@ class JunoCompilerTest {
             String plainSource = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class PlainBle {
                         public static void main(String[] args) {
                             MCU.getGpio().pinMode(13, Gpio.getOutput());
@@ -2672,7 +2674,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.hid.Mouse;
+                    import io.github.jabrena.juno.api.hardware.hid.Mouse;
                     public final class Wiggle {
                         public static void main(String[] args) {
                             Mouse mouse = MCU.getMouse();
@@ -2693,7 +2695,7 @@ class JunoCompilerTest {
             String plainSource = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class Plain {
                         public static void main(String[] args) {
                             MCU.getGpio().pinMode(13, Gpio.getOutput());
@@ -2793,7 +2795,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     import io.github.jabrena.juno.api.util.Delay;
                     public final class Reported {
                         static int addTo(int limit) {
@@ -2965,7 +2967,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class ArrayEdges {
                         public static void main(String[] args) {
                             int[] pins = new int[3];
@@ -2994,7 +2996,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class ArrayDemo {
                         static int sum(int[] values, int count) {
                             int total = 0;
@@ -3428,7 +3430,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.util.Delay;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class FloatMath {
                         public static void main(String[] args) {
                             float total = 0.0f;
@@ -3469,7 +3471,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.time.Clock;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class Geometry {
                         public static void main(String[] args) {
                             int x = MCU.getClock().millis();
@@ -3506,7 +3508,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.time.Clock;
-                    import io.github.jabrena.juno.api.io.serial.Serial;
+                    import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                     public final class WideClamp {
                         public static void main(String[] args) {
                             long value = MCU.getClock().millis();
@@ -4007,7 +4009,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class PortBlink {
                         private final Gpio gpio;
                         PortBlink(Gpio gpio) { this.gpio = gpio; }
@@ -4190,7 +4192,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.util.Delay;
-                    import io.github.jabrena.juno.api.io.gpio.Gpio;
+                    import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                     public final class PolymorphicInterface {
                         interface Operation { int apply(int value); }
                         static final class Adder implements Operation {

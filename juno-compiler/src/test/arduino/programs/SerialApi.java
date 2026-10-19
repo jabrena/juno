@@ -1,7 +1,7 @@
 package demo;
 
-import io.github.jabrena.juno.api.io.serial.BaudRate;
-import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
+import io.github.jabrena.juno.api.hardware.io.serial.Serial;
 
 /** Every Serial print overload. */
 public final class SerialApi {

@@ -1,0 +1,40 @@
+package io.github.jabrena.juno.api.hardware.led;
+
+import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
+import io.github.jabrena.juno.api.util.Delay;
+
+/**
+ * Counts from 1 to 10 on the built-in LED matrix using the shared 5x7 font in
+ * {@code LedCanvas}/{@code LedMatrixFont}. 1-9 are drawn as a single centered digit; 10 is
+ * drawn as two digits side by side, since 5 + 1 gap + 5 = 11 fits within the 12-column matrix.
+ */
+@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+public final class LedMatrixCountUp {
+    public static void main(String[] args) {
+        LedMatrix matrix = MCU.getLedMatrix();
+        matrix.begin();
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+
+        while (true) {
+            int number = 1;
+            while (number <= 10) {
+                LedCanvas.clear(frame);
+                if (number < 10) {
+                    LedCanvas.drawDigit(frame, number, 4, 0);
+                } else {
+                    LedCanvas.drawDigit(frame, 1, 0, 0);
+                    LedCanvas.drawDigit(frame, 0, 6, 0);
+                }
+
+                LedCanvas.show(frame);
+                Delay.millis(700);
+                matrix.clear();
+                Delay.millis(120);
+                number = number + 1;
+            }
+        }
+    }
+}

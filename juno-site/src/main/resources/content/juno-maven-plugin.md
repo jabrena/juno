@@ -46,7 +46,7 @@ invocation with `-Djuno.main=...`, or, in a module with a single program, fix it
 
 This is how [`juno-examples/pom.xml`](https://github.com/jabrena/juno/blob/main/juno-examples/pom.xml) is set up: it holds
 many programs, so every `compile`, `verify` or `upload` names one, for example
-`-Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink`. Without it the goal fails and says how to pass it.
+`-Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink`. Without it the goal fails and says how to pass it.
 
 | Property | Goals | Default | Purpose |
 |---|---|---|---|
@@ -71,12 +71,12 @@ always wins for a given run.
 
 # Compile and check with arduino-cli
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Flash it to a connected board
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Watch its Serial output

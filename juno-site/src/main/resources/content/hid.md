@@ -4,8 +4,8 @@ description: "Emulating a USB HID mouse from a sketch."
 layout: page
 ---
 
-[`Mouse`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hid/Mouse.java)
-(`io.github.jabrena.juno.api.hid`) lets a Juno program act as a USB HID mouse, moving the
+[`Mouse`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/hid/Mouse.java)
+(`io.github.jabrena.juno.api.hardware.hid`) lets a Juno program act as a USB HID mouse, moving the
 pointer of whatever computer the board's USB port is plugged into. `MCU.getMouse()` hands out the
 board's mouse, whose methods are compiler intrinsics backed by the Arduino `Mouse` library; a unit
 test passes `mock(Mouse.class)` instead (see [Injectable APIs](../apis)). Get it once, at startup,
@@ -29,7 +29,7 @@ and pass it to the code that moves the pointer.
 
 ```java
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hid.Mouse;
+import io.github.jabrena.juno.api.hardware.hid.Mouse;
 
 Mouse mouse = MCU.getMouse();
 mouse.begin();
@@ -47,7 +47,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.hid.Mouse;
+import io.github.jabrena.juno.api.hardware.hid.Mouse;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class MouseSquare {
@@ -79,15 +79,15 @@ public final class MouseSquare {
 ```
 
 The repository ships a fuller version of this idea as
-[`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hid/RatonLoco.java),
+[`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java),
 which also blinks the built-in LED and draws a
-[mouse-face icon](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hid/MouseIcon.java)
+[mouse-face icon](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/MouseIcon.java)
 on the LED matrix first. Build, flash, and run it with `juno-maven-plugin` (see
 [docs/JUNO-MAVEN-PLUGIN.md](../juno-maven-plugin)):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.hid.RatonLoco
+  -Djuno.main=io.github.jabrena.juno.api.hardware.hid.RatonLoco
 ```
 
 ## Warning

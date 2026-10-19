@@ -55,9 +55,9 @@ public final class Linker {
 
     /** The on-board {@link Capability} each capability-dependent intrinsic needs; every other intrinsic is portable. */
     private static final Map<Intrinsic, Capability> REQUIRED_CAPABILITIES = requiredCapabilities();
-    private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
+    private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/api/hardware/led/LedCanvas",
             "drawText", "([[ZLjava/lang/String;II)V");
-    private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
+    private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/api/hardware/led/LedCanvas",
             "drawChar", "([[ZIII)V");
 
     private final BytecodeDecoder decoder = new BytecodeDecoder();

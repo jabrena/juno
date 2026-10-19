@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.tft;
 
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
 
 /** The ILI9341's 8-bit parallel bus protocol, split out of {@link TftTouchShield} to keep its cyclomatic complexity down. */
 final class TftBus {

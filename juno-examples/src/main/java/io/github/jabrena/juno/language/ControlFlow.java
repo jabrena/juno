@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.api.io.serial.BaudRate;
-import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
+import io.github.jabrena.juno.api.hardware.io.serial.Serial;
 import io.github.jabrena.juno.api.util.Delay;
 
 /** Demonstrates sequence, bifurcation, and iteration control-flow structures. */
