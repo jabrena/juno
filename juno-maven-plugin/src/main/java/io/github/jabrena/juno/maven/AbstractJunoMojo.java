@@ -20,8 +20,11 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     private final RuntimeRiskReportFormatter riskFormatter = new RuntimeRiskReportFormatter();
     private final ConfigSuggestionFormatter suggestionFormatter = new ConfigSuggestionFormatter();
 
-    /** Fully qualified Java entry-point class. */
-    @Parameter(property = "juno.main", required = true)
+    /**
+     * Fully qualified Java entry-point class: the one program to compile. There is no default, so a project with several
+     * programs always says which one; when it is missing the goal fails with how to pass it.
+     */
+    @Parameter(property = "juno.main")
     private @Nullable String mainClass;
 
     /** Maven compile classpath used as Juno's closed-world classpath. */
@@ -73,7 +76,8 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
 
     final CompiledSketch compileSketch() {
         String entryPoint = configured(mainClass).orElseThrow(() -> new ArduinoCliException(
-                "Missing required Juno entry point; configure <mainClass> or -Djuno.main=<class>"));
+                "Missing required Juno entry point: choose the program to compile with -Djuno.main=<class> "
+                        + "(e.g. -Djuno.main=com.example.Main) or configure <mainClass>"));
         if (classpathElements == null || classpathElements.isEmpty()) {
             throw new ArduinoCliException("Maven compile classpath is empty");
         }
