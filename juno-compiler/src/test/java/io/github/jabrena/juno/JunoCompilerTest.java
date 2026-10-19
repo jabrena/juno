@@ -13,6 +13,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -380,6 +382,36 @@ class JunoCompilerTest {
             assertThat(result.runtimeShim()).doesNotContain(
                     "#include <WDT.h>", "WDT.begin", "WDT.refresh", "juno_watchdog_begin",
                     "[juno-watchdog]");
+        }
+
+        @ParameterizedTest
+        @CsvSource({"ArduinoUnoR4WiFi, 0", "ArduinoUnoQ, 1"})
+        @DisplayName("Folds a BoardModel query through MCU to the target board's constant")
+        void shouldFoldABoardModelQueryThroughMcuToAConstant(String board, int isQ) throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.%1$s;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.api.hardware.MCU;
+                    import io.github.jabrena.juno.api.util.Delay;
+                    @Board(%1$s.class)
+                    public final class Which {
+                        public static void main(String[] args) {
+                            if (MCU.getBoardModel().isQ()) {
+                                Delay.millis(111);
+                            }
+                        }
+                    }
+                    """.formatted(board);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Which", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Which");
+
+            // Then
+            assertThat(result.assembly()).contains("movs r0, #" + isQ)
+                    .doesNotContain("NativeBoardModel_isQ", "blx");
         }
     }
 
@@ -1757,11 +1789,11 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.hardware.Memory;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.io.serial.Serial;
                     public final class ArenaRoom {
                         public static void main(String[] args) {
-                            Serial.println(Memory.arenaCapacityBytes() - Memory.arenaUsedBytes());
+                            Serial.println(MCU.getBoardMemory().arenaCapacityBytes() - MCU.getBoardMemory().arenaUsedBytes());
                         }
                     }
                     """;
@@ -1781,11 +1813,11 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.hardware.Memory;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.io.serial.Serial;
                     public final class FlashRoom {
                         public static void main(String[] args) {
-                            Serial.println(Memory.flashCapacityBytes() - Memory.flashUsedBytes());
+                            Serial.println(MCU.getBoardMemory().flashCapacityBytes() - MCU.getBoardMemory().flashUsedBytes());
                         }
                     }
                     """;
@@ -2639,11 +2671,13 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.api.hardware.MCU;
                     import io.github.jabrena.juno.api.hid.Mouse;
                     public final class Wiggle {
                         public static void main(String[] args) {
-                            Mouse.begin();
-                            Mouse.move(50, -50);
+                            Mouse mouse = MCU.getMouse();
+                            mouse.begin();
+                            mouse.move(50, -50);
                         }
                     }
                     """;

@@ -109,7 +109,7 @@ public final class IntrinsicLowering {
     private record ShimCall(String function, Result result, List<Operand> operands, Set<ShimFeature> features) {
     }
 
-    /** The {@code BoardRuntime} queries, each true only on boards of its generation. */
+    /** The {@code BoardModel} queries, each true only on boards of its generation. */
     private static final Map<Intrinsic, UnoGeneration> GENERATION_QUERIES = Map.of(
             Intrinsic.BOARD_IS_R3, UnoGeneration.R3,
             Intrinsic.BOARD_IS_R4, UnoGeneration.R4,

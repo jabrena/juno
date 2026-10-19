@@ -392,13 +392,17 @@ public enum Intrinsic {
     ATOMIC_LONG_GET_AND_ADD;
 
     /**
-     * The pin, bus and timer reads and writes behind {@code Gpio}, {@code I2c} and {@code Clock}, declared on the
-     * stateless {@code NativeGpio}, {@code NativeI2c} and {@code NativeClock}: plain Arduino core calls that never
-     * throw, recurse, yield or allocate, and never read the port object they are called on.
+     * The pin, bus, USB HID and timer reads and writes behind {@code Gpio}, {@code I2c}, {@code Mouse} and
+     * {@code Clock}, the board queries behind {@code BoardModel} and the arena and flash figures behind
+     * {@code BoardMemory}, declared on the stateless {@code NativeGpio}, {@code NativeI2c}, {@code NativeMouse},
+     * {@code NativeClock}, {@code NativeBoardModel} and {@code NativeBoardMemory}: plain Arduino core calls or board
+     * constants that never throw, recurse, yield or allocate, and never read the port object they are called on.
      */
     private static final Set<Intrinsic> PORT_OPERATIONS = EnumSet.of(GPIO_PIN_MODE, GPIO_DIGITAL_WRITE,
             GPIO_DIGITAL_READ, GPIO_ANALOG_READ, GPIO_ANALOG_WRITE, GPIO_TOGGLE, GPIO_BUILTIN_LED, I2C_BEGIN,
-            I2C_WRITE_REGISTER, I2C_READ_REGISTER, I2C_READ_REGISTER16, CLOCK_MILLIS, CLOCK_MICROS);
+            I2C_WRITE_REGISTER, I2C_READ_REGISTER, I2C_READ_REGISTER16, MOUSE_BEGIN, MOUSE_MOVE, CLOCK_MILLIS,
+            CLOCK_MICROS, BOARD_IS_Q, BOARD_IS_R4, BOARD_IS_R3, MEMORY_ARENA_USED, MEMORY_ARENA_CAPACITY,
+            MEMORY_FLASH_USED, MEMORY_FLASH_CAPACITY);
 
     /** The {@code DigitalOutput} operations: plain pin calls whose handle is the pin number, so they inline too. */
     private static final Set<Intrinsic> INLINABLE_OPERATIONS = EnumSet.of(DIGITAL_OUTPUT_OF, DIGITAL_OUTPUT_HIGH,
