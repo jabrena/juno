@@ -1,0 +1,139 @@
+package io.github.jabrena.juno.backend.runtime.core;
+
+import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.backend.runtime.RuntimeSource;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
+import io.github.jabrena.juno.board.Architecture;
+
+import java.util.Map;
+
+/**
+ * The Nano ESP32's {@code arduino:esp32} core. {@code delay()}/{@code delayMicroseconds()} and {@code yield()} are
+ * plain C symbols the assembly calls directly. The board builds with {@code BOARD_HAS_PIN_REMAP}, which turns
+ * {@code pinMode}/{@code digitalWrite} and friends into macros translating the printed pin number ({@code D13}) to
+ * the ESP32-S3 GPIO number (48); the real symbols take GPIO numbers, so the assembly reaches them through
+ * {@code juno_*} wrappers compiled with the macros in effect. Everything beyond GPIO, delays and serial is not
+ * wired to this core yet and fails at compile time.
+ */
+final class Esp32CoreRuntime implements CoreRuntime {
+    private static final Map<String, String> PIN_REMAP_WRAPPERS = Map.of(
+            "pinMode", "juno_pin_mode",
+            "digitalWrite", "juno_digital_write",
+            "digitalRead", "juno_digital_read",
+            "analogRead", "juno_analog_read",
+            "analogWrite", "juno_analog_write");
+
+    private final RuntimeSource runtimeSource = new RuntimeSource();
+
+    @Override
+    public String delayMillisFunction() {
+        return "delay";
+    }
+
+    @Override
+    public String delayMicrosFunction() {
+        return "delayMicroseconds";
+    }
+
+    @Override
+    public String gpioFunction(String arduinoFunction) {
+        return PIN_REMAP_WRAPPERS.getOrDefault(arduinoFunction, arduinoFunction);
+    }
+
+    /** {@code LED_BUILTIN} under the core's default "By Arduino pin" numbering. */
+    @Override
+    public int builtinLedPin() {
+        return 13;
+    }
+
+    @Override
+    public String ledMatrixType() {
+        throw unsupported("an LED matrix");
+    }
+
+    @Override
+    public int ledMatrixColumns() {
+        throw unsupported("an LED matrix");
+    }
+
+    @Override
+    public String wifiIncludes(boolean udp) {
+        throw unsupported("networking");
+    }
+
+    @Override
+    public String wifiHelpers() {
+        throw unsupported("networking");
+    }
+
+    @Override
+    public String httpServerTransport() {
+        throw unsupported("an HTTP server");
+    }
+
+    @Override
+    public String udpDeclaration() {
+        throw unsupported("UDP networking");
+    }
+
+    @Override
+    public String httpsInclude() {
+        throw unsupported("TLS networking");
+    }
+
+    @Override
+    public String httpsHelpers() {
+        throw unsupported("TLS networking");
+    }
+
+    @Override
+    public String httpsClientDeclaration() {
+        throw unsupported("TLS networking");
+    }
+
+    @Override
+    public String yieldFunction() {
+        return runtimeSource.load("esp32/core-glue.cpp");
+    }
+
+    @Override
+    public WatchdogRuntime watchdog(int timeoutMillis) {
+        throw unsupported("@Watchdog");
+    }
+
+    @Override
+    public String parallelBusHelpers() {
+        throw unsupported("ParallelBus");
+    }
+
+    @Override
+    public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
+        throw unsupported("SD cards");
+    }
+
+    @Override
+    public String flashHelpers() {
+        throw unsupported("flash usage queries");
+    }
+
+    @Override
+    public String uuidRandomHelpers() {
+        throw unsupported("a cryptographic entropy source");
+    }
+
+    @Override
+    public String threadIncludes() {
+        throw unsupported("threads");
+    }
+
+    @Override
+    public String threadPort(RuntimeConfig config) {
+        throw unsupported("threads");
+    }
+
+    private CompileException unsupported(String feature) {
+        return Architecture.XTENSA.unsupported(feature + " on the ESP32 core");
+    }
+}

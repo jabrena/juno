@@ -37,6 +37,9 @@ items:
   - title: "UNO R3 WiFi"
     path: "/arduino-one-r3-wifi"
     icon: "fa-solid fa-microchip"
+  - title: "Nano ESP32"
+    path: "/arduino-nano-esp32"
+    icon: "fa-solid fa-microchip"
 
   - group: "Hardware APIs"
   - title: "APIs Overview"

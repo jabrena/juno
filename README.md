@@ -1,8 +1,9 @@
 # JUno: Java for Arduino One
 
 JUno `/ˈxu.no/` is an ahead-of-time compiler for running a practical subset of Java on Arduino boards. It keeps `javac` as the Java frontend, performs
-closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly, or
-AVR assembly for the UNO R3's ATmega328P and the UNO WiFi Rev2's ATmega4809.
+closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly,
+AVR assembly for the UNO R3's ATmega328P and the UNO WiFi Rev2's ATmega4809, or Xtensa assembly for the
+Nano ESP32's ESP32-S3 (GPIO, delays and serial so far).
 
 [![CI Builds](https://github.com/jabrena/juno/actions/workflows/maven.yaml/badge.svg)](https://github.com/jabrena/juno/actions/workflows/maven.yaml)
 
@@ -149,6 +150,7 @@ The project provides a `Maven plugin` to help the user with the common operation
   #-Djuno.board=arduino-uno-r4-wifi
   #-Djuno.board=arduino-uno-r3-wifi-rev2
   #-Djuno.board=arduino-uno-r3
+  #-Djuno.board=arduino-nano-esp32
 ```
 
 It auto-detects the port when exactly one matching board is connected. Otherwise, select it with

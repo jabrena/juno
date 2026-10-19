@@ -22,7 +22,12 @@ public enum ArduinoCore {
     /** {@code arduino:megaavr}: the UNO WiFi Rev2's ATmega4809 core, with no RTOS and 6 KB of RAM. */
     MEGAAVR("megaAVR", Architecture.AVR, RuntimeLimits.AVR_THREAD_STACK_BYTES,
             RuntimeLimits.AVR_ARENA_CAPACITY_BYTES, RuntimeLimits.AVR_MAX_ARENA_BYTES,
-            RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES);
+            RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES),
+    /**
+     * {@code arduino:esp32}: the Nano ESP32's FreeRTOS-based core, whose {@code pinMode}/{@code digitalWrite} are
+     * macros mapping the board's printed pin numbers to ESP32-S3 GPIO numbers.
+     */
+    ESP32("ESP32", Architecture.XTENSA, RuntimeLimits.MIN_THREAD_STACK_BYTES, 0, 0, 0);
 
     private final String displayName;
     private final Architecture architecture;

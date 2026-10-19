@@ -10,8 +10,10 @@
  *       {@link io.github.jabrena.juno.annotations.ArduinoUnoR3} (its classic 8-bit ATmega328P, under Arduino's AVR
  *       core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi},
  *       {@link io.github.jabrena.juno.annotations.ArduinoUnoQ} (its STM32U585 microcontroller,
- *       under Arduino's Zephyr core) and {@link io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2}
- *       (its 8-bit ATmega4809, under Arduino's megaAVR core); the linker resolves the selection into a
+ *       under Arduino's Zephyr core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2}
+ *       (its 8-bit ATmega4809, under Arduino's megaAVR core) and
+ *       {@link io.github.jabrena.juno.annotations.ArduinoNanoEsp32} (its Xtensa ESP32-S3, under Arduino's ESP32
+ *       core); the linker resolves the selection into a
  *       {@code io.github.jabrena.juno.board.Board} compilation target.</li>
  *   <li>{@link io.github.jabrena.juno.annotations.Watchdog @Watchdog} enables the hardware watchdog
  *       on UNO R3, UNO WiFi Rev2 and UNO R4 WiFi, rebooting the board if generated code ever stops

@@ -14,7 +14,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 /**
  * Keeps the backend's dependencies pointing one way: the code generators ({@code backend}, {@code thumb2},
- * {@code avr}) depend on the runtime, the per-core implementations ({@code runtime.core}) depend on the shared runtime
+ * {@code avr}, {@code xtensa}) depend on the runtime, the per-core implementations ({@code runtime.core}) depend on the shared runtime
  * ({@code runtime}), and everything depends on the contracts in {@code runtime.spi}, which depend on nothing else in
  * the backend. Code generation reaches a board's Arduino core only through {@code CoreRuntime}, so adding a board is
  * adding one core implementation, never a branch in the code generator.
@@ -26,6 +26,7 @@ class BackendArchitectureTest {
     private static final String CODEGEN = "io.github.jabrena.juno.backend";
     private static final String THUMB2 = "io.github.jabrena.juno.backend.thumb2..";
     private static final String AVR = "io.github.jabrena.juno.backend.avr..";
+    private static final String XTENSA = "io.github.jabrena.juno.backend.xtensa..";
     private static final String RUNTIME = "io.github.jabrena.juno.backend.runtime";
     private static final String CORE = "io.github.jabrena.juno.backend.runtime.core..";
     private static final String SPI = "io.github.jabrena.juno.backend.runtime.spi..";
@@ -34,12 +35,13 @@ class BackendArchitectureTest {
     private static final String[] CORE_IMPLEMENTATIONS = {
             "io.github.jabrena.juno.backend.runtime.core.RenesasCoreRuntime",
             "io.github.jabrena.juno.backend.runtime.core.ZephyrCoreRuntime",
-            "io.github.jabrena.juno.backend.runtime.core.MegaAvrCoreRuntime"};
+            "io.github.jabrena.juno.backend.runtime.core.MegaAvrCoreRuntime",
+            "io.github.jabrena.juno.backend.runtime.core.Esp32CoreRuntime"};
 
     @ArchTest
     static final ArchRule shouldNotDependOnCodeGenerationFromTheRuntime = noClasses()
             .that().resideInAnyPackage(RUNTIME, CORE, SPI)
-            .should().dependOnClassesThat().resideInAnyPackage(CODEGEN, THUMB2, AVR)
+            .should().dependOnClassesThat().resideInAnyPackage(CODEGEN, THUMB2, AVR, XTENSA)
             .because("the runtime shim is what generated code links against; it must not know how that code is "
                     + "generated, so the code generators can depend on it and not the other way round");
 
@@ -53,7 +55,7 @@ class BackendArchitectureTest {
     @ArchTest
     static final ArchRule shouldKeepTheContractsFreeOfOtherBackendPackages = noClasses()
             .that().resideInAPackage(SPI)
-            .should().dependOnClassesThat().resideInAnyPackage(CODEGEN, THUMB2, AVR, RUNTIME, CORE)
+            .should().dependOnClassesThat().resideInAnyPackage(CODEGEN, THUMB2, AVR, XTENSA, RUNTIME, CORE)
             .because("CoreRuntime and ShimFeature are the contracts every other backend package depends on");
 
     @ArchTest

@@ -11,5 +11,7 @@ public enum UnoGeneration {
     /** The UNO R4 boards. */
     R4,
     /** The UNO Q. */
-    Q
+    Q,
+    /** The Nano boards, which belong to no UNO generation: every {@code BoardModel} query is false there. */
+    NANO
 }

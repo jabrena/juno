@@ -6,11 +6,17 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.board.ArduinoCore;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.OptionalInt;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @DisplayName("Per-core runtime implementations")
 class CoreRuntimeTest {
@@ -292,5 +298,65 @@ class CoreRuntimeTest {
 
         // Then
         assertThat(zephyr).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 1536u");
+    }
+
+    static Stream<Arguments> unsupportedEsp32Features() {
+        return Stream.of(
+                esp32Feature("an LED matrix", CoreRuntime::ledMatrixType),
+                esp32Feature("an LED matrix", CoreRuntime::ledMatrixColumns),
+                esp32Feature("networking", runtime -> runtime.wifiIncludes(false)),
+                esp32Feature("networking", CoreRuntime::wifiHelpers),
+                esp32Feature("an HTTP server", CoreRuntime::httpServerTransport),
+                esp32Feature("UDP networking", CoreRuntime::udpDeclaration),
+                esp32Feature("TLS networking", CoreRuntime::httpsInclude),
+                esp32Feature("TLS networking", CoreRuntime::httpsHelpers),
+                esp32Feature("TLS networking", CoreRuntime::httpsClientDeclaration),
+                esp32Feature("@Watchdog", runtime -> runtime.watchdog(1000)),
+                esp32Feature("ParallelBus", CoreRuntime::parallelBusHelpers),
+                esp32Feature("SD cards", runtime -> runtime.sdHelpers(1, 1, 1, 1, 1)),
+                esp32Feature("flash usage queries", CoreRuntime::flashHelpers),
+                esp32Feature("a cryptographic entropy source", CoreRuntime::uuidRandomHelpers),
+                esp32Feature("threads", CoreRuntime::threadIncludes),
+                esp32Feature("threads", runtime -> runtime.threadPort(RuntimeConfig.DEFAULT)));
+    }
+
+    private static Arguments esp32Feature(String feature, Consumer<CoreRuntime> use) {
+        return arguments(feature, use);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("unsupportedEsp32Features")
+    @DisplayName("The ESP32 core rejects what it does not wire yet")
+    void shouldRejectWhatTheEsp32CoreDoesNotWireYet(String feature, Consumer<CoreRuntime> use) {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ESP32);
+
+        // When & Then
+        assertThatThrownBy(() -> use.accept(runtime))
+                .hasMessage("The Xtensa assembly backend (Nano ESP32) does not support this yet: " + feature
+                        + " on the ESP32 core");
+    }
+
+    @Test
+    @DisplayName("The ESP32 core calls the delays directly and the GPIO functions through pin-remap wrappers")
+    void shouldReachTheEsp32GpioThroughPinRemapWrappers() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ESP32);
+
+        // When & Then
+        assertThat(new String[] {runtime.delayMillisFunction(), runtime.delayMicrosFunction(),
+                runtime.gpioFunction("pinMode"), runtime.gpioFunction("analogWrite"), runtime.gpioFunction("millis"),
+                Integer.toString(runtime.builtinLedPin())})
+                .containsExactly("delay", "delayMicroseconds", "juno_pin_mode", "juno_analog_write", "millis", "13");
+    }
+
+    @Test
+    @DisplayName("Cores without pin remapping call the Arduino GPIO functions by name")
+    void shouldCallTheGpioFunctionsByNameWithoutPinRemapping() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.RENESAS_UNO);
+
+        // When & Then
+        assertThat(runtime.gpioFunction("digitalWrite")).isEqualTo("digitalWrite");
     }
 }

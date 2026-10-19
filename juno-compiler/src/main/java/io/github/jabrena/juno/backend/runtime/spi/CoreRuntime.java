@@ -21,6 +21,15 @@ public interface CoreRuntime {
     /** The symbol {@code Delay.micros} branches to, taking the delay in r0. */
     String delayMicrosFunction();
 
+    /**
+     * The symbol generated code calls for the Arduino GPIO function {@code arduinoFunction} ({@code pinMode},
+     * {@code digitalWrite}, {@code digitalRead}, {@code analogRead} or {@code analogWrite}): the function itself,
+     * unless the core defines it as a macro the assembly cannot call, in which case its shim wrapper.
+     */
+    default String gpioFunction(String arduinoFunction) {
+        return arduinoFunction;
+    }
+
     /** C++ type accepted by an AVR core's {@code pinMode}; classic AVR cores use byte constants. */
     default String avrPinModeType() {
         return "uint8_t";
