@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.tft;
 
-import io.github.jabrena.juno.api.io.gpio.EmulatedShield;
+import io.github.jabrena.juno.api.hardware.io.gpio.EmulatedShield;
 import io.github.jabrena.juno.api.util.Delay;
 
 import java.lang.reflect.Field;

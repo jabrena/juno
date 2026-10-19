@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.services;
 
-import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.SdCapacity;

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.api.io.serial.BaudRate;
-import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
+import io.github.jabrena.juno.api.hardware.io.serial.Serial;
 
 /** Prints the size and range of every primitive type; javac folds each line into one string constant. */
 public class PrimitiveTypes {

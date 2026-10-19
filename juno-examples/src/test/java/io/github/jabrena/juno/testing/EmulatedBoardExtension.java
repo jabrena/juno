@@ -3,8 +3,8 @@ package io.github.jabrena.juno.testing;
 
 import io.github.jabrena.juno.api.hardware.EmulatedMemory;
 import io.github.jabrena.juno.api.hardware.EmulatedUnoQ;
-import io.github.jabrena.juno.api.io.gpio.EmulatedShield;
-import io.github.jabrena.juno.api.led.EmulatedLedMatrix;
+import io.github.jabrena.juno.api.hardware.io.gpio.EmulatedShield;
+import io.github.jabrena.juno.api.hardware.led.EmulatedLedMatrix;
 import io.github.jabrena.juno.api.time.SimulatedClock;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;

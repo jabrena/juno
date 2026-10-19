@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.gpio;
+package io.github.jabrena.juno.api.hardware.io.gpio;
 
 /**
  * Plays a Morse pattern on one LED, one time unit per {@link #tick()}, and loops it. The pins come in as a

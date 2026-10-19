@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.serial;
+package io.github.jabrena.juno.api.hardware.io.serial;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;

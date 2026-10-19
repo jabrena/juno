@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.gpio;
+package io.github.jabrena.juno.api.hardware.io.gpio;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

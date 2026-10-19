@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.net.wifi;
 
-import io.github.jabrena.juno.api.io.serial.BaudRate;
-import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
+import io.github.jabrena.juno.api.hardware.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;

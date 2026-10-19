@@ -19,7 +19,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 /**
  * Examples are user programs: they may use only juno-api and the JDK, never the compiler.
  *
- * <p>Examples share package names with juno-api and juno-compiler (e.g. {@code io.github.jabrena.juno.api.io}), so
+ * <p>Examples share package names with juno-api and juno-compiler (e.g. {@code io.github.jabrena.juno.api.hardware.io}), so
  * the rule tells them apart by where each class comes from rather than by package. API classes are taken from
  * juno-api's own output, not resolved through the test classpath, where this module's test fakes shadow some of them.
  */

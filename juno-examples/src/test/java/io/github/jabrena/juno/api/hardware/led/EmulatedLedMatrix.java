@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.led;
+package io.github.jabrena.juno.api.hardware.led;
 
 import io.github.jabrena.juno.api.hardware.internal.NativeLedMatrix;
 

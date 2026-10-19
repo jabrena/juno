@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lcd.pomodoro;
 
-import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.io.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.api.util.Delay;
 

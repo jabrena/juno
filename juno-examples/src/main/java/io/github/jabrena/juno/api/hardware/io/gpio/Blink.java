@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.io.gpio;
+package io.github.jabrena.juno.api.hardware.io.gpio;
 
 import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.util.Delay;

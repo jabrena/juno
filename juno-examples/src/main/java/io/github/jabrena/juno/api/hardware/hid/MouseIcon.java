@@ -1,7 +1,7 @@
-package io.github.jabrena.juno.api.hid;
+package io.github.jabrena.juno.api.hardware.hid;
 
-import io.github.jabrena.juno.api.led.LedCanvas;
-import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.hardware.led.LedCanvas;
+import io.github.jabrena.juno.api.hardware.led.LedMatrix;
 
 /**
  * Draws the mouse-face icon used by {@link RatonLoco} on the UNO R4 WiFi's built-in 12x8 LED
