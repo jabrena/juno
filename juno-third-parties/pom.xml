@@ -14,6 +14,11 @@
     <packaging>pom</packaging>
     <name>Juno Third-Party Integrations</name>
 
+    <!-- An aggregating pom with no classes of its own; its modules run PIT themselves. -->
+    <properties>
+        <skipPitest>true</skipPitest>
+    </properties>
+
     <modules>
         <module>juno-rcx-firmware</module>
     </modules>

@@ -18,6 +18,8 @@
         <quarkus.platform.version>3.40.1</quarkus.platform.version>
         <roq.version>2.1.9</roq.version>
         <skipITs>true</skipITs>
+        <!-- A static site has no unit tests to mutate; the root -Ppitest profile skips it. -->
+        <skipPitest>true</skipPitest>
         <maven-plugin-resources.version>3.5.0</maven-plugin-resources.version>
     </properties>
 
