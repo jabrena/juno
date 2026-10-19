@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
@@ -101,11 +102,12 @@ class ExceptionsTest {
         // Given
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.time.Clock;
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Selector {
                     public static void main(String[] args) {
-                        RuntimeException picked = Clock.millis() == 0
+                        RuntimeException picked = MCU.getClock().millis() == 0
                                 ? new IllegalArgumentException("a")
                                 : new IllegalStateException("b");
                         try {
@@ -411,6 +413,7 @@ class ExceptionsTest {
     private static String divisionSource() {
         return """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.time.Clock;
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class Division {
@@ -439,7 +442,7 @@ class ExceptionsTest {
                     public static void main(String[] args) {
                         Serial.println(ratio(10, 0));
                         Serial.println(wideRemainder(10L, 0L));
-                        Serial.println(unguarded(10, 2) + 10 / Clock.millis());
+                        Serial.println(unguarded(10, 2) + 10 / MCU.getClock().millis());
                     }
                 }
                 """;

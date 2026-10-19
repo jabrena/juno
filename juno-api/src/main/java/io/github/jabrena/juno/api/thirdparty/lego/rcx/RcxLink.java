@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
 import io.github.jabrena.juno.api.thirdparty.lego.scout.ScoutRemote;
 import io.github.jabrena.juno.api.time.Clock;
@@ -11,7 +12,16 @@ import io.github.jabrena.juno.api.util.Delay;
  * complement. Plain Java on top of {@link Infrared}.
  */
 public final class RcxLink {
-    private RcxLink() {
+    private final Clock clock;
+
+    /** A link on the board's own timer. Create it once, at startup, and share it with every class that talks to the brick. */
+    public RcxLink() {
+        this(MCU.getClock());
+    }
+
+    /** A link that times its replies on {@code clock}: a simulated one in a unit test. */
+    public RcxLink(Clock clock) {
+        this.clock = clock;
     }
 
     static final int BAUD = 2400;
@@ -28,11 +38,11 @@ public final class RcxLink {
     private static final int COMMAND_GAP_MILLIS = 60;
 
     /** The opcode (toggle bit cleared) and arguments of the last frame {@link #receive} accepted. */
-    static int opcode;
-    static int argument0;
-    static int argument1;
-    private static boolean toggle;
-    private static boolean receiveEnabled;
+    int opcode;
+    int argument0;
+    int argument1;
+    private boolean toggle;
+    private boolean receiveEnabled;
     /** The opcode, up to ten arguments and the checksum: the longest reply decoded, the brick's version report. */
     private static final int FRAME_VALUES = 12;
     /**
@@ -43,7 +53,7 @@ public final class RcxLink {
     /** How long {@link #awaitReply} lets one wait for a start bit run before it checks its deadline again. */
     private static final int REPLY_POLL_MICROS = 20000;
 
-    public static void begin(int receivePin, int transmitPin) {
+    public void begin(int receivePin, int transmitPin) {
         receiveEnabled = receivePin >= 0;
         Infrared.begin(receivePin, transmitPin, BAUD);
     }
@@ -52,7 +62,7 @@ public final class RcxLink {
      * Reads one frame if one is arriving and stores it in the fields above. Returns its argument
      * count, or {@code -1} when there was no valid frame.
      */
-    static int receive() {
+    int receive() {
         if (!Infrared.receiving()) {
             return -1;
         }
@@ -63,7 +73,7 @@ public final class RcxLink {
      * Waits up to {@code waitMicros} for a frame's first start bit, then reads the frame as {@link #receive} does.
      * Waiting inside {@link Infrared#readByte} catches the start bit's edge, so the bits are sampled in their middle.
      */
-    private static int receiveFrame(int waitMicros) {
+    private int receiveFrame(int waitMicros) {
         int[] data = FRAME;
         int count = 0;
         if (Infrared.readByte(waitMicros) != 0x55 || Infrared.readByte(GAP_MICROS) != 0xFF
@@ -99,17 +109,17 @@ public final class RcxLink {
     }
 
     /** Argument {@code index} (from 0) of the last frame {@link #receive} or {@link #awaitReply} accepted. */
-    static int argument(int index) {
+    int argument(int index) {
         return FRAME[index + 1];
     }
 
     /** Transmits {@code opcode} with {@code arguments} (0..2) arguments {@code first} and {@code second}. */
-    public static void send(int opcode, int first, int second, int arguments) {
+    public void send(int opcode, int first, int second, int arguments) {
         send(opcode, first, second, 0, arguments);
     }
 
     /** Transmits {@code opcode} with {@code arguments} (0..3) arguments {@code first}, {@code second} and {@code third}. */
-    static void send(int opcode, int first, int second, int third, int arguments) {
+    void send(int opcode, int first, int second, int third, int arguments) {
         toggle = !toggle;
         int code = toggle ? opcode | OPCODE_TOGGLE : opcode;
         int sum = code;
@@ -137,7 +147,7 @@ public final class RcxLink {
      * acknowledgement, so the brick's answer and the next transmission do not collide on the air; without a
      * receiver it leaves a short gap instead.
      */
-    static void command(int opcode, int first, int second, int third, int arguments) {
+    void command(int opcode, int first, int second, int third, int arguments) {
         if (receiveEnabled) {
             request(opcode, first, second, third, arguments);
         } else {
@@ -152,12 +162,12 @@ public final class RcxLink {
      * echo of the command itself) are skipped. Returns the reply's argument count, with the arguments in
      * {@link #argument0} and {@link #argument1}, or {@code -1} if no reply came.
      */
-    static int request(int command, int first, int second, int arguments) {
+    int request(int command, int first, int second, int arguments) {
         return request(command, first, second, 0, arguments);
     }
 
     /** Like the two-argument request, for commands with up to three arguments. */
-    static int request(int command, int first, int second, int third, int arguments) {
+    int request(int command, int first, int second, int third, int arguments) {
         send(command, first, second, third, arguments);
         return awaitReply(command, REPLY_TIMEOUT_MILLIS);
     }
@@ -167,10 +177,10 @@ public final class RcxLink {
      * skipping other frames; returns its argument count, with the arguments in {@link #argument0} and
      * {@link #argument1}, or {@code -1}.
      */
-    static int awaitReply(int command, int timeoutMillis) {
+    int awaitReply(int command, int timeoutMillis) {
         int replyOpcode = ~command & 0xFF & ~OPCODE_TOGGLE;
-        int started = Clock.millis();
-        while (Clock.millis() - started < timeoutMillis) {
+        int started = clock.millis();
+        while (clock.millis() - started < timeoutMillis) {
             int count = receiveFrame(REPLY_POLL_MICROS);
             if (count >= 0 && opcode == replyOpcode) {
                 return count;
@@ -179,7 +189,7 @@ public final class RcxLink {
         return -1;
     }
 
-    private static void sendPair(int value) {
+    private void sendPair(int value) {
         Infrared.writeByte(value);
         Infrared.writeByte(~value & 0xFF);
     }

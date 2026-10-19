@@ -31,7 +31,7 @@ public interface CoreRuntime {
         return "uint8_t";
     }
 
-    /** The Arduino digital pin number {@code Gpio.builtinLed()} resolves to on this core's board. */
+    /** The Arduino digital pin number {@code Gpio.getBuiltinLed()} resolves to on this core's board. */
     int builtinLedPin();
 
     /** The core's LED matrix class ({@code Arduino_LED_Matrix.h} names it differently on each core). */

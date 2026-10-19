@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.api.util;
 
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.testing.SimulatedTime;
 
 /**
- * Test-only stand-in for the delay intrinsics. A delay moves the simulated {@link Clock} forward instead of
+ * Test-only stand-in for the delay intrinsics. A delay moves the simulated {@link SimulatedTime} clock forward instead of
  * waiting; the {@link #seconds(int)} wrapper is the production code, unchanged.
  */
 public final class Delay {
@@ -11,11 +11,11 @@ public final class Delay {
     }
 
     public static void millis(int milliseconds) {
-        Clock.now += milliseconds * 1000;
+        SimulatedTime.now += milliseconds * 1000;
     }
 
     public static void micros(int microseconds) {
-        Clock.now += microseconds;
+        SimulatedTime.now += microseconds;
     }
 
     /**

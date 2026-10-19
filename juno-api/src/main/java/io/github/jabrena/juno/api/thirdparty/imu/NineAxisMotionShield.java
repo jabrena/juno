@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.imu;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.io.i2c.I2c;
 import io.github.jabrena.juno.api.util.Delay;
@@ -13,23 +14,23 @@ import io.github.jabrena.juno.api.util.Delay;
  * measuring how far a vehicle has turned:
  *
  * <pre>{@code
- * int start = NineAxisMotionShield.headingDegrees();
- * // ... turn left until NineAxisMotionShield.turnedSince(start) <= -90 (heading grows clockwise)
+ * NineAxisMotionShield imu = new NineAxisMotionShield();   // once, at startup
+ * imu.begin();
+ * int start = imu.headingDegrees();
+ * // ... turn left until imu.turnedSince(start) <= -90 (heading grows clockwise)
  * }</pre>
  *
  * <p>The shield's BNO055 answers at address {@code 0x28}; the {@code 0x29} variant is selected with
  * {@link #begin(int)}. Works on both boards, wherever {@code Wire} reaches the shield's SDA/SCL.
  * {@link #begin} drives D7, the shield's sensor reset line, so a program using the shield must not
- * use D7 for anything else.
+ * use D7 for anything else. {@code new NineAxisMotionShield(gpio)} drives that line through a given
+ * {@link Gpio} instead of the board's, which is how a unit test mocks it.
  *
  * @see <a href="https://docs.arduino.cc/hardware/9-axis-motion-shield/">Arduino 9 Axis Motion Shield</a>
  */
 public final class NineAxisMotionShield {
-    private NineAxisMotionShield() {
-    }
-
-    public static final int ADDRESS_DEFAULT = 0x28;
-    public static final int ADDRESS_ALTERNATE = 0x29;
+    private static final int ADDRESS_DEFAULT = 0x28;
+    private static final int ADDRESS_ALTERNATE = 0x29;
 
     private static final int CHIP_ID = 0x00;
     private static final int GYRO_X = 0x14;
@@ -52,7 +53,7 @@ public final class NineAxisMotionShield {
      * The shield wires the BNO055's RESET line to D7 (fitted {@code R_RESET} on the V3 schematic, as
      * in Arduino's NineAxesMotion library); the chip only runs while it is high.
      */
-    private static final int RESET_PIN = Gpio.D7;
+    private static final int RESET_PIN = Gpio.getD7();
     private static final int RESET_LOW_MILLIS = 300;
     private static final int RESET_HIGH_MILLIS = 600;
     /** Heading is reported in sixteenths of a degree. */
@@ -60,10 +61,21 @@ public final class NineAxisMotionShield {
     private static final int SIGN_BIT = 0x8000;
     private static final int WORD = 0x10000;
 
-    private static int address = ADDRESS_DEFAULT;
+    private final Gpio gpio;
+    private int address = ADDRESS_DEFAULT;
+
+    /** A shield on the board's own pins. Create it once, at startup. */
+    public NineAxisMotionShield() {
+        this(MCU.getGpio());
+    }
+
+    /** A shield whose reset line is driven through {@code gpio}: a mocked one in a unit test. */
+    public NineAxisMotionShield(Gpio gpio) {
+        this.gpio = gpio;
+    }
 
     /** Starts the sensor at {@link #ADDRESS_DEFAULT}; see {@link #begin(int)}. */
-    public static boolean begin() {
+    public boolean begin() {
         return begin(ADDRESS_DEFAULT);
     }
 
@@ -71,12 +83,12 @@ public final class NineAxisMotionShield {
      * Starts the I2C bus and the sensor at {@code sensorAddress} in IMU fusion mode, returning
      * {@code false} if no BNO055 answered. Waits for the sensor to boot, so call it once at startup.
      */
-    public static boolean begin(int sensorAddress) {
+    public boolean begin(int sensorAddress) {
         address = sensorAddress;
-        Gpio.pinMode(RESET_PIN, Gpio.OUTPUT);
-        Gpio.digitalWrite(RESET_PIN, false);
+        gpio.pinMode(RESET_PIN, Gpio.getOutput());
+        gpio.digitalWrite(RESET_PIN, false);
         Delay.millis(RESET_LOW_MILLIS);
-        Gpio.digitalWrite(RESET_PIN, true);
+        gpio.digitalWrite(RESET_PIN, true);
         Delay.millis(RESET_HIGH_MILLIS);
         I2c.begin();
         Delay.millis(BOOT_MILLIS);
@@ -94,13 +106,13 @@ public final class NineAxisMotionShield {
     }
 
     /** The heading in sixteenths of a degree, {@code 0..5759}, growing clockwise; {@code -1} if the read failed. */
-    public static int headingRaw() {
+    public int headingRaw() {
         int raw = I2c.readRegister16(address, EULER_HEADING);
         return raw < 0 ? -1 : raw % (360 * UNITS_PER_DEGREE);
     }
 
     /** The heading in whole degrees, {@code 0..359}, growing clockwise; {@code -1} if the read failed. */
-    public static int headingDegrees() {
+    public int headingDegrees() {
         int raw = headingRaw();
         return raw < 0 ? -1 : raw / UNITS_PER_DEGREE;
     }
@@ -111,7 +123,7 @@ public final class NineAxisMotionShield {
      * mounting. {@link Short#MIN_VALUE} if the read failed. This is the tilt a self-balancing robot
      * rocks about when the shield is mounted with its X axis along the wheel axle.
      */
-    public static int pitchRaw() {
+    public int pitchRaw() {
         return signed(I2c.readRegister16(address, EULER_PITCH));
     }
 
@@ -120,12 +132,12 @@ public final class NineAxisMotionShield {
      * gyroscope; the derivative of {@link #pitchRaw} without the delay of differencing it.
      * {@link Short#MIN_VALUE} if the read failed.
      */
-    public static int gyroXRaw() {
+    public int gyroXRaw() {
         return signed(I2c.readRegister16(address, GYRO_X));
     }
 
     /** Turns a register word {@code 0..65535} into a signed value, keeping the {@code -1} failure as {@link Short#MIN_VALUE}. */
-    private static int signed(int word) {
+    private int signed(int word) {
         if (word < 0) {
             return Short.MIN_VALUE;
         }
@@ -137,7 +149,7 @@ public final class NineAxisMotionShield {
      * signed angle {@code -180..180}: positive clockwise, negative anticlockwise (a left turn). Handles
      * the wrap around 360. Returns {@code 0} if the read failed.
      */
-    public static int turnedSince(int startDegrees) {
+    public int turnedSince(int startDegrees) {
         int now = headingDegrees();
         if (now < 0 || startDegrees < 0) {
             return 0;
@@ -152,7 +164,17 @@ public final class NineAxisMotionShield {
      * mode only the gyroscope and accelerometer matter, and the gyroscope calibrates on its own while
      * the sensor stands still for a moment.
      */
-    public static int calibration() {
+    public int calibration() {
         return I2c.readRegister(address, CALIBRATION_STATUS);
+    }
+
+    /** The sensor's default I2C address, {@code 0x28}: the shield's BNO055 as wired from the factory. */
+    public int getAddressDefault() {
+        return ADDRESS_DEFAULT;
+    }
+
+    /** The alternate I2C address, {@code 0x29}, selected by the shield's address jumper. */
+    public int getAddressAlternate() {
+        return ADDRESS_ALTERNATE;
     }
 }

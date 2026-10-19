@@ -27,7 +27,9 @@ import java.util.Set;
  *
  * <p>A callee qualifies when it is tiny (at most {@link #MAX_COST} instructions besides the local loads, stores and
  * constants that copy propagation cleans up, and {@link #MAX_INSTRUCTIONS} in all, in at most {@link #MAX_BLOCKS}
- * blocks), calls nothing and allocates nothing (so it can neither recurse nor throw), and passes and returns only
+ * blocks), calls nothing but {@link io.github.jabrena.juno.intrinsic.Intrinsic#inlinable() inlinable} intrinsics
+ * (such as the GPIO behind {@code Gpio.digitalWrite}) and allocates nothing (so it can neither recurse nor throw),
+ * and passes and returns only
  * one-slot values. Its locals move to a window above the caller's own; every inlined site in a method shares that
  * window, since a leaf body never overlaps another. Arguments are stored into the window's parameter slots and the
  * result comes back through one more slot, which copy propagation then removes.
@@ -114,8 +116,11 @@ public final class Inliner implements CompilerPass {
     }
 
     private boolean isLeafInstruction(IrInstruction instruction) {
+        if (instruction instanceof IrInstruction.IntrinsicCall call) {
+            return call.intrinsic().inlinable();
+        }
         return !(instruction instanceof IrInstruction.Call || instruction instanceof IrInstruction.LambdaCall
-                || instruction instanceof IrInstruction.InterfaceCall || instruction instanceof IrInstruction.IntrinsicCall
+                || instruction instanceof IrInstruction.InterfaceCall
                 || instruction instanceof IrInstruction.NewObject || instruction instanceof IrInstruction.NewArray
                 || instruction instanceof IrInstruction.NewMultiArray || instruction instanceof IrInstruction.LambdaCreate);
     }

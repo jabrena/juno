@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
 import io.github.jabrena.juno.api.time.Clock;
 
@@ -22,14 +23,31 @@ import io.github.jabrena.juno.api.time.Clock;
  * not while {@code Delay.millis} is waiting. Works on both boards.
  */
 public final class RcxRemote {
-    private RcxRemote() {
+    private final RcxLink link;
+    private final Clock clock;
+
+    /** A remote on the board's own infrared link and timer. Create it once, at startup. */
+    public RcxRemote() {
+        this(new RcxLink(), MCU.getClock());
     }
+
+    /** A remote on a link shared with other RCX classes, so they share one toggle bit. */
+    public RcxRemote(RcxLink link) {
+        this(link, MCU.getClock());
+    }
+
+    /** A remote on {@code link}, timing its button hold on {@code clock}: a simulated clock in a unit test. */
+    public RcxRemote(RcxLink link, Clock clock) {
+        this.link = link;
+        this.clock = clock;
+    }
+
 
     private static final int HOLD_MILLIS = 300;
 
-    private static int buttonState;
-    private static int buttonStateAt;
-    private static int lastMessage = -1;
+    private int buttonState;
+    private int buttonStateAt;
+    private int lastMessage = -1;
 
     /** {@link #buttons} bits: the three message buttons at the top of the remote. */
     public static final int MESSAGE_1 = 0x0001;
@@ -56,8 +74,8 @@ public final class RcxRemote {
      * Configures the pins: {@code receivePin} for an IR receiver module and {@code transmitPin} for
      * an IR LED, either {@code -1} when unused.
      */
-    public static void begin(int receivePin, int transmitPin) {
-        RcxLink.begin(receivePin, transmitPin);
+    public void begin(int receivePin, int transmitPin) {
+        link.begin(receivePin, transmitPin);
     }
 
     /**
@@ -65,7 +83,7 @@ public final class RcxRemote {
      * none is held. Decodes a frame if one is arriving; the last state is kept for 300 ms and then
      * counts as released, in case the release message was missed.
      */
-    public static int buttons() {
+    public int buttons() {
         poll();
         return buttonState;
     }
@@ -75,7 +93,7 @@ public final class RcxRemote {
      * another RCX or by {@link #sendMessage}), {@code 0..255}, or {@code -1} if none has arrived
      * since the last call.
      */
-    public static int message() {
+    public int message() {
         poll();
         int value = lastMessage;
         lastMessage = -1;
@@ -83,24 +101,24 @@ public final class RcxRemote {
     }
 
     /** Transmits a remote-control command with {@code buttonMask} to RCX bricks in range, as the remote does. */
-    public static void sendButtons(int buttonMask) {
-        RcxLink.send(RcxLink.OPCODE_REMOTE, (buttonMask >> 8) & 0xFF, buttonMask & 0xFF, 2);
+    public void sendButtons(int buttonMask) {
+        link.send(RcxLink.OPCODE_REMOTE, (buttonMask >> 8) & 0xFF, buttonMask & 0xFF, 2);
     }
 
     /** Transmits an RCX {@code message} command carrying the low 8 bits of {@code value}. */
-    public static void sendMessage(int value) {
-        RcxLink.send(RcxLink.OPCODE_MESSAGE, value & 0xFF, 0, 1);
+    public void sendMessage(int value) {
+        link.send(RcxLink.OPCODE_MESSAGE, value & 0xFF, 0, 1);
     }
 
-    private static void poll() {
-        int arguments = RcxLink.receive();
-        if (arguments == 2 && RcxLink.opcode == RcxLink.OPCODE_REMOTE) {
-            buttonState = (RcxLink.argument0 << 8) | RcxLink.argument1;
-            buttonStateAt = Clock.millis();
-        } else if (arguments == 1 && RcxLink.opcode == RcxLink.OPCODE_MESSAGE) {
-            lastMessage = RcxLink.argument0;
+    private void poll() {
+        int arguments = link.receive();
+        if (arguments == 2 && link.opcode == RcxLink.OPCODE_REMOTE) {
+            buttonState = (link.argument0 << 8) | link.argument1;
+            buttonStateAt = clock.millis();
+        } else if (arguments == 1 && link.opcode == RcxLink.OPCODE_MESSAGE) {
+            lastMessage = link.argument0;
         }
-        if (buttonState != 0 && Clock.millis() - buttonStateAt > HOLD_MILLIS) {
+        if (buttonState != 0 && clock.millis() - buttonStateAt > HOLD_MILLIS) {
             buttonState = 0;
         }
     }

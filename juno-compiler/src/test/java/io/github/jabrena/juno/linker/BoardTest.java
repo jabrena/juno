@@ -431,8 +431,9 @@ class BoardTest {
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
-                        if (PoweredUpHubRemote.connect(1000)) {
-                            PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, 50);
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        if (hub.connect(1000)) {
+                            hub.setMotorPower(PoweredUpHubRemote.PORT_A, 50);
                         }
                     }
                 }
@@ -459,8 +460,9 @@ class BoardTest {
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
-                        if (PoweredUpHubRemote.connect(1000)) {
-                            PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, 50);
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        if (hub.connect(1000)) {
+                            hub.setMotorPower(PoweredUpHubRemote.PORT_A, 50);
                         }
                     }
                 }

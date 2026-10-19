@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+
 import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
@@ -201,6 +202,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.util.Delay;
                 import io.github.jabrena.juno.api.util.Random;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
@@ -210,12 +212,13 @@ class GeneratedAsmToolchainTest {
                 public final class AsmSmoke {
                     static int mix(int value) { return (value << 2) ^ 7; }
                     public static void main(String[] args) {
-                        Gpio.pinMode(Gpio.D13, Gpio.OUTPUT);
-                        Gpio.digitalWrite(Gpio.D13, mix(4) != 0);
+                        Gpio gpio = MCU.getGpio();
+                        gpio.pinMode(Gpio.getD13(), Gpio.getOutput());
+                        gpio.digitalWrite(Gpio.getD13(), mix(4) != 0);
                         Delay.millis(10);
                         Random.seed(42);
                         int randomValue = Random.nextInt(1, 7);
-                        Gpio.digitalWrite(12, randomValue > 0);
+                        gpio.digitalWrite(12, randomValue > 0);
                         LedMatrix.begin();
                         LedMatrix.loadFrame(0x3184a444, 0x44042081, 0x100a0040);
                         LedMatrix.clear();
@@ -357,6 +360,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.util.Delay;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class AsmInterfaces {
@@ -371,7 +375,7 @@ class GeneratedAsmToolchainTest {
                         return add ? new Add() : new Multiply();
                     }
                     public static void main(String[] args) {
-                        Operation operation = choose(Gpio.analogRead(0) > 0);
+                        Operation operation = choose(MCU.getGpio().analogRead(0) > 0);
                         Delay.millis(operation.apply(5));
                     }
                 }
@@ -880,15 +884,16 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmLegoTrain {
                     public static void main(String[] args) {
-                        if (!PoweredUpHubRemote.connect(0)) return;
-                        PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
-                        PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, 40);
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        if (!hub.connect(0)) return;
+                        hub.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
+                        hub.setMotorPower(PoweredUpHubRemote.PORT_A, 40);
                         Delay.millis(1000);
-                        PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
-                        if (PoweredUpHubRemote.hubType() != PoweredUpHubRemote.TYPE_UNKNOWN && PoweredUpHubRemote.isConnected()) {
-                            PoweredUpHubRemote.disconnect();
+                        hub.brakeMotor(PoweredUpHubRemote.PORT_A);
+                        if (hub.hubType() != PoweredUpHubRemote.TYPE_UNKNOWN && hub.isConnected()) {
+                            hub.disconnect();
                         }
-                        PoweredUpHubRemote.switchOff();
+                        hub.switchOff();
                     }
                 }
                 """;
@@ -915,14 +920,15 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxRemote;
                 public final class AsmRcxRemote {
                     public static void main(String[] args) {
-                        RcxRemote.begin(2, 3);
+                        RcxRemote remote = new RcxRemote();
+                        remote.begin(2, 3);
                         while (true) {
-                            int buttons = RcxRemote.buttons();
+                            int buttons = remote.buttons();
                             if ((buttons & RcxRemote.A_FORWARD) != 0) {
-                                RcxRemote.sendButtons(RcxRemote.B_FORWARD);
+                                remote.sendButtons(RcxRemote.B_FORWARD);
                             }
-                            if (RcxRemote.message() >= 0) {
-                                RcxRemote.sendMessage(7);
+                            if (remote.message() >= 0) {
+                                remote.sendMessage(7);
                             }
                         }
                     }
@@ -952,14 +958,15 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.lego.scout.ScoutRemote;
                 public final class AsmScoutRemote {
                     public static void main(String[] args) {
-                        ScoutRemote.begin(-1, 3);
-                        ScoutRemote.ping();
-                        ScoutRemote.setMode(ScoutRemote.MODE_POWER);
-                        ScoutRemote.playSound(2);
-                        ScoutRemote.selectProgram(3);
-                        ScoutRemote.sendButtons(RcxRemote.A_FORWARD);
-                        ScoutRemote.stopAll();
-                        ScoutRemote.powerOff();
+                        ScoutRemote scout = new ScoutRemote();
+                        scout.begin(-1, 3);
+                        scout.ping();
+                        scout.setMode(ScoutRemote.MODE_POWER);
+                        scout.playSound(2);
+                        scout.selectProgram(3);
+                        scout.sendButtons(RcxRemote.A_FORWARD);
+                        scout.stopAll();
+                        scout.powerOff();
                     }
                 }
                 """;
@@ -1068,12 +1075,14 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxRemote;
                 public final class AsmRcxFirmware {
                     public static void main(String[] args) {
-                        RcxRemote.begin(2, 3);
+                        RcxRemote remote = new RcxRemote();
+                        RcxFirmware firmware = new RcxFirmware();
+                        remote.begin(2, 3);
                         byte[] block = new byte[64];
-                        if (RcxFirmware.installed() != 0) return;
-                        if (!RcxFirmware.delete() || !RcxFirmware.start(0x8000, 0)) return;
-                        if (RcxFirmware.transfer(1, block, 64) < 0) RcxFirmware.transfer(1, block, 64);
-                        if (RcxFirmware.transfer(0, block, 1) == 0) RcxFirmware.unlock();
+                        if (firmware.installed() != 0) return;
+                        if (!firmware.delete() || !firmware.start(0x8000, 0)) return;
+                        if (firmware.transfer(1, block, 64) < 0) firmware.transfer(1, block, 64);
+                        if (firmware.transfer(0, block, 1) == 0) firmware.unlock();
                     }
                 }
                 """);
@@ -1089,26 +1098,30 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxBrick;
+                import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxLink;
                 import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxRemote;
                 public final class AsmRcxSensor {
                     public static void main(String[] args) {
-                        RcxRemote.begin(2, 3);
-                        if (!RcxBrick.setTouchSensor(RcxBrick.INPUT_1)) return;
-                        if (RcxBrick.batteryMillivolts() < 6000) return;
-                        RcxBrick.playSound(RcxBrick.SOUND_BEEP);
-                        RcxBrick.playTone(440, 50);
-                        RcxBrick.setLightSensor(RcxBrick.INPUT_2);
-                        RcxBrick.setRotationSensor(RcxBrick.INPUT_3);
-                        RcxBrick.setTemperatureSensor(RcxBrick.INPUT_1);
-                        if (RcxBrick.rotationDegrees(RcxBrick.INPUT_3) > 90 || RcxBrick.temperatureTenths(RcxBrick.INPUT_1) > 300) {
-                            RcxBrick.clearSensor(RcxBrick.INPUT_3);
+                        RcxLink link = new RcxLink();
+                        RcxRemote remote = new RcxRemote(link);
+                        RcxBrick brick = new RcxBrick(link);
+                        remote.begin(2, 3);
+                        if (!brick.setTouchSensor(RcxBrick.INPUT_1)) return;
+                        if (brick.batteryMillivolts() < 6000) return;
+                        brick.playSound(RcxBrick.SOUND_BEEP);
+                        brick.playTone(440, 50);
+                        brick.setLightSensor(RcxBrick.INPUT_2);
+                        brick.setRotationSensor(RcxBrick.INPUT_3);
+                        brick.setTemperatureSensor(RcxBrick.INPUT_1);
+                        if (brick.rotationDegrees(RcxBrick.INPUT_3) > 90 || brick.temperatureTenths(RcxBrick.INPUT_1) > 300) {
+                            brick.clearSensor(RcxBrick.INPUT_3);
                         }
-                        RcxBrick.drive(RcxBrick.OUTPUT_A | RcxBrick.OUTPUT_B, 4);
-                        RcxBrick.setMotorDirection(RcxBrick.OUTPUT_C, false);
-                        RcxBrick.setMotorPower(RcxBrick.OUTPUT_C, 3);
-                        RcxBrick.motorFloat(RcxBrick.OUTPUT_C);
-                        while (!RcxBrick.isPressed(RcxBrick.INPUT_1)) {
-                            RcxRemote.sendButtons(RcxRemote.A_FORWARD);
+                        brick.drive(RcxBrick.OUTPUT_A | RcxBrick.OUTPUT_B, 4);
+                        brick.setMotorDirection(RcxBrick.OUTPUT_C, false);
+                        brick.setMotorPower(RcxBrick.OUTPUT_C, 3);
+                        brick.motorFloat(RcxBrick.OUTPUT_C);
+                        while (!brick.isPressed(RcxBrick.INPUT_1)) {
+                            remote.sendButtons(RcxRemote.A_FORWARD);
                         }
                     }
                 }
@@ -1168,10 +1181,11 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.imu.NineAxisMotionShield;
                 public final class AsmHeading {
                     public static void main(String[] args) {
-                        if (!NineAxisMotionShield.begin()) return;
-                        int start = NineAxisMotionShield.headingDegrees();
-                        while (NineAxisMotionShield.turnedSince(start) > -90) {
-                            if (NineAxisMotionShield.calibration() < 0) return;
+                        NineAxisMotionShield imu = new NineAxisMotionShield();
+                        if (!imu.begin()) return;
+                        int start = imu.headingDegrees();
+                        while (imu.turnedSince(start) > -90) {
+                            if (imu.calibration() < 0) return;
                         }
                     }
                 }
@@ -1201,8 +1215,9 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.imu.NineAxisMotionShield;
                 public final class AsmBalance {
                     public static void main(String[] args) {
-                        if (!NineAxisMotionShield.begin()) return;
-                        while (Math.abs(NineAxisMotionShield.pitchRaw()) < 480 && NineAxisMotionShield.gyroXRaw() > -16000) {
+                        NineAxisMotionShield imu = new NineAxisMotionShield();
+                        if (!imu.begin()) return;
+                        while (Math.abs(imu.pitchRaw()) < 480 && imu.gyroXRaw() > -16000) {
                         }
                     }
                 }
@@ -1230,20 +1245,21 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmHubImu {
                     public static void main(String[] args) {
-                        if (!PoweredUpHubRemote.connect(0)) return;
-                        PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_GYRO, PoweredUpHubRemote.MODE_IMU_VALUES);
-                        PoweredUpHubRemote.setLedRgb(255, 128, 0);
-                        int pair = PoweredUpHubRemote.linkMotors(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.PORT_B);
-                        if (pair >= 0 && PoweredUpHubRemote.batteryMillivolts() > 6000
-                                && PoweredUpHubRemote.currentMilliamps() < 2000) {
-                            PoweredUpHubRemote.setLinkedMotorPower(pair, 40, 40);
-                            PoweredUpHubRemote.brakeLinkedMotors(pair);
-                            PoweredUpHubRemote.unlinkMotors(pair);
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        if (!hub.connect(0)) return;
+                        hub.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_GYRO, PoweredUpHubRemote.MODE_IMU_VALUES);
+                        hub.setLedRgb(255, 128, 0);
+                        int pair = hub.linkMotors(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.PORT_B);
+                        if (pair >= 0 && hub.batteryMillivolts() > 6000
+                                && hub.currentMilliamps() < 2000) {
+                            hub.setLinkedMotorPower(pair, 40, 40);
+                            hub.brakeLinkedMotors(pair);
+                            hub.unlinkMotors(pair);
                         }
-                        while (PoweredUpHubRemote.isConnected()) {
-                            if (PoweredUpHubRemote.sensorReportSize(PoweredUpHubRemote.PORT_TECHNIC_GYRO) >= 6
-                                    && PoweredUpHubRemote.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_GYRO, 2, 2) > 100) {
-                                PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
+                        while (hub.isConnected()) {
+                            if (hub.sensorReportSize(PoweredUpHubRemote.PORT_TECHNIC_GYRO) >= 6
+                                    && hub.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_GYRO, 2, 2) > 100) {
+                                hub.brakeMotor(PoweredUpHubRemote.PORT_A);
                             }
                         }
                     }
@@ -1271,15 +1287,16 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmHubProperties {
                     public static void main(String[] args) {
-                        if (!PoweredUpHubRemote.connect(0)) return;
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        if (!hub.connect(0)) return;
                         byte[] name = new byte[20];
-                        int length = PoweredUpHubRemote.hubName(name, name.length);
-                        int firmware = PoweredUpHubRemote.firmwareVersion();
-                        if (length > 0 && PoweredUpHubRemote.batteryPercent() < 10 && !PoweredUpHubRemote.buttonPressed()
-                                && PoweredUpHubRemote.rssi() < -80 && PoweredUpHubRemote.versionMajor(firmware) == 1
-                                && PoweredUpHubRemote.versionMinor(firmware) + PoweredUpHubRemote.versionBugfix(
-                                        PoweredUpHubRemote.hardwareVersion()) + PoweredUpHubRemote.versionBuild(firmware) > 0) {
-                            PoweredUpHubRemote.switchOff();
+                        int length = hub.hubName(name, name.length);
+                        int firmware = hub.firmwareVersion();
+                        if (length > 0 && hub.batteryPercent() < 10 && !hub.buttonPressed()
+                                && hub.rssi() < -80 && hub.versionMajor(firmware) == 1
+                                && hub.versionMinor(firmware) + hub.versionBugfix(
+                                        hub.hardwareVersion()) + hub.versionBuild(firmware) > 0) {
+                            hub.switchOff();
                         }
                     }
                 }
@@ -1306,11 +1323,12 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmHubPorts {
                     public static void main(String[] args) {
-                        if (!PoweredUpHubRemote.connect(0)) return;
-                        if (PoweredUpHubRemote.portDevice(PoweredUpHubRemote.PORT_B)
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        if (!hub.connect(0)) return;
+                        if (hub.portDevice(PoweredUpHubRemote.PORT_B)
                                 == PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_MOTOR) {
-                            PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_B, 30);
-                            PoweredUpHubRemote.holdMotor(PoweredUpHubRemote.PORT_B);
+                            hub.setMotorPower(PoweredUpHubRemote.PORT_B, 30);
+                            hub.holdMotor(PoweredUpHubRemote.PORT_B);
                         }
                     }
                 }
@@ -1341,11 +1359,12 @@ class GeneratedAsmToolchainTest {
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQLegoTrain {
                     public static void main(String[] args) {
-                        if (!PoweredUpHubRemote.connect(0)) return;
-                        PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
-                        PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, -40);
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        if (!hub.connect(0)) return;
+                        hub.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+                        hub.setMotorPower(PoweredUpHubRemote.PORT_A, -40);
                         Delay.millis(1000);
-                        PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
+                        hub.brakeMotor(PoweredUpHubRemote.PORT_A);
                     }
                 }
                 """;
@@ -1586,6 +1605,7 @@ class GeneratedAsmToolchainTest {
 
     private static final String EXCEPTIONS = """
             package demo;
+            import io.github.jabrena.juno.api.hardware.MCU;
             import io.github.jabrena.juno.api.time.Clock;
             import io.github.jabrena.juno.api.io.serial.Serial;
             public final class AsmExceptions {
@@ -1597,7 +1617,7 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 public static void main(String[] args) {
-                    int reading = Clock.millis();
+                    int reading = MCU.getClock().millis();
                     try {
                         if (reading < 0) throw new SensorException("offline", 7);
                         if (reading > 1000) throw new IllegalStateException();
@@ -1674,13 +1694,14 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null || compiler != null, "No toolchain available");
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.time.Clock;
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 public final class AsmStringConcat {
                     public static void main(String[] args) {
-                        String state = Clock.millis() > 0 ? "on" : null;
-                        boolean active = Clock.millis() > 0;
-                        int count = Clock.millis();
+                        String state = MCU.getClock().millis() > 0 ? "on" : null;
+                        boolean active = MCU.getClock().millis() > 0;
+                        int count = MCU.getClock().millis();
                         long total = 7L;
                         float ratio = 1.5f;
                         double precise = 2.5;
@@ -1977,13 +1998,14 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class LegoRuntime {
                     public static void main(String[] args) {
-                        if (PoweredUpHubRemote.connect(0) && PoweredUpHubRemote.isConnected()) {
-                            PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.MODE_MOTOR_POSITION);
-                            PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.readSensor(PoweredUpHubRemote.PORT_A));
-                            PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.hubType());
-                            PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
-                            PoweredUpHubRemote.switchOff();
-                            PoweredUpHubRemote.disconnect();
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        if (hub.connect(0) && hub.isConnected()) {
+                            hub.enableSensor(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.MODE_MOTOR_POSITION);
+                            hub.setMotorPower(PoweredUpHubRemote.PORT_A, hub.readSensor(PoweredUpHubRemote.PORT_A));
+                            hub.setLedColor(hub.hubType());
+                            hub.brakeMotor(PoweredUpHubRemote.PORT_A);
+                            hub.switchOff();
+                            hub.disconnect();
                         }
                     }
                 }
@@ -2199,11 +2221,12 @@ class GeneratedAsmToolchainTest {
     /** Reaches every supported {@code java.lang.Math} overload, so the shim carries all of their helpers. */
     private static final String MATH_EVERYTHING = """
             package demo;
+            import io.github.jabrena.juno.api.hardware.MCU;
             import io.github.jabrena.juno.api.time.Clock;
             import io.github.jabrena.juno.api.io.serial.Serial;
             public final class MathEverything {
                 public static void main(String[] args) {
-                    int i = Clock.millis() % 2 == 0 ? 3 : -7;
+                    int i = MCU.getClock().millis() % 2 == 0 ? 3 : -7;
                     long l = i * 1000000000000L;
                     float f = i / 2.0f;
                     double d = i / 4.0;

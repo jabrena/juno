@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.intrinsic;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /** Every hardware operation Juno understands, independent of its Java method signature or Arduino lowering. */
 public enum Intrinsic {
     GPIO_PIN_MODE,
@@ -386,5 +389,28 @@ public enum Intrinsic {
     ATOMIC_LONG_GET_AND_INCREMENT,
     ATOMIC_LONG_GET_AND_DECREMENT,
     ATOMIC_LONG_ADD_AND_GET,
-    ATOMIC_LONG_GET_AND_ADD
+    ATOMIC_LONG_GET_AND_ADD;
+
+    /**
+     * The pin and timer reads and writes behind {@code Gpio} and {@code Clock}, declared on the stateless
+     * {@code NativeGpio} and {@code NativeClock}: plain Arduino core calls that never throw, recurse, yield or
+     * allocate, and never read the port object they are called on.
+     */
+    private static final Set<Intrinsic> PORT_OPERATIONS = EnumSet.of(GPIO_PIN_MODE, GPIO_DIGITAL_WRITE,
+            GPIO_DIGITAL_READ, GPIO_ANALOG_READ, GPIO_ANALOG_WRITE, GPIO_TOGGLE, GPIO_BUILTIN_LED, CLOCK_MILLIS,
+            CLOCK_MICROS);
+
+    /** The {@code DigitalOutput} operations: plain pin calls whose handle is the pin number, so they inline too. */
+    private static final Set<Intrinsic> INLINABLE_OPERATIONS = EnumSet.of(DIGITAL_OUTPUT_OF, DIGITAL_OUTPUT_HIGH,
+            DIGITAL_OUTPUT_LOW);
+
+    /** Whether a call to this intrinsic leaves its enclosing method small enough to inline. */
+    public boolean inlinable() {
+        return PORT_OPERATIONS.contains(this) || INLINABLE_OPERATIONS.contains(this);
+    }
+
+    /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
+    public boolean ignoresReceiver() {
+        return PORT_OPERATIONS.contains(this);
+    }
 }

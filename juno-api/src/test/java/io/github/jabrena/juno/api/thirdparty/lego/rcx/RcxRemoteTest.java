@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.api.testing.SimulatedTime;
 import io.github.jabrena.juno.api.testing.Wire;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
 import io.github.jabrena.juno.api.util.Delay;
@@ -11,16 +12,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("RCX infrared remote")
 class RcxRemoteTest {
+    private RcxRemote remote;
 
     @BeforeEach
     void startWithAnIdleReceiver() {
         Wire.resetBoard();
         Infrared.reset();
-        RcxRemote.begin(2, 3);
+        remote = new RcxRemote(new RcxLink(SimulatedTime.clock()), SimulatedTime.clock());
+        remote.begin(2, 3);
         // The held buttons are static and survive begin(): script a release so no earlier test's buttons leak in.
         Infrared.receivingFrame = true;
         Infrared.replies.addAll(RcxFrames.frame(0xD2, 0x00, 0x00));
-        RcxRemote.buttons();
+        remote.buttons();
         Infrared.replies.clear();
     }
 
@@ -28,7 +31,7 @@ class RcxRemoteTest {
     @DisplayName("Sending buttons frames each byte with its complement")
     void shouldFrameEachButtonByteWithItsComplement() {
         // When
-        RcxRemote.sendButtons(0x1234);
+        remote.sendButtons(0x1234);
 
         // Then
         assertThat(Infrared.written).containsSubsequence(0x12, 0xED, 0x34, 0xCB);
@@ -38,7 +41,7 @@ class RcxRemoteTest {
     @DisplayName("Sending a message frames it with its complement")
     void shouldFrameAMessageWithItsComplement() {
         // When
-        RcxRemote.sendMessage(0x5A);
+        remote.sendMessage(0x5A);
 
         // Then
         assertThat(Infrared.written).containsSubsequence(0x5A, 0xA5);
@@ -52,7 +55,7 @@ class RcxRemoteTest {
         Infrared.replies.addAll(RcxFrames.frame(0xD2, 0x01, 0x80));
 
         // When
-        int buttons = RcxRemote.buttons();
+        int buttons = remote.buttons();
 
         // Then
         assertThat(buttons).isEqualTo(0x0180);
@@ -64,11 +67,11 @@ class RcxRemoteTest {
         // Given
         Infrared.receivingFrame = true;
         Infrared.replies.addAll(RcxFrames.frame(0xD2, 0x01, 0x80));
-        RcxRemote.buttons();
+        remote.buttons();
         Delay.millis(400);
 
         // When
-        int buttons = RcxRemote.buttons();
+        int buttons = remote.buttons();
 
         // Then
         assertThat(buttons).as("released after the hold time").isZero();
@@ -82,7 +85,7 @@ class RcxRemoteTest {
         Infrared.replies.addAll(RcxFrames.frame(0xF7, 0x2A));
 
         // When
-        int message = RcxRemote.message();
+        int message = remote.message();
 
         // Then
         assertThat(message).isEqualTo(0x2A);
@@ -94,10 +97,10 @@ class RcxRemoteTest {
         // Given
         Infrared.receivingFrame = true;
         Infrared.replies.addAll(RcxFrames.frame(0xF7, 0x2A));
-        RcxRemote.message();
+        remote.message();
 
         // When
-        int message = RcxRemote.message();
+        int message = remote.message();
 
         // Then
         assertThat(message).as("no new message").isEqualTo(-1);
@@ -111,8 +114,8 @@ class RcxRemoteTest {
         Infrared.replies.addAll(RcxFrames.frame(0x11, 0x01));
 
         // When
-        int buttons = RcxRemote.buttons();
-        int message = RcxRemote.message();
+        int buttons = remote.buttons();
+        int message = remote.message();
 
         // Then
         assertThat(new int[] {buttons, message}).containsExactly(0, -1);

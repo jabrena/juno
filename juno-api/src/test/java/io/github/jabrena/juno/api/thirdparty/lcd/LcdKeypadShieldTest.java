@@ -8,12 +8,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @DisplayName("LCD keypad shield")
 class LcdKeypadShieldTest {
@@ -22,10 +27,15 @@ class LcdKeypadShieldTest {
     private static final int PIN_BACKLIGHT = 10;
     private static final int PIN_BUTTONS = 14;
 
+    private Gpio pins;
+    private LcdKeypadShield lcd;
+
     @BeforeEach
     void startWithAnIdleShield() {
         Wire.resetBoard();
-        Gpio.analogValues[PIN_BUTTONS] = 1023;
+        pins = mock(Gpio.class);
+        lcd = new LcdKeypadShield(pins);
+        when(pins.analogRead(PIN_BUTTONS)).thenReturn(1023);
     }
 
     static Stream<Arguments> buttonLadder() {
@@ -42,7 +52,7 @@ class LcdKeypadShieldTest {
     @DisplayName("Begin runs the four-bit startup and then configures the display")
     void shouldRunTheFourBitStartupThenConfigureTheDisplay() {
         // When
-        LcdKeypadShield.begin();
+        lcd.begin();
 
         // Then
         assertThat(emitted()).containsSubsequence("3@0", "3@0", "3@0", "2@0",
@@ -53,7 +63,7 @@ class LcdKeypadShieldTest {
     @DisplayName("Set cursor adds the row offset to the DDRAM address")
     void shouldAddTheRowOffsetToTheDdramAddressWhenSettingTheCursor() {
         // When
-        LcdKeypadShield.setCursor(3, 1);
+        lcd.setCursor(3, 1);
 
         // Then
         assertThat(emitted()).containsExactly("C@0", "3@0");
@@ -63,7 +73,7 @@ class LcdKeypadShieldTest {
     @DisplayName("Home sends the home command")
     void shouldSendTheHomeCommand() {
         // When
-        LcdKeypadShield.home();
+        lcd.home();
 
         // Then
         assertThat(emitted()).containsExactly("0@0", "2@0");
@@ -73,7 +83,7 @@ class LcdKeypadShieldTest {
     @DisplayName("Clear sends the clear command")
     void shouldSendTheClearCommand() {
         // When
-        LcdKeypadShield.clear();
+        lcd.clear();
 
         // Then
         assertThat(emitted()).containsExactly("0@0", "1@0");
@@ -83,7 +93,7 @@ class LcdKeypadShieldTest {
     @DisplayName("Print sends each character as data with RS high")
     void shouldSendEachCharacterAsDataWithRsHigh() {
         // When
-        LcdKeypadShield.print("A");
+        lcd.print("A");
 
         // Then
         assertThat(emitted()).containsExactly("4@1", "1@1");
@@ -93,7 +103,7 @@ class LcdKeypadShieldTest {
     @DisplayName("Print of an integer sends its digits")
     void shouldSendTheDigitsOfAnInteger() {
         // When
-        LcdKeypadShield.print(7);
+        lcd.print(7);
 
         // Then
         assertThat(emitted()).containsExactly("3@1", "7@1");
@@ -103,7 +113,7 @@ class LcdKeypadShieldTest {
     @DisplayName("Print of a buffer sends its characters")
     void shouldSendTheCharactersOfABuffer() {
         // When
-        LcdKeypadShield.print(new byte[] {'H', 'i'}, 2);
+        lcd.print(new byte[] {'H', 'i'}, 2);
 
         // Then
         assertThat(emitted()).containsExactly("4@1", "8@1", "6@1", "9@1");
@@ -113,20 +123,20 @@ class LcdKeypadShieldTest {
     @DisplayName("Backlight drives the pin as an input when switched on")
     void shouldDriveTheBacklightPinAsInputWhenSwitchedOn() {
         // When
-        LcdKeypadShield.backlight(true);
+        lcd.backlight(true);
 
         // Then
-        assertThat(Gpio.lastPinMode[PIN_BACKLIGHT]).isEqualTo(Gpio.INPUT);
+        verify(pins).pinMode(PIN_BACKLIGHT, Gpio.getInput());
     }
 
     @Test
     @DisplayName("Backlight drives the pin as an output when switched off")
     void shouldDriveTheBacklightPinAsOutputWhenSwitchedOff() {
         // When
-        LcdKeypadShield.backlight(false);
+        lcd.backlight(false);
 
         // Then
-        assertThat(Gpio.lastPinMode[PIN_BACKLIGHT]).isEqualTo(Gpio.OUTPUT);
+        verify(pins).pinMode(PIN_BACKLIGHT, Gpio.getOutput());
     }
 
     @ParameterizedTest(name = "reading {0} maps to key {1}")
@@ -134,10 +144,10 @@ class LcdKeypadShieldTest {
     @DisplayName("Read button maps the analog ladder to its key")
     void shouldMapTheAnalogLadderToItsKey(int reading, int key) {
         // Given
-        Gpio.analogValues[PIN_BUTTONS] = reading;
+        when(pins.analogRead(PIN_BUTTONS)).thenReturn(reading);
 
         // When
-        int button = LcdKeypadShield.readButton();
+        int button = lcd.readButton();
 
         // Then
         assertThat(button).as("reading %d", reading).isEqualTo(key);
@@ -147,13 +157,16 @@ class LcdKeypadShieldTest {
      * What the controller latched: each nibble on the data lines when the enable line fell, as {@code <nibble>@<rs>}
      * with the nibble in hex.
      */
-    private static List<String> emitted() {
+    private List<String> emitted() {
+        ArgumentCaptor<Integer> pinsWritten = ArgumentCaptor.forClass(Integer.class);
+        ArgumentCaptor<Boolean> levels = ArgumentCaptor.forClass(Boolean.class);
+        verify(pins, atLeast(0)).digitalWrite(pinsWritten.capture(), levels.capture());
         List<String> latched = new ArrayList<>();
         int[] data = new int[4];
         int rs = 0;
-        for (int[] write : Gpio.writes) {
-            int pin = write[0];
-            int value = write[1];
+        for (int write = 0; write < pinsWritten.getAllValues().size(); write++) {
+            int pin = pinsWritten.getAllValues().get(write);
+            int value = levels.getAllValues().get(write) ? 1 : 0;
             if (pin >= 4 && pin <= 7) {
                 data[pin - 4] = value;
             } else if (pin == PIN_RS) {

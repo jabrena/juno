@@ -1,5 +1,6 @@
 package io.github.jabrena.juno;
 
+
 import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,8 +48,9 @@ class MainTest {
                 "--board", Board.UNO_R4_WIFI.id()});
 
         // Then
+        // main, Gpio's two constructors and pinMode, and the Gpio and NativeGpio static initializers.
         assertThat(captured.toString(StandardCharsets.UTF_8))
-                .contains("Entry point: demo.Fixture.main", "Reachable methods: 1", "Intrinsics used: [GPIO_PIN_MODE]")
+                .contains("Entry point: demo.Fixture.main", "Reachable methods: 6", "Intrinsics used: [GPIO_PIN_MODE]")
                 .as("no --ir flag, so no IR dump")
                 .doesNotContain("Juno IR:");
     }
@@ -112,7 +114,8 @@ class MainTest {
         // Then
         assertThat(captured.toString(StandardCharsets.UTF_8)).contains(
                 "Compilation metrics:",
-                "Generated methods: 1",
+                // main and the Gpio and NativeGpio static initializers; the constructors and pinMode are inlined.
+                "Generated methods: 2",
                 "Loads / stores:",
                 "Maximum fixed frame:",
                 "use the final ELF for flash/RAM size and target hardware for cycle counts");
@@ -168,10 +171,11 @@ class MainTest {
     private void compileFixture() throws Exception {
         String source = """
                 package demo;
+                import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 public final class Fixture {
                     public static void main(String[] args) {
-                        Gpio.pinMode(13, Gpio.OUTPUT);
+                        MCU.getGpio().pinMode(13, Gpio.getOutput());
                     }
                 }
                 """;

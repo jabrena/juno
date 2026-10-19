@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.time.Clock;
 
 /**
@@ -22,7 +23,18 @@ import io.github.jabrena.juno.api.time.Clock;
  * {@code Arduino_RouterBridge}, which needs {@code arduino-router} 0.7.0 or newer on the board.
  */
 public final class PoweredUpHubRemote {
-    private PoweredUpHubRemote() {
+    private final PoweredUpPort hubPort;
+    private final Clock clock;
+
+    /** A hub controller on the board's own Bluetooth stack and timer. Create it once, at startup. */
+    public PoweredUpHubRemote() {
+        this(NativePoweredUpPort.INSTANCE, MCU.getClock());
+    }
+
+    /** A hub controller that drives {@code port} and times its waits on {@code clock}: fakes in a unit test. */
+    public PoweredUpHubRemote(PoweredUpPort port, Clock clock) {
+        this.hubPort = port;
+        this.clock = clock;
     }
 
     public static final int PORT_A = 0;
@@ -82,22 +94,32 @@ public final class PoweredUpHubRemote {
      * connected afterwards. Waits at most {@code timeoutMillis}, or indefinitely when it is zero or
      * negative. Returns {@code true} immediately if a hub is already connected.
      */
-    public static native boolean connect(int timeoutMillis);
+    public boolean connect(int timeoutMillis) {
+        return hubPort.connect(timeoutMillis);
+    }
 
     /** Whether a hub is currently connected; turns {@code false} once the hub switches off or goes out of range. */
-    public static native boolean isConnected();
+    public boolean isConnected() {
+        return hubPort.isConnected();
+    }
 
     /** The connected hub's {@code TYPE_*} system type id, or {@link #TYPE_UNKNOWN} before {@link #connect}. */
-    public static native int hubType();
+    public int hubType() {
+        return hubPort.hubType();
+    }
 
     /**
      * Drives the motor on {@code port} at {@code powerPercent} of full power, {@code -100..100}
      * (negative runs backwards, {@code 0} lets it coast); out-of-range values are clamped.
      */
-    public static native void setMotorPower(int port, int powerPercent);
+    public void setMotorPower(int port, int powerPercent) {
+        hubPort.setMotorPower(port, powerPercent);
+    }
 
     /** Actively brakes the motor on {@code port}, unlike {@code setMotorPower(port, 0)}, which lets it coast. */
-    public static native void brakeMotor(int port);
+    public void brakeMotor(int port) {
+        hubPort.brakeMotor(port);
+    }
 
     /**
      * Holds the motor on {@code port} where it is, resisting being turned: the third way to stop, next to
@@ -106,10 +128,14 @@ public final class PoweredUpHubRemote {
      * follows the protocol documentation; a first hands-on try suggests that it holds, but it has not been
      * checked systematically. Any later power command releases the hold.
      */
-    public static native void holdMotor(int port);
+    public void holdMotor(int port) {
+        hubPort.holdMotor(port);
+    }
 
     /** Sets the hub's status LED to one of the {@code COLOR_*} values. */
-    public static native void setLedColor(int color);
+    public void setLedColor(int color) {
+        hubPort.setLedColor(color);
+    }
 
     /**
      * Asks the hub to report every change of {@code mode} of the motor or sensor on {@code port},
@@ -117,7 +143,9 @@ public final class PoweredUpHubRemote {
      * constants cover common devices. Up to eight ports report at a time, and a new
      * {@link #connect} starts with none, so enable them again after reconnecting.
      */
-    public static native void enableSensor(int port, int mode);
+    public void enableSensor(int port, int mode) {
+        hubPort.enableSensor(port, mode);
+    }
 
     /**
      * The latest value reported by the port {@link #enableSensor} subscribed to, or {@code 0}
@@ -126,7 +154,9 @@ public final class PoweredUpHubRemote {
      * regularly: values are received while it (or another hub call) runs, not during
      * {@code Delay.millis}.
      */
-    public static native int readSensor(int port);
+    public int readSensor(int port) {
+        return hubPort.readSensor(port);
+    }
 
     /**
      * The hub's battery level as a percentage, {@code 0..100}, or {@code -1} before the hub has
@@ -134,22 +164,32 @@ public final class PoweredUpHubRemote {
      * {@link #connect} subscribes to the hub's properties and waits up to 300 ms for the answers,
      * later calls return the latest update without blocking.
      */
-    public static native int batteryPercent();
+    public int batteryPercent() {
+        return hubPort.batteryPercent();
+    }
 
     /** Whether the hub's green button is held down right now. Subscribed on the first property call. */
-    public static native boolean buttonPressed();
+    public boolean buttonPressed() {
+        return hubPort.buttonPressed();
+    }
 
     /** The Bluetooth signal strength the hub reports for this link in dBm (a negative number), or {@code 0} if unknown. */
-    public static native int rssi();
+    public int rssi() {
+        return hubPort.rssi();
+    }
 
     /**
      * The hub's firmware version as the protocol's packed number, or {@code -1} if unknown; take it apart
      * with {@link #versionMajor}, {@link #versionMinor}, {@link #versionBugfix} and {@link #versionBuild}.
      */
-    public static native int firmwareVersion();
+    public int firmwareVersion() {
+        return hubPort.firmwareVersion();
+    }
 
     /** The hub's hardware version in the same packed form as {@link #firmwareVersion}, or {@code -1} if unknown. */
-    public static native int hardwareVersion();
+    public int hardwareVersion() {
+        return hubPort.hardwareVersion();
+    }
 
     /** I/O device types {@link #portDevice} can return, from the LEGO Wireless Protocol. */
     public static final int DEVICE_NONE = 0;
@@ -171,33 +211,37 @@ public final class PoweredUpHubRemote {
      * The hub announces its ports right after {@link #connect} and again when something is plugged or
      * unplugged; the announcements are received while a hub call runs, so call this regularly.
      */
-    public static native int portDevice(int port);
+    public int portDevice(int port) {
+        return hubPort.portDevice(port);
+    }
 
     /**
      * Copies the hub's advertised name (up to 20 characters, ASCII bytes, no terminator) into
      * {@code buffer}, at most {@code capacity} bytes, and returns how many were copied, {@code 0} if
      * the hub has not reported its name.
      */
-    public static native int hubName(byte[] buffer, int capacity);
+    public int hubName(byte[] buffer, int capacity) {
+        return hubPort.hubName(buffer, capacity);
+    }
 
     /**
      * The parts of a packed {@link #firmwareVersion} or {@link #hardwareVersion}: 4 bits of major
      * version, 4 of minor, two binary-coded-decimal digits of bug-fix number, and 16 bits of build.
      */
-    public static int versionMajor(int version) {
+    public int versionMajor(int version) {
         return (version >> 28) & 0xF;
     }
 
-    public static int versionMinor(int version) {
+    public int versionMinor(int version) {
         return (version >> 24) & 0xF;
     }
 
-    public static int versionBugfix(int version) {
+    public int versionBugfix(int version) {
         int bcd = (version >> 16) & 0xFF;
         return (bcd >> 4) * 10 + (bcd & 0xF);
     }
 
-    public static int versionBuild(int version) {
+    public int versionBuild(int version) {
         return version & 0xFFFF;
     }
 
@@ -222,19 +266,27 @@ public final class PoweredUpHubRemote {
      * {@code index} 0, 1 and 2. Returns {@code 0} before the first report or when the report is too short
      * for that index; see {@link #sensorReportSize}.
      */
-    public static native int readSensorValue(int port, int index, int bytesPerValue);
+    public int readSensorValue(int port, int index, int bytesPerValue) {
+        return hubPort.readSensorValue(port, index, bytesPerValue);
+    }
 
     /**
      * How many reports the hub has sent for {@code port} since {@link #enableSensor} subscribed to it,
      * counting repeats of an unchanged value, so a program can measure how often the hub reports.
      */
-    public static native int sensorReportCount(int port);
+    public int sensorReportCount(int port) {
+        return hubPort.sensorReportCount(port);
+    }
 
     /** How many value bytes the latest report of {@code port} carried (at most 16), {@code 0} before the first. */
-    public static native int sensorReportSize(int port);
+    public int sensorReportSize(int port) {
+        return hubPort.sensorReportSize(port);
+    }
 
     /** Sets the hub's status LED to any colour, each channel {@code 0..255}; unlike {@link #setLedColor}'s 11 indexes. */
-    public static native void setLedRgb(int red, int green, int blue);
+    public void setLedRgb(int red, int green, int blue) {
+        hubPort.setLedRgb(red, green, blue);
+    }
 
     /**
      * Pairs the motors on ports {@code portA} and {@code portB} into one virtual port, so a single
@@ -244,20 +296,28 @@ public final class PoweredUpHubRemote {
      * {@link #connect} starts with none. The message formats follow the protocol documentation and have
      * not been verified on a hub.
      */
-    public static native int linkMotors(int portA, int portB);
+    public int linkMotors(int portA, int portB) {
+        return hubPort.linkMotors(portA, portB);
+    }
 
     /** Takes the virtual port {@code virtualPort} apart, so the two motors are driven separately again. */
-    public static native void unlinkMotors(int virtualPort);
+    public void unlinkMotors(int virtualPort) {
+        hubPort.unlinkMotors(virtualPort);
+    }
 
     /**
      * Drives the two motors of a virtual port in one message: {@code first} for the motor on the first
      * port given to {@link #linkMotors} and {@code second} for the other, each {@code -100..100}
      * (clamped), negative for backwards, {@code 0} to coast. Mount mirrored motors with opposite signs.
      */
-    public static native void setLinkedMotorPower(int virtualPort, int first, int second);
+    public void setLinkedMotorPower(int virtualPort, int first, int second) {
+        hubPort.setLinkedMotorPower(virtualPort, first, second);
+    }
 
     /** Actively brakes both motors of a virtual port. */
-    public static native void brakeLinkedMotors(int virtualPort);
+    public void brakeLinkedMotors(int virtualPort) {
+        hubPort.brakeLinkedMotors(virtualPort);
+    }
 
     /** The Technic Hub's (88012) built-in current and voltage sensors, on the same footing as the motion sensors above. */
     public static final int PORT_TECHNIC_CURRENT = 0x3B;
@@ -275,7 +335,7 @@ public final class PoweredUpHubRemote {
      * (a raw 0 to 4095 reading spanning 0 to 9.615 V) comes from the community protocol documentation
      * and is not verified.
      */
-    public static int batteryMillivolts() {
+    public int batteryMillivolts() {
         int raw = internalReading(PORT_TECHNIC_VOLTAGE);
         return raw < 0 ? -1 : raw * VOLTAGE_FULL_SCALE_MILLIVOLTS / RAW_FULL_SCALE;
     }
@@ -285,17 +345,17 @@ public final class PoweredUpHubRemote {
      * the hub has not answered; subscribed on the first call like {@link #batteryMillivolts}. Its scale (a
      * raw 0 to 4095 reading spanning 0 to 4175 mA) is likewise unverified.
      */
-    public static int currentMilliamps() {
+    public int currentMilliamps() {
         int raw = internalReading(PORT_TECHNIC_CURRENT);
         return raw < 0 ? -1 : raw * CURRENT_FULL_SCALE_MILLIAMPS / RAW_FULL_SCALE;
     }
 
     /** Subscribes to an internal sensor if it has not reported yet, waits briefly for the report, and returns its raw value or -1. */
-    private static int internalReading(int port) {
+    private int internalReading(int port) {
         if (sensorReportSize(port) == 0) {
             enableSensor(port, MODE_IMU_VALUES);
-            int started = Clock.millis();
-            while (sensorReportSize(port) == 0 && Clock.millis() - started < INTERNAL_SENSOR_WAIT_MILLIS) {
+            int started = clock.millis();
+            while (sensorReportSize(port) == 0 && clock.millis() - started < INTERNAL_SENSOR_WAIT_MILLIS) {
                 readSensor(port);
             }
         }
@@ -303,8 +363,12 @@ public final class PoweredUpHubRemote {
     }
 
     /** Closes the BLE connection, leaving the hub on and advertising again. */
-    public static native void disconnect();
+    public void disconnect() {
+        hubPort.disconnect();
+    }
 
     /** Asks the hub to switch itself off, which also ends the connection. */
-    public static native void switchOff();
+    public void switchOff() {
+        hubPort.switchOff();
+    }
 }

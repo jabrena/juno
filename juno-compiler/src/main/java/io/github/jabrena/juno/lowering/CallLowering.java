@@ -60,7 +60,9 @@ final class CallLowering {
         if (intrinsic.isPresent() && interfaceTargets.isEmpty() && HttpUrlCall.handles(intrinsic.get())) {
             httpUrlCall.emit(instruction, called, intrinsic.get(), arguments, result);
         } else if (intrinsic.isPresent() && interfaceTargets.isEmpty()) {
-            context.emit(new IrInstruction.IntrinsicCall(result, intrinsic.get(), receiver, arguments.values(),
+            // A port operation never reads its stateless port, so the loads that produced it can become dead.
+            Optional<Value> used = intrinsic.get().ignoresReceiver() ? Optional.empty() : receiver;
+            context.emit(new IrInstruction.IntrinsicCall(result, intrinsic.get(), used, arguments.values(),
                     arguments.literals()));
         } else {
             List<Value> callArguments = new ArrayList<>();

@@ -2,7 +2,22 @@ package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.classfile.ConstantPool;
 
-import static io.github.jabrena.juno.bytecode.Opcodes.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.ACONST_NULL;
+import static io.github.jabrena.juno.bytecode.Opcodes.BIPUSH;
+import static io.github.jabrena.juno.bytecode.Opcodes.DCONST_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.DCONST_1;
+import static io.github.jabrena.juno.bytecode.Opcodes.FCONST_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.FCONST_2;
+import static io.github.jabrena.juno.bytecode.Opcodes.ICONST_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.ICONST_5;
+import static io.github.jabrena.juno.bytecode.Opcodes.ICONST_M1;
+import static io.github.jabrena.juno.bytecode.Opcodes.LCONST_0;
+import static io.github.jabrena.juno.bytecode.Opcodes.LCONST_1;
+import static io.github.jabrena.juno.bytecode.Opcodes.LDC;
+import static io.github.jabrena.juno.bytecode.Opcodes.LDC2_W;
+import static io.github.jabrena.juno.bytecode.Opcodes.LDC_W;
+import static io.github.jabrena.juno.bytecode.Opcodes.NOP;
+import static io.github.jabrena.juno.bytecode.Opcodes.SIPUSH;
 
 /** Constant pushes: {@code aconst_null}, {@code iconst_*}..{@code dconst_*}, {@code bipush}/{@code sipush}, {@code ldc*}. */
 final class ConstantLowering implements OpcodeGroup {

@@ -14,14 +14,19 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.INT_ARRAY;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DisplayName("ELEGOO TFT touch shield")
 class TftTouchShieldTest {
+    private Gpio pins;
 
     @BeforeEach
     void initialiseThePanelInPortrait() {
         Wire.resetBoard();
-        Gpio.analogSequence = null;
+        pins = mock(Gpio.class);
+        TftPins.use(pins);
         ParallelBus.reset();
         TftTouchShield.begin();
         ParallelBus.bytes.clear();
@@ -345,8 +350,8 @@ class TftTouchShieldTest {
     @DisplayName("Read touch reports the raw coordinates and pressure")
     void shouldReportTheRawTouchCoordinatesAndPressure() {
         // Given
-        Gpio.analogValues[16] = 523;
-        Gpio.analogValues[17] = 600;
+        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
+        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
 
         // When
         boolean touched = TftTouchShield.readTouch();
@@ -361,8 +366,8 @@ class TftTouchShieldTest {
     @DisplayName("Read touch maps the touch to screen coordinates")
     void shouldMapTheTouchToScreenCoordinates() {
         // Given
-        Gpio.analogValues[16] = 523;
-        Gpio.analogValues[17] = 600;
+        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
+        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
 
         // When
         boolean touched = TftTouchShield.readTouch();
@@ -376,8 +381,8 @@ class TftTouchShieldTest {
     @DisplayName("Read touch reports no touch without pressure")
     void shouldReportNoTouchWithoutPressure() {
         // Given
-        Gpio.analogValues[16] = 0;
-        Gpio.analogValues[17] = 0;
+        when(pins.analogRead(Gpio.getA2())).thenReturn(0);
+        when(pins.analogRead(Gpio.getA3())).thenReturn(0);
 
         // When & Then
         assertThat(TftTouchShield.readTouch()).isFalse();
@@ -388,8 +393,8 @@ class TftTouchShieldTest {
     @DisplayName("Read touch follows the rotation")
     void shouldFollowTheRotationWhenReadingATouch(int rotation, int x, int y) {
         // Given
-        Gpio.analogValues[16] = 523;
-        Gpio.analogValues[17] = 600;
+        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
+        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
         TftTouchShield.setRotation(rotation);
 
         // When
@@ -404,8 +409,8 @@ class TftTouchShieldTest {
     @DisplayName("Calibration changes the raw-to-screen mapping")
     void shouldChangeTheRawToScreenMappingWhenCalibrated() {
         // Given
-        Gpio.analogValues[16] = 523;
-        Gpio.analogValues[17] = 600;
+        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
+        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
         TftTouchShield.calibrateTouch(0, 1000, 1000, 0);
 
         // When
@@ -445,7 +450,7 @@ class TftTouchShieldTest {
     void shouldNotAcceptATouchThatMovesBetweenSamples() {
         // Given
         // Pressure, then X and Y, then X and Y again, then pressure again: the second X sample moved too far.
-        Gpio.analogSequence = new int[] {100, 600, 513, 100, 300, 100, 100, 600};
+        when(pins.analogRead(anyInt())).thenReturn(100, 600, 513, 100, 300, 100, 100, 600);
 
         // When & Then
         assertThat(TftTouchShield.readTouch()).isFalse();
@@ -456,7 +461,7 @@ class TftTouchShieldTest {
     void shouldNotAcceptATouchWhoseConfirmingPressureIsOutOfRange() {
         // Given
         // The first pressure is in range; the confirming pressure afterwards is not.
-        Gpio.analogSequence = new int[] {100, 600, 513, 100, 513, 100, 100, 0};
+        when(pins.analogRead(anyInt())).thenReturn(100, 600, 513, 100, 513, 100, 100, 0);
 
         // When & Then
         assertThat(TftTouchShield.readTouch()).isFalse();
@@ -466,7 +471,7 @@ class TftTouchShieldTest {
     @DisplayName("A rejected touch reports zero pressure")
     void shouldReportZeroPressureForARejectedTouch() {
         // Given
-        Gpio.analogSequence = new int[] {100, 600, 513, 100, 513, 100, 100, 0};
+        when(pins.analogRead(anyInt())).thenReturn(100, 600, 513, 100, 513, 100, 100, 0);
         TftTouchShield.readTouch();
 
         // When & Then

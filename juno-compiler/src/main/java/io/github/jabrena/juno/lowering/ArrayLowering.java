@@ -10,7 +10,12 @@ import io.github.jabrena.juno.ir.Value;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.jabrena.juno.bytecode.Opcodes.*;
+import static io.github.jabrena.juno.bytecode.Opcodes.ANEWARRAY;
+import static io.github.jabrena.juno.bytecode.Opcodes.ARRAYLENGTH;
+import static io.github.jabrena.juno.bytecode.Opcodes.IALOAD;
+import static io.github.jabrena.juno.bytecode.Opcodes.IASTORE;
+import static io.github.jabrena.juno.bytecode.Opcodes.MULTIANEWARRAY;
+import static io.github.jabrena.juno.bytecode.Opcodes.NEWARRAY;
 
 /**
  * Array element loads and stores, array creation and {@code arraylength}. Every array is created with a

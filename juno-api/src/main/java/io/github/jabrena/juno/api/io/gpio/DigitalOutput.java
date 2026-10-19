@@ -1,20 +1,23 @@
 package io.github.jabrena.juno.api.io.gpio;
 
+import io.github.jabrena.juno.api.io.gpio.internal.NativeDigitalOutput;
 /**
  * A zero-cost GPIO handle. Juno represents instances as their integer pin number, so no heap
- * allocation or object header remains in the generated program.
+ * allocation or object header remains in the generated program. The operations are GPIO intrinsics
+ * the compiler lowers to the Arduino core calls, keyed on this interface; {@link #of} is the
+ * board's {@link NativeDigitalOutput}, which hands out the handle.
  */
-public final class DigitalOutput {
-    private DigitalOutput() {
+public interface DigitalOutput {
+
+    static DigitalOutput of(int pin) {
+        return NativeDigitalOutput.of(pin);
     }
 
-    public static native DigitalOutput of(int pin);
+    void high();
 
-    public native void high();
+    void low();
 
-    public native void low();
+    void toggle();
 
-    public native void toggle();
-
-    public native boolean isHigh();
+    boolean isHigh();
 }

@@ -1,34 +1,59 @@
 package io.github.jabrena.juno.api.thirdparty.imu;
 
+import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.io.i2c.I2c;
 import io.github.jabrena.juno.api.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 
 @DisplayName("BNO055 nine-axis motion shield")
 class NineAxisMotionShieldTest {
-    private static final int DEVICE = NineAxisMotionShield.ADDRESS_DEFAULT;
+    private Gpio pins;
+    private NineAxisMotionShield imu;
+    private int device;
 
     @BeforeEach
     void startWithAnEmptyBus() {
         Wire.resetBoard();
         I2c.reset();
+        pins = mock(Gpio.class);
+        imu = new NineAxisMotionShield(pins);
+        device = imu.getAddressDefault();
+    }
+
+    @Test
+    @DisplayName("Begin pulses D7 low then high to release the BNO055 from reset")
+    void shouldPulseTheResetLineBeforeTalkingToTheSensor() {
+        // Given
+        I2c.device(device, 0x00, 0xA0);
+
+        // When
+        imu.begin();
+
+        // Then
+        InOrder order = inOrder(pins);
+        order.verify(pins).pinMode(Gpio.getD7(), Gpio.getOutput());
+        order.verify(pins).digitalWrite(Gpio.getD7(), false);
+        order.verify(pins).digitalWrite(Gpio.getD7(), true);
     }
 
     @Test
     @DisplayName("Begin reports success when the chip ID matches")
     void shouldReportSuccessWhenTheChipIdMatches() {
         // Given
-        I2c.device(DEVICE, 0x00, 0xA0);
+        I2c.device(device, 0x00, 0xA0);
 
         // When
-        boolean begun = NineAxisMotionShield.begin();
+        boolean begun = imu.begin();
 
         // Then
         assertThat(begun).isTrue();
@@ -38,27 +63,27 @@ class NineAxisMotionShieldTest {
     @DisplayName("Begin resets the sensor and switches it to Android IMU mode")
     void shouldResetTheSensorAndSwitchItToAndroidImuMode() {
         // Given
-        I2c.device(DEVICE, 0x00, 0xA0);
+        I2c.device(device, 0x00, 0xA0);
 
         // When
-        NineAxisMotionShield.begin();
+        imu.begin();
 
         // Then
         assertThat(flat(I2c.writes)).containsSubsequence(
-                DEVICE, 0x3D, 0x00,
-                DEVICE, 0x3B, 0x80,
-                DEVICE, 0x3E, 0x00,
-                DEVICE, 0x3D, 0x08);
+                device, 0x3D, 0x00,
+                device, 0x3B, 0x80,
+                device, 0x3E, 0x00,
+                device, 0x3D, 0x08);
     }
 
     @Test
     @DisplayName("Begin reports failure when the chip ID is wrong")
     void shouldReportFailureWhenTheChipIdIsWrong() {
         // Given
-        I2c.device(DEVICE, 0x00, 0x32);
+        I2c.device(device, 0x00, 0x32);
 
         // When
-        boolean begun = NineAxisMotionShield.begin();
+        boolean begun = imu.begin();
 
         // Then
         assertThat(begun).isFalse();
@@ -68,10 +93,10 @@ class NineAxisMotionShieldTest {
     @DisplayName("No mode is written after a failed identity check")
     void shouldWriteNoModeAfterAFailedIdentityCheck() {
         // Given
-        I2c.device(DEVICE, 0x00, 0x32);
+        I2c.device(device, 0x00, 0x32);
 
         // When
-        NineAxisMotionShield.begin();
+        imu.begin();
 
         // Then
         assertThat(I2c.writes).as("no mode is written after a failed identity check").isEmpty();
@@ -81,10 +106,10 @@ class NineAxisMotionShieldTest {
     @DisplayName("A full turn of heading wraps to zero degrees")
     void shouldWrapAFullTurnOfHeadingToZeroDegrees() {
         // Given
-        I2c.device(DEVICE, 0x1A, 360 * 16 + 5);
+        I2c.device(device, 0x1A, 360 * 16 + 5);
 
         // When
-        int[] heading = {NineAxisMotionShield.headingRaw(), NineAxisMotionShield.headingDegrees()};
+        int[] heading = {imu.headingRaw(), imu.headingDegrees()};
 
         // Then
         assertThat(heading).containsExactly(5, 0);
@@ -94,10 +119,10 @@ class NineAxisMotionShieldTest {
     @DisplayName("Heading converts to degrees")
     void shouldConvertHeadingToDegrees() {
         // Given
-        I2c.device(DEVICE, 0x1A, 90 * 16);
+        I2c.device(device, 0x1A, 90 * 16);
 
         // When
-        int degrees = NineAxisMotionShield.headingDegrees();
+        int degrees = imu.headingDegrees();
 
         // Then
         assertThat(degrees).isEqualTo(90);
@@ -108,9 +133,9 @@ class NineAxisMotionShieldTest {
     void shouldReadAMissingHeadingAsMinusOneWithNoTurn() {
         // When
         int[] values = {
-                NineAxisMotionShield.headingRaw(),
-                NineAxisMotionShield.headingDegrees(),
-                NineAxisMotionShield.turnedSince(90)};
+                imu.headingRaw(),
+                imu.headingDegrees(),
+                imu.turnedSince(90)};
 
         // Then
         assertThat(values).containsExactly(-1, -1, 0);
@@ -120,10 +145,10 @@ class NineAxisMotionShieldTest {
     @DisplayName("Pitch is a signed sixteen-bit value")
     void shouldReadPitchAsASignedSixteenBitValue() {
         // Given
-        I2c.device(DEVICE, 0x1E, 0xFFFF);
+        I2c.device(device, 0x1E, 0xFFFF);
 
         // When
-        int pitch = NineAxisMotionShield.pitchRaw();
+        int pitch = imu.pitchRaw();
 
         // Then
         assertThat(pitch).isEqualTo(-1);
@@ -133,10 +158,10 @@ class NineAxisMotionShieldTest {
     @DisplayName("Gyro X reads a positive sixteen-bit value")
     void shouldReadGyroXAsAPositiveSixteenBitValue() {
         // Given
-        I2c.device(DEVICE, 0x14, 0x0100);
+        I2c.device(device, 0x14, 0x0100);
 
         // When
-        int gyro = NineAxisMotionShield.gyroXRaw();
+        int gyro = imu.gyroXRaw();
 
         // Then
         assertThat(gyro).isEqualTo(256);
@@ -146,10 +171,10 @@ class NineAxisMotionShieldTest {
     @DisplayName("Gyro X reads a negative value from the sign bit")
     void shouldReadGyroXAsANegativeValueFromTheSignBit() {
         // Given
-        I2c.device(DEVICE, 0x14, 0x8000);
+        I2c.device(device, 0x14, 0x8000);
 
         // When
-        int gyro = NineAxisMotionShield.gyroXRaw();
+        int gyro = imu.gyroXRaw();
 
         // Then
         assertThat(gyro).isEqualTo(-32768);
@@ -159,7 +184,7 @@ class NineAxisMotionShieldTest {
     @DisplayName("A missing pitch reads as the minimum value")
     void shouldReadAMissingPitchAsTheMinimumValue() {
         // When
-        int pitch = NineAxisMotionShield.pitchRaw();
+        int pitch = imu.pitchRaw();
 
         // Then
         assertThat(pitch).isEqualTo(Short.MIN_VALUE);
@@ -169,10 +194,10 @@ class NineAxisMotionShieldTest {
     @DisplayName("Turn takes the shortest way around the compass")
     void shouldTakeTheShortestWayAroundTheCompass() {
         // Given
-        I2c.device(DEVICE, 0x1A, 10 * 16);
+        I2c.device(device, 0x1A, 10 * 16);
 
         // When
-        int turned = NineAxisMotionShield.turnedSince(350);
+        int turned = imu.turnedSince(350);
 
         // Then
         assertThat(turned).isEqualTo(20);
@@ -182,10 +207,10 @@ class NineAxisMotionShieldTest {
     @DisplayName("No turn is reported without a start heading")
     void shouldReportNoTurnWithoutAStartHeading() {
         // Given
-        I2c.device(DEVICE, 0x1A, 10 * 16);
+        I2c.device(device, 0x1A, 10 * 16);
 
         // When
-        int turned = NineAxisMotionShield.turnedSince(-1);
+        int turned = imu.turnedSince(-1);
 
         // Then
         assertThat(turned).as("no start heading").isZero();
@@ -195,10 +220,10 @@ class NineAxisMotionShieldTest {
     @DisplayName("Calibration reads the status register")
     void shouldReadTheCalibrationStatusRegister() {
         // Given
-        I2c.device(DEVICE, 0x35, 0xFF);
+        I2c.device(device, 0x35, 0xFF);
 
         // When
-        int calibration = NineAxisMotionShield.calibration();
+        int calibration = imu.calibration();
 
         // Then
         assertThat(calibration).isEqualTo(255);

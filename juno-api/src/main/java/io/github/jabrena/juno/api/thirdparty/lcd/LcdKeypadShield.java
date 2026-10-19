@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lcd;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.util.Delay;
 
@@ -66,20 +67,29 @@ public final class LcdKeypadShield {
     private static final int NIBBLE_SETTLE_MICROS = 200;
     private static final int COMMAND_SETTLE_MICROS = 200;
 
-    private LcdKeypadShield() {
+    private final Gpio gpio;
+
+    /** A shield on the board's own pins. Create it once, at startup, and share it. */
+    public LcdKeypadShield() {
+        this(MCU.getGpio());
+    }
+
+    /** A shield driven through {@code gpio}: a mocked one in a unit test. */
+    public LcdKeypadShield(Gpio gpio) {
+        this.gpio = gpio;
     }
 
     /** Configures the shield's pins, runs the HD44780 4-bit init sequence, and turns the backlight on. */
-    public static void begin() {
-        Gpio.pinMode(PIN_RS, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_ENABLE, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D4, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D5, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D6, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_D7, Gpio.OUTPUT);
-        Gpio.pinMode(PIN_BUTTONS, Gpio.INPUT);
-        Gpio.digitalWrite(PIN_RS, false);
-        Gpio.digitalWrite(PIN_ENABLE, false);
+    public void begin() {
+        gpio.pinMode(PIN_RS, Gpio.getOutput());
+        gpio.pinMode(PIN_ENABLE, Gpio.getOutput());
+        gpio.pinMode(PIN_D4, Gpio.getOutput());
+        gpio.pinMode(PIN_D5, Gpio.getOutput());
+        gpio.pinMode(PIN_D6, Gpio.getOutput());
+        gpio.pinMode(PIN_D7, Gpio.getOutput());
+        gpio.pinMode(PIN_BUTTONS, Gpio.getInput());
+        gpio.digitalWrite(PIN_RS, false);
+        gpio.digitalWrite(PIN_ENABLE, false);
         backlight(true);
 
         // HD44780 datasheet fig. 24: force 8-bit mode three times, then switch to 4-bit mode.
@@ -99,19 +109,19 @@ public final class LcdKeypadShield {
     }
 
     /** Clears the display and returns the cursor to (0, 0). */
-    public static void clear() {
+    public void clear() {
         command(CLEAR_DISPLAY);
         Delay.millis(2);
     }
 
     /** Returns the cursor to (0, 0) without clearing the display. */
-    public static void home() {
+    public void home() {
         command(RETURN_HOME);
         Delay.millis(2);
     }
 
     /** Moves the cursor to {@code column} (0-15) on {@code row} (0-1). */
-    public static void setCursor(int column, int row) {
+    public void setCursor(int column, int row) {
         int rowOffset = 0;
         if (row == 1) {
             rowOffset = ROW_1_OFFSET;
@@ -126,17 +136,17 @@ public final class LcdKeypadShield {
      * the pin HIGH can pull down the shared 5V rail hard enough to keep the LCD itself from
      * initializing.
      */
-    public static void backlight(boolean on) {
-        Gpio.digitalWrite(PIN_BACKLIGHT, false);
+    public void backlight(boolean on) {
+        gpio.digitalWrite(PIN_BACKLIGHT, false);
         if (on) {
-            Gpio.pinMode(PIN_BACKLIGHT, Gpio.INPUT);
+            gpio.pinMode(PIN_BACKLIGHT, Gpio.getInput());
         } else {
-            Gpio.pinMode(PIN_BACKLIGHT, Gpio.OUTPUT);
+            gpio.pinMode(PIN_BACKLIGHT, Gpio.getOutput());
         }
     }
 
     /** Prints {@code text} starting at the cursor, without wrapping. */
-    public static void print(String text) {
+    public void print(String text) {
         int length = text.length();
         for (int i = 0; i < length; i++) {
             writeData(text.charAt(i));
@@ -144,7 +154,7 @@ public final class LcdKeypadShield {
     }
 
     /** Prints {@code value} in decimal, starting at the cursor. */
-    public static void print(int value) {
+    public void print(int value) {
         print(String.valueOf(value));
     }
 
@@ -155,7 +165,7 @@ public final class LcdKeypadShield {
      * io.github.jabrena.juno.api.net.email.Pop3Client#readSubject}'s output) and would
      * otherwise need a heap allocation just to be displayed.
      */
-    public static void print(byte[] buffer, int length) {
+    public void print(byte[] buffer, int length) {
         for (int i = 0; i < length; i++) {
             writeData(buffer[i]);
         }
@@ -165,8 +175,8 @@ public final class LcdKeypadShield {
      * Reads the currently pressed button (undebounced), one of {@link #NONE}, {@link #RIGHT},
      * {@link #UP}, {@link #DOWN}, {@link #LEFT}, {@link #SELECT}.
      */
-    public static int readButton() {
-        int reading = Gpio.analogRead(PIN_BUTTONS);
+    public int readButton() {
+        int reading = gpio.analogRead(PIN_BUTTONS);
         if (reading < RIGHT_THRESHOLD) {
             return RIGHT;
         }
@@ -185,28 +195,28 @@ public final class LcdKeypadShield {
         return NONE;
     }
 
-    private static void command(int value) {
-        Gpio.digitalWrite(PIN_RS, false);
+    private void command(int value) {
+        gpio.digitalWrite(PIN_RS, false);
         writeNibble((value >> 4) & 0x0F);
         writeNibble(value & 0x0F);
         Delay.micros(COMMAND_SETTLE_MICROS);
     }
 
-    private static void writeData(int value) {
-        Gpio.digitalWrite(PIN_RS, true);
+    private void writeData(int value) {
+        gpio.digitalWrite(PIN_RS, true);
         writeNibble((value >> 4) & 0x0F);
         writeNibble(value & 0x0F);
         Delay.micros(COMMAND_SETTLE_MICROS);
     }
 
-    private static void writeNibble(int nibble) {
-        Gpio.digitalWrite(PIN_D4, (nibble & 0x1) != 0);
-        Gpio.digitalWrite(PIN_D5, (nibble & 0x2) != 0);
-        Gpio.digitalWrite(PIN_D6, (nibble & 0x4) != 0);
-        Gpio.digitalWrite(PIN_D7, (nibble & 0x8) != 0);
-        Gpio.digitalWrite(PIN_ENABLE, true);
+    private void writeNibble(int nibble) {
+        gpio.digitalWrite(PIN_D4, (nibble & 0x1) != 0);
+        gpio.digitalWrite(PIN_D5, (nibble & 0x2) != 0);
+        gpio.digitalWrite(PIN_D6, (nibble & 0x4) != 0);
+        gpio.digitalWrite(PIN_D7, (nibble & 0x8) != 0);
+        gpio.digitalWrite(PIN_ENABLE, true);
         Delay.micros(ENABLE_PULSE_MICROS);
-        Gpio.digitalWrite(PIN_ENABLE, false);
+        gpio.digitalWrite(PIN_ENABLE, false);
         Delay.micros(NIBBLE_SETTLE_MICROS);
     }
 }
