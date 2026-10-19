@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.io.i2c;
 
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.io.serial.BaudRate;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.util.Delay;
@@ -34,13 +35,14 @@ public final class I2cScanner {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
-        I2c.begin();
+        I2c i2c = MCU.getI2c();
+        i2c.begin();
 
         while (true) {
             Serial.println("I2C scan");
             int devices = 0;
             for (int address = FIRST_ADDRESS; address <= LAST_ADDRESS; address++) {
-                if (I2c.readRegister(address, 0) >= 0) {
+                if (i2c.readRegister(address, 0) >= 0) {
                     Serial.print("found ");
                     Serial.println(address);
                     devices++;

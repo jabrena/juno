@@ -23,8 +23,8 @@ import io.github.jabrena.juno.api.util.Delay;
  * <p>The shield's BNO055 answers at address {@code 0x28}; the {@code 0x29} variant is selected with
  * {@link #begin(int)}. Works on both boards, wherever {@code Wire} reaches the shield's SDA/SCL.
  * {@link #begin} drives D7, the shield's sensor reset line, so a program using the shield must not
- * use D7 for anything else. {@code new NineAxisMotionShield(gpio)} drives that line through a given
- * {@link Gpio} instead of the board's, which is how a unit test mocks it.
+ * use D7 for anything else. {@code new NineAxisMotionShield(gpio, i2c)} drives that line and talks to the
+ * sensor through a given {@link Gpio} and {@link I2c} instead of the board's, which is how a unit test mocks them.
  *
  * @see <a href="https://docs.arduino.cc/hardware/9-axis-motion-shield/">Arduino 9 Axis Motion Shield</a>
  */
@@ -62,16 +62,21 @@ public final class NineAxisMotionShield {
     private static final int WORD = 0x10000;
 
     private final Gpio gpio;
+    private final I2c i2c;
     private int address = ADDRESS_DEFAULT;
 
-    /** A shield on the board's own pins. Create it once, at startup. */
+    /** A shield on the board's own pins and I2C bus. Create it once, at startup. */
     public NineAxisMotionShield() {
-        this(MCU.getGpio());
+        this(MCU.getGpio(), MCU.getI2c());
     }
 
-    /** A shield whose reset line is driven through {@code gpio}: a mocked one in a unit test. */
-    public NineAxisMotionShield(Gpio gpio) {
+    /**
+     * A shield whose reset line is driven through {@code gpio} and whose sensor is read over {@code i2c}: mocked ones
+     * in a unit test.
+     */
+    public NineAxisMotionShield(Gpio gpio, I2c i2c) {
         this.gpio = gpio;
+        this.i2c = i2c;
     }
 
     /** Starts the sensor at {@link #ADDRESS_DEFAULT}; see {@link #begin(int)}. */
@@ -90,24 +95,24 @@ public final class NineAxisMotionShield {
         Delay.millis(RESET_LOW_MILLIS);
         gpio.digitalWrite(RESET_PIN, true);
         Delay.millis(RESET_HIGH_MILLIS);
-        I2c.begin();
+        i2c.begin();
         Delay.millis(BOOT_MILLIS);
-        if (I2c.readRegister(address, CHIP_ID) != CHIP_ID_VALUE) {
+        if (i2c.readRegister(address, CHIP_ID) != CHIP_ID_VALUE) {
             return false;
         }
-        I2c.writeRegister(address, OPERATION_MODE, MODE_CONFIG);
+        i2c.writeRegister(address, OPERATION_MODE, MODE_CONFIG);
         Delay.millis(MODE_SWITCH_MILLIS);
-        I2c.writeRegister(address, UNIT_SELECTION, UNIT_ANDROID);
-        I2c.writeRegister(address, POWER_MODE, POWER_NORMAL);
+        i2c.writeRegister(address, UNIT_SELECTION, UNIT_ANDROID);
+        i2c.writeRegister(address, POWER_MODE, POWER_NORMAL);
         Delay.millis(MODE_SWITCH_MILLIS);
-        I2c.writeRegister(address, OPERATION_MODE, MODE_IMU);
+        i2c.writeRegister(address, OPERATION_MODE, MODE_IMU);
         Delay.millis(MODE_SWITCH_MILLIS);
         return true;
     }
 
     /** The heading in sixteenths of a degree, {@code 0..5759}, growing clockwise; {@code -1} if the read failed. */
     public int headingRaw() {
-        int raw = I2c.readRegister16(address, EULER_HEADING);
+        int raw = i2c.readRegister16(address, EULER_HEADING);
         return raw < 0 ? -1 : raw % (360 * UNITS_PER_DEGREE);
     }
 
@@ -124,7 +129,7 @@ public final class NineAxisMotionShield {
      * rocks about when the shield is mounted with its X axis along the wheel axle.
      */
     public int pitchRaw() {
-        return signed(I2c.readRegister16(address, EULER_PITCH));
+        return signed(i2c.readRegister16(address, EULER_PITCH));
     }
 
     /**
@@ -133,7 +138,7 @@ public final class NineAxisMotionShield {
      * {@link Short#MIN_VALUE} if the read failed.
      */
     public int gyroXRaw() {
-        return signed(I2c.readRegister16(address, GYRO_X));
+        return signed(i2c.readRegister16(address, GYRO_X));
     }
 
     /** Turns a register word {@code 0..65535} into a signed value, keeping the {@code -1} failure as {@link Short#MIN_VALUE}. */
@@ -165,7 +170,7 @@ public final class NineAxisMotionShield {
      * the sensor stands still for a moment.
      */
     public int calibration() {
-        return I2c.readRegister(address, CALIBRATION_STATUS);
+        return i2c.readRegister(address, CALIBRATION_STATUS);
     }
 
     /** The sensor's default I2C address, {@code 0x28}: the shield's BNO055 as wired from the factory. */

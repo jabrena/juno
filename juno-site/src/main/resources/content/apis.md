@@ -34,26 +34,28 @@ Compiling it with plain `javac` (as `juno-examples`'s own Maven build does, on e
 fine and produces a real `.class` file — it is only *Juno's own* compiler that treats the call
 specially.
 
-### Injectable APIs: `Gpio` and `Clock`
+### Injectable APIs: `Gpio`, `I2c` and `Clock`
 
-A `native` method has no body, so a unit test on a desktop JVM can neither run nor mock it. `Gpio`
-and `Clock` therefore keep their intrinsics behind a type that a test can replace:
+A `native` method has no body, so a unit test on a desktop JVM can neither run nor mock it. `Gpio`,
+`I2c` and `Clock` therefore keep their intrinsics behind a type that a test can replace:
 
 | You write | What you get | On the board |
 |---|---|---|
 | `MCU.getGpio()` | the `Gpio` interface, one shared instance | `hardware.internal.NativeGpio`, whose `native` methods are the GPIO intrinsics; it is created once, in a `static {}` block |
+| `MCU.getI2c()` | the `I2c` interface, one shared instance | `hardware.internal.NativeI2c`, whose `native` methods are the I2C register intrinsics over `Wire` |
 | `MCU.getClock()` | the `Clock` interface, one shared instance | `hardware.internal.NativeClock`, whose `native` methods are the clock intrinsics |
-| `mock(Gpio.class)` / `mock(Clock.class)` | a Mockito mock or a fake | only in a test |
+| `mock(Gpio.class)` / `mock(I2c.class)` / `mock(Clock.class)` | a Mockito mock or a fake | only in a test |
 
-The compiler keys these intrinsics on the `NativeGpio`/`NativeClock` methods. On the board
+The compiler keys these intrinsics on the `NativeGpio`/`NativeI2c`/`NativeClock` methods. On the board
 `Gpio` has one reachable implementation, so a call through it, such as
-`MCU.getGpio().digitalWrite(13, true)`, compiles to a single `bl digitalWrite`. Take `MCU.getGpio()`
-and `MCU.getClock()` once, at startup, and pass them to the classes that need them; such a class
-takes a `Gpio` or `Clock` in its constructor, and its test passes a mock instead.
+`MCU.getGpio().digitalWrite(13, true)`, compiles to a single `bl digitalWrite`. Take `MCU.getGpio()`,
+`MCU.getI2c()` and `MCU.getClock()` once, at startup, and pass them to the classes that need them; such a
+class takes a `Gpio`, `I2c` or `Clock` in its constructor (the I2C drivers, such as `NineAxisMotionShield`
+and `PwmServoShield`, do), and its test passes a mock instead.
 
 An API class that is still static, such as the TFT driver, holds a package-private
 `static Gpio gpio = MCU.getGpio()`, which its own tests replace with a mock. A whole-program emulator,
-such as the examples' TFT screenshot tests, instead calls `NativeGpio.setGpio(...)` and `NativeClock.setClock(...)` before the program
+such as the examples' TFT screenshot tests, instead calls `NativeGpio.setGpio(...)`, `NativeI2c.setI2c(...)` and `NativeClock.setClock(...)` before the program
 starts.
 
 ## Consuming an API: `HttpClient` walkthrough

@@ -21,9 +21,10 @@ public final class GroveSensorWiringMonitor {
         Serial.begin(BaudRate.BAUD_115200);
         GrovePirMotion pir = new GrovePirMotion();
         GroveAnalogGas gas = new GroveAnalogGas();
+        GroveCompassProbe compassProbe = new GroveCompassProbe();
         pir.begin(shield.getD3());
         Delay.millis(1000);
-        int compass = GroveCompassProbe.detect();
+        int compass = compassProbe.detect();
         Serial.print("Compass chip: ");
         switch (compass) {
             case GroveCompassProbe.BMM150 -> Serial.println("BMM150 (Grove V2.0)");
@@ -32,7 +33,7 @@ public final class GroveSensorWiringMonitor {
         int[] compassAxes = new int[GroveCompassProbe.AXIS_LENGTH];
         while (true) {
             boolean compassReading = compass == GroveCompassProbe.BMM150
-                    && GroveCompassProbe.readRaw(compassAxes, compassAxes.length);
+                    && compassProbe.readRaw(compassAxes, compassAxes.length);
             Serial.print("Compass X/Y/Z: ");
             if (compassReading) {
                 Serial.print(compassAxes[GroveCompassProbe.X_AXIS]);
