@@ -1,12 +1,18 @@
 package io.github.jabrena.juno;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("Compilation metrics of generated assembly")
 class CompilationMetricsTest {
     @Test
-    void measuresInstructionsSourcesAndFixedFrames() {
+    @DisplayName("Measures instructions, sources and fixed frames of generated assembly")
+    void shouldMeasureInstructionsSourcesAndFixedFrames() {
+        // Given
         String assembly = """
                 @ generated fixture
                     .text
@@ -32,16 +38,22 @@ class CompilationMetricsTest {
                     bx lr
                 """;
 
+        // When
         CompilationMetrics metrics = CompilationMetrics.from(assembly, "// ñ\n");
 
+        // Then
         assertThat(metrics).isEqualTo(new CompilationMetrics(
                 assembly.getBytes(java.nio.charset.StandardCharsets.UTF_8).length, 6,
                 2, 14, 1, 1, 4, 1, 1, 70_036, 70_104));
     }
 
     @Test
-    void measuresEmptyGeneratedSources() {
-        assertThat(CompilationMetrics.from("", "")).isEqualTo(
-                new CompilationMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+    @DisplayName("Measures empty generated sources as all zeros")
+    void shouldMeasureEmptyGeneratedSourcesAsAllZeros() {
+        // When
+        CompilationMetrics metrics = CompilationMetrics.from("", "");
+
+        // Then
+        assertThat(metrics).isEqualTo(new CompilationMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     }
 }

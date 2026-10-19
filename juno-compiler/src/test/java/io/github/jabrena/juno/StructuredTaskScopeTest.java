@@ -1,44 +1,114 @@
 package io.github.jabrena.juno;
 
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** The JDK 25 preview {@code StructuredTaskScope} subset lowered onto Juno's task runtime. */
+@NullMarked
+@DisplayName("Restricted StructuredTaskScope subset")
 class StructuredTaskScopeTest {
     @TempDir
     Path temporaryDirectory;
 
-    @Test
-    void defaultOpenForksBothTaskShapesJoinsAndExposesSubtaskState() throws Exception {
-        CompilationResult result = compile("""
-                try (var scope = StructuredTaskScope.open()) {
-                    var first = scope.fork(() -> "first");
-                    var second = scope.fork(() -> { });
-                    scope.join();
-                    if (first.state() == StructuredTaskScope.Subtask.State.SUCCESS) {
-                        first.get();
-                    }
-                    second.exception();
-                    scope.isCancelled();
+    private static final String DEFAULT_OPEN = """
+            try (var scope = StructuredTaskScope.open()) {
+                var first = scope.fork(() -> "first");
+                var second = scope.fork(() -> { });
+                scope.join();
+                if (first.state() == StructuredTaskScope.Subtask.State.SUCCESS) {
+                    first.get();
                 }
-                """);
+                second.exception();
+                scope.isCancelled();
+            }
+            """;
 
+    private static final String BUILT_IN_JOINERS = """
+            var allSuccessful = StructuredTaskScope.Joiner.<String>allSuccessfulOrThrow();
+            try (var scope = StructuredTaskScope.open(allSuccessful)) {
+                scope.fork(() -> "all");
+                scope.join();
+            }
+            try (var scope = StructuredTaskScope.open(
+                    StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
+                scope.fork(() -> "winner");
+                scope.join();
+            }
+            try (var scope = StructuredTaskScope.open(
+                    StructuredTaskScope.Joiner.<String>awaitAllSuccessfulOrThrow())) {
+                scope.fork(() -> "done");
+                scope.join();
+            }
+            """;
+
+    private static final String NESTED_CANCELLATION = """
+            try (var outer = StructuredTaskScope.open(
+                    StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
+                outer.fork(() -> {
+                    synchronized (new Object()) {
+                        try (var inner = StructuredTaskScope.open()) {
+                            inner.fork(() -> "slow");
+                            inner.join();
+                        }
+                    }
+                    return "outer";
+                });
+                outer.fork(() -> "fast");
+                outer.join();
+            }
+            """;
+
+    private static final String TIMEOUT_CONFIGURATION = """
+            try (var scope = StructuredTaskScope.open(
+                    configuration -> configuration.withTimeout(java.time.Duration.ofMillis(100)))) {
+                var task = scope.fork(() -> "done");
+                scope.join();
+                task.get();
+            }
+            """;
+
+    static Stream<String> joinerFactories() {
+        return Stream.of("allSuccessfulOrThrow", "anySuccessfulOrThrow", "awaitAllSuccessfulOrThrow");
+    }
+
+    @Test
+    @DisplayName("Default open forks both task shapes, joins and exposes subtask state")
+    void shouldForkBothTaskShapesJoinAndExposeSubtaskState() throws Exception {
+        // Given
+        CompilationResult result = compile(DEFAULT_OPEN);
+
+        // When & Then
         assertThat(result.assembly()).contains(
                 ".global juno_task_entry", "juno_task_entry:",
                 "bl juno_task_scope_open_default", "bl juno_task_scope_fork_callable",
                 "bl juno_task_scope_fork_runnable", "bl juno_task_scope_join",
                 "bl juno_task_state", "bl juno_task_get", "bl juno_task_exception",
                 "bl juno_task_scope_is_cancelled", "bl juno_task_scope_close");
+    }
+
+    @Test
+    @DisplayName("The runtime shim declares the task entry points and the join-once guard")
+    void shouldDeclareTheTaskEntryPointsAndTheJoinOnceGuardInTheShim() throws Exception {
+        // Given
+        CompilationResult result = compile(DEFAULT_OPEN);
+
+        // When & Then
         assertThat(result.runtimeShim()).contains(
                 "extern \"C\" int32_t juno_task_entry(int32_t callable);",
                 "extern \"C\" void juno_thread_entry(int32_t runnable);",
@@ -48,28 +118,24 @@ class StructuredTaskScopeTest {
     }
 
     @Test
-    void builtInJoinerFactoriesSelectTheirJdk25ResultPolicies() throws Exception {
-        CompilationResult result = compile("""
-                var allSuccessful = StructuredTaskScope.Joiner.<String>allSuccessfulOrThrow();
-                try (var scope = StructuredTaskScope.open(allSuccessful)) {
-                    scope.fork(() -> "all");
-                    scope.join();
-                }
-                try (var scope = StructuredTaskScope.open(
-                        StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
-                    scope.fork(() -> "winner");
-                    scope.join();
-                }
-                try (var scope = StructuredTaskScope.open(
-                        StructuredTaskScope.Joiner.<String>awaitAllSuccessfulOrThrow())) {
-                    scope.fork(() -> "done");
-                    scope.join();
-                }
-                """);
+    @DisplayName("Built-in joiner factories select their JDK 25 result policies in the assembly")
+    void shouldSelectTheBuiltInJoinerResultPoliciesInTheAssembly() throws Exception {
+        // Given
+        CompilationResult result = compile(BUILT_IN_JOINERS);
 
+        // When & Then
         assertThat(result.assembly()).contains(
                 "bl juno_task_scope_open", "bl juno_task_scope_fork_callable",
                 "bl juno_task_scope_join");
+    }
+
+    @Test
+    @DisplayName("The runtime shim carries the joiner policies and sibling cancellation")
+    void shouldCarryTheJoinerPoliciesAndSiblingCancellationInTheShim() throws Exception {
+        // Given
+        CompilationResult result = compile(BUILT_IN_JOINERS);
+
+        // When & Then
         assertThat(result.runtimeShim()).contains(
                 "JUNO_JOINER_ALL_SUCCESSFUL", "JUNO_JOINER_ANY_SUCCESSFUL",
                 "JUNO_JOINER_AWAIT_ALL_SUCCESSFUL",
@@ -78,62 +144,52 @@ class StructuredTaskScopeTest {
                 "juno_task_cancel_owned(slot + 1u)", "juno_task_release_monitors(slot + 1u)");
     }
 
-    @Test
-    void cancellingATaskCancelsItsInnerScopesAndReleasesItsMonitors() throws Exception {
+    @ParameterizedTest(name = "cancelling nested scopes compiles as C++ for {0}")
+    @ValueSource(strings = {"ArduinoUnoR4WiFi", "ArduinoUnoQ"})
+    @DisplayName("Cancelling a task cancels its inner scopes and releases its monitors")
+    void shouldCancelATaskAndItsInnerScopesAndReleaseItsMonitors(String board) throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
-            CompilationResult result = compile("""
-                    try (var outer = StructuredTaskScope.open(
-                            StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
-                        outer.fork(() -> {
-                            synchronized (new Object()) {
-                                try (var inner = StructuredTaskScope.open()) {
-                                    inner.fork(() -> "slow");
-                                    inner.join();
-                                }
-                            }
-                            return "outer";
-                        });
-                        outer.fork(() -> "fast");
-                        outer.join();
-                    }
-                    """, board);
-            Path shim = temporaryDirectory.resolve("nested-" + board + ".cpp");
-            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-            Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
-                    "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
-            assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
-            String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            assertThat(process.exitValue()).as("%s shim:%n%s", board, diagnostics).isZero();
-        }
+        CompilationResult result = compile(NESTED_CANCELLATION, board);
+        Path shim = temporaryDirectory.resolve("nested-" + board + ".cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        // When
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
+        assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
+
+        // Then
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(process.exitValue()).as("%s shim:%n%s", board, diagnostics).isZero();
+    }
+
+    @ParameterizedTest(name = "generated runtime compiles as C++ for {0}")
+    @ValueSource(strings = {"ArduinoUnoR4WiFi", "ArduinoUnoQ"})
+    @DisplayName("The generated structured-task runtime compiles for both board ports")
+    void shouldCompileTheGeneratedStructuredTaskRuntimeForBothBoardPorts(String board) throws Exception {
+        // Given
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        CompilationResult result = compile(TIMEOUT_CONFIGURATION, board);
+        Path shim = temporaryDirectory.resolve(board + ".cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        // When
+        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
+                "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
+        assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
+
+        // Then
+        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(process.exitValue()).as("%s shim:%n%s", board, diagnostics).isZero();
     }
 
     @Test
-    void generatedStructuredTaskRuntimeCompilesForBothBoardPorts() throws Exception {
-        String compiler = availableCppCompiler();
-        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
-            CompilationResult result = compile("""
-                    try (var scope = StructuredTaskScope.open(
-                            configuration -> configuration.withTimeout(java.time.Duration.ofMillis(100)))) {
-                        var task = scope.fork(() -> "done");
-                        scope.join();
-                        task.get();
-                    }
-                    """, board);
-            Path shim = temporaryDirectory.resolve(board + ".cpp");
-            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-            Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
-                    "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
-            assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
-            String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            assertThat(process.exitValue()).as("%s shim:%n%s", board, diagnostics).isZero();
-        }
-    }
-
-    @Test
-    void rejectsStructuredTaskScopeOperationsOutsideTheRestrictedSubset() throws Exception {
+    @DisplayName("Rejects StructuredTaskScope operations outside the restricted subset")
+    void shouldRejectStructuredTaskScopeOperationsOutsideTheRestrictedSubset() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import java.util.concurrent.StructuredTaskScope;
@@ -145,6 +201,7 @@ class StructuredTaskScopeTest {
                 """;
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Tasks", source);
 
+        // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("JDK 27 StructuredTaskScope subset")
@@ -152,7 +209,9 @@ class StructuredTaskScopeTest {
     }
 
     @Test
-    void rejectsCustomJoinerImplementationsAtCompileTime() throws Exception {
+    @DisplayName("Rejects custom Joiner implementations at compile time")
+    void shouldRejectCustomJoinerImplementationsAtCompileTime() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import java.util.concurrent.StructuredTaskScope;
@@ -171,37 +230,41 @@ class StructuredTaskScopeTest {
                 """;
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Tasks", source);
 
+        // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("custom Joiner implementations")
                 .hasMessageContaining("demo.Tasks$CustomJoiner");
     }
 
-    @Test
-    void rejectsJoinerFactoryOverloadsThatChooseTheExceptionType() throws Exception {
-        for (String factory : new String[]{"allSuccessfulOrThrow", "anySuccessfulOrThrow",
-                "awaitAllSuccessfulOrThrow"}) {
-            String source = """
-                    package demo;
-                    import java.util.concurrent.StructuredTaskScope;
-                    public final class Tasks {
-                        public static void main() throws Exception {
-                            StructuredTaskScope.open(StructuredTaskScope.Joiner.<String, Exception>%s(null));
-                        }
+    @ParameterizedTest(name = "rejects the {0} overload that chooses the exception type")
+    @MethodSource("joinerFactories")
+    @DisplayName("Rejects joiner factory overloads that choose the exception type")
+    void shouldRejectJoinerFactoryOverloadsThatChooseTheExceptionType(String factory) throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import java.util.concurrent.StructuredTaskScope;
+                public final class Tasks {
+                    public static void main() throws Exception {
+                        StructuredTaskScope.open(StructuredTaskScope.Joiner.<String, Exception>%s(null));
                     }
-                    """.formatted(factory);
-            Path directory = Files.createTempDirectory(temporaryDirectory, factory);
-            CompilerTestSupport.compileJavaWithPreview(directory, "demo.Tasks", source);
+                }
+                """.formatted(factory);
+        Path directory = Files.createDirectory(temporaryDirectory.resolve(factory));
+        CompilerTestSupport.compileJavaWithPreview(directory, "demo.Tasks", source);
 
-            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(directory, "demo.Tasks"))
-                    .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("StructuredTaskScope subset")
-                    .hasMessageContaining(factory);
-        }
+        // When & Then
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(directory, "demo.Tasks"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("StructuredTaskScope subset")
+                .hasMessageContaining(factory);
     }
 
     @Test
-    void rejectsReadingTheResultListOfAllSuccessfulOrThrow() throws Exception {
+    @DisplayName("Rejects reading the result list of allSuccessfulOrThrow")
+    void shouldRejectReadingTheResultListOfAllSuccessfulOrThrow() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import java.util.concurrent.StructuredTaskScope;
@@ -218,12 +281,56 @@ class StructuredTaskScopeTest {
                 """;
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Tasks", source);
 
+        // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
                 .isInstanceOf(CompileException.class);
     }
 
     @Test
-    void supportsTimeoutConfigurationOverload() throws Exception {
+    @DisplayName("Supports the timeout configuration overload in the assembly")
+    void shouldSupportTheTimeoutConfigurationOverloadInTheAssembly() throws Exception {
+        // Given
+        CompilationResult result = compileTimeout();
+
+        // When & Then
+        assertThat(result.assembly()).contains(
+                "bl juno_task_scope_open_with_config", "juno_task_configuration_entry",
+                "bl juno_task_configuration_with_timeout", "bl juno_duration_of_millis");
+    }
+
+    @Test
+    @DisplayName("The runtime shim carries the timeout handling")
+    void shouldCarryTheTimeoutHandlingInTheShim() throws Exception {
+        // Given
+        CompilationResult result = compileTimeout();
+
+        // When & Then
+        assertThat(result.runtimeShim()).contains(
+                "JUNO_SCOPE_TIMED_OUT", "juno_task_scope_timeout_expired",
+                "structured task scope timed out");
+    }
+
+    @Test
+    @DisplayName("Javac requires --enable-preview for the JDK 25 API")
+    void shouldRequireEnablePreviewForTheJdk25Api() {
+        // Given
+        String source = """
+                package demo;
+                import java.util.concurrent.StructuredTaskScope;
+                public final class Tasks {
+                    public static void main() {
+                        StructuredTaskScope.open().close();
+                    }
+                }
+                """;
+
+        // When & Then
+        assertThatThrownBy(() -> CompilerTestSupport.compileJava(temporaryDirectory, "demo.Tasks", source, "25"))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("Fixture javac failed");
+    }
+
+    private CompilationResult compileTimeout() throws Exception {
         String source = """
                 package demo;
                 import java.time.Duration;
@@ -240,31 +347,7 @@ class StructuredTaskScopeTest {
                 }
                 """;
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Tasks", source);
-
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks");
-        assertThat(result.assembly()).contains(
-                "bl juno_task_scope_open_with_config", "juno_task_configuration_entry",
-                "bl juno_task_configuration_with_timeout", "bl juno_duration_of_millis");
-        assertThat(result.runtimeShim()).contains(
-                "JUNO_SCOPE_TIMED_OUT", "juno_task_scope_timeout_expired",
-                "structured task scope timed out");
-    }
-
-    @Test
-    void javacRequiresEnablePreviewForTheJdk25Api() {
-        String source = """
-                package demo;
-                import java.util.concurrent.StructuredTaskScope;
-                public final class Tasks {
-                    public static void main() {
-                        StructuredTaskScope.open().close();
-                    }
-                }
-                """;
-
-        assertThatThrownBy(() -> CompilerTestSupport.compileJava(temporaryDirectory, "demo.Tasks", source, "25"))
-                .isInstanceOf(AssertionError.class)
-                .hasMessageContaining("Fixture javac failed");
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks");
     }
 
     private CompilationResult compile(String body) throws Exception {

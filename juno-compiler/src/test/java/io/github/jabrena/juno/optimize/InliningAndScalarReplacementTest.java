@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.optimize;
 
 import io.github.jabrena.juno.CompilerTestSupport;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -9,50 +11,70 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Which calls the inliner removes and which allocations scalar replacement removes, compiled from real Java. */
+@NullMarked
+@DisplayName("Inlining and scalar replacement")
 class InliningAndScalarReplacementTest {
     @TempDir
     Path temporaryDirectory;
 
     @Test
-    void inlinesASmallLeafHelperWithABranch() throws Exception {
+    @DisplayName("Inlines a small leaf helper with a branch")
+    void shouldInlineASmallLeafHelperWithABranch() throws Exception {
+        // Given
         String assembly = compile("""
                 static int clamp(int value) { return value < 0 ? 0 : value > 99 ? 99 : value; }
                 public static void main(String[] args) { Delay.millis(clamp(Gpio.analogRead(0))); }
                 """);
+
+        // When & Then
         assertThat(assembly).doesNotContain("bl juno_fn");
     }
 
     @Test
-    void keepsACallToAMethodThatCallsSomethingElse() throws Exception {
+    @DisplayName("Keeps a call to a method that calls something else")
+    void shouldKeepACallToAMethodThatCallsSomethingElse() throws Exception {
+        // Given
         String assembly = compile("""
                 static void blink(int pin) { Gpio.digitalWrite(pin, true); Delay.millis(5); }
                 public static void main(String[] args) { blink(13); blink(12); }
                 """);
+
+        // When & Then
         assertThat(assembly).contains("bl juno_fn");
     }
 
     @Test
-    void keepsACallToAMethodTooLargeToInline() throws Exception {
+    @DisplayName("Keeps a call to a method too large to inline")
+    void shouldKeepACallToAMethodTooLargeToInline() throws Exception {
+        // Given
         String assembly = compile("""
                 static int mix(int a, int b) {
                     return (a * 3 + b) ^ (a >> 2) ^ (b << 5) ^ (a - b) ^ (a | b) ^ (a & 7) ^ (b % 11);
                 }
                 public static void main(String[] args) { Delay.millis(mix(Gpio.analogRead(0), Gpio.analogRead(1))); }
                 """);
+
+        // When & Then
         assertThat(assembly).contains("bl juno_fn");
     }
 
     @Test
-    void keepsACallWithALongParameter() throws Exception {
+    @DisplayName("Keeps a call with a long parameter")
+    void shouldKeepACallWithALongParameter() throws Exception {
+        // Given
         String assembly = compile("""
                 static int low(long value) { return (int) value; }
                 public static void main(String[] args) { Delay.millis(low(Gpio.analogRead(0))); }
                 """);
+
+        // When & Then
         assertThat(assembly).contains("bl juno_fn");
     }
 
     @Test
-    void replacesARecordThatNeverLeavesTheMethod() throws Exception {
+    @DisplayName("Replaces a record that never leaves the method")
+    void shouldReplaceARecordThatNeverLeavesTheMethod() throws Exception {
+        // Given
         String assembly = compile("""
                 record Pair(int left, int right) {}
                 public static void main(String[] args) {
@@ -64,11 +86,15 @@ class InliningAndScalarReplacementTest {
                     Delay.millis(total);
                 }
                 """);
+
+        // When & Then
         assertThat(assembly).doesNotContain("bl juno_alloc", "bl juno_fn");
     }
 
     @Test
-    void keepsAnObjectStoredInAStaticField() throws Exception {
+    @DisplayName("Keeps an object stored in a static field")
+    void shouldKeepAnObjectStoredInAStaticField() throws Exception {
+        // Given
         String assembly = compile("""
                 record Pair(int left, int right) {}
                 static Pair last;
@@ -78,11 +104,15 @@ class InliningAndScalarReplacementTest {
                     Delay.millis(pair.right());
                 }
                 """);
+
+        // When & Then
         assertThat(assembly).contains("bl juno_alloc");
     }
 
     @Test
-    void keepsAnObjectPassedToAMethodThatIsNotInlined() throws Exception {
+    @DisplayName("Keeps an object passed to a method that is not inlined")
+    void shouldKeepAnObjectPassedToAMethodThatIsNotInlined() throws Exception {
+        // Given
         String assembly = compile("""
                 static final class Holder { int value; }
                 static void fill(Holder holder) {
@@ -95,6 +125,8 @@ class InliningAndScalarReplacementTest {
                     Delay.millis(holder.value);
                 }
                 """);
+
+        // When & Then
         assertThat(assembly).contains("bl juno_alloc", "bl juno_fn");
     }
 

@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.backend.runtime;
 
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -30,6 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * operations against the JDK classes (results, scales, rounding, text and the exception class). The shim's own
  * handle helpers are replaced by index-based ones so 64-bit hosts work.
  */
+@NullMarked
+@DisplayName("Big-number runtime against the JDK")
 class BigNumberRuntimeTest {
     private final BigNumberRuntime bigNumberRuntime = new BigNumberRuntime();
 
@@ -39,7 +43,9 @@ class BigNumberRuntimeTest {
     Path directory;
 
     @Test
-    void matchesTheJdkOnRandomOperations() throws Exception {
+    @DisplayName("Matches the JDK on random operations")
+    void shouldMatchTheJdkOnRandomOperations() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         Files.writeString(directory.resolve("runtime.inc"), bigNumberRuntime.helpers(1, 2, 3, false),
@@ -60,12 +66,15 @@ class BigNumberRuntimeTest {
             expected.add(generated.result());
         }
         Files.write(directory.resolve("commands.txt"), commands);
+
+        // When
         Process run = new ProcessBuilder(directory.resolve("driver").toString())
                 .redirectInput(directory.resolve("commands.txt").toFile())
                 .redirectOutput(directory.resolve("actual.txt").toFile()).start();
         assertThat(run.waitFor(120, TimeUnit.SECONDS)).isTrue();
         assertThat(run.exitValue()).isZero();
 
+        // Then
         List<String> actual = Files.readAllLines(directory.resolve("actual.txt"));
         assertThat(actual).hasSameSizeAs(expected);
         for (int index = 0; index < CASES; index++) {
@@ -80,9 +89,13 @@ class BigNumberRuntimeTest {
      * collecting call once let {@code BigInteger.sqrt} free its own Newton iterate when the arena was tight.
      */
     @Test
-    void neverCollectsInTheMiddleOfAnOperation() {
+    @DisplayName("Never collects garbage in the middle of an operation")
+    void shouldNeverCollectInTheMiddleOfAnOperation() {
+        // Given
         String source = bigNumberRuntime.handleHelpers() + bigNumberRuntime.helpers(1, 2, 3, true)
                 + bigNumberRuntime.helpersWithoutDoubles(1, 2, 3);
+
+        // When
         Map<String, String> bodies = new LinkedHashMap<>();
         Matcher header = Pattern.compile("\\n\\s*(?:extern \"C\" (?:JUNO_ASM_ABI )?|static )[\\w*]+ (juno_\\w+)\\([^)]*\\) \\{")
                 .matcher(source);
@@ -128,6 +141,7 @@ class BigNumberRuntimeTest {
                 }
             }
         });
+        // Then
         assertThat(violations).isEmpty();
     }
 

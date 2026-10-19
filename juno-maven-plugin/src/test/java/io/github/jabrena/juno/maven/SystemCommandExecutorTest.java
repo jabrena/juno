@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.maven;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -14,29 +16,48 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * build even though monitoring never actually happened. These tests use plain {@code sh -c} in place
  * of {@code arduino-cli} so they don't depend on the toolchain being installed.
  */
+@NullMarked
+@DisplayName("System command execution")
 class SystemCommandExecutorTest {
     private final SystemCommandExecutor executor = new SystemCommandExecutor();
 
     @Test
-    void nonInteractiveCommandCapturesOutputAndExitCode() {
-        CommandResult result = executor.execute(new Command(List.of("sh", "-c", "echo hello; exit 3"), Command.Mode.CAPTURED));
+    @DisplayName("Captures the output and exit code of a non-interactive command")
+    void shouldCaptureOutputAndExitCodeOfANonInteractiveCommand() {
+        // Given
+        Command command = new Command(List.of("sh", "-c", "echo hello; exit 3"), Command.Mode.CAPTURED);
 
+        // When
+        CommandResult result = executor.execute(command);
+
+        // Then
         assertThat(result.exitCode()).isEqualTo(3);
         assertThat(result.output()).contains("hello");
     }
 
     @Test
-    void interactiveCommandThatExitsImplausiblyFastFailsWithADiagnosticMessage() {
-        assertThatThrownBy(() -> executor.execute(new Command(List.of("sh", "-c", "exit 0"), Command.Mode.INTERACTIVE)))
+    @DisplayName("Fails an interactive command that exits implausibly fast with a diagnostic message")
+    void shouldFailAnInteractiveCommandThatExitsImplausiblyFastWithADiagnosticMessage() {
+        // Given
+        Command command = new Command(List.of("sh", "-c", "exit 0"), Command.Mode.INTERACTIVE);
+
+        // When & Then
+        assertThatThrownBy(() -> executor.execute(command))
                 .isInstanceOf(ArduinoCliException.class)
                 .hasMessageContaining("exited after just")
                 .hasMessageContaining("no real interactive terminal");
     }
 
     @Test
-    void interactiveCommandThatRunsLongEnoughSucceeds() {
-        CommandResult result = executor.execute(new Command(List.of("sh", "-c", "sleep 3.2; exit 0"), Command.Mode.INTERACTIVE));
+    @DisplayName("Succeeds for an interactive command that runs long enough")
+    void shouldSucceedForAnInteractiveCommandThatRunsLongEnough() {
+        // Given
+        Command command = new Command(List.of("sh", "-c", "sleep 3.2; exit 0"), Command.Mode.INTERACTIVE);
 
+        // When
+        CommandResult result = executor.execute(command);
+
+        // Then
         assertThat(result.exitCode()).isEqualTo(0);
     }
 }

@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.backend.runtime;
 
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -13,12 +15,15 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("Local date-time runtime helpers, compiled and run as C++")
 class LocalDateTimeRuntimeTest {
     @TempDir
     Path temporaryDirectory;
 
     @Test
-    void returnsMinimumWhileOfflineThenAdvancesTheSynchronizedClockAcrossLeapDay() throws Exception {
+    @DisplayName("Returns the minimum while offline, then advances the synchronized clock across a leap day")
+    void shouldReturnMinimumWhileOfflineThenAdvanceTheSynchronizedClockAcrossLeapDay() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String runtime = new LocalDateTimeRuntime(Map.of(

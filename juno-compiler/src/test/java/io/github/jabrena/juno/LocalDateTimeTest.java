@@ -1,5 +1,7 @@
 package io.github.jabrena.juno;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -9,12 +11,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** The deliberately bounded {@code java.time.LocalDateTime} subset lowered onto the runtime shim. */
+@NullMarked
+@DisplayName("Bounded LocalDateTime subset")
 class LocalDateTimeTest {
     @TempDir
     Path temporaryDirectory;
 
     @Test
-    void lowersInternetBackedNowAndMakesTheOfflineMinimumObservable() throws Exception {
+    @DisplayName("Lowers the internet-backed now and its calls to the shim")
+    void shouldLowerInternetBackedNowAndItsCallsToTheShim() throws Exception {
+        // Given
         CompilationResult result = compile("""
                 public static void main() {
                     io.github.jabrena.juno.api.net.Wifi.begin("ssid", "password");
@@ -30,6 +36,7 @@ class LocalDateTimeTest {
                 }
                 """);
 
+        // When & Then
         assertThat(result.assembly()).contains(
                 "bl juno_local_date_time_now",
                 "bl juno_local_date_time_min",
@@ -41,18 +48,64 @@ class LocalDateTimeTest {
                 "bl juno_local_date_time_get_minute",
                 "bl juno_local_date_time_get_second",
                 "bl juno_local_date_time_to_string");
+    }
+
+    @Test
+    @DisplayName("The runtime shim declares the time API request and the offline check")
+    void shouldDeclareTheTimeApiRequestAndTheOfflineCheckInTheShim() throws Exception {
+        // Given
+        CompilationResult result = compile("""
+                public static void main() {
+                    io.github.jabrena.juno.api.net.Wifi.begin("ssid", "password");
+                    java.time.LocalDateTime value = java.time.LocalDateTime.now();
+                    boolean offline = value.equals(java.time.LocalDateTime.MIN);
+                    int year = value.getYear();
+                    int month = value.getMonthValue();
+                    int day = value.getDayOfMonth();
+                    int hour = value.getHour();
+                    int minute = value.getMinute();
+                    int second = value.getSecond();
+                    String text = value.toString();
+                }
+                """);
+
+        // When & Then
         assertThat(result.runtimeShim()).contains(
                 "timeapi.io",
                 "/api/Time/current/zone?timeZone=UTC",
                 "juno_wifi_status() != 3",
                 "juno_https_get",
                 "juno_local_date_time_now");
+    }
+
+    @Test
+    @DisplayName("Wi-Fi begins before the clock is read")
+    void shouldBeginWifiBeforeTheClockIsRead() throws Exception {
+        // Given
+        CompilationResult result = compile("""
+                public static void main() {
+                    io.github.jabrena.juno.api.net.Wifi.begin("ssid", "password");
+                    java.time.LocalDateTime value = java.time.LocalDateTime.now();
+                    boolean offline = value.equals(java.time.LocalDateTime.MIN);
+                    int year = value.getYear();
+                    int month = value.getMonthValue();
+                    int day = value.getDayOfMonth();
+                    int hour = value.getHour();
+                    int minute = value.getMinute();
+                    int second = value.getSecond();
+                    String text = value.toString();
+                }
+                """);
+
+        // When & Then
         assertThat(result.assembly().indexOf("bl juno_wifi_begin"))
                 .isLessThan(result.assembly().indexOf("bl juno_local_date_time_now"));
     }
 
     @Test
-    void localDateTimeCanCrossMethodAndFieldBoundaries() throws Exception {
+    @DisplayName("A LocalDateTime can cross method and field boundaries")
+    void shouldLetLocalDateTimeCrossMethodAndFieldBoundaries() throws Exception {
+        // Given
         CompilationResult result = compile("""
                 private static java.time.LocalDateTime shared;
 
@@ -66,11 +119,14 @@ class LocalDateTimeTest {
                 }
                 """);
 
+        // When & Then
         assertThat(result.assembly()).contains("juno_local_date_time_now", "juno_local_date_time_min");
     }
 
     @Test
-    void acceptsAnApplicationPropertiesOverrideLoadedByTheApplication() throws Exception {
+    @DisplayName("Accepts an application-properties override loaded by the application")
+    void shouldAcceptAnApplicationPropertiesOverrideLoadedByTheApplication() throws Exception {
+        // Given
         CompilationResult result = compile("""
                 public static void main() {
                     java.util.Properties properties = new java.util.Properties();
@@ -79,14 +135,32 @@ class LocalDateTimeTest {
                 }
                 """);
 
+        // When & Then
         assertThat(result.assembly()).contains(
                 "juno_local_date_time_configure", "juno_local_date_time_now");
+    }
+
+    @Test
+    @DisplayName("The override reads the URL and JSON path properties in the shim")
+    void shouldReadTheUrlAndJsonPathPropertiesInTheShim() throws Exception {
+        // Given
+        CompilationResult result = compile("""
+                public static void main() {
+                    java.util.Properties properties = new java.util.Properties();
+                    boolean configured = io.github.jabrena.juno.api.net.InternetClock.configure(properties);
+                    java.time.LocalDateTime value = java.time.LocalDateTime.now();
+                }
+                """);
+
+        // When & Then
         assertThat(result.runtimeShim()).contains(
                 "time.api.url", "time.api.jsonPath", "juno_properties_get");
     }
 
     @Test
-    void rejectsMethodsOutsideTheBoundedSubset() throws Exception {
+    @DisplayName("Rejects methods outside the bounded subset")
+    void shouldRejectMethodsOutsideTheBoundedSubset() throws Exception {
+        // When & Then
         assertThatThrownBy(() -> compile("""
                 public static void main() {
                     int nano = java.time.LocalDateTime.now().getNano();
@@ -98,7 +172,9 @@ class LocalDateTimeTest {
     }
 
     @Test
-    void rejectsInternetClockOnABoardWithoutHttps() throws Exception {
+    @DisplayName("Rejects the internet clock on a board without HTTPS")
+    void shouldRejectTheInternetClockOnABoardWithoutHttps() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR3;
@@ -112,13 +188,16 @@ class LocalDateTimeTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.OfflineClock", source, "25");
 
+        // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OfflineClock"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("HTTPS networking");
     }
 
     @Test
-    void supportsTheUnoWifiRev2ThroughAvrThunks() throws Exception {
+    @DisplayName("Supports the UNO WiFi Rev2 through AVR thunks")
+    void shouldSupportTheUnoWifiRev2ThroughAvrThunks() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
@@ -133,12 +212,35 @@ class LocalDateTimeTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiRev2Clock", source, "25");
-
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiRev2Clock");
 
+        // When & Then
         assertThat(result.assembly()).contains(
                 "call juno_avr_thunk_juno_local_date_time_now",
                 "call juno_avr_thunk_juno_local_date_time_get_second");
+    }
+
+    @Test
+    @DisplayName("The UNO WiFi Rev2 shim includes WiFiNINA and the time API")
+    void shouldIncludeWifiNinaAndTheTimeApiInTheRev2Shim() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+                import io.github.jabrena.juno.annotations.Board;
+                import java.time.LocalDateTime;
+                @Board(ArduinoUnoR3WiFiRev2.class)
+                public final class WifiRev2Clock {
+                    public static void main() {
+                        LocalDateTime value = LocalDateTime.now();
+                        int second = value.getSecond();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiRev2Clock", source, "25");
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiRev2Clock");
+
+        // When & Then
         assertThat(result.runtimeShim()).contains("#include <WiFiNINA.h>", "timeapi.io");
     }
 

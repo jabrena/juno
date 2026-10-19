@@ -1,7 +1,9 @@
 package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -11,6 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** {@code juno:verify} through a real, Maven-configured {@link VerifyMojo}: a real Juno compile of
  * {@link io.github.jabrena.juno.maven.fixture.TinyProgram}, followed by a faked {@code arduino-cli compile}. */
+@NullMarked
+@DisplayName("juno:verify goal")
 class VerifyMojoTest extends AbstractMojoTestCase {
     @BeforeEach
     @Override
@@ -19,7 +23,9 @@ class VerifyMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    void compilesThenBuildsTheSketchWithArduinoCli() throws Exception {
+    @DisplayName("Compiles, then builds the sketch with arduino-cli")
+    void shouldCompileThenBuildTheSketchWithArduinoCli() throws Exception {
+        // Given
         VerifyMojo mojo = lookupEmptyMojo("verify", new File("."));
         mojo = configureMojo(mojo, configuration()
                 .set("arduinoCli", "arduino-cli")
@@ -32,8 +38,10 @@ class VerifyMojoTest extends AbstractMojoTestCase {
         FakeExecutor executor = new FakeExecutor().respond(0, "Sketch uses 1234 bytes");
         mojo.useExecutor(executor);
 
+        // When
         mojo.execute();
 
+        // Then
         assertThat(executor.invocations()).hasSize(1);
         Command compileCommand = executor.invocations().getFirst();
         assertThat(compileCommand.arguments()).contains("arduino-cli", "compile", "--fqbn",
@@ -43,7 +51,9 @@ class VerifyMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    void warnsAndBuildsForAConfiguredFqbnOverride() throws Exception {
+    @DisplayName("Warns and builds for a configured FQBN override")
+    void shouldWarnAndBuildForAConfiguredFqbnOverride() throws Exception {
+        // Given
         VerifyMojo mojo = lookupEmptyMojo("verify", new File("."));
         mojo = configureMojo(mojo, configuration()
                 .set("arduinoCli", "arduino-cli")
@@ -58,8 +68,10 @@ class VerifyMojoTest extends AbstractMojoTestCase {
         FakeExecutor executor = new FakeExecutor().respond(0, "Sketch uses 1234 bytes");
         mojo.useExecutor(executor);
 
+        // When
         mojo.execute();
 
+        // Then
         assertThat(log.warnings()).anyMatch(line -> line.contains("overrides @Board target"));
         Command compileCommand = executor.invocations().getFirst();
         assertThat(compileCommand.arguments()).contains("--fqbn", "arduino:renesas_uno:unor4wifi:cache=download");

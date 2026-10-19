@@ -1,46 +1,71 @@
 package io.github.jabrena.juno.lowering;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@NullMarked
+@DisplayName("HTTP URL parsing")
 class HttpUrlTest {
 
-    @Test
-    void theSchemeDecidesTlsAndTheDefaultPort() {
-        assertThat(HttpUrl.parse("https://api.example.com/v1/items"))
-                .isEqualTo(new HttpUrl(true, "api.example.com", 443, "/v1/items"));
-        assertThat(HttpUrl.parse("http://example.com/status"))
-                .isEqualTo(new HttpUrl(false, "example.com", 80, "/status"));
+    @ParameterizedTest(name = "parses {0}")
+    @CsvSource({
+        "https://api.example.com/v1/items, true, api.example.com, 443, /v1/items",
+        "http://example.com/status, false, example.com, 80, /status",
+        "http://192.168.1.10:8080/led, false, 192.168.1.10, 8080, /led",
+        "https://example.com, true, example.com, 443, /",
+        "https://example.com?q=1, true, example.com, 443, /?q=1"
+    })
+    @DisplayName("The scheme decides TLS and the default port, and an explicit port overrides the default")
+    void shouldParseTheUrlIntoItsParts(String url, boolean tls, String host, int port, String path) {
+        // When
+        HttpUrl parsed = HttpUrl.parse(url);
+
+        // Then
+        assertThat(parsed).isEqualTo(new HttpUrl(tls, host, port, path));
     }
 
     @Test
-    void anExplicitPortOverridesTheDefault() {
-        assertThat(HttpUrl.parse("http://192.168.1.10:8080/led"))
-                .isEqualTo(new HttpUrl(false, "192.168.1.10", 8080, "/led"));
+    @DisplayName("A query is kept and the fragment is dropped")
+    void shouldKeepTheQueryAndDropTheFragment() {
+        // When
+        String path = HttpUrl.parse("https://example.com/search?q=1#top").path();
+
+        // Then
+        assertThat(path).isEqualTo("/search?q=1");
     }
 
-    @Test
-    void aMissingPathBecomesRootAndAQueryIsKept() {
-        assertThat(HttpUrl.parse("https://example.com")).isEqualTo(new HttpUrl(true, "example.com", 443, "/"));
-        assertThat(HttpUrl.parse("https://example.com?q=1")).isEqualTo(new HttpUrl(true, "example.com", 443, "/?q=1"));
-        assertThat(HttpUrl.parse("https://example.com/search?q=1#top").path()).isEqualTo("/search?q=1");
+    @ParameterizedTest(name = "isBase is {1} for {0}")
+    @CsvSource({
+        "https://example.com, true",
+        "https://example.com/, true",
+        "https://example.com/v1, false"
+    })
+    @DisplayName("Only a URL without a path is a base")
+    void shouldTreatOnlyAUrlWithoutAPathAsABase(String url, boolean expected) {
+        // When
+        boolean base = HttpUrl.parse(url).isBase();
+
+        // Then
+        assertThat(base).isEqualTo(expected);
     }
 
-    @Test
-    void onlyAUrlWithoutAPathIsABase() {
-        assertThat(HttpUrl.parse("https://example.com").isBase()).isTrue();
-        assertThat(HttpUrl.parse("https://example.com/").isBase()).isTrue();
-        assertThat(HttpUrl.parse("https://example.com/v1").isBase()).isFalse();
-    }
-
-    @Test
-    void rejectsWhatItCannotSend() {
-        assertThatThrownBy(() -> HttpUrl.parse("ftp://example.com/")).hasMessageContaining("http:// or https://");
-        assertThatThrownBy(() -> HttpUrl.parse("https:///path")).hasMessageContaining("has no host");
-        assertThatThrownBy(() -> HttpUrl.parse("http://example.com:0/")).hasMessageContaining("invalid port");
-        assertThatThrownBy(() -> HttpUrl.parse("http://example.com:http/")).hasMessageContaining("invalid port");
-        assertThatThrownBy(() -> HttpUrl.parse("https://user@example.com/")).hasMessageContaining("not supported");
+    @ParameterizedTest(name = "rejects {0}")
+    @CsvSource({
+        "ftp://example.com/, http:// or https://",
+        "https:///path, has no host",
+        "http://example.com:0/, invalid port",
+        "http://example.com:http/, invalid port",
+        "https://user@example.com/, not supported"
+    })
+    @DisplayName("Rejects URLs it cannot send")
+    void shouldRejectUrlsItCannotSend(String url, String message) {
+        // When & Then
+        assertThatThrownBy(() -> HttpUrl.parse(url)).hasMessageContaining(message);
     }
 }

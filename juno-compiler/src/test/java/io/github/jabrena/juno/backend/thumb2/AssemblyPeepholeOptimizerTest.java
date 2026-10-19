@@ -1,14 +1,20 @@
 package io.github.jabrena.juno.backend.thumb2;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("Thumb-2 assembly peephole optimizer")
 class AssemblyPeepholeOptimizerTest {
     private final AssemblyPeepholeOptimizer assemblyPeepholeOptimizer = new AssemblyPeepholeOptimizer();
 
     @Test
-    void forwardsResidentStackWordsAndRemovesRedundantTraffic() {
+    @DisplayName("Forwards resident stack words and removes redundant stack traffic")
+    void shouldForwardResidentStackWordsAndRemoveRedundantTraffic() {
+        // Given
         String assembly = """
                     movs r0, #7
                     str r0, [sp, #0]
@@ -19,6 +25,7 @@ class AssemblyPeepholeOptimizerTest {
                     str r1, [sp, #8]
                 """;
 
+        // When & Then
         assertThat(assemblyPeepholeOptimizer.optimize(assembly)).isEqualTo("""
                     movs r0, #7
                     str r0, [sp, #0]
@@ -29,7 +36,9 @@ class AssemblyPeepholeOptimizerTest {
     }
 
     @Test
-    void treatsCallsInstructionsAndControlFlowBoundariesAsBarriers() {
+    @DisplayName("Treats calls, instructions and control-flow boundaries as barriers")
+    void shouldTreatCallsInstructionsAndControlFlowBoundariesAsBarriers() {
+        // Given
         String assembly = """
                     str r0, [sp, #0]
                     bl consume
@@ -42,6 +51,7 @@ class AssemblyPeepholeOptimizerTest {
                     ldr r0, [sp, #8]
                 """;
 
+        // When & Then
         assertThat(assemblyPeepholeOptimizer.optimize(assembly)).isEqualTo(assembly);
     }
 }

@@ -2,7 +2,9 @@ package io.github.jabrena.juno.api.thirdparty.imu;
 
 import io.github.jabrena.juno.api.io.i2c.I2c;
 import io.github.jabrena.juno.api.testing.Wire;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -10,6 +12,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("BNO055 nine-axis motion shield")
 class NineAxisMotionShieldTest {
     private static final int DEVICE = NineAxisMotionShield.ADDRESS_DEFAULT;
 
@@ -20,11 +24,28 @@ class NineAxisMotionShieldTest {
     }
 
     @Test
-    void beginResetsTheSensorAndSwitchesItToAndroidImuMode() {
+    @DisplayName("Begin reports success when the chip ID matches")
+    void shouldReportSuccessWhenTheChipIdMatches() {
+        // Given
         I2c.device(DEVICE, 0x00, 0xA0);
 
-        assertThat(NineAxisMotionShield.begin()).isTrue();
+        // When
+        boolean begun = NineAxisMotionShield.begin();
 
+        // Then
+        assertThat(begun).isTrue();
+    }
+
+    @Test
+    @DisplayName("Begin resets the sensor and switches it to Android IMU mode")
+    void shouldResetTheSensorAndSwitchItToAndroidImuMode() {
+        // Given
+        I2c.device(DEVICE, 0x00, 0xA0);
+
+        // When
+        NineAxisMotionShield.begin();
+
+        // Then
         assertThat(flat(I2c.writes)).containsSubsequence(
                 DEVICE, 0x3D, 0x00,
                 DEVICE, 0x3B, 0x80,
@@ -33,60 +54,156 @@ class NineAxisMotionShieldTest {
     }
 
     @Test
-    void beginFailsWhenTheChipIdIsWrong() {
+    @DisplayName("Begin reports failure when the chip ID is wrong")
+    void shouldReportFailureWhenTheChipIdIsWrong() {
+        // Given
         I2c.device(DEVICE, 0x00, 0x32);
 
-        assertThat(NineAxisMotionShield.begin()).isFalse();
+        // When
+        boolean begun = NineAxisMotionShield.begin();
+
+        // Then
+        assertThat(begun).isFalse();
+    }
+
+    @Test
+    @DisplayName("No mode is written after a failed identity check")
+    void shouldWriteNoModeAfterAFailedIdentityCheck() {
+        // Given
+        I2c.device(DEVICE, 0x00, 0x32);
+
+        // When
+        NineAxisMotionShield.begin();
+
+        // Then
         assertThat(I2c.writes).as("no mode is written after a failed identity check").isEmpty();
     }
 
     @Test
-    void headingIsWrappedAndConvertedToDegrees() {
+    @DisplayName("A full turn of heading wraps to zero degrees")
+    void shouldWrapAFullTurnOfHeadingToZeroDegrees() {
+        // Given
         I2c.device(DEVICE, 0x1A, 360 * 16 + 5);
-        assertThat(NineAxisMotionShield.headingRaw()).isEqualTo(5);
-        assertThat(NineAxisMotionShield.headingDegrees()).isZero();
 
+        // When
+        int[] heading = {NineAxisMotionShield.headingRaw(), NineAxisMotionShield.headingDegrees()};
+
+        // Then
+        assertThat(heading).containsExactly(5, 0);
+    }
+
+    @Test
+    @DisplayName("Heading converts to degrees")
+    void shouldConvertHeadingToDegrees() {
+        // Given
         I2c.device(DEVICE, 0x1A, 90 * 16);
-        assertThat(NineAxisMotionShield.headingDegrees()).isEqualTo(90);
+
+        // When
+        int degrees = NineAxisMotionShield.headingDegrees();
+
+        // Then
+        assertThat(degrees).isEqualTo(90);
     }
 
     @Test
-    void aMissingHeadingReadsAsMinusOne() {
-        assertThat(NineAxisMotionShield.headingRaw()).isEqualTo(-1);
-        assertThat(NineAxisMotionShield.headingDegrees()).isEqualTo(-1);
-        assertThat(NineAxisMotionShield.turnedSince(90)).isZero();
+    @DisplayName("A missing heading reads as minus one with no turn")
+    void shouldReadAMissingHeadingAsMinusOneWithNoTurn() {
+        // When
+        int[] values = {
+                NineAxisMotionShield.headingRaw(),
+                NineAxisMotionShield.headingDegrees(),
+                NineAxisMotionShield.turnedSince(90)};
+
+        // Then
+        assertThat(values).containsExactly(-1, -1, 0);
     }
 
     @Test
-    void pitchAndGyroAreSignedSixteenBitValues() {
+    @DisplayName("Pitch is a signed sixteen-bit value")
+    void shouldReadPitchAsASignedSixteenBitValue() {
+        // Given
         I2c.device(DEVICE, 0x1E, 0xFFFF);
-        assertThat(NineAxisMotionShield.pitchRaw()).isEqualTo(-1);
 
+        // When
+        int pitch = NineAxisMotionShield.pitchRaw();
+
+        // Then
+        assertThat(pitch).isEqualTo(-1);
+    }
+
+    @Test
+    @DisplayName("Gyro X reads a positive sixteen-bit value")
+    void shouldReadGyroXAsAPositiveSixteenBitValue() {
+        // Given
         I2c.device(DEVICE, 0x14, 0x0100);
-        assertThat(NineAxisMotionShield.gyroXRaw()).isEqualTo(256);
 
+        // When
+        int gyro = NineAxisMotionShield.gyroXRaw();
+
+        // Then
+        assertThat(gyro).isEqualTo(256);
+    }
+
+    @Test
+    @DisplayName("Gyro X reads a negative value from the sign bit")
+    void shouldReadGyroXAsANegativeValueFromTheSignBit() {
+        // Given
         I2c.device(DEVICE, 0x14, 0x8000);
-        assertThat(NineAxisMotionShield.gyroXRaw()).isEqualTo(-32768);
+
+        // When
+        int gyro = NineAxisMotionShield.gyroXRaw();
+
+        // Then
+        assertThat(gyro).isEqualTo(-32768);
     }
 
     @Test
-    void aMissingPitchReadsAsTheMinimumValue() {
-        assertThat(NineAxisMotionShield.pitchRaw()).isEqualTo(Short.MIN_VALUE);
+    @DisplayName("A missing pitch reads as the minimum value")
+    void shouldReadAMissingPitchAsTheMinimumValue() {
+        // When
+        int pitch = NineAxisMotionShield.pitchRaw();
+
+        // Then
+        assertThat(pitch).isEqualTo(Short.MIN_VALUE);
     }
 
     @Test
-    void turnedSinceTakesTheShortestWayAroundTheCompass() {
+    @DisplayName("Turn takes the shortest way around the compass")
+    void shouldTakeTheShortestWayAroundTheCompass() {
+        // Given
         I2c.device(DEVICE, 0x1A, 10 * 16);
 
-        assertThat(NineAxisMotionShield.turnedSince(350)).isEqualTo(20);
-        assertThat(NineAxisMotionShield.turnedSince(-1)).as("no start heading").isZero();
+        // When
+        int turned = NineAxisMotionShield.turnedSince(350);
+
+        // Then
+        assertThat(turned).isEqualTo(20);
     }
 
     @Test
-    void calibrationReadsTheStatusRegister() {
+    @DisplayName("No turn is reported without a start heading")
+    void shouldReportNoTurnWithoutAStartHeading() {
+        // Given
+        I2c.device(DEVICE, 0x1A, 10 * 16);
+
+        // When
+        int turned = NineAxisMotionShield.turnedSince(-1);
+
+        // Then
+        assertThat(turned).as("no start heading").isZero();
+    }
+
+    @Test
+    @DisplayName("Calibration reads the status register")
+    void shouldReadTheCalibrationStatusRegister() {
+        // Given
         I2c.device(DEVICE, 0x35, 0xFF);
 
-        assertThat(NineAxisMotionShield.calibration()).isEqualTo(255);
+        // When
+        int calibration = NineAxisMotionShield.calibration();
+
+        // Then
+        assertThat(calibration).isEqualTo(255);
     }
 
     private static List<Integer> flat(List<int[]> writes) {

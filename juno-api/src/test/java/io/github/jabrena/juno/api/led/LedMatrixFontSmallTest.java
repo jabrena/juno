@@ -1,44 +1,70 @@
 package io.github.jabrena.juno.api.led;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("LED matrix small font")
 class LedMatrixFontSmallTest {
 
     @Test
-    void zeroAndOneHaveTheirClassicShapes() {
+    @DisplayName("Zero has its classic shape")
+    void shouldDrawZeroWithItsClassicShape() {
+        // When & Then
         assertThat(rows(0)).containsExactly("###", "#.#", "#.#", "#.#", "###");
+    }
+
+    @Test
+    @DisplayName("One has its classic shape")
+    void shouldDrawOneWithItsClassicShape() {
+        // When & Then
         assertThat(rows(1)).containsExactly(".#.", "##.", ".#.", ".#.", "###");
     }
 
     @Test
-    void everyDigitHasItsOwnShape() {
+    @DisplayName("Every digit has its own shape")
+    void shouldGiveEveryDigitADistinctShape() {
+        // Given
         String[] shapes = new String[10];
         for (int digit = 0; digit <= 9; digit++) {
             shapes[digit] = String.join("/", rows(digit));
         }
 
+        // When & Then
         assertThat(shapes).doesNotHaveDuplicates();
     }
 
     @Test
-    void everyDigitFitsItsGlyphBoxAndLightsSomething() {
+    @DisplayName("Every digit fits its glyph box and lights at least one pixel")
+    void shouldFitEveryDigitInsideItsGlyphBoxAndLightAPixel() {
         for (int digit = 0; digit <= 9; digit++) {
+            // Given
             String[] rows = rows(digit);
-            assertThat(rows).hasSize(LedMatrixFontSmall.GLYPH_HEIGHT);
-            for (String row : rows) {
-                assertThat(row).hasSize(LedMatrixFontSmall.GLYPH_WIDTH);
-            }
+
+            // When & Then
+            assertThat(rows)
+                    .hasSize(LedMatrixFontSmall.GLYPH_HEIGHT)
+                    .allSatisfy(row -> assertThat(row).hasSize(LedMatrixFontSmall.GLYPH_WIDTH));
             assertThat(String.join("", rows)).contains("#");
         }
     }
 
     @Test
-    void decimalPointIsASingleBaselinePixel() {
+    @DisplayName("The decimal point is a single baseline pixel")
+    void shouldLightOnlyTheBaselinePixelForTheDecimalPoint() {
+        // Given
+        boolean[] actual = new boolean[LedMatrixFontSmall.GLYPH_HEIGHT];
         for (int row = 0; row < LedMatrixFontSmall.GLYPH_HEIGHT; row++) {
-            assertThat(LedMatrixFontSmall.pointPixel(row)).isEqualTo(row == LedMatrixFontSmall.GLYPH_HEIGHT - 1);
+            actual[row] = LedMatrixFontSmall.pointPixel(row);
         }
+        boolean[] expected = new boolean[LedMatrixFontSmall.GLYPH_HEIGHT];
+        expected[LedMatrixFontSmall.GLYPH_HEIGHT - 1] = true;
+
+        // When & Then
+        assertThat(actual).isEqualTo(expected);
     }
 
     private static String[] rows(int digit) {

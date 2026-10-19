@@ -1,12 +1,16 @@
 package io.github.jabrena.juno.api.io.gpio;
 
 import io.github.jabrena.juno.api.testing.Wire;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@NullMarked
+@DisplayName("Port noise seed collection")
 class PortNoiseTest {
 
     @BeforeEach
@@ -15,39 +19,61 @@ class PortNoiseTest {
     }
 
     @Test
-    void aVaryingSourcePassesTheHealthChecksAndGivesASeed() {
+    @DisplayName("A varying source passes the health checks and gives a seed")
+    void shouldGiveASeedWhenTheSourceVaries() {
+        // Given
         Gpio.analogSequence = new int[] {0, 1};
 
+        // When
         int seed = PortNoise.collectSeed(Gpio.A0, Gpio.D2, 64);
 
+        // Then
         assertThat(seed).isNotZero();
     }
 
     @Test
-    void theSameSourceAndTimingGiveTheSameSeed() {
+    @DisplayName("The same source and timing give the same seed")
+    void shouldGiveTheSameSeedForTheSameSourceAndTiming() {
+        // Given
         Gpio.analogSequence = new int[] {0, 1, 1, 0};
         int first = PortNoise.collectSeed(Gpio.A0, Gpio.D2, 64);
-
         Wire.resetBoard();
         Gpio.analogSequence = new int[] {0, 1, 1, 0};
 
-        assertThat(PortNoise.collectSeed(Gpio.A0, Gpio.D2, 64)).isEqualTo(first);
+        // When
+        int second = PortNoise.collectSeed(Gpio.A0, Gpio.D2, 64);
+
+        // Then
+        assertThat(second).isEqualTo(first);
     }
 
     @Test
-    void aConstantLowSourceFailsTheProportionCheck() {
-        assertThat(PortNoise.collectSeed(Gpio.A0, Gpio.D2, 64)).isZero();
+    @DisplayName("A constant low source fails the proportion check")
+    void shouldFailWhenTheSourceIsConstantlyLow() {
+        // When
+        int seed = PortNoise.collectSeed(Gpio.A0, Gpio.D2, 64);
+
+        // Then
+        assertThat(seed).isZero();
     }
 
     @Test
-    void aConstantHighSourceFailsTheProportionCheck() {
+    @DisplayName("A constant high source fails the proportion check")
+    void shouldFailWhenTheSourceIsConstantlyHigh() {
+        // Given
         Gpio.analogSequence = new int[] {1};
 
-        assertThat(PortNoise.collectSeed(Gpio.A0, Gpio.D2, 64)).isZero();
+        // When
+        int seed = PortNoise.collectSeed(Gpio.A0, Gpio.D2, 64);
+
+        // Then
+        assertThat(seed).isZero();
     }
 
     @Test
-    void tooFewSamplesAreRejected() {
+    @DisplayName("Too few samples are rejected")
+    void shouldRejectTooFewSamples() {
+        // When & Then
         assertThatThrownBy(() -> PortNoise.collectSeed(Gpio.A0, Gpio.D2, 31))
                 .isInstanceOf(IllegalArgumentException.class);
     }

@@ -1,87 +1,79 @@
 package io.github.jabrena.juno.optimize;
 
 import io.github.jabrena.juno.CompilerTestSupport;
-import org.junit.jupiter.api.Test;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /** Which bounds checks the range analysis proves redundant in real loops, and which it must keep. */
+@NullMarked
+@DisplayName("Bounds check elimination in real loops")
 class BoundsCheckEliminationTest {
     @TempDir
     Path temporaryDirectory;
 
-    @Test
-    void removesTheCheckOfACountedLoopBoundedByTheArrayLength() throws Exception {
-        assertThat(runtimeChecks("""
-                int[] values = new int[16];
-                for (int i = 0; i < 16; i++) values[i] = i;
-                for (int i = 0; i < values.length; i++) total += values[i];
-                """)).isZero();
+    static Stream<Arguments> boundsCases() {
+        return Stream.of(
+                arguments("a counted loop bounded by the array length removes its check", 0, """
+                        int[] values = new int[16];
+                        for (int i = 0; i < 16; i++) values[i] = i;
+                        for (int i = 0; i < values.length; i++) total += values[i];
+                        """),
+                arguments("a loop counting down removes its check", 0, """
+                        int[] values = new int[8];
+                        for (int i = 7; i >= 0; i--) values[i] = i;
+                        total = values[0];
+                        """),
+                arguments("a masked or remainder index removes its check", 0, """
+                        int[] values = new int[16];
+                        int seed = Gpio.analogRead(0);
+                        values[seed & 15] = 1;
+                        values[(seed & 0x7FFF) % 16] = 2;
+                        """),
+                arguments("the same index read then written keeps one check", 1, """
+                        int[] values = new int[16];
+                        int k = Gpio.analogRead(0);
+                        values[k] = values[k] + 1;
+                        """),
+                arguments("a loop running one past the end keeps its check", 1, """
+                        int[] values = new int[16];
+                        for (int i = 0; i <= 16; i++) values[i] = i;
+                        """),
+                arguments("a possibly negative index keeps its check", 1, """
+                        int[] values = new int[16];
+                        for (int i = -1; i < 16; i++) values[i] = i;
+                        """),
+                arguments("an unknown loop bound keeps its check", 1, """
+                        int[] values = new int[16];
+                        int count = Gpio.analogRead(0);
+                        for (int i = 0; i < count; i++) values[i] = i;
+                        """),
+                arguments("index arithmetic that can overflow keeps its check", 1, """
+                        int[] values = new int[16];
+                        int big = Gpio.analogRead(0) | 0x7FFFFFF0;
+                        values[big + 20] = 1;
+                        """));
     }
 
-    @Test
-    void removesTheCheckOfALoopCountingDown() throws Exception {
-        assertThat(runtimeChecks("""
-                int[] values = new int[8];
-                for (int i = 7; i >= 0; i--) values[i] = i;
-                total = values[0];
-                """)).isZero();
-    }
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("boundsCases")
+    @DisplayName("Counts the bounds checks left after range analysis")
+    void shouldCountTheBoundsChecksLeftAfterRangeAnalysis(String description, int expectedChecks, String body)
+            throws Exception {
+        // When
+        int checks = runtimeChecks(body);
 
-    @Test
-    void removesTheCheckOfAMaskedOrRemainderIndex() throws Exception {
-        assertThat(runtimeChecks("""
-                int[] values = new int[16];
-                int seed = Gpio.analogRead(0);
-                values[seed & 15] = 1;
-                values[(seed & 0x7FFF) % 16] = 2;
-                """)).isZero();
-    }
-
-    @Test
-    void keepsOneCheckForTheSameIndexReadThenWritten() throws Exception {
-        assertThat(runtimeChecks("""
-                int[] values = new int[16];
-                int k = Gpio.analogRead(0);
-                values[k] = values[k] + 1;
-                """)).isEqualTo(1);
-    }
-
-    @Test
-    void keepsTheCheckWhenTheLoopRunsOnePastTheEnd() throws Exception {
-        assertThat(runtimeChecks("""
-                int[] values = new int[16];
-                for (int i = 0; i <= 16; i++) values[i] = i;
-                """)).isEqualTo(1);
-    }
-
-    @Test
-    void keepsTheCheckWhenTheIndexCanBeNegative() throws Exception {
-        assertThat(runtimeChecks("""
-                int[] values = new int[16];
-                for (int i = -1; i < 16; i++) values[i] = i;
-                """)).isEqualTo(1);
-    }
-
-    @Test
-    void keepsTheCheckWhenTheBoundIsUnknown() throws Exception {
-        assertThat(runtimeChecks("""
-                int[] values = new int[16];
-                int count = Gpio.analogRead(0);
-                for (int i = 0; i < count; i++) values[i] = i;
-                """)).isEqualTo(1);
-    }
-
-    @Test
-    void keepsTheCheckWhenTheIndexArithmeticCanOverflow() throws Exception {
-        assertThat(runtimeChecks("""
-                int[] values = new int[16];
-                int big = Gpio.analogRead(0) | 0x7FFFFFF0;
-                values[big + 20] = 1;
-                """)).isEqualTo(1);
+        // Then
+        assertThat(checks).isEqualTo(expectedChecks);
     }
 
     /** Compiles {@code body} inside a {@code main} with an {@code int total} in scope; counts the runtime checks left. */

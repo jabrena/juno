@@ -2,20 +2,27 @@ package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.analysis.RuntimeRiskReport;
 import io.github.jabrena.juno.board.Board;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("Runtime risk analysis findings")
 class RuntimeRiskAnalyzerTest {
     @TempDir
     Path temporaryDirectory;
 
     @Test
-    void reportsRepeatedArenaAllocationAndPossibleIntegerDivisionByZero() throws Exception {
+    @DisplayName("Reports repeated arena allocation and possible integer division by zero")
+    void shouldReportRepeatedArenaAllocationAndPossibleIntegerDivisionByZero() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.Risky", """
                 package demo;
                 public final class Risky {
@@ -31,15 +38,34 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(report.arenaCapacityBytes()).isEqualTo(8192);
-        assertThat(report.estimatedArenaBytes() > 0).isTrue();
-        assertThat(report.unboundedArenaAllocation()).isTrue();
-        assertThat(hasCode(report, "JUNO-RISK-001")).isTrue();
-        assertThat(hasCode(report, "JUNO-RISK-005")).isTrue();
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-001", "JUNO-RISK-005");
     }
 
     @Test
-    void reportsAConservativeArenaEstimateAboveCapacity() throws Exception {
+    @DisplayName("Reports the default arena capacity")
+    void shouldReportTheDefaultArenaCapacity() throws Exception {
+        // Given
+        RuntimeRiskReport report = compileReport("demo.Risky", riskySource());
+
+        // When & Then
+        assertThat(report.arenaCapacityBytes()).isEqualTo(8192);
+    }
+
+    @Test
+    @DisplayName("Flags an unbounded arena allocation inside a loop")
+    void shouldFlagAnUnboundedArenaAllocationInsideALoop() throws Exception {
+        // Given
+        RuntimeRiskReport report = compileReport("demo.Risky", riskySource());
+
+        // When & Then
+        assertThat(report.unboundedArenaAllocation()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Reports a conservative arena estimate above capacity")
+    void shouldReportAConservativeArenaEstimateAboveCapacity() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.TooLarge", """
                 package demo;
                 public final class TooLarge {
@@ -50,30 +76,62 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(report.estimatedArenaBytes() > report.arenaCapacityBytes()).isTrue();
-        assertThat(hasCode(report, "JUNO-RISK-002")).isTrue();
+        // When & Then
+        assertThat(report.estimatedArenaBytes()).isGreaterThan(report.arenaCapacityBytes());
     }
 
     @Test
-    void reportsRecursionAsUnboundedCallDepthAndStack() throws Exception {
-        RuntimeRiskReport report = compileReport("demo.Recursive", """
+    @DisplayName("Reports the over-capacity arena estimate with its finding")
+    void shouldReportTheOverCapacityArenaEstimateWithItsFinding() throws Exception {
+        // Given
+        RuntimeRiskReport report = compileReport("demo.TooLarge", """
                 package demo;
-                public final class Recursive {
-                    static int countDown(int value) {
-                        if (value == 0) return 0;
-                        return countDown(value - 1);
+                public final class TooLarge {
+                    public static void main() {
+                        int[] values = new int[3000];
+                        values[0] = 1;
                     }
-                    public static void main() { countDown(3); }
                 }
                 """);
 
-        assertThat(report.maxCallDepth()).isEqualTo(-1);
-        assertThat(report.estimatedMaxStackBytes()).isEqualTo(-1);
-        assertThat(hasCode(report, "JUNO-RISK-003")).isTrue();
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-002");
     }
 
     @Test
-    void distinguishesGeneratedBoundsChecksFromUncheckedParameterAccess() throws Exception {
+    @DisplayName("Reports recursion as unbounded call depth")
+    void shouldReportRecursionAsUnboundedCallDepth() throws Exception {
+        // Given
+        RuntimeRiskReport report = compileReport("demo.Recursive", recursiveSource());
+
+        // When & Then
+        assertThat(report.maxCallDepth()).isEqualTo(-1);
+    }
+
+    @Test
+    @DisplayName("Reports recursion as an unbounded stack")
+    void shouldReportRecursionAsAnUnboundedStack() throws Exception {
+        // Given
+        RuntimeRiskReport report = compileReport("demo.Recursive", recursiveSource());
+
+        // When & Then
+        assertThat(report.estimatedMaxStackBytes()).isEqualTo(-1);
+    }
+
+    @Test
+    @DisplayName("Reports recursion with its finding")
+    void shouldReportRecursionWithItsFinding() throws Exception {
+        // Given
+        RuntimeRiskReport report = compileReport("demo.Recursive", recursiveSource());
+
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-003");
+    }
+
+    @Test
+    @DisplayName("Distinguishes generated bounds checks from unchecked parameter access")
+    void shouldDistinguishGeneratedBoundsChecksFromUncheckedParameterAccess() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.Arrays", """
                 package demo;
                 public final class Arrays {
@@ -86,13 +144,16 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(report.boundsChecks() > 0).isTrue();
-        assertThat(report.uncheckedArrayAccesses() > 0).isTrue();
-        assertThat(hasCode(report, "JUNO-RISK-004")).isTrue();
+        // When & Then
+        assertThat(report.boundsChecks()).isPositive();
+        assertThat(report.uncheckedArrayAccesses()).isPositive();
+        assertThat(codes(report)).contains("JUNO-RISK-004");
     }
 
     @Test
-    void doesNotWarnForKnownNonzeroIntegerOrFloatingPointDivisors() throws Exception {
+    @DisplayName("Does not warn for known nonzero integer or floating-point divisors")
+    void shouldNotWarnForKnownNonzeroIntegerOrFloatingPointDivisors() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.SafeDivision", """
                 package demo;
                 public final class SafeDivision {
@@ -105,11 +166,16 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(report, "JUNO-RISK-005")).as("floating-point zero division follows Java infinity/NaN semantics and does not panic").isFalse();
+        // When & Then
+        assertThat(codes(report))
+                .as("floating-point zero division follows Java infinity/NaN semantics and does not panic")
+                .doesNotContain("JUNO-RISK-005");
     }
 
     @Test
-    void anUncaughtThrowIsNotAnAllocationLoop() throws Exception {
+    @DisplayName("An uncaught throw is not an allocation loop")
+    void shouldNotTreatAnUncaughtThrowAsAnAllocationLoop() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.Boom", """
                 package demo;
                 public final class Boom {
@@ -119,11 +185,14 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(report, "JUNO-RISK-001")).isFalse();
+        // When & Then
+        assertThat(codes(report)).doesNotContain("JUNO-RISK-001");
     }
 
     @Test
-    void reportsMathFloorDivisionOnlyForAnUnknownDivisor() throws Exception {
+    @DisplayName("Floor division of a known positive divisor does not warn")
+    void shouldNotWarnForFloorDivisionOfAKnownPositiveDivisor() throws Exception {
+        // Given
         RuntimeRiskReport safe = compileReport("demo.SafeFloorDiv", """
                 package demo;
                 public final class SafeFloorDiv {
@@ -135,6 +204,15 @@ class RuntimeRiskAnalyzerTest {
                     }
                 }
                 """);
+
+        // When & Then
+        assertThat(codes(safe)).doesNotContain("JUNO-RISK-005");
+    }
+
+    @Test
+    @DisplayName("Floor division of an unknown divisor warns")
+    void shouldWarnForFloorDivisionOfAnUnknownDivisor() throws Exception {
+        // Given
         RuntimeRiskReport risky = compileReport("demo.RiskyFloorDiv", """
                 package demo;
                 public final class RiskyFloorDiv {
@@ -145,12 +223,14 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(safe, "JUNO-RISK-005")).isFalse();
-        assertThat(hasCode(risky, "JUNO-RISK-005")).isTrue();
+        // When & Then
+        assertThat(codes(risky)).contains("JUNO-RISK-005");
     }
 
     @Test
-    void reportsADereferenceOfCompileTimeNull() throws Exception {
+    @DisplayName("Reports a dereference of a compile-time null")
+    void shouldReportADereferenceOfACompileTimeNull() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.NullReceiver", """
                 package demo;
                 public final class NullReceiver {
@@ -162,11 +242,14 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(report, "JUNO-RISK-006")).isTrue();
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-006");
     }
 
     @Test
-    void reportsAStoreThroughACompileTimeNullReceiver() throws Exception {
+    @DisplayName("Reports a store through a compile-time null receiver")
+    void shouldReportAStoreThroughACompileTimeNullReceiver() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.NullStoreReceiver", """
                 package demo;
                 public final class NullStoreReceiver {
@@ -178,12 +261,15 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(report, "JUNO-RISK-006")).isTrue();
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-006");
     }
 
     @Test
-    void reportsACompileTimeNullArrayLoadAndStore() throws Exception {
-        RuntimeRiskReport loadReport = compileReport("demo.NullArrayLoad", """
+    @DisplayName("Reports a compile-time null array load")
+    void shouldReportACompileTimeNullArrayLoad() throws Exception {
+        // Given
+        RuntimeRiskReport report = compileReport("demo.NullArrayLoad", """
                 package demo;
                 public final class NullArrayLoad {
                     public static void main() {
@@ -192,7 +278,16 @@ class RuntimeRiskAnalyzerTest {
                     }
                 }
                 """);
-        RuntimeRiskReport storeReport = compileReport("demo.NullArrayStore", """
+
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-006");
+    }
+
+    @Test
+    @DisplayName("Reports a compile-time null array store")
+    void shouldReportACompileTimeNullArrayStore() throws Exception {
+        // Given
+        RuntimeRiskReport report = compileReport("demo.NullArrayStore", """
                 package demo;
                 public final class NullArrayStore {
                     public static void main() {
@@ -202,12 +297,14 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(loadReport, "JUNO-RISK-006")).isTrue();
-        assertThat(hasCode(storeReport, "JUNO-RISK-006")).isTrue();
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-006");
     }
 
     @Test
-    void reportsLongDivisionOnlyForAnUnknownOrLiteralZeroDivisor() throws Exception {
+    @DisplayName("Reports long division by a literal zero divisor")
+    void shouldReportLongDivisionByALiteralZeroDivisor() throws Exception {
+        // Given
         RuntimeRiskReport literalZero = compileReport("demo.LiteralZeroLongDiv", """
                 package demo;
                 public final class LiteralZeroLongDiv {
@@ -215,6 +312,15 @@ class RuntimeRiskAnalyzerTest {
                     public static void main() { divide(10L); }
                 }
                 """);
+
+        // When & Then
+        assertThat(codes(literalZero)).contains("JUNO-RISK-005");
+    }
+
+    @Test
+    @DisplayName("Reports long division by an unknown divisor")
+    void shouldReportLongDivisionByAnUnknownDivisor() throws Exception {
+        // Given
         RuntimeRiskReport unknownDivisor = compileReport("demo.UnknownLongDivisor", """
                 package demo;
                 public final class UnknownLongDivisor {
@@ -222,6 +328,15 @@ class RuntimeRiskAnalyzerTest {
                     public static void main() { divide(10L, 4L); }
                 }
                 """);
+
+        // When & Then
+        assertThat(codes(unknownDivisor)).contains("JUNO-RISK-005");
+    }
+
+    @Test
+    @DisplayName("Long division by a known nonzero divisor does not warn")
+    void shouldNotWarnForLongDivisionByAKnownNonzeroDivisor() throws Exception {
+        // Given
         RuntimeRiskReport safe = compileReport("demo.SafeLongDiv", """
                 package demo;
                 public final class SafeLongDiv {
@@ -230,13 +345,14 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(literalZero, "JUNO-RISK-005")).isTrue();
-        assertThat(hasCode(unknownDivisor, "JUNO-RISK-005")).isTrue();
-        assertThat(hasCode(safe, "JUNO-RISK-005")).isFalse();
+        // When & Then
+        assertThat(codes(safe)).doesNotContain("JUNO-RISK-005");
     }
 
     @Test
-    void reportsAStringBuilderCapacityThatCanOverflowTheRuntimeStringSlotAtToString() throws Exception {
+    @DisplayName("Reports a StringBuilder capacity that can overflow the runtime string slot")
+    void shouldReportAStringBuilderCapacityThatCanOverflowTheRuntimeStringSlot() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.OversizedBuilder", """
                 package demo;
                 public final class OversizedBuilder {
@@ -248,11 +364,14 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(report, "JUNO-RISK-007")).isTrue();
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-007");
     }
 
     @Test
-    void doesNotReportAStringBuilderCapacityWellWithinTheRuntimeStringSlot() throws Exception {
+    @DisplayName("Does not report a StringBuilder capacity well within the runtime string slot")
+    void shouldNotReportAStringBuilderCapacityWellWithinTheRuntimeStringSlot() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.SafeBuilder", """
                 package demo;
                 public final class SafeBuilder {
@@ -264,13 +383,16 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(report, "JUNO-RISK-007"))
+        // When & Then
+        assertThat(codes(report))
                 .as("a capacity comfortably under the string-slot size can never overflow it")
-                .isFalse();
+                .doesNotContain("JUNO-RISK-007");
     }
 
     @Test
-    void warnsWhenSubtasksAreForkedInALoopOrBeyondTheSlotLimit() throws Exception {
+    @DisplayName("Warns when subtasks are forked in a loop or beyond the slot limit")
+    void shouldWarnWhenSubtasksAreForkedInALoopOrBeyondTheSlotLimit() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.Spawner", """
                 package demo;
                 public final class Spawner {
@@ -289,12 +411,14 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(report, "JUNO-RISK-008")).isTrue();
-        assertThat(hasCode(report, "JUNO-RISK-009")).isTrue();
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-008", "JUNO-RISK-009");
     }
 
     @Test
-    void doesNotWarnForJoinedSubtasksWithinTheSlotLimit() throws Exception {
+    @DisplayName("Does not warn for joined subtasks within the slot limit")
+    void shouldNotWarnForJoinedSubtasksWithinTheSlotLimit() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.Joined", """
                 package demo;
                 public final class Joined {
@@ -312,14 +436,14 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(report, "JUNO-RISK-008")).isFalse();
-        assertThat(hasCode(report, "JUNO-RISK-009")).isFalse();
-        assertThat(hasCode(report, "JUNO-RISK-010")).isFalse();
-        assertThat(hasCode(report, "JUNO-RISK-011")).isFalse();
+        // When & Then
+        assertThat(codes(report)).doesNotContain("JUNO-RISK-008", "JUNO-RISK-009", "JUNO-RISK-010", "JUNO-RISK-011");
     }
 
     @Test
-    void warnsWhenASubtaskBodyNestsScopesOrRecurses() throws Exception {
+    @DisplayName("Warns when a subtask body nests scopes or recurses")
+    void shouldWarnWhenASubtaskBodyNestsScopesOrRecurses() throws Exception {
+        // Given
         RuntimeRiskReport report = compileReport("demo.Nested", """
                 package demo;
                 public final class Nested {
@@ -341,8 +465,38 @@ class RuntimeRiskAnalyzerTest {
                 }
                 """);
 
-        assertThat(hasCode(report, "JUNO-RISK-010")).isTrue();
-        assertThat(hasCode(report, "JUNO-RISK-011")).isTrue();
+        // When & Then
+        assertThat(codes(report)).contains("JUNO-RISK-010", "JUNO-RISK-011");
+    }
+
+    private static String riskySource() {
+        return """
+                package demo;
+                public final class Risky {
+                    static final class Box { int value; }
+                    static Box create() { return new Box(); }
+                    static int divide(int value, int divisor) { return value / divisor; }
+                    public static void main() {
+                        while (true) {
+                            Box box = create();
+                            divide(10, box.value);
+                        }
+                    }
+                }
+                """;
+    }
+
+    private static String recursiveSource() {
+        return """
+                package demo;
+                public final class Recursive {
+                    static int countDown(int value) {
+                        if (value == 0) return 0;
+                        return countDown(value - 1);
+                    }
+                    public static void main() { countDown(3); }
+                }
+                """;
     }
 
     private RuntimeRiskReport compileReport(String className, String source) throws Exception {
@@ -353,7 +507,7 @@ class RuntimeRiskAnalyzerTest {
         return result.report().runtimeRisks();
     }
 
-    private boolean hasCode(RuntimeRiskReport report, String code) {
-        return report.findings().stream().anyMatch(finding -> finding.code().equals(code));
+    private static List<String> codes(RuntimeRiskReport report) {
+        return report.findings().stream().map(finding -> finding.code()).toList();
     }
 }
