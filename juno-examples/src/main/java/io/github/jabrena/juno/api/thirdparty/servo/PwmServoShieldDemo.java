@@ -28,23 +28,24 @@ public final class PwmServoShieldDemo {
     private static final int STEP_DELAY_MILLIS = 15;
 
     public static void main(String[] args) {
-        PwmServoShield.begin();
+        PwmServoShield shield = new PwmServoShield();
+        shield.begin();
 
         while (true) {
             for (int angle = PwmServoShield.MIN_ANGLE; angle <= PwmServoShield.MAX_ANGLE; angle += STEP_DEGREES) {
-                writeAll(angle);
+                writeAll(shield, angle);
                 Delay.millis(STEP_DELAY_MILLIS);
             }
             for (int angle = PwmServoShield.MAX_ANGLE; angle >= PwmServoShield.MIN_ANGLE; angle -= STEP_DEGREES) {
-                writeAll(angle);
+                writeAll(shield, angle);
                 Delay.millis(STEP_DELAY_MILLIS);
             }
         }
     }
 
-    private static void writeAll(int angle) {
+    private static void writeAll(PwmServoShield shield, int angle) {
         for (int channel = 0; channel < SERVO_COUNT; channel++) {
-            PwmServoShield.write(channel, angle);
+            shield.write(channel, angle);
         }
     }
 }
