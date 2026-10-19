@@ -2705,6 +2705,31 @@ class JunoCompilerTest {
             CompilationResult plainResult = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Plain");
             assertThat(plainResult.runtimeShim()).doesNotContain("Mouse.h", "juno_mouse_begin", "juno_parallel_bus");
         }
+
+        @Test
+        @DisplayName("Rejects Mouse on the UNO Q, whose core has no HID.h")
+        void shouldRejectMouseOnTheUnoQ() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.api.hardware.MCU;
+                    @Board(ArduinoUnoQ.class)
+                    public final class UnoQMouse {
+                        public static void main(String[] args) {
+                            MCU.getMouse().begin();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoQMouse", source);
+
+            // When & Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoQMouse"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("Mouse")
+                    .hasMessageContaining("Zephyr core has no HID.h");
+        }
     }
 
     @Nested

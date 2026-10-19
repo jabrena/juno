@@ -33,12 +33,14 @@ class BoardTest {
                 arguments(Board.UNO_R4_WIFI, Capability.WIFI, true),
                 arguments(Board.UNO_R4_WIFI, Capability.HTTPS_CLIENT, true),
                 arguments(Board.UNO_R4_WIFI, Capability.LED_MATRIX, true),
+                arguments(Board.UNO_R4_WIFI, Capability.USB_HID, true),
                 arguments(Board.UNO_Q, Capability.WIFI, true),
                 arguments(Board.UNO_Q, Capability.HTTPS_CLIENT, true),
                 arguments(Board.UNO_Q, Capability.LED_MATRIX, true),
                 arguments(Board.UNO_Q, Capability.HTTP_SERVER, true),
                 arguments(Board.UNO_Q, Capability.SMTP_STARTTLS, false),
                 arguments(Board.UNO_Q, Capability.WATCHDOG, false),
+                arguments(Board.UNO_Q, Capability.USB_HID, false),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.WATCHDOG, true));
     }
 

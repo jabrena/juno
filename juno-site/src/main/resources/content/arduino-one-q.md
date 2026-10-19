@@ -134,7 +134,8 @@ loaded by the board's Zephyr firmware.
 | Juno HTTPS client API | Yes | TLS connections use `BridgeTCPClient` and the Linux system trust store |
 | Juno HTTP server and email APIs | No | Current intrinsics target the UNO R4 WiFi's `WiFiS3` libraries |
 | `@Watchdog` | No | The STM32U585 has watchdog hardware, but the current Arduino Zephyr firmware builds with `CONFIG_WATCHDOG` disabled, so sketches cannot safely use it |
-| USB mouse, SD card, servo and email APIs | Untested | Do not assume UNO R4 library compatibility |
+| USB mouse (`Mouse`) | No | The Zephyr core has no `HID.h`, which the `Mouse` library needs; Juno rejects `Mouse` for the UNO Q at compile time |
+| SD card, servo and email APIs | Untested | Do not assume UNO R4 library compatibility |
 | Linux applications | Not yet | Juno emits the MCU sketch; networking uses the board's existing `arduino-router` service |
 
 The Arduino linker report is authoritative for a generated sketch's usable memory. Its reported
