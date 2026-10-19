@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcxfirmware;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -11,20 +13,35 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("Generated RCX firmware Java image")
 class RcxFirmwareImageTest {
     private static final int CHECKSUM_END = 0xCC00;
 
     @Test
-    void generatedJavaImageMatchesTheTrackedSRecord() throws Exception {
+    @DisplayName("Generated Java image matches the tracked S-record")
+    void shouldMatchTheTrackedSRecord() throws Exception {
+        // Given
         SRecordImage srecord = readSRecord();
         byte[] javaImage = new byte[RcxFirmwareImage.LENGTH];
+
+        // When
         for (int address = 0; address < javaImage.length; address++) {
             javaImage[address] = RcxFirmwareImage.byteAt(address);
         }
 
+        // Then
         assertThat(javaImage).isEqualTo(srecord.bytes());
         assertThat(RcxFirmwareImage.ENTRY).isEqualTo(srecord.entry());
         assertThat(RcxFirmwareImage.CHECKSUM).isEqualTo(checksum(srecord.bytes()));
+    }
+
+    @Test
+    @DisplayName("Addresses outside the first chunk read as zero")
+    void shouldReadAddressesOutsideTheFirstChunkAsZero() {
+        // When & Then
+        assertThat(RcxFirmwareImage.byteAt(4096)).isZero();
+        assertThat(RcxFirmwareImage.byteAt(RcxFirmwareImage.LENGTH + 10_000)).isZero();
     }
 
     private static SRecordImage readSRecord() throws IOException {
@@ -80,11 +97,5 @@ class RcxFirmwareImageTest {
     }
 
     private record SRecordImage(byte[] bytes, int entry) {
-    }
-
-    @Test
-    void addressesOutsideTheFirstChunkReadAsZero() {
-        assertThat(RcxFirmwareImage.byteAt(4096)).isZero();
-        assertThat(RcxFirmwareImage.byteAt(RcxFirmwareImage.LENGTH + 10_000)).isZero();
     }
 }

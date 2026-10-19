@@ -5,7 +5,9 @@ import io.github.jabrena.juno.api.testing.Wire;
 import io.github.jabrena.juno.api.thirdparty.tft.ParallelBus;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Delay;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayDeque;
@@ -16,6 +18,8 @@ import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("View router frame loop")
 class ViewRouterTest {
     /** Thrown from a view's render once its script is exhausted, which is how a test leaves the never-ending frame loop. */
     private static final class Stop extends RuntimeException {
@@ -44,50 +48,67 @@ class ViewRouterTest {
     }
 
     @Test
-    void showSwitchesTheActiveViewBetweenFrames() {
+    @DisplayName("Show switches the active view between frames")
+    void shouldSwitchTheActiveViewBetweenFrames() {
+        // Given
         script.add(r -> r.show(1));
         script.add(r -> { });
         script.add(r -> { throw new Stop(); });
 
+        // When
         runFrom(0);
 
+        // Then
         assertThat(log).containsSubsequence("render:0", "enter:1", "render:1");
     }
 
     @Test
-    void showingTheActiveViewDoesNothing() {
+    @DisplayName("Showing the active view does nothing")
+    void shouldNotEnterTheActiveViewAgain() {
+        // Given
         script.add(r -> r.show(0));
         script.add(r -> { throw new Stop(); });
 
+        // When
         runFrom(0);
 
+        // Then
         assertThat(log).doesNotContain("enter:0");
     }
 
     @Test
-    void backReturnsToThePreviousView() {
+    @DisplayName("Back returns to the previous view")
+    void shouldReturnToThePreviousView() {
+        // Given
         script.add(r -> r.show(1));
         script.add(r -> r.back());
         script.add(r -> { throw new Stop(); });
 
+        // When
         runFrom(0);
 
+        // Then
         assertThat(log).containsSubsequence("enter:1", "enter:0");
     }
 
     @Test
-    void backDoesNothingWhenNothingWasRemembered() {
+    @DisplayName("Back does nothing when no view was remembered")
+    void shouldDoNothingWhenNothingWasRemembered() {
+        // Given
         script.add(r -> r.back());
         script.add(r -> { throw new Stop(); });
 
+        // When
         runFrom(0);
 
-        assertThat(log).doesNotContain("enter:1");
-        assertThat(log).doesNotContain("enter:0");
+        // Then
+        assertThat(log).doesNotContain("enter:1", "enter:0");
     }
 
     @Test
-    void theBackStackKeepsOnlyTheFourMostRecentViews() {
+    @DisplayName("The back stack keeps only the four most recent views")
+    void shouldKeepOnlyTheFourMostRecentViewsInTheBackStack() {
+        // Given
         script.add(r -> r.show(1));
         script.add(r -> r.show(2));
         script.add(r -> r.show(3));
@@ -100,53 +121,70 @@ class ViewRouterTest {
         script.add(r -> r.back());
         script.add(r -> { throw new Stop(); });
 
+        // When
         runFrom(0);
 
+        // Then
         assertThat(log).containsSubsequence("enter:1", "enter:0", "enter:3", "enter:2", "enter:1");
         assertThat(log.subList(log.lastIndexOf("enter:1") + 1, log.size())).doesNotContain("enter:0");
     }
 
     @Test
-    void aTouchIsDeliveredOncePerPress() {
+    @DisplayName("A touch is delivered once per press")
+    void shouldDeliverATouchOncePerPress() {
+        // Given
         Gpio.analogValues[16] = 523;
         Gpio.analogValues[17] = 600;
         script.add(r -> { });
         script.add(r -> { });
         script.add(r -> { throw new Stop(); });
 
+        // When
         runFrom(0);
 
+        // Then
         assertThat(log.stream().filter(entry -> entry.startsWith("touch:")).toList())
                 .containsExactly("touch:0:93:158");
     }
 
     @Test
-    void theBackgroundTaskStepsOncePerFrame() {
+    @DisplayName("The background task steps once per frame")
+    void shouldStepTheBackgroundTaskOncePerFrame() {
+        // Given
         int[] steps = {0};
         router.background(() -> steps[0]++);
         script.add(r -> { });
         script.add(r -> { throw new Stop(); });
 
+        // When
         runFrom(0);
 
+        // Then
         assertThat(steps[0]).isEqualTo(2);
     }
 
     @Test
-    void aFrameThatOverrunsTheScheduleRestartsItRatherThanRushingToCatchUp() {
+    @DisplayName("A frame that overruns its schedule restarts instead of rushing to catch up")
+    void shouldRestartAFrameThatOverrunsTheScheduleInsteadOfRushing() {
+        // Given
         script.add(r -> Delay.millis(500));
         script.add(r -> { });
         script.add(r -> { throw new Stop(); });
 
+        // When
         runFrom(0);
 
+        // Then
         assertThat(log).containsExactly("render:0", "render:0", "render:0");
     }
 
     @Test
-    void startEntersTheFirstViewBeforeTheLoop() {
+    @DisplayName("Start enters the first view before the loop")
+    void shouldEnterTheFirstViewBeforeTheLoop() {
+        // When
         router.start(2);
 
+        // Then
         assertThat(log).containsExactly("enter:2");
     }
 

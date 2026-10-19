@@ -2,7 +2,9 @@ package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -16,6 +18,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Juno compiler against {@link io.github.jabrena.juno.maven.fixture.TinyProgram} on this module's own test
  * classpath, never touching {@code arduino-cli}. Every Mojo parameter is set in pure Java through
  * {@link MojoConfig}, not an XML fixture file. */
+@NullMarked
+@DisplayName("juno:compile goal")
 class CompileMojoTest extends AbstractMojoTestCase {
     @BeforeEach
     @Override
@@ -24,7 +28,9 @@ class CompileMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    void requiresAMainClass() throws Exception {
+    @DisplayName("Requires a main class")
+    void shouldRequireAMainClass() throws Exception {
+        // Given
         CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
         mojo = configureMojo(mojo, configuration()
                 .set("arduinoCli", "arduino-cli")
@@ -32,13 +38,16 @@ class CompileMojoTest extends AbstractMojoTestCase {
                 .build());
         mojo.setLog(new RecordingLog());
 
+        // When & Then
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("Missing required Juno entry point");
     }
 
     @Test
-    void rejectsAnEmptyClasspath() throws Exception {
+    @DisplayName("Rejects an empty classpath")
+    void shouldRejectAnEmptyClasspath() throws Exception {
+        // Given
         CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
         mojo = configureMojo(mojo, configuration()
                 .set("arduinoCli", "arduino-cli")
@@ -47,13 +56,16 @@ class CompileMojoTest extends AbstractMojoTestCase {
                 .build());
         mojo.setLog(new RecordingLog());
 
+        // When & Then
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("Maven compile classpath is empty");
     }
 
     @Test
-    void generatesTheAssemblyShimAndWrapperForARealEntryPoint() throws Exception {
+    @DisplayName("Generates the assembly, shim and wrapper for a real entry point")
+    void shouldGenerateTheAssemblyShimAndWrapperForARealEntryPoint() throws Exception {
+        // Given
         CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
         mojo = configureMojo(mojo, configuration()
                 .set("arduinoCli", "arduino-cli")
@@ -65,8 +77,10 @@ class CompileMojoTest extends AbstractMojoTestCase {
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
 
+        // When
         mojo.execute();
 
+        // Then
         Path sketchDirectory = Path.of("target/juno-mojo-test/compile/TinyProgramAsm");
         assertThat(sketchDirectory.resolve("TinyProgram.S")).isRegularFile();
         assertThat(sketchDirectory.resolve("TinyProgramShim.cpp")).isRegularFile();

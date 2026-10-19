@@ -9,6 +9,8 @@ import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.backend.runtime.AvrShimThunks;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -21,6 +23,8 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@NullMarked
+@DisplayName("AVR assembly backend")
 class AvrAsmBackendTest {
     private final AvrShimThunks avrShimThunks = new AvrShimThunks();
 
@@ -91,35 +95,82 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void resolvesTheUnoWiFiRev2ToTheAvrBackend() {
+    @DisplayName("Resolves the UNO WiFi Rev2 to the AVR backend")
+    void shouldResolveTheUnoWifiRev2ToTheAvrBackend() {
+        // Given
         Board board = Board.fromId(R3WIFIREV2);
+
+        // When & Then
         assertThat(board).isEqualTo(Board.UNO_R3_WIFI_REV2);
-        assertThat(board.fqbn()).isEqualTo(Board.UNO_R3_WIFI_REV2.fqbn());
-        assertThat(board.core().architecture()).isEqualTo(Architecture.AVR);
+    }
+
+    @Test
+    @DisplayName("The UNO WiFi Rev2 has its FQBN and AVR architecture")
+    void shouldGiveTheUnoWifiRev2ItsFqbnAndAvrArchitecture() {
+        // Given
+        Board board = Board.fromId(R3WIFIREV2);
+
+        // When & Then
+        assertThat(new String[] {board.fqbn(), board.core().architecture().name()})
+                .containsExactly(Board.UNO_R3_WIFI_REV2.fqbn(), Architecture.AVR.name());
+    }
+
+    @Test
+    @DisplayName("The UNO WiFi Rev2 resolves from its API class name and annotation argument")
+    void shouldResolveTheUnoWifiRev2FromItsApiClassNameAndAnnotationArgument() {
+        // Given
+        Board board = Board.fromId(R3WIFIREV2);
+
+        // When & Then
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2")).isEqualTo(board);
         assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3WiFiRev2.class");
     }
 
     @Test
-    void resolvesTheClassicUnoR3ToTheAvrBackend() {
+    @DisplayName("Resolves the classic UNO R3 to the AVR backend")
+    void shouldResolveTheClassicUnoR3ToTheAvrBackend() {
+        // Given
         Board board = Board.fromId(R3);
 
+        // When & Then
         assertThat(board).isEqualTo(Board.UNO_R3);
-        assertThat(board.fqbn()).isEqualTo(Board.UNO_R3.fqbn());
-        assertThat(board.core().architecture()).isEqualTo(Architecture.AVR);
+    }
+
+    @Test
+    @DisplayName("The classic UNO R3 has its FQBN and AVR architecture")
+    void shouldGiveTheClassicUnoR3ItsFqbnAndAvrArchitecture() {
+        // Given
+        Board board = Board.fromId(R3);
+
+        // When & Then
+        assertThat(new String[] {board.fqbn(), board.core().architecture().name()})
+                .containsExactly(Board.UNO_R3.fqbn(), Architecture.AVR.name());
+    }
+
+    @Test
+    @DisplayName("The classic UNO R3 resolves from its API class name and annotation argument")
+    void shouldResolveTheClassicUnoR3FromItsApiClassNameAndAnnotationArgument() {
+        // Given
+        Board board = Board.fromId(R3);
+
+        // When & Then
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3")).isEqualTo(board);
         assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3.class");
     }
 
     @Test
-    void rejectsANonAvrBoard() {
+    @DisplayName("Rejects a non-AVR board for the AVR backend")
+    void shouldRejectANonAvrBoardForTheAvrBackend() {
+        // When & Then
         assertThatThrownBy(() -> new AvrAsmBackend(false, Board.UNO_R4_WIFI, RuntimeConfig.DEFAULT))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("is not an AVR board");
     }
 
     @Test
-    void compilesBasicGpioForTheClassicUnoR3() throws Exception {
+    @DisplayName("Compiles basic GPIO for the classic UNO R3")
+    void shouldCompileBasicGpioForTheClassicUnoR3() throws Exception {
+        // Given
         CompilationResult result = compileR3("demo.R3Blink", """
                         Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
                         Gpio.digitalWrite(Gpio.builtinLed(), true);
@@ -129,17 +180,52 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 """);
 
+        // When & Then
         assertThat(result.assembly())
                 .contains("call juno_avr_thunk_juno_pin_mode", "call juno_avr_thunk_juno_delay_millis")
                 .contains("ldi r22, 13");
+    }
+
+    @Test
+    @DisplayName("The classic UNO R3 shim omits WiFi, SD soft SPI and context switching")
+    void shouldOmitWifiSdSoftSpiAndContextSwitchFromTheClassicUnoR3Shim() throws Exception {
+        // Given
+        CompilationResult result = compileR3("demo.R3Blink", """
+                        Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
+                        Gpio.digitalWrite(Gpio.builtinLed(), true);
+                        Delay.millis(500);
+                """, """
+                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                """);
+
+        // When & Then
         assertThat(result.runtimeShim()).doesNotContain("WiFiNINA", "JunoSdSoftSpiDriver", "juno_context_switch");
+    }
+
+    @Test
+    @DisplayName("The classic UNO R3 shim wraps the pin and digital-write calls")
+    void shouldWrapThePinAndDigitalWriteCallsInTheClassicUnoR3Shim() throws Exception {
+        // Given
+        CompilationResult result = compileR3("demo.R3Blink", """
+                        Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
+                        Gpio.digitalWrite(Gpio.builtinLed(), true);
+                        Delay.millis(500);
+                """, """
+                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                """);
+
+        // When & Then
         assertThat(result.runtimeShim())
                 .contains("pinMode(static_cast<uint8_t>(pin), static_cast<uint8_t>(mode));")
                 .contains("digitalWrite(static_cast<uint8_t>(pin), static_cast<uint8_t>(value != 0 ? HIGH : LOW));");
     }
 
     @Test
-    void storesATwoByteLengthInFrontOfEveryArrayAndReadsItBack() throws Exception {
+    @DisplayName("Stores a two-byte length in front of every array and reads it back")
+    void shouldStoreATwoByteLengthInFrontOfEveryArrayAndReadItBack() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR3;
@@ -160,6 +246,7 @@ class AvrAsmBackendTest {
         CompilationResult result = new JunoCompiler().compile(CompilerTestSupport.classpath(classes),
                 "demo.R3Length", false, Optional.of(R3));
 
+        // When & Then
         assertThat(result.assembly())
                 .as("a 5-byte array is allocated with a 2-byte length word, which is stored and skipped")
                 .contains("ldi r22, 7", "std Z+0, r18", "std Z+1, r19", "subi r22, -2", "sbci r23, -1")
@@ -168,28 +255,53 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void rejectsFeaturesThatDoNotFitTheClassicUnoR3() {
+    @DisplayName("Rejects features that do not fit the classic UNO R3")
+    void shouldRejectFeaturesThatDoNotFitTheClassicUnoR3() {
+        // When & Then
         assertThatThrownBy(() -> compileR3("demo.R3Wifi", "Wifi.status();",
                 "import io.github.jabrena.juno.api.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3 has no onboard WiFi module");
+    }
+
+    @Test
+    @DisplayName("Rejects per-task stacks on the classic UNO R3")
+    void shouldRejectPerTaskStacksOnTheClassicUnoR3() {
+        // When & Then
         assertThatThrownBy(() -> compileR3("demo.R3Tasks", "StructuredTaskScope.open();",
                 "import java.util.concurrent.StructuredTaskScope;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3 has no room for per-task stacks");
+    }
+
+    @Test
+    @DisplayName("Rejects an Xmx above the classic UNO R3's one kilobyte")
+    void shouldRejectAnXmxAboveTheClassicUnoR3sOneKilobyte() {
+        // When & Then
         assertThatThrownBy(() -> new RuntimeConfig(2048, 4, OptionalInt.empty()).forBoard(Board.UNO_R3))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("juno.Xmx can be at most 1024 bytes");
     }
 
     @Test
-    void enablesAndRefreshesTheClassicUnoR3Watchdog() throws Exception {
-        CompilationResult result = compileWatchdog(
-                "demo.R3Watchdog", "ArduinoUnoR3", R3, 3000);
+    @DisplayName("Enables and refreshes the classic UNO R3 watchdog in the assembly")
+    void shouldEnableAndRefreshTheClassicUnoR3WatchdogInTheAssembly() throws Exception {
+        // Given
+        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoUnoR3", R3, 3000);
 
+        // When & Then
         assertThat(result.assembly())
                 .contains("call juno_watchdog_begin", "call yield")
                 .doesNotContain("call juno_watchdog_refresh");
+    }
+
+    @Test
+    @DisplayName("The classic UNO R3 watchdog shim uses the AVR wdt API")
+    void shouldUseTheAvrWdtApiForTheClassicUnoR3WatchdogShim() throws Exception {
+        // Given
+        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoUnoR3", R3, 3000);
+
+        // When & Then
         assertThat(result.runtimeShim()).contains(
                 "#include <avr/wdt.h>",
                 "wdt_enable(WDTO_4S);",
@@ -198,13 +310,24 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void enablesAndRefreshesTheUnoWiFiRev2Watchdog() throws Exception {
-        CompilationResult result = compileWatchdog(
-                "demo.Rev2Watchdog", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 3000);
+    @DisplayName("Enables and refreshes the UNO WiFi Rev2 watchdog in the assembly")
+    void shouldEnableAndRefreshTheUnoWifiRev2WatchdogInTheAssembly() throws Exception {
+        // Given
+        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 3000);
 
+        // When & Then
         assertThat(result.assembly())
                 .contains("call juno_watchdog_begin", "call yield")
                 .doesNotContain("call juno_watchdog_refresh");
+    }
+
+    @Test
+    @DisplayName("The UNO WiFi Rev2 watchdog shim uses the megaAVR WDT registers")
+    void shouldUseTheMegaAvrWdtRegistersForTheUnoWifiRev2WatchdogShim() throws Exception {
+        // Given
+        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 3000);
+
+        // When & Then
         assertThat(result.runtimeShim()).contains(
                 "#include <avr/io.h>",
                 "_PROTECTED_WRITE(WDT.CTRLA, WDT_PERIOD_4KCLK_gc);",
@@ -213,19 +336,27 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void rejectsWatchdogTimeoutsOutsideEachAvrChipsRange() {
-        assertThatThrownBy(() -> compileWatchdog(
-                "demo.R3WatchdogTooLong", "ArduinoUnoR3", R3, 8001))
+    @DisplayName("Rejects a classic UNO R3 watchdog timeout outside its chip range")
+    void shouldRejectAClassicUnoR3WatchdogTimeoutOutsideItsChipRange() {
+        // When & Then
+        assertThatThrownBy(() -> compileWatchdog("demo.R3WatchdogTooLong", "ArduinoUnoR3", R3, 8001))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("timeoutMillis must be between 1 and 8000 on UNO R3");
-        assertThatThrownBy(() -> compileWatchdog(
-                "demo.Rev2WatchdogTooLong", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 8201))
+    }
+
+    @Test
+    @DisplayName("Rejects a UNO WiFi Rev2 watchdog timeout outside its chip range")
+    void shouldRejectAUnoWifiRev2WatchdogTimeoutOutsideItsChipRange() {
+        // When & Then
+        assertThatThrownBy(() -> compileWatchdog("demo.Rev2WatchdogTooLong", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 8201))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("timeoutMillis must be between 1 and 8200 on UNO WiFi Rev2");
     }
 
     @Test
-    void generatesAvrAssemblyAndAThunkedShim() throws Exception {
+    @DisplayName("Generates AVR assembly with the program's entry symbol")
+    void shouldGenerateAvrAssemblyWithTheProgramEntrySymbol() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrSmoke", """
                         Serial.println("ready");
                         long big = 1L << 40;
@@ -233,7 +364,22 @@ class AvrAsmBackendTest {
                         Serial.println(big + (long) (half * 4));
                 """, "import io.github.jabrena.juno.api.io.serial.Serial;");
 
+        // When & Then
         assertThat(result.entryPointSymbol()).isEqualTo("juno_AvrSmoke_asm");
+    }
+
+    @Test
+    @DisplayName("The AVR assembly is generated by the AVR backend with a thunked call")
+    void shouldGenerateTheAvrAssemblyFromTheAvrBackendWithAThunkedCall() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrSmoke", """
+                        Serial.println("ready");
+                        long big = 1L << 40;
+                        double half = 0.5;
+                        Serial.println(big + (long) (half * 4));
+                """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+
+        // When & Then
         assertThat(result.assembly())
                 .contains("; Generated by Juno's AVR assembly backend")
                 .contains(".global juno_avr_args")
@@ -242,6 +388,20 @@ class AvrAsmBackendTest {
                 .contains("    call juno_avr_thunk_juno_serial_println_str")
                 .doesNotContain("bl ")
                 .doesNotContain(".word");
+    }
+
+    @Test
+    @DisplayName("The AVR shim thunks the serial call and defines the software binary64 helpers")
+    void shouldThunkTheSerialCallAndDefineTheSoftwareBinary64HelpersInTheShim() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrSmoke", """
+                        Serial.println("ready");
+                        long big = 1L << 40;
+                        double half = 0.5;
+                        Serial.println(big + (long) (half * 4));
+                """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+
+        // When & Then
         assertThat(result.runtimeShim())
                 .contains("typedef uint64_t juno_f64;")
                 .contains("extern \"C\" void juno_avr_thunk_juno_serial_println_str() {")
@@ -251,7 +411,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void lowersIntBitwiseAndMultiplyByAConstant() throws Exception {
+    @DisplayName("Lowers int bitwise operations and multiply by a constant")
+    void shouldLowerIntBitwiseAndMultiplyByAConstant() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrBitwise", """
                         int value = Gpio.analogRead(0);
                         Serial.println(value & 0x0F);
@@ -259,13 +421,30 @@ class AvrAsmBackendTest {
                         Serial.println(value * 8);
                 """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
 
+        // When & Then
         assertThat(result.assembly()).contains("    andi r22, 15\n", "    ori r22, 240\n");
+    }
+
+    @Test
+    @DisplayName("Multiply by a power-of-two constant is a left shift, never a call to the imul helper")
+    void shouldLowerMultiplyByAPowerOfTwoConstantAsAShift() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrBitwise", """
+                        int value = Gpio.analogRead(0);
+                        Serial.println(value & 0x0F);
+                        Serial.println(value | 0xF0);
+                        Serial.println(value * 8);
+                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+
+        // When & Then
         // value * 8 is a power-of-two constant: lowered as a left shift, never a call to juno_avr_imul.
         assertThat(result.assembly()).doesNotContain("call juno_avr_imul");
     }
 
     @Test
-    void lowersConstantShiftsByte_AlignedAndBitAligned() throws Exception {
+    @DisplayName("Constant shifts are whole-byte moves plus bit-by-bit rotates, never variable helpers")
+    void shouldLowerConstantShiftsWithoutTheVariableShiftHelpers() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrShifts", """
                         int value = Gpio.analogRead(0);
                         Serial.println(value << 10);
@@ -273,17 +452,34 @@ class AvrAsmBackendTest {
                         Serial.println(value >>> 10);
                 """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
 
+        // When & Then
         // A constant shift never calls the variable-shift helpers; it's always whole-byte moves plus
         // bit-by-bit rotates.
         assertThat(result.assembly()).doesNotContain("call juno_avr_ishl", "call juno_avr_ishr",
                 "call juno_avr_iushr");
+    }
+
+    @Test
+    @DisplayName("Lowers the left, arithmetic and logical constant shifts to rotate sequences")
+    void shouldLowerTheConstantShiftsToRotateSequences() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrShifts", """
+                        int value = Gpio.analogRead(0);
+                        Serial.println(value << 10);
+                        Serial.println(value >> 10);
+                        Serial.println(value >>> 10);
+                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+
+        // When & Then
         assertThat(result.assembly()).contains("    lsl r22\n    rol r23\n    rol r24\n    rol r25\n")
                 .contains("    asr r25\n    ror r24\n    ror r23\n    ror r22\n")
                 .contains("    lsr r25\n    ror r24\n    ror r23\n    ror r22\n");
     }
 
     @Test
-    void lowersNarrowingCastsToByteCharAndShort() throws Exception {
+    @DisplayName("Lowers narrowing casts to byte, char and short")
+    void shouldLowerNarrowingCastsToByteCharAndShort() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrNarrowing", """
                         int value = Gpio.analogRead(0);
                         Serial.println((byte) value);
@@ -291,6 +487,7 @@ class AvrAsmBackendTest {
                         Serial.println((short) value);
                 """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
 
+        // When & Then
         assertThat(result.assembly())
                 .contains("    mov r23, r22\n    lsl r23\n    sbc r23, r23\n")
                 .contains("    ldi r24, 0\n    ldi r25, 0\n")
@@ -298,7 +495,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void comparesWithGreaterThanAndLessOrEqualOnAvr() throws Exception {
+    @DisplayName("Compares with greater-than and less-or-equal on AVR")
+    void shouldCompareWithGreaterThanAndLessOrEqualOnAvr() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrCompare", """
                         int value = Gpio.analogRead(0);
                         if (value > 10) {
@@ -309,13 +508,16 @@ class AvrAsmBackendTest {
                         }
                 """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
 
+        // When & Then
         // GREATER_THAN/LESS_EQUAL swap their operands and reuse brlt/brge, AVR having only signed
         // less-than/greater-or-equal.
         assertThat(result.assembly()).contains("brlt").contains("brge");
     }
 
     @Test
-    void lowersLongAndFloatingPointWideOperationsOnAvr() throws Exception {
+    @DisplayName("Lowers long and floating-point wide operations on AVR")
+    void shouldLowerLongAndFloatingPointWideOperationsOnAvr() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrWide", """
                         long left = Gpio.analogRead(0);
                         long right = Gpio.analogRead(1);
@@ -339,6 +541,7 @@ class AvrAsmBackendTest {
                         Serial.println((float) left);
                 """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
 
+        // When & Then
         assertThat(result.assembly())
                 .contains("call juno_avr_thunk_juno_lneg")
                 .contains("call juno_avr_thunk_juno_lcmp")
@@ -353,10 +556,13 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void usesSoftwareSpiForShieldSdCards() throws Exception {
+    @DisplayName("Uses software SPI for shield SD cards in the shim")
+    void shouldUseSoftwareSpiForShieldSdCardsInTheShim() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrSd", "SdCard.begin();",
                 "import io.github.jabrena.juno.api.thirdparty.sd.SdCard;");
 
+        // When & Then
         assertThat(result.runtimeShim())
                 .contains("class JunoSdSoftSpiDriver : public SdSpiBaseClass")
                 .contains("digitalWrite(11, (output & mask) != 0 ? HIGH : LOW);")
@@ -369,7 +575,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void passesALongArgumentOnAnEvenWordLikeAapcs() {
+    @DisplayName("Passes a long argument on an even word, like AAPCS")
+    void shouldPassALongArgumentOnAnEvenWordLikeAapcs() {
+        // Given
         String shim = """
                 extern "C" void juno_string_concat_append_long(int32_t handle, int64_t value) {
                 }
@@ -379,9 +587,11 @@ class AvrAsmBackendTest {
                 }
                 """;
 
+        // When
         String thunks = avrShimThunks.generate(shim,
                 new java.util.TreeSet<>(Set.of("juno_string_concat_append_long", "juno_dcmp_like", "juno_alloc_like")));
 
+        // Then
         assertThat(thunks)
                 .contains("juno_string_concat_append_long(static_cast<int32_t>(juno_avr_args[0]), "
                         + "static_cast<int64_t>(juno_avr_arg64(2)));")
@@ -392,25 +602,47 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void refusesAThunkForACDoubleOrAMissingPrototype() {
+    @DisplayName("Refuses a thunk for a C double or a missing prototype")
+    void shouldRefuseAThunkForACDoubleOrAMissingPrototype() {
+        // When & Then
         assertThatThrownBy(() -> avrShimThunks.generate("extern \"C\" void f(double value) {\n}\n", Set.of("f")))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("avr-gcc makes 32 bits wide");
+    }
+
+    @Test
+    @DisplayName("Refuses a thunk whose prototype has no extern C definition")
+    void shouldRefuseAThunkWhoseNameHasNoExternCDefinition() {
+        // When & Then
         assertThatThrownBy(() -> avrShimThunks.generate("", Set.of("juno_missing")))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("no extern \"C\" definition of juno_missing");
     }
 
     @Test
-    void rejectsCapabilitiesTheBoardLacks() {
+    @DisplayName("Rejects capabilities the board lacks")
+    void shouldRejectCapabilitiesTheBoardLacks() {
+        // When & Then
         assertThatThrownBy(() -> compile("demo.AvrMatrix", "LedMatrix.begin();",
                 "import io.github.jabrena.juno.api.led.LedMatrix;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO WiFi Rev2 has no onboard LED matrix");
+    }
+
+    @Test
+    @DisplayName("Rejects the single-precision-only libm for double math")
+    void shouldRejectDoubleMathBecauseOnlySinglePrecisionLibmIsAvailable() {
+        // When & Then
         assertThatThrownBy(() -> compile("demo.AvrSine", "Serial.println((int) Math.sin(1.0));",
                 "import io.github.jabrena.juno.api.io.serial.Serial;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("only has single-precision libm");
+    }
+
+    @Test
+    @DisplayName("Rejects Mouse on a board without a native USB port")
+    void shouldRejectMouseOnABoardWithoutANativeUsbPort() {
+        // When & Then
         assertThatThrownBy(() -> compile("demo.AvrMouse", "Mouse.begin();",
                 "import io.github.jabrena.juno.api.hid.Mouse;"))
                 .isInstanceOf(CompileException.class)
@@ -418,7 +650,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void acceptsHttpAndUdp() throws Exception {
+    @DisplayName("Accepts HTTP and UDP on the UNO WiFi Rev2")
+    void shouldAcceptHttpAndUdpOnTheUnoWifiRev2() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrNet", """
                         byte[] body = new byte[32];
                         byte[] headers = new byte[32];
@@ -432,6 +666,8 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.api.net.Wifi;
                 import io.github.jabrena.juno.api.net.http.HttpClient;
                 """);
+
+        // When & Then
         assertThat(result.runtimeShim())
                 .contains("#include <WiFiNINA.h>")
                 .contains("#include <WiFiUdp.h>")
@@ -440,7 +676,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void runsHttpsThroughTheNinaModulesTls() throws Exception {
+    @DisplayName("Runs HTTPS through the NINA module's TLS")
+    void shouldRunHttpsThroughTheNinaModulesTls() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrTls", """
                         byte[] body = new byte[32];
                         int[] status = new int[2];
@@ -449,6 +687,8 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 import io.github.jabrena.juno.api.net.http.HttpClient;
                 """);
+
+        // When & Then
         assertThat(result.runtimeShim())
                 .contains("#include <WiFiNINA.h>")
                 .contains("using JunoHttpsClient = WiFiSSLClient;")
@@ -457,7 +697,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void sendsAndReadsMailOverImplicitTlsLikeTheUnoR4() throws Exception {
+    @DisplayName("Sends and reads mail over implicit TLS like the UNO R4")
+    void shouldSendAndReadMailOverImplicitTlsLikeTheUnoR4() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrMail", """
                         Serial.println(Smtp.sendTls("smtp.example.com", 465, "user", "secret", "a@example.com",
                                 "b@example.com", "Hello", "Body"));
@@ -467,6 +709,8 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.api.net.email.Pop3Client;
                 import io.github.jabrena.juno.api.net.email.Smtp;
                 """);
+
+        // When & Then
         assertThat(result.runtimeShim())
                 .contains("extern \"C\" int32_t juno_avr_thunk_juno_smtp_send_tls() {")
                 .contains("extern \"C\" int32_t juno_avr_thunk_juno_pop3_message_count() {")
@@ -475,7 +719,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void rejectsStartTlsMailSubmission() {
+    @DisplayName("Rejects STARTTLS mail submission")
+    void shouldRejectStartTlsMailSubmission() {
+        // When & Then
         assertThatThrownBy(() -> compile("demo.AvrStartTls", """
                         Serial.println(Smtp.send("smtp.example.com", 587, "user", "secret", "a@example.com",
                                 "b@example.com", "Hello", "Body"));
@@ -489,7 +735,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void convertsBigNumbersToDoublesOnTheSoftwareBinary64() throws Exception {
+    @DisplayName("Converts big numbers to doubles on the software binary64 in the shim")
+    void shouldConvertBigNumbersToDoublesOnTheSoftwareBinary64InTheShim() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrBig", """
                         BigDecimal price = new BigDecimal("19.99");
                         Serial.println(price.multiply(BigDecimal.valueOf(3)).toString());
@@ -500,6 +748,8 @@ class AvrAsmBackendTest {
                 import java.math.BigDecimal;
                 import java.math.BigInteger;
                 """);
+
+        // When & Then
         assertThat(result.runtimeShim())
                 .contains("extern \"C\" juno_f64 juno_big_decimal_double_value(int32_t a) {")
                 .contains("extern \"C\" juno_f64 juno_big_integer_double_value(int32_t a) {")
@@ -507,7 +757,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void lowersUuidWideValuesThroughAvrThunksOnBothR3Boards() throws Exception {
+    @DisplayName("Lowers UUID wide values through AVR thunks on both R3 boards")
+    void shouldLowerUuidWideValuesThroughAvrThunksOnBothR3Boards() throws Exception {
+        // Given
         String body = """
                         UUID value = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
                         UUID copy = new UUID(value.getMostSignificantBits(), value.getLeastSignificantBits());
@@ -521,10 +773,32 @@ class AvrAsmBackendTest {
 
         for (CompilationResult result : List.of(
                 compile("demo.AvrUuid", body, imports), compileR3("demo.ClassicAvrUuid", body, imports))) {
+            // When & Then
             assertThat(result.assembly()).contains(
                     "call juno_avr_thunk_juno_uuid_new",
                     "call juno_avr_thunk_juno_uuid_get_most_significant_bits",
                     "call juno_avr_thunk_juno_uuid_get_least_significant_bits");
+        }
+    }
+
+    @Test
+    @DisplayName("The UUID shims on both R3 boards declare the thunks and the helpers")
+    void shouldDeclareTheUuidThunksAndHelpersInTheShimsOnBothR3Boards() throws Exception {
+        // Given
+        String body = """
+                        UUID value = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+                        UUID copy = new UUID(value.getMostSignificantBits(), value.getLeastSignificantBits());
+                        Serial.println(copy.toString());
+                        Serial.println(copy.equals(value));
+                """;
+        String imports = """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.util.UUID;
+                """;
+
+        for (CompilationResult result : List.of(
+                compile("demo.AvrUuid", body, imports), compileR3("demo.ClassicAvrUuid", body, imports))) {
+            // When & Then
             assertThat(result.runtimeShim()).contains(
                     "extern \"C\" int32_t juno_avr_thunk_juno_uuid_new()",
                     "extern \"C\" uint64_t juno_avr_thunk_juno_uuid_get_most_significant_bits()",
@@ -533,19 +807,43 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void sizesTheArenaForSixKilobytesOfRam() {
+    @DisplayName("Sizes the arena for six kilobytes of RAM")
+    void shouldSizeTheArenaForSixKilobytesOfRam() {
+        // When & Then
         assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_R3_WIFI_REV2).arenaBytes())
                 .isEqualTo(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES);
+    }
+
+    @Test
+    @DisplayName("Leaves the R4's default runtime config unchanged")
+    void shouldLeaveTheR4DefaultRuntimeConfigUnchanged() {
+        // When & Then
         assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_R4_WIFI)).isEqualTo(RuntimeConfig.DEFAULT);
+    }
+
+    @Test
+    @DisplayName("Keeps an explicit arena that fits the UNO WiFi Rev2")
+    void shouldKeepAnExplicitArenaThatFitsTheUnoWifiRev2() {
+        // Given
         RuntimeConfig explicit = new RuntimeConfig(2048, 4, OptionalInt.empty());
+
+        // When & Then
         assertThat(explicit.forBoard(Board.UNO_R3_WIFI_REV2)).isEqualTo(explicit);
+    }
+
+    @Test
+    @DisplayName("Rejects an arena above the AVR limit")
+    void shouldRejectAnArenaAboveTheAvrLimit() {
+        // When & Then
         assertThatThrownBy(() -> new RuntimeConfig(4096, 4, OptionalInt.empty()).forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES);
     }
 
     @Test
-    void forksTasksOnThePreemptiveSchedulerWithAnAvrContextSwitch() throws Exception {
+    @DisplayName("Forks tasks on the preemptive scheduler with an AVR context switch")
+    void shouldForkTasksOnThePreemptiveSchedulerWithAnAvrContextSwitch() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrTasks", """
                         final int[] sums = new int[2];
                         try (var scope = StructuredTaskScope.open()) {
@@ -564,8 +862,10 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.api.io.serial.Serial;
                 import java.util.concurrent.StructuredTaskScope;
                 """);
+
+        // When & Then
+        // The scheduler enters a task through a global symbol that takes its argument in r22-r25.
         assertThat(result.assembly())
-                // The scheduler enters a task through a global symbol that takes its argument in r22-r25.
                 .contains("""
                             .global juno_thread_entry
                             .type juno_thread_entry, @function
@@ -580,47 +880,186 @@ class AvrAsmBackendTest {
                 .contains("    call juno_thread_main_exit\n")
                 .contains("    lds r26, juno_stack_limit\n")
                 .doesNotContain("call yield\n");
+    }
+
+    @Test
+    @DisplayName("Main starts before any thread exists")
+    void shouldStartMainBeforeAnyThreadExists() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrTasks", """
+                        final int[] sums = new int[2];
+                        try (var scope = StructuredTaskScope.open()) {
+                            scope.fork(() -> {
+                                for (int i = 0; i < 10; i++) {
+                                    sums[0] = sums[0] + i;
+                                }
+                            });
+                            scope.fork(() -> { sums[1] = 7; });
+                            scope.join();
+                        } catch (Exception failure) {
+                            Serial.println("failed");
+                        }
+                        Serial.println(sums[0] + sums[1]);
+                """, """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.util.concurrent.StructuredTaskScope;
+                """);
         String entry = result.assembly().substring(result.assembly().indexOf(result.entryPointSymbol() + ":\n"));
+
+        // When & Then
         assertThat(entry.substring(0, entry.indexOf("    .type ")))
                 .as("main() starts before any thread exists").doesNotContain("juno_thread_safepoint");
+    }
+
+    @Test
+    @DisplayName("The AVR thread port sizes its stacks and context switch in the shim")
+    void shouldSizeTheAvrThreadPortStacksAndContextSwitchInTheShim() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrTasks", """
+                        final int[] sums = new int[2];
+                        try (var scope = StructuredTaskScope.open()) {
+                            scope.fork(() -> {
+                                for (int i = 0; i < 10; i++) {
+                                    sums[0] = sums[0] + i;
+                                }
+                            });
+                            scope.fork(() -> { sums[1] = 7; });
+                            scope.join();
+                        } catch (Exception failure) {
+                            Serial.println("failed");
+                        }
+                        Serial.println(sums[0] + sums[1]);
+                """, """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.util.concurrent.StructuredTaskScope;
+                """);
+
+        // When & Then
         assertThat(result.runtimeShim())
                 .contains("---- Juno threads: AVR port")
                 .contains("static constexpr uint16_t JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.AVR_THREAD_STACK_BYTES + "u;")
                 .contains("\"  out 0x3e, r23\\n\"")
                 .contains("juno_gc_scan_bytes(from, reinterpret_cast<const uint8_t*>(top));")
-                .contains("juno_thread_gc_scan(&stackMarker);")
+                .contains("juno_thread_gc_scan(&stackMarker);");
+    }
+
+    @Test
+    @DisplayName("The AVR thread shim catches an overflow with the stack pointer and the canary")
+    void shouldCatchAnAvrThreadStackOverflowWithTheStackPointerAndTheCanary() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrTasks", """
+                        final int[] sums = new int[2];
+                        try (var scope = StructuredTaskScope.open()) {
+                            scope.fork(() -> {
+                                for (int i = 0; i < 10; i++) {
+                                    sums[0] = sums[0] + i;
+                                }
+                            });
+                            scope.fork(() -> { sums[1] = 7; });
+                            scope.join();
+                        } catch (Exception failure) {
+                            Serial.println("failed");
+                        }
+                        Serial.println(sums[0] + sums[1]);
+                """, """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.util.concurrent.StructuredTaskScope;
+                """);
+
+        // When & Then
+        // An overflow is caught by the stack pointer as well as the canary, and reported from its own stack.
+        assertThat(result.runtimeShim())
                 .contains("extern \"C\" [[noreturn]] void juno_thread_stack_overflow() {")
-                // An overflow is caught by the stack pointer as well as the canary, and reported from its own stack.
                 .contains("bool below = SP < reinterpret_cast<uintptr_t>(bottom) + sizeof JUNO_STACK_CANARY;",
-                        "static uint8_t juno_overflow_stack[128];", "\"out __SP_H__, %B0\\n\"")
-                // Preemption at safepoints once the time slice is over; no tick, so no interrupt trampoline.
+                        "static uint8_t juno_overflow_stack[128];", "\"out __SP_H__, %B0\\n\"");
+    }
+
+    @Test
+    @DisplayName("Preempts at safepoints once the slice is over, with no tick or interrupt trampoline")
+    void shouldPreemptAtSafepointsOnceTheSliceIsOverWithNoTick() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrTasks", """
+                        final int[] sums = new int[2];
+                        try (var scope = StructuredTaskScope.open()) {
+                            scope.fork(() -> {
+                                for (int i = 0; i < 10; i++) {
+                                    sums[0] = sums[0] + i;
+                                }
+                            });
+                            scope.fork(() -> { sums[1] = 7; });
+                            scope.join();
+                        } catch (Exception failure) {
+                            Serial.println("failed");
+                        }
+                        Serial.println(sums[0] + sums[1]);
+                """, """
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                import java.util.concurrent.StructuredTaskScope;
+                """);
+
+        // When & Then
+        // Preemption at safepoints once the time slice is over; no tick, so no interrupt trampoline.
+        assertThat(result.runtimeShim())
                 .contains("extern \"C\" void juno_thread_safepoint() {",
                         "if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) return;")
                 .doesNotContain("juno_preempt_trampoline", "SysTick_Handler", "k_timer");
     }
 
     @Test
-    void keepsTheStackLimitCheckOutOfProgramsWithoutTasks() throws Exception {
+    @DisplayName("Keeps the stack-limit check out of programs without tasks")
+    void shouldKeepTheStackLimitCheckOutOfProgramsWithoutTasks() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrNoTasks", """
                         for (int i = 0; i < 3; i++) {
                             Serial.println(i);
                         }
                 """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+
+        // When & Then
         assertThat(result.assembly())
                 .contains("    call yield\n")
                 .doesNotContain("juno_stack_limit")
                 .doesNotContain("juno_thread_main_exit")
                 .doesNotContain("juno_thread_safepoint");
+    }
+
+    @Test
+    @DisplayName("A program without tasks has no context switch in its shim")
+    void shouldOmitTheContextSwitchFromTheShimOfAProgramWithoutTasks() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrNoTasks", """
+                        for (int i = 0; i < 3; i++) {
+                            Serial.println(i);
+                        }
+                """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+
+        // When & Then
         assertThat(result.runtimeShim()).doesNotContain("juno_context_switch");
     }
 
     @Test
-    void sizesTaskStacksForSixKilobytesOfRam() {
+    @DisplayName("Sizes task stacks for six kilobytes of RAM")
+    void shouldSizeTaskStacksForSixKilobytesOfRam() {
+        // When & Then
         assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_R3_WIFI_REV2)
                 .threadStackBytes(Board.UNO_R3_WIFI_REV2.core().defaultThreadStackBytes()))
                 .isEqualTo(RuntimeLimits.AVR_THREAD_STACK_BYTES);
+    }
+
+    @Test
+    @DisplayName("An explicit task stack of one kilobyte is kept on the UNO WiFi Rev2")
+    void shouldKeepAnExplicitOneKilobyteTaskStackOnTheUnoWifiRev2() {
+        // Given
         RuntimeConfig larger = new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(1024));
+
+        // When & Then
         assertThat(larger.forBoard(Board.UNO_R3_WIFI_REV2).threadStackBytes()).hasValue(1024);
+    }
+
+    @Test
+    @DisplayName("Rejects a task stack above the AVR limit")
+    void shouldRejectATaskStackAboveTheAvrLimit() {
+        // When & Then
         assertThatThrownBy(() -> new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(2048))
                 .forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
@@ -628,7 +1067,9 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    void reachesTheCorePinFunctionsThroughJavaWidthWrappers() throws Exception {
+    @DisplayName("Reaches the core pin functions through Java-width wrappers")
+    void shouldReachTheCorePinFunctionsThroughJavaWidthWrappers() throws Exception {
+        // Given
         CompilationResult result = compile("demo.AvrBlink", """
                         Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
                         Gpio.digitalWrite(Gpio.builtinLed(), true);
@@ -637,12 +1078,30 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.api.util.Delay;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
                 """);
+
+        // When & Then
         assertThat(result.assembly())
                 .contains("call juno_avr_thunk_juno_pin_mode")
                 .contains("call juno_avr_thunk_juno_digital_write")
                 .contains("call juno_avr_thunk_juno_delay_millis")
                 // LED_BUILTIN of the uno2018 variant.
                 .contains("ldi r22, 25");
+    }
+
+    @Test
+    @DisplayName("The shim wraps the pinMode call with a PinMode cast")
+    void shouldWrapThePinModeCallWithAPinModeCastInTheShim() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrBlink", """
+                        Gpio.pinMode(Gpio.builtinLed(), Gpio.OUTPUT);
+                        Gpio.digitalWrite(Gpio.builtinLed(), true);
+                        Delay.millis(500);
+                """, """
+                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                """);
+
+        // When & Then
         assertThat(List.of(result.runtimeShim().split("\n")))
                 .contains("  pinMode(static_cast<uint8_t>(pin), static_cast<PinMode>(mode));");
     }

@@ -2,6 +2,9 @@ package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.classfile.ClassPath;
 import io.github.jabrena.juno.classfile.JavaClass;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -17,47 +20,57 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Restricted Java synchronization primitives over Juno's preemptive thread scheduler. */
+@NullMarked
+@DisplayName("Restricted synchronization primitives")
 class SynchronizationTest {
     @TempDir
     Path temporaryDirectory;
 
     @Test
-    void aVolatileFlagIsReloadedOnEverySpinLoopIteration() throws Exception {
-        String source = """
-                package demo;
-                public final class VolatileFlag {
-                    private static volatile boolean ready;
-                    private static int result;
-                    public static void main() throws Exception {
-                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
-                            scope.fork(() -> {
-                                result = 42;
-                                ready = true;
-                            });
-                            while (!ready) {
-                                // The thread can be preempted anywhere in this loop.
-                            }
-                            scope.join();
-                        }
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.VolatileFlag", source);
-
+    @DisplayName("A volatile flag is declared volatile in the class file")
+    void shouldDeclareTheVolatileFlagAsVolatileInTheClassFile() throws Exception {
+        // Given
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.VolatileFlag", volatileFlagSource());
         Map<String, JavaClass> classes = new ClassPath().load(List.of(temporaryDirectory));
-        assertThat(classes.get("demo/VolatileFlag").findField("ready", "Z").isVolatile()).isTrue();
 
-        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.VolatileFlag").assembly();
-        assertThat(assembly).contains(
-                "juno_static_demo_VolatileFlag_ready_Z",
-                "bl juno_thread_backedge");
-        assertThat(occurrences(assembly, "=juno_static_demo_VolatileFlag_ready_Z"))
-                .as("the loop must execute a real load of the volatile flag")
-                .isGreaterThanOrEqualTo(1);
+        // When
+        boolean volatileFlag = classes.get("demo/VolatileFlag").findField("ready", "Z").isVolatile();
+
+        // Then
+        assertThat(volatileFlag).isTrue();
     }
 
     @Test
-    void aVolatileFieldIsReadAgainAfterACall() throws Exception {
+    @DisplayName("A volatile flag is reloaded on every spin-loop iteration")
+    void shouldReloadTheVolatileFlagOnEverySpinLoopIteration() throws Exception {
+        // Given
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.VolatileFlag", volatileFlagSource());
+
+        // When
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.VolatileFlag").assembly();
+
+        // Then
+        assertThat(assembly).contains("juno_static_demo_VolatileFlag_ready_Z", "bl juno_thread_backedge");
+    }
+
+    @Test
+    @DisplayName("The spin loop executes a real load of the volatile flag")
+    void shouldExecuteARealLoadOfTheVolatileFlag() throws Exception {
+        // Given
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.VolatileFlag", volatileFlagSource());
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.VolatileFlag").assembly();
+
+        // When
+        int loads = occurrences(assembly, "=juno_static_demo_VolatileFlag_ready_Z");
+
+        // Then
+        assertThat(loads).as("the loop must execute a real load of the volatile flag").isGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("A volatile field is read again after a call")
+    void shouldReadAVolatileFieldAgainAfterACall() throws Exception {
+        // Given
         String source = """
                 package demo;
                 public final class VolatileAcrossCall {
@@ -71,43 +84,33 @@ class SynchronizationTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.VolatileAcrossCall", source);
-
         String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.VolatileAcrossCall").assembly();
 
-        assertThat(occurrences(assembly, "=juno_static_demo_VolatileAcrossCall_state_I"))
-                .as("both source reads and the write must access the volatile field")
+        // When
+        int accesses = occurrences(assembly, "=juno_static_demo_VolatileAcrossCall_state_I");
+
+        // Then
+        assertThat(accesses).as("both source reads and the write must access the volatile field")
                 .isGreaterThanOrEqualTo(3);
     }
 
     @Test
-    void synchronizedBlocksUseAReentrantRuntimeMonitor() throws Exception {
-        String source = """
-                package demo;
-                public final class SynchronizedBlock {
-                    static final class Guard { }
-                    private static final Guard GUARD = new Guard();
-                    private static int counter;
-                    static void increment() {
-                        synchronized (GUARD) {
-                            synchronized (GUARD) {
-                                counter++;
-                            }
-                        }
-                    }
-                    public static void main() throws Exception {
-                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
-                            scope.fork(SynchronizedBlock::increment);
-                            scope.fork(SynchronizedBlock::increment);
-                            scope.join();
-                        }
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.SynchronizedBlock", source);
+    @DisplayName("Synchronized blocks use a reentrant runtime monitor in the assembly")
+    void shouldUseAReentrantRuntimeMonitorForSynchronizedBlocksInTheAssembly() throws Exception {
+        // Given
+        CompilationResult result = compileSynchronizedBlock();
 
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SynchronizedBlock");
-
+        // When & Then
         assertThat(result.assembly()).contains("bl juno_monitor_enter", "bl juno_monitor_exit");
+    }
+
+    @Test
+    @DisplayName("The runtime shim declares the monitor enter and exit functions")
+    void shouldDeclareTheMonitorEnterAndExitFunctionsInTheShim() throws Exception {
+        // Given
+        CompilationResult result = compileSynchronizedBlock();
+
+        // When & Then
         assertThat(result.runtimeShim()).contains(
                 "extern \"C\" void juno_monitor_enter(int32_t handle)",
                 "extern \"C\" void juno_monitor_exit(int32_t handle)",
@@ -115,7 +118,9 @@ class SynchronizationTest {
     }
 
     @Test
-    void reentrantLockUsesTheSameMonitorRuntime() throws Exception {
+    @DisplayName("A ReentrantLock uses the same monitor runtime")
+    void shouldUseTheSameMonitorRuntimeForAReentrantLock() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import java.util.concurrent.locks.ReentrantLock;
@@ -147,9 +152,9 @@ class SynchronizationTest {
                 }
                 """;
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.ExplicitLock", source);
-
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ExplicitLock");
 
+        // When & Then
         assertThat(result.assembly()).contains(
                 "bl juno_reentrant_lock_new",
                 "bl juno_monitor_enter",
@@ -158,7 +163,9 @@ class SynchronizationTest {
     }
 
     @Test
-    void synchronizedMethodsAreRejectedInsteadOfSilentlyRunningUnlocked() throws Exception {
+    @DisplayName("Synchronized methods are rejected instead of silently running unlocked")
+    void shouldRejectSynchronizedMethodsInsteadOfRunningUnlocked() throws Exception {
+        // Given
         String source = """
                 package demo;
                 public final class SynchronizedMethod {
@@ -173,6 +180,7 @@ class SynchronizationTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.SynchronizedMethod", source);
 
+        // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SynchronizedMethod"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("synchronized methods")
@@ -180,7 +188,9 @@ class SynchronizationTest {
     }
 
     @Test
-    void reentrantLockApisOutsideTheRestrictedSubsetAreRejectedExplicitly() throws Exception {
+    @DisplayName("ReentrantLock APIs outside the restricted subset are rejected explicitly")
+    void shouldRejectReentrantLockApisOutsideTheRestrictedSubsetExplicitly() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import java.util.concurrent.locks.ReentrantLock;
@@ -192,6 +202,7 @@ class SynchronizationTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnsupportedLockApi", source);
 
+        // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnsupportedLockApi"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("restricted ReentrantLock subset")
@@ -199,9 +210,11 @@ class SynchronizationTest {
     }
 
     @Test
-    void monitorRuntimeCompilesAsCppForBothBoards() throws Exception {
+    @DisplayName("The monitor runtime compiles as C++ for both boards")
+    void shouldCompileTheMonitorRuntimeAsCppForBothBoards() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
-        org.junit.jupiter.api.Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String body = """
                 static final class Guard { }
                 static final Guard GUARD = new Guard();
@@ -224,12 +237,65 @@ class SynchronizationTest {
             Path shim = temporaryDirectory.resolve(board + "Monitor.cpp");
             Files.writeString(shim, CompilerTestSupport.compileJuno(temporaryDirectory, mainClass).runtimeShim(),
                     StandardCharsets.UTF_8);
+
+            // When
             Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
                     "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
             assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
+
+            // Then
             String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             assertThat(process.exitValue()).as("%s shim:%n%s", board, diagnostics).isZero();
         }
+    }
+
+    private CompilationResult compileSynchronizedBlock() throws Exception {
+        String source = """
+                package demo;
+                public final class SynchronizedBlock {
+                    static final class Guard { }
+                    private static final Guard GUARD = new Guard();
+                    private static int counter;
+                    static void increment() {
+                        synchronized (GUARD) {
+                            synchronized (GUARD) {
+                                counter++;
+                            }
+                        }
+                    }
+                    public static void main() throws Exception {
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(SynchronizedBlock::increment);
+                            scope.fork(SynchronizedBlock::increment);
+                            scope.join();
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.SynchronizedBlock", source);
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SynchronizedBlock");
+    }
+
+    private static String volatileFlagSource() {
+        return """
+                package demo;
+                public final class VolatileFlag {
+                    private static volatile boolean ready;
+                    private static int result;
+                    public static void main() throws Exception {
+                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
+                            scope.fork(() -> {
+                                result = 42;
+                                ready = true;
+                            });
+                            while (!ready) {
+                                // The thread can be preempted anywhere in this loop.
+                            }
+                            scope.join();
+                        }
+                    }
+                }
+                """;
     }
 
     private static int occurrences(String value, String needle) {

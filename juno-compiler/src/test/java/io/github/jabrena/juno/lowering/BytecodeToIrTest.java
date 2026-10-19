@@ -11,6 +11,8 @@ import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.linker.LinkedMethod;
 import io.github.jabrena.juno.linker.Program;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -20,6 +22,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("Bytecode to IR lowering")
 class BytecodeToIrTest {
     @TempDir
     Path temporaryDirectory;
@@ -27,7 +31,9 @@ class BytecodeToIrTest {
     private final BytecodeToIr lowering = new BytecodeToIr();
 
     @Test
-    void lowersStraightLineArithmeticAndAnIntrinsicCall() throws Exception {
+    @DisplayName("Lowers straight-line arithmetic into one block")
+    void shouldLowerStraightLineArithmeticIntoOneBlock() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.io.gpio.Gpio;
@@ -41,30 +47,140 @@ class BytecodeToIrTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Simple", source);
         Program program = CompilerTestSupport.link(temporaryDirectory, "demo.Simple");
 
+        // When
         IrMethod method = entryPointMethod(program);
 
-        assertThat(method.blocks().size()).isEqualTo(1);
-        assertThat(method.values().stream().allMatch(value -> value.type() == JunoType.INT32)).isTrue();
-        List<IrInstruction> instructions = method.blocks().get(0).instructions();
-
-        // javac constant-folds `1 + 2` into a single iconst_3.
-        assertThat(instructionsOfType(instructions, IrInstruction.Const.class).stream().anyMatch(c -> c.value() == 3)).isTrue();
-        assertThat(instructionsOfType(instructions, IrInstruction.Const.class).stream().anyMatch(c -> c.value() == 13)).isTrue();
-        assertThat(instructionsOfType(instructions, IrInstruction.StoreLocal.class).stream().anyMatch(s -> s.local() == 1)).as("expected value to be stored to JVM local 1").isTrue();
-
-        IrInstruction.IntrinsicCall call = instructionsOfType(instructions, IrInstruction.IntrinsicCall.class)
-                .stream().findFirst().orElseThrow();
-        assertThat(call.intrinsic()).isEqualTo(Intrinsic.GPIO_PIN_MODE);
-        assertThat(call.arguments().size()).isEqualTo(2);
-        assertThat(call.target().isEmpty()).isTrue();
-        assertThat(call.receiver().isEmpty()).isTrue();
-
-        assertThat(method.blocks().get(0).terminator()).isInstanceOf(IrTerminator.Return.class);
-        assertThat(((IrTerminator.Return) method.blocks().get(0).terminator()).value().isEmpty()).isTrue();
+        // Then
+        assertThat(method.blocks()).hasSize(1);
     }
 
     @Test
-    void lowersAnIfIntoThreeBlocksWithACompareAndBranch() throws Exception {
+    @DisplayName("Types every value of the straight-line method as int32")
+    void shouldTypeEveryValueOfTheStraightLineMethodAsInt32() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                public final class Simple {
+                    public static void main(String[] args) {
+                        int value = 1 + 2;
+                        Gpio.pinMode(13, value);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Simple", source);
+        IrMethod method = entryPointMethod(CompilerTestSupport.link(temporaryDirectory, "demo.Simple"));
+
+        // When & Then
+        assertThat(method.values()).allMatch(value -> value.type() == JunoType.INT32);
+    }
+
+    @Test
+    @DisplayName("Folds the constant sum and keeps the pin constant")
+    void shouldFoldTheConstantSumAndKeepThePinConstant() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                public final class Simple {
+                    public static void main(String[] args) {
+                        int value = 1 + 2;
+                        Gpio.pinMode(13, value);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Simple", source);
+        IrMethod method = entryPointMethod(CompilerTestSupport.link(temporaryDirectory, "demo.Simple"));
+        List<IrInstruction> instructions = method.blocks().get(0).instructions();
+
+        // When & Then
+        // javac constant-folds `1 + 2` into a single iconst_3.
+        assertThat(instructionsOfType(instructions, IrInstruction.Const.class))
+                .anyMatch(c -> c.value() == 3)
+                .anyMatch(c -> c.value() == 13);
+    }
+
+    @Test
+    @DisplayName("Stores the value into JVM local 1")
+    void shouldStoreTheValueIntoJvmLocalOne() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                public final class Simple {
+                    public static void main(String[] args) {
+                        int value = 1 + 2;
+                        Gpio.pinMode(13, value);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Simple", source);
+        IrMethod method = entryPointMethod(CompilerTestSupport.link(temporaryDirectory, "demo.Simple"));
+        List<IrInstruction> instructions = method.blocks().get(0).instructions();
+
+        // When & Then
+        assertThat(instructionsOfType(instructions, IrInstruction.StoreLocal.class))
+                .as("expected value to be stored to JVM local 1").anyMatch(s -> s.local() == 1);
+    }
+
+    @Test
+    @DisplayName("Lowers the intrinsic call with its arguments and no target or receiver")
+    void shouldLowerTheIntrinsicCallWithItsArgumentsAndNoTargetOrReceiver() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                public final class Simple {
+                    public static void main(String[] args) {
+                        int value = 1 + 2;
+                        Gpio.pinMode(13, value);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Simple", source);
+        IrMethod method = entryPointMethod(CompilerTestSupport.link(temporaryDirectory, "demo.Simple"));
+        List<IrInstruction> instructions = method.blocks().get(0).instructions();
+
+        // When
+        IrInstruction.IntrinsicCall call = instructionsOfType(instructions, IrInstruction.IntrinsicCall.class)
+                .stream().findFirst().orElseThrow();
+
+        // Then
+        assertThat(call.intrinsic()).isEqualTo(Intrinsic.GPIO_PIN_MODE);
+        assertThat(call.arguments()).hasSize(2);
+        assertThat(call.target()).isEmpty();
+        assertThat(call.receiver()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Returns void from the straight-line method")
+    void shouldReturnVoidFromTheStraightLineMethod() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                public final class Simple {
+                    public static void main(String[] args) {
+                        int value = 1 + 2;
+                        Gpio.pinMode(13, value);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Simple", source);
+        IrMethod method = entryPointMethod(CompilerTestSupport.link(temporaryDirectory, "demo.Simple"));
+
+        // When
+        IrTerminator terminator = method.blocks().get(0).terminator();
+
+        // Then
+        assertThat(terminator).isInstanceOfSatisfying(IrTerminator.Return.class,
+                returned -> assertThat(returned.value()).isEmpty());
+    }
+
+    @Test
+    @DisplayName("Lowers an if into three blocks with a compare and branch")
+    void shouldLowerAnIfIntoThreeBlocksWithACompareAndBranch() throws Exception {
+        // Given
         String source = """
                 package demo;
                 public final class Branchy {
@@ -80,34 +196,135 @@ class BytecodeToIrTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Branchy", source);
-        Program program = CompilerTestSupport.link(temporaryDirectory, "demo.Branchy");
+        IrMethod pick = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.Branchy"), "pick");
 
-        IrMethod pick = methodNamed(program, "pick");
-        assertThat(pick.blocks().size()).isEqualTo(3);
+        // When & Then
+        assertThat(pick.blocks()).hasSize(3);
+    }
 
+    @Test
+    @DisplayName("The header compares the flag against zero and branches on the result")
+    void shouldCompareTheFlagAgainstZeroAndBranchOnTheResult() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                public final class Branchy {
+                    static int pick(int flag) {
+                        if (flag == 0) {
+                            return 1;
+                        }
+                        return 2;
+                    }
+                    public static void main(String[] args) {
+                        pick(0);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Branchy", source);
+        IrMethod pick = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.Branchy"), "pick");
+        IrBasicBlock header = blockAt(pick, 0);
+
+        // When
+        IrInstruction.Compare compare = instructionsOfType(header.instructions(), IrInstruction.Compare.class)
+                .stream().findFirst().orElseThrow();
+
+        // Then
+        assertThat(compare.condition()).isEqualTo(Condition.NOT_EQUAL);
+    }
+
+    @Test
+    @DisplayName("The header branches on the compare result to the then and else blocks")
+    void shouldBranchOnTheCompareResultToTheThenAndElseBlocks() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                public final class Branchy {
+                    static int pick(int flag) {
+                        if (flag == 0) {
+                            return 1;
+                        }
+                        return 2;
+                    }
+                    public static void main(String[] args) {
+                        pick(0);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Branchy", source);
+        IrMethod pick = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.Branchy"), "pick");
         IrBasicBlock header = blockAt(pick, 0);
         IrInstruction.Compare compare = instructionsOfType(header.instructions(), IrInstruction.Compare.class)
                 .stream().findFirst().orElseThrow();
-        assertThat(compare.condition()).isEqualTo(Condition.NOT_EQUAL);
+
+        // When
         assertThat(header.terminator()).isInstanceOf(IrTerminator.Branch.class);
         var branch = (IrTerminator.Branch) header.terminator();
+
+        // Then
         assertThat(branch.condition()).isEqualTo(compare.target());
-        assertThat(branch.trueTarget()).isEqualTo(6);
-        assertThat(branch.falseTarget()).isEqualTo(4);
+        assertThat(new int[] {branch.trueTarget(), branch.falseTarget()}).containsExactly(6, 4);
+    }
 
+    @Test
+    @DisplayName("The then block returns the constant one")
+    void shouldReturnTheConstantOneFromTheThenBlock() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                public final class Branchy {
+                    static int pick(int flag) {
+                        if (flag == 0) {
+                            return 1;
+                        }
+                        return 2;
+                    }
+                    public static void main(String[] args) {
+                        pick(0);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Branchy", source);
+        IrMethod pick = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.Branchy"), "pick");
         IrBasicBlock thenBlock = blockAt(pick, 4);
-        assertThat(instructionsOfType(thenBlock.instructions(), IrInstruction.Const.class).stream()
-                .anyMatch(c -> c.value() == 1)).isTrue();
-        assertThat(thenBlock.terminator()).isInstanceOf(IrTerminator.Return.class);
 
+        // When & Then
+        assertThat(instructionsOfType(thenBlock.instructions(), IrInstruction.Const.class))
+                .anyMatch(c -> c.value() == 1);
+        assertThat(thenBlock.terminator()).isInstanceOf(IrTerminator.Return.class);
+    }
+
+    @Test
+    @DisplayName("The else block returns the constant two")
+    void shouldReturnTheConstantTwoFromTheElseBlock() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                public final class Branchy {
+                    static int pick(int flag) {
+                        if (flag == 0) {
+                            return 1;
+                        }
+                        return 2;
+                    }
+                    public static void main(String[] args) {
+                        pick(0);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Branchy", source);
+        IrMethod pick = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.Branchy"), "pick");
         IrBasicBlock elseBlock = blockAt(pick, 6);
-        assertThat(instructionsOfType(elseBlock.instructions(), IrInstruction.Const.class).stream()
-                .anyMatch(c -> c.value() == 2)).isTrue();
+
+        // When & Then
+        assertThat(instructionsOfType(elseBlock.instructions(), IrInstruction.Const.class))
+                .anyMatch(c -> c.value() == 2);
         assertThat(elseBlock.terminator()).isInstanceOf(IrTerminator.Return.class);
     }
 
     @Test
-    void lowersALoopWithoutLosingValuesAcrossTheBackEdge() throws Exception {
+    @DisplayName("Lowers a loop without losing values across the back edge")
+    void shouldLowerALoopWithoutLosingValuesAcrossTheBackEdge() throws Exception {
+        // Given
         String source = """
                 package demo;
                 public final class Loop {
@@ -122,18 +339,36 @@ class BytecodeToIrTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Loop", source);
-        Program program = CompilerTestSupport.link(temporaryDirectory, "demo.Loop");
+        IrMethod addTo = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.Loop"), "addTo");
 
-        IrMethod addTo = methodNamed(program, "addTo");
-
-        assertThat(addTo.blocks().size() > 1).isTrue();
-        boolean sawBackEdge = addTo.blocks().stream()
+        // When & Then
+        assertThat(addTo.blocks()).hasSizeGreaterThan(1)
                 .anyMatch(block -> block.terminator() instanceof IrTerminator.Jump jump
                         && jump.target() < block.start());
-        assertThat(sawBackEdge).as("expected a jump back to an earlier block for the loop").isTrue();
-        boolean sawReturn = addTo.blocks().stream()
-                .anyMatch(block -> block.terminator() instanceof IrTerminator.Return);
-        assertThat(sawReturn).isTrue();
+    }
+
+    @Test
+    @DisplayName("A loop method returns a value")
+    void shouldReturnAValueFromTheLoopMethod() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                public final class Loop {
+                    static int addTo(int limit) {
+                        int value = 0;
+                        for (int i = 0; i < limit; i++) value += i;
+                        return value;
+                    }
+                    public static void main(String[] args) {
+                        addTo(4);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Loop", source);
+        IrMethod addTo = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.Loop"), "addTo");
+
+        // When & Then
+        assertThat(addTo.blocks()).anyMatch(block -> block.terminator() instanceof IrTerminator.Return);
     }
 
     /**
@@ -146,7 +381,9 @@ class BytecodeToIrTest {
      * reads that same slot back.
      */
     @Test
-    void ternaryBranchesShareTheSameMergeSlot() throws Exception {
+    @DisplayName("Ternary branches share the same merge slot")
+    void shouldShareTheSameMergeSlotBetweenTernaryBranches() throws Exception {
+        // Given
         String source = """
                 package demo;
                 public final class Ternary {
@@ -160,25 +397,51 @@ class BytecodeToIrTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Ternary", source);
-        Program program = CompilerTestSupport.link(temporaryDirectory, "demo.Ternary");
-
-        IrMethod pick = methodNamed(program, "pick");
-        assertThat(pick.blocks().size()).isEqualTo(4);
-
+        IrMethod pick = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.Ternary"), "pick");
         IrBasicBlock thenBlock = blockAt(pick, 4);
         IrBasicBlock elseBlock = blockAt(pick, 8);
+
+        // When
         int thenSlot = lastStoreLocal(thenBlock.instructions()).local();
         int elseSlot = lastStoreLocal(elseBlock.instructions()).local();
-        assertThat(elseSlot).as("both branches of a ternary must write their result to the same slot").isEqualTo(thenSlot);
 
+        // Then
+        assertThat(elseSlot).as("both branches of a ternary must write their result to the same slot").isEqualTo(thenSlot);
+    }
+
+    @Test
+    @DisplayName("The merge block reads the value back from the slot both branches wrote")
+    void shouldReadTheMergeValueFromTheSlotBothBranchesWrote() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                public final class Ternary {
+                    static int pick(int flag) {
+                        int result = flag == 0 ? 1 : 2;
+                        return result;
+                    }
+                    public static void main(String[] args) {
+                        pick(0);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Ternary", source);
+        IrMethod pick = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.Ternary"), "pick");
+        int thenSlot = lastStoreLocal(blockAt(pick, 4).instructions()).local();
         IrBasicBlock mergeBlock = blockAt(pick, 9);
+
+        // When
         IrInstruction.LoadLocal firstLoad = instructionsOfType(mergeBlock.instructions(), IrInstruction.LoadLocal.class)
                 .stream().findFirst().orElseThrow();
+
+        // Then
         assertThat(firstLoad.local()).as("the merge block must read the value back from the same slot both branches wrote").isEqualTo(thenSlot);
     }
 
     @Test
-    void lowersTypedFloatArgumentsCallResultAndReturns() throws Exception {
+    @DisplayName("Lowers typed float arguments, call result and returns")
+    void shouldLowerTypedFloatArgumentsCallResultAndReturns() throws Exception {
+        // Given
         String source = """
                 package demo;
                 public final class FloatCalls {
@@ -193,7 +456,6 @@ class BytecodeToIrTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatCalls", source);
         Program program = CompilerTestSupport.link(temporaryDirectory, "demo.FloatCalls");
-
         IrMethod main = entryPointMethod(program);
         IrInstruction.Call call = main.blocks().stream()
                 .flatMap(block -> block.instructions().stream())
@@ -201,18 +463,71 @@ class BytecodeToIrTest {
                 .map(IrInstruction.Call.class::cast)
                 .findFirst()
                 .orElseThrow();
-        assertThat(call.arguments().stream().map(value -> value.type()).toList()).isEqualTo(List.of(JunoType.FLOAT32, JunoType.INT32, JunoType.FLOAT32));
-        assertThat(call.target().orElseThrow().type()).isEqualTo(JunoType.FLOAT32);
 
-        IrMethod pick = methodNamed(program, "pick");
+        // When & Then
+        assertThat(call.arguments().stream().map(value -> value.type()).toList())
+                .isEqualTo(List.of(JunoType.FLOAT32, JunoType.INT32, JunoType.FLOAT32));
+    }
+
+    @Test
+    @DisplayName("A float call produces a float32 target")
+    void shouldProduceAFloat32TargetFromAFloatCall() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                public final class FloatCalls {
+                    static float pick(float left, int useLeft, float right) {
+                        if (useLeft != 0) return left;
+                        return right;
+                    }
+                    public static void main(String[] args) {
+                        float value = pick(1.25f, 0, 2.5f);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatCalls", source);
+        IrMethod main = entryPointMethod(CompilerTestSupport.link(temporaryDirectory, "demo.FloatCalls"));
+        IrInstruction.Call call = main.blocks().stream()
+                .flatMap(block -> block.instructions().stream())
+                .filter(IrInstruction.Call.class::isInstance)
+                .map(IrInstruction.Call.class::cast)
+                .findFirst()
+                .orElseThrow();
+
+        // When & Then
+        assertThat(call.target().orElseThrow().type()).isEqualTo(JunoType.FLOAT32);
+    }
+
+    @Test
+    @DisplayName("A float method returns float32 values from both of its returns")
+    void shouldReturnFloat32ValuesFromBothReturnsOfAFloatMethod() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                public final class FloatCalls {
+                    static float pick(float left, int useLeft, float right) {
+                        if (useLeft != 0) return left;
+                        return right;
+                    }
+                    public static void main(String[] args) {
+                        float value = pick(1.25f, 0, 2.5f);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.FloatCalls", source);
+        IrMethod pick = methodNamed(CompilerTestSupport.link(temporaryDirectory, "demo.FloatCalls"), "pick");
+
+        // When
         List<IrTerminator.Return> returns = pick.blocks().stream()
                 .map(IrBasicBlock::terminator)
                 .filter(IrTerminator.Return.class::isInstance)
                 .map(IrTerminator.Return.class::cast)
                 .filter(returned -> returned.value().isPresent())
                 .toList();
-        assertThat(returns.size()).isEqualTo(2);
-        assertThat(returns.stream().allMatch(returned -> returned.value().orElseThrow().type() == JunoType.FLOAT32)).isTrue();
+
+        // Then
+        assertThat(returns).hasSize(2)
+                .allMatch(returned -> returned.value().orElseThrow().type() == JunoType.FLOAT32);
     }
 
     private IrInstruction.StoreLocal lastStoreLocal(List<IrInstruction> instructions) {

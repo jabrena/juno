@@ -2,7 +2,9 @@ package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -12,6 +14,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** {@code juno:monitor} through a real, Maven-configured {@link MonitorMojo}; never touches a real board. */
+@NullMarked
+@DisplayName("juno:monitor goal")
 class MonitorMojoTest extends AbstractMojoTestCase {
     @BeforeEach
     @Override
@@ -20,18 +24,23 @@ class MonitorMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    void requiresABoardParameter() throws Exception {
+    @DisplayName("Requires a board parameter")
+    void shouldRequireABoardParameter() throws Exception {
+        // Given
         MonitorMojo mojo = lookupEmptyMojo("monitor", new File("."));
         mojo = configureMojo(mojo, configuration().set("arduinoCli", "arduino-cli").build());
         mojo.setLog(new RecordingLog());
 
+        // When & Then
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("Missing required target board");
     }
 
     @Test
-    void opensTheMonitorOnTheResolvedPortAtTheConfiguredBaudRate() throws Exception {
+    @DisplayName("Opens the monitor on the resolved port at the configured baud rate")
+    void shouldOpenTheMonitorOnTheResolvedPortAtTheConfiguredBaudRate() throws Exception {
+        // Given
         MonitorMojo mojo = lookupEmptyMojo("monitor", new File("."));
         mojo = configureMojo(mojo, configuration()
                 .set("arduinoCli", "arduino-cli")
@@ -44,8 +53,10 @@ class MonitorMojoTest extends AbstractMojoTestCase {
                 .respond(0, "");
         mojo.useExecutor(executor);
 
+        // When
         mojo.execute();
 
+        // Then
         assertThat(executor.invocations()).hasSize(2);
         Command monitorCommand = executor.invocations().get(1);
         assertThat(monitorCommand.isInteractive()).isTrue();

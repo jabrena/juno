@@ -6,6 +6,8 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 
 import static com.tngtech.archunit.base.DescribedPredicate.describe;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -18,6 +20,8 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
  * the backend. Code generation reaches a board's Arduino core only through {@code CoreRuntime}, so adding a board is
  * adding one core implementation, never a branch in the code generator.
  */
+@NullMarked
+@DisplayName("Backend package dependency rules")
 @AnalyzeClasses(packages = "io.github.jabrena.juno", importOptions = ImportOption.DoNotIncludeTests.class)
 class BackendArchitectureTest {
 
@@ -35,34 +39,34 @@ class BackendArchitectureTest {
             "io.github.jabrena.juno.backend.runtime.core.MegaAvrCoreRuntime"};
 
     @ArchTest
-    static final ArchRule runtimeNeverDependsOnCodeGeneration = noClasses()
+    static final ArchRule shouldNotDependOnCodeGenerationFromTheRuntime = noClasses()
             .that().resideInAnyPackage(RUNTIME, CORE, SPI)
             .should().dependOnClassesThat().resideInAnyPackage(CODEGEN, THUMB2, AVR)
             .because("the runtime shim is what generated code links against; it must not know how that code is "
                     + "generated, so the code generators can depend on it and not the other way round");
 
     @ArchTest
-    static final ArchRule sharedRuntimeNeverDependsOnACore = noClasses()
+    static final ArchRule shouldNotSeeACoreFromTheSharedRuntime = noClasses()
             .that().resideInAnyPackage(RUNTIME, SPI)
             .should().dependOnClassesThat().resideInAPackage(CORE)
             .because("each core implements CoreRuntime on top of the shared runtime, so the shared runtime may only "
                     + "see a core through the CoreRuntime contract");
 
     @ArchTest
-    static final ArchRule contractsDependOnNothingElseInTheBackend = noClasses()
+    static final ArchRule shouldKeepTheContractsFreeOfOtherBackendPackages = noClasses()
             .that().resideInAPackage(SPI)
             .should().dependOnClassesThat().resideInAnyPackage(CODEGEN, THUMB2, AVR, RUNTIME, CORE)
             .because("CoreRuntime and ShimFeature are the contracts every other backend package depends on");
 
     @ArchTest
-    static final ArchRule coresLiveInTheCorePackage = classes()
+    static final ArchRule shouldPlaceEveryCoreInTheCorePackage = classes()
             .that().implement(CoreRuntime.class)
             .should().resideInAPackage(CORE)
             .because("a new board's Arduino core is one CoreRuntime implementation in runtime.core, created by "
                     + "CoreRuntimes.of");
 
     @ArchTest
-    static final ArchRule codeGenerationNeverNamesACoreImplementation = noClasses()
+    static final ArchRule shouldNotNameACoreImplementationOutsideTheCorePackage = noClasses()
             .that().resideOutsideOfPackage(CORE)
             .should().dependOnClassesThat(describe("are a per-core runtime implementation",
                     (JavaClass javaClass) -> javaClassIsCoreImplementation(javaClass)))
@@ -70,7 +74,7 @@ class BackendArchitectureTest {
                     + "belongs in that core's implementation");
 
     @ArchTest
-    static final ArchRule coreImplementationsArePackagePrivate = noClasses()
+    static final ArchRule shouldKeepCoreImplementationsPackagePrivate = noClasses()
             .that().resideInAPackage(CORE)
             .and().doNotHaveSimpleName("CoreRuntimes")
             .should().bePublic()

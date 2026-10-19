@@ -2,11 +2,22 @@ package io.github.jabrena.juno.api.thirdparty.tft;
 
 import io.github.jabrena.juno.api.io.gpio.Gpio;
 import io.github.jabrena.juno.api.testing.Wire;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.INT_ARRAY;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+@NullMarked
+@DisplayName("ELEGOO TFT touch shield")
 class TftTouchShieldTest {
 
     @BeforeEach
@@ -19,260 +30,448 @@ class TftTouchShieldTest {
         ParallelBus.runs.clear();
     }
 
+    static Stream<Arguments> rotations() {
+        return Stream.of(
+                arguments(TftTouchShield.LANDSCAPE, 320, 240, 0xE8),
+                arguments(TftTouchShield.LANDSCAPE_FLIPPED, 320, 240, 0x28),
+                arguments(TftTouchShield.PORTRAIT_FLIPPED, 240, 320, 0x48));
+    }
+
+    static Stream<Arguments> colors() {
+        return Stream.of(
+                arguments(255, 0, 0, TftTouchShield.RED),
+                arguments(0, 255, 0, TftTouchShield.GREEN),
+                arguments(0, 0, 255, TftTouchShield.BLUE),
+                arguments(255, 255, 255, TftTouchShield.WHITE));
+    }
+
+    static Stream<Arguments> touchOrientations() {
+        return Stream.of(
+                arguments(TftTouchShield.LANDSCAPE, 158, 146),
+                arguments(TftTouchShield.LANDSCAPE_FLIPPED, 161, 93),
+                arguments(TftTouchShield.PORTRAIT_FLIPPED, 146, 161));
+    }
+
+    static Stream<Arguments> windowsOutsideTheScreen() {
+        return Stream.of(
+                arguments(1, 0, 240, 1, "past the right edge"),
+                arguments(0, -1, 1, 1, "above the top"),
+                arguments(0, 0, 1, 321, "past the bottom edge"),
+                arguments(239, 0, 2, 1, "past the right edge at the last column"),
+                arguments(0, 0, 0, 2, "empty"));
+    }
+
     @Test
-    void beginRoutesTheDataBusAndStrobeAndStartsInPortrait() {
-        assertThat(TftTouchShield.width()).isEqualTo(240);
-        assertThat(TftTouchShield.height()).isEqualTo(320);
+    @DisplayName("Begin reports the portrait dimensions")
+    void shouldReportThePortraitDimensionsAfterBegin() {
+        // When & Then
+        assertThat(new int[] {TftTouchShield.width(), TftTouchShield.height()}).containsExactly(240, 320);
+    }
+
+    @Test
+    @DisplayName("Begin routes the data bus to the parallel pins")
+    void shouldRouteTheDataBusToTheParallelPins() {
+        // When & Then
         assertThat(ParallelBus.dataPins).containsExactly(8, 9, 2, 3, 4, 5, 6, 7);
+    }
+
+    @Test
+    @DisplayName("Begin routes the strobe to the write pin")
+    void shouldRouteTheStrobeToTheWritePin() {
+        // When & Then
         assertThat(ParallelBus.strobePin).isEqualTo(TftTouchShield.PIN_WR);
     }
 
-    @Test
-    void setRotationSwapsTheDimensionsForTheLandscapeOrientations() {
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        assertThat(TftTouchShield.width()).isEqualTo(320);
-        assertThat(TftTouchShield.height()).isEqualTo(240);
-        assertThat(ParallelBus.bytes).containsSubsequence(0x36, 0xE8);
+    @ParameterizedTest(name = "rotation {0} is {1}x{2} with MADCTL 0x{3}")
+    @MethodSource("rotations")
+    @DisplayName("Set rotation swaps the dimensions for the landscape orientations")
+    void shouldSwapTheDimensionsForTheRotation(int rotation, int width, int height, int madctl) {
+        // When
+        TftTouchShield.setRotation(rotation);
 
-        ParallelBus.bytes.clear();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE_FLIPPED);
-        assertThat(TftTouchShield.width()).isEqualTo(320);
-        assertThat(ParallelBus.bytes).containsSubsequence(0x36, 0x28);
+        // Then
+        assertThat(new int[] {TftTouchShield.width(), TftTouchShield.height()}).containsExactly(width, height);
+        assertThat(ParallelBus.bytes).containsSubsequence(0x36, madctl);
+    }
 
-        ParallelBus.bytes.clear();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
-        assertThat(TftTouchShield.height()).isEqualTo(320);
-        assertThat(ParallelBus.bytes).containsSubsequence(0x36, 0x48);
+    @ParameterizedTest(name = "r={0}, g={1}, b={2} packs to {3}")
+    @MethodSource("colors")
+    @DisplayName("Color packs RGB into sixteen bits")
+    void shouldPackRgbIntoSixteenBits(int red, int green, int blue, int expected) {
+        // When & Then
+        assertThat(TftTouchShield.color(red, green, blue)).isEqualTo(expected);
     }
 
     @Test
-    void colorPacksRgbIntoSixteenBits() {
-        assertThat(TftTouchShield.color(255, 0, 0)).isEqualTo(TftTouchShield.RED);
-        assertThat(TftTouchShield.color(0, 255, 0)).isEqualTo(TftTouchShield.GREEN);
-        assertThat(TftTouchShield.color(0, 0, 255)).isEqualTo(TftTouchShield.BLUE);
-        assertThat(TftTouchShield.color(255, 255, 255)).isEqualTo(TftTouchShield.WHITE);
-    }
-
-    @Test
-    void fillRectClipsToTheScreenBeforeSendingItsPixels() {
+    @DisplayName("Fill rect clips to the screen before sending its pixels")
+    void shouldClipTheFillRectToTheScreenBeforeSendingItsPixels() {
+        // When
         TftTouchShield.fillRect(-5, -5, 10, 10, TftTouchShield.RED);
 
-        assertThat(ParallelBus.runs).hasSize(1);
-        assertThat(ParallelBus.runs.get(0)).containsExactly(TftTouchShield.RED, 25);
+        // Then
+        assertThat(ParallelBus.runs).hasSize(1).first(INT_ARRAY).containsExactly(TftTouchShield.RED, 25);
+    }
+
+    @Test
+    @DisplayName("Fill rect sends the clipped column window")
+    void shouldSendTheClippedColumnWindowForFillRect() {
+        // When
+        TftTouchShield.fillRect(-5, -5, 10, 10, TftTouchShield.RED);
+
+        // Then
         assertThat(ParallelBus.bytes).containsSubsequence(TftTouchShield.COLUMN_ADDRESS_SET, 0x00, 0x00, 0x00, 0x04);
     }
 
     @Test
-    void anUnchangedWindowIsNotSentTwice() {
+    @DisplayName("An unchanged window is not sent twice")
+    void shouldNotSendAnUnchangedWindowTwice() {
+        // Given
         TftTouchShield.fillRect(0, 0, 4, 4, TftTouchShield.BLUE);
         ParallelBus.bytes.clear();
 
+        // When
         TftTouchShield.fillRect(0, 0, 4, 4, TftTouchShield.BLUE);
 
+        // Then
         assertThat(ParallelBus.bytes).containsExactly(TftTouchShield.MEMORY_WRITE);
     }
 
     @Test
-    void fillRectOutsideTheScreenSendsNothing() {
+    @DisplayName("Fill rect outside the screen sends nothing")
+    void shouldSendNothingForAFillRectOutsideTheScreen() {
+        // When
         TftTouchShield.fillRect(300, 300, 10, 10, TftTouchShield.RED);
 
+        // Then
         assertThat(ParallelBus.runs).isEmpty();
     }
 
     @Test
-    void fillScreenCoversEveryPixel() {
+    @DisplayName("Fill screen covers every pixel")
+    void shouldCoverEveryPixelWhenFillingTheScreen() {
+        // When
         TftTouchShield.fillScreen(TftTouchShield.GREEN);
 
-        assertThat(ParallelBus.runs).hasSize(1);
-        assertThat(ParallelBus.runs.get(0)).containsExactly(TftTouchShield.GREEN, 240 * 320);
+        // Then
+        assertThat(ParallelBus.runs).hasSize(1).first(INT_ARRAY).containsExactly(TftTouchShield.GREEN, 240 * 320);
     }
 
     @Test
-    void drawPixelIgnoresPointsOffTheScreen() {
+    @DisplayName("Draw pixel ignores points off the screen")
+    void shouldIgnorePixelsOffTheScreen() {
+        // When
         TftTouchShield.drawPixel(240, 0, TftTouchShield.RED);
         TftTouchShield.drawPixel(-1, 0, TftTouchShield.RED);
-        assertThat(ParallelBus.runs).isEmpty();
 
-        TftTouchShield.drawPixel(10, 10, TftTouchShield.BLUE);
-        assertThat(ParallelBus.runs).hasSize(1);
-        assertThat(ParallelBus.runs.get(0)).containsExactly(TftTouchShield.BLUE, 1);
+        // Then
+        assertThat(ParallelBus.runs).isEmpty();
     }
 
     @Test
-    void rectanglesAndLinesDrawTheirEdges() {
+    @DisplayName("Draw pixel draws a point on the screen")
+    void shouldDrawAPixelOnTheScreen() {
+        // When
+        TftTouchShield.drawPixel(10, 10, TftTouchShield.BLUE);
+
+        // Then
+        assertThat(ParallelBus.runs).hasSize(1).first(INT_ARRAY).containsExactly(TftTouchShield.BLUE, 1);
+    }
+
+    @Test
+    @DisplayName("Draw rect draws four edges")
+    void shouldDrawARectangleWithFourEdges() {
+        // When
         TftTouchShield.drawRect(10, 10, 4, 3, TftTouchShield.WHITE);
 
-        assertThat(ParallelBus.runs).hasSize(4);
-        assertThat(ParallelBus.runs).allSatisfy(run -> assertThat(run[0]).isEqualTo(TftTouchShield.WHITE));
-        assertThat(ParallelBus.runs.stream().mapToInt(run -> run[1]).sum()).isEqualTo(4 + 4 + 3 + 3);
+        // Then
+        assertThat(ParallelBus.runs).hasSize(4).allSatisfy(run -> assertThat(run[0]).isEqualTo(TftTouchShield.WHITE));
+    }
 
-        ParallelBus.runs.clear();
+    @Test
+    @DisplayName("Draw rect covers its edges with the expected pixel count")
+    void shouldCoverTheRectangleEdgesWithTheExpectedPixelCount() {
+        // When
+        TftTouchShield.drawRect(10, 10, 4, 3, TftTouchShield.WHITE);
+
+        // Then
+        assertThat(ParallelBus.runs.stream().mapToInt(run -> run[1]).sum()).isEqualTo(4 + 4 + 3 + 3);
+    }
+
+    @Test
+    @DisplayName("Horizontal and vertical lines draw their length")
+    void shouldDrawHorizontalAndVerticalLinesWithTheirLength() {
+        // When
         TftTouchShield.drawHorizontalLine(0, 0, 5, TftTouchShield.CYAN);
         TftTouchShield.drawVerticalLine(0, 0, 6, TftTouchShield.CYAN);
+
+        // Then
         assertThat(ParallelBus.runs.stream().mapToInt(run -> run[1]).sum()).isEqualTo(5 + 6);
     }
 
     @Test
-    void fillCircleCoversTheDiscRowByRow() {
+    @DisplayName("Fill circle covers the disc row by row")
+    void shouldCoverTheDiscRowByRow() {
+        // When
         TftTouchShield.fillCircle(50, 50, 2, TftTouchShield.WHITE);
 
+        // Then
         assertThat(ParallelBus.runs.stream().mapToInt(run -> run[1]).sum()).isEqualTo(5 + 3 + 3 + 1 + 1);
     }
 
     @Test
-    void drawCircleOutlinesWithSinglePixels() {
+    @DisplayName("Draw circle outlines with single pixels")
+    void shouldOutlineACircleWithSinglePixels() {
+        // When
         TftTouchShield.drawCircle(50, 50, 3, TftTouchShield.WHITE);
 
-        assertThat(ParallelBus.runs).isNotEmpty();
-        assertThat(ParallelBus.runs).allSatisfy(run -> assertThat(run[1]).isEqualTo(1));
+        // Then
+        assertThat(ParallelBus.runs).isNotEmpty().allSatisfy(run -> assertThat(run[1]).isEqualTo(1));
     }
 
     @Test
-    void beginPixelsStreamsIntoAWindowThatFitsTheScreen() {
+    @DisplayName("Begin pixels accepts a window that fits the screen")
+    void shouldAcceptAWindowThatFitsTheScreen() {
+        // When & Then
         assertThat(TftTouchShield.beginPixels(0, 0, 2, 2)).isTrue();
-        TftTouchShield.pushPixel(TftTouchShield.RED);
-        assertThat(ParallelBus.runs).hasSize(1);
-        assertThat(ParallelBus.runs.get(0)).containsExactly(TftTouchShield.RED, 1);
-
-        assertThat(TftTouchShield.beginPixels(0, 0, 0, 2)).as("empty").isFalse();
-        assertThat(TftTouchShield.beginPixels(239, 0, 2, 1)).as("past the right edge").isFalse();
     }
 
     @Test
-    void printDrawsEachGlyphAsItsPixelsAndAdvancesTheCursor() {
+    @DisplayName("Push pixel streams a pixel into the open window")
+    void shouldStreamAPixelIntoTheOpenWindow() {
+        // Given
+        TftTouchShield.beginPixels(0, 0, 2, 2);
+
+        // When
+        TftTouchShield.pushPixel(TftTouchShield.RED);
+
+        // Then
+        assertThat(ParallelBus.runs).hasSize(1).first(INT_ARRAY).containsExactly(TftTouchShield.RED, 1);
+    }
+
+    @Test
+    @DisplayName("Begin pixels accepts the whole screen as a window")
+    void shouldAcceptTheWholeScreenAsAWindow() {
+        // When & Then
+        assertThat(TftTouchShield.beginPixels(0, 0, 240, 320)).isTrue();
+    }
+
+    @ParameterizedTest(name = "rejects a window {4}")
+    @MethodSource("windowsOutsideTheScreen")
+    @DisplayName("Begin pixels rejects windows outside the screen")
+    void shouldRejectWindowsOutsideTheScreen(int x, int y, int width, int height, String description) {
+        // When & Then
+        assertThat(TftTouchShield.beginPixels(x, y, width, height)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Print draws each glyph as its pixels and advances the cursor")
+    void shouldDrawEachGlyphAsItsPixelsAndAdvanceTheCursor() {
+        // Given
         TftTouchShield.setCursor(0, 0);
+
+        // When
         TftTouchShield.print("A");
 
+        // Then
         assertThat(ParallelBus.runs).hasSize(TftTouchShield.CHAR_WIDTH * TftTouchShield.CHAR_HEIGHT);
     }
 
     @Test
-    void printScalesTheTextSize() {
+    @DisplayName("Print scales the text size")
+    void shouldScaleTheTextSize() {
+        // Given
         TftTouchShield.setTextSize(2);
         TftTouchShield.setCursor(0, 0);
+
+        // When
         TftTouchShield.print("A");
 
+        // Then
         assertThat(ParallelBus.runs).hasSize(TftTouchShield.CHAR_WIDTH * TftTouchShield.CHAR_HEIGHT * 4);
     }
 
     @Test
-    void printWrapsToTheNextLineAtTheRightEdge() {
+    @DisplayName("Print wraps to the next line at the right edge")
+    void shouldWrapToTheNextLineAtTheRightEdge() {
+        // Given
         TftTouchShield.setCursor(236, 0);
+
+        // When
         TftTouchShield.print("B");
 
+        // Then
         assertThat(ParallelBus.bytes).containsSubsequence(TftTouchShield.COLUMN_ADDRESS_SET, 0x00, 0x00, 0x00, 0x05);
     }
 
     @Test
-    void printAcceptsIntegersBytesAndNewlines() {
+    @DisplayName("Print draws each digit of an integer")
+    void shouldDrawEachDigitOfAnInteger() {
+        // Given
         TftTouchShield.setCursor(0, 0);
+
+        // When
         TftTouchShield.print(255);
-        assertThat(ParallelBus.runs).hasSize(3 * TftTouchShield.CHAR_WIDTH * TftTouchShield.CHAR_HEIGHT);
 
-        ParallelBus.runs.clear();
-        TftTouchShield.print(new byte[] {'\u0001', 'x', 0x7F}, 3);
+        // Then
         assertThat(ParallelBus.runs).hasSize(3 * TftTouchShield.CHAR_WIDTH * TftTouchShield.CHAR_HEIGHT);
+    }
 
-        ParallelBus.runs.clear();
+    @Test
+    @DisplayName("Print draws each byte of a buffer, including unprintable ones")
+    void shouldDrawEachByteOfABufferIncludingUnprintableOnes() {
+        // Given
         TftTouchShield.setCursor(0, 0);
+
+        // When
+        TftTouchShield.print(new byte[] {'\u0001', 'x', 0x7F}, 3);
+
+        // Then
+        assertThat(ParallelBus.runs).hasSize(3 * TftTouchShield.CHAR_WIDTH * TftTouchShield.CHAR_HEIGHT);
+    }
+
+    @Test
+    @DisplayName("Println with an empty string moves to the next line")
+    void shouldMoveToTheNextLineForAnEmptyPrintln() {
+        // Given
+        TftTouchShield.setCursor(0, 0);
+
+        // When
         TftTouchShield.println("");
         TftTouchShield.print("C");
+
+        // Then
         assertThat(ParallelBus.bytes).containsSubsequence(TftTouchShield.COLUMN_ADDRESS_SET, 0x00, 0x00, 0x00, 0x05);
     }
 
     @Test
-    void readTouchMapsARaisedPressureToScreenCoordinates() {
+    @DisplayName("Read touch reports the raw coordinates and pressure")
+    void shouldReportTheRawTouchCoordinatesAndPressure() {
+        // Given
         Gpio.analogValues[16] = 523;
         Gpio.analogValues[17] = 600;
 
-        assertThat(TftTouchShield.readTouch()).isTrue();
+        // When
+        boolean touched = TftTouchShield.readTouch();
 
-        assertThat(TftTouchShield.touchRawX()).isEqualTo(423);
-        assertThat(TftTouchShield.touchRawY()).isEqualTo(500);
-        assertThat(TftTouchShield.touchPressure()).isEqualTo(946);
-        assertThat(TftTouchShield.touchX()).isEqualTo(93);
-        assertThat(TftTouchShield.touchY()).isEqualTo(158);
+        // Then
+        assertThat(touched).isTrue();
+        assertThat(new int[] {TftTouchShield.touchRawX(), TftTouchShield.touchRawY(), TftTouchShield.touchPressure()})
+                .containsExactly(423, 500, 946);
     }
 
     @Test
-    void readTouchReportsNoTouchWithoutPressure() {
+    @DisplayName("Read touch maps the touch to screen coordinates")
+    void shouldMapTheTouchToScreenCoordinates() {
+        // Given
+        Gpio.analogValues[16] = 523;
+        Gpio.analogValues[17] = 600;
+
+        // When
+        boolean touched = TftTouchShield.readTouch();
+
+        // Then
+        assertThat(touched).isTrue();
+        assertThat(new int[] {TftTouchShield.touchX(), TftTouchShield.touchY()}).containsExactly(93, 158);
+    }
+
+    @Test
+    @DisplayName("Read touch reports no touch without pressure")
+    void shouldReportNoTouchWithoutPressure() {
+        // Given
         Gpio.analogValues[16] = 0;
         Gpio.analogValues[17] = 0;
 
+        // When & Then
         assertThat(TftTouchShield.readTouch()).isFalse();
     }
 
-    @Test
-    void readTouchFollowsTheRotation() {
+    @ParameterizedTest(name = "rotation {0} maps the touch to ({1}, {2})")
+    @MethodSource("touchOrientations")
+    @DisplayName("Read touch follows the rotation")
+    void shouldFollowTheRotationWhenReadingATouch(int rotation, int x, int y) {
+        // Given
         Gpio.analogValues[16] = 523;
         Gpio.analogValues[17] = 600;
+        TftTouchShield.setRotation(rotation);
 
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        assertThat(TftTouchShield.readTouch()).isTrue();
-        assertThat(TftTouchShield.touchX()).isEqualTo(158);
-        assertThat(TftTouchShield.touchY()).isEqualTo(146);
+        // When
+        boolean touched = TftTouchShield.readTouch();
 
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE_FLIPPED);
-        assertThat(TftTouchShield.readTouch()).isTrue();
-        assertThat(TftTouchShield.touchX()).isEqualTo(161);
-        assertThat(TftTouchShield.touchY()).isEqualTo(93);
-
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
-        assertThat(TftTouchShield.readTouch()).isTrue();
-        assertThat(TftTouchShield.touchX()).isEqualTo(146);
-        assertThat(TftTouchShield.touchY()).isEqualTo(161);
+        // Then
+        assertThat(touched).isTrue();
+        assertThat(new int[] {TftTouchShield.touchX(), TftTouchShield.touchY()}).containsExactly(x, y);
     }
 
     @Test
-    void calibrationChangesTheRawToScreenMapping() {
+    @DisplayName("Calibration changes the raw-to-screen mapping")
+    void shouldChangeTheRawToScreenMappingWhenCalibrated() {
+        // Given
         Gpio.analogValues[16] = 523;
         Gpio.analogValues[17] = 600;
         TftTouchShield.calibrateTouch(0, 1000, 1000, 0);
 
-        assertThat(TftTouchShield.readTouch()).isTrue();
+        // When
+        boolean touched = TftTouchShield.readTouch();
 
-        assertThat(TftTouchShield.touchX()).isEqualTo(101);
-        assertThat(TftTouchShield.touchY()).isEqualTo(160);
+        // Then
+        assertThat(touched).isTrue();
+        assertThat(new int[] {TftTouchShield.touchX(), TftTouchShield.touchY()}).containsExactly(101, 160);
     }
 
     @Test
-    void beginPixelsRejectsWindowsOutsideTheScreen() {
-        assertThat(TftTouchShield.beginPixels(0, 0, 240, 320)).isTrue();
-        assertThat(TftTouchShield.beginPixels(1, 0, 240, 1)).as("past the right edge").isFalse();
-        assertThat(TftTouchShield.beginPixels(0, -1, 1, 1)).as("above the top").isFalse();
-        assertThat(TftTouchShield.beginPixels(0, 0, 1, 321)).as("past the bottom edge").isFalse();
-    }
-
-    @Test
-    void drawPixelIgnoresPointsAboveOrBelowTheScreen() {
+    @DisplayName("Draw pixel ignores points above or below the screen")
+    void shouldIgnorePixelsAboveOrBelowTheScreen() {
+        // When
         TftTouchShield.drawPixel(0, -1, TftTouchShield.RED);
         TftTouchShield.drawPixel(0, 320, TftTouchShield.RED);
 
+        // Then
         assertThat(ParallelBus.runs).isEmpty();
     }
 
     @Test
-    void aCharacterThatWouldRunOffTheBottomIsNotDrawn() {
+    @DisplayName("A character that would run off the bottom is not drawn")
+    void shouldNotDrawACharacterThatWouldRunOffTheBottom() {
+        // Given
         TftTouchShield.setCursor(0, 316);
+
+        // When
         TftTouchShield.print("A");
 
+        // Then
         assertThat(ParallelBus.runs).isEmpty();
     }
 
     @Test
-    void aTouchThatMovesBetweenSamplesIsNotAccepted() {
+    @DisplayName("A touch that moves between samples is not accepted")
+    void shouldNotAcceptATouchThatMovesBetweenSamples() {
+        // Given
         // Pressure, then X and Y, then X and Y again, then pressure again: the second X sample moved too far.
         Gpio.analogSequence = new int[] {100, 600, 513, 100, 300, 100, 100, 600};
 
+        // When & Then
         assertThat(TftTouchShield.readTouch()).isFalse();
     }
 
     @Test
-    void aSecondPressureReadingOutOfRangeIsNotAccepted() {
+    @DisplayName("A confirming pressure reading out of range is not accepted")
+    void shouldNotAcceptATouchWhoseConfirmingPressureIsOutOfRange() {
+        // Given
         // The first pressure is in range; the confirming pressure afterwards is not.
         Gpio.analogSequence = new int[] {100, 600, 513, 100, 513, 100, 100, 0};
 
+        // When & Then
         assertThat(TftTouchShield.readTouch()).isFalse();
+    }
+
+    @Test
+    @DisplayName("A rejected touch reports zero pressure")
+    void shouldReportZeroPressureForARejectedTouch() {
+        // Given
+        Gpio.analogSequence = new int[] {100, 600, 513, 100, 513, 100, 100, 0};
+        TftTouchShield.readTouch();
+
+        // When & Then
         assertThat(TftTouchShield.touchPressure()).isZero();
     }
 }

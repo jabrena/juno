@@ -2,6 +2,8 @@ package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.analysis.RiskSeverity;
 import io.github.jabrena.juno.analysis.RuntimeRisk;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,6 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code <clinit>}, and kept on the old arena path, with a {@code JUNO-RISK-012} note, when any read could let
  * the array be written. Runtime values of every element type are checked under QEMU ({@code ConstantTables}).
  */
+@NullMarked
+@DisplayName("Constant primitive array tables")
 class ConstantTablesTest {
     @TempDir
     Path temporaryDirectory;
@@ -31,7 +35,9 @@ class ConstantTablesTest {
     }
 
     @Test
-    void placesAConstantShortTableInFlashAndSkipsItsArenaInitializer() throws Exception {
+    @DisplayName("Places a constant short table in flash at its native 16-bit width")
+    void shouldPlaceAConstantShortTableInFlashAtItsNativeWidth() throws Exception {
+        // Given
         CompilationResult result = compile("Lookup", """
                 package demo;
                 public final class Lookup {
@@ -44,9 +50,9 @@ class ConstantTablesTest {
                     }
                 }
                 """);
-        String assembly = result.assembly();
 
-        assertThat(assembly).as("the table is read-only data, its values at their native 16-bit width")
+        // When & Then
+        assertThat(result.assembly()).as("the table is read-only data, its values at their native 16-bit width")
                 .contains("""
                             .section .rodata
                             .align 2
@@ -54,17 +60,98 @@ class ConstantTablesTest {
                         juno_table_demo_Lookup_RECIPROCAL__S:
                             .short -32768, -300, 0, 300, 32767
                         """);
-        assertThat(assembly).as("a read loads the table's flash address")
-                .contains("ldr r0, =juno_table_demo_Lookup_RECIPROCAL__S");
-        assertThat(assembly).as("<clinit> no longer allocates or fills it, and no .bss word holds it")
+    }
+
+    @Test
+    @DisplayName("A read loads the table's flash address")
+    void shouldLoadTheTableFlashAddressOnARead() throws Exception {
+        // Given
+        CompilationResult result = compile("Lookup", """
+                package demo;
+                public final class Lookup {
+                    static final short[] RECIPROCAL = {-32768, -300, 0, 300, 32767};
+                    static int at(int i) {
+                        return RECIPROCAL[i] + RECIPROCAL.length;
+                    }
+                    public static void main(String[] args) {
+                        int total = at(1) + at(3);
+                    }
+                }
+                """);
+
+        // When & Then
+        assertThat(result.assembly()).contains("ldr r0, =juno_table_demo_Lookup_RECIPROCAL__S");
+    }
+
+    @Test
+    @DisplayName("The arena initializer and its static word are skipped for a constant table")
+    void shouldSkipTheArenaInitializerForAConstantTable() throws Exception {
+        // Given
+        CompilationResult result = compile("Lookup", """
+                package demo;
+                public final class Lookup {
+                    static final short[] RECIPROCAL = {-32768, -300, 0, 300, 32767};
+                    static int at(int i) {
+                        return RECIPROCAL[i] + RECIPROCAL.length;
+                    }
+                    public static void main(String[] args) {
+                        int total = at(1) + at(3);
+                    }
+                }
+                """);
+
+        // When & Then
+        assertThat(result.assembly()).as("<clinit> no longer allocates or fills it, and no .bss word holds it")
                 .doesNotContain("bl juno_alloc", "juno_static_demo_Lookup_RECIPROCAL");
+    }
+
+    @Test
+    @DisplayName("Every access to a known-length table is bounds checked")
+    void shouldBoundsCheckEveryAccessToAKnownLengthTable() throws Exception {
+        // Given
+        CompilationResult result = compile("Lookup", """
+                package demo;
+                public final class Lookup {
+                    static final short[] RECIPROCAL = {-32768, -300, 0, 300, 32767};
+                    static int at(int i) {
+                        return RECIPROCAL[i] + RECIPROCAL.length;
+                    }
+                    public static void main(String[] args) {
+                        int total = at(1) + at(3);
+                    }
+                }
+                """);
+
+        // When & Then
         assertThat(result.report().runtimeRisks().uncheckedArrayAccesses())
                 .as("its length is known, so every access is bounds checked").isZero();
+    }
+
+    @Test
+    @DisplayName("A constant table produces no table note in the risk report")
+    void shouldNotNoteAConstantTableInTheRiskReport() throws Exception {
+        // Given
+        CompilationResult result = compile("Lookup", """
+                package demo;
+                public final class Lookup {
+                    static final short[] RECIPROCAL = {-32768, -300, 0, 300, 32767};
+                    static int at(int i) {
+                        return RECIPROCAL[i] + RECIPROCAL.length;
+                    }
+                    public static void main(String[] args) {
+                        int total = at(1) + at(3);
+                    }
+                }
+                """);
+
+        // When & Then
         assertThat(tableNotes(result)).isEmpty();
     }
 
     @Test
-    void emitsEveryElementTypeAtTheWidthArrayLoadsExpect() throws Exception {
+    @DisplayName("Emits every element type at the width array loads expect")
+    void shouldEmitEveryElementTypeAtTheWidthArrayLoadsExpect() throws Exception {
+        // Given
         String assembly = compile("Widths", """
                 package demo;
                 public final class Widths {
@@ -83,6 +170,7 @@ class ConstantTablesTest {
                 }
                 """).assembly();
 
+        // When & Then
         assertThat(assembly).contains(
                 "juno_table_demo_Widths_FLAGS__Z:\n    .byte 1, 0\n",
                 "juno_table_demo_Widths_BYTES__B:\n    .byte -1, 127\n",
@@ -90,16 +178,20 @@ class ConstantTablesTest {
                 "juno_table_demo_Widths_INTS__I:\n    .word -7, 1048576\n",
                 "juno_table_demo_Widths_LONGS__J:\n    .word -2, -1, 0, 256\n",
                 "juno_table_demo_Widths_FLOATS__F:\n    .word 1065353216, -1090519040\n",
-                "juno_table_demo_Widths_DOUBLES__D:\n    .word 0, 1072693248\n");
-        assertThat(assembly).doesNotContain("bl juno_alloc");
+                "juno_table_demo_Widths_DOUBLES__D:\n    .word 0, 1072693248\n")
+                .doesNotContain("bl juno_alloc");
     }
 
     @Test
-    void indexesOneTableWithAnotherAndWrapsLongTablesAcrossLines() throws Exception {
+    @DisplayName("Indexes one table with another and wraps long tables across lines")
+    void shouldIndexOneTableWithAnotherAndWrapLongTablesAcrossLines() throws Exception {
+        // Given
         StringBuilder values = new StringBuilder();
         for (int i = 0; i < 20; i++) {
             values.append(i == 0 ? "" : ", ").append(i * 3);
         }
+
+        // When
         String assembly = compile("Nested", """
                 package demo;
                 public final class Nested {
@@ -112,14 +204,93 @@ class ConstantTablesTest {
                 }
                 """.formatted(values)).assembly();
 
+        // Then
         assertThat(assembly).contains("ldr r0, =juno_table_demo_Nested_ORDER__I",
                 "ldr r0, =juno_table_demo_Nested_VALUES__I",
                 "    .word 0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45\n    .word 48, 51, 54, 57\n");
     }
 
     @Test
-    void keepsATableThatCouldBeWrittenInTheArenaAndSaysWhy() throws Exception {
-        CompilationResult result = compile("Escapes", """
+    @DisplayName("Moves only the read-only final table to flash")
+    void shouldMoveOnlyTheReadOnlyFinalTableToFlash() throws Exception {
+        // Given
+        CompilationResult result = compileEscapes();
+
+        // When & Then
+        assertThat(result.assembly()).as("only the read-only final table moves to flash")
+                .contains("juno_table_demo_Escapes_READ__I:")
+                .doesNotContain("juno_table_demo_Escapes_PASSED", "juno_table_demo_Escapes_WRITTEN",
+                        "juno_table_demo_Escapes_mutable");
+    }
+
+    @Test
+    @DisplayName("Keeps the escaping and written tables in the arena")
+    void shouldKeepTheEscapingAndWrittenTablesInTheArena() throws Exception {
+        // Given
+        CompilationResult result = compileEscapes();
+
+        // When & Then
+        assertThat(result.assembly()).contains("juno_static_demo_Escapes_PASSED__I:",
+                "juno_static_demo_Escapes_WRITTEN__I:", "juno_static_demo_Escapes_mutable__I:", "bl juno_alloc");
+    }
+
+    @Test
+    @DisplayName("Explains with an info note why each escaping table stays in the arena")
+    void shouldExplainWithAnInfoNoteWhyEachEscapingTableStaysInTheArena() throws Exception {
+        // Given
+        CompilationResult result = compileEscapes();
+
+        // When & Then
+        assertThat(tableNotes(result)).extracting(RuntimeRisk::severity).containsOnly(RiskSeverity.INFO);
+        assertThat(tableNotes(result)).extracting(RuntimeRisk::message).containsExactlyInAnyOrder(
+                "constant table demo.Escapes.PASSED:[I stays in the arena instead of flash: it is used at bytecode "
+                        + "offset 7 other than as T[i] or T.length (passed on, stored, written or read across a branch)",
+                "constant table demo.Escapes.WRITTEN:[I stays in the arena instead of flash: it is used at bytecode "
+                        + "offset 0 other than as T[i] or T.length (passed on, stored, written or read across a branch)");
+    }
+
+    @Test
+    @DisplayName("Leaves arrays without an all-constant initializer unchanged")
+    void shouldLeaveArraysWithoutAnAllConstantInitializerUnchanged() throws Exception {
+        // Given
+        CompilationResult result = compile("Computed", """
+                package demo;
+                public final class Computed {
+                    static int seed = 3;
+                    static final int[] COMPUTED = {seed, seed * 2};
+                    static final int[] BUFFER = new int[4];
+                    public static void main(String[] args) {
+                        BUFFER[0] = COMPUTED[1];
+                    }
+                }
+                """);
+
+        // When & Then
+        assertThat(result.assembly()).doesNotContain("juno_table_").contains("bl juno_alloc");
+    }
+
+    @Test
+    @DisplayName("Neither non-constant array is a constant table candidate")
+    void shouldNotNoteNonConstantArraysAsConstantTableCandidates() throws Exception {
+        // Given
+        CompilationResult result = compile("Computed", """
+                package demo;
+                public final class Computed {
+                    static int seed = 3;
+                    static final int[] COMPUTED = {seed, seed * 2};
+                    static final int[] BUFFER = new int[4];
+                    public static void main(String[] args) {
+                        BUFFER[0] = COMPUTED[1];
+                    }
+                }
+                """);
+
+        // When & Then
+        assertThat(tableNotes(result)).as("neither was a constant table candidate").isEmpty();
+    }
+
+    private CompilationResult compileEscapes() throws Exception {
+        return compile("Escapes", """
                 package demo;
                 public final class Escapes {
                     static final int[] PASSED = {1, 2, 3};
@@ -137,37 +308,5 @@ class ConstantTablesTest {
                     }
                 }
                 """);
-        String assembly = result.assembly();
-
-        assertThat(assembly).as("only the read-only final table moves to flash")
-                .contains("juno_table_demo_Escapes_READ__I:")
-                .doesNotContain("juno_table_demo_Escapes_PASSED", "juno_table_demo_Escapes_WRITTEN",
-                        "juno_table_demo_Escapes_mutable");
-        assertThat(assembly).contains("juno_static_demo_Escapes_PASSED__I:", "juno_static_demo_Escapes_WRITTEN__I:",
-                "juno_static_demo_Escapes_mutable__I:", "bl juno_alloc");
-        assertThat(tableNotes(result)).extracting(RuntimeRisk::severity).containsOnly(RiskSeverity.INFO);
-        assertThat(tableNotes(result)).extracting(RuntimeRisk::message).containsExactlyInAnyOrder(
-                "constant table demo.Escapes.PASSED:[I stays in the arena instead of flash: it is used at bytecode "
-                        + "offset 7 other than as T[i] or T.length (passed on, stored, written or read across a branch)",
-                "constant table demo.Escapes.WRITTEN:[I stays in the arena instead of flash: it is used at bytecode "
-                        + "offset 0 other than as T[i] or T.length (passed on, stored, written or read across a branch)");
-    }
-
-    @Test
-    void leavesArraysWithoutAnAllConstantInitializerUnchanged() throws Exception {
-        CompilationResult result = compile("Computed", """
-                package demo;
-                public final class Computed {
-                    static int seed = 3;
-                    static final int[] COMPUTED = {seed, seed * 2};
-                    static final int[] BUFFER = new int[4];
-                    public static void main(String[] args) {
-                        BUFFER[0] = COMPUTED[1];
-                    }
-                }
-                """);
-
-        assertThat(result.assembly()).doesNotContain("juno_table_").contains("bl juno_alloc");
-        assertThat(tableNotes(result)).as("neither was a constant table candidate").isEmpty();
     }
 }

@@ -1,9 +1,13 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.board.Board;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,37 +32,53 @@ import static org.assertj.core.api.Assertions.assertThat;
  * real payload with the retired test's original edge cases (unicode escapes, array roots, truncated/
  * malformed input, int64 boundaries) -- runtime behavior, not just syntax.
  */
+@NullMarked
+@DisplayName("Offline toolchain verification of generated ASM and shims")
 class GeneratedAsmToolchainTest {
     @TempDir
     Path temporaryDirectory;
 
     @Test
-    void avrTasksKeepNativeAllocationsBelowTheParkedMainStack() throws Exception {
+    @DisplayName("AVR task allocations stay below the parked main stack")
+    void shouldKeepAvrTaskAllocationsBelowTheParkedMainStack() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String runtime = Files.readString(Path.of("src/main/resources/runtime/avr/thread-heap.cpp"));
         String harness = Files.readString(Path.of("src/test/resources/avr-thread-heap-harness.cpp"));
+
+        // When
         Process run = compileAndStart(compiler, harness.replace("// AVR_THREAD_HEAP", runtime), "avr-thread-heap");
+
+        // Then
         assertThat(run.waitFor(20, TimeUnit.SECONDS)).isTrue();
         String diagnostics = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertThat(run.exitValue()).as(diagnostics).isZero();
     }
 
     @Test
-    void drainsHttpBatchesBeforePollingTheRpcTransportAgain() throws Exception {
+    @DisplayName("HTTP batches are drained before the RPC transport is polled again")
+    void shouldDrainHttpBatchesBeforePollingTheRpcTransportAgain() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String runtime = Files.readString(Path.of("src/main/resources/runtime/common/http-client.cpp"));
         String codec = runtime.substring(0, runtime.indexOf("struct JunoHttpJob"));
         String harness = Files.readString(Path.of("src/test/resources/http-batch-harness.cpp"));
+
+        // When
         Process run = compileAndStart(compiler, harness.replace("// HTTP_CODEC", codec), "http-batch-runtime");
+
+        // Then
         assertThat(run.waitFor(20, TimeUnit.SECONDS)).isTrue();
         String diagnostics = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertThat(run.exitValue()).as(diagnostics).isZero();
     }
 
     @Test
-    void compilesAnInternetBackedLocalDateTimeShimWithACppCompiler() throws Exception {
+    @DisplayName("An internet-backed LocalDateTime shim compiles with a C++ compiler")
+    void shouldCompileAnInternetBackedLocalDateTimeShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -84,89 +104,101 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLocalDateTime", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLocalDateTime");
         Path shim = temporaryDirectory.resolve("AsmLocalDateTimeShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
-    @Test
-    void compilesAUuidProgramsShimWithACppCompiler() throws Exception {
+    @ParameterizedTest(name = "a UUID program's shim is valid for {0}")
+    @ValueSource(strings = {"ArduinoUnoR3", "ArduinoUnoR3WiFiRev2", "ArduinoUnoR4WiFi", "ArduinoUnoQ"})
+    @DisplayName("A UUID program's shim is valid C++ on every board")
+    void shouldCompileAUuidProgramsShimWithACppCompiler(String board) throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        for (String board : new String[] {
-            "ArduinoUnoR3", "ArduinoUnoR3WiFiRev2", "ArduinoUnoR4WiFi", "ArduinoUnoQ"
-        }) {
-            String name = "AsmUuid" + board;
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.%1$s;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.api.util.UuidCodec;
-                    import java.util.UUID;
-                    @Board(%1$s.class)
-                    public final class %2$s {
-                        public static void main(String[] args) {
-                            UUID value = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-                            byte[] network = new byte[UuidCodec.BYTES];
-                            UuidCodec.toBytes(value, network, 0);
-                            UUID copy = UuidCodec.fromBytes(network, 0);
-                            String text = copy.toString();
-                            int properties = copy.version() + copy.variant() + copy.compareTo(value)
-                                    + copy.hashCode() + (copy.equals(value) ? 1 : 0) + text.length();
-                        }
+        String name = "AsmUuid" + board;
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.%1$s;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.util.UuidCodec;
+                import java.util.UUID;
+                @Board(%1$s.class)
+                public final class %2$s {
+                    public static void main(String[] args) {
+                        UUID value = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+                        byte[] network = new byte[UuidCodec.BYTES];
+                        UuidCodec.toBytes(value, network, 0);
+                        UUID copy = UuidCodec.fromBytes(network, 0);
+                        String text = copy.toString();
+                        int properties = copy.version() + copy.variant() + copy.compareTo(value)
+                                + copy.hashCode() + (copy.equals(value) ? 1 : 0) + text.length();
                     }
-                    """.formatted(board, name);
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+                }
+                """.formatted(board, name);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
+
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+        Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        // Then
+        if (board.equals("ArduinoUnoR3") || board.equals("ArduinoUnoR3WiFiRev2")) {
+            assertThat(result.runtimeShim()).contains(
+                    "juno_uuid_new", "juno_avr_thunk_juno_uuid_new",
+                    "juno_avr_thunk_juno_uuid_get_most_significant_bits");
+        } else {
+            syntaxCheckCpp(compiler, shim);
+        }
+    }
+
+    @ParameterizedTest(name = "random UUID shim is valid for {0}")
+    @ValueSource(strings = {"ArduinoUnoR3WiFiRev2", "ArduinoUnoR4WiFi", "ArduinoUnoQ"})
+    @DisplayName("Random UUID shims compile for boards with native entropy")
+    void shouldCompileRandomUuidShimsForBoardsWithNativeEntropy(String board) throws Exception {
+        // Given
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String name = "AsmUuidRandom" + board;
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.%1$s;
+                import io.github.jabrena.juno.annotations.Board;
+                import java.util.UUID;
+                @Board(%1$s.class)
+                public final class %2$s {
+                    public static void main(String[] args) {
+                        UUID value = UUID.randomUUID();
+                        int attributes = value.version() + value.variant();
+                    }
+                }
+                """.formatted(board, name);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
+
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+
+        // Then
+        assertThat(result.assembly()).contains("juno_uuid_random");
+        if (board.equals("ArduinoUnoR3WiFiRev2")) {
+            assertThat(result.runtimeShim()).contains("juno_atecc608_crc", "juno_avr_thunk_juno_uuid_random");
+        } else {
             Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
             Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-
-            if (board.equals("ArduinoUnoR3") || board.equals("ArduinoUnoR3WiFiRev2")) {
-                assertThat(result.runtimeShim()).contains(
-                        "juno_uuid_new", "juno_avr_thunk_juno_uuid_new",
-                        "juno_avr_thunk_juno_uuid_get_most_significant_bits");
-            } else {
-                syntaxCheckCpp(compiler, shim);
-            }
+            syntaxCheckCpp(compiler, shim);
         }
     }
 
     @Test
-    void compilesRandomUuidShimsForBoardsWithNativeEntropy() throws Exception {
-        String compiler = availableCppCompiler();
-        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        for (String board : new String[] {"ArduinoUnoR3WiFiRev2", "ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
-            String name = "AsmUuidRandom" + board;
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.%1$s;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import java.util.UUID;
-                    @Board(%1$s.class)
-                    public final class %2$s {
-                        public static void main(String[] args) {
-                            UUID value = UUID.randomUUID();
-                            int attributes = value.version() + value.variant();
-                        }
-                    }
-                    """.formatted(board, name);
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
-            assertThat(result.assembly()).contains("juno_uuid_random");
-            if (board.equals("ArduinoUnoR3WiFiRev2")) {
-                assertThat(result.runtimeShim()).contains("juno_atecc608_crc", "juno_avr_thunk_juno_uuid_random");
-            } else {
-                Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
-                Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-                syntaxCheckCpp(compiler, shim);
-            }
-        }
-    }
-
-    @Test
-    void assemblesAGpioLedMatrixAndSerialProgram() throws Exception {
+    @DisplayName("A GPIO, LED matrix and serial program assembles with the ARM toolchain")
+    void shouldAssembleAGpioLedMatrixAndSerialProgram() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -199,11 +231,15 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 """;
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmSmoke", source);
     }
 
     @Test
-    void assemblesATftTouchShieldProgram() throws Exception {
+    @DisplayName("A TFT touch shield program assembles with the ARM toolchain")
+    void shouldAssembleATftTouchShieldProgram() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -221,11 +257,15 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 """;
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmTft", source);
     }
 
     @Test
-    void assemblesALongFloatAndDoubleMathProgram() throws Exception {
+    @DisplayName("A long, float and double math program assembles with the ARM toolchain")
+    void shouldAssembleALongFloatAndDoubleMathProgram() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -243,11 +283,15 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 """;
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmMath", source);
     }
 
     @Test
-    void assemblesArraysAndArenaAllocatedRecordsProgram() throws Exception {
+    @DisplayName("An arrays and arena-allocated records program assembles with the ARM toolchain")
+    void shouldAssembleArraysAndArenaAllocatedRecordsProgram() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String recordSource = """
@@ -274,11 +318,15 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmPoint", recordSource);
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmArrays", source);
     }
 
     @Test
-    void assemblesFlashResidentConstantTablesOfEveryElementType() throws Exception {
+    @DisplayName("A flash-resident constant table of every element type assembles with the ARM toolchain")
+    void shouldAssembleFlashResidentConstantTablesOfEveryElementType() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -298,11 +346,15 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 """;
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmTables", source);
     }
 
     @Test
-    void assemblesClosedWorldInterfaceDispatch() throws Exception {
+    @DisplayName("Closed-world interface dispatch assembles with the ARM toolchain")
+    void shouldAssembleClosedWorldInterfaceDispatch() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -326,11 +378,15 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 """;
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmInterfaces", source);
     }
 
     @Test
-    void assemblesLambdasClosuresAndMethodReferences() throws Exception {
+    @DisplayName("Lambdas, closures and method references assemble with the ARM toolchain")
+    void shouldAssembleLambdasClosuresAndMethodReferences() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -355,11 +411,15 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 """;
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmLambdas", source);
     }
 
     @Test
-    void assemblesTaskScopesWithAClassAndALambdaRunnable() throws Exception {
+    @DisplayName("Task scopes with a class and a lambda runnable assemble with the ARM toolchain")
+    void shouldAssembleTaskScopesWithAClassAndALambdaRunnable() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -380,11 +440,15 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.AsmThreads", source);
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmThreads");
     }
 
     @Test
-    void assemblesVolatileSynchronizedAndReentrantLock() throws Exception {
+    @DisplayName("Volatile, synchronized and ReentrantLock code assembles with the ARM toolchain")
+    void shouldAssembleVolatileSynchronizedAndReentrantLock() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -417,11 +481,15 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.AsmSynchronization", source);
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmSynchronization");
     }
 
     @Test
-    void assemblesAtomicIntegerBooleanAndLong() throws Exception {
+    @DisplayName("AtomicInteger, AtomicBoolean and AtomicLong assemble with the ARM toolchain")
+    void shouldAssembleAtomicIntegerBooleanAndLong() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -441,11 +509,15 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 """;
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmAtomics", source);
     }
 
     @Test
-    void assemblesStructuredTaskScopes() throws Exception {
+    @DisplayName("Structured task scopes assemble with the ARM toolchain")
+    void shouldAssembleStructuredTaskScopes() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -463,11 +535,15 @@ class GeneratedAsmToolchainTest {
                 """;
         CompilerTestSupport.compileJavaWithPreview(
                 temporaryDirectory, "demo.AsmStructuredTasks", source);
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmStructuredTasks");
     }
 
     @Test
-    void assemblesScopedValuesInheritedBySubtasks() throws Exception {
+    @DisplayName("Scoped values inherited by subtasks assemble with the ARM toolchain")
+    void shouldAssembleScopedValuesInheritedBySubtasks() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
@@ -489,6 +565,8 @@ class GeneratedAsmToolchainTest {
                 """;
         CompilerTestSupport.compileJavaWithPreview(
                 temporaryDirectory, "demo.AsmScopedValues", source);
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmScopedValues");
     }
 
@@ -506,7 +584,9 @@ class GeneratedAsmToolchainTest {
      * object (nm's uppercase {@code B}), not local ({@code b}).
      */
     @Test
-    void gcStackTopSymbolHasGlobalLinkageInGeneratedAssembly() throws Exception {
+    @DisplayName("The GC stack-top symbol has global linkage in the assembled object")
+    void shouldGiveTheGcStackTopSymbolGlobalLinkageInTheAssembledObject() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String armNm = availableArmNm(armGcc);
@@ -526,6 +606,7 @@ class GeneratedAsmToolchainTest {
         Files.writeString(assembly, result.assembly(), StandardCharsets.UTF_8);
         Path object = temporaryDirectory.resolve("AsmAllocatesForLinkage.o");
 
+        // When
         Process assemble = new ProcessBuilder(armGcc, "-mcpu=cortex-m4", "-mthumb", "-c",
                 assembly.toString(), "-o", object.toString())
                 .redirectErrorStream(true)
@@ -539,16 +620,20 @@ class GeneratedAsmToolchainTest {
         boolean nmFinished = nm.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(nmFinished, "arm-none-eabi-nm timed out");
         String symbols = new String(nm.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Then
         assertThat(symbols).as("juno_gc_stack_top must have GLOBAL linkage (uppercase nm type 'B'), "
-                + "not local ('b'), so the shim's extern \"C\" declaration can link against it: " + symbols)
-                .containsPattern("(?m)^\\S+ B juno_gc_stack_top$");
-        assertThat(symbols).as("the GC static-root bounds must have GLOBAL linkage: " + symbols)
+                        + "not local ('b'), so the shim's extern \"C\" declaration can link against it: " + symbols)
+                .containsPattern("(?m)^\\S+ B juno_gc_stack_top$")
+                .as("the GC static-root bounds must have GLOBAL linkage: " + symbols)
                 .containsPattern("(?m)^\\S+ B juno_gc_static_start$")
                 .containsPattern("(?m)^\\S+ B juno_gc_static_end$");
     }
 
     @Test
-    void compilesAWifiHttpAndJsonProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A Wi-Fi, HTTP and JSON program's shim is valid C++")
+    void shouldCompileAWifiHttpAndJsonProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -580,15 +665,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmNetworking", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmNetworking");
         Path shim = temporaryDirectory.resolve("AsmNetworkingShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAnUnoQRouterBridgeHttpsShimWithACppCompiler() throws Exception {
+    @DisplayName("An UNO Q RouterBridge HTTPS shim is valid C++")
+    void shouldCompileAnUnoQRouterBridgeHttpsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -609,15 +699,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQHttps", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQHttps");
         Path shim = temporaryDirectory.resolve("AsmUnoQHttpsShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAnUnoQLedMatrixShimWithACppCompiler() throws Exception {
+    @DisplayName("An UNO Q LED matrix shim is valid C++")
+    void shouldCompileAnUnoQLedMatrixShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -635,15 +730,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQLedMatrix", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQLedMatrix");
         Path shim = temporaryDirectory.resolve("AsmUnoQLedMatrixShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAnUnoQRouterBridgeEmailShimWithACppCompiler() throws Exception {
+    @DisplayName("An UNO Q RouterBridge email shim is valid C++")
+    void shouldCompileAnUnoQRouterBridgeEmailShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -662,15 +762,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQEmail", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQEmail");
         Path shim = temporaryDirectory.resolve("AsmUnoQEmailShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesPortableUdpShimsForBothArduinoCores() throws Exception {
+    @DisplayName("Portable UDP shims are valid C++ for both Arduino cores")
+    void shouldCompilePortableUdpShimsForBothArduinoCores() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -696,21 +801,25 @@ class GeneratedAsmToolchainTest {
         List<Path> classpath = CompilerTestSupport.classpath(temporaryDirectory);
         JunoCompiler juno = new JunoCompiler();
 
+        // When
         CompilationResult r4 = juno.compile(classpath, "demo.AsmUdp", false,
                 Optional.of(Board.UNO_R4_WIFI.id()));
         Path r4Shim = temporaryDirectory.resolve("AsmUdpR4Shim.cpp");
         Files.writeString(r4Shim, r4.runtimeShim(), StandardCharsets.UTF_8);
-        syntaxCheckCpp(compiler, r4Shim);
-
         CompilationResult q = juno.compile(classpath, "demo.AsmUdp", false,
                 Optional.of(Board.UNO_Q.id()));
         Path qShim = temporaryDirectory.resolve("AsmUdpQShim.cpp");
         Files.writeString(qShim, q.runtimeShim(), StandardCharsets.UTF_8);
+
+        // Then
+        syntaxCheckCpp(compiler, r4Shim);
         syntaxCheckCpp(compiler, qShim);
     }
 
     @Test
-    void compilesKasaHs100AndHs110ShimsForBothArduinoCores() throws Exception {
+    @DisplayName("Kasa HS100 and HS110 shims are valid C++ for both Arduino cores")
+    void shouldCompileKasaHs100AndHs110ShimsForBothArduinoCores() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -742,16 +851,18 @@ class GeneratedAsmToolchainTest {
         List<Path> classpath = CompilerTestSupport.classpath(temporaryDirectory);
         JunoCompiler juno = new JunoCompiler();
 
+        // When
         CompilationResult r4 = juno.compile(classpath, "demo.AsmKasa", false,
                 Optional.of(Board.UNO_R4_WIFI.id()));
         Path r4Shim = temporaryDirectory.resolve("AsmKasaR4Shim.cpp");
         Files.writeString(r4Shim, r4.runtimeShim(), StandardCharsets.UTF_8);
-        syntaxCheckCpp(compiler, r4Shim);
-
         CompilationResult q = juno.compile(classpath, "demo.AsmKasa", false,
                 Optional.of(Board.UNO_Q.id()));
         Path qShim = temporaryDirectory.resolve("AsmKasaQShim.cpp");
         Files.writeString(qShim, q.runtimeShim(), StandardCharsets.UTF_8);
+
+        // Then
+        syntaxCheckCpp(compiler, r4Shim);
         syntaxCheckCpp(compiler, qShim);
     }
 
@@ -760,7 +871,9 @@ class GeneratedAsmToolchainTest {
      * against the module's mock {@code ArduinoBLE.h}, which mirrors the library's signatures.
      */
     @Test
-    void compilesALegoPoweredUpProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A LEGO Powered Up program's shim is valid C++ against the mock ArduinoBLE")
+    void shouldCompileALegoPoweredUpProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -782,16 +895,21 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLegoTrain", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLegoTrain");
         Path shim = temporaryDirectory.resolve("AsmLegoTrainShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     /** The RCX remote is Java framing over the library-free {@code Infrared} shim, so it compiles with plain Arduino calls. */
     @Test
-    void compilesAnRcxRemoteProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("An RCX remote program's shim writes bytes through the library-free IR path")
+    void shouldCompileAnRcxRemoteProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -813,17 +931,21 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmRcxRemote", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmRcxRemote");
-        assertThat(result.runtimeShim()).contains("juno_ir_write_byte");
-        assertThat(result.runtimeShim()).doesNotContain("ArduinoBLE.h");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_ir_write_byte").doesNotContain("ArduinoBLE.h");
         Path shim = temporaryDirectory.resolve("AsmRcxRemoteShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAScoutRemoteProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A LEGO Scout remote program's shim writes bytes through the library-free IR path")
+    void shouldCompileAScoutRemoteProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -844,28 +966,34 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmScoutRemote", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmScoutRemote");
+
+        // Then
         assertThat(result.runtimeShim()).contains("juno_ir_write_byte").doesNotContain("ArduinoBLE.h");
         Path shim = temporaryDirectory.resolve("AsmScoutRemoteShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-
         syntaxCheckCpp(compiler, shim);
     }
 
     /** {@code ParallelBus} is the core's GPIO port registers on the UNO R4: RA {@code PCNTR3} set/reset stores. */
     @Test
-    void compilesAParallelBusProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A ParallelBus program's shim writes the R4 GPIO port registers and is valid C++")
+    void shouldCompileAParallelBusProgramsShimWithACppCompiler() throws Exception {
         assertParallelBusShimCompiles("", "AsmParallelBus", "PCNTR3");
     }
 
     /** On the UNO Q the same helpers write ports through Zephyr's raw GPIO port API, over the devicetree pin table. */
     @Test
-    void compilesAnUnoQParallelBusProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A ParallelBus program's shim writes the UNO Q GPIO port API and is valid C++")
+    void shouldCompileAnUnoQParallelBusProgramsShimWithACppCompiler() throws Exception {
         assertParallelBusShimCompiles("@io.github.jabrena.juno.annotations.Board(io.github.jabrena.juno.annotations.ArduinoUnoQ.class)",
                 "AsmUnoQParallelBus", "gpio_port_set_clr_bits_raw");
     }
 
     private void assertParallelBusShimCompiles(String board, String name, String portWrite) throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -882,19 +1010,24 @@ class GeneratedAsmToolchainTest {
                 }
                 """.replace("${BOARD}", board).replace("${NAME}", name);
         CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+        Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        // Then
         assertThat(result.runtimeShim()).contains("juno_parallel_bus_begin", "juno_parallel_bus_write",
                 "juno_parallel_bus_repeat16", portWrite);
         assertThat(result.assembly()).contains("bl juno_parallel_bus_begin", "bl juno_parallel_bus_write",
                 "bl juno_parallel_bus_repeat16");
-        Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
-        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAnInfraredLoopbackProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("An infrared loopback program's shim is valid C++")
+    void shouldCompileAnInfraredLoopbackProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -911,19 +1044,26 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmLoopback", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmLoopback");
-        assertThat(result.runtimeShim())
-                .contains("juno_ir_echo_byte", "juno_ir_timer2_until", "juno_ir_wait_timer1", "_BV(COM2B1)", "cli()");
         Path shim = temporaryDirectory.resolve("AsmLoopbackShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
+        assertThat(result.runtimeShim())
+                .contains("juno_ir_echo_byte", "juno_ir_timer2_until", "juno_ir_wait_timer1", "_BV(COM2B1)", "cli()");
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void assemblesRcxFirmwareTransfersIncludingRetryAndFinalBlock() throws Exception {
+    @DisplayName("RCX firmware transfers, including retry and the final block, assemble with the ARM toolchain")
+    void shouldAssembleRcxFirmwareTransfersIncludingRetryAndFinalBlock() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.AsmRcxFirmware", """
                 package demo;
                 import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxFirmware;
@@ -943,7 +1083,9 @@ class GeneratedAsmToolchainTest {
 
     /** Reading the RCX's sensors is a request and reply over the same library-free {@code Infrared} shim. */
     @Test
-    void compilesAnRcxBrickSensorProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("An RCX brick sensor program's shim is valid C++")
+    void shouldCompileAnRcxBrickSensorProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -974,16 +1116,21 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmRcxSensor", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmRcxSensor");
         Path shim = temporaryDirectory.resolve("AsmRcxSensorShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     /** Power Functions is Java over the raw {@code Infrared} mark/space pulses, with no library. */
     @Test
-    void compilesAPowerFunctionsProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A Power Functions program's shim writes mark and space pulses and is valid C++")
+    void shouldCompileAPowerFunctionsProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1000,17 +1147,22 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmPowerFunctions", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmPowerFunctions");
-        assertThat(result.runtimeShim()).contains("juno_ir_mark", "juno_ir_space").doesNotContain("ArduinoBLE.h");
         Path shim = temporaryDirectory.resolve("AsmPowerFunctionsShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_ir_mark", "juno_ir_space").doesNotContain("ArduinoBLE.h");
         syntaxCheckCpp(compiler, shim);
     }
 
     /** The BNO055 driver is Java over the library-free {@code I2c} shim, which wraps the core's {@code Wire}. */
     @Test
-    void compilesANineAxisMotionShieldProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A nine-axis heading program's shim wraps Wire and is valid C++")
+    void shouldCompileANineAxisMotionShieldProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1027,18 +1179,23 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHeading", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHeading");
-        assertThat(result.runtimeShim()).contains("#include <Wire.h>", "juno_i2c_read_register16")
-                .doesNotContain("ArduinoBLE.h");
         Path shim = temporaryDirectory.resolve("AsmHeadingShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <Wire.h>", "juno_i2c_read_register16")
+                .doesNotContain("ArduinoBLE.h");
         syntaxCheckCpp(compiler, shim);
     }
 
     /** Pitch and gyroscope rate are signed words read through the same library-free {@code I2c} shim. */
     @Test
-    void compilesANineAxisMotionShieldPitchAndGyroProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A pitch and gyroscope program's shim reads signed words and is valid C++")
+    void shouldCompileANineAxisMotionShieldPitchAndGyroProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1053,16 +1210,21 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmBalance", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmBalance");
-        assertThat(result.runtimeShim()).contains("juno_i2c_read_register16").doesNotContain("ArduinoBLE.h");
         Path shim = temporaryDirectory.resolve("AsmBalanceShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_i2c_read_register16").doesNotContain("ArduinoBLE.h");
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAPoweredUpHubImuProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A Powered Up hub IMU program's shim is valid C++")
+    void shouldCompileAPoweredUpHubImuProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1090,15 +1252,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHubImu", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHubImu");
         Path shim = temporaryDirectory.resolve("AsmHubImuShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAPoweredUpHubPropertiesProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A Powered Up hub properties program's shim is valid C++")
+    void shouldCompileAPoweredUpHubPropertiesProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1120,15 +1287,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHubProperties", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHubProperties");
         Path shim = temporaryDirectory.resolve("AsmHubPropertiesShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAPoweredUpHubPortDeviceProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A Powered Up hub port-device program's shim is valid C++")
+    void shouldCompileAPoweredUpHubPortDeviceProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1146,16 +1318,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHubPorts", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHubPorts");
         Path shim = temporaryDirectory.resolve("AsmHubPortsShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
-    /** On the UNO Q the same ArduinoBLE-based shim sits next to the Zephyr core's own runtime glue. */
     @Test
-    void compilesAnUnoQLegoPoweredUpProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A UNO Q LEGO Powered Up program's shim is valid C++")
+    void shouldCompileAnUnoQLegoPoweredUpProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1176,16 +1352,21 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQLegoTrain", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQLegoTrain");
-        assertThat(result.runtimeShim()).contains("#include <ArduinoBLE.h>", "juno_delay(uint32_t ms)");
         Path shim = temporaryDirectory.resolve("AsmUnoQLegoTrainShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <ArduinoBLE.h>", "juno_delay(uint32_t ms)");
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAnSdPropertiesProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("An SD properties program's shim is valid C++")
+    void shouldCompileAnSdPropertiesProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1210,15 +1391,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmSdProperties", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmSdProperties");
         Path shim = temporaryDirectory.resolve("AsmSdPropertiesShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesAStorageOccupancyProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A storage-occupancy program's shim is valid C++")
+    void shouldCompileAStorageOccupancyProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1237,15 +1423,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmStorageOccupancy", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmStorageOccupancy");
         Path shim = temporaryDirectory.resolve("AsmStorageOccupancyShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void compilesARandomAccessFileProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A RandomAccessFile program's shim is valid C++")
+    void shouldCompileARandomAccessFileProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1269,10 +1460,13 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmSdRandomAccess", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmSdRandomAccess");
         Path shim = temporaryDirectory.resolve("AsmSdRandomAccessShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
@@ -1285,7 +1479,9 @@ class GeneratedAsmToolchainTest {
      * for this).
      */
     @Test
-    void compilesAnHttpServerProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("An HTTP server program's shim is valid C++")
+    void shouldCompileAnHttpServerProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1309,74 +1505,85 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmHttpServer", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmHttpServer");
         Path shim = temporaryDirectory.resolve("AsmHttpServerShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     /** AP mode plus the server on both boards: WiFiS3's WiFiServer on the R4, BridgeTCPServer on the UNO Q. */
-    @Test
-    void compilesAnAccessPointProvisioningShimForBothBoardsWithACppCompiler() throws Exception {
+    @ParameterizedTest(name = "access point provisioning shim is valid C++ for {0}")
+    @ValueSource(strings = {"ArduinoUnoR4WiFi", "ArduinoUnoQ"})
+    @DisplayName("An access-point provisioning shim is valid C++ on both boards")
+    void shouldCompileAnAccessPointProvisioningShimForBothBoardsWithACppCompiler(String board) throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        for (String board : new String[] {"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
-            String name = "AsmAp" + board;
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.%1$s;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.api.net.Wifi;
-                    import io.github.jabrena.juno.api.net.http.HttpServer;
-                    @Board(%1$s.class)
-                    public final class %2$s {
-                        public static void main(String[] args) {
-                            Wifi.beginAP("juno-setup", "junosetup");
-                            HttpServer.begin(80);
-                            byte[] body = new byte[64];
-                            if (HttpServer.accept(body, body.length) >= 0) {
-                                HttpServer.respond(200, "text/html", "<form></form>");
-                            }
+        String name = "AsmAp" + board;
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.%1$s;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.net.Wifi;
+                import io.github.jabrena.juno.api.net.http.HttpServer;
+                @Board(%1$s.class)
+                public final class %2$s {
+                    public static void main(String[] args) {
+                        Wifi.beginAP("juno-setup", "junosetup");
+                        HttpServer.begin(80);
+                        byte[] body = new byte[64];
+                        if (HttpServer.accept(body, body.length) >= 0) {
+                            HttpServer.respond(200, "text/html", "<form></form>");
                         }
                     }
-                    """.formatted(board, name);
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
-            assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap");
-            Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
-            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+                }
+                """.formatted(board, name);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
 
-            syntaxCheckCpp(compiler, shim);
-        }
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+        Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap");
+        syntaxCheckCpp(compiler, shim);
     }
 
     /** The pure-Java provisioning helper links against both boards' intrinsics and produces a valid shim. */
-    @Test
-    void compilesTheWifiProvisionerForBothBoardsWithACppCompiler() throws Exception {
+    @ParameterizedTest(name = "Wi-Fi provisioner shim is valid C++ for {0}")
+    @ValueSource(strings = {"ArduinoUnoR4WiFi", "ArduinoUnoQ"})
+    @DisplayName("The Wi-Fi provisioner produces a valid shim on both boards")
+    void shouldCompileTheWifiProvisionerForBothBoardsWithACppCompiler(String board) throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        for (String board : new String[] {"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
-            String name = "AsmProvisioner" + board;
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.%1$s;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.api.net.WifiProvisioner;
-                    @Board(%1$s.class)
-                    public final class %2$s {
-                        public static void main(String[] args) {
-                            WifiProvisioner.run("juno-setup", "junosetup");
-                        }
+        String name = "AsmProvisioner" + board;
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.%1$s;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.api.net.WifiProvisioner;
+                @Board(%1$s.class)
+                public final class %2$s {
+                    public static void main(String[] args) {
+                        WifiProvisioner.run("juno-setup", "junosetup");
                     }
-                    """.formatted(board, name);
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
-            Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
-            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+                }
+                """.formatted(board, name);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo." + name, source);
 
-            syntaxCheckCpp(compiler, shim);
-        }
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo." + name);
+        Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        // Then
+        syntaxCheckCpp(compiler, shim);
     }
 
     private static final String EXCEPTIONS = """
@@ -1409,12 +1616,18 @@ class GeneratedAsmToolchainTest {
             """;
 
     @Test
-    void assemblesAnExceptionsProgramAndCompilesItsShim() throws Exception {
+    @DisplayName("An exceptions program assembles with the ARM toolchain and its shim is valid C++")
+    void shouldAssembleAnExceptionsProgramAndCompileItsShim() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(armGcc != null || compiler != null, "No toolchain available");
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmExceptions", EXCEPTIONS);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmExceptions");
+
+        // Then
         if (armGcc != null) {
             assembleAndCompile(armGcc, "demo.AsmExceptions");
         }
@@ -1426,7 +1639,9 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
-    void compilesAStringBuilderProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A StringBuilder program's shim is valid C++")
+    void shouldCompileAStringBuilderProgramsShimWithACppCompiler() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1442,15 +1657,20 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmStringBuilder", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmStringBuilder");
         Path shim = temporaryDirectory.resolve("AsmStringBuilderShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
+        // Then
         syntaxCheckCpp(compiler, shim);
     }
 
     @Test
-    void assemblesAStringConcatProgramAndCompilesItsShim() throws Exception {
+    @DisplayName("A string-concat program assembles and its shim is valid C++")
+    void shouldAssembleAStringConcatProgramAndCompileItsShim() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(armGcc != null || compiler != null, "No toolchain available");
@@ -1471,7 +1691,11 @@ class GeneratedAsmToolchainTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmStringConcat", source);
+
+        // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmStringConcat");
+
+        // Then
         if (armGcc != null) {
             assembleAndCompile(armGcc, "demo.AsmStringConcat");
         }
@@ -1522,7 +1746,9 @@ class GeneratedAsmToolchainTest {
             """;
 
     @Test
-    void gcReclaimsUnreachableBlocksSoAllocationFarExceedingArenaCapacitySucceeds() throws Exception {
+    @DisplayName("The collector reclaims unreachable blocks so allocation far beyond arena capacity succeeds")
+    void shouldReclaimUnreachableBlocksSoAllocationFarExceedingArenaCapacitySucceeds() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1547,19 +1773,25 @@ class GeneratedAsmToolchainTest {
                   return 0;
                 }
                 """ + GC_STACK_TOP_MAIN;
+
+        // When
         Process run = compileAndStart(compiler, result.runtimeShim() + harness, "gc-reclaim");
         boolean finished = run.waitFor(20, TimeUnit.SECONDS);
         if (!finished) {
             run.destroyForcibly();
         }
         String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Then
         assertThat(finished).as("process should not hang if the collector actually reclaims garbage: "
                 + output).isTrue();
         assertThat(run.exitValue()).as("runtime exit code; output: " + output).isEqualTo(0);
     }
 
     @Test
-    void gcCannotReclaimRetainedBlocksSoArenaExhaustionStillPanics() throws Exception {
+    @DisplayName("The collector cannot reclaim retained blocks, so arena exhaustion still panics")
+    void shouldNotReclaimRetainedBlocksSoArenaExhaustionStillPanics() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1586,18 +1818,24 @@ class GeneratedAsmToolchainTest {
                   return 0;
                 }
                 """ + GC_STACK_TOP_MAIN;
+
+        // When
         Process run = compileAndStart(compiler, result.runtimeShim() + harness, "gc-retained");
         boolean finished = run.waitFor(3, TimeUnit.SECONDS);
         if (!finished) {
             run.destroyForcibly();
         }
+
+        // Then
         assertThat(finished).as("retaining every block leaves nothing for the collector to reclaim, "
                 + "so exhaustion should still reach juno_panic()'s infinite loop instead of returning")
                 .isFalse();
     }
 
     @Test
-    void gcReusesAnInteriorFreedBlockRatherThanGrowingTheArena() throws Exception {
+    @DisplayName("The collector reuses an interior freed block rather than growing the arena")
+    void shouldReuseAnInteriorFreedBlockRatherThanGrowingTheArena() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1639,19 +1877,25 @@ class GeneratedAsmToolchainTest {
                   return (juno_arena_used == usedAfterCollect) ? 0 : 1;
                 }
                 """ + GC_STACK_TOP_MAIN;
+
+        // When
         Process run = compileAndStart(compiler, result.runtimeShim() + harness, "gc-free-list");
         boolean finished = run.waitFor(20, TimeUnit.SECONDS);
         if (!finished) {
             run.destroyForcibly();
         }
         String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Then
         assertThat(finished).as("process should not hang: " + output).isTrue();
         assertThat(run.exitValue()).as("expected the interior freed block to be reused via the "
                 + "free list rather than the arena growing; output: " + output).isEqualTo(0);
     }
 
     @Test
-    void generatedStringFromBytesShimCopiesABoundedRangeAtRuntime() throws Exception {
+    @DisplayName("The generated string-from-bytes shim copies a bounded range at runtime")
+    void shouldCopyABoundedRangeInTheGeneratedStringFromBytesShimAtRuntime() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1700,6 +1944,7 @@ class GeneratedAsmToolchainTest {
         Files.writeString(sketch, result.runtimeShim() + harness, StandardCharsets.UTF_8);
         Path executable = temporaryDirectory.resolve("json-runtime");
 
+        // When
         Process compile = new ProcessBuilder(compiler, "-std=c++17", "-x", "c++",
                 "-Isrc/test/resources", sketch.toString(), "-o", executable.toString())
                 .redirectErrorStream(true)
@@ -1713,6 +1958,8 @@ class GeneratedAsmToolchainTest {
         boolean finished = run.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "Generated JSON runtime test timed out");
         String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Then
         assertThat(run.exitValue()).as("runtime exit code; output: " + output).isEqualTo(0);
     }
 
@@ -1722,7 +1969,9 @@ class GeneratedAsmToolchainTest {
      * frame, and the hub's Port Value notifications must decode into {@code readSensor} values.
      */
     @Test
-    void generatedLegoPoweredUpShimSpeaksLegoWirelessProtocolAtRuntime() throws Exception {
+    @DisplayName("The generated LEGO Powered Up shim speaks the LEGO Wireless Protocol at runtime")
+    void shouldSpeakTheLegoWirelessProtocolAtRuntimeInTheGeneratedLegoPoweredUpShim() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
@@ -1930,6 +2179,7 @@ class GeneratedAsmToolchainTest {
         Files.writeString(sketch, result.runtimeShim() + harness, StandardCharsets.UTF_8);
         Path executable = temporaryDirectory.resolve("lego-runtime");
 
+        // When
         Process compile = new ProcessBuilder(compiler, "-std=c++17", "-x", "c++",
                 "-Isrc/test/resources", sketch.toString(), "-o", executable.toString())
                 .redirectErrorStream(true)
@@ -1943,6 +2193,8 @@ class GeneratedAsmToolchainTest {
         boolean finished = run.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "Generated LEGO runtime test timed out");
         String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Then
         assertThat(run.exitValue()).as("runtime exit code (the failing check); output: " + output).isEqualTo(0);
     }
 
@@ -1977,11 +2229,15 @@ class GeneratedAsmToolchainTest {
             """;
 
     @Test
-    void assemblesAProgramUsingEveryMathOverload() throws Exception {
+    @DisplayName("A program using every Math overload assembles with the ARM toolchain")
+    void shouldAssembleAProgramUsingEveryMathOverload() throws Exception {
+        // Given
         String armGcc = availableArmGcc();
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         // Math.clamp is Java 21.
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.MathEverything", MATH_EVERYTHING, "21");
+
+        // When & Then
         assembleAndCompile(armGcc, "demo.MathEverything");
     }
 
@@ -1991,7 +2247,9 @@ class GeneratedAsmToolchainTest {
      * specifies exactly, within 1e-14 (relative) for the {@code libm}-backed transcendental functions.
      */
     @Test
-    void generatedMathShimMatchesJavaLangMathAtRuntime() throws Exception {
+    @DisplayName("The generated Math shim matches java.lang.Math at runtime")
+    void shouldMatchJavaLangMathAtRuntimeInTheGeneratedMathShim() throws Exception {
+        // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.MathEverything", MATH_EVERYTHING, "21");
@@ -2123,10 +2381,14 @@ class GeneratedAsmToolchainTest {
                   return junoFailures == 0 ? 0 : 1;
                 }
                 """;
+
+        // When
         Process run = compileAndStart(compiler, result.runtimeShim() + harness, "math-runtime");
         boolean finished = run.waitFor(20, TimeUnit.SECONDS);
         Assumptions.assumeTrue(finished, "Generated Math runtime test timed out");
         String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Then
         assertThat(run.exitValue()).as("mismatches against java.lang.Math:\n" + output).isEqualTo(0);
     }
 

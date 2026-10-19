@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.backend.h8300;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -9,18 +11,24 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@NullMarked
+@DisplayName("RCX firmware image source")
 class RcxFirmwareImageSourceTest {
     @TempDir
     private Path temporaryDirectory;
 
     @Test
-    void generatesImageMetadataBytesAndChecksum() throws Exception {
+    @DisplayName("Generates the image metadata, bytes and checksum")
+    void shouldGenerateImageMetadataBytesAndChecksum() throws Exception {
+        // Given
         H8Image image = new H8Image(0x8000, 0x8001, new byte[] {1, 2, -1});
         RcxFirmwareImageSource generator = new RcxFirmwareImageSource(image);
         Path output = temporaryDirectory.resolve("generated/RcxFirmwareImage.java");
 
+        // When
         generator.write(output);
 
+        // Then
         assertThat(Files.readString(output))
                 .contains("public final class RcxFirmwareImage")
                 .contains("public static final int ORIGIN = 0x8000;")
@@ -32,17 +40,23 @@ class RcxFirmwareImageSourceTest {
     }
 
     @Test
-    void splitsLargeImagesIntoIndependentInitializerClasses() {
+    @DisplayName("Splits large images into independent initializer classes")
+    void shouldSplitLargeImagesIntoIndependentInitializerClasses() {
+        // Given
         byte[] bytes = new byte[4097];
 
+        // When
         String source = new RcxFirmwareImageSource(new H8Image(0x8000, 0x8000, bytes)).source();
 
+        // Then
         assertThat(source).contains("case 0 -> Chunk0.DATA[offset];", "case 1 -> Chunk1.DATA[offset];")
                 .contains("private static final class Chunk0", "private static final class Chunk1");
     }
 
     @Test
-    void rejectsImagesTheRcxCannotLoad() {
+    @DisplayName("Rejects images the RCX cannot load")
+    void shouldRejectImagesTheRcxCannotLoad() {
+        // When & Then
         assertThatThrownBy(() -> new RcxFirmwareImageSource(new H8Image(0x7000, 0x7000, new byte[] {1})))
                 .isInstanceOf(FirmwareGenerationException.class)
                 .hasMessageContaining("start at 0x8000");
@@ -55,7 +69,9 @@ class RcxFirmwareImageSourceTest {
     }
 
     @Test
-    void rejectsAnImageTooLongForTheRomArea() {
+    @DisplayName("Rejects an image too long for the ROM area")
+    void shouldRejectAnImageTooLongForTheRomArea() {
+        // When & Then
         assertThatThrownBy(() -> new RcxFirmwareImageSource(new H8Image(0x8000, 0x8000, new byte[28_673])))
                 .isInstanceOf(FirmwareGenerationException.class)
                 .hasMessageContaining("28672");

@@ -1,34 +1,40 @@
 package io.github.jabrena.juno.backend.h8300;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("H8 byte registers")
 class H8ByteRegisterTest {
 
-    @Test
-    void eachGeneralRegisterHasItsHighAndLowByte() {
-        assertThat(H8ByteRegister.high(H8Register.R0)).isEqualTo(H8ByteRegister.R0H);
-        assertThat(H8ByteRegister.high(H8Register.R1)).isEqualTo(H8ByteRegister.R1H);
-        assertThat(H8ByteRegister.high(H8Register.R2)).isEqualTo(H8ByteRegister.R2H);
-        assertThat(H8ByteRegister.high(H8Register.R3)).isEqualTo(H8ByteRegister.R3H);
-        assertThat(H8ByteRegister.high(H8Register.R4)).isEqualTo(H8ByteRegister.R4H);
-        assertThat(H8ByteRegister.high(H8Register.R5)).isEqualTo(H8ByteRegister.R5H);
-        assertThat(H8ByteRegister.high(H8Register.R6)).isEqualTo(H8ByteRegister.R6H);
-        assertThat(H8ByteRegister.high(H8Register.R7)).isEqualTo(H8ByteRegister.R7H);
-
-        assertThat(H8ByteRegister.low(H8Register.R0)).isEqualTo(H8ByteRegister.R0L);
-        assertThat(H8ByteRegister.low(H8Register.R1)).isEqualTo(H8ByteRegister.R1L);
-        assertThat(H8ByteRegister.low(H8Register.R2)).isEqualTo(H8ByteRegister.R2L);
-        assertThat(H8ByteRegister.low(H8Register.R3)).isEqualTo(H8ByteRegister.R3L);
-        assertThat(H8ByteRegister.low(H8Register.R4)).isEqualTo(H8ByteRegister.R4L);
-        assertThat(H8ByteRegister.low(H8Register.R5)).isEqualTo(H8ByteRegister.R5L);
-        assertThat(H8ByteRegister.low(H8Register.R6)).isEqualTo(H8ByteRegister.R6L);
-        assertThat(H8ByteRegister.low(H8Register.R7)).isEqualTo(H8ByteRegister.R7L);
+    @ParameterizedTest(name = "{0} has high byte {1} and low byte {2}")
+    @CsvSource({
+            "R0, R0H, R0L",
+            "R1, R1H, R1L",
+            "R2, R2H, R2L",
+            "R3, R3H, R3L",
+            "R4, R4H, R4L",
+            "R5, R5H, R5L",
+            "R6, R6H, R6L",
+            "R7, R7H, R7L"
+    })
+    @DisplayName("Gives each general register its high and low byte")
+    void shouldGiveEachGeneralRegisterItsHighAndLowByte(H8Register register, H8ByteRegister high,
+            H8ByteRegister low) {
+        // When & Then
+        assertThat(H8ByteRegister.high(register)).isEqualTo(high);
+        assertThat(H8ByteRegister.low(register)).isEqualTo(low);
     }
 
     @Test
-    void highBytesAreNumberedFirstThenLowBytes() {
+    @DisplayName("Numbers the high bytes first, then the low bytes")
+    void shouldNumberTheHighBytesFirstThenTheLowBytes() {
+        // When & Then
         assertThat(H8ByteRegister.high(H8Register.R0).number()).isZero();
         assertThat(H8ByteRegister.high(H8Register.R7).number()).isEqualTo(7);
         assertThat(H8ByteRegister.low(H8Register.R0).number()).isEqualTo(8);

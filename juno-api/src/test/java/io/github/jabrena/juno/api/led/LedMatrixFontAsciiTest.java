@@ -1,13 +1,19 @@
 package io.github.jabrena.juno.api.led;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("LED matrix ASCII font")
 class LedMatrixFontAsciiTest {
 
     @Test
-    void lowercaseGHasAClosedBowlAndVisibleDescender() {
+    @DisplayName("Lowercase g has a closed bowl and a visible descender")
+    void shouldDrawLowercaseGWithAClosedBowlAndAVisibleDescender() {
+        // When & Then
         assertThat(rows('g')).containsExactly(".....", ".....", ".####", "#...#", ".####", "....#", ".###.");
     }
 

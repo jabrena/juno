@@ -1,5 +1,7 @@
 package io.github.jabrena.juno;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -8,12 +10,15 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Stable generated-code guardrails for the optimization roadmap; no host wall-clock thresholds. */
+@NullMarked
+@DisplayName("Generated-code performance guardrails")
 class CompilerPerformanceGuardrailTest {
     @TempDir
     Path temporaryDirectory;
 
     @Test
-    void arithmeticBenchmarkDoesNotRegress() throws Exception {
+    @DisplayName("Arithmetic benchmark does not regress")
+    void shouldNotRegressTheArithmeticBenchmark() throws Exception {
         assertWithinBaseline("ArithmeticBench", """
                 package benchmark;
                 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -33,7 +38,8 @@ class CompilerPerformanceGuardrailTest {
     }
 
     @Test
-    void arrayBenchmarkDoesNotRegress() throws Exception {
+    @DisplayName("Array benchmark does not regress")
+    void shouldNotRegressTheArrayBenchmark() throws Exception {
         assertWithinBaseline("ArrayBench", """
                 package benchmark;
                 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -57,7 +63,8 @@ class CompilerPerformanceGuardrailTest {
     }
 
     @Test
-    void stackBenchmarkDoesNotRegress() throws Exception {
+    @DisplayName("Stack benchmark does not regress")
+    void shouldNotRegressTheStackBenchmark() throws Exception {
         assertWithinBaseline("StackBench", """
                 package benchmark;
                 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -85,7 +92,8 @@ class CompilerPerformanceGuardrailTest {
     }
 
     @Test
-    void allocationBenchmarkDoesNotRegress() throws Exception {
+    @DisplayName("Allocation benchmark does not regress")
+    void shouldNotRegressTheAllocationBenchmark() throws Exception {
         assertWithinBaseline("AllocationBench", """
                 package benchmark;
                 import io.github.jabrena.juno.api.io.serial.Serial;

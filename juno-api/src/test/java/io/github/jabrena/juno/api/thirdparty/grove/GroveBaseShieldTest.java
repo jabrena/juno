@@ -1,16 +1,25 @@
 package io.github.jabrena.juno.api.thirdparty.grove;
 
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("Grove base shield socket mapping")
 class GroveBaseShieldTest {
+
     @Test
-    void mapsTheGroveSocketsToUnoPins() {
-        assertEquals(14, GroveBaseShield.A0);
-        assertEquals(2, GroveBaseShield.D2);
-        assertEquals(8, GroveBaseShield.D8);
-        assertEquals(0, GroveBaseShield.UART_RX);
-        assertEquals(19, GroveBaseShield.I2C_SCL);
+    @DisplayName("Maps the Grove sockets to UNO pins")
+    void shouldMapTheGroveSocketsToUnoPins() {
+        // When & Then
+        assertThat(new int[] {
+                GroveBaseShield.A0,
+                GroveBaseShield.D2,
+                GroveBaseShield.D8,
+                GroveBaseShield.UART_RX,
+                GroveBaseShield.I2C_SCL})
+            .containsExactly(14, 2, 8, 0, 19);
     }
 }

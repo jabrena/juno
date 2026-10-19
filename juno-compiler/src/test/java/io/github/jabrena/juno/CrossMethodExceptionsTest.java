@@ -8,6 +8,8 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.linker.Program;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -22,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * caller's poll routes it to a {@code catch}/{@code finally} handler or keeps unwinding. Also try-with-resources,
  * whose {@code close()} and {@code addSuppressed} calls ride on the same mechanism.
  */
+@NullMarked
+@DisplayName("Exceptions across method boundaries")
 class CrossMethodExceptionsTest {
     @TempDir
     Path temporaryDirectory;
@@ -52,128 +56,6 @@ class CrossMethodExceptionsTest {
                 }
             }
             """;
-
-    @Test
-    void aCallerCatchesWhatItsCalleeThrows() throws Exception {
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Crossing", CALLEE_THROWS);
-
-        IrProgram program = optimized("demo.Crossing");
-
-        IrMethod parse = method(program, "parse");
-        assertThat(count(parse, Intrinsic.THROW_RAISE)).as("no handler here: raise and unwind").isEqualTo(1);
-        assertThat(parse.blocks()).anyMatch(block -> block.terminator() instanceof IrTerminator.Return returned
-                && returned.value().isEmpty() && endsInRaise(block));
-
-        IrMethod middle = method(program, "middle");
-        assertThat(count(middle, Intrinsic.THROW_PENDING)).as("polls after calling parse").isEqualTo(1);
-        assertThat(count(middle, Intrinsic.THROW_CATCH)).as("no handler: just keep unwinding").isZero();
-
-        IrMethod main = method(program, "main");
-        assertThat(count(main, Intrinsic.THROW_PENDING)).as("only the call to middle can throw").isEqualTo(1);
-        assertThat(count(main, Intrinsic.THROW_CATCH)).isEqualTo(1);
-        assertThat(count(main, Intrinsic.THROWABLE_GET_MESSAGE)).isEqualTo(1);
-
-        // quiet() is small enough to be inlined into its caller; how it was lowered is what matters here.
-        assertThat(count(method(lowered("demo.Crossing"), "quiet"), Intrinsic.THROW_PENDING)).isZero();
-    }
-
-    @Test
-    void programsThatNeverThrowAcrossACallAreNotPolled() throws Exception {
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.api.io.serial.Serial;
-                public final class Quiet {
-                    static int twice(int value) { return value * 2; }
-                    public static void main(String[] args) {
-                        try {
-                            Serial.println(twice(4));
-                        } catch (RuntimeException e) {
-                            Serial.println(e.getMessage());
-                        }
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Quiet", source);
-
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Quiet");
-
-        assertThat(result.assembly()).doesNotContain("juno_throw_pending", "juno_throw_check_escape");
-    }
-
-    @Test
-    void anUnmatchedExceptionKeepsUnwindingPastTheCatchingFrame() throws Exception {
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.api.io.serial.Serial;
-                public final class Partial {
-                    static void fail(int kind) {
-                        if (kind == 0) {
-                            throw new IllegalArgumentException("argument");
-                        }
-                        throw new IllegalStateException("state");
-                    }
-                    static void guarded(int kind) {
-                        try {
-                            fail(kind);
-                        } catch (IllegalArgumentException e) {
-                            Serial.println("wrong handler");
-                        }
-                    }
-                    public static void main(String[] args) {
-                        try {
-                            guarded(1);
-                        } catch (IllegalStateException e) {
-                            Serial.println(e.getMessage());
-                        }
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Partial", source);
-
-        IrMethod guarded = method(optimized("demo.Partial"), "guarded");
-
-        // guarded() has a handler, but only for IllegalArgumentException: IllegalStateException funnels into
-        // the shared propagation block instead of panicking.
-        assertThat(count(guarded, Intrinsic.THROW_CATCH)).isEqualTo(1);
-        assertThat(guarded.blocks()).anyMatch(block -> block.terminator() instanceof IrTerminator.Switch switched
-                && switched.defaultTarget() != switched.targets().get(0)
-                && isReturnBlock(guarded, switched.defaultTarget()));
-    }
-
-    @Test
-    void aFinallyBlockRunsWhenACalleeThrowsAndThenRethrows() throws Exception {
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.api.io.serial.Serial;
-                public final class Cleanup {
-                    static void fail() { throw new IllegalStateException("boom"); }
-                    static void work() {
-                        try {
-                            fail();
-                        } finally {
-                            Serial.println("cleanup");
-                        }
-                    }
-                    public static void main(String[] args) {
-                        try {
-                            work();
-                        } catch (IllegalStateException e) {
-                            Serial.println(e.getMessage());
-                        }
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Cleanup", source);
-
-        IrProgram program = optimized("demo.Cleanup");
-        IrMethod work = method(program, "work");
-
-        assertThat(count(work, Intrinsic.THROW_CATCH)).as("fail() lands in finally's catch-any").isEqualTo(1);
-        assertThat(count(work, Intrinsic.THROW_RAISE)).as("finally rethrows to work()'s caller").isEqualTo(1);
-        assertThat(count(work, Intrinsic.SERIAL_PRINTLN_STRING)).as("javac inlines finally on both paths")
-                .isEqualTo(2);
-        assertThat(count(method(program, "main"), Intrinsic.THROW_CATCH)).isEqualTo(1);
-    }
 
     private static final String TRY_WITH_RESOURCES = """
             package demo;
@@ -209,35 +91,264 @@ class CrossMethodExceptionsTest {
             """;
 
     @Test
-    void tryWithResourcesClosesTheResourceOnBothPathsAndRethrows() throws Exception {
+    @DisplayName("A caller catches what its callee throws")
+    void shouldLetACallerCatchWhatItsCalleeThrows() throws Exception {
+        // Given
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Crossing", CALLEE_THROWS);
+        IrProgram program = optimized("demo.Crossing");
+        IrMethod main = method(program, "main");
+
+        // When & Then
+        assertThat(new long[] {
+                count(main, Intrinsic.THROW_PENDING),
+                count(main, Intrinsic.THROW_CATCH),
+                count(main, Intrinsic.THROWABLE_GET_MESSAGE)})
+                .as("pending poll after middle, catch, get message")
+                .containsExactly(1, 1, 1);
+    }
+
+    @Test
+    @DisplayName("A callee without a handler raises and unwinds")
+    void shouldRaiseAndUnwindInACalleeWithNoHandler() throws Exception {
+        // Given
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Crossing", CALLEE_THROWS);
+        IrMethod parse = method(optimized("demo.Crossing"), "parse");
+
+        // When & Then
+        assertThat(count(parse, Intrinsic.THROW_RAISE)).as("no handler here: raise and unwind").isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("A callee that raises ends with a return that carries no value")
+    void shouldEndTheRaisingCalleeWithAReturnWithNoValue() throws Exception {
+        // Given
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Crossing", CALLEE_THROWS);
+        IrMethod parse = method(optimized("demo.Crossing"), "parse");
+
+        // When & Then
+        assertThat(parse.blocks()).anyMatch(block -> block.terminator() instanceof IrTerminator.Return returned
+                && returned.value().isEmpty() && endsInRaise(block));
+    }
+
+    @Test
+    @DisplayName("A middle caller polls after calling the throwing callee and keeps unwinding")
+    void shouldPollAfterCallingTheThrowingCalleeAndKeepUnwinding() throws Exception {
+        // Given
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Crossing", CALLEE_THROWS);
+        IrMethod middle = method(optimized("demo.Crossing"), "middle");
+
+        // When & Then
+        assertThat(new long[] {
+                count(middle, Intrinsic.THROW_PENDING),
+                count(middle, Intrinsic.THROW_CATCH)})
+                .as("polls after calling parse, no handler: just keep unwinding")
+                .containsExactly(1, 0);
+    }
+
+    @Test
+    @DisplayName("A small callee that never throws is not polled after the call")
+    void shouldNotPollAfterACalleeThatNeverThrows() throws Exception {
+        // Given
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Crossing", CALLEE_THROWS);
+
+        // When & Then
+        // quiet() is small enough to be inlined into its caller; how it was lowered is what matters here.
+        assertThat(count(method(lowered("demo.Crossing"), "quiet"), Intrinsic.THROW_PENDING)).isZero();
+    }
+
+    @Test
+    @DisplayName("Programs that never throw across a call are not polled")
+    void shouldNotPollProgramsThatNeverThrowAcrossACall() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                public final class Quiet {
+                    static int twice(int value) { return value * 2; }
+                    public static void main(String[] args) {
+                        try {
+                            Serial.println(twice(4));
+                        } catch (RuntimeException e) {
+                            Serial.println(e.getMessage());
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Quiet", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Quiet");
+
+        // When & Then
+        assertThat(result.assembly()).doesNotContain("juno_throw_pending", "juno_throw_check_escape");
+    }
+
+    @Test
+    @DisplayName("An unmatched exception keeps unwinding past the frame that catches a different class")
+    void shouldKeepUnwindingPastAFrameThatCatchesADifferentClass() throws Exception {
+        // Given
+        IrMethod guarded = method(optimized(compilePartial()), "guarded");
+
+        // When & Then
+        // guarded() has a handler, but only for IllegalArgumentException: IllegalStateException funnels into
+        // the shared propagation block instead of panicking.
+        assertThat(guarded.blocks()).anyMatch(block -> block.terminator() instanceof IrTerminator.Switch switched
+                && switched.defaultTarget() != switched.targets().get(0)
+                && isReturnBlock(guarded, switched.defaultTarget()));
+    }
+
+    @Test
+    @DisplayName("The frame with a non-matching handler still has one catch poll")
+    void shouldKeepOneCatchPollInTheFrameWithANonMatchingHandler() throws Exception {
+        // Given
+        IrMethod guarded = method(optimized(compilePartial()), "guarded");
+
+        // When & Then
+        assertThat(count(guarded, Intrinsic.THROW_CATCH)).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("A finally block runs when a callee throws and then rethrows")
+    void shouldRunFinallyWhenACalleeThrowsAndThenRethrow() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                public final class Cleanup {
+                    static void fail() { throw new IllegalStateException("boom"); }
+                    static void work() {
+                        try {
+                            fail();
+                        } finally {
+                            Serial.println("cleanup");
+                        }
+                    }
+                    public static void main(String[] args) {
+                        try {
+                            work();
+                        } catch (IllegalStateException e) {
+                            Serial.println(e.getMessage());
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Cleanup", source);
+        IrProgram program = optimized("demo.Cleanup");
+        IrMethod work = method(program, "work");
+
+        // When & Then
+        assertThat(new long[] {
+                count(work, Intrinsic.THROW_CATCH),
+                count(work, Intrinsic.THROW_RAISE),
+                count(work, Intrinsic.SERIAL_PRINTLN_STRING)})
+                .as("catch-any for fail(), rethrow to the caller, javac inlines finally on both paths")
+                .containsExactly(1, 1, 2);
+    }
+
+    @Test
+    @DisplayName("The caller of the finally-protected method has one catch poll")
+    void shouldPollOnceInTheCallerOfTheFinallyProtectedMethod() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                public final class Cleanup {
+                    static void fail() { throw new IllegalStateException("boom"); }
+                    static void work() {
+                        try {
+                            fail();
+                        } finally {
+                            Serial.println("cleanup");
+                        }
+                    }
+                    public static void main(String[] args) {
+                        try {
+                            work();
+                        } catch (IllegalStateException e) {
+                            Serial.println(e.getMessage());
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Cleanup", source);
+
+        // When & Then
+        assertThat(count(method(optimized("demo.Cleanup"), "main"), Intrinsic.THROW_CATCH)).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Try-with-resources closes the resource on both paths and rethrows")
+    void shouldCloseTheResourceOnBothPathsAndRethrow() throws Exception {
+        // Given
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Resources",
                 TRY_WITH_RESOURCES.replace("@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})\n", ""));
-
         IrProgram program = optimized("demo.Resources");
         IrMethod use = method(program, "use");
 
+        // When
         // close() is called on the normal path and on the exceptional path, where the original exception is
         // then rethrown (addSuppressed is dropped; Juno keeps no suppressed list).
         long closes = use.blocks().stream().flatMap(block -> block.instructions().stream())
                 .filter(instruction -> instruction instanceof IrInstruction.Call call
                         && call.method().name().equals("close"))
                 .count();
+
+        // Then
         assertThat(closes).isGreaterThanOrEqualTo(2);
-        assertThat(count(use, Intrinsic.THROW_RAISE)).isGreaterThanOrEqualTo(1);
-        assertThat(count(method(program, "main"), Intrinsic.THROW_CATCH)).as("one poll per use() call").isEqualTo(2);
     }
 
     @Test
-    void generatesTheSameUnwindingMachineryForBothBoards() throws Exception {
+    @DisplayName("Try-with-resources raises on the exceptional path")
+    void shouldRaiseOnTheExceptionalPathOfTryWithResources() throws Exception {
+        // Given
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Resources",
+                TRY_WITH_RESOURCES.replace("@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})\n", ""));
+        IrMethod use = method(optimized("demo.Resources"), "use");
+
+        // When & Then
+        assertThat(count(use, Intrinsic.THROW_RAISE)).isGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Main has one poll per use() call")
+    void shouldPollOncePerUseCallInMain() throws Exception {
+        // Given
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Resources",
+                TRY_WITH_RESOURCES.replace("@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})\n", ""));
+
+        // When & Then
+        assertThat(count(method(optimized("demo.Resources"), "main"), Intrinsic.THROW_CATCH)).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Generates the same unwinding machinery for both boards")
+    void shouldGenerateTheSameUnwindingMachineryForBothBoards() throws Exception {
+        // Given
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Resources", TRY_WITH_RESOURCES);
         List<Path> classpath = CompilerTestSupport.classpath(temporaryDirectory);
         JunoCompiler juno = new JunoCompiler();
 
         for (Board board : List.of(Board.UNO_R4_WIFI, Board.UNO_Q)) {
+            // When
             CompilationResult result = juno.compile(classpath, "demo.Resources", false, Optional.of(board.id()));
 
+            // Then
             assertThat(result.assembly()).as(board.id()).contains("bl juno_throw_pending", "bl juno_throw_catch",
                     "bl juno_throw_raise", "bl juno_throw_check_escape");
+        }
+    }
+
+    @Test
+    @DisplayName("The runtime shim for each board declares the catch and escape-check functions")
+    void shouldDeclareTheCatchAndEscapeCheckFunctionsInEachBoardShim() throws Exception {
+        // Given
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Resources", TRY_WITH_RESOURCES);
+        List<Path> classpath = CompilerTestSupport.classpath(temporaryDirectory);
+        JunoCompiler juno = new JunoCompiler();
+
+        for (Board board : List.of(Board.UNO_R4_WIFI, Board.UNO_Q)) {
+            // When
+            CompilationResult result = juno.compile(classpath, "demo.Resources", false, Optional.of(board.id()));
+
+            // Then
             assertThat(result.runtimeShim()).as(board.id()).contains(
                     "extern \"C\" int32_t juno_throw_catch(int32_t caughtMask)",
                     "extern \"C\" void juno_throw_check_escape()");
@@ -245,7 +356,9 @@ class CrossMethodExceptionsTest {
     }
 
     @Test
-    void aDivisionByZeroInACalleeIsCatchableByItsCaller() throws Exception {
+    @DisplayName("A division by zero in a callee is catchable by its caller")
+    void shouldLetACallerCatchADivisionByZeroFromACallee() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -264,16 +377,20 @@ class CrossMethodExceptionsTest {
                 }
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Divide", source);
-
         IrProgram program = optimized("demo.Divide");
 
-        assertThat(count(method(program, "ratio"), Intrinsic.THROW_RAISE)).as("ratio unwinds on a zero divisor")
-                .isEqualTo(1);
-        assertThat(count(method(program, "main"), Intrinsic.THROW_CATCH)).isEqualTo(2);
+        // When & Then
+        assertThat(new long[] {
+                count(method(program, "ratio"), Intrinsic.THROW_RAISE),
+                count(method(program, "main"), Intrinsic.THROW_CATCH)})
+                .as("ratio unwinds on a zero divisor, main catches")
+                .containsExactly(1, 2);
     }
 
     @Test
-    void aProgramWithNoArithmeticHandlerStillPanicsOnDivisionByZero() throws Exception {
+    @DisplayName("A program with no arithmetic handler still panics on division by zero")
+    void shouldStillPanicOnDivisionByZeroWithNoArithmeticHandler() throws Exception {
+        // Given
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.io.serial.Serial;
@@ -288,8 +405,40 @@ class CrossMethodExceptionsTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Panics", source);
 
+        // When & Then
         // ratio() is small enough to be inlined into main; how it was lowered is what matters here.
         assertThat(count(method(lowered("demo.Panics"), "ratio"), Intrinsic.THROW_RAISE)).isZero();
+    }
+
+    private String compilePartial() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.api.io.serial.Serial;
+                public final class Partial {
+                    static void fail(int kind) {
+                        if (kind == 0) {
+                            throw new IllegalArgumentException("argument");
+                        }
+                        throw new IllegalStateException("state");
+                    }
+                    static void guarded(int kind) {
+                        try {
+                            fail(kind);
+                        } catch (IllegalArgumentException e) {
+                            Serial.println("wrong handler");
+                        }
+                    }
+                    public static void main(String[] args) {
+                        try {
+                            guarded(1);
+                        } catch (IllegalStateException e) {
+                            Serial.println(e.getMessage());
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Partial", source);
+        return "demo.Partial";
     }
 
     private static boolean endsInRaise(IrBasicBlock block) {

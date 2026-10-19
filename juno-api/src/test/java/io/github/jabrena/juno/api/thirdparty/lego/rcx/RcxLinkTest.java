@@ -2,7 +2,9 @@ package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
 import io.github.jabrena.juno.api.testing.Wire;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -10,6 +12,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("RCX infrared link")
 class RcxLinkTest {
 
     @BeforeEach
@@ -19,13 +23,27 @@ class RcxLinkTest {
     }
 
     @Test
-    void sendFramesEachByteWithItsComplementAndAChecksum() {
+    @DisplayName("Send starts each frame with the header")
+    void shouldStartEachFrameWithTheHeader() {
+        // When
         RcxLink.send(0x13, 1, 2, 2);
 
-        int code = Infrared.written.get(3);
+        // Then
         assertThat(Infrared.written).startsWith(0x55, 0xFF, 0x00);
-        assertThat(code & 0xF7).isEqualTo(0x13);
-        assertThat(Infrared.written.subList(3, 11)).containsExactly(
+    }
+
+    @Test
+    @DisplayName("Send carries the command and its arguments with complements and a checksum")
+    void shouldCarryTheCommandAndArgumentsWithComplementsAndAChecksum() {
+        // Given
+        RcxLink.send(0x13, 1, 2, 2);
+        int code = Infrared.written.get(3);
+
+        // When
+        List<Integer> body = Infrared.written.subList(3, 11);
+
+        // Then
+        assertThat(body).containsExactly(
                 code, ~code & 0xFF,
                 1, 0xFE,
                 2, 0xFD,
@@ -33,44 +51,110 @@ class RcxLinkTest {
     }
 
     @Test
-    void sendAlternatesTheToggleBetweenFrames() {
+    @DisplayName("Send masks the toggle bit out of the command code")
+    void shouldMaskTheToggleBitOutOfTheCommandCode() {
+        // Given
+        RcxLink.send(0x13, 1, 2, 2);
+        int code = Infrared.written.get(3);
+
+        // When
+        int command = code & 0xF7;
+
+        // Then
+        assertThat(command).isEqualTo(0x13);
+    }
+
+    @Test
+    @DisplayName("Send alternates the toggle between frames")
+    void shouldAlternateTheToggleBetweenFrames() {
+        // Given
         RcxLink.send(0x13, 0, 0, 0);
         int first = Infrared.written.get(3);
         Infrared.written.clear();
 
+        // When
         RcxLink.send(0x13, 0, 0, 0);
         int second = Infrared.written.get(3);
 
+        // Then
         assertThat(first ^ second).isEqualTo(0x08);
     }
 
     @Test
-    void receiveReadsAFrameAndItsArgument() {
+    @DisplayName("Receive reads a frame and reports it as received")
+    void shouldReadAFrameAndReportItAsReceived() {
+        // Given
         Infrared.receivingFrame = true;
         Infrared.replies.addAll(frame(0xD2, 0x05));
 
-        assertThat(RcxLink.receive()).isEqualTo(1);
-        assertThat(RcxLink.opcode).isEqualTo(0xD2);
-        assertThat(RcxLink.argument0).isEqualTo(0x05);
+        // When
+        int received = RcxLink.receive();
+
+        // Then
+        assertThat(received).isEqualTo(1);
     }
 
     @Test
-    void receiveReportsNothingWhileTheReceiverIsIdle() {
+    @DisplayName("Receive exposes the opcode of the frame")
+    void shouldExposeTheOpcodeOfTheReceivedFrame() {
+        // Given
+        Infrared.receivingFrame = true;
+        Infrared.replies.addAll(frame(0xD2, 0x05));
+        RcxLink.receive();
+
+        // When
+        int opcode = RcxLink.opcode;
+
+        // Then
+        assertThat(opcode).isEqualTo(0xD2);
+    }
+
+    @Test
+    @DisplayName("Receive exposes the first argument of the frame")
+    void shouldExposeTheFirstArgumentOfTheReceivedFrame() {
+        // Given
+        Infrared.receivingFrame = true;
+        Infrared.replies.addAll(frame(0xD2, 0x05));
+        RcxLink.receive();
+
+        // When
+        int argument = RcxLink.argument0;
+
+        // Then
+        assertThat(argument).isEqualTo(0x05);
+    }
+
+    @Test
+    @DisplayName("Receive reports nothing while the receiver is idle")
+    void shouldReportNothingWhileTheReceiverIsIdle() {
+        // Given
         Infrared.receivingFrame = false;
 
-        assertThat(RcxLink.receive()).isEqualTo(-1);
+        // When
+        int received = RcxLink.receive();
+
+        // Then
+        assertThat(received).isEqualTo(-1);
     }
 
     @Test
-    void receiveRejectsAFrameWhoseChecksumDoesNotMatch() {
+    @DisplayName("Receive rejects a frame whose checksum does not match")
+    void shouldRejectAFrameWhoseChecksumDoesNotMatch() {
+        // Given
         Infrared.receivingFrame = true;
         Infrared.replies.addAll(List.of(0x55, 0xFF, 0x00, 0xD2, 0x2D, 0x05, 0xFA, 0xD8, 0x27, Infrared.TIMEOUT));
 
-        assertThat(RcxLink.receive()).isEqualTo(-1);
+        // When
+        int received = RcxLink.receive();
+
+        // Then
+        assertThat(received).isEqualTo(-1);
     }
 
     @Test
-    void receiveRejectsAFrameWithAComplementError() {
+    @DisplayName("Receive rejects a frame with a complement error")
+    void shouldRejectAFrameWithAComplementError() {
+        // Given
         Infrared.receivingFrame = true;
         Infrared.replies.add(0x55);
         Infrared.replies.add(0xFF);
@@ -78,30 +162,65 @@ class RcxLinkTest {
         Infrared.replies.add(0xD2);
         Infrared.replies.add(0xD2);
 
-        assertThat(RcxLink.receive()).isEqualTo(-1);
+        // When
+        int received = RcxLink.receive();
+
+        // Then
+        assertThat(received).isEqualTo(-1);
     }
 
     @Test
-    void receiveRejectsAFrameMissingItsHeader() {
+    @DisplayName("Receive rejects a frame missing its header")
+    void shouldRejectAFrameMissingItsHeader() {
+        // Given
         Infrared.receivingFrame = true;
         Infrared.replies.add(0x12);
 
-        assertThat(RcxLink.receive()).isEqualTo(-1);
+        // When
+        int received = RcxLink.receive();
+
+        // Then
+        assertThat(received).isEqualTo(-1);
     }
 
     @Test
-    void requestWaitsForTheComplementOpcodeOfItsCommand() {
+    @DisplayName("Request returns the reply to the complement opcode of its command")
+    void shouldReturnTheReplyToTheComplementOpcodeOfItsCommand() {
+        // Given
         Infrared.replies.addAll(frame(0xE4, 0x07));
 
-        assertThat(RcxLink.request(0x13, 1, 2, 2)).isEqualTo(1);
-        assertThat(RcxLink.argument0).isEqualTo(0x07);
+        // When
+        int reply = RcxLink.request(0x13, 1, 2, 2);
+
+        // Then
+        assertThat(reply).isEqualTo(1);
     }
 
     @Test
-    void requestSkipsOtherFramesAndReportsATimeoutWhenNoReplyComes() {
+    @DisplayName("Request exposes the first argument of the reply")
+    void shouldExposeTheFirstArgumentOfTheReply() {
+        // Given
+        Infrared.replies.addAll(frame(0xE4, 0x07));
+        RcxLink.request(0x13, 1, 2, 2);
+
+        // When
+        int argument = RcxLink.argument0;
+
+        // Then
+        assertThat(argument).isEqualTo(0x07);
+    }
+
+    @Test
+    @DisplayName("Request skips other frames and reports a timeout when no reply comes")
+    void shouldSkipOtherFramesAndReportATimeoutWhenNoReplyComes() {
+        // Given
         Infrared.replies.addAll(frame(0xD2, 0x01));
 
-        assertThat(RcxLink.request(0x13, 1, 2, 2)).isEqualTo(-1);
+        // When
+        int reply = RcxLink.request(0x13, 1, 2, 2);
+
+        // Then
+        assertThat(reply).isEqualTo(-1);
     }
 
     private static List<Integer> frame(int... values) {

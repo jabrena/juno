@@ -2,7 +2,9 @@ package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -13,6 +15,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** {@code juno:install-deps} through a real, Maven-configured {@link InstallDepsMojo}; never touches a real
  * process. */
+@NullMarked
+@DisplayName("juno:install-deps goal")
 class InstallDepsMojoTest extends AbstractMojoTestCase {
     @BeforeEach
     @Override
@@ -21,7 +25,9 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    void installsTheCoreThenEveryOptionalLibrary() throws Exception {
+    @DisplayName("Installs the core, then every optional library")
+    void shouldInstallTheCoreThenEveryOptionalLibrary() throws Exception {
+        // Given
         InstallDepsMojo mojo = lookupConfiguredMojo();
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
@@ -31,8 +37,10 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
         }
         mojo.useExecutor(executor);
 
+        // When
         mojo.execute();
 
+        // Then
         assertThat(executor.invocations()).hasSize(6);
         assertThat(executor.invocations().get(0).arguments())
                 .containsExactly("arduino-cli", "core", "install", "arduino:renesas_uno");
@@ -44,7 +52,9 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    void stopsAndLogsOnTheFirstFailure() throws Exception {
+    @DisplayName("Stops and logs on the first failing install")
+    void shouldStopAndLogOnTheFirstFailingInstall() throws Exception {
+        // Given
         InstallDepsMojo mojo = lookupConfiguredMojo();
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
@@ -53,6 +63,7 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
                 .respond(1, "network unreachable");
         mojo.useExecutor(executor);
 
+        // When & Then
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("network unreachable");

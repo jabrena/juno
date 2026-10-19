@@ -2,11 +2,18 @@ package io.github.jabrena.juno.api.thirdparty.lego.pf;
 
 import io.github.jabrena.juno.api.testing.Wire;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@NullMarked
+@DisplayName("LEGO Power Functions remote")
 class PowerFunctionsRemoteTest {
     private static final int MARK = 156;
     private static final int PAUSE_START_STOP = 1014;
@@ -24,66 +31,126 @@ class PowerFunctionsRemoteTest {
     }
 
     @Test
-    void setSpeedSendsSixRepeatsOfTheSameMessage() {
+    @DisplayName("Set speed sends six repeats of the same message")
+    void shouldSendSixRepeatsOfTheSameMessage() {
+        // Given
         PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
 
+        // When
+        List<Integer> repeats = IntStream.range(0, REPEATS).mapToObj(PowerFunctionsRemoteTest::decode).toList();
+
+        // Then
         assertThat(Infrared.pulses).hasSize(REPEATS * PAIRS_PER_REPEAT * 2);
-        assertThat(Infrared.pulses.get(0)).isEqualTo(MARK);
-        assertThat(Infrared.pulses.get(1)).isEqualTo(-PAUSE_START_STOP);
-        int message = decode(0);
-        assertThat((message >> 8) & 0xF).as("channel 1, red output, speed 7 uses nibble 4 for output and 7 for speed")
-                .isEqualTo(0x4);
-        assertThat((message >> 4) & 0xF).isEqualTo(7);
-        assertThat(message & 0xF).as("checksum of the three nibbles").isEqualTo(0xF ^ (message >> 12) ^ 4 ^ 7);
-        for (int repeat = 1; repeat < REPEATS; repeat++) {
-            assertThat(decode(repeat)).as("repeat %d", repeat).isEqualTo(message);
-        }
+        assertThat(repeats).containsOnly(repeats.get(0));
     }
 
     @Test
-    void theToggleBitFlipsBetweenSuccessiveSingleOutputMessages() {
+    @DisplayName("Each repeat starts with a start mark")
+    void shouldStartEachMessageWithAStartMark() {
+        // Given
+        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
+
+        // When & Then
+        assertThat(Infrared.pulses.subList(0, 2)).containsExactly(MARK, -PAUSE_START_STOP);
+    }
+
+    @Test
+    @DisplayName("Set speed encodes the channel, output and speed nibbles")
+    void shouldEncodeTheChannelOutputAndSpeedNibbles() {
+        // Given
+        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
+        int message = decode(0);
+
+        // When & Then
+        assertThat(new int[] {(message >> 8) & 0xF, (message >> 4) & 0xF})
+                .as("channel 1, red output, speed 7 uses nibble 4 for output and 7 for speed")
+                .containsExactly(0x4, 7);
+    }
+
+    @Test
+    @DisplayName("Set speed appends a checksum nibble")
+    void shouldAppendAChecksumNibble() {
+        // Given
+        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
+        int message = decode(0);
+
+        // When
+        int checksum = message & 0xF;
+
+        // Then
+        assertThat(checksum).as("checksum of the three nibbles").isEqualTo(0xF ^ (message >> 12) ^ 4 ^ 7);
+    }
+
+    @Test
+    @DisplayName("Toggle bit flips between successive single-output messages")
+    void shouldFlipTheToggleBitBetweenSuccessiveSingleOutputMessages() {
+        // Given
         PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
         int first = decode(0) >> 12;
         Infrared.pulses.clear();
 
+        // When
         PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
         int second = decode(0) >> 12;
 
+        // Then
         assertThat(first ^ second).isEqualTo(0x8);
     }
 
     @Test
-    void aNegativeSpeedIsSentAsTheReversePwmNibble() {
+    @DisplayName("A negative speed is sent as the reverse PWM nibble")
+    void shouldSendANegativeSpeedAsTheReversePwmNibble() {
+        // Given
         PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_BLUE, -3);
 
-        assertThat((decode(0) >> 4) & 0xF).isEqualTo(13);
+        // When
+        int nibble = (decode(0) >> 4) & 0xF;
+
+        // Then
+        assertThat(nibble).isEqualTo(13);
     }
 
     @Test
-    void brakeSendsTheBrakeNibble() {
+    @DisplayName("Brake sends the brake nibble")
+    void shouldSendTheBrakeNibble() {
+        // Given
         PowerFunctionsRemote.brake(PowerFunctionsRemote.CHANNEL_2, PowerFunctionsRemote.OUTPUT_RED);
 
-        assertThat((decode(0) >> 4) & 0xF).isEqualTo(8);
+        // When
+        int nibble = (decode(0) >> 4) & 0xF;
+
+        // Then
+        assertThat(nibble).isEqualTo(8);
     }
 
     @Test
-    void setSpeedsSendsBothOutputsWithTheChannelInTheEscapeNibble() {
+    @DisplayName("Set speeds sends both outputs with the channel in the escape nibble")
+    void shouldSendBothOutputsWithTheChannelInTheEscapeNibble() {
+        // Given
         PowerFunctionsRemote.setSpeeds(PowerFunctionsRemote.CHANNEL_2, 2, 3);
 
+        // When
         int message = decode(0);
-        assertThat(message >> 12).isEqualTo(0x4 | 1);
-        assertThat((message >> 8) & 0xF).as("blue").isEqualTo(3);
-        assertThat((message >> 4) & 0xF).as("red").isEqualTo(2);
+
+        // Then
+        assertThat(new int[] {message >> 12, (message >> 8) & 0xF, (message >> 4) & 0xF})
+                .as("escape nibble, blue, red")
+                .containsExactly(0x4 | 1, 3, 2);
     }
 
     @Test
-    void stopFloatsBothOutputsOfTheChannel() {
+    @DisplayName("Stop floats both outputs of the channel")
+    void shouldFloatBothOutputsOfTheChannel() {
+        // Given
         PowerFunctionsRemote.stop(PowerFunctionsRemote.CHANNEL_3);
 
+        // When
         int message = decode(0);
-        assertThat(message >> 12).isEqualTo(0x4 | 2);
-        assertThat((message >> 8) & 0xF).isZero();
-        assertThat((message >> 4) & 0xF).isZero();
+
+        // Then
+        assertThat(new int[] {message >> 12, (message >> 8) & 0xF, (message >> 4) & 0xF})
+                .as("escape nibble, blue, red")
+                .containsExactly(0x4 | 2, 0, 0);
     }
 
     /** The 16-bit message in repeat {@code repeat}, read from the space after each mark. */

@@ -2,7 +2,9 @@ package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -12,6 +14,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** {@code juno:boards} through a real, Maven-configured {@link BoardsMojo}; never touches a real process. */
+@NullMarked
+@DisplayName("juno:boards goal")
 class BoardsMojoTest extends AbstractMojoTestCase {
     @BeforeEach
     @Override
@@ -20,19 +24,25 @@ class BoardsMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    void reportsNoPortsDetected() throws Exception {
+    @DisplayName("Reports that no ports were detected")
+    void shouldReportThatNoPortsWereDetected() throws Exception {
+        // Given
         BoardsMojo mojo = lookupConfiguredMojo();
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
         mojo.useExecutor(new FakeExecutor().respond(0, "{\"detected_ports\": []}"));
 
+        // When
         mojo.execute();
 
+        // Then
         assertThat(log.infos()).contains("No serial ports detected. Connect a board and try again.");
     }
 
     @Test
-    void listsEveryDetectedPort() throws Exception {
+    @DisplayName("Lists every detected port")
+    void shouldListEveryDetectedPort() throws Exception {
+        // Given
         BoardsMojo mojo = lookupConfiguredMojo();
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
@@ -48,18 +58,23 @@ class BoardsMojoTest extends AbstractMojoTestCase {
                   ]
                 }"""));
 
+        // When
         mojo.execute();
 
+        // Then
         assertThat(log.infos()).contains("Detected ports (use -Djuno.port=<port> to select one):",
                 "  /dev/cu.usbmodem1 [serial] - Arduino UNO R4 WiFi (arduino:renesas_uno:unor4wifi)");
     }
 
     @Test
-    void wrapsAnArduinoCliFailureAsAMojoFailureException() throws Exception {
+    @DisplayName("Wraps an arduino-cli failure as a MojoFailureException")
+    void shouldWrapAnArduinoCliFailureAsAMojoFailureException() throws Exception {
+        // Given
         BoardsMojo mojo = lookupConfiguredMojo();
         mojo.setLog(new RecordingLog());
         mojo.useExecutor(new FakeExecutor().respond(1, "arduino-cli: command not found"));
 
+        // When & Then
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("Command failed with exit code 1");

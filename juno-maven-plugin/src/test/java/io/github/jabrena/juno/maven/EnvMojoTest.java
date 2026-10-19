@@ -1,7 +1,9 @@
 package io.github.jabrena.juno.maven;
 
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -15,6 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** {@code juno:env} through a real, Maven-configured {@link EnvMojo}. Exports into the real process environment
  * (as the goal is documented to do), under keys unique to this test so other tests are unaffected. */
+@NullMarked
+@DisplayName("juno:env goal")
 class EnvMojoTest extends AbstractMojoTestCase {
     @BeforeEach
     @Override
@@ -23,7 +27,10 @@ class EnvMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    void exportsEveryEntryFromTheConfiguredEnvFile(@TempDir Path tempDir) throws Exception {
+    @DisplayName("Exports every entry from the configured env file, keeping the last value of a repeated key")
+    void shouldExportEveryEntryFromTheConfiguredEnvFileKeepingTheLastValueOfARepeatedKey(@TempDir Path tempDir)
+            throws Exception {
+        // Given
         Path envFile = writeEnvFile(tempDir, """
                 # a comment, ignored
                 JUNO_TEST_ENV_MOJO_KEY=first
@@ -36,15 +43,19 @@ class EnvMojoTest extends AbstractMojoTestCase {
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
 
+        // When
         mojo.execute();
 
+        // Then
         assertThat(System.getenv("JUNO_TEST_ENV_MOJO_KEY")).isEqualTo("second");
         assertThat(System.getenv("ANOTHER_JUNO_TEST_KEY")).isEqualTo("spaced value");
         assertThat(log.infos()).anyMatch(line -> line.contains("Exported 2 variable(s)"));
     }
 
     @Test
-    void doesNothingWhenTheEnvFileIsMissing(@TempDir Path tempDir) throws Exception {
+    @DisplayName("Does nothing when the env file is missing")
+    void shouldDoNothingWhenTheEnvFileIsMissing(@TempDir Path tempDir) throws Exception {
+        // Given
         EnvMojo mojo = lookupEmptyMojo("env", new File("."));
         mojo = configureMojo(mojo, configuration()
                 .set("envFile", tempDir.resolve("does-not-exist.env").toString())
@@ -52,8 +63,10 @@ class EnvMojoTest extends AbstractMojoTestCase {
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
 
+        // When
         mojo.execute();
 
+        // Then
         assertThat(log.infos()).anyMatch(line -> line.contains("nothing exported"));
     }
 
