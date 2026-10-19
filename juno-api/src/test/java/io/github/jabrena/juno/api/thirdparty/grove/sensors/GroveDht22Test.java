@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
 import io.github.jabrena.juno.api.testing.SimulatedTime;
 import io.github.jabrena.juno.api.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;

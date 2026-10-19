@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
 
 /**
  * A Grove PIR motion sensor with a digital {@code SIG} output. Configure its socket once at startup

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.imu;
 
-import io.github.jabrena.juno.api.io.gpio.Gpio;
-import io.github.jabrena.juno.api.io.i2c.I2c;
+import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.io.i2c.I2c;
 import io.github.jabrena.juno.api.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

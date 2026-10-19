@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.internal;
 
-import io.github.jabrena.juno.api.io.i2c.I2c;
+import io.github.jabrena.juno.api.hardware.io.i2c.I2c;
 
 /**
  * The board's {@link I2c}: each method is an I2C intrinsic the compiler lowers to the core-bundled {@code Wire}

@@ -12,7 +12,7 @@
  * <p>The API lives in subpackages, grouped by the hardware or concern they address:
  * <ul>
  *   <li>{@code io} — general-purpose I/O
- *       ({@link io.github.jabrena.juno.api.io.gpio.Gpio}, {@link io.github.jabrena.juno.api.io.gpio.DigitalOutput}),
+ *       ({@link io.github.jabrena.juno.api.hardware.io.gpio.Gpio}, {@link io.github.jabrena.juno.api.hardware.io.gpio.DigitalOutput}),
  *       I2C ({@code io.i2c}) and serial port I/O ({@code io.serial}).</li>
  *   <li>{@code hardware} — program-wide introspection: arena and flash usage
  *       ({@link io.github.jabrena.juno.api.hardware.BoardMemory}) and the board the program was compiled for

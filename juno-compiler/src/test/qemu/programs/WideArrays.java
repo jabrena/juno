@@ -4,7 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.io.serial.Serial;
 
 /** long[], double[] and float[] arrays: element access, passing to methods, and arena churn. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.internal;
 
-import io.github.jabrena.juno.api.hid.Mouse;
+import io.github.jabrena.juno.api.hardware.hid.Mouse;
 
 /**
  * The board's {@link Mouse}: each method is a USB HID intrinsic the compiler lowers to the Arduino {@code Mouse}

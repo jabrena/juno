@@ -205,9 +205,9 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.util.Delay;
                 import io.github.jabrena.juno.api.util.Random;
-                import io.github.jabrena.juno.api.io.gpio.Gpio;
-                import io.github.jabrena.juno.api.io.serial.BaudRate;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 public final class AsmSmoke {
                     static int mix(int value) { return (value << 2) ^ 7; }
                     public static void main(String[] args) {
@@ -361,7 +361,7 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                 public final class AsmInterfaces {
                     interface Operation { int apply(int value); }
                     static final class Add implements Operation {
@@ -720,7 +720,7 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.led.LedCanvas;
+                import io.github.jabrena.juno.api.hardware.led.LedCanvas;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQLedMatrix {
                     public static void main(String[] args) {
@@ -1427,7 +1427,7 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 public final class AsmStorageOccupancy {
                     public static void main(String[] args) {
                         Serial.println(MCU.getBoardMemory().flashUsedBytes());
@@ -1458,7 +1458,7 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import java.io.IOException;
                 import java.io.RandomAccessFile;
                 public final class AsmSdRandomAccess {
@@ -1606,7 +1606,7 @@ class GeneratedAsmToolchainTest {
             package demo;
             import io.github.jabrena.juno.api.hardware.MCU;
             import io.github.jabrena.juno.api.time.Clock;
-            import io.github.jabrena.juno.api.io.serial.Serial;
+            import io.github.jabrena.juno.api.hardware.io.serial.Serial;
             public final class AsmExceptions {
                 static final class SensorException extends RuntimeException {
                     final int code;
@@ -1663,7 +1663,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 public final class AsmStringBuilder {
                     public static void main(String[] args) {
                         StringBuilder builder = new StringBuilder(8);
@@ -1695,7 +1695,7 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.time.Clock;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 public final class AsmStringConcat {
                     public static void main(String[] args) {
                         String state = MCU.getClock().millis() > 0 ? "on" : null;
@@ -2222,7 +2222,7 @@ class GeneratedAsmToolchainTest {
             package demo;
             import io.github.jabrena.juno.api.hardware.MCU;
             import io.github.jabrena.juno.api.time.Clock;
-            import io.github.jabrena.juno.api.io.serial.Serial;
+            import io.github.jabrena.juno.api.hardware.io.serial.Serial;
             public final class MathEverything {
                 public static void main(String[] args) {
                     int i = MCU.getClock().millis() % 2 == 0 ? 3 : -7;

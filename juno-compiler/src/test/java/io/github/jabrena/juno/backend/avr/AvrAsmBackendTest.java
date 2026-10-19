@@ -178,7 +178,7 @@ class AvrAsmBackendTest {
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                 """);
 
         // When & Then
@@ -197,7 +197,7 @@ class AvrAsmBackendTest {
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                 """);
 
         // When & Then
@@ -214,7 +214,7 @@ class AvrAsmBackendTest {
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                 """);
 
         // When & Then
@@ -231,7 +231,7 @@ class AvrAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR3;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 @Board(ArduinoUnoR3.class)
                 public final class R3Length {
                     static int length(byte[] values) {
@@ -363,7 +363,7 @@ class AvrAsmBackendTest {
                         long big = 1L << 40;
                         double half = 0.5;
                         Serial.println(big + (long) (half * 4));
-                """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         assertThat(result.entryPointSymbol()).isEqualTo("juno_AvrSmoke_asm");
@@ -378,7 +378,7 @@ class AvrAsmBackendTest {
                         long big = 1L << 40;
                         double half = 0.5;
                         Serial.println(big + (long) (half * 4));
-                """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         assertThat(result.assembly())
@@ -400,7 +400,7 @@ class AvrAsmBackendTest {
                         long big = 1L << 40;
                         double half = 0.5;
                         Serial.println(big + (long) (half * 4));
-                """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         assertThat(result.runtimeShim())
@@ -420,7 +420,7 @@ class AvrAsmBackendTest {
                         Serial.println(value & 0x0F);
                         Serial.println(value | 0xF0);
                         Serial.println(value * 8);
-                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         assertThat(result.assembly()).contains("    andi r22, 15\n", "    ori r22, 240\n");
@@ -435,7 +435,7 @@ class AvrAsmBackendTest {
                         Serial.println(value & 0x0F);
                         Serial.println(value | 0xF0);
                         Serial.println(value * 8);
-                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         // value * 8 is a power-of-two constant: lowered as a left shift, never a call to juno_avr_imul.
@@ -451,7 +451,7 @@ class AvrAsmBackendTest {
                         Serial.println(value << 10);
                         Serial.println(value >> 10);
                         Serial.println(value >>> 10);
-                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         // A constant shift never calls the variable-shift helpers; it's always whole-byte moves plus
@@ -469,7 +469,7 @@ class AvrAsmBackendTest {
                         Serial.println(value << 10);
                         Serial.println(value >> 10);
                         Serial.println(value >>> 10);
-                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         assertThat(result.assembly()).contains("    lsl r22\n    rol r23\n    rol r24\n    rol r25\n")
@@ -486,7 +486,7 @@ class AvrAsmBackendTest {
                         Serial.println((byte) value);
                         Serial.println((char) value);
                         Serial.println((short) value);
-                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         assertThat(result.assembly())
@@ -507,7 +507,7 @@ class AvrAsmBackendTest {
                         if (value <= 10) {
                             Serial.println("small");
                         }
-                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         // GREATER_THAN/LESS_EQUAL swap their operands and reuse brlt/brge, AVR having only signed
@@ -540,7 +540,7 @@ class AvrAsmBackendTest {
                         Serial.println((float) da);
                         Serial.println((long) fa);
                         Serial.println((float) left);
-                """, "import io.github.jabrena.juno.api.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;\nimport io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         assertThat(result.assembly())
@@ -635,7 +635,7 @@ class AvrAsmBackendTest {
     void shouldRejectDoubleMathBecauseOnlySinglePrecisionLibmIsAvailable() {
         // When & Then
         assertThatThrownBy(() -> compile("demo.AvrSine", "Serial.println((int) Math.sin(1.0));",
-                "import io.github.jabrena.juno.api.io.serial.Serial;"))
+                "import io.github.jabrena.juno.api.hardware.io.serial.Serial;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("only has single-precision libm");
     }
@@ -645,7 +645,7 @@ class AvrAsmBackendTest {
     void shouldRejectMouseOnABoardWithoutANativeUsbPort() {
         // When & Then
         assertThatThrownBy(() -> compile("demo.AvrMouse", "MCU.getMouse().begin();",
-                "import io.github.jabrena.juno.api.hid.Mouse;"))
+                "import io.github.jabrena.juno.api.hardware.hid.Mouse;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("no native USB port");
     }
@@ -662,7 +662,7 @@ class AvrAsmBackendTest {
                         Serial.println(HttpClient.get("http://example.com/", body, 32, headers, 32, status));
                         Serial.println(Udp.listen(4210));
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import io.github.jabrena.juno.api.net.Udp;
                 import io.github.jabrena.juno.api.net.Wifi;
                 import io.github.jabrena.juno.api.net.http.HttpClient;
@@ -685,7 +685,7 @@ class AvrAsmBackendTest {
                         int[] status = new int[2];
                         Serial.println(HttpClient.get("https://example.com/", body, 32, body, 32, status));
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import io.github.jabrena.juno.api.net.http.HttpClient;
                 """);
 
@@ -706,7 +706,7 @@ class AvrAsmBackendTest {
                                 "b@example.com", "Hello", "Body"));
                         Serial.println(Pop3Client.messageCount("pop.example.com", 995, "user", "secret"));
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import io.github.jabrena.juno.api.net.email.Pop3Client;
                 import io.github.jabrena.juno.api.net.email.Smtp;
                 """);
@@ -727,7 +727,7 @@ class AvrAsmBackendTest {
                         Serial.println(Smtp.send("smtp.example.com", 587, "user", "secret", "a@example.com",
                                 "b@example.com", "Hello", "Body"));
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import io.github.jabrena.juno.api.net.email.Smtp;
                 """))
                 .isInstanceOf(CompileException.class)
@@ -745,7 +745,7 @@ class AvrAsmBackendTest {
                         Serial.println(price.doubleValue() > 19.0 ? 1 : 0);
                         Serial.println(BigInteger.TEN.pow(30).doubleValue() > 1.0 ? 1 : 0);
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import java.math.BigDecimal;
                 import java.math.BigInteger;
                 """);
@@ -768,7 +768,7 @@ class AvrAsmBackendTest {
                         Serial.println(copy.equals(value));
                 """;
         String imports = """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import java.util.UUID;
                 """;
 
@@ -793,7 +793,7 @@ class AvrAsmBackendTest {
                         Serial.println(copy.equals(value));
                 """;
         String imports = """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import java.util.UUID;
                 """;
 
@@ -860,7 +860,7 @@ class AvrAsmBackendTest {
                         }
                         Serial.println(sums[0] + sums[1]);
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import java.util.concurrent.StructuredTaskScope;
                 """);
 
@@ -902,7 +902,7 @@ class AvrAsmBackendTest {
                         }
                         Serial.println(sums[0] + sums[1]);
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import java.util.concurrent.StructuredTaskScope;
                 """);
         String entry = result.assembly().substring(result.assembly().indexOf(result.entryPointSymbol() + ":\n"));
@@ -931,7 +931,7 @@ class AvrAsmBackendTest {
                         }
                         Serial.println(sums[0] + sums[1]);
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import java.util.concurrent.StructuredTaskScope;
                 """);
 
@@ -963,7 +963,7 @@ class AvrAsmBackendTest {
                         }
                         Serial.println(sums[0] + sums[1]);
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import java.util.concurrent.StructuredTaskScope;
                 """);
 
@@ -994,7 +994,7 @@ class AvrAsmBackendTest {
                         }
                         Serial.println(sums[0] + sums[1]);
                 """, """
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import java.util.concurrent.StructuredTaskScope;
                 """);
 
@@ -1014,7 +1014,7 @@ class AvrAsmBackendTest {
                         for (int i = 0; i < 3; i++) {
                             Serial.println(i);
                         }
-                """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         assertThat(result.assembly())
@@ -1032,7 +1032,7 @@ class AvrAsmBackendTest {
                         for (int i = 0; i < 3; i++) {
                             Serial.println(i);
                         }
-                """, "import io.github.jabrena.juno.api.io.serial.Serial;");
+                """, "import io.github.jabrena.juno.api.hardware.io.serial.Serial;");
 
         // When & Then
         assertThat(result.runtimeShim()).doesNotContain("juno_context_switch");
@@ -1077,7 +1077,7 @@ class AvrAsmBackendTest {
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                 """);
 
         // When & Then
@@ -1099,7 +1099,7 @@ class AvrAsmBackendTest {
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                 """);
 
         // When & Then

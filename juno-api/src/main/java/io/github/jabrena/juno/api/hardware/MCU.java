@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware;
 
+import io.github.jabrena.juno.api.hardware.hid.Mouse;
 import io.github.jabrena.juno.api.hardware.internal.NativeBoardMemory;
 import io.github.jabrena.juno.api.hardware.internal.NativeBoardModel;
 import io.github.jabrena.juno.api.hardware.internal.NativeClock;
@@ -7,10 +8,9 @@ import io.github.jabrena.juno.api.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.api.hardware.internal.NativeI2c;
 import io.github.jabrena.juno.api.hardware.internal.NativeLedMatrix;
 import io.github.jabrena.juno.api.hardware.internal.NativeMouse;
-import io.github.jabrena.juno.api.hid.Mouse;
-import io.github.jabrena.juno.api.io.gpio.Gpio;
-import io.github.jabrena.juno.api.io.i2c.I2c;
-import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.io.i2c.I2c;
+import io.github.jabrena.juno.api.hardware.led.LedMatrix;
 import io.github.jabrena.juno.api.time.Clock;
 
 /**

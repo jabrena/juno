@@ -5,7 +5,7 @@
  * {@link io.github.jabrena.juno.api.thirdparty.sd.SdCard}).
  *
  * <p>Like {@code lcd}'s {@code LcdKeypadShield}, a shield here needs no new compiler intrinsic —
- * every operation is built entirely from {@link io.github.jabrena.juno.api.io.gpio.Gpio} pin operations
+ * every operation is built entirely from {@link io.github.jabrena.juno.api.hardware.io.gpio.Gpio} pin operations
  * and {@link io.github.jabrena.juno.api.util.Delay}.
  */
 @NullMarked

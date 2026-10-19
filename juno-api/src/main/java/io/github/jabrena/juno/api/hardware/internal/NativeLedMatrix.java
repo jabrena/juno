@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.internal;
 
-import io.github.jabrena.juno.api.led.LedMatrix;
+import io.github.jabrena.juno.api.hardware.led.LedMatrix;
 
 /**
  * The board's {@link LedMatrix}: each method is an LED matrix intrinsic the compiler lowers to the

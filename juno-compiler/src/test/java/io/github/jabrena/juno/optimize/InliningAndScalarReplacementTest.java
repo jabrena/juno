@@ -134,7 +134,7 @@ class InliningAndScalarReplacementTest {
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
                 import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
                 import io.github.jabrena.juno.api.util.Random;
                 public final class Inlining {
                 %s

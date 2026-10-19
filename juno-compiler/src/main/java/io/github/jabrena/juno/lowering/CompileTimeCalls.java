@@ -14,9 +14,9 @@ import java.util.Optional;
 final class CompileTimeCalls {
     private static final MethodRef GETENV = new MethodRef("java/lang/System", "getenv",
             "(Ljava/lang/String;)Ljava/lang/String;");
-    private static final MethodRef DRAW_TEXT = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
+    private static final MethodRef DRAW_TEXT = new MethodRef("io/github/jabrena/juno/api/hardware/led/LedCanvas",
             "drawText", "([[ZLjava/lang/String;II)V");
-    private static final MethodRef DRAW_CHAR = new MethodRef("io/github/jabrena/juno/api/led/LedCanvas",
+    private static final MethodRef DRAW_CHAR = new MethodRef("io/github/jabrena/juno/api/hardware/led/LedCanvas",
             "drawChar", "([[ZIII)V");
     /**
      * {@code LedMatrixFontAscii.GLYPH_WIDTH + 1} (a 5-wide glyph plus a 1-column gap), kept as a literal so codegen

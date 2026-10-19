@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.grove;
 
-import io.github.jabrena.juno.api.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
 
 /**
  * Pin map for the passive Grove Base Shield for UNO. The shield does not add a protocol or a

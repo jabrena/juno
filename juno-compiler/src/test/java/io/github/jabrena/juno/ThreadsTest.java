@@ -37,7 +37,7 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 @Board(%1$s.class)
                 public final class Worker {
                     static final class Job implements Runnable {
@@ -338,7 +338,7 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import io.github.jabrena.juno.api.net.http.HttpClient;
                 @Board(%s.class)
                 public final class Fetch {
@@ -480,7 +480,7 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 import io.github.jabrena.juno.api.net.Wifi;
                 import io.github.jabrena.juno.api.net.http.HttpClient;
                 @Board(ArduinoUnoQ.class)
@@ -655,7 +655,7 @@ class ThreadsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 public final class Worker {
                     static void spawn(Runnable work) throws Exception {
                         try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
@@ -682,7 +682,7 @@ class ThreadsTest {
         // Given
         String reachable = """
                 package demo;
-                import io.github.jabrena.juno.api.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
                 public final class Worker {
                     static void spawn(Runnable work) throws Exception {
                         try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
