@@ -2,6 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.io.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
@@ -22,6 +23,7 @@ import java.util.concurrent.StructuredTaskScope;
 public final class BridgeWhileWaiting {
     static final int BODY = 32;
     static final int HEADERS = 64;
+    static final Clock CLOCK = MCU.getClock();
     static volatile boolean stop;
     static volatile boolean waiting;
     static volatile int started;
@@ -30,7 +32,7 @@ public final class BridgeWhileWaiting {
     static void watch() {
         while (!stop) {
             if (waiting) {
-                int seen = Clock.millis() - started;
+                int seen = CLOCK.millis() - started;
                 if (seen > longestSeen) {
                     longestSeen = seen;
                 }
@@ -40,7 +42,7 @@ public final class BridgeWhileWaiting {
 
     static void begin() {
         longestSeen = 0;
-        started = Clock.millis();
+        started = CLOCK.millis();
         waiting = true;
     }
 
