@@ -108,7 +108,7 @@ Generate and compile a Juno example for the R3 through the Maven plugin:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
   -Djuno.board=arduino-uno-r3
 ```
 

@@ -32,15 +32,16 @@ The driver assumes the shield's standard pinout and needs no additional configur
 ```java
 import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
 
-LcdKeypadShield.begin();                 // pin setup + HD44780 4-bit init + backlight on
-LcdKeypadShield.clear();                 // clear display, cursor to (0, 0)
-LcdKeypadShield.home();                  // cursor to (0, 0), keep contents
-LcdKeypadShield.setCursor(0, 1);         // column 0-15, row 0-1
-LcdKeypadShield.print("Hello");          // print text at the cursor, no wrapping
-LcdKeypadShield.print(42);               // print an int in decimal
-LcdKeypadShield.backlight(false);        // turn the backlight off (or on)
+LcdKeypadShield lcd = new LcdKeypadShield(); // once, at startup; new LcdKeypadShield(gpio) in a unit test
+lcd.begin();                 // pin setup + HD44780 4-bit init + backlight on
+lcd.clear();                 // clear display, cursor to (0, 0)
+lcd.home();                  // cursor to (0, 0), keep contents
+lcd.setCursor(0, 1);         // column 0-15, row 0-1
+lcd.print("Hello");          // print text at the cursor, no wrapping
+lcd.print(42);               // print an int in decimal
+lcd.backlight(false);        // turn the backlight off (or on)
 
-int button = LcdKeypadShield.readButton(); // undebounced read of the currently pressed button
+int button = lcd.readButton(); // undebounced read of the currently pressed button
 ```
 
 `readButton()` returns one of `LcdKeypadShield.NONE`, `RIGHT`, `UP`, `DOWN`, `LEFT`, or `SELECT`.
@@ -59,14 +60,15 @@ import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
 @Board(ArduinoUnoR4WiFi.class)
 public final class LcdKeypadDemo {
     public static void main(String[] args) {
-        LcdKeypadShield.begin();
-        LcdKeypadShield.print("Press a button");
+        LcdKeypadShield lcd = new LcdKeypadShield();
+        lcd.begin();
+        lcd.print("Press a button");
 
         int lastButton = -1;
         while (true) {
-            int button = LcdKeypadShield.readButton();
+            int button = lcd.readButton();
             if (button != lastButton) {
-                LcdKeypadShield.setCursor(0, 1);
+                lcd.setCursor(0, 1);
                 String label = "NONE  ";
                 if (button == LcdKeypadShield.RIGHT) {
                     label = "RIGHT ";
@@ -79,7 +81,7 @@ public final class LcdKeypadDemo {
                 } else if (button == LcdKeypadShield.SELECT) {
                     label = "SELECT";
                 }
-                LcdKeypadShield.print(label);
+                lcd.print(label);
                 lastButton = button;
             }
             Delay.millis(50);

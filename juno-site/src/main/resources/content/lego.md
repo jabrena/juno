@@ -39,10 +39,12 @@ for that board that uses `PoweredUpHubRemote` should not also use `Wifi`, `Udp`,
 ```java
 import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
 
-if (PoweredUpHubRemote.connect(10_000)) {              // scan up to 10 s; 0 waits forever
-    PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
-    PoweredUpHubRemote.setMotorPower(PoweredUpHubRemote.PORT_A, 50);   // -100..100 percent
-    PoweredUpHubRemote.brakeMotor(PoweredUpHubRemote.PORT_A);
+PoweredUpHubRemote hub = new PoweredUpHubRemote();   // once, at startup; the same object for the program's life
+
+if (hub.connect(10_000)) {              // scan up to 10 s; 0 waits forever
+    hub.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+    hub.setMotorPower(PoweredUpHubRemote.PORT_A, 50);   // -100..100 percent
+    hub.brakeMotor(PoweredUpHubRemote.PORT_A);
 }
 ```
 
@@ -72,9 +74,9 @@ subscribes to one of their *modes*. `enableSensor(port, mode)` subscribes, and f
 sends a message whenever the value changes; `readSensor(port)` returns the latest one.
 
 ```java
-PoweredUpHubRemote.enableSensor(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.MODE_MOTOR_POSITION);
+hub.enableSensor(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.MODE_MOTOR_POSITION);
 ...
-int degrees = PoweredUpHubRemote.readSensor(PoweredUpHubRemote.PORT_A);
+int degrees = hub.readSensor(PoweredUpHubRemote.PORT_A);
 ```
 
 | Device | Mode | `readSensor` value |
@@ -152,13 +154,14 @@ LED to show the direction:
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LegoTrain {
     private static final int MOTOR = PoweredUpHubRemote.PORT_A;
+    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
 
     public static void main(String[] args) {
         Serial.begin(9600);
         while (true) {
-            if (!PoweredUpHubRemote.isConnected()) {
+            if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                PoweredUpHubRemote.connect(0);
+                HUB.connect(0);
             }
             run(1, PoweredUpHubRemote.COLOR_GREEN);
             run(-1, PoweredUpHubRemote.COLOR_BLUE);
@@ -166,14 +169,14 @@ public final class LegoTrain {
     }
 
     private static void run(int direction, int color) {
-        PoweredUpHubRemote.setLedColor(color);
+        HUB.setLedColor(color);
         for (int power = 10; power <= 60; power += 10) {
-            PoweredUpHubRemote.setMotorPower(MOTOR, direction * power);
+            HUB.setMotorPower(MOTOR, direction * power);
             Delay.millis(200);
         }
         Delay.millis(3000);
-        PoweredUpHubRemote.brakeMotor(MOTOR);
-        PoweredUpHubRemote.setLedColor(PoweredUpHubRemote.COLOR_RED);
+        HUB.brakeMotor(MOTOR);
+        HUB.setLedColor(PoweredUpHubRemote.COLOR_RED);
         Delay.millis(2000);
     }
 }

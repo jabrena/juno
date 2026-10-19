@@ -17,7 +17,7 @@ reproduce the problem there with the smallest program you can, before changing a
 
 ## 1. Make sure Juno compiles what you think it compiles
 
-- Rebuild the classes with Maven before any Juno goal: `./mvnw -f juno-examples/pom.xml compile juno:compile`.
+- Rebuild the classes with Maven before any Juno goal: `./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=<class>`.
   An IDE background build (the VS Code Java extension uses ECJ) can silently overwrite `target/classes` with
   different bytecode, so Juno then compiles something else than the command line does. Check with
   `javap -v target/classes/…/Main.class | grep major` (the Maven build targets release 27, major version 71).

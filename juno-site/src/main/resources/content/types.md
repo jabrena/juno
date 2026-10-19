@@ -70,7 +70,7 @@ calls) is the single place that bridges the two:
 
 | Juno API (Java)                          | Generated assembly call         | Shim / Arduino type notes |
 |-------------------------------------------|----------------------------------|-------------------------|
-| `Gpio.digitalWrite(int pin, boolean high)` | `bl digitalWrite`                | Java `boolean` (0/1) is loaded straight into the register Arduino's `digitalWrite` reads as `HIGH`/`LOW`; no C++ `bool` conversion involved |
+| `gpio.digitalWrite(int pin, boolean high)` | `bl digitalWrite`                | Java `boolean` (0/1) is loaded straight into the register Arduino's `digitalWrite` reads as `HIGH`/`LOW`; no C++ `bool` conversion involved |
 | `Delay.millis(int ms)`                     | `bl delay` (calls Arduino's `delay` directly, no shim) | Arduino's `delay` takes `unsigned long`; the raw `int32_t` register value is reinterpreted as `unsigned long` at the call boundary itself, with no explicit cast anywhere in generated code |
 | `Serial.begin(BaudRate baudRate)`           | resolves the enum to an `int`, then `bl juno_serial_begin` | shim casts to `unsigned long`; type-safe convenience overload for the five common rates in `BaudRate` |
 | `Serial.println(int value)`                | `bl juno_serial_println`         | prints a signed decimal `int32_t`; the `boolean` overload prints `true`/`false` through the string intrinsic, `long`/`float`/`double` use type-specific shims, and `String` values compile to `bl juno_serial_println_str` |
@@ -100,9 +100,9 @@ Every instance method (`high`, `low`) receives that same pin number as its recei
 `digitalWrite` directly (`r1 = 1` or `0`) — there is no heap allocation, no vtable, and no field
 storage. `DigitalOutput led = DigitalOutput.of(13)` and the raw pin number `13` compile to
 identical code; the Java type exists purely to make call sites read like object method calls
-(`led.high()` instead of `Gpio.digitalWrite(13, true)`). `Gpio.analogRead` lowers to the core's real
+(`led.high()` instead of `gpio.digitalWrite(13, true)`). `gpio.analogRead` lowers to the core's real
 `analogRead` the same way `digitalWrite` does. `DigitalOutput.toggle()`/`isHigh()` and
-`Gpio.digitalRead`/`analogWrite` still exist in the Java API but the Thumb-2 assembly backend
+`gpio.digitalRead`/`analogWrite` still exist in the Java API but the Thumb-2 assembly backend
 doesn't lower them yet (`CompileException: ... does not support this yet: intrinsic ...` at compile
 time).
 

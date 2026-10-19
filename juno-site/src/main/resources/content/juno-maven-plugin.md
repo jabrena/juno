@@ -26,17 +26,14 @@ always reflects the current Java source — there is no separate "just compile" 
 
 ## Configuration
 
-Add the plugin to a module's `pom.xml` and set the entry-point class once, or override it per
-invocation with `-Djuno.main=...`:
+Add the plugin to a module's `pom.xml`. There is no default program: name the one to compile on each
+invocation with `-Djuno.main=...`, or, in a module with a single program, fix it with `<mainClass>`:
 
 ```xml
 <plugin>
     <groupId>io.github.jabrena</groupId>
     <artifactId>juno-maven-plugin</artifactId>
     <version>${project.version}</version>
-    <configuration>
-        <mainClass>${juno.main}</mainClass>
-    </configuration>
     <executions>
         <execution>
             <goals>
@@ -47,9 +44,9 @@ invocation with `-Djuno.main=...`:
 </plugin>
 ```
 
-This is exactly how [`juno-examples/pom.xml`](https://github.com/jabrena/juno/blob/main/juno-examples/pom.xml) is set up, with
-`juno.main` defaulting to `io.github.jabrena.juno.api.Blink` as a Maven property so any example
-can be selected without editing the POM.
+This is how [`juno-examples/pom.xml`](https://github.com/jabrena/juno/blob/main/juno-examples/pom.xml) is set up: it holds
+many programs, so every `compile`, `verify` or `upload` names one, for example
+`-Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink`. Without it the goal fails and says how to pass it.
 
 | Property | Goals | Default | Purpose |
 |---|---|---|---|
@@ -74,12 +71,12 @@ always wins for a given run.
 
 # Compile and check with arduino-cli
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Flash it to a connected board
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.io.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Watch its Serial output
