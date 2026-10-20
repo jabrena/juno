@@ -2,10 +2,10 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.remote.lego.rcx.RcxAudio;
 import io.github.jabrena.juno.remote.lego.rcx.RcxFirmware;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.thirdparty.lego.rcxfirmware.RcxFirmwareImage;
 import io.github.jabrena.juno.util.Delay;
 
@@ -27,13 +27,12 @@ public final class RcxFirmwareDownload {
     private static final int START_MILLIS = 5000;
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink();
-        RcxRemote remote = new RcxRemote(link);
-        RcxFirmware firmware = new RcxFirmware(link);
-        RcxBrick brick = new RcxBrick(link);
+        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxFirmware firmware = remote.getFirmware();
+        RcxAudio audio = remote.getAudio();
         Serial.begin(BaudRate.BAUD_115200);
+        remote.begin();
         Delay.millis(START_MILLIS);
-        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
         byte[] block = new byte[RcxFirmware.BLOCK_SIZE];
         RcxDownloadProgress progress = new RcxDownloadProgress(RcxFirmwareImage.LENGTH);
         Serial.print("RCX firmware bytes: ");
@@ -70,7 +69,7 @@ public final class RcxFirmwareDownload {
             Serial.println(firmware.unlock() ? "Unlock answered" : "Unlock: no answer");
             Delay.millis(RETRY_MILLIS);
             if (firmware.installed() == 1) {
-                Serial.println(brick.playSound(RcxBrick.SOUND_FAST_SWEEP_UP)
+                Serial.println(audio.playSound(RcxAudio.SOUND_FAST_SWEEP_UP)
                         ? "Firmware running; sound acknowledged" : "Firmware running; sound unconfirmed");
                 stop("Done");
             }

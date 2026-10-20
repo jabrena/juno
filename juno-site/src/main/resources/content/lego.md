@@ -116,7 +116,30 @@ stop();
 
 `TURN_MILLIS` is the time a spin on the spot takes for 90 degrees; tune it for your vehicle.
 `MagicSquareRcx` in `lego.rcx` and `MagicSquareScout` in `lego.scout` do the same over infrared with
-an RCX or Scout brick, using `RcxRemote` and `ScoutRemote`.
+an RCX or Scout brick, using `RemoteRcx` and `ScoutRemote`.
+
+### The RCX as a remote brick
+
+`RemoteRcx` follows LeJOS's `RemoteNXT`: one object for the brick, created with its infrared `RcxLink` and the
+IR receiver and IR LED pins, whose getters hand out its parts.
+The motors are `getMotorA()`, `getMotorB()` and `getMotorC()`, and `and` combines them into one command. The sensor
+ports are `getSensor1()` to `getSensor3()`; pass them to an `RcxTouchSensor`, `RcxLightSensor`,
+`RcxTemperatureSensor` or `RcxRotationSensor`. The other parts are the display (`getLcd()`), the speaker
+(`getAudio()`), the batteries (`getBattery()`) and the firmware loader (`getFirmware()`). Every part is allocated
+once, when the `RemoteRcx` is created:
+
+```java
+RemoteRcx rcx = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+RcxMotor wheels = rcx.getMotorA().and(rcx.getMotorC());
+RcxTouchSensor bumper = new RcxTouchSensor(rcx.getSensor1());
+rcx.begin();
+bumper.begin();
+wheels.drive(RcxMotor.MAX_POWER);
+while (!bumper.isPressed()) {
+    Delay.millis(50);
+}
+wheels.stop();
+```
 
 ## Example: a touch screen remote
 

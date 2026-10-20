@@ -2,9 +2,12 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.remote.lego.rcx.RcxLightSensor;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RcxSensor;
+import io.github.jabrena.juno.remote.lego.rcx.RcxTemperatureSensor;
+import io.github.jabrena.juno.remote.lego.rcx.RcxTouchSensor;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -18,33 +21,31 @@ import io.github.jabrena.juno.util.Delay;
 public class RcxSensors {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
-    private static final int TEMPERATURE = RcxBrick.INPUT_1;
-    private static final int TOUCH = RcxBrick.INPUT_2;
-    private static final int LIGHT = RcxBrick.INPUT_3;
     private static final int PERIOD_MILLIS = 500;
     private static final int START_MILLIS = 2000;
     private static final int RETRY_MILLIS = 1000;
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink();
-        RcxRemote remote = new RcxRemote(link);
-        RcxBrick brick = new RcxBrick(link);
+        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxTemperatureSensor temperature = new RcxTemperatureSensor(remote.getSensor1());
+        RcxSensor touch = remote.getSensor2();
+        RcxTouchSensor touchSensor = new RcxTouchSensor(touch);
+        RcxLightSensor light = new RcxLightSensor(remote.getSensor3());
         Serial.begin(BaudRate.BAUD_115200);
+        remote.begin();
         Delay.millis(START_MILLIS);
-        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        while (!(brick.setTemperatureSensor(TEMPERATURE) && brick.setTouchSensor(TOUCH)
-                && brick.setLightSensor(LIGHT))) {
+        while (!(temperature.begin() && touchSensor.begin() && light.begin())) {
             Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
             Delay.millis(RETRY_MILLIS);
         }
         Serial.println("Sensors set: temperature 1, touch 2, light 3");
 
         while (true) {
-            printTemperature(brick.temperatureTenths(TEMPERATURE));
+            printTemperature(temperature.temperatureTenths());
             Serial.print("  touch ");
-            Serial.print(brick.readSensor(TOUCH));
+            Serial.print(touch.readValue());
             Serial.print("  light ");
-            Serial.print(brick.readSensor(LIGHT));
+            Serial.print(light.lightPercent());
             Serial.println(" %");
             Delay.millis(PERIOD_MILLIS);
         }

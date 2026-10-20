@@ -4,7 +4,7 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
 import io.github.jabrena.juno.util.Delay;
 
@@ -94,14 +94,14 @@ public class ScoutBumpAndGo {
     private void move(int left, int right) {
         int buttons = 0;
         if (left > 0) {
-            buttons |= RcxRemote.A_FORWARD;
+            buttons |= RemoteRcx.A_FORWARD;
         } else if (left < 0) {
-            buttons |= RcxRemote.A_BACKWARD;
+            buttons |= RemoteRcx.A_BACKWARD;
         }
         if (right > 0) {
-            buttons |= RcxRemote.B_FORWARD;
+            buttons |= RemoteRcx.B_FORWARD;
         } else if (right < 0) {
-            buttons |= RcxRemote.B_BACKWARD;
+            buttons |= RemoteRcx.B_BACKWARD;
         }
         scout.sendButtons(buttons);
     }

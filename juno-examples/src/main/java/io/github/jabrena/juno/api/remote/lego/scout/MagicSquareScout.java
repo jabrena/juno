@@ -4,7 +4,7 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
 import io.github.jabrena.juno.util.Delay;
 
@@ -38,10 +38,10 @@ public class MagicSquareScout {
 
         while (true) {
             Serial.println("Straight");
-            app.drive(RcxRemote.A_FORWARD | RcxRemote.B_FORWARD, STRAIGHT_MILLIS);
+            app.drive(RemoteRcx.A_FORWARD | RemoteRcx.B_FORWARD, STRAIGHT_MILLIS);
             app.stop();
             Serial.println("Turn left");
-            app.drive(RcxRemote.A_BACKWARD | RcxRemote.B_FORWARD, TURN_MILLIS);
+            app.drive(RemoteRcx.A_BACKWARD | RemoteRcx.B_FORWARD, TURN_MILLIS);
             app.stop();
         }
     }

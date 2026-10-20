@@ -3,13 +3,13 @@ package io.github.jabrena.juno.remote.lego.scout;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 
 /**
  * Remote control of a LEGO Scout brick (Robotics Discovery Set) over infrared, plain Java on top of
  * {@link Infrared}: see there for the wiring of the IR receiver module and the IR LED. The Scout
  * speaks the RCX infrared framing and opcode set, adding the opcodes {@code 0x47} and {@code 0xD5}, so it understands
- * the remote-control and message commands of {@link RcxRemote}, and also these direct commands.
+ * the remote-control and message commands of {@link RemoteRcx}, and also these direct commands.
  *
  * <p>The Scout answers each direct command with an acknowledgement, which this class does not wait
  * for. The opcode and argument encodings, including the Scout mode argument, have not been verified on a Scout.
@@ -19,7 +19,6 @@ import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
 public final class ScoutRemote {
     private final RcxLink link;
     private final RcxBrick brick;
-    private final RcxRemote remote;
 
     /** A Scout on the board's own infrared link. Create it once, at startup. */
     public ScoutRemote() {
@@ -30,7 +29,6 @@ public final class ScoutRemote {
     public ScoutRemote(RcxLink link) {
         this.link = link;
         this.brick = new RcxBrick(link);
-        this.remote = new RcxRemote(link);
     }
 
 
@@ -50,14 +48,14 @@ public final class ScoutRemote {
         link.begin(receivePin, transmitPin);
     }
 
-    /** Sends the same remote-control command as {@link RcxRemote#sendButtons}, which a Scout accepts. */
+    /** Sends the same remote-control command as {@link RemoteRcx#sendButtons}, which a Scout accepts. */
     public void sendButtons(int buttonMask) {
-        remote.sendButtons(buttonMask);
+        link.sendButtons(buttonMask);
     }
 
-    /** Sends the same message command as {@link RcxRemote#sendMessage}, which a Scout accepts. */
+    /** Sends the same message command as {@link RemoteRcx#sendMessage}, which a Scout accepts. */
     public void sendMessage(int value) {
-        remote.sendMessage(value);
+        link.sendMessage(value);
     }
 
     /** The Scout's two sensor inputs, numbered 1 and 2 on the brick. */

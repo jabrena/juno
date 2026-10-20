@@ -2,9 +2,11 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.remote.lego.rcx.RcxAudio;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RcxSensor;
+import io.github.jabrena.juno.remote.lego.rcx.RcxTouchSensor;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -18,19 +20,19 @@ import io.github.jabrena.juno.util.Delay;
 public class RcxTouchBeep {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
-    private static final int TOUCH = RcxBrick.INPUT_2;
     private static final int POLL_MILLIS = 50;
     private static final int START_MILLIS = 2000;
     private static final int RETRY_MILLIS = 1000;
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink();
-        RcxRemote remote = new RcxRemote(link);
-        RcxBrick brick = new RcxBrick(link);
+        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxSensor touch = remote.getSensor2();
+        RcxTouchSensor touchSensor = new RcxTouchSensor(touch);
+        RcxAudio audio = remote.getAudio();
         Serial.begin(BaudRate.BAUD_115200);
+        remote.begin();
         Delay.millis(START_MILLIS);
-        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        while (!brick.setTouchSensor(TOUCH)) {
+        while (!touchSensor.begin()) {
             Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
             Delay.millis(RETRY_MILLIS);
         }
@@ -39,12 +41,13 @@ public class RcxTouchBeep {
         boolean wasPressed = false;
         int presses = 0;
         while (true) {
-            int reading = brick.readSensor(TOUCH);
+            // The port's raw value tells a missed reply (-1) from a release (0), so a lost reply is no new press.
+            int reading = touch.readValue();
             if (reading >= 0) {
                 boolean pressed = reading == 1;
                 if (pressed && !wasPressed) {
                     presses++;
-                    brick.playSound(RcxBrick.SOUND_BEEP);
+                    audio.playSound(RcxAudio.SOUND_BEEP);
                     Serial.print("Pressed: beep ");
                     Serial.println(presses);
                 }

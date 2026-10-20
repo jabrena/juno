@@ -7,7 +7,7 @@ import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * The RCX family's infrared framing, shared by {@link RcxRemote} and {@link ScoutRemote}: a message is
+ * The RCX family's infrared framing, shared by {@link RemoteRcx} and {@link ScoutRemote}: a message is
  * {@code 55 FF 00} followed by the opcode, its arguments and a checksum, each byte followed by its
  * complement. Plain Java on top of {@link Infrared}.
  */
@@ -116,6 +116,16 @@ public final class RcxLink {
     /** Transmits {@code opcode} with {@code arguments} (0..2) arguments {@code first} and {@code second}. */
     public void send(int opcode, int first, int second, int arguments) {
         send(opcode, first, second, 0, arguments);
+    }
+
+    /** Transmits a remote-control command with {@code buttonMask}, {@code RemoteRcx}'s button bits, as the RCX Remote Control does. */
+    public void sendButtons(int buttonMask) {
+        send(OPCODE_REMOTE, (buttonMask >> 8) & 0xFF, buttonMask & 0xFF, 2);
+    }
+
+    /** Transmits an RCX {@code message} command carrying the low 8 bits of {@code value}. */
+    public void sendMessage(int value) {
+        send(OPCODE_MESSAGE, value & 0xFF, 0, 1);
     }
 
     /** Transmits {@code opcode} with {@code arguments} (0..3) arguments {@code first}, {@code second} and {@code third}. */

@@ -5,7 +5,7 @@ import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
 import io.github.jabrena.juno.util.Delay;
 
@@ -46,7 +46,7 @@ public class MagicSquareScoutWithImu {
 
         while (true) {
             Serial.println("Straight");
-            app.drive(RcxRemote.A_FORWARD | RcxRemote.B_FORWARD, STRAIGHT_MILLIS);
+            app.drive(RemoteRcx.A_FORWARD | RemoteRcx.B_FORWARD, STRAIGHT_MILLIS);
             app.stop();
             Serial.println("Turn left");
             app.turnLeft();
@@ -68,7 +68,7 @@ public class MagicSquareScoutWithImu {
         int startHeading = IMU.headingDegrees();
         int started = CLOCK.millis();
         while (IMU.turnedSince(startHeading) > -TURN_DEGREES && CLOCK.millis() - started < TURN_TIMEOUT_MILLIS) {
-            scout.sendButtons(RcxRemote.A_BACKWARD | RcxRemote.B_FORWARD);
+            scout.sendButtons(RemoteRcx.A_BACKWARD | RemoteRcx.B_FORWARD);
         }
     }
 

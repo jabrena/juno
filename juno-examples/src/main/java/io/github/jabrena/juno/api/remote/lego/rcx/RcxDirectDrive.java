@@ -2,9 +2,10 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.remote.lego.rcx.RcxLightSensor;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RcxMotor;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -19,30 +20,24 @@ import io.github.jabrena.juno.util.Delay;
 public class RcxDirectDrive {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
-    private static final int MOTORS = RcxBrick.OUTPUT_A | RcxBrick.OUTPUT_B;
-    private static final int LIGHT_INPUT = RcxBrick.INPUT_2;
     private static final int STEP_MILLIS = 800;
     private static final int PAUSE_SECONDS = 2;
 
-    private final RcxLink link;
-    private final RcxRemote remote;
-    private final RcxBrick brick;
+    private final RcxMotor motors;
+    private final RcxLightSensor light;
 
-    RcxDirectDrive(RcxLink link, RcxRemote remote, RcxBrick brick) {
-        this.link = link;
-        this.remote = remote;
-        this.brick = brick;
+    RcxDirectDrive(RcxMotor motors, RcxLightSensor light) {
+        this.motors = motors;
+        this.light = light;
     }
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink();
-        RcxRemote remote = new RcxRemote(link);
-        RcxBrick brick = new RcxBrick(link);
+        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
         Serial.begin(BaudRate.BAUD_115200);
-        RcxDirectDrive app = new RcxDirectDrive(link, remote, brick);
-        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        Serial.println("RCX battery: " + brick.batteryMillivolts() + " mV");
-        if (!brick.setLightSensor(LIGHT_INPUT)) {
+        remote.begin();
+        RcxDirectDrive app = new RcxDirectDrive(remote.getMotorA().and(remote.getMotorB()), new RcxLightSensor(remote.getSensor2()));
+        Serial.println("RCX battery: " + remote.getBattery().millivolts() + " mV");
+        if (!app.light.begin()) {
             Serial.println("The RCX did not answer: is it in range, with the IR receiver wired?");
             return;
         }
@@ -56,18 +51,18 @@ public class RcxDirectDrive {
 
     /** Ramps the speed up to full in the given direction (1 forwards, -1 backwards), then back to a stop. */
     private void ramp(int direction) {
-        for (int level = 1; level <= RcxBrick.MAX_POWER; level++) {
+        for (int level = 1; level <= RcxMotor.MAX_POWER; level++) {
             step(direction * level);
         }
-        for (int level = RcxBrick.MAX_POWER - 1; level >= 1; level--) {
+        for (int level = RcxMotor.MAX_POWER - 1; level >= 1; level--) {
             step(direction * level);
         }
-        brick.drive(MOTORS, 0);
+        motors.drive(0);
     }
 
     private void step(int speed) {
-        brick.drive(MOTORS, speed);
-        Serial.println("Speed " + speed + ", light " + brick.readSensor(LIGHT_INPUT) + " %");
+        motors.drive(speed);
+        Serial.println("Speed " + speed + ", light " + light.lightPercent() + " %");
         Delay.millis(STEP_MILLIS);
     }
 }

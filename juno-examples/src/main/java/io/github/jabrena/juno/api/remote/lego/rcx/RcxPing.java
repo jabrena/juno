@@ -2,9 +2,9 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.remote.lego.rcx.RcxBattery;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -24,21 +24,20 @@ public class RcxPing {
     private static final int START_MILLIS = 2000;
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink();
-        RcxRemote remote = new RcxRemote(link);
-        RcxBrick brick = new RcxBrick(link);
+        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxBattery battery = remote.getBattery();
         Serial.begin(BaudRate.BAUD_115200);
-        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        remote.begin();
         Delay.millis(START_MILLIS);
         Serial.println("RCX ping: switch the RCX on");
 
         while (true) {
-            int battery = brick.batteryMillivolts();
-            if (battery < 0) {
+            int millivolts = battery.millivolts();
+            if (millivolts < 0) {
                 Serial.println("battery: no answer");
             } else {
                 Serial.print("battery: ");
-                Serial.print(battery);
+                Serial.print(millivolts);
                 Serial.println(" mV");
             }
             Delay.millis(PERIOD_MILLIS);

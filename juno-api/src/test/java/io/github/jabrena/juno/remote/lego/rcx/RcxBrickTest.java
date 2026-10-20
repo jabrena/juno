@@ -81,7 +81,7 @@ class RcxBrickTest {
 
         // Then
         assertThat(new int[] {argumentPair(0), argumentPair(1), argumentPair(2)})
-                .containsExactly(RcxBrick.OUTPUT_B, 2, RcxBrick.MAX_POWER);
+                .containsExactly(RcxBrick.OUTPUT_B, 2, RcxMotor.MAX_POWER);
     }
 
     @Test
@@ -288,7 +288,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x51));
 
         // When
-        boolean played = brick.playSound(RcxBrick.SOUND_BEEP);
+        boolean played = brick.playSound(RcxAudio.SOUND_BEEP);
 
         // Then
         assertThat(played).isTrue();
@@ -316,7 +316,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0xB2));
 
         // When
-        boolean shown = brick.showIcon(RcxBrick.ICON_WALKING, true);
+        boolean shown = brick.showIcon(RcxLcd.ICON_WALKING, true);
 
         // Then
         assertThat(shown).isTrue();
@@ -339,7 +339,7 @@ class RcxBrickTest {
     @DisplayName("Playing a sound reports no acknowledgement when the brick is silent")
     void shouldReportNoAcknowledgementWhenTheBrickIsSilentForASound() {
         // When
-        boolean played = brick.playSound(RcxBrick.SOUND_ERROR);
+        boolean played = brick.playSound(RcxAudio.SOUND_ERROR);
 
         // Then
         assertThat(played).as("no acknowledgement").isFalse();
@@ -376,7 +376,7 @@ class RcxBrickTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0xB2));
 
         // When
-        boolean shown = brick.showIcon(RcxBrick.ICON_WALKING, false);
+        boolean shown = brick.showIcon(RcxLcd.ICON_WALKING, false);
 
         // Then
         assertThat(shown).isTrue();
