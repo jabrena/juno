@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.thirdparty.lego.rcx;
 
-import io.github.jabrena.juno.thirdparty.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/** Builds the bytes an RCX brick sends back over IR, for scripting {@link io.github.jabrena.juno.thirdparty.ir.Infrared}. */
+/** Builds the bytes an RCX brick sends back over IR, for scripting {@link io.github.jabrena.juno.hardware.device.ir.Infrared}. */
 public final class RcxFrames {
     private RcxFrames() {
     }

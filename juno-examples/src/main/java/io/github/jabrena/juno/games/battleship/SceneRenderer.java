@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.battleship;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 import static io.github.jabrena.juno.games.battleship.Battleship.CELL;
 import static io.github.jabrena.juno.games.battleship.Battleship.GRID_LINE;

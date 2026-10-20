@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * The screen, a text header over the view, and the two display lists that draw the view: the one on

@@ -726,7 +726,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+                    import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
                     public final class TftDemo {
                         public static void main(String[] args) {
                             TftTouchShield.begin();
@@ -765,8 +765,8 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.thirdparty.grove.GroveBaseShield;
-                    import io.github.jabrena.juno.thirdparty.grove.sensors.GroveDht22;
+                    import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht22;
                     public final class GroveDht22Demo {
                         public static void main(String[] args) {
                             GroveBaseShield shield = new GroveBaseShield();
@@ -793,10 +793,10 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.thirdparty.grove.sensors.GroveAnalogGas;
-                    import io.github.jabrena.juno.thirdparty.grove.GroveBaseShield;
-                    import io.github.jabrena.juno.thirdparty.grove.sensors.GroveCompassProbe;
-                    import io.github.jabrena.juno.thirdparty.grove.sensors.GrovePirMotion;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveAnalogGas;
+                    import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveCompassProbe;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GrovePirMotion;
                     public final class GroveSensorsDemo {
                         public static void main(String[] args) {
                             GroveBaseShield shield = new GroveBaseShield();
@@ -833,11 +833,11 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.thirdparty.grove.GroveBaseShield;
-                    import io.github.jabrena.juno.thirdparty.grove.sensors.GroveDht11;
-                    import io.github.jabrena.juno.thirdparty.grove.sensors.GroveLightSensorV12;
-                    import io.github.jabrena.juno.thirdparty.grove.sensors.GroveSoundSensorV16;
-                    import io.github.jabrena.juno.thirdparty.grove.sensors.GroveTemperatureSensorV12;
+                    import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightSensorV12;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveSoundSensorV16;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveTemperatureSensorV12;
                     public final class GroveSensorBatchDemo {
                         public static void main(String[] args) {
                             GroveBaseShield shield = new GroveBaseShield();
@@ -1320,7 +1320,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.thirdparty.kasa.KasaSmartPlug;
+                    import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
                     @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                     public final class KasaPlug {
                         public static void main(String[] args) {
@@ -1403,7 +1403,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.hardware.net.Wifi;
-                    import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     import java.io.IOException;
                     import java.io.InputStream;
                     import java.util.Properties;
@@ -1462,7 +1462,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.time.Clock;
-                    import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class HighScoreLog {
                         public static void main(String[] args) {
                             SdCard.begin();
@@ -1506,7 +1506,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.time.Clock;
-                    import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class DynamicHighScorePath {
                         public static void main(String[] args) {
                             SdCard.begin();
@@ -1528,7 +1528,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class SaveState {
                         public static void main(String[] args) {
                             SdCard.begin();
@@ -1565,7 +1565,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.time.Clock;
-                    import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class DynamicStatePath {
                         public static void main(String[] args) {
                             SdCard.begin();
@@ -1587,7 +1587,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     public final class LogSize {
                         public static void main(String[] args) {
@@ -1616,7 +1616,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class DeleteHighScoreLog {
                         public static void main(String[] args) {
                             SdCard.begin();
@@ -1644,7 +1644,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     import java.io.EOFException;
                     import java.io.FileNotFoundException;
@@ -1841,7 +1841,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     public final class SdRoom {
                         public static void main(String[] args) {

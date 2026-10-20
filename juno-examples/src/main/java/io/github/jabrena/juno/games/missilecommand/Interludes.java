@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** The cover, wave title and results cards, and the game-over screen. */

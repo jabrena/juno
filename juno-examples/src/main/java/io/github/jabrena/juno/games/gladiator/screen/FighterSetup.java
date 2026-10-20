@@ -4,7 +4,7 @@ import io.github.jabrena.juno.games.gladiator.arena.GladiatorClass;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** Two touch pages that choose a historical name and a gladiator class, which decides the fighting style. */

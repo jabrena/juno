@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.doom;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /**
  * Times a map's loading and its route planning, and shows their progress. The work is known before it starts: the

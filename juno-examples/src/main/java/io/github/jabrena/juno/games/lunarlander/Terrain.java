@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.lunarlander;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Random;
 
 /** Generates and draws the moonscape and its three landing pads. */

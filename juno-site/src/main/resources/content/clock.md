@@ -80,7 +80,7 @@ Unlike a `Delay.millis(500)` blink, this loop never stops watching the button, b
 only measures time — it never pauses execution.
 
 The repository's
-[Pomodoro timer](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/pomodoro/RunPomodoro.java)
+[Pomodoro timer](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/pomodoro/RunPomodoro.java)
 uses the same pattern for real: `millis()` is its sole time source for a countdown displayed
 on an [`LcdKeypadShield`](../lcd-keypad-shield), so the displayed time stays accurate regardless of
 how long each tick's own display/print work takes.

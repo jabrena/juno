@@ -2,7 +2,7 @@ package io.github.jabrena.juno.usecases.dashboard.storage;
 
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.SdCapacity;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;

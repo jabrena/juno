@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.usecases.miner.intro;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Views;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.View;

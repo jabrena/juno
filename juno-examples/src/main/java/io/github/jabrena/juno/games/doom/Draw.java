@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** Pixel-art strokes and polygons the cover is composed from. */
 final class Draw {

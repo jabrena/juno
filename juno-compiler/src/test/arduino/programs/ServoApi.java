@@ -4,7 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
-import io.github.jabrena.juno.thirdparty.servo.Servo;
+import io.github.jabrena.juno.hardware.device.servo.Servo;
 
 /** A hobby servo on a PWM pin. R4 only for now: the shim uses NUM_DIGITAL_PINS, which the UNO Q core spells NUM_OF_DIGITAL_PINS. */
 @Board(ArduinoUnoR4WiFi.class)

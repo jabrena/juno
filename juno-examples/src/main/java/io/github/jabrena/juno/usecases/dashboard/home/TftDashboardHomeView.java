@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.home;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardViews;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftFpsWidget;

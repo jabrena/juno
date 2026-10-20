@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.thirdparty.lego.rcx;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.ir.Infrared;
 import io.github.jabrena.juno.thirdparty.lego.scout.ScoutRemote;
 import io.github.jabrena.juno.util.Delay;
 

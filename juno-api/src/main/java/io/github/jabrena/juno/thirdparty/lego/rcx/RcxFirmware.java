@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.thirdparty.lego.rcx;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.ir.Infrared;
 
 /**
  * Loads firmware into an RCX brick over infrared, as the LEGO IR tower does: the brick's boot ROM

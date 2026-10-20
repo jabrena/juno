@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.starwars;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** The header over the view (score, best, wave, pilot, shields and the phase's goal) and centered text. */

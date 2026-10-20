@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.thirdparty.lego.pf;
 
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.testing.Wire;
-import io.github.jabrena.juno.thirdparty.ir.Infrared;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

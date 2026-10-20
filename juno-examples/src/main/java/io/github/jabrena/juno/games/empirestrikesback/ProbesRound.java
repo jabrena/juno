@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Random;
 
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.E_STRIDE;

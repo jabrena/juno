@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.thirdparty.sd.SdCard;
 import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;

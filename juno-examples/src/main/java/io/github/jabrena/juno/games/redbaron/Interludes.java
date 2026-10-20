@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.redbaron;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** The propeller start, take-off and letter-by-letter title scenes. */

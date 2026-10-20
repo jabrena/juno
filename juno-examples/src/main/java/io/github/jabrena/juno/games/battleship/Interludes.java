@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.battleship;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** Radar sweep, incoming salvos and animated title cover. */

@@ -4,7 +4,7 @@ description: "Driving a standard Hitachi HD44780 LCD keypad shield."
 layout: page
 ---
 
-[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/lcd/LcdKeypadShield.java)
+[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.java)
 drives the common "LCD Keypad Shield" — a 16x2 HD44780-compatible character LCD in 4-bit mode,
 plus 5 buttons wired through a single resistor ladder into one analog pin — using its standard
 pinout, as used by e.g. [dzindra/lcdkeypad](https://github.com/dzindra/lcdkeypad).
@@ -30,7 +30,7 @@ The driver assumes the shield's standard pinout and needs no additional configur
 ## API
 
 ```java
-import io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 
 LcdKeypadShield lcd = new LcdKeypadShield(); // once, at startup; new LcdKeypadShield(gpio) in a unit test
 lcd.begin();                 // pin setup + HD44780 4-bit init + backlight on
@@ -55,7 +55,7 @@ example below does.
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.util.Delay;
-import io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class LcdKeypadDemo {
@@ -91,13 +91,13 @@ public final class LcdKeypadDemo {
 ```
 
 This is
-[`juno-examples/.../lcd/LcdKeypadDemo.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/LcdKeypadDemo.java).
+[`juno-examples/.../lcd/LcdKeypadDemo.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java).
 Build, flash, and run it with `juno-maven-plugin` (see
 [docs/JUNO-MAVEN-PLUGIN.md](../juno-maven-plugin)):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadDemo
+  -Djuno.main=io.github.jabrena.juno.api.hardware.device.lcd.LcdKeypadDemo
 ```
 
 Note that each printed label is padded to a fixed width (`"NONE  "`, `"SELECT"`) so a shorter new
@@ -106,7 +106,7 @@ clear the rest of the row.
 
 ### A larger example: Pomodoro
 
-[`juno-examples/.../lcd/pomodoro`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/thirdparty/lcd/pomodoro)
+[`juno-examples/.../lcd/pomodoro`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/hardware/device/lcd/pomodoro)
 implements a small Pomodoro timer entirely on the shield: `ConfigurePomodoroView` lets the buttons
 set a duration, `RunPomodoro` counts it down while showing elapsed time, and `TimeUpView` signals
 completion — a good reference for a multi-screen, button-driven program built only from

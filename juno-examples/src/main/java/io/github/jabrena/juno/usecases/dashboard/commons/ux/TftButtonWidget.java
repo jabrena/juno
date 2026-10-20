@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.commons.ux;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** A labelled, touchable rectangle: drawn in its fill color with a white border and its label centered. */
 public final class TftButtonWidget {

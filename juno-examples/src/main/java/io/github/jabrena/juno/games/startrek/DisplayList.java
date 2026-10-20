@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.startrek;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * Screen layout, the double display list clipped to whichever view is being drawn, and its

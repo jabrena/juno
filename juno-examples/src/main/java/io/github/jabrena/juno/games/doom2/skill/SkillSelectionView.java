@@ -4,8 +4,8 @@ import io.github.jabrena.juno.games.doom2.commons.ChoiceList;
 import io.github.jabrena.juno.games.doom2.commons.Doom2State;
 import io.github.jabrena.juno.games.doom2.commons.Doom2Views;
 import io.github.jabrena.juno.games.doom2.commons.Screen;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.View;
 

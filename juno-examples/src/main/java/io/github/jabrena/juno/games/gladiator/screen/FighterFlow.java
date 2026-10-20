@@ -16,10 +16,10 @@ import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /**

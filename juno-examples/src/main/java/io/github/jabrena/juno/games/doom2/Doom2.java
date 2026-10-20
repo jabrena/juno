@@ -16,9 +16,9 @@ import io.github.jabrena.juno.games.doom2.pilot.PilotSelectionView;
 import io.github.jabrena.juno.games.doom2.report.ReportView;
 import io.github.jabrena.juno.games.doom2.services.DoomStartupService;
 import io.github.jabrena.juno.games.doom2.skill.SkillSelectionView;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.util.mvc.ViewRouter;
 

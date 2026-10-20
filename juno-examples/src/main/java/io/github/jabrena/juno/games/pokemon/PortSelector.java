@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.pokemon;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Udp;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** The "CHOOSE PORT" screen of {@link PokemonBattle}: pick the UDP port both boards use, then listen on it. */

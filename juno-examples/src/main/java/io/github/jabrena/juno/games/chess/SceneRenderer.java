@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.chess;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 import static io.github.jabrena.juno.games.chess.Chess.BLACK_PIECE_EDGE;
 import static io.github.jabrena.juno.games.chess.Chess.BOARD_X;

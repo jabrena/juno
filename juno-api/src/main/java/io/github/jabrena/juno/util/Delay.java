@@ -11,7 +11,7 @@ public final class Delay {
 
     /**
      * Delays {@code seconds} seconds. Not itself a compiler intrinsic — a plain wrapper around
-     * {@link #millis}, the same way {@link io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield} is
+     * {@link #millis}, the same way {@link io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield} is
      * built entirely from lower-level intrinsics.
      */
     public static void seconds(int seconds) {

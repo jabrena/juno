@@ -4,7 +4,7 @@ description: "The playable games built for the ELEGOO TFT touch shield, with CPU
 layout: page
 ---
 
-Juno ships 14 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/thirdparty/tft`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/thirdparty/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](../features) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
+Juno ships 14 games (and a paint demo) for the ELEGOO 2.8" TFT touch screen shield on the Arduino UNO R4 WiFi. Every one is plain Java in [`juno-examples`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/) (the paint demo lives in [`api/hardware/device/tft`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/hardware/device/tft/)), compiled ahead of time by Juno to Cortex-M4 assembly, with no JVM or interpreter on the board: just the Java subset described in [FEATURES.md](../features) and the `TftTouchShield` API described in [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
 
 ## How to play
 

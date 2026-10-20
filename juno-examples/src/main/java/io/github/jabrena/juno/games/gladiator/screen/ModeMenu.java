@@ -3,7 +3,7 @@ package io.github.jabrena.juno.games.gladiator.screen;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** Selects a local duel or the original multi-board network game. */

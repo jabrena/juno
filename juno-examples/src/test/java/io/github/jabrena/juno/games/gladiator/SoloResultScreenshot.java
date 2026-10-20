@@ -3,7 +3,7 @@ package io.github.jabrena.juno.games.gladiator;
 import io.github.jabrena.juno.games.gladiator.arena.GladiatorClass;
 import io.github.jabrena.juno.games.gladiator.screen.FighterProfile;
 import io.github.jabrena.juno.games.gladiator.screen.SoloPresentation;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** Screenshot-only entry point covering both Solo result views. */

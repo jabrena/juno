@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.thirdparty.lego.scout;
 
-import io.github.jabrena.juno.thirdparty.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.thirdparty.lego.rcx.RcxBrick;
 import io.github.jabrena.juno.thirdparty.lego.rcx.RcxLink;
 import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;

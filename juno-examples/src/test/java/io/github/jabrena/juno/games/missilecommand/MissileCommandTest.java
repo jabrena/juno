@@ -1,18 +1,18 @@
 package io.github.jabrena.juno.games.missilecommand;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.EmulatedShield;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static io.github.jabrena.juno.thirdparty.tft.Internals.call;
-import static io.github.jabrena.juno.thirdparty.tft.Internals.callBoolean;
-import static io.github.jabrena.juno.thirdparty.tft.Internals.callInt;
-import static io.github.jabrena.juno.thirdparty.tft.Internals.getInt;
-import static io.github.jabrena.juno.thirdparty.tft.Internals.set;
+import static io.github.jabrena.juno.hardware.device.tft.Internals.call;
+import static io.github.jabrena.juno.hardware.device.tft.Internals.callBoolean;
+import static io.github.jabrena.juno.hardware.device.tft.Internals.callInt;
+import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
+import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

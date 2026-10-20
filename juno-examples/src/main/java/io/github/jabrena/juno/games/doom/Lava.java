@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * The lava of the cover: a still mosaic of coarse cells whose heat runs in diagonal bands, painted once behind the

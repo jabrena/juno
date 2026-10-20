@@ -2,12 +2,12 @@ package io.github.jabrena.juno.api.hardware.net.email;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
 import io.github.jabrena.juno.hardware.net.email.Smtp;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.util.Delay;
 
 /**

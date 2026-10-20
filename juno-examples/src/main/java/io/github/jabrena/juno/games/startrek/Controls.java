@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.startrek;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** Touch input: steering, the three buttons, the header that hands the helm over, and the pilot screen. */

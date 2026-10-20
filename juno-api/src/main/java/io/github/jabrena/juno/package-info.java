@@ -22,11 +22,12 @@
  *       ({@code hardware.net}, {@code hardware.net.http}, {@code hardware.net.email}) with the
  *       {@link io.github.jabrena.juno.hardware.net.InternetClock} configuration for the internet-backed
  *       {@link java.time.LocalDateTime#now()} subset, and the monotonic uptime clock ({@code hardware.time},
- *       {@link io.github.jabrena.juno.hardware.time.Clock}), for measuring elapsed time without blocking.</li>
- *   <li>{@code thirdparty} — shields, sensors and devices from other vendors: {@code grove}
- *       (the passive Grove Base Shield pin map and allocation-free Grove sensor drivers), {@code lcd}
- *       (character LCD shields), {@code tft} (the ELEGOO 2.8" TFT touch shield and its parallel bus),
- *       {@code imu}, {@code servo}, {@code ir}, {@code sd} and {@code lego} (Powered Up, RCX, Scout and
+ *       {@link io.github.jabrena.juno.hardware.time.Clock}), for measuring elapsed time without blocking,
+ *       and attached shields, sensors and devices ({@code hardware.device}): {@code grove} (the passive
+ *       Grove Base Shield pin map and allocation-free Grove sensor drivers), {@code lcd} (character LCD
+ *       shields), {@code tft} (the ELEGOO 2.8" TFT touch shield and its parallel bus), {@code imu},
+ *       {@code servo}, {@code ir}, {@code sd} and {@code kasa}.</li>
+ *   <li>{@code thirdparty} — third-party ecosystems: {@code lego} (Powered Up, RCX, Scout and
  *       Power Functions).</li>
  *   <li>{@code util} — general-purpose utilities: blocking millisecond/microsecond delays
  *       ({@link io.github.jabrena.juno.util.Delay}), seeded pseudorandom numbers

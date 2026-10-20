@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.commons.ux;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * One occupancy row of the storage screen: an accent dot and label, the share used as a percentage, a 20-segment bar

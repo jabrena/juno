@@ -4,7 +4,7 @@ package io.github.jabrena.juno.thirdparty.lego.rcx;
  * Direct commands to an RCX brick that answer back, over the same infrared link as
  * {@link RcxRemote} (set it up with {@link RcxRemote#begin} first, with both the IR LED and the IR
  * receiver module wired). It reads the touch sensors plugged into the RCX's own inputs, so a vehicle
- * can sense obstacles without extra wiring to the Arduino. Plain Java on {@link io.github.jabrena.juno.thirdparty.ir.Infrared}.
+ * can sense obstacles without extra wiring to the Arduino. Plain Java on {@link io.github.jabrena.juno.hardware.device.ir.Infrared}.
  *
  * <p>Each call is a request and a reply, which takes 100 ms or more; they return {@code -1} when the
  * brick does not answer (out of range, off, or the IR LED not pointing at it). The opcode and argument encodings have

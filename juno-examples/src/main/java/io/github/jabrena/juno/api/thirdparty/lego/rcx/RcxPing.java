@@ -8,7 +8,7 @@ import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Checks the infrared link to an RCX brick, the step between {@link io.github.jabrena.juno.api.thirdparty.ir.InfraredLoopback}
+ * Checks the infrared link to an RCX brick, the step between {@link io.github.jabrena.juno.api.hardware.device.ir.InfraredLoopback}
  * and driving its motors: every two seconds it silently asks the switched-on brick for its battery voltage,
  * printing what came back. Wire the IR transmitter's DAT to pin 3 and the IR receiver's OUT to pin 2, both
  * with VCC and GND, facing the RCX's IR window from 10 to 50 cm.

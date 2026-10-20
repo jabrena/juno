@@ -2,8 +2,8 @@ package io.github.jabrena.juno.usecases.miner.blocks;
 
 import io.github.jabrena.juno.games.blockchain.GameScreen;
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.miner.commons.BitBoard;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Header;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2State;
