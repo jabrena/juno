@@ -123,7 +123,7 @@ public final class AvrRuntimeShim {
         }
         if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.TCP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.SMTP_TLS,
                 ShimFeature.POP3)) {
-            shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
+            shim.append(core.wifiIncludes(usesAny(ShimFeature.UDP, ShimFeature.SNTP)));
         }
         if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsInclude());
@@ -215,7 +215,8 @@ public final class AvrRuntimeShim {
                         throwableClasses.indexOf("java/lang/IllegalArgumentException"),
                         uses(ShimFeature.UUID_RANDOM))),
                 new ShimFeatureBlock(ShimFeature.LOCAL_DATE_TIME, () -> localDateTimeRuntime.helpers(
-                        uses(ShimFeature.LOCAL_DATE_TIME_NOW), uses(ShimFeature.LOCAL_DATE_TIME_CONFIG))),
+                        uses(ShimFeature.LOCAL_DATE_TIME_NOW), uses(ShimFeature.LOCAL_DATE_TIME_CONFIG),
+                        uses(ShimFeature.SNTP) ? core.sntpUdpDeclaration() : "")),
                 new ShimFeatureBlock(ShimFeature.BIG_NUMBERS, () -> bigNumberRuntime.handleHelpers()
                         + bigNumberRuntime.helpersWithoutDoubles(
                                 throwableClasses.indexOf("java/lang/ArithmeticException"),
@@ -283,7 +284,9 @@ public final class AvrRuntimeShim {
             shim.append(core.httpsHelpers());
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
-            shim.append(networkShimLibraries.httpHelpers(features, core.httpsClientType(),
+            // A plain-HTTP-only program never names the TLS client, which a core without one cannot provide.
+            String httpsClientType = uses(ShimFeature.HTTPS) ? core.httpsClientType() : "";
+            shim.append(networkShimLibraries.httpHelpers(features, core.httpClientType(), httpsClientType,
                     ioRuntime.usesWorker(core, features)));
         }
         // Smtp.sendTls and Pop3Client, exactly as on the UNO R4 WiFi: the board's TLS client is WiFiSSLClient.

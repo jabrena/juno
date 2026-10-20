@@ -105,7 +105,7 @@ public final class RuntimeShim {
         }
         if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.TCP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
-            shim.append(core.wifiIncludes(uses(ShimFeature.UDP)));
+            shim.append(core.wifiIncludes(usesAny(ShimFeature.UDP, ShimFeature.SNTP)));
         }
         if (uses(ShimFeature.SD)) {
             shim.append("#include <SPI.h>\n#include <SdFat.h>\n");
@@ -251,7 +251,7 @@ public final class RuntimeShim {
             shim.append(core.httpsHelpers());
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
-            shim.append(networkShimLibraries.httpHelpers(features, core.httpsClientType(),
+            shim.append(networkShimLibraries.httpHelpers(features, core.httpClientType(), core.httpsClientType(),
                     ioRuntime.usesWorker(core, features)));
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
@@ -274,7 +274,8 @@ public final class RuntimeShim {
     private void appendLocalDateTimeHelpers(StringBuilder shim) {
         if (uses(ShimFeature.LOCAL_DATE_TIME)) {
             shim.append(localDateTimeRuntime.helpers(uses(ShimFeature.LOCAL_DATE_TIME_NOW),
-                    uses(ShimFeature.LOCAL_DATE_TIME_CONFIG)));
+                    uses(ShimFeature.LOCAL_DATE_TIME_CONFIG),
+                    uses(ShimFeature.SNTP) ? core.sntpUdpDeclaration() : ""));
         }
     }
 

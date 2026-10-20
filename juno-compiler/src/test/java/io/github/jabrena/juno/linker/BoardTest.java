@@ -29,6 +29,11 @@ class BoardTest {
     static Stream<Arguments> capabilities() {
         return Stream.of(
                 arguments(Board.UNO_R3, Capability.WATCHDOG, true),
+                arguments(Board.UNO_R3, Capability.WIFI, true),
+                arguments(Board.UNO_R3, Capability.WIFI_ACCESS_POINT, false),
+                arguments(Board.UNO_R3, Capability.HTTP_CLIENT, true),
+                arguments(Board.UNO_R3, Capability.HTTPS_CLIENT, false),
+                arguments(Board.UNO_R4_WIFI, Capability.WIFI_ACCESS_POINT, true),
                 arguments(Board.UNO_R4_WIFI, Capability.WATCHDOG, true),
                 arguments(Board.UNO_R4_WIFI, Capability.WIFI, true),
                 arguments(Board.UNO_R4_WIFI, Capability.HTTPS_CLIENT, true),
@@ -487,7 +492,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.net.Udp;
+                import io.github.jabrena.juno.hardware.net.udp.Udp;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
