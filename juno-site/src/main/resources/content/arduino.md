@@ -254,18 +254,18 @@ It needs the `Servo` library (not bundled with the `arduino:renesas_uno` core, i
 
 ### Example: LegoTrain (LEGO Powered Up over Bluetooth LE)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/thirdparty/lego/LegoTrain.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/thirdparty/lego/LegoTrain.java)
+[`juno-examples/src/main/java/io/github/jabrena/juno/remote/lego/LegoTrain.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/remote/lego/LegoTrain.java)
 connects to a LEGO Powered Up hub and shuttles a train motor on port A back and forth using
-[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/lego/poweredup/PoweredUpHubRemote.java) —
+[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.java) —
 see [the LEGO Powered Up guide](../lego) for the full API. `MagicSquarePoweredUpHub` in
-`io.github.jabrena.juno.thirdparty.lego.poweredup` drives a two-motor vehicle around a square.
+`io.github.jabrena.juno.remote.lego.poweredup` drives a two-motor vehicle around a square.
 
 It needs the `ArduinoBLE` library (not bundled with the `arduino:renesas_uno` core, installed by
 `juno:install-deps` above, or on its own with `arduino-cli lib install ArduinoBLE`):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.thirdparty.lego.LegoTrain \
+  -Djuno.main=io.github.jabrena.juno.remote.lego.LegoTrain \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 

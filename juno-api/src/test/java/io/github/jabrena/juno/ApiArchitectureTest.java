@@ -17,7 +17,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 class ApiArchitectureTest {
 
     private static final String[] API_PACKAGES = {
-        "io.github.jabrena.juno.hardware..", "io.github.jabrena.juno.thirdparty..", "io.github.jabrena.juno.util..",
+        "io.github.jabrena.juno.hardware..", "io.github.jabrena.juno.remote..", "io.github.jabrena.juno.util..",
         "io.github.jabrena.juno.annotations.."
     };
 
@@ -25,13 +25,13 @@ class ApiArchitectureTest {
     static final ArchRule shouldLiveOnlyInApiPackages = classes()
             .that().doNotHaveSimpleName("package-info")
             .should().resideInAnyPackage(API_PACKAGES)
-            .because("juno-api holds only the hardware, thirdparty, util and annotations packages; compiler"
+            .because("juno-api holds only the hardware, remote, util and annotations packages; compiler"
                     + " code belongs in juno-compiler");
 
     @ArchTest
     static final ArchRule shouldDependOnlyOnItselfAndTheJdk = classes()
             .should().onlyDependOnClassesThat().resideInAnyPackage(
-                    "io.github.jabrena.juno.hardware..", "io.github.jabrena.juno.thirdparty..",
+                    "io.github.jabrena.juno.hardware..", "io.github.jabrena.juno.remote..",
                     "io.github.jabrena.juno.util..", "io.github.jabrena.juno.annotations..", "java..",
                     "org.jspecify.annotations..")
             .because("programs compile against juno-api alone, so it must not use the compiler or third-party code");

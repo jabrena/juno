@@ -3,7 +3,7 @@ package io.github.jabrena.juno.hardware.device.ir;
 /**
  * Serial bytes over modulated infrared light, recognized as compiler intrinsics by Juno and
  * bit-banged on two plain pins, with no Arduino library. It is the transport under protocols such
- * as {@link io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote}.
+ * as {@link io.github.jabrena.juno.remote.lego.rcx.RcxRemote}.
  *
  * <p>Wiring: an IR receiver module with a 38 kHz demodulator (e.g. TSOP38238 or VS1838B), whose
  * output idles high and goes low during a burst, on the receive pin; an IR LED with a series
@@ -51,7 +51,7 @@ public final class Infrared {
     /**
      * Transmits a burst of the 38 kHz carrier for {@code micros} microseconds. With {@link #space}, it
      * builds protocols that encode bits in pulse lengths rather than as serial bytes, such as
-     * {@link io.github.jabrena.juno.thirdparty.lego.pf.PowerFunctionsRemote}; the transmit pin must be set by
+     * {@link io.github.jabrena.juno.remote.lego.pf.PowerFunctionsRemote}; the transmit pin must be set by
      * {@link #begin} (the baud rate is ignored by these two calls).
      */
     public static native void mark(int micros);
