@@ -3,7 +3,7 @@ package io.github.jabrena.juno.games.gladiator.view;
 import io.github.jabrena.juno.games.gladiator.arena.Match;
 import io.github.jabrena.juno.games.gladiator.gladiator.Brain;
 import io.github.jabrena.juno.games.gladiator.gladiator.Report;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * The gladiator's screen apart from the view: full-screen messages while it looks for the arena, and the status bar

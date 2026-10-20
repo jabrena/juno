@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.util.mvc;
 
+import io.github.jabrena.juno.hardware.device.tft.ParallelBus;
+import io.github.jabrena.juno.hardware.device.tft.TftPins;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;
-import io.github.jabrena.juno.thirdparty.tft.ParallelBus;
-import io.github.jabrena.juno.thirdparty.tft.TftPins;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

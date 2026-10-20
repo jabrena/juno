@@ -5,8 +5,8 @@ import io.github.jabrena.juno.games.gladiator.view.Figure;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** The CPU-opponent reveal and the final result screens around a Solo bout. */

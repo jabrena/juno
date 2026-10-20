@@ -26,7 +26,7 @@ import io.github.jabrena.juno.games.gladiator.view.ClassWireframe;
 import io.github.jabrena.juno.games.gladiator.view.Figure;
 import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

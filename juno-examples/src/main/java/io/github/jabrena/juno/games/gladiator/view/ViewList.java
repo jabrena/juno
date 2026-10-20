@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.gladiator.view;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * Double-buffered list of the first-person frame's lines, after DOOM's: presenting a frame erases only the lines

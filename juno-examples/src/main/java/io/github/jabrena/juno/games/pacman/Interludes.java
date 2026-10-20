@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.pacman;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** The animated title screen and the non-gameplay cards: ready, death, level-clear and game over. */

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.lunarlander;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** Cover and descent-result screens. */
 final class Interludes {

@@ -244,7 +244,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+                import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
                 public final class AsmTft {
                     public static void main(String[] args) {
                         TftTouchShield.begin();
@@ -828,7 +828,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.thirdparty.kasa.KasaSmartPlug;
+                import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class AsmKasa {
                     public static void main(String[] args) {
@@ -1002,7 +1002,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.tft.ParallelBus;
+                import io.github.jabrena.juno.hardware.device.tft.ParallelBus;
                 ${BOARD}
                 public final class ${NAME} {
                     private static final int[] PINS = {8, 9, 2, 3, 4, 5, 6, 7};
@@ -1036,7 +1036,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.ir.Infrared;
+                import io.github.jabrena.juno.hardware.device.ir.Infrared;
                 public final class AsmLoopback {
                     public static void main(String[] args) {
                         Infrared.begin(2, 3, 2400);
@@ -1177,7 +1177,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.imu.NineAxisMotionShield;
+                import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
                 public final class AsmHeading {
                     public static void main(String[] args) {
                         NineAxisMotionShield imu = new NineAxisMotionShield();
@@ -1211,7 +1211,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.imu.NineAxisMotionShield;
+                import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
                 public final class AsmBalance {
                     public static void main(String[] args) {
                         NineAxisMotionShield imu = new NineAxisMotionShield();
@@ -1388,7 +1388,7 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import java.io.IOException;
                 import java.io.InputStream;
                 import java.util.Properties;
@@ -1426,7 +1426,7 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmStorageOccupancy {
                     public static void main(String[] args) {
@@ -1457,7 +1457,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import java.io.IOException;
                 import java.io.RandomAccessFile;

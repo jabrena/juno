@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * The explosions: starting one, growing/holding/shrinking it every frame, and any warhead it

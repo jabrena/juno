@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.commons.ux;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** The title bar every screen shows at the top: its title and a cyan rule under it. */
 public final class TftHeaderWidget {

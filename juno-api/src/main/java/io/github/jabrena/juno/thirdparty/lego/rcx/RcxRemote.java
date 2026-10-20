@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.thirdparty.lego.rcx;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.ir.Infrared;
 
 /**
  * The LEGO Mindstorms RCX infrared protocol, recognized as compiler intrinsics by Juno: receives

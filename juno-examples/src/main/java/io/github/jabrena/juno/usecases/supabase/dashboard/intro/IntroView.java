@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.intro;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.View;
 

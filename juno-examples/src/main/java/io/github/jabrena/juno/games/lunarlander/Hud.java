@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.lunarlander;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** Flight instruments, controls, centered messages, and pilot-choice buttons. */
 final class Hud {

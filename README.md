@@ -210,7 +210,7 @@ without uploading it:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveDht22Monitor \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.device.grove.sensors.GroveDht22Monitor \
   -Djuno.board=arduino-uno-r3-wifi-rev2
 ```
 
@@ -312,17 +312,17 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`HttpsMethods`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpsMethods.java) (HTTP/HTTPS and JSON),
   [`Miner2`](juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/Miner2.java) (UDP between boards:
   factor numbers together and chain the verified answers as a leaderless, Bitcoin-style proof-of-work chain), and
-  [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/sd/SdFileOperations.java) (SD card).
+  [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) (SD card).
 - **Shields:** stacked shields are driven through the same intrinsic APIs.
   The [Grove Base Shield and Temperature and Humidity Sensor Pro](https://jabrena.github.io/juno/grove)
   exposes the UNO pin map and reads the sensor without an Arduino library, as shown by
-  [`GroveDht22Monitor`](juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveDht22Monitor.java).
+  [`GroveDht22Monitor`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java).
   The [LCD Keypad Shield](https://jabrena.github.io/juno/lcd-keypad-shield) (16x2 display, buttons,
   backlight) is shown in
-  [`LcdKeypadDemo`](juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/LcdKeypadDemo.java).
+  [`LcdKeypadDemo`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java).
   The [ELEGOO 2.8" TFT touch shield](https://jabrena.github.io/juno/tft-touch-shield) (display,
   touch, microSD) is shown in
-  [`TouchPaintTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/tft/TouchPaintTFT.java) and
+  [`TouchPaintTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java) and
   [`WifiStatusSDTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSDTFT.java).
   The [AZDelivery Data Logger Module Data Recorder Shield](https://jabrena.github.io/juno/storage)
   provides the SD card for

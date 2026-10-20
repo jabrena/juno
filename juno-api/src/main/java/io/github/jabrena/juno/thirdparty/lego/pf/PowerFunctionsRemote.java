@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.thirdparty.lego.pf;
 
-import io.github.jabrena.juno.thirdparty.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.util.Delay;
 
 /**

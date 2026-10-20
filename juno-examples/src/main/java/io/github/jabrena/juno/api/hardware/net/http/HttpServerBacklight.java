@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
@@ -9,7 +10,6 @@ import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.util.Delay;
 
 /**

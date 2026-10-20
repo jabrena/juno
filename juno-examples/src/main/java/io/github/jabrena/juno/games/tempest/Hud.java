@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.tempest;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** The header (score, best, level, lives, zapper and pilot) and the shared centered-text helper. */
 final class Hud {

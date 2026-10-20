@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.ir.Infrared;
 import io.github.jabrena.juno.util.Delay;
 
 /** Sends the RCX firmware-independent alive packet and prints the raw reply. */

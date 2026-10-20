@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.thirdparty.lego.scout;
 
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;
-import io.github.jabrena.juno.thirdparty.ir.Infrared;
 import io.github.jabrena.juno.thirdparty.lego.rcx.RcxFrames;
 import io.github.jabrena.juno.thirdparty.lego.rcx.RcxLink;
 import org.junit.jupiter.api.BeforeEach;

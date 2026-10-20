@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom2.commons;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * Drawing shared by Doom 2's views on the landscape 320x240 screen: centered text, DOOM's red-edged plaque and the

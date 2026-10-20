@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.tempest;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 /** All the drawing for the web, claw, flippers and shots; game rules never touch the display directly. */

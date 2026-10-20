@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** All the drawing for trails, blasts, the ground, bases and cities; game rules never draw directly. */
 final class SceneRenderer {

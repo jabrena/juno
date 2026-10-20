@@ -37,7 +37,7 @@ This is a multi-module Maven build:
 
 - [`juno-api/`](https://github.com/jabrena/juno/tree/main/juno-api) — the programming model: the small Java-facing hardware API Juno recognizes as compiler intrinsics
   (`io.github.jabrena.juno`: `util.Delay`, `hardware.time.Clock`, `util.Random`, `hardware.led.LedMatrix`, `hardware.gpio.Gpio`,
-  `hardware.gpio.DigitalOutput`, `thirdparty.lcd.LcdKeypadShield`, `thirdparty.tft.TftTouchShield`, `hardware.hid.Mouse`, `hardware.serial.Serial`, …) and the
+  `hardware.gpio.DigitalOutput`, `hardware.device.lcd.LcdKeypadShield`, `hardware.device.tft.TftTouchShield`, `hardware.hid.Mouse`, `hardware.serial.Serial`, …) and the
   `io.github.jabrena.juno.annotations` package
   (`Board`, `ArduinoBoard`, `ArduinoUnoR4WiFi`, `ArduinoUnoQ`) that entry-point classes use to select a
   compilation target. This is the only artifact programs compile against.

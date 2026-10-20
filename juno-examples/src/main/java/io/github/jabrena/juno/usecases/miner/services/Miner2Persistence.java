@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
 import io.github.jabrena.juno.games.blockchain.Bytes;
-import io.github.jabrena.juno.thirdparty.sd.SdCard;
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.usecases.miner.chain.BlockFormat;
 import io.github.jabrena.juno.usecases.miner.chain.BlockPool;
 import io.github.jabrena.juno.usecases.miner.peers.NodeId;

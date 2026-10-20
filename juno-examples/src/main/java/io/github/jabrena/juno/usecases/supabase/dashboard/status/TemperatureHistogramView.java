@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.status;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.supabase.dashboard.commons.TemperatureDashboardState;
 import io.github.jabrena.juno.util.mvc.View;
 

@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** The 2.8" TFT touch shield: setup, geometry and the drawing primitives. */
 public final class TftTouchShieldApi {

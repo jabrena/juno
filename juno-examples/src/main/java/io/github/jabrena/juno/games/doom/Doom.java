@@ -3,10 +3,10 @@ package io.github.jabrena.juno.games.doom;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.util.Random;
 

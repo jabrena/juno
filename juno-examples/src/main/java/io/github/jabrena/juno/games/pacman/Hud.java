@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.pacman;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** The score/best header, the lives-and-level footer, and the shared centered-text helper. */
 final class Hud {

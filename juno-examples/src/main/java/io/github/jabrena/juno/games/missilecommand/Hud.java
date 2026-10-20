@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** The header (score, best and wave) and the shared centered-text helpers. */
 final class Hud {

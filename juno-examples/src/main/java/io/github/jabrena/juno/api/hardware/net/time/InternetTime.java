@@ -4,11 +4,11 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.InternetClock;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.thirdparty.sd.SdCard;
 import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;

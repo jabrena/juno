@@ -6,19 +6,19 @@ layout: page
 
 The [Grove Base Shield](https://wiki.seeedstudio.com/Base_Shield_V2/) is a passive adapter for
 the UNO headers. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins; Juno exposes their
-map through [`GroveBaseShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/grove/GroveBaseShield.java).
+map through [`GroveBaseShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.java).
 
 ## Grove Temperature and Humidity Sensor Pro
 
-[`GroveDht22`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/grove/sensors/GroveDht22.java)
+[`GroveDht22`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht22.java)
 is a library-free, allocation-free driver for Seeed's [Grove Temperature and Humidity Sensor
 Pro](https://wiki.seeedstudio.com/Grove-Temperature_and_Humidity_Sensor_Pro/), which uses the
 DHT22 (AM2302) frame format. Plug the module into the shield's D4 socket: the shield supplies
 `GND` and `VCC`, and the driver reads the `SIG` wire on `D4`.
 
 ```java
-import io.github.jabrena.juno.thirdparty.grove.GroveBaseShield;
-import io.github.jabrena.juno.thirdparty.grove.sensors.GroveDht22;
+import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
+import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht22;
 
 GroveDht22 dht22 = new GroveDht22();   // create once, at startup
 int[] reading = new int[GroveDht22.READING_LENGTH];
@@ -34,7 +34,7 @@ The result and raw-frame buffers belong to the caller and are reused across read
 stored in tenths of a percent and tenths of a degree Celsius; a failed response, checksum or
 out-of-range value returns `false` without changing the previous result. Wait at least two seconds
 between reads. The complete serial example is
-[`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveDht22Monitor.java).
+[`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java).
 
 `new GroveDht22(gpio, clock)` (and the same for `GroveDht11`) runs the driver on a given `Gpio` and
 `Clock` instead of the board's, which is how its unit tests feed it a scripted sensor reply through a
@@ -47,13 +47,13 @@ UNO Q targets.
 ## DHT11, temperature, sound and light batch
 
 The DHT11 is a separate, whole-number sensor from the DHT22-format Temperature and Humidity
-Sensor Pro. Use [`GroveDht11`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/grove/sensors/GroveDht11.java)
+Sensor Pro. Use [`GroveDht11`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.java)
 for the [Seeed DHT11 module](https://www.seeedstudio.com/Grove-Temperature-Humidity-Sensor-DHT11.html).
 The DHT11 signal is digital, so connect it to **D4** (or another digital socket and pass that pin
 to the driver).
 
 For the new analog modules, use separate analog sockets. The recommended wiring for
-[`GroveSensorBatchMonitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveSensorBatchMonitor.java)
+[`GroveSensorBatchMonitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveSensorBatchMonitor.java)
 is:
 
 | Module | Shield socket | Juno driver | Result |
@@ -79,7 +79,7 @@ Run the dedicated monitor with:
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.board=arduino-uno-r3-wifi-rev2 \
-  -Djuno.main=io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveSensorBatchMonitor
+  -Djuno.main=io.github.jabrena.juno.api.hardware.device.grove.sensors.GroveSensorBatchMonitor
 ```
 
 ### Observed DHT22-format readings
@@ -96,7 +96,7 @@ are not reported as measurements.
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.board=arduino-uno-r3-wifi-rev2 \
-  -Djuno.main=io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveDht22Monitor
+  -Djuno.main=io.github.jabrena.juno.api.hardware.device.grove.sensors.GroveDht22Monitor
 ```
 
 ## Compass, gas and PIR wiring check
@@ -111,7 +111,7 @@ Grove sockets have the same connector, but they do not all carry the same signal
 
 A compass plugged into D8 is not connected to SDA/SCL, and an analog gas sensor plugged into D7
 cannot be measured with `analogRead`. Move those plugs before using
-[`GroveSensorWiringMonitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveSensorWiringMonitor.java).
+[`GroveSensorWiringMonitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveSensorWiringMonitor.java).
 The probe identifies the V2.0 compass's BMM150 chip and the loop reads its raw X/Y/Z magnetic
 counts. These counts are uncalibrated sensor units, not a heading in degrees. The monitor also
 prints the gas ADC value and PIR state. The exact gas sensor model and its calibration are required before
@@ -120,7 +120,7 @@ turning ADC readings into concentrations or alarm thresholds.
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.board=arduino-uno-r3-wifi-rev2 \
-  -Djuno.main=io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveSensorWiringMonitor
+  -Djuno.main=io.github.jabrena.juno.api.hardware.device.grove.sensors.GroveSensorWiringMonitor
 ```
 
 ## Publishing temperatures to Supabase

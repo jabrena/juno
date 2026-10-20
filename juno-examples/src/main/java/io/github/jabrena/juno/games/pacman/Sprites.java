@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.pacman;
 
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * The procedural pixel shapes of Pac-Man and the ghosts (body, eyes and frightened face), plus the

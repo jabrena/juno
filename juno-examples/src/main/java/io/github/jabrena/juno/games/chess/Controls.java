@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.chess;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
 
 import static io.github.jabrena.juno.games.chess.Chess.BOARD_X;
