@@ -6,12 +6,12 @@ layout: page
 
 Juno provides a small, allocation-free Internet stack for the Arduino UNO R4 WiFi. Programs can:
 
-- connect to a Wi-Fi network with [`Wifi`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/net/Wifi.java);
+- connect to a Wi-Fi network with [`Wifi`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/Wifi.java);
 - send plain HTTP or TLS-protected HTTPS `GET`, `POST`, `DELETE`, `PATCH`, and `QUERY` requests with
-  [`HttpClient`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpClient.java),
+  [`HttpClient`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/http/HttpClient.java),
   where the URL's `http://` or `https://` scheme decides whether the request uses TLS; and
 - extract typed values directly from JSON response bytes with
-  [`Json`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/net/http/Json.java).
+  [`Json`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/http/Json.java).
 
 These APIs are compiler intrinsics, like every Juno API — see [docs/APIS.md](../apis) for what
 that means, how they're built, and the general rules (compile-time-only `String` arguments,
@@ -374,12 +374,12 @@ the JSON type, and prints an integer temperature over USB serial once a minute:
 ```java
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
-import io.github.jabrena.juno.api.hardware.net.http.Json;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.net.http.HttpClient;
+import io.github.jabrena.juno.hardware.net.http.Json;
+import io.github.jabrena.juno.hardware.net.Wifi;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class InternetExample {
@@ -456,16 +456,16 @@ arduino-cli monitor \
 Uploading replaces the board's current firmware. Find the correct port first with
 `arduino-cli board list`. For the broader build/upload workflow, see
 [`docs/ARDUINO.md`](../arduino). The repository includes
-[`HttpMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/HttpMethods.java), which verifies all supported
+[`HttpMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/hardware/net/HttpMethods.java), which verifies all supported
 methods over plain HTTP,
-[`HttpsMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/HttpsMethods.java), which repeats the checks with
+[`HttpsMethods.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/hardware/net/HttpsMethods.java), which repeats the checks with
 certificate-validated TLS, and
 [`MadridWeather.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/MadridWeather.java), which extracts live API
 data for display on the LED matrix.
 
 ## Boards talking to each other over UDP
 
-[`Udp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/net/Udp.java)
+[`Udp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/Udp.java)
 works on both the UNO R4 WiFi and the UNO Q, and unlike the HTTP client its payloads are runtime
 `byte[]` buffers. That makes it the way for boards to exchange data they compute. Miner 2 builds a
 small, decentralized factorization network on it (see [Games](../games#network)). Code they share, such as SHA-256 and the factorizer, lives in

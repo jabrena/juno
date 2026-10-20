@@ -117,7 +117,7 @@ a call, field, or array boundary. Remaining exclusions include:
   concatenation, `String.valueOf(int)`/`(double)`, `length()`, `charAt(int)`, and a fixed-capacity
   `StringBuilder`); see
   [FEATURES.md](../features) for the exact list. Multi-character LED matrix display (see
-  [`LedCanvas`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/led/LedCanvas.java)) still works
+  [`LedCanvas`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/led/LedCanvas.java)) still works
   character-by-character with hand-encoded font tables rather than string data
 - polymorphic objects/inheritance and unbounded allocation. Final closed-world objects and records use
   one-slot handles into a fixed 8 KiB program-lifetime arena with no reclamation

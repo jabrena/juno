@@ -26,8 +26,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 
 ## File structure
 
-- `juno-api/` – the programming model programs compile against (`src/main/java/io/github/jabrena/juno/`: `api`,
-  `annotations`); it has no dependency on the compiler.
+- `juno-api/` – the programming model programs compile against (`src/main/java/io/github/jabrena/juno/`: `hardware`,
+  `thirdparty`, `util`, `annotations`); it has no dependency on the compiler.
 - `juno-compiler/` – the compiler (`src/main/java/io/github/jabrena/juno/`: `classfile`, `bytecode`, `linker`,
   `backend`, …) plus its unit tests; depends on `juno-api`. A new `native` API method is declared in `juno-api`
   and needs entries in `IntrinsicRegistry` and `IntrinsicLowering` here, and the backend never branches on a

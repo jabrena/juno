@@ -4,15 +4,15 @@ description: "Driving a standard Hitachi HD44780 LCD keypad shield."
 layout: page
 ---
 
-[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/LcdKeypadShield.java)
+[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/lcd/LcdKeypadShield.java)
 drives the common "LCD Keypad Shield" — a 16x2 HD44780-compatible character LCD in 4-bit mode,
 plus 5 buttons wired through a single resistor ladder into one analog pin — using its standard
 pinout, as used by e.g. [dzindra/lcdkeypad](https://github.com/dzindra/lcdkeypad).
 
-Unlike the [LED matrix](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrix.java), this
+Unlike the [LED matrix](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/led/LedMatrix.java), this
 shield needs no new compiler intrinsic: every operation is built entirely from
-[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Gpio.java) pin operations and
-[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/util/Delay.java), so it works today on any
+[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/Gpio.java) pin operations and
+[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/util/Delay.java), so it works today on any
 board Juno's ASM backend targets.
 
 ## Wiring
@@ -30,7 +30,7 @@ The driver assumes the shield's standard pinout and needs no additional configur
 ## API
 
 ```java
-import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield;
 
 LcdKeypadShield lcd = new LcdKeypadShield(); // once, at startup; new LcdKeypadShield(gpio) in a unit test
 lcd.begin();                 // pin setup + HD44780 4-bit init + backlight on
@@ -54,8 +54,8 @@ example below does.
 ```java
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class LcdKeypadDemo {
@@ -106,7 +106,7 @@ clear the rest of the row.
 
 ### A larger example: Pomodoro
 
-[`juno-examples/.../lcd/pomodoro`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/pomodoro)
+[`juno-examples/.../lcd/pomodoro`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/thirdparty/lcd/pomodoro)
 implements a small Pomodoro timer entirely on the shield: `ConfigurePomodoroView` lets the buttons
 set a duration, `RunPomodoro` counts it down while showing elapsed time, and `TimeUpView` signals
 completion — a good reference for a multi-screen, button-driven program built only from

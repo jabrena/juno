@@ -120,8 +120,9 @@ supported board. Its built-in LED alternates on and off every 500 ms (one full c
 ```java
 package io.github.jabrena.juno.api.hardware.gpio;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+import io.github.jabrena.juno.util.Delay;
 
 public final class Blink {
 

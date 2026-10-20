@@ -157,7 +157,7 @@ built-in 12x8 LED matrix.
 
 ### LCD Keypad Shield examples
 
-[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/lcd/LcdKeypadShield.java)
+[`LcdKeypadShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/lcd/LcdKeypadShield.java)
 drives a common 16x2 HD44780-compatible "LCD Keypad Shield" (LCD on digital pins 4-9, backlight on
 pin 10, 5 buttons on `A0`) — no new compiler intrinsic, built entirely from `Gpio`/`Delay` the same
 way `LedCanvas` is built from `LedMatrix`.
@@ -183,7 +183,7 @@ alarm blinks until any button is pressed, then returns to minute selection.
 
 ### TFT touch screen shield examples
 
-[`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/tft/TftTouchShield.java)
+[`TftTouchShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/tft/TftTouchShield.java)
 drives the ELEGOO 2.8" TFT touch screen shield (ILI9341 on an 8-bit parallel bus on D2-D9/`A0`-`A4`,
 resistive touch, microSD on D10-D13), built from `Gpio`/`Delay` plus the `ParallelBus` intrinsic for the
 display's bytes. See [TFT-TOUCH-SHIELD.md](../tft-touch-shield).
@@ -241,7 +241,7 @@ to the plugin with `-Djuno.port=...`.
 
 [`juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/servo/ServoSweep.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/servo/ServoSweep.java)
 sweeps a 3-wire hobby servo back and forth between 0 and 180 degrees using
-[`Servo`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/servo/Servo.java) — see its wiring
+[`Servo`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/servo/Servo.java) — see its wiring
 diagram in the class Javadoc for how to connect the servo's signal/power/ground wires.
 
 It needs the `Servo` library (not bundled with the `arduino:renesas_uno` core, installed by
@@ -254,26 +254,26 @@ It needs the `Servo` library (not bundled with the `arduino:renesas_uno` core, i
 
 ### Example: LegoTrain (LEGO Powered Up over Bluetooth LE)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lego/LegoTrain.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lego/LegoTrain.java)
+[`juno-examples/src/main/java/io/github/jabrena/juno/thirdparty/lego/LegoTrain.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/thirdparty/lego/LegoTrain.java)
 connects to a LEGO Powered Up hub and shuttles a train motor on port A back and forth using
-[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/lego/poweredup/PoweredUpHubRemote.java) —
+[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/lego/poweredup/PoweredUpHubRemote.java) —
 see [the LEGO Powered Up guide](../lego) for the full API. `MagicSquarePoweredUpHub` in
-`io.github.jabrena.juno.api.thirdparty.lego.poweredup` drives a two-motor vehicle around a square.
+`io.github.jabrena.juno.thirdparty.lego.poweredup` drives a two-motor vehicle around a square.
 
 It needs the `ArduinoBLE` library (not bundled with the `arduino:renesas_uno` core, installed by
 `juno:install-deps` above, or on its own with `arduino-cli lib install ArduinoBLE`):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.thirdparty.lego.LegoTrain \
+  -Djuno.main=io.github.jabrena.juno.thirdparty.lego.LegoTrain \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 
 ### Example: InboxCount (basic email support)
 
-[`Smtp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/net/email/Smtp.java) sends a
+[`Smtp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Smtp.java) sends a
 plain-text message to one recipient over `STARTTLS` (mail submission on port 587), and
-[`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/net/email/Pop3Client.java)
+[`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Pop3Client.java)
 reports the mailbox message count and reads the newest message's `From`/`Subject`/body over
 POP3S (port 995) — see that package's Javadoc for the full scope and its deliberate limits (one
 recipient, plain text only, no attachments/HTML/MIME/folders/OAuth2).

@@ -4,8 +4,8 @@ description: "Driving LEGO Powered Up motors and hub LEDs over Bluetooth LE, fro
 layout: page
 ---
 
-[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/lego/poweredup/PoweredUpHubRemote.java)
-(`io.github.jabrena.juno.api.thirdparty.lego.poweredup`) lets a Juno program remote-control a LEGO Powered Up hub — run
+[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/lego/poweredup/PoweredUpHubRemote.java)
+(`io.github.jabrena.juno.thirdparty.lego.poweredup`) lets a Juno program remote-control a LEGO Powered Up hub — run
 its motors and set its status LED — the same way the LEGO apps do. The board acts as a Bluetooth
 Low Energy central and speaks the
 [LEGO Wireless Protocol 3.0](https://lego.github.io/lego-ble-wireless-protocol-docs/) to the hub.
@@ -37,7 +37,7 @@ for that board that uses `PoweredUpHubRemote` should not also use `Wifi`, `Udp`,
 ## API
 
 ```java
-import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
 
 PoweredUpHubRemote hub = new PoweredUpHubRemote();   // once, at startup; the same object for the program's life
 
@@ -146,7 +146,7 @@ LEGO Wireless Protocol; they have been tried on a hub only briefly, so check the
 
 ## Example: a shuttling train
 
-[`LegoTrain`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/lego/LegoTrain.java)
+[`LegoTrain`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/thirdparty/lego/LegoTrain.java)
 ramps a train motor on port A up to cruising speed, brakes, and repeats in reverse, using the hub's
 LED to show the direction:
 
@@ -184,7 +184,7 @@ public final class LegoTrain {
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.thirdparty.lego.LegoTrain \
+  -Djuno.main=io.github.jabrena.juno.thirdparty.lego.LegoTrain \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 
