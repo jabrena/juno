@@ -34,7 +34,7 @@ final class TftEmulator {
         try (URLClassLoader loader = isolatedLoader()) {
             Class<?> clock = loader.loadClass("io.github.jabrena.juno.api.time.SimulatedClock");
             Class<?> delay = loader.loadClass("io.github.jabrena.juno.api.util.Delay");
-            Class<?> gpio = loader.loadClass("io.github.jabrena.juno.api.hardware.io.gpio.EmulatedShield");
+            Class<?> gpio = loader.loadClass("io.github.jabrena.juno.api.hardware.gpio.EmulatedShield");
             Class<?> shield = loader.loadClass("io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield");
             Class<?> board = loader.loadClass("io.github.jabrena.juno.api.hardware.EmulatedUnoQ");
             Class<?> memory = loader.loadClass("io.github.jabrena.juno.api.hardware.EmulatedMemory");
@@ -87,7 +87,7 @@ final class TftEmulator {
         try (URLClassLoader loader = isolatedLoader()) {
             Class<?> clock = loader.loadClass("io.github.jabrena.juno.api.time.SimulatedClock");
             Class<?> delay = loader.loadClass("io.github.jabrena.juno.api.util.Delay");
-            Class<?> gpio = loader.loadClass("io.github.jabrena.juno.api.hardware.io.gpio.EmulatedShield");
+            Class<?> gpio = loader.loadClass("io.github.jabrena.juno.api.hardware.gpio.EmulatedShield");
             Class<?> shield = loader.loadClass("io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield");
             Class<?> board = loader.loadClass("io.github.jabrena.juno.api.hardware.EmulatedUnoQ");
             Class<?> memory = loader.loadClass("io.github.jabrena.juno.api.hardware.EmulatedMemory");

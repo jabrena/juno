@@ -6,7 +6,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.util.UuidCodec;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import java.util.UUID;
 
 /** UUID construction, value semantics, canonical text, parsing and 16-byte network representation. */

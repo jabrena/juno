@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.net.wifi;
 
-import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.BaudRate;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
 import io.github.jabrena.juno.api.util.Delay;

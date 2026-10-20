@@ -11,7 +11,7 @@ pinout, as used by e.g. [dzindra/lcdkeypad](https://github.com/dzindra/lcdkeypad
 
 Unlike the [LED matrix](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrix.java), this
 shield needs no new compiler intrinsic: every operation is built entirely from
-[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/io/gpio/Gpio.java) pin operations and
+[`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Gpio.java) pin operations and
 [`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/util/Delay.java), so it works today on any
 board Juno's ASM backend targets.
 

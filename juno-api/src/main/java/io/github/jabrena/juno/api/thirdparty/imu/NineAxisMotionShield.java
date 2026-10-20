@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.thirdparty.imu;
 
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
-import io.github.jabrena.juno.api.hardware.io.i2c.I2c;
+import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.i2c.I2c;
 import io.github.jabrena.juno.api.util.Delay;
 
 /**

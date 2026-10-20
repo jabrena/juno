@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.net;
 
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.net.http.HttpMethod;
 import io.github.jabrena.juno.api.net.http.HttpServer;
 import io.github.jabrena.juno.api.net.http.HttpStatus;

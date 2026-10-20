@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.internal;
 
-import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.gpio.Gpio;
 
 /**
  * The board's {@link Gpio}: each method is a GPIO intrinsic the compiler lowers to the Arduino core call, so it has no

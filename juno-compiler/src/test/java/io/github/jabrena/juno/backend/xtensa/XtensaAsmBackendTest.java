@@ -37,7 +37,7 @@ class XtensaAsmBackendTest {
                     Delay.micros(10);
             """;
     private static final String BLINK_IMPORTS = """
-            import io.github.jabrena.juno.api.hardware.io.gpio.DigitalOutput;
+            import io.github.jabrena.juno.api.hardware.gpio.DigitalOutput;
             import io.github.jabrena.juno.api.util.Delay;
             """;
     private static final String SERIAL = """
@@ -50,8 +50,8 @@ class XtensaAsmBackendTest {
                     }
             """;
     private static final String SERIAL_IMPORTS = """
-            import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
-            import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+            import io.github.jabrena.juno.api.hardware.serial.BaudRate;
+            import io.github.jabrena.juno.api.hardware.serial.Serial;
             """;
 
     private static final String SHAPES = """
@@ -59,7 +59,7 @@ class XtensaAsmBackendTest {
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
             import io.github.jabrena.juno.annotations.Board;
             import io.github.jabrena.juno.api.hardware.MCU;
-            import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+            import io.github.jabrena.juno.api.hardware.serial.Serial;
             @Board(ArduinoNanoEsp32.class)
             public final class NanoShapes {
                 interface Shape {
@@ -236,7 +236,7 @@ class XtensaAsmBackendTest {
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.serial.Serial;
                 @Board(ArduinoNanoEsp32.class)
                 public final class NanoCalls {
                     static int mix(int a, int b, int c) {
@@ -363,7 +363,7 @@ class XtensaAsmBackendTest {
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.serial.Serial;
                 @Board(ArduinoNanoEsp32.class)
                 public final class NanoWide {
                     static int sum(int a, int b, int c, int d, int e, int f, int g) {

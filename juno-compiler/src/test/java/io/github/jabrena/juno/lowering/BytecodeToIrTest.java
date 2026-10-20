@@ -36,7 +36,7 @@ class BytecodeToIrTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
@@ -61,7 +61,7 @@ class BytecodeToIrTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
@@ -83,7 +83,7 @@ class BytecodeToIrTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
@@ -109,7 +109,7 @@ class BytecodeToIrTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
@@ -162,7 +162,7 @@ class BytecodeToIrTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;

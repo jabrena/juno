@@ -11,19 +11,18 @@
  *
  * <p>The API lives in subpackages, grouped by the hardware or concern they address:
  * <ul>
- *   <li>{@code io} — general-purpose I/O
- *       ({@link io.github.jabrena.juno.api.hardware.io.gpio.Gpio}, {@link io.github.jabrena.juno.api.hardware.io.gpio.DigitalOutput}),
- *       I2C ({@code io.i2c}) and serial port I/O ({@code io.serial}).</li>
- *   <li>{@code hardware} — program-wide introspection: arena and flash usage
+ *   <li>{@code hardware} — the board's own peripherals, handed out by
+ *       {@link io.github.jabrena.juno.api.hardware.MCU}: general-purpose I/O ({@code hardware.gpio},
+ *       {@link io.github.jabrena.juno.api.hardware.gpio.Gpio}, {@link io.github.jabrena.juno.api.hardware.gpio.DigitalOutput}),
+ *       I2C ({@code hardware.i2c}), serial port I/O ({@code hardware.serial}), USB HID mouse control
+ *       ({@code hardware.hid}), the UNO R4 WiFi's built-in LED matrix with its frame/canvas helpers and
+ *       bitmap fonts ({@code hardware.led}), and program-wide introspection: arena and flash usage
  *       ({@link io.github.jabrena.juno.api.hardware.BoardMemory}) and the board the program was compiled for
  *       ({@link io.github.jabrena.juno.api.hardware.BoardModel}).</li>
- *   <li>{@code hid} — USB HID mouse control.</li>
  *   <li>{@code net} — the Wi-Fi/UDP/HTTP/JSON/email networking stack ({@code net.http},
  *       {@code net.email}) and the
  *       {@link io.github.jabrena.juno.api.net.InternetClock} configuration for the internet-backed
  *       {@link java.time.LocalDateTime#now()} subset.</li>
- *   <li>{@code led} — the UNO R4 WiFi's built-in LED matrix, its frame/canvas helpers, and bitmap
- *       fonts.</li>
  *   <li>{@code thirdparty} — shields, sensors and devices from other vendors: {@code grove}
  *       (the passive Grove Base Shield pin map and allocation-free Grove sensor drivers), {@code lcd}
  *       (character LCD shields), {@code tft} (the ELEGOO 2.8" TFT touch shield and its parallel bus),

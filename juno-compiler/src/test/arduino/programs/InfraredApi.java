@@ -1,9 +1,9 @@
 package demo;
 
-import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.gpio.Gpio;
 import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
-import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.BaudRate;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 
 /** Infrared byte transmit and receive. */
 public final class InfraredApi {

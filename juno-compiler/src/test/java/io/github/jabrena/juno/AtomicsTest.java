@@ -35,7 +35,7 @@ class AtomicsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.serial.Serial;
                 import java.util.concurrent.atomic.AtomicBoolean;
                 import java.util.concurrent.atomic.AtomicInteger;
                 import java.util.concurrent.atomic.AtomicLong;
@@ -111,7 +111,7 @@ class AtomicsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.serial.Serial;
                 @Board(ArduinoUnoR4WiFi.class)
                 public final class Plain {
                     public static void main() {
@@ -135,7 +135,7 @@ class AtomicsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.serial.Serial;
                 @Board(ArduinoUnoR4WiFi.class)
                 public final class Plain {
                     public static void main() {

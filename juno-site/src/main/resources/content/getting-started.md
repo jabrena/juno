@@ -23,7 +23,7 @@ AVR output for the UNO R3 and UNO WiFi Rev2.
 
 This repository contains a working v0.1 compiler, not a JVM interpreter. The first milestone
 supports 32-bit integer code, static methods, branches, loops, and GPIO/time intrinsics. It can
-compile [`juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/gpio/Blink.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/gpio/Blink.java) all the way to a
+compile [`juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) all the way to a
 sketch (`.S` assembly + `Shim.cpp` runtime + `.ino` wrapper).
 
 ```text
@@ -36,8 +36,8 @@ Java source -> javac -> .class -> Juno linker/AOT -> .S + Shim.cpp + .ino -> Ard
 This is a multi-module Maven build:
 
 - [`juno-api/`](https://github.com/jabrena/juno/tree/main/juno-api) — the programming model: the small Java-facing hardware API Juno recognizes as compiler intrinsics
-  (`io.github.jabrena.juno.api`: `Delay`, `Clock`, `Random`, `LedMatrix`, `api.hardware.io.gpio.Gpio`,
-  `api.hardware.io.gpio.DigitalOutput`, `api.thirdparty.lcd.LcdKeypadShield`, `api.thirdparty.tft.TftTouchShield`, `api.hardware.hid.Mouse`, `api.hardware.io.serial.Serial`, …) and the
+  (`io.github.jabrena.juno.api`: `Delay`, `Clock`, `Random`, `LedMatrix`, `api.hardware.gpio.Gpio`,
+  `api.hardware.gpio.DigitalOutput`, `api.thirdparty.lcd.LcdKeypadShield`, `api.thirdparty.tft.TftTouchShield`, `api.hardware.hid.Mouse`, `api.hardware.serial.Serial`, …) and the
   `io.github.jabrena.juno.annotations` package
   (`Board`, `ArduinoBoard`, `ArduinoUnoR4WiFi`, `ArduinoUnoQ`) that entry-point classes use to select a
   compilation target. This is the only artifact programs compile against.
@@ -70,12 +70,12 @@ Use the following commands for the complete `Blink` workflow. Pick one target wi
 ```bash
 # Generate and verify with arduino-cli
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Upload
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Monitor
@@ -96,7 +96,7 @@ at link time:
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.hardware.io.gpio.DigitalOutput;
+import io.github.jabrena.juno.api.hardware.gpio.DigitalOutput;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class Blink {

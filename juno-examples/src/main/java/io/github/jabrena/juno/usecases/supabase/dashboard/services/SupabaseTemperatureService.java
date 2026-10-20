@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.services;
 
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Task;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.time.Clock;

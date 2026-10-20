@@ -4,8 +4,8 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.BaudRate;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 
 /**
  * JLS 17.1 and 17.4.5: a monitor is reentrant, and an unlock happens-before a later lock of the same monitor.

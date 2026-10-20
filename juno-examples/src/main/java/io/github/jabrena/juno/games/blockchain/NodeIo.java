@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.blockchain;
 
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.net.Wifi;
 import io.github.jabrena.juno.api.util.Delay;

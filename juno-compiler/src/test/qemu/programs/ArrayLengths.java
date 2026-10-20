@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 
 /**
  * {@code array.length} on arrays whose size is not known where it is read: a parameter, a field, a returned array,

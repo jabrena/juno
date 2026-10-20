@@ -2,7 +2,7 @@ package io.github.jabrena.juno.games.gladiator.screen;
 
 import io.github.jabrena.juno.api.hardware.MCU;
 
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.time.Clock;
