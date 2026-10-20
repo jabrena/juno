@@ -910,21 +910,22 @@ class GeneratedAsmToolchainTest {
     /** The RCX remote is Java framing over the library-free {@code Infrared} shim, so it compiles with plain Arduino calls. */
     @Test
     @DisplayName("An RCX remote program's shim writes bytes through the library-free IR path")
-    void shouldCompileAnRcxRemoteProgramsShimWithACppCompiler() throws Exception {
+    void shouldCompileARemoteRcxProgramsShimWithACppCompiler() throws Exception {
         // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
-                public final class AsmRcxRemote {
+                import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
+                import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
+                public final class AsmRemoteRcx {
                     public static void main(String[] args) {
-                        RcxRemote remote = new RcxRemote();
-                        remote.begin(2, 3);
+                        RemoteRcx remote = new RemoteRcx(new RcxLink(), 2, 3);
+                        remote.begin();
                         while (true) {
                             int buttons = remote.buttons();
-                            if ((buttons & RcxRemote.A_FORWARD) != 0) {
-                                remote.sendButtons(RcxRemote.B_FORWARD);
+                            if ((buttons & RemoteRcx.A_FORWARD) != 0) {
+                                remote.sendButtons(RemoteRcx.B_FORWARD);
                             }
                             if (remote.message() >= 0) {
                                 remote.sendMessage(7);
@@ -933,14 +934,14 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmRcxRemote", source);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmRemoteRcx", source);
 
         // When
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmRcxRemote");
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmRemoteRcx");
 
         // Then
         assertThat(result.runtimeShim()).contains("juno_ir_write_byte").doesNotContain("ArduinoBLE.h");
-        Path shim = temporaryDirectory.resolve("AsmRcxRemoteShim.cpp");
+        Path shim = temporaryDirectory.resolve("AsmRemoteRcxShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
         syntaxCheckCpp(compiler, shim);
     }
@@ -953,7 +954,8 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
+                import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
                 import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
                 public final class AsmScoutRemote {
                     public static void main(String[] args) {
@@ -963,7 +965,7 @@ class GeneratedAsmToolchainTest {
                         scout.setMode(ScoutRemote.MODE_POWER);
                         scout.playSound(2);
                         scout.selectProgram(3);
-                        scout.sendButtons(RcxRemote.A_FORWARD);
+                        scout.sendButtons(RemoteRcx.A_FORWARD);
                         scout.stopAll();
                         scout.powerOff();
                     }
@@ -1071,12 +1073,13 @@ class GeneratedAsmToolchainTest {
         assembleAndCompile(armGcc, "demo.AsmRcxFirmware", """
                 package demo;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxFirmware;
-                import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
+                import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
                 public final class AsmRcxFirmware {
                     public static void main(String[] args) {
-                        RcxRemote remote = new RcxRemote();
-                        RcxFirmware firmware = new RcxFirmware();
-                        remote.begin(2, 3);
+                        RemoteRcx rcx = new RemoteRcx(new RcxLink(), 2, 3);
+                        RcxFirmware firmware = rcx.getFirmware();
+                        rcx.begin();
                         byte[] block = new byte[64];
                         if (firmware.installed() != 0) return;
                         if (!firmware.delete() || !firmware.start(0x8000, 0)) return;
@@ -1087,40 +1090,54 @@ class GeneratedAsmToolchainTest {
                 """);
     }
 
-    /** Reading the RCX's sensors is a request and reply over the same library-free {@code Infrared} shim. */
+    /** RemoteRcx's motors, sensors, display, sound and battery are requests and replies over the library-free {@code Infrared} shim. */
     @Test
-    @DisplayName("An RCX brick sensor program's shim is valid C++")
-    void shouldCompileAnRcxBrickSensorProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("A program using every RemoteRcx part has a valid C++ shim")
+    void shouldCompileARemoteRcxPartsProgramsShimWithACppCompiler() throws Exception {
         // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxAudio;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxLcd;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxLightSensor;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxMotor;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxRotationSensor;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxTemperatureSensor;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxTouchSensor;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-                import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
                 public final class AsmRcxSensor {
                     public static void main(String[] args) {
-                        RcxLink link = new RcxLink();
-                        RcxRemote remote = new RcxRemote(link);
-                        RcxBrick brick = new RcxBrick(link);
-                        remote.begin(2, 3);
-                        if (!brick.setTouchSensor(RcxBrick.INPUT_1)) return;
-                        if (brick.batteryMillivolts() < 6000) return;
-                        brick.playSound(RcxBrick.SOUND_BEEP);
-                        brick.playTone(440, 50);
-                        brick.setLightSensor(RcxBrick.INPUT_2);
-                        brick.setRotationSensor(RcxBrick.INPUT_3);
-                        brick.setTemperatureSensor(RcxBrick.INPUT_1);
-                        if (brick.rotationDegrees(RcxBrick.INPUT_3) > 90 || brick.temperatureTenths(RcxBrick.INPUT_1) > 300) {
-                            brick.clearSensor(RcxBrick.INPUT_3);
+                        RemoteRcx rcx = new RemoteRcx(new RcxLink(), 2, 3);
+                        RcxTouchSensor touch = new RcxTouchSensor(rcx.getSensor1());
+                        RcxTemperatureSensor temperature = new RcxTemperatureSensor(rcx.getSensor1());
+                        RcxLightSensor light = new RcxLightSensor(rcx.getSensor2());
+                        RcxRotationSensor rotation = new RcxRotationSensor(rcx.getSensor3());
+                        RcxMotor drive = rcx.getMotorA().and(rcx.getMotorB());
+                        RcxMotor arm = rcx.getMotorC();
+                        rcx.begin();
+                        if (!touch.begin()) return;
+                        if (rcx.getBattery().millivolts() < 6000) return;
+                        rcx.getAudio().playSound(RcxAudio.SOUND_BEEP);
+                        rcx.getAudio().playTone(440, 50);
+                        rcx.getLcd().showNumber(light.lightPercent() + rcx.getSensor2().readValue());
+                        rcx.getLcd().showIcon(RcxLcd.ICON_WALKING, true);
+                        light.begin();
+                        rotation.begin();
+                        temperature.begin();
+                        if (rotation.degrees() > 90 || rotation.steps() < -4 || temperature.temperatureTenths() > 300) {
+                            rotation.reset();
                         }
-                        brick.drive(RcxBrick.OUTPUT_A | RcxBrick.OUTPUT_B, 4);
-                        brick.setMotorDirection(RcxBrick.OUTPUT_C, false);
-                        brick.setMotorPower(RcxBrick.OUTPUT_C, 3);
-                        brick.motorFloat(RcxBrick.OUTPUT_C);
-                        while (!brick.isPressed(RcxBrick.INPUT_1)) {
-                            remote.sendButtons(RcxRemote.A_FORWARD);
+                        drive.drive(4);
+                        arm.setPower(3);
+                        arm.backward();
+                        arm.forward();
+                        arm.flt();
+                        drive.stop();
+                        while (!touch.isPressed()) {
+                            rcx.sendButtons(RemoteRcx.A_FORWARD);
                         }
                     }
                 }

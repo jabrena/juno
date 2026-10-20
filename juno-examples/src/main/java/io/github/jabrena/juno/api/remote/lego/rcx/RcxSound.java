@@ -2,9 +2,9 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.remote.lego.rcx.RcxAudio;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -25,24 +25,23 @@ public class RcxSound {
     private static final int G4 = 392;
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink();
-        RcxRemote remote = new RcxRemote(link);
-        RcxBrick brick = new RcxBrick(link);
+        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxAudio audio = remote.getAudio();
         Serial.begin(BaudRate.BAUD_115200);
+        remote.begin();
         Delay.millis(START_MILLIS);
-        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
         Serial.println("Playing five tones");
         Delay.millis(SERIAL_DRAIN_MILLIS);
-        play(E4, brick);
-        play(E4, brick);
-        play(F4, brick);
-        play(G4, brick);
-        play(G4, brick);
+        play(E4, audio);
+        play(E4, audio);
+        play(F4, audio);
+        play(G4, audio);
+        play(G4, audio);
         Serial.println("Five-tone sequence finished");
     }
 
-    private static void play(int frequency, RcxBrick brick) {
-        boolean acknowledged = brick.playTone(frequency, NOTE_CENTISECONDS);
+    private static void play(int frequency, RcxAudio audio) {
+        boolean acknowledged = audio.playTone(frequency, NOTE_CENTISECONDS);
         Serial.print("Tone ");
         Serial.print(frequency);
         Serial.println(acknowledged ? " Hz: acknowledged" : " Hz: no acknowledgement");

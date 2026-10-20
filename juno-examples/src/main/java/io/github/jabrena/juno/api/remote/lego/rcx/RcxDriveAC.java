@@ -2,9 +2,10 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.remote.lego.rcx.RcxBattery;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RcxMotor;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -20,49 +21,47 @@ import io.github.jabrena.juno.util.Delay;
 public class RcxDriveAC {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
-    private static final int LEFT = RcxBrick.OUTPUT_A;
-    private static final int RIGHT = RcxBrick.OUTPUT_C;
-    private static final int ALL_OUTPUTS = RcxBrick.OUTPUT_A | RcxBrick.OUTPUT_B | RcxBrick.OUTPUT_C;
-    private static final int SPEED = RcxBrick.MAX_POWER;
+    private static final int SPEED = RcxMotor.MAX_POWER;
     private static final int MOVE_MILLIS = 1500;
     private static final int STOP_MILLIS = 700;
     private static final int PAUSE_SECONDS = 3;
     private static final int START_MILLIS = 2000;
     private static final int RETRY_MILLIS = 1000;
 
-    private final RcxLink link;
-    private final RcxRemote remote;
-    private final RcxBrick brick;
+    private final RcxMotor left;
+    private final RcxMotor right;
+    private final RcxMotor both;
+    private final RcxBattery battery;
 
-    RcxDriveAC(RcxLink link, RcxRemote remote, RcxBrick brick) {
-        this.link = link;
-        this.remote = remote;
-        this.brick = brick;
+    RcxDriveAC(RcxMotor left, RcxMotor right, RcxBattery battery) {
+        this.left = left;
+        this.right = right;
+        this.both = left.and(right);
+        this.battery = battery;
     }
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink();
-        RcxRemote remote = new RcxRemote(link);
-        RcxBrick brick = new RcxBrick(link);
+        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
         Serial.begin(BaudRate.BAUD_115200);
+        remote.begin();
         Delay.millis(START_MILLIS);
-        RcxDriveAC app = new RcxDriveAC(link, remote, brick);
-        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        int battery = brick.batteryMillivolts();
-        while (battery < 0) {
+        RcxDriveAC app = new RcxDriveAC(remote.getMotorA(), remote.getMotorC(), remote.getBattery());
+        RcxMotor all = app.both.and(remote.getMotorB());
+        int millivolts = app.battery.millivolts();
+        while (millivolts < 0) {
             Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
             Delay.millis(RETRY_MILLIS);
-            battery = brick.batteryMillivolts();
+            millivolts = app.battery.millivolts();
         }
-        app.printBattery(battery);
-        brick.motorOff(ALL_OUTPUTS);
+        app.printBattery(millivolts);
+        all.stop();
 
         while (true) {
             app.move("Forward", SPEED, SPEED);
             app.move("Backward", -SPEED, -SPEED);
             app.move("Spin left", -SPEED, SPEED);
             app.move("Spin right", SPEED, -SPEED);
-            app.printBattery(brick.batteryMillivolts());
+            app.printBattery(app.battery.millivolts());
             Delay.seconds(PAUSE_SECONDS);
         }
     }
@@ -75,16 +74,16 @@ public class RcxDriveAC {
     }
 
     /** Runs the left (A) and right (C) motors at the given speeds, {@code -7..7}, for a moment, then brakes both. */
-    private void move(String name, int left, int right) {
+    private void move(String name, int leftSpeed, int rightSpeed) {
         Serial.println(name);
-        if (left == right) {
-            brick.drive(LEFT | RIGHT, left);
+        if (leftSpeed == rightSpeed) {
+            both.drive(leftSpeed);
         } else {
-            brick.drive(LEFT, left);
-            brick.drive(RIGHT, right);
+            left.drive(leftSpeed);
+            right.drive(rightSpeed);
         }
         Delay.millis(MOVE_MILLIS);
-        brick.drive(LEFT | RIGHT, 0);
+        both.drive(0);
         Delay.millis(STOP_MILLIS);
     }
 }

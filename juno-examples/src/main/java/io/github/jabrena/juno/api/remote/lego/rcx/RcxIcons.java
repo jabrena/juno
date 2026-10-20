@@ -2,9 +2,10 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.remote.lego.rcx.RcxLcd;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RcxMotor;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -25,63 +26,59 @@ public class RcxIcons {
     private static final int START_MILLIS = 2000;
     private static final int RETRY_MILLIS = 1000;
 
-    private final RcxLink link;
-    private final RcxRemote remote;
-    private final RcxBrick brick;
+    private final RcxLcd lcd;
 
-    RcxIcons(RcxLink link, RcxRemote remote, RcxBrick brick) {
-        this.link = link;
-        this.remote = remote;
-        this.brick = brick;
+    RcxIcons(RcxLcd lcd) {
+        this.lcd = lcd;
     }
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink();
-        RcxRemote remote = new RcxRemote(link);
-        RcxBrick brick = new RcxBrick(link);
-        RcxIcons app = new RcxIcons(link, remote, brick);
+        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxLcd lcd = remote.getLcd();
+        RcxMotor motorA = remote.getMotorA();
+        RcxIcons app = new RcxIcons(lcd);
         Serial.begin(BaudRate.BAUD_115200);
+        remote.begin();
         Delay.millis(START_MILLIS);
-        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        while (!brick.showIcon(RcxBrick.ICON_STANDING, false)) {
+        while (!lcd.showIcon(RcxLcd.ICON_STANDING, false)) {
             Serial.println("No answer: is Juno's firmware on the RCX, and is it on and in range?");
             Delay.millis(RETRY_MILLIS);
         }
 
         Serial.println("Each icon in turn");
-        app.flash("standing figure", RcxBrick.ICON_STANDING);
-        app.flash("walking figure", RcxBrick.ICON_WALKING);
-        app.flash("sensor 1 view", RcxBrick.ICON_SENSOR_1_VIEW);
-        app.flash("sensor 1 pressed", RcxBrick.ICON_SENSOR_1_PRESSED);
-        app.flash("sensor 2 view", RcxBrick.ICON_SENSOR_2_VIEW);
-        app.flash("sensor 2 pressed", RcxBrick.ICON_SENSOR_2_PRESSED);
-        app.flash("sensor 3 view", RcxBrick.ICON_SENSOR_3_VIEW);
-        app.flash("sensor 3 pressed", RcxBrick.ICON_SENSOR_3_PRESSED);
-        app.flash("motor A view", RcxBrick.ICON_MOTOR_A_VIEW);
-        app.flash("motor A backward", RcxBrick.ICON_MOTOR_A_BACKWARD);
-        app.flash("motor A forward", RcxBrick.ICON_MOTOR_A_FORWARD);
-        app.flash("motor B view", RcxBrick.ICON_MOTOR_B_VIEW);
-        app.flash("motor B backward", RcxBrick.ICON_MOTOR_B_BACKWARD);
-        app.flash("motor B forward", RcxBrick.ICON_MOTOR_B_FORWARD);
-        app.flash("motor C view", RcxBrick.ICON_MOTOR_C_VIEW);
-        app.flash("motor C backward", RcxBrick.ICON_MOTOR_C_BACKWARD);
-        app.flash("motor C forward", RcxBrick.ICON_MOTOR_C_FORWARD);
-        app.flash("datalog", RcxBrick.ICON_DATALOG);
-        app.flash("download", RcxBrick.ICON_DOWNLOAD);
-        app.flash("upload", RcxBrick.ICON_UPLOAD);
-        app.flash("battery low", RcxBrick.ICON_BATTERY_LOW);
-        app.flash("short range", RcxBrick.ICON_RANGE_SHORT);
-        app.flash("long range", RcxBrick.ICON_RANGE_LONG);
+        app.flash("standing figure", RcxLcd.ICON_STANDING);
+        app.flash("walking figure", RcxLcd.ICON_WALKING);
+        app.flash("sensor 1 view", RcxLcd.ICON_SENSOR_1_VIEW);
+        app.flash("sensor 1 pressed", RcxLcd.ICON_SENSOR_1_PRESSED);
+        app.flash("sensor 2 view", RcxLcd.ICON_SENSOR_2_VIEW);
+        app.flash("sensor 2 pressed", RcxLcd.ICON_SENSOR_2_PRESSED);
+        app.flash("sensor 3 view", RcxLcd.ICON_SENSOR_3_VIEW);
+        app.flash("sensor 3 pressed", RcxLcd.ICON_SENSOR_3_PRESSED);
+        app.flash("motor A view", RcxLcd.ICON_MOTOR_A_VIEW);
+        app.flash("motor A backward", RcxLcd.ICON_MOTOR_A_BACKWARD);
+        app.flash("motor A forward", RcxLcd.ICON_MOTOR_A_FORWARD);
+        app.flash("motor B view", RcxLcd.ICON_MOTOR_B_VIEW);
+        app.flash("motor B backward", RcxLcd.ICON_MOTOR_B_BACKWARD);
+        app.flash("motor B forward", RcxLcd.ICON_MOTOR_B_FORWARD);
+        app.flash("motor C view", RcxLcd.ICON_MOTOR_C_VIEW);
+        app.flash("motor C backward", RcxLcd.ICON_MOTOR_C_BACKWARD);
+        app.flash("motor C forward", RcxLcd.ICON_MOTOR_C_FORWARD);
+        app.flash("datalog", RcxLcd.ICON_DATALOG);
+        app.flash("download", RcxLcd.ICON_DOWNLOAD);
+        app.flash("upload", RcxLcd.ICON_UPLOAD);
+        app.flash("battery low", RcxLcd.ICON_BATTERY_LOW);
+        app.flash("short range", RcxLcd.ICON_RANGE_SHORT);
+        app.flash("long range", RcxLcd.ICON_RANGE_LONG);
 
         Serial.println("Every segment");
-        brick.showIcon(RcxBrick.ICON_ALL, true);
+        lcd.showIcon(RcxLcd.ICON_ALL, true);
         Delay.seconds(ALL_SECONDS);
-        brick.showIcon(RcxBrick.ICON_ALL, false);
+        lcd.showIcon(RcxLcd.ICON_ALL, false);
 
         Serial.println("Motor A forward: arrow and walking figure");
-        brick.drive(RcxBrick.OUTPUT_A, RcxBrick.MAX_POWER);
+        motorA.drive(RcxMotor.MAX_POWER);
         Delay.seconds(MOTOR_SECONDS);
-        brick.drive(RcxBrick.OUTPUT_A, 0);
+        motorA.drive(0);
         Serial.println("Done");
 
         while (true) {
@@ -92,8 +89,8 @@ public class RcxIcons {
     /** Lights {@code icon} for a moment, then hands it back to the brick. */
     private void flash(String name, int icon) {
         Serial.print(name);
-        Serial.println(brick.showIcon(icon, true) ? ": lit" : ": no answer");
+        Serial.println(lcd.showIcon(icon, true) ? ": lit" : ": no answer");
         Delay.millis(ICON_MILLIS);
-        Serial.println(brick.showIcon(icon, false) ? "  back" : "  back: no answer");
+        Serial.println(lcd.showIcon(icon, false) ? "  back" : "  back: no answer");
     }
 }

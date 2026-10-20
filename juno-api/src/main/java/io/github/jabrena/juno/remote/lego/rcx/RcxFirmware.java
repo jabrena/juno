@@ -7,7 +7,7 @@ import io.github.jabrena.juno.hardware.time.Clock;
 /**
  * Loads firmware into an RCX brick over infrared, as the LEGO IR tower does: the brick's boot ROM
  * answers these four commands even when it has no firmware, which is the state it is in after its batteries
- * were out (the display then shows program {@code 0}). Set up the link with {@link RcxRemote#begin} first,
+ * were out (the display then shows program {@code 0}). Get it from {@link RemoteRcx#getFirmware()} and set up the link with {@link RemoteRcx#begin} first,
  * with both the IR LED and the IR receiver module wired, since every step waits for the brick's reply.
  *
  * <p>The sequence is {@link #delete}, {@link #start} with the image's entry address and checksum, one

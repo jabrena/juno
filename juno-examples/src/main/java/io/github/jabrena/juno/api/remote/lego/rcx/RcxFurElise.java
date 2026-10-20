@@ -4,16 +4,17 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.remote.lego.rcx.RcxAudio;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RcxMotor;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.util.Delay;
 
 /**
  * Plays the melody of Beethoven's "Für Elise" on an RCX brick's own speaker over infrared, forever, with a pause
  * between repeats: the theme twice, the middle section, the theme, the middle section again and the closing theme,
  * as the first part of the piece is played with its repeats (about 45 seconds). The brick sounds one tone at a
- * time, so it is the right hand's melody alone. Each note is one {@link RcxBrick#playTone} command; a command takes about 100 ms to send and
+ * time, so it is the right hand's melody alone. Each note is one {@link RcxAudio#playTone} command; a command takes about 100 ms to send and
  * acknowledge, so every note is timed from when it should start rather than from the brick's answer, which
  * keeps the rhythm steady. The melody is two flash tables, so playing allocates nothing. It first switches the
  * brick's outputs off, since the brick keeps running whatever motor command an earlier program left it with.
@@ -33,7 +34,6 @@ public class RcxFurElise {
     private static final int PAUSE_SECONDS = 3;
     private static final int START_MILLIS = 2000;
     private static final int REST = 0;
-    private static final int ALL_OUTPUTS = RcxBrick.OUTPUT_A | RcxBrick.OUTPUT_B | RcxBrick.OUTPUT_C;
 
     private static final int C4 = 262;
     private static final int E4 = 330;
@@ -102,31 +102,26 @@ public class RcxFurElise {
             1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 6,
     };
 
-    private final RcxLink link;
-    private final RcxRemote remote;
-    private final RcxBrick brick;
+    private final RcxAudio audio;
 
-    RcxFurElise(RcxLink link, RcxRemote remote, RcxBrick brick) {
-        this.link = link;
-        this.remote = remote;
-        this.brick = brick;
+    RcxFurElise(RcxAudio audio) {
+        this.audio = audio;
     }
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink();
-        RcxRemote remote = new RcxRemote(link);
-        RcxBrick brick = new RcxBrick(link);
+        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxMotor all = remote.getMotorA().and(remote.getMotorB()).and(remote.getMotorC());
         Serial.begin(BaudRate.BAUD_115200);
+        remote.begin();
         Delay.millis(START_MILLIS);
-        RcxFurElise app = new RcxFurElise(link, remote, brick);
-        remote.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        int battery = brick.batteryMillivolts();
+        RcxFurElise app = new RcxFurElise(remote.getAudio());
+        int battery = remote.getBattery().millivolts();
         while (battery < 0) {
             Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
             Delay.millis(1000);
-            battery = brick.batteryMillivolts();
+            battery = remote.getBattery().millivolts();
         }
-        brick.motorOff(ALL_OUTPUTS);
+        all.stop();
 
         while (true) {
             Serial.println("Fur Elise, Ludwig van Beethoven");
@@ -141,7 +136,7 @@ public class RcxFurElise {
         for (int i = 0; i < NOTES.length; i++) {
             int length = STEPS[i] * STEP_MILLIS;
             if (NOTES[i] != REST) {
-                brick.playTone(NOTES[i], (length - GAP_MILLIS) / 10);
+                audio.playTone(NOTES[i], (length - GAP_MILLIS) / 10);
             }
             noteStart += length;
             int remaining = noteStart - CLOCK.millis();
