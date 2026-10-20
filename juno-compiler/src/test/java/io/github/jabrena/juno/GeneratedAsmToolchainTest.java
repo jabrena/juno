@@ -84,8 +84,8 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.net.InternetClock;
-                import io.github.jabrena.juno.api.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.net.InternetClock;
+                import io.github.jabrena.juno.hardware.net.Wifi;
                 import java.time.LocalDateTime;
                 import java.util.Properties;
                 @Board(ArduinoUnoR4WiFi.class)
@@ -125,7 +125,7 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.util.UuidCodec;
+                import io.github.jabrena.juno.util.UuidCodec;
                 import java.util.UUID;
                 @Board(%1$s.class)
                 public final class %2$s {
@@ -202,12 +202,12 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.util.Random;
-                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
-                import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.util.Delay;
+                import io.github.jabrena.juno.util.Random;
+                import io.github.jabrena.juno.hardware.gpio.Gpio;
+                import io.github.jabrena.juno.hardware.serial.BaudRate;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmSmoke {
                     static int mix(int value) { return (value << 2) ^ 7; }
                     public static void main(String[] args) {
@@ -244,7 +244,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+                import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
                 public final class AsmTft {
                     public static void main(String[] args) {
                         TftTouchShield.begin();
@@ -270,7 +270,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 public final class AsmMath {
                     static long lmix(long a, long b) { return (a + b) * (a - b) % 7; }
                     static float fmix(float a, float b) { return -(a * b) / 2.0f; }
@@ -359,9 +359,9 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.util.Delay;
+                import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class AsmInterfaces {
                     interface Operation { int apply(int value); }
                     static final class Add implements Operation {
@@ -392,7 +392,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 public final class AsmLambdas {
                     interface Operation { int apply(int value); }
                     static final class Adder {
@@ -425,7 +425,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 public final class AsmThreads {
                     static final class Job implements Runnable {
                         public void run() { Delay.millis(1); }
@@ -639,9 +639,9 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
-                import io.github.jabrena.juno.api.hardware.net.http.Json;
-                import io.github.jabrena.juno.api.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.net.http.Json;
+                import io.github.jabrena.juno.hardware.net.Wifi;
                 public final class AsmNetworking {
                     public static void main(String[] args) {
                         Wifi.begin("ssid", "password");
@@ -686,8 +686,8 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.net.Wifi;
-                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQHttps {
                     public static void main(String[] args) {
@@ -720,7 +720,7 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.led.LedCanvas;
+                import io.github.jabrena.juno.hardware.led.LedCanvas;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQLedMatrix {
                     public static void main(String[] args) {
@@ -751,8 +751,8 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.net.email.Pop3Client;
-                import io.github.jabrena.juno.api.hardware.net.email.Smtp;
+                import io.github.jabrena.juno.hardware.net.email.Pop3Client;
+                import io.github.jabrena.juno.hardware.net.email.Smtp;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQEmail {
                     public static void main(String[] args) {
@@ -784,7 +784,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.net.Udp;
+                import io.github.jabrena.juno.hardware.net.Udp;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class AsmUdp {
                     public static void main(String[] args) {
@@ -828,7 +828,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.thirdparty.kasa.KasaSmartPlug;
+                import io.github.jabrena.juno.thirdparty.kasa.KasaSmartPlug;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class AsmKasa {
                     public static void main(String[] args) {
@@ -879,8 +879,8 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.util.Delay;
+                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmLegoTrain {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -916,7 +916,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
                 public final class AsmRcxRemote {
                     public static void main(String[] args) {
                         RcxRemote remote = new RcxRemote();
@@ -953,8 +953,8 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxRemote;
-                import io.github.jabrena.juno.api.thirdparty.lego.scout.ScoutRemote;
+                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.thirdparty.lego.scout.ScoutRemote;
                 public final class AsmScoutRemote {
                     public static void main(String[] args) {
                         ScoutRemote scout = new ScoutRemote();
@@ -1002,7 +1002,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.tft.ParallelBus;
+                import io.github.jabrena.juno.thirdparty.tft.ParallelBus;
                 ${BOARD}
                 public final class ${NAME} {
                     private static final int[] PINS = {8, 9, 2, 3, 4, 5, 6, 7};
@@ -1036,7 +1036,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.ir.Infrared;
+                import io.github.jabrena.juno.thirdparty.ir.Infrared;
                 public final class AsmLoopback {
                     public static void main(String[] args) {
                         Infrared.begin(2, 3, 2400);
@@ -1070,8 +1070,8 @@ class GeneratedAsmToolchainTest {
         // When & Then
         assembleAndCompile(armGcc, "demo.AsmRcxFirmware", """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxFirmware;
-                import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxFirmware;
+                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
                 public final class AsmRcxFirmware {
                     public static void main(String[] args) {
                         RcxRemote remote = new RcxRemote();
@@ -1096,9 +1096,9 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxBrick;
-                import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxLink;
-                import io.github.jabrena.juno.api.thirdparty.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxBrick;
+                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxLink;
+                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
                 public final class AsmRcxSensor {
                     public static void main(String[] args) {
                         RcxLink link = new RcxLink();
@@ -1145,7 +1145,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.lego.pf.PowerFunctionsRemote;
+                import io.github.jabrena.juno.thirdparty.lego.pf.PowerFunctionsRemote;
                 public final class AsmPowerFunctions {
                     public static void main(String[] args) {
                         PowerFunctionsRemote.begin(3);
@@ -1177,7 +1177,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.imu.NineAxisMotionShield;
+                import io.github.jabrena.juno.thirdparty.imu.NineAxisMotionShield;
                 public final class AsmHeading {
                     public static void main(String[] args) {
                         NineAxisMotionShield imu = new NineAxisMotionShield();
@@ -1211,7 +1211,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.imu.NineAxisMotionShield;
+                import io.github.jabrena.juno.thirdparty.imu.NineAxisMotionShield;
                 public final class AsmBalance {
                     public static void main(String[] args) {
                         NineAxisMotionShield imu = new NineAxisMotionShield();
@@ -1241,7 +1241,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmHubImu {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -1283,7 +1283,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmHubProperties {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -1319,7 +1319,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmHubPorts {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -1353,8 +1353,8 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.util.Delay;
+                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQLegoTrain {
                     public static void main(String[] args) {
@@ -1387,8 +1387,8 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.net.Wifi;
-                import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                import io.github.jabrena.juno.thirdparty.sd.SdCard;
                 import java.io.IOException;
                 import java.io.InputStream;
                 import java.util.Properties;
@@ -1425,9 +1425,9 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmStorageOccupancy {
                     public static void main(String[] args) {
                         Serial.println(MCU.getBoardMemory().flashUsedBytes());
@@ -1457,8 +1457,8 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.thirdparty.sd.SdCard;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 import java.io.IOException;
                 import java.io.RandomAccessFile;
                 public final class AsmSdRandomAccess {
@@ -1502,7 +1502,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.net.http.HttpServer;
+                import io.github.jabrena.juno.hardware.net.http.HttpServer;
                 public final class AsmHttpServer {
                     public static void main(String[] args) {
                         HttpServer.begin(80);
@@ -1544,8 +1544,8 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.net.Wifi;
-                import io.github.jabrena.juno.api.hardware.net.http.HttpServer;
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.net.http.HttpServer;
                 @Board(%1$s.class)
                 public final class %2$s {
                     public static void main(String[] args) {
@@ -1583,7 +1583,7 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.net.WifiProvisioner;
+                import io.github.jabrena.juno.hardware.net.WifiProvisioner;
                 @Board(%1$s.class)
                 public final class %2$s {
                     public static void main(String[] args) {
@@ -1604,9 +1604,9 @@ class GeneratedAsmToolchainTest {
 
     private static final String EXCEPTIONS = """
             package demo;
-            import io.github.jabrena.juno.api.hardware.MCU;
-            import io.github.jabrena.juno.api.hardware.time.Clock;
-            import io.github.jabrena.juno.api.hardware.serial.Serial;
+            import io.github.jabrena.juno.hardware.MCU;
+            import io.github.jabrena.juno.hardware.time.Clock;
+            import io.github.jabrena.juno.hardware.serial.Serial;
             public final class AsmExceptions {
                 static final class SensorException extends RuntimeException {
                     final int code;
@@ -1663,7 +1663,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmStringBuilder {
                     public static void main(String[] args) {
                         StringBuilder builder = new StringBuilder(8);
@@ -1693,9 +1693,9 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null || compiler != null, "No toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.time.Clock;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.time.Clock;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmStringConcat {
                     public static void main(String[] args) {
                         String state = MCU.getClock().millis() > 0 ? "on" : null;
@@ -1918,7 +1918,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.net.http.Json;
+                import io.github.jabrena.juno.hardware.net.http.Json;
                 public final class JsonRuntime {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[1];
@@ -1994,7 +1994,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 public final class LegoRuntime {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -2220,9 +2220,9 @@ class GeneratedAsmToolchainTest {
     /** Reaches every supported {@code java.lang.Math} overload, so the shim carries all of their helpers. */
     private static final String MATH_EVERYTHING = """
             package demo;
-            import io.github.jabrena.juno.api.hardware.MCU;
-            import io.github.jabrena.juno.api.hardware.time.Clock;
-            import io.github.jabrena.juno.api.hardware.serial.Serial;
+            import io.github.jabrena.juno.hardware.MCU;
+            import io.github.jabrena.juno.hardware.time.Clock;
+            import io.github.jabrena.juno.hardware.serial.Serial;
             public final class MathEverything {
                 public static void main(String[] args) {
                     int i = MCU.getClock().millis() % 2 == 0 ? 3 : -7;

@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
-import io.github.jabrena.juno.api.hardware.net.Udp;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.hardware.net.Udp;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.serial.Serial;
 
 /**
  * {@link NodeIo#connect()} split into steps, so the frame loop keeps drawing while the node joins Wi-Fi: {@link #start}

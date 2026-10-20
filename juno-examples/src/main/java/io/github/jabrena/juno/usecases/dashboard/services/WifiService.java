@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.usecases.dashboard.services;
 
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiCredentials;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiStatus;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Joins the Wi-Fi network on a thread of its own and publishes the outcome into the model. It waits for the

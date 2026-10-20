@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /** {@link WeatherTFT}'s large seven-segment {@code HH:MM} clock. */
 final class SevenSegmentClock {

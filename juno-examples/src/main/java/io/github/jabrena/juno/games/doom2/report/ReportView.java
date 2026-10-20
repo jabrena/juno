@@ -1,14 +1,14 @@
 package io.github.jabrena.juno.games.doom2.report;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
-import io.github.jabrena.juno.api.util.mvc.View;
 import io.github.jabrena.juno.games.doom.DoomEngine;
 import io.github.jabrena.juno.games.doom2.commons.Doom2State;
 import io.github.jabrena.juno.games.doom2.commons.Doom2Views;
 import io.github.jabrena.juno.games.doom2.commons.Screen;
 import io.github.jabrena.juno.games.doom2.map.DoomMapLoader;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.View;
 
 /**
  * DOOM's intermission after an exit: the finished map's kills, items, secrets and time. The episode's next map is

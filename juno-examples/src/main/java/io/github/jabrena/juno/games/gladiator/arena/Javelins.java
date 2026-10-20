@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.arena;
 
-import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * The two javelins the {@link Match} keeps on the sand. A gladiator that walks over one picks it up; thrown, it flies

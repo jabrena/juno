@@ -1,12 +1,12 @@
 package io.github.jabrena.juno.games.doom2.death;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
-import io.github.jabrena.juno.api.util.mvc.View;
 import io.github.jabrena.juno.games.doom.DoomEngine;
 import io.github.jabrena.juno.games.doom2.commons.Doom2Views;
 import io.github.jabrena.juno.games.doom2.commons.Screen;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.View;
 
 /**
  * DOOM's death card over the last frame of the view. For two seconds it only says YOU DIED, so a finger still firing

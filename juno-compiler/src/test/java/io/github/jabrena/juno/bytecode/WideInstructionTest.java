@@ -22,7 +22,7 @@ class WideInstructionTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 public final class WideIncrement {
                     public static void main(String[] args) {
                         int next = 0;

@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.hardware.BoardMemory;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
+import io.github.jabrena.juno.hardware.BoardMemory;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.sd.SdCard;
 
 /**
  * The map the engine plays, held in RAM: one map at a time (E1M1 to E4M9) read from {@code DOOM1.WAD} on the SD

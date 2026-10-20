@@ -1,8 +1,9 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Drives a two-motor LEGO vehicle around a square, forever: straight for 3 seconds, stop both motors,

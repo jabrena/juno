@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.blackjack;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 import static io.github.jabrena.juno.games.blackjack.Blackjack.BETTING;
 import static io.github.jabrena.juno.games.blackjack.Blackjack.BUTTON;

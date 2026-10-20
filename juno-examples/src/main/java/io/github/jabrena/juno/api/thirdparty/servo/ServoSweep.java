@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.api.thirdparty.servo;
 
-import io.github.jabrena.juno.api.hardware.gpio.Gpio;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.thirdparty.servo.Servo;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Sweeps a 3-wire hobby servo back and forth between 0 and 180 degrees, backed by the Arduino

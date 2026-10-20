@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.gathering;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
-import io.github.jabrena.juno.api.util.mvc.View;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.supabase.dashboard.commons.TemperatureDashboardState;
 import io.github.jabrena.juno.usecases.supabase.dashboard.services.SupabaseTemperatureService;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.View;
 
 /** Displays bounded Supabase page collection progress, opening the histogram only after a complete collection. */
 public final class TemperatureGatheringView implements View {

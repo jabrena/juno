@@ -37,8 +37,8 @@ class XtensaAsmBackendTest {
                     Delay.micros(10);
             """;
     private static final String BLINK_IMPORTS = """
-            import io.github.jabrena.juno.api.hardware.gpio.DigitalOutput;
-            import io.github.jabrena.juno.api.util.Delay;
+            import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+            import io.github.jabrena.juno.util.Delay;
             """;
     private static final String SERIAL = """
                     Serial.begin(BaudRate.BAUD_115200);
@@ -50,16 +50,16 @@ class XtensaAsmBackendTest {
                     }
             """;
     private static final String SERIAL_IMPORTS = """
-            import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-            import io.github.jabrena.juno.api.hardware.serial.Serial;
+            import io.github.jabrena.juno.hardware.serial.BaudRate;
+            import io.github.jabrena.juno.hardware.serial.Serial;
             """;
 
     private static final String SHAPES = """
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.api.hardware.MCU;
-            import io.github.jabrena.juno.api.hardware.serial.Serial;
+            import io.github.jabrena.juno.hardware.MCU;
+            import io.github.jabrena.juno.hardware.serial.Serial;
             @Board(ArduinoNanoEsp32.class)
             public final class NanoShapes {
                 interface Shape {
@@ -130,7 +130,7 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.MCU;
+                import io.github.jabrena.juno.hardware.MCU;
                 %s
                 @Board(ArduinoNanoEsp32.class)
                 public final class %s {
@@ -235,8 +235,8 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 @Board(ArduinoNanoEsp32.class)
                 public final class NanoCalls {
                     static int mix(int a, int b, int c) {
@@ -293,7 +293,7 @@ class XtensaAsmBackendTest {
     void shouldRejectNetworking() {
         // When & Then
         assertThatThrownBy(() -> compile("demo.NanoWifi", "Wifi.status();",
-                "import io.github.jabrena.juno.api.hardware.net.Wifi;"))
+                "import io.github.jabrena.juno.hardware.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("Nano ESP32 has no onboard WiFi module");
     }
@@ -362,8 +362,8 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 @Board(ArduinoNanoEsp32.class)
                 public final class NanoWide {
                     static int sum(int a, int b, int c, int d, int e, int f, int g) {

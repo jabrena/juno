@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.blackjack;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /** Animated casino cover: cards fan out while chips orbit the title. */
 final class Interludes {

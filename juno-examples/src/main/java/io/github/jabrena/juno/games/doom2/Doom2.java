@@ -2,11 +2,6 @@ package io.github.jabrena.juno.games.doom2;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.util.mvc.ViewRouter;
 import io.github.jabrena.juno.games.doom.DoomEngine;
 import io.github.jabrena.juno.games.doom2.commons.Doom2State;
 import io.github.jabrena.juno.games.doom2.commons.Doom2Views;
@@ -21,6 +16,11 @@ import io.github.jabrena.juno.games.doom2.pilot.PilotSelectionView;
 import io.github.jabrena.juno.games.doom2.report.ReportView;
 import io.github.jabrena.juno.games.doom2.services.DoomStartupService;
 import io.github.jabrena.juno.games.doom2.skill.SkillSelectionView;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.mvc.ViewRouter;
 
 /**
  * Incremental MVC migration of DOOM. The original game remains in {@code games.doom}; its screens move here one at a

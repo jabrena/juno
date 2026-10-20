@@ -12,7 +12,7 @@ public final class RcxFirmwareImageSource {
     private static final int IMAGE_MAX_LENGTH = 0x7000;
     private static final int CHECKSUM_END = 0xCC00;
     private static final int CHUNK_SIZE = 4096;
-    private static final String PACKAGE = "io.github.jabrena.juno.api.thirdparty.lego.rcxfirmware";
+    private static final String PACKAGE = "io.github.jabrena.juno.thirdparty.lego.rcxfirmware";
 
     private final H8Image image;
     private final byte[] bytes;

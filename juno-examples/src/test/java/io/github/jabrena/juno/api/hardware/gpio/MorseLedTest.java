@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.gpio;
 
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;

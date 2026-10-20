@@ -1,11 +1,5 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.net.Udp;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.games.gladiator.arena.Arms;
 import io.github.jabrena.juno.games.gladiator.arena.Body;
 import io.github.jabrena.juno.games.gladiator.arena.Coliseum;
@@ -21,6 +15,12 @@ import io.github.jabrena.juno.games.gladiator.view.Figure;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.net.Udp;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * A gladiator's board: it plays one gladiator and shows the battle through its eyes.

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * What flies, in {@link Monsters#shots}: imps' fireballs, which hurt the marine, and the marine's rockets, plasma and

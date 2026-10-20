@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.Delay;
 
 /** Demonstrates fixed-size primitive arrays: indexing, loops, passing to methods, and a 2D array. */
 public class Arrays {

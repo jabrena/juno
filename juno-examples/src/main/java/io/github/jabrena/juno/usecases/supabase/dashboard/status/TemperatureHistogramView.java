@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.status;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.View;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.supabase.dashboard.commons.TemperatureDashboardState;
+import io.github.jabrena.juno.util.mvc.View;
 
 /** The dashboard view: it observes the shared model and redraws only when its status or page changes. */
 public final class TemperatureHistogramView implements View {

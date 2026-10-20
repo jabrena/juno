@@ -52,7 +52,7 @@ class BoardTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 public final class Unannotated {
                     public static void main(String[] args) {
                         Delay.millis(1);
@@ -126,7 +126,7 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.MCU;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(ArduinoUnoQ.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
@@ -155,7 +155,7 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.MCU;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(ArduinoUnoQ.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
@@ -214,7 +214,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.Watchdog;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 @Board(ArduinoUnoQ.class)
                 @Watchdog(timeoutMillis = 3000)
                 public final class WatchdogOnUnoQ {
@@ -240,7 +240,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
                 public final class Portable {
                     public static void main(String[] args) {
@@ -267,7 +267,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
                 public final class Portable {
                     public static void main(String[] args) {
@@ -291,7 +291,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
                 public final class Portable {
                     public static void main(String[] args) {
@@ -314,7 +314,7 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 @Board(ArduinoUnoQ.class)
                 public final class OnlyUnoQ {
                     public static void main(String[] args) {
@@ -337,7 +337,7 @@ class BoardTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 public final class Unrestricted {
                     public static void main(String[] args) {
                         Delay.millis(1);
@@ -357,7 +357,7 @@ class BoardTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 public final class Unannotated2 {
                     public static void main(String[] args) {
                         Delay.millis(1);
@@ -382,7 +382,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.MCU;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
@@ -407,7 +407,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.MCU;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
@@ -431,7 +431,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
@@ -460,7 +460,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
@@ -486,11 +486,11 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.net.Wifi;
-                import io.github.jabrena.juno.api.hardware.net.Udp;
-                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
-                import io.github.jabrena.juno.api.hardware.net.email.Pop3Client;
-                import io.github.jabrena.juno.api.hardware.net.email.Smtp;
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.net.Udp;
+                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.net.email.Pop3Client;
+                import io.github.jabrena.juno.hardware.net.email.Smtp;
                 @Board(ArduinoUnoQ.class)
                 public final class WifiOnUnoQ {
                     public static void main(String[] args) {
@@ -541,7 +541,7 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 @Board(ArduinoUnoQ.class)
                 public final class OnUnoQ {
                     public static void main(String[] args) {
@@ -557,8 +557,8 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.util.Delay;
-                import io.github.jabrena.juno.api.hardware.MCU;
+                import io.github.jabrena.juno.util.Delay;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(ArduinoUnoR4WiFi.class)
                 public final class OnUnoR4 {
                     public static void main(String[] args) {

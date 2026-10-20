@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.tempest;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /** Touch input and pilot selection; the CPU player itself lives in {@link AutopilotTempest}. */
 final class Controls {

@@ -3,11 +3,11 @@ package io.github.jabrena.juno.api.hardware.net.weather;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.net.http.HttpClient;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Connects to WiFi, then periodically requests Madrid's current temperature and local time from
@@ -28,7 +28,7 @@ import io.github.jabrena.juno.api.util.Delay;
  * positions (11-12 and 14-15) rather than parsed generically. Open-Meteo's
  * {@code current.temperature_2m} is a JSON number with a decimal fraction (e.g. {@code 21.2});
  * {@link WeatherClient} reads its raw JSON text directly via {@link
- * io.github.jabrena.juno.api.hardware.net.http.Json#getString(byte[], int, String)} rather than parsing it
+ * io.github.jabrena.juno.hardware.net.http.Json#getString(byte[], int, String)} rather than parsing it
  * to a {@code double} and reformatting, so the displayed value matches Open-Meteo's own text
  * exactly rather than being subject to binary-floating-point rounding.
  */

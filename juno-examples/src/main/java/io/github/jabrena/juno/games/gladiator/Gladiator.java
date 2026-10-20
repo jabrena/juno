@@ -3,16 +3,6 @@ package io.github.jabrena.juno.games.gladiator;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.BoardModel;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.net.Udp;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
 import io.github.jabrena.juno.games.gladiator.net.WifiSettings;
 import io.github.jabrena.juno.games.gladiator.screen.ArenaFlow;
@@ -25,6 +15,16 @@ import io.github.jabrena.juno.games.gladiator.screen.SoloFlow;
 import io.github.jabrena.juno.games.gladiator.view.ClassWireframe;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
+import io.github.jabrena.juno.hardware.BoardModel;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.net.Udp;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * Gladiator, a network game for boards with the ELEGOO 2.8" TFT touch shield: two gladiators fight among the

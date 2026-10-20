@@ -3,8 +3,8 @@ package io.github.jabrena.juno.games.blackjack;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 import static io.github.jabrena.juno.games.blackjack.Cards.handValue;
 import static io.github.jabrena.juno.games.blackjack.Controls.waitForButton;

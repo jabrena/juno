@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.util.Random;
 
 /** The CPU pilot: intercepts whichever warhead is closest to the ground, leading its aim to meet it. */
 final class AutopilotMissileCommand {

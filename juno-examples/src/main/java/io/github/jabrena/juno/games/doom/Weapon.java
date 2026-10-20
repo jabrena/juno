@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * The marine's arms, after DOOM's: fist and chainsaw (slot 1), pistol, shotgun, chaingun, rocket launcher, plasma rifle

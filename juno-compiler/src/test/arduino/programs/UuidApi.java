@@ -1,7 +1,7 @@
 package demo;
 
-import io.github.jabrena.juno.api.util.UuidCodec;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
+import io.github.jabrena.juno.util.UuidCodec;
+import io.github.jabrena.juno.hardware.serial.Serial;
 import java.util.UUID;
 
 /** The portable UUID subset and its caller-buffer network representation. */

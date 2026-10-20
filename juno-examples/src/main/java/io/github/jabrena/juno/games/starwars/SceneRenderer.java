@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.starwars;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 import static io.github.jabrena.juno.games.starwars.Entities.CAP_HEIGHT;
 import static io.github.jabrena.juno.games.starwars.Entities.ENTITIES;

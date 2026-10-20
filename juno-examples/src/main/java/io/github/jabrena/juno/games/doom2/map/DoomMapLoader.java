@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom2.map;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.serial.Serial;
 
 /**
  * Loads the requested map with its {@link MapReader}. Doom2 runs on the main thread alone (the engine leaves no RAM on

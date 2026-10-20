@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.games.blockchain;
 
-import io.github.jabrena.juno.api.hardware.net.Udp;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.net.Udp;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.Delay;
 
 /** Wi-Fi/UDP start-up and serial formatting shared by the blockchain games. */
 public final class NodeIo {

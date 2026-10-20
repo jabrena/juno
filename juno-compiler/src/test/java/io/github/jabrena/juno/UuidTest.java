@@ -166,8 +166,8 @@ class UuidTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    int seed = new io.github.jabrena.juno.api.hardware.gpio.PortNoise().collectSeed(14, 2, 64);
-                    io.github.jabrena.juno.api.util.Random.seed(seed);
+                    int seed = new io.github.jabrena.juno.hardware.gpio.PortNoise().collectSeed(14, 2, 64);
+                    io.github.jabrena.juno.util.Random.seed(seed);
                 }
                 """);
 
@@ -181,8 +181,8 @@ class UuidTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    int seed = new io.github.jabrena.juno.api.hardware.gpio.PortNoise().collectSeed(14, 2, 64);
-                    io.github.jabrena.juno.api.util.Random.seed(seed);
+                    int seed = new io.github.jabrena.juno.hardware.gpio.PortNoise().collectSeed(14, 2, 64);
+                    io.github.jabrena.juno.util.Random.seed(seed);
                 }
                 """);
 
@@ -198,8 +198,8 @@ class UuidTest {
                 public static void main() {
                     byte[] bytes = new byte[20];
                     java.util.UUID original = new java.util.UUID(0x123456789abcdef0L, 0x0fedcba987654321L);
-                    io.github.jabrena.juno.api.util.UuidCodec.toBytes(original, bytes, 2);
-                    java.util.UUID copy = io.github.jabrena.juno.api.util.UuidCodec.fromBytes(bytes, 2);
+                    io.github.jabrena.juno.util.UuidCodec.toBytes(original, bytes, 2);
+                    java.util.UUID copy = io.github.jabrena.juno.util.UuidCodec.fromBytes(bytes, 2);
                     boolean equal = original.equals(copy);
                 }
                 """);

@@ -1,11 +1,13 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxLink;
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * The classic bump and go robot: a two-motor RCX vehicle drives forwards until one of its two

@@ -1,9 +1,5 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
 import io.github.jabrena.juno.games.gladiator.arena.Match;
 import io.github.jabrena.juno.games.gladiator.gladiator.Report;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
@@ -11,6 +7,10 @@ import io.github.jabrena.juno.games.gladiator.view.ClassWireframe;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /** A complete local CPU-versus-CPU match using the selected player profile and a random opponent on an UNO Q. */
 public final class SoloFlow {

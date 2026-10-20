@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.texasholdem;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.Random;
 
 import static io.github.jabrena.juno.games.texasholdem.Controls.waitForButton;
 import static io.github.jabrena.juno.games.texasholdem.Deck.countState;

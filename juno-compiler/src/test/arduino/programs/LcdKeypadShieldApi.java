@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield;
 
 /** The 16x2 LCD keypad shield: text output and button reading. */
 public final class LcdKeypadShieldApi {

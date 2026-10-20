@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.arena;
 
-import io.github.jabrena.juno.api.hardware.net.Udp;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
+import io.github.jabrena.juno.hardware.net.Udp;
 
 /**
  * One gate's gladiator as the {@link Match} knows it: which board holds the slot, where it stands and faces, its

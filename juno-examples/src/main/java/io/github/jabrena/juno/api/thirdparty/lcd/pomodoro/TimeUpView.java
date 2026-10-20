@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.thirdparty.lcd.pomodoro;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.util.Delay;
 
 /** The alarm screen: both rows announce the session is over and the backlight blinks until any button is pressed. */
 final class TimeUpView {

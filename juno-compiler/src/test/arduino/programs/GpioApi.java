@@ -1,11 +1,11 @@
 package demo;
 
-import io.github.jabrena.juno.api.hardware.MCU;
+import io.github.jabrena.juno.hardware.MCU;
 
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.util.Random;
-import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.Random;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 
 /** Digital and analog pins, the clock, delays and the random generator. */
 public final class GpioApi {

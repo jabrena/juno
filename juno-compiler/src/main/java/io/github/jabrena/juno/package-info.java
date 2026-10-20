@@ -30,8 +30,9 @@
  * {@code classfile}/{@code bytecode} (parsing), {@code linker} (closed-world reachability),
  * {@code lowering}/{@code ir} (bytecode to Juno's own IR), {@code optimize} (IR-level passes),
  * {@code analysis} (runtime-risk estimation), and {@code backend} (Cortex-M4 assembly and C++
- * runtime shim generation). {@code api}, {@code annotations}, {@code board}, and {@code intrinsic}
- * define the Java-facing hardware API and the compiler's model of what it can target.
+ * runtime shim generation). {@code board} and {@code intrinsic} define the compiler's model of
+ * what it can target; the Java-facing hardware API itself lives in juno-api ({@code hardware},
+ * {@code thirdparty}, {@code util} and {@code annotations}).
  */
 @NullMarked
 package io.github.jabrena.juno;

@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.api.thirdparty.servo.PwmServoShield;
+import io.github.jabrena.juno.thirdparty.servo.PwmServoShield;
 
 /** Servos on a PCA9685 shield over I2C. */
 public final class PwmServoShieldApi {

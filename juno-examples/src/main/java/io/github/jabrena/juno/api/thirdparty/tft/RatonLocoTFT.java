@@ -2,11 +2,12 @@ package io.github.jabrena.juno.api.thirdparty.tft;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.gpio.DigitalOutput;
-import io.github.jabrena.juno.api.hardware.hid.Mouse;
 import io.github.jabrena.juno.api.hardware.hid.MouseIcon;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+import io.github.jabrena.juno.hardware.hid.Mouse;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * A remote-controlled version of {@link io.github.jabrena.juno.api.hardware.hid.RatonLoco}: the same

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.peers;
 
-import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.usecases.miner.chain.ChainProtocol;
+import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,14 +1,14 @@
 package io.github.jabrena.juno.games.pacman;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static io.github.jabrena.juno.api.thirdparty.tft.Internals.call;
-import static io.github.jabrena.juno.api.thirdparty.tft.Internals.callInt;
-import static io.github.jabrena.juno.api.thirdparty.tft.Internals.getInt;
-import static io.github.jabrena.juno.api.thirdparty.tft.Internals.set;
+import static io.github.jabrena.juno.thirdparty.tft.Internals.call;
+import static io.github.jabrena.juno.thirdparty.tft.Internals.callInt;
+import static io.github.jabrena.juno.thirdparty.tft.Internals.getInt;
+import static io.github.jabrena.juno.thirdparty.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**

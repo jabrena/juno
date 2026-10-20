@@ -1,14 +1,14 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.services;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.util.mvc.Task;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseClient;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseContentRange;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseResponse;
 import io.github.jabrena.juno.usecases.supabase.dashboard.commons.TemperatureDashboardState;
+import io.github.jabrena.juno.util.mvc.Task;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;

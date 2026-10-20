@@ -3,13 +3,13 @@ package io.github.jabrena.juno.language;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.gpio.Gpio;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.language.Interfaces.Half;
 import io.github.jabrena.juno.language.Interfaces.Scale;
+import io.github.jabrena.juno.util.Delay;
 
 /** Demonstrates closed-world interface dispatch with two reachable implementations. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})

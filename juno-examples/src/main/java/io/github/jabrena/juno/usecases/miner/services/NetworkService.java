@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
-import io.github.jabrena.juno.api.hardware.net.Udp;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.hardware.net.Udp;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.miner.chain.BlockPool;
 import io.github.jabrena.juno.usecases.miner.chain.ChainProtocol;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2State;

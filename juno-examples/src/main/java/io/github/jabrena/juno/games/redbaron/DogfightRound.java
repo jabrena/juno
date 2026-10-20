@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.redbaron;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Random;
 
 import static io.github.jabrena.juno.games.redbaron.Entities.E_AUX;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_HEADING;

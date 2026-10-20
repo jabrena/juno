@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.net;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.sd.SdCard;
 
 import java.io.IOException;
 import java.io.InputStream;

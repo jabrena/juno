@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.pacman;
 
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * The CPU pilot: at every junction it favors dots and energizers, flees any active ghost within

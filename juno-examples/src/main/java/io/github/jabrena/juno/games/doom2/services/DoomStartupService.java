@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.games.doom2.services;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
-import io.github.jabrena.juno.api.util.mvc.Task;
 import io.github.jabrena.juno.games.doom2.commons.Doom2State;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.sd.SdCard;
+import io.github.jabrena.juno.util.mvc.Task;
 
 /**
  * Owns Doom2's startup I/O. The controller advances it one short step per frame, on the main thread, while it

@@ -3,10 +3,10 @@ package demo;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.hardware.led.LedCanvas;
-import io.github.jabrena.juno.api.hardware.led.LedMatrix;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.hardware.led.LedCanvas;
+import io.github.jabrena.juno.hardware.led.LedMatrix;
 
 /** The onboard LED matrix: 12x8 on the UNO R4 WiFi, 13x8 on the UNO Q; raw frames and the width-aware canvas. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})

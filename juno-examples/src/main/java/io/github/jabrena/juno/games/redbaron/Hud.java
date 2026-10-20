@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.redbaron;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /** Score, best score, wave, pilot, planes and round goal above the view. */
 final class Hud {

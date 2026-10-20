@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.hardware.BoardMemory;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.hardware.BoardMemory;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * The game's engine as one object another program can drive a frame at a time, so a screen flow other than

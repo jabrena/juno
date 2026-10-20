@@ -1,16 +1,16 @@
 package io.github.jabrena.juno.usecases.dashboard.storage;
 
-import io.github.jabrena.juno.api.hardware.BoardMemory;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
-import io.github.jabrena.juno.api.util.mvc.View;
+import io.github.jabrena.juno.hardware.BoardMemory;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.SdCapacity;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftFpsWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftHeaderWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftOccupancyBar;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.View;
 
 /** Shows flash, RAM-arena and SD-card occupancy as three {@link TftOccupancyBar} rows; the SD row reads the model. */
 public final class TftDashboardStorageView implements View {

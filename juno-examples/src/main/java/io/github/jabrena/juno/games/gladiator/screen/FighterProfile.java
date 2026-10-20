@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.gladiator.screen;
 
-import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.gladiator.arena.GladiatorClass;
 import io.github.jabrena.juno.games.gladiator.gladiator.Brain;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * A player's historical name and gladiator class. The class decides the CPU's fighting style: a RETIARIUS lays its

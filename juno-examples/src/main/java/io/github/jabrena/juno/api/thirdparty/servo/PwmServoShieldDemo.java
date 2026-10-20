@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.servo;
 
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.thirdparty.servo.PwmServoShield;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Sweeps 3-wire hobby servos back and forth between 0 and 180 degrees from a "16 x 12-bit PWM &amp; Servo

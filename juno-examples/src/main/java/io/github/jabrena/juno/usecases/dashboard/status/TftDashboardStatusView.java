@@ -1,8 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.status;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
-import io.github.jabrena.juno.api.util.mvc.View;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.StatusFile;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiStatus;
@@ -10,6 +8,8 @@ import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftButtonWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftFpsWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftHeaderWidget;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftTextWidget;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.View;
 
 /** The network status screen: the Wi-Fi, SD-card and STATUS.TXT state from the model, each line redrawn on change. */
 public final class TftDashboardStatusView implements View {

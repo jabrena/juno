@@ -2,10 +2,11 @@ package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.grove.GroveBaseShield;
+import io.github.jabrena.juno.thirdparty.grove.sensors.GroveDht22;
+import io.github.jabrena.juno.util.Delay;
 
 /** Prints DHT22-format temperature and humidity from the Grove module on D4. */
 @Board({ArduinoUnoR3WiFiRev2.class})

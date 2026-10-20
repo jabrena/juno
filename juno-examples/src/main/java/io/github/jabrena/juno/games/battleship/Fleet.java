@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.battleship;
 
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.util.Random;
 
 import static io.github.jabrena.juno.games.battleship.Battleship.CELLS;
 import static io.github.jabrena.juno.games.battleship.Battleship.HIT;
