@@ -103,7 +103,7 @@ class ExceptionsTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.time.Clock;
+                import io.github.jabrena.juno.api.hardware.time.Clock;
                 import io.github.jabrena.juno.api.hardware.serial.Serial;
                 public final class Selector {
                     public static void main(String[] args) {
@@ -414,7 +414,7 @@ class ExceptionsTest {
         return """
                 package demo;
                 import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.time.Clock;
+                import io.github.jabrena.juno.api.hardware.time.Clock;
                 import io.github.jabrena.juno.api.hardware.serial.Serial;
                 public final class Division {
                     static int ratio(int total, int count) {

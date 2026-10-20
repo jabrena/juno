@@ -146,7 +146,7 @@ Supported today:
   can use `JUNO_LOCAL_DATE_TIME_URL` and `JUNO_LOCAL_DATE_TIME_JSON_PATH`. An unavailable clock returns
   `LocalDateTime.MIN`. Values are one-word arena handles. The intrinsic is available on the UNO R4 WiFi, UNO Q
   and UNO R3 WiFi Rev2; classic UNO R3 is rejected because it has no HTTPS runtime. See the board-ready
-  [`InternetTime` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/net/time/InternetTime.java).
+  [`InternetTime` example](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/time/InternetTime.java).
   Its SD-card `application.properties` requires `wifi.ssid` and `wifi.password`; optionally set `time.api.url`
   and `time.api.jsonPath` to select a different HTTPS endpoint and JSON field. Example:
   `wifi.ssid=YOUR_WIFI_SSID`, `wifi.password=YOUR_WIFI_PASSWORD`,

@@ -4,16 +4,16 @@ description: "Timing: Delay and Clock."
 layout: page
 ---
 
-[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/time/Clock.java)
-(`io.github.jabrena.juno.api.time`) reads the board's monotonic uptime clock. `MCU.getClock()` reads
+[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/time/Clock.java)
+(`io.github.jabrena.juno.api.hardware.time`) reads the board's monotonic uptime clock. `MCU.getClock()` reads
 the real timer: its calls compile to the Arduino core's `millis()`/`micros()` with no extra call in
 between. `port` reads any
-[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/time/Clock.java)
+[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/time/Clock.java)
 instead, which is how a unit test controls time (see [Testing](#testing-code-that-reads-the-clock)).
 Create a program's clocks once, at startup, as you would any other object.
 
 ```java
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 
 private static final Clock CLOCK = MCU.getClock();
 
@@ -44,7 +44,7 @@ the classic single-LED blink.
 ```java
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 import io.github.jabrena.juno.api.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.api.hardware.gpio.Gpio;
 

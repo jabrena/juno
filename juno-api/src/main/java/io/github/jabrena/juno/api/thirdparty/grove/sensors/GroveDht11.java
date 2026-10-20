@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
 import io.github.jabrena.juno.api.hardware.gpio.Gpio;
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 
 /**
  * Reads Seeed's <a href="https://www.seeedstudio.com/Grove-Temperature-Humidity-Sensor-DHT11.html">

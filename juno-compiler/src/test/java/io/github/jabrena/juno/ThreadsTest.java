@@ -339,7 +339,7 @@ class ThreadsTest {
                 import io.github.jabrena.juno.annotations.%s;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.hardware.serial.Serial;
-                import io.github.jabrena.juno.api.net.http.HttpClient;
+                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                 @Board(%s.class)
                 public final class Fetch {
                     public static void main() throws Exception {
@@ -361,7 +361,7 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.net.http.HttpClient;
+                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                 @Board(%1$s.class)
                 public final class ParallelFetch {
                     static final class First {
@@ -481,8 +481,8 @@ class ThreadsTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.api.hardware.serial.Serial;
-                import io.github.jabrena.juno.api.net.Wifi;
-                import io.github.jabrena.juno.api.net.http.HttpClient;
+                import io.github.jabrena.juno.api.hardware.net.Wifi;
+                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                 @Board(ArduinoUnoQ.class)
                 public final class Fetch {
                     public static void main() throws Exception {

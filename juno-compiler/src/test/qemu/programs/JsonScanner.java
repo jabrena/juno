@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.net.http.Json;
+import io.github.jabrena.juno.api.hardware.net.http.Json;
 
 /** Json's scanner, compiled from Java like the program: paths, validation, every getter and UTF-8 decoding. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})

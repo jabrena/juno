@@ -7,7 +7,7 @@ import java.util.Map;
 /** The deliberately bounded {@code java.time.LocalDateTime} subset supported on the board. */
 public final class LocalDateTimeMethods {
     static final Map<MethodRef, Intrinsic> METHODS = Map.ofEntries(
-            Map.entry(new MethodRef("io/github/jabrena/juno/api/net/InternetClock", "configure",
+            Map.entry(new MethodRef("io/github/jabrena/juno/api/hardware/net/InternetClock", "configure",
                     "(Ljava/util/Properties;)Z"), Intrinsic.LOCAL_DATE_TIME_CONFIGURE),
             Map.entry(new MethodRef("java/time/LocalDateTime", "now", "()Ljava/time/LocalDateTime;"),
                     Intrinsic.LOCAL_DATE_TIME_NOW),

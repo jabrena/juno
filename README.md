@@ -258,7 +258,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   `JUNO_LOCAL_DATE_TIME_URL` / `JUNO_LOCAL_DATE_TIME_JSON_PATH` build settings. If the clock is unavailable,
   `now()` returns `LocalDateTime.MIN`. Values are immutable one-word handles in the arena. Supported on the
   UNO R4 WiFi, UNO Q, and UNO R3 WiFi Rev2; classic UNO R3 is rejected because it has no HTTPS runtime. See
-  [`InternetTime`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/time/InternetTime.java). Its SD-card
+  [`InternetTime`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/time/InternetTime.java). Its SD-card
   `application.properties` requires `wifi.ssid` and `wifi.password`; optionally set `time.api.url` and
   `time.api.jsonPath` to select a different HTTPS endpoint and JSON field, for example:
   `wifi.ssid=YOUR_WIFI_SSID`, `wifi.password=YOUR_WIFI_PASSWORD`,
@@ -302,13 +302,13 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
   See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) (GPIO and delays),
   [`SerialCounter`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialCounter.java) (serial I/O),
-  [`HttpServerStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/HttpServerStatus.java) (clocks),
+  [`HttpServerStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerStatus.java) (clocks),
   [`LedMatrixHeart`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixHeart.java) (LED matrix),
-  [`WifiStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatus.java) (Wi-Fi),
-  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSD.java) (Wi-Fi credentials loaded from an SD card),
-  [`WifiStatusSDLcd`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSDLcd.java) (the same, with an LCD Keypad Shield),
-  [`WifiProvisioning`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/WifiProvisioning.java) (access point and HTTP server to provide Wi-Fi credentials),
-  [`HttpsMethods`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/http/HttpsMethods.java) (HTTP/HTTPS and JSON),
+  [`WifiStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatus.java) (Wi-Fi),
+  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSD.java) (Wi-Fi credentials loaded from an SD card),
+  [`WifiStatusSDLcd`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSDLcd.java) (the same, with an LCD Keypad Shield),
+  [`WifiProvisioning`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/WifiProvisioning.java) (access point and HTTP server to provide Wi-Fi credentials),
+  [`HttpsMethods`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpsMethods.java) (HTTP/HTTPS and JSON),
   [`Miner2`](juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/Miner2.java) (UDP between boards:
   factor numbers together and chain the verified answers as a leaderless, Bitcoin-style proof-of-work chain), and
   [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/sd/SdFileOperations.java) (SD card).
@@ -322,10 +322,10 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   The [ELEGOO 2.8" TFT touch shield](https://jabrena.github.io/juno/tft-touch-shield) (display,
   touch, microSD) is shown in
   [`TouchPaintTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/thirdparty/tft/TouchPaintTFT.java) and
-  [`WifiStatusSDTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSDTFT.java).
+  [`WifiStatusSDTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSDTFT.java).
   The [AZDelivery Data Logger Module Data Recorder Shield](https://jabrena.github.io/juno/storage)
   provides the SD card for
-  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/net/wifi/WifiStatusSD.java).
+  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSD.java).
 
 ## Maven modules
 

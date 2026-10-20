@@ -906,7 +906,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.hardware.serial.Serial;
                     public final class BooleanSerial {
                         public static void main(String[] args) {
@@ -1104,7 +1104,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.hardware.serial.Serial;
                     public final class RuntimeConcat {
                         public static void main(String[] args) {
@@ -1140,7 +1140,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.hardware.serial.Serial;
                     public final class NumericConcat {
                         public static void main(String[] args) {
@@ -1179,7 +1179,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.hardware.serial.Serial;
                     public final class ConcatRecipeConstant {
                         public static void main(String[] args) {
@@ -1208,7 +1208,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.hardware.serial.BaudRate;
                     import io.github.jabrena.juno.api.hardware.serial.Serial;
                     public final class DynamicGreeting {
@@ -1244,7 +1244,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.Wifi;
+                    import io.github.jabrena.juno.api.hardware.net.Wifi;
                     public final class WifiConnect {
                         public static void main(String[] args) {
                             Wifi.begin("TestNetwork-SSID", "test-password-123");
@@ -1274,7 +1274,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.api.net.Udp;
+                    import io.github.jabrena.juno.api.hardware.net.Udp;
                     @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                     public final class PortableUdp {
                         public static void main(String[] args) {
@@ -1373,7 +1373,7 @@ class JunoCompilerTest {
             assertThat(pathValue != null && !pathValue.isEmpty()).as("test environment must define PATH").isTrue();
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.Wifi;
+                    import io.github.jabrena.juno.api.hardware.net.Wifi;
                     public final class WifiConnectFromEnv {
                         public static void main(String[] args) {
                             Wifi.begin(System.getenv("PATH"), "password");
@@ -1402,7 +1402,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.Wifi;
+                    import io.github.jabrena.juno.api.hardware.net.Wifi;
                     import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
                     import java.io.IOException;
                     import java.io.InputStream;
@@ -1461,7 +1461,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
                     public final class HighScoreLog {
                         public static void main(String[] args) {
@@ -1505,7 +1505,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
                     public final class DynamicHighScorePath {
                         public static void main(String[] args) {
@@ -1564,7 +1564,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
                     public final class DynamicStatePath {
                         public static void main(String[] args) {
@@ -1869,7 +1869,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.Wifi;
+                    import io.github.jabrena.juno.api.hardware.net.Wifi;
                     public final class WifiConnectFromMissingEnv {
                         public static void main(String[] args) {
                             Wifi.begin(System.getenv("JUNO_TEST_WIFI_SSID_NOT_SET"), "password");
@@ -1899,7 +1899,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     public final class HttpDemo {
                         public static void main(String[] args) {
                             byte[] response = new byte[128];
@@ -1943,7 +1943,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     public final class HttpsDemo {
                         public static void main(String[] args) {
                             byte[] response = new byte[128];
@@ -1985,7 +1985,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     public final class BufferedPostDemo {
                         public static void main(String[] args) {
                             byte[] requestHeaders = new byte[32];
@@ -2025,7 +2025,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     public final class HttpsPathBufferDemo {
                         public static void main(String[] args) {
                             byte[] path = new byte[16];
@@ -2058,7 +2058,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     public final class BufferedHttpsDemo {
                         private static int request(String host, String method,
                                 byte[] path, byte[] requestHeaders, byte[] requestBody,
@@ -2114,8 +2114,8 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.api.net.Wifi;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.Wifi;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     @Board(ArduinoUnoQ.class)
                     public final class UnoQHttps {
                         public static void main(String[] args) {
@@ -2150,7 +2150,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     public final class HttpPathBufferDemo {
                         public static void main(String[] args) {
                             byte[] path = new byte[8];
@@ -2182,7 +2182,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     @Board(ArduinoUnoQ.class)
                     public final class UnoQPlainHttp {
                         public static void main(String[] args) {
@@ -2207,7 +2207,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     public final class BaseUrlWithPath {
                         public static void main(String[] args) {
                             byte[] path = new byte[8];
@@ -2231,7 +2231,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.HttpClient;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                     public final class NoScheme {
                         public static void main(String[] args) {
                             byte[] response = new byte[64];
@@ -2261,8 +2261,8 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.email.Pop3Client;
-                    import io.github.jabrena.juno.api.net.email.Smtp;
+                    import io.github.jabrena.juno.api.hardware.net.email.Pop3Client;
+                    import io.github.jabrena.juno.api.hardware.net.email.Smtp;
                     public final class EmailDemo {
                         public static void main(String[] args) {
                             int sent = Smtp.send("mail.example.com", 587, "alerts@example.com", "secret",
@@ -2309,8 +2309,8 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.api.net.email.Pop3Client;
-                    import io.github.jabrena.juno.api.net.email.Smtp;
+                    import io.github.jabrena.juno.api.hardware.net.email.Pop3Client;
+                    import io.github.jabrena.juno.api.hardware.net.email.Smtp;
                     @Board(ArduinoUnoQ.class)
                     public final class UnoQEmail {
                         public static void main(String[] args) {
@@ -2343,7 +2343,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.HttpServer;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpServer;
                     public final class HttpServerDemo {
                         public static void main(String[] args) {
                             HttpServer.begin(80);
@@ -2398,8 +2398,8 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
-                    import io.github.jabrena.juno.api.net.http.HttpServer;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpServer;
                     public final class HttpServerRuntimeBody {
                         public static void main(String[] args) {
                             HttpServer.begin(80);
@@ -2438,8 +2438,8 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
-                    import io.github.jabrena.juno.api.net.http.HttpServer;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.net.http.HttpServer;
                     public final class HttpServerDynamicContentType {
                         public static void main(String[] args) {
                             HttpServer.begin(80);
@@ -2502,7 +2502,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.Json;
+                    import io.github.jabrena.juno.api.hardware.net.http.Json;
                     public final class JsonDemo {
                         public static void main(String[] args) {
                             byte[] buffer = new byte[64];
@@ -2535,7 +2535,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.Json;
+                    import io.github.jabrena.juno.api.hardware.net.http.Json;
                     public final class JsonStringValueDemo {
                         public static void main(String[] args) {
                             byte[] buffer = new byte[64];
@@ -2561,7 +2561,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.http.Json;
+                    import io.github.jabrena.juno.api.hardware.net.http.Json;
                     public final class JsonIntOnlyDemo {
                         public static void main(String[] args) {
                             byte[] buffer = new byte[64];
@@ -3470,7 +3470,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.hardware.serial.Serial;
                     public final class Geometry {
                         public static void main(String[] args) {
@@ -3507,7 +3507,7 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.api.hardware.MCU;
-                    import io.github.jabrena.juno.api.time.Clock;
+                    import io.github.jabrena.juno.api.hardware.time.Clock;
                     import io.github.jabrena.juno.api.hardware.serial.Serial;
                     public final class WideClamp {
                         public static void main(String[] args) {
@@ -3896,7 +3896,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.api.net.Wifi;
+                    import io.github.jabrena.juno.api.hardware.net.Wifi;
                     public final class UsesCredentials {
                         static Credentials kept;
                         private record Credentials(String ssid, String password) {

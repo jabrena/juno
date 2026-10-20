@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.kasa;
 
-import io.github.jabrena.juno.api.net.Tcp;
-import io.github.jabrena.juno.api.net.Udp;
+import io.github.jabrena.juno.api.hardware.net.Tcp;
+import io.github.jabrena.juno.api.hardware.net.Udp;
 
 /**
  * Allocation-free local control and discovery for legacy TP-Link Kasa HS100 and HS110 plugs.

@@ -4,10 +4,10 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.net.Udp;
-import io.github.jabrena.juno.api.net.Wifi;
+import io.github.jabrena.juno.api.hardware.net.Udp;
+import io.github.jabrena.juno.api.hardware.net.Wifi;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
 /**

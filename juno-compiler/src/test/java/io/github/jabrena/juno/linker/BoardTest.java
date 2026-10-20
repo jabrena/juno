@@ -486,11 +486,11 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.net.Wifi;
-                import io.github.jabrena.juno.api.net.Udp;
-                import io.github.jabrena.juno.api.net.http.HttpClient;
-                import io.github.jabrena.juno.api.net.email.Pop3Client;
-                import io.github.jabrena.juno.api.net.email.Smtp;
+                import io.github.jabrena.juno.api.hardware.net.Wifi;
+                import io.github.jabrena.juno.api.hardware.net.Udp;
+                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.api.hardware.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.hardware.net.email.Smtp;
                 @Board(ArduinoUnoQ.class)
                 public final class WifiOnUnoQ {
                     public static void main(String[] args) {

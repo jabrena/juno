@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.gpio;
 
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 
 /**
  * Collects a best-effort startup seed from a user-provided physical noise source attached to Arduino pins.

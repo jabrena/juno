@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
 /**
  * The Powered Up hub intrinsics as an interface: {@link NativePoweredUpPort} drives the real hub on the board, and a
- * mock or fake takes its place in a unit test through {@link PoweredUpHubRemote#PoweredUpHubRemote(PoweredUpPort, io.github.jabrena.juno.api.time.Clock)}.
+ * mock or fake takes its place in a unit test through {@link PoweredUpHubRemote#PoweredUpHubRemote(PoweredUpPort, io.github.jabrena.juno.api.hardware.time.Clock)}.
  */
 public interface PoweredUpPort {
     boolean connect(int timeoutMillis);

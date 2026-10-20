@@ -801,7 +801,7 @@ class Thumb2AsmBackendTest {
     /**
      * Mirrors {@code WeatherClient}'s exact {@code (int) Json.getDouble(...)} pattern: a double immediately
      * truncated to int (see
-     * {@code juno-examples/src/main/java/io/github/jabrena/juno/api/net/weather/WeatherClient.java}).
+     * {@code juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherClient.java}).
      */
     @Test
     @DisplayName("Lowers a double truncated to int like the Madrid weather program")

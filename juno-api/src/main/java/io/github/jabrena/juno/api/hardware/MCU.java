@@ -11,7 +11,7 @@ import io.github.jabrena.juno.api.hardware.internal.NativeI2c;
 import io.github.jabrena.juno.api.hardware.internal.NativeLedMatrix;
 import io.github.jabrena.juno.api.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.api.hardware.led.LedMatrix;
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 
 /**
  * The board's microcontroller unit (MCU): its {@link Gpio} pins, its {@link I2c} bus, its USB {@link Mouse}, its

@@ -18,23 +18,21 @@
  *       ({@code hardware.hid}), the UNO R4 WiFi's built-in LED matrix with its frame/canvas helpers and
  *       bitmap fonts ({@code hardware.led}), and program-wide introspection: arena and flash usage
  *       ({@link io.github.jabrena.juno.api.hardware.BoardMemory}) and the board the program was compiled for
- *       ({@link io.github.jabrena.juno.api.hardware.BoardModel}).</li>
- *   <li>{@code net} — the Wi-Fi/UDP/HTTP/JSON/email networking stack ({@code net.http},
- *       {@code net.email}) and the
- *       {@link io.github.jabrena.juno.api.net.InternetClock} configuration for the internet-backed
- *       {@link java.time.LocalDateTime#now()} subset.</li>
+ *       ({@link io.github.jabrena.juno.api.hardware.BoardModel}), the Wi-Fi/UDP/HTTP/JSON/email networking stack
+ *       ({@code hardware.net}, {@code hardware.net.http}, {@code hardware.net.email}) with the
+ *       {@link io.github.jabrena.juno.api.hardware.net.InternetClock} configuration for the internet-backed
+ *       {@link java.time.LocalDateTime#now()} subset, and the monotonic uptime clock ({@code hardware.time},
+ *       {@link io.github.jabrena.juno.api.hardware.time.Clock}), for measuring elapsed time without blocking.</li>
  *   <li>{@code thirdparty} — shields, sensors and devices from other vendors: {@code grove}
  *       (the passive Grove Base Shield pin map and allocation-free Grove sensor drivers), {@code lcd}
  *       (character LCD shields), {@code tft} (the ELEGOO 2.8" TFT touch shield and its parallel bus),
  *       {@code imu}, {@code servo}, {@code ir}, {@code sd} and {@code lego} (Powered Up, RCX, Scout and
  *       Power Functions).</li>
- *   <li>{@code time} — the monotonic uptime clock ({@link io.github.jabrena.juno.api.time.Clock}),
- *       for measuring elapsed time without blocking.</li>
  *   <li>{@code util} — general-purpose utilities: blocking millisecond/microsecond delays
  *       ({@link io.github.jabrena.juno.api.util.Delay}), seeded pseudorandom numbers
  *       ({@link io.github.jabrena.juno.api.util.Random}) and UUID byte conversion
- *       ({@link io.github.jabrena.juno.api.util.UuidCodec}).</li>
- *   <li>{@code mvc} — views, navigation and a frame-loop controller for multi-screen TFT programs.</li>
+ *       ({@link io.github.jabrena.juno.api.util.UuidCodec}), plus views, navigation and a frame-loop
+ *       controller for multi-screen TFT programs ({@code util.mvc}).</li>
  * </ul>
  *
  * <p>Classes in this package and its subpackages are final, non-instantiable utility types (or,

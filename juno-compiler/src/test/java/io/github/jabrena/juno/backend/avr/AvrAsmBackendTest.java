@@ -260,7 +260,7 @@ class AvrAsmBackendTest {
     void shouldRejectFeaturesThatDoNotFitTheClassicUnoR3() {
         // When & Then
         assertThatThrownBy(() -> compileR3("demo.R3Wifi", "Wifi.status();",
-                "import io.github.jabrena.juno.api.net.Wifi;"))
+                "import io.github.jabrena.juno.api.hardware.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3 has no onboard WiFi module");
     }
@@ -663,9 +663,9 @@ class AvrAsmBackendTest {
                         Serial.println(Udp.listen(4210));
                 """, """
                 import io.github.jabrena.juno.api.hardware.serial.Serial;
-                import io.github.jabrena.juno.api.net.Udp;
-                import io.github.jabrena.juno.api.net.Wifi;
-                import io.github.jabrena.juno.api.net.http.HttpClient;
+                import io.github.jabrena.juno.api.hardware.net.Udp;
+                import io.github.jabrena.juno.api.hardware.net.Wifi;
+                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                 """);
 
         // When & Then
@@ -686,7 +686,7 @@ class AvrAsmBackendTest {
                         Serial.println(HttpClient.get("https://example.com/", body, 32, body, 32, status));
                 """, """
                 import io.github.jabrena.juno.api.hardware.serial.Serial;
-                import io.github.jabrena.juno.api.net.http.HttpClient;
+                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
                 """);
 
         // When & Then
@@ -707,8 +707,8 @@ class AvrAsmBackendTest {
                         Serial.println(Pop3Client.messageCount("pop.example.com", 995, "user", "secret"));
                 """, """
                 import io.github.jabrena.juno.api.hardware.serial.Serial;
-                import io.github.jabrena.juno.api.net.email.Pop3Client;
-                import io.github.jabrena.juno.api.net.email.Smtp;
+                import io.github.jabrena.juno.api.hardware.net.email.Pop3Client;
+                import io.github.jabrena.juno.api.hardware.net.email.Smtp;
                 """);
 
         // When & Then
@@ -728,7 +728,7 @@ class AvrAsmBackendTest {
                                 "b@example.com", "Hello", "Body"));
                 """, """
                 import io.github.jabrena.juno.api.hardware.serial.Serial;
-                import io.github.jabrena.juno.api.net.email.Smtp;
+                import io.github.jabrena.juno.api.hardware.net.email.Smtp;
                 """))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("Smtp.send (STARTTLS) requires @Board(ArduinoUnoR4WiFi.class)")
