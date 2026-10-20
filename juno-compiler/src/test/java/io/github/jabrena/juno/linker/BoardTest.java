@@ -431,7 +431,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
@@ -460,7 +460,7 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {

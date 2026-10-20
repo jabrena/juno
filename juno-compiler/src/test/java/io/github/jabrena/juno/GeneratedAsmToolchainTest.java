@@ -880,7 +880,7 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.util.Delay;
-                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmLegoTrain {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -916,7 +916,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
                 public final class AsmRcxRemote {
                     public static void main(String[] args) {
                         RcxRemote remote = new RcxRemote();
@@ -953,8 +953,8 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
-                import io.github.jabrena.juno.thirdparty.lego.scout.ScoutRemote;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
                 public final class AsmScoutRemote {
                     public static void main(String[] args) {
                         ScoutRemote scout = new ScoutRemote();
@@ -1070,8 +1070,8 @@ class GeneratedAsmToolchainTest {
         // When & Then
         assembleAndCompile(armGcc, "demo.AsmRcxFirmware", """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxFirmware;
-                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxFirmware;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
                 public final class AsmRcxFirmware {
                     public static void main(String[] args) {
                         RcxRemote remote = new RcxRemote();
@@ -1096,9 +1096,9 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxBrick;
-                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxLink;
-                import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxBrick;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
+                import io.github.jabrena.juno.remote.lego.rcx.RcxRemote;
                 public final class AsmRcxSensor {
                     public static void main(String[] args) {
                         RcxLink link = new RcxLink();
@@ -1145,7 +1145,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.lego.pf.PowerFunctionsRemote;
+                import io.github.jabrena.juno.remote.lego.pf.PowerFunctionsRemote;
                 public final class AsmPowerFunctions {
                     public static void main(String[] args) {
                         PowerFunctionsRemote.begin(3);
@@ -1241,7 +1241,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmHubImu {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -1283,7 +1283,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmHubProperties {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -1319,7 +1319,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
                 public final class AsmHubPorts {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -1354,7 +1354,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
-                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQLegoTrain {
                     public static void main(String[] args) {
@@ -1994,7 +1994,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
                 public final class LegoRuntime {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();

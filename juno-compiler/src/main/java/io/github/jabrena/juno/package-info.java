@@ -32,7 +32,7 @@
  * {@code analysis} (runtime-risk estimation), and {@code backend} (Cortex-M4 assembly and C++
  * runtime shim generation). {@code board} and {@code intrinsic} define the compiler's model of
  * what it can target; the Java-facing hardware API itself lives in juno-api ({@code hardware},
- * {@code thirdparty}, {@code util} and {@code annotations}).
+ * {@code remote}, {@code util} and {@code annotations}).
  */
 @NullMarked
 package io.github.jabrena.juno;
