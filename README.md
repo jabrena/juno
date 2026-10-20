@@ -73,6 +73,11 @@ Nano ESP32's ESP32-S3 (GPIO, delays and serial so far).
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-grove.png" alt="Grove Base Shield" width="220"></td>
     <td>Grove digital, analog, I2C, and UART connectors.</td>
   </tr>
+  <tr>
+    <td><strong>Arduino WiFi Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="220"></td>
+    <td>Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock on the UNO R3 (shield firmware 1.1.0). No access point or HTTPS.</td>
+  </tr>
   </tbody>
 </table>
 
@@ -82,34 +87,6 @@ Requirements: JDK 27+ and Maven 3.10+.
 
 ```bash
 ./mvnw clean install
-```
-
-### Local SonarQube Community
-
-Start the local SonarQube Community instance with Docker Compose:
-
-```bash
-docker compose -f docker-compose.sonar.yml up -d
-```
-
-The one-shot `sonar-init` service creates a local analysis user and writes its credentials and token to the ignored
-`.sonar/sonar.env` file. Wait for that file, load it, and run the Maven analysis from the repository root:
-
-```bash
-until test -s .sonar/sonar.env; do sleep 2; done
-set -a
-. .sonar/sonar.env
-set +a
-./mvnw -Pjacoco,sonar clean verify sonar:sonar
-```
-
-The defaults use the local `admin`/`admin` bootstrap credentials and create `juno-sonar` with password
-`juno-sonar-local`. Override `SONAR_ADMIN_PASSWORD`, `SONAR_ANALYSIS_LOGIN`, `SONAR_ANALYSIS_PASSWORD`, or
-`SONAR_TOKEN_NAME` in `.env` before starting Compose if needed. The `sonar` profile is opt-in, and the `jacoco` profile
-supplies the XML coverage reports used by SonarQube. Stop the instance when it is no longer needed:
-
-```bash
-docker compose -f docker-compose.sonar.yml down
 ```
 
 ### Blink
@@ -253,29 +230,21 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   `toPlainString` follow the JDK's results, scales and rounding. Values are immutable blocks in the
   8 KiB arena and are garbage-collected, so precision is limited by memory, not by a fixed width. See
   [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java).
-- **LocalDateTime:** a bounded `java.time.LocalDateTime` subset with `now()`, `MIN`, calendar and clock
-  component accessors, `equals`, and ISO-8601 `toString`. `now()` synchronizes UTC over HTTPS after Wi-Fi
-  connects; configure the endpoint and JSON path with `InternetClock.configure(Properties)` or the
-  `JUNO_LOCAL_DATE_TIME_URL` / `JUNO_LOCAL_DATE_TIME_JSON_PATH` build settings. If the clock is unavailable,
-  `now()` returns `LocalDateTime.MIN`. Values are immutable one-word handles in the arena. Supported on the
-  UNO R4 WiFi, UNO Q, and UNO R3 WiFi Rev2; classic UNO R3 is rejected because it has no HTTPS runtime. See
-  [`InternetTime`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/time/InternetTime.java). Its SD-card
-  `application.properties` requires `wifi.ssid` and `wifi.password`; optionally set `time.api.url` and
-  `time.api.jsonPath` to select a different HTTPS endpoint and JSON field, for example:
-  `wifi.ssid=YOUR_WIFI_SSID`, `wifi.password=YOUR_WIFI_PASSWORD`,
-  `time.api.url=https://gateway.timeapi.world/timezone/Etc/UTC`, and `time.api.jsonPath=utc_datetime`.
-- **UUID:** immutable `java.util.UUID` values with construction, bit access, version/variant,
-  equality, ordering, canonical parsing/formatting, and caller-buffer 16-byte network conversion
-  through `UuidCodec`. `UUID.randomUUID()` uses the RA4M1 SCE5 TRNG on UNO R4 WiFi, the
-  ATECC608 secure element on UNO WiFi Rev2, and the STM32U585 Zephyr CSPRNG on UNO Q; it is
-  rejected on classic UNO R3. `PortNoise.collectSeed` is an explicitly non-cryptographic,
-  opt-in collector for a user-provided physical noise circuit.
-- **Objects:** simple enums, records, final closed-world classes, constructors, and instance fields.
-  Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative
-  garbage collection. See
-  [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/language/Objects.java).
-- **Interfaces:** directly implemented interfaces with closed-world dispatch through an interface
-  reference. See
+- **LocalDateTime:** `now()`, `MIN`, the date and time getters, `equals` and ISO-8601 `toString`. `now()`
+  gets UTC from an SNTP server once Wi-Fi is up (`JUNO_SNTP_HOST`, default `pool.ntp.org`;
+  `JUNO_SNTP_PORT`, default `123`) and returns `LocalDateTime.MIN` while it is unavailable. Works on every
+  Wi-Fi board, including the UNO R3 with the Arduino WiFi Shield. See
+  [`SntpTime`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java) and
+  [`SntpTimeSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java)
+  (server read from the SD card).
+- **UUID:** `java.util.UUID` construction, parsing, formatting, comparison and 16-byte conversion through
+  `UuidCodec`. `UUID.randomUUID()` uses the board's hardware random source on the UNO R4 WiFi, UNO WiFi
+  Rev2 and UNO Q; the UNO R3 has none, so it is rejected there.
+- **Objects and interfaces:** simple enums, records, final closed-world classes, constructors, instance
+  fields, and directly implemented interfaces with closed-world dispatch through an interface reference.
+  Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative garbage
+  collection. See
+  [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/language/Objects.java) and
   [`Interfaces`](juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java).
 - **Lambdas and method references:** non-capturing and capturing lambdas, plus static, bound,
   unbound, and constructor references emitted through `LambdaMetafactory.metafactory`. See
@@ -313,20 +282,23 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`Miner2`](juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/Miner2.java) (UDP between boards:
   factor numbers together and chain the verified answers as a leaderless, Bitcoin-style proof-of-work chain), and
   [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) (SD card).
-- **Shields:** stacked shields are driven through the same intrinsic APIs.
-  The [Grove Base Shield and Temperature and Humidity Sensor Pro](https://jabrena.github.io/juno/grove)
-  exposes the UNO pin map and reads the sensor without an Arduino library, as shown by
+- **Shields:** stack a shield on the board as designed, with no rewiring, and use it through Juno's APIs;
+  a combination whose shields share pins, such as the LCD Keypad Shield on a UNO R3 with the Arduino WiFi
+  Shield, is rejected at compile time. The [Grove Base Shield](https://jabrena.github.io/juno/grove) brings
+  Grove connectors on the UNO pin map, as shown by
   [`GroveDht22Monitor`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java).
   The [LCD Keypad Shield](https://jabrena.github.io/juno/lcd-keypad-shield) (16x2 display, buttons,
   backlight) is shown in
   [`LcdKeypadDemo`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java).
-  The [ELEGOO 2.8" TFT touch shield](https://jabrena.github.io/juno/tft-touch-shield) (display,
-  touch, microSD) is shown in
+  The [ELEGOO 2.8" TFT touch shield](https://jabrena.github.io/juno/tft-touch-shield) (display, touch,
+  microSD) is shown in
   [`TouchPaintTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java) and
   [`WifiStatusSDTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSDTFT.java).
-  The [AZDelivery Data Logger Module Data Recorder Shield](https://jabrena.github.io/juno/storage)
-  provides the SD card for
+  The [AZDelivery Data Logger Shield](https://jabrena.github.io/juno/storage) provides the SD card for
   [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSD.java).
+  The Arduino WiFi Shield brings Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock to the UNO R3, as shown by
+  [`UdpEcho`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/UdpEcho.java) and
+  [`PlainHttpWeather`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java).
 
 ## Maven modules
 
@@ -388,15 +360,12 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://docs.arduino.cc/hardware/uno-r4-wifi/
 - https://docs.arduino.cc/hardware/uno-wifi-rev2/
 - https://docs.arduino.cc/hardware/uno-rev3/
+- https://docs.arduino.cc/hardware/nano-esp32/
 - https://lejos.sourceforge.io/
+- https://lejos.sourceforge.io/ev3/docs/index.html
 - https://lejos.sourceforge.io/nxt/nxj/api/index.html
 - https://lejos.sourceforge.io/rcx/api/index.html
 - https://pbrick.info/index.html-p=74.html
 - https://tinyvm.sourceforge.net/
-- https://haiku-vm.sourceforge.net/
 - https://sunspotdev.org/
 - https://sunspotdev.org/docs/index.html
-- https://github.com/dzindra/lcdkeypad
-- https://github.com/arduino-libraries/Mouse
-- https://github.com/arduino-libraries/ArduinoBLE
-- https://github.com/mobizt/ESP_SSLClient
