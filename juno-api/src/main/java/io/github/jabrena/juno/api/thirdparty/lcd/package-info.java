@@ -5,7 +5,7 @@
  * standard pinout.
  *
  * <p>Unlike {@code led}'s {@code LedMatrix}, a shield here needs no new compiler intrinsic —
- * every operation is built entirely from {@link io.github.jabrena.juno.api.hardware.io.gpio.Gpio} pin
+ * every operation is built entirely from {@link io.github.jabrena.juno.api.hardware.gpio.Gpio} pin
  * operations and {@link io.github.jabrena.juno.api.util.Delay}.
  */
 @NullMarked

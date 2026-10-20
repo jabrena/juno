@@ -3,7 +3,7 @@ package demo;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 
 /**
  * Virtual threads on the preemptive scheduler: classes and lambdas as Runnables, join, sleep, yield, a monitor,

@@ -2,7 +2,7 @@ package io.github.jabrena.juno.usecases.miner.services;
 
 import io.github.jabrena.juno.api.hardware.MCU;
 
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.net.Udp;
 import io.github.jabrena.juno.api.time.Clock;
 import io.github.jabrena.juno.games.blockchain.Bytes;

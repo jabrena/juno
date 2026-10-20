@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom2.gameplay;
 
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.games.doom.DoomEngine;

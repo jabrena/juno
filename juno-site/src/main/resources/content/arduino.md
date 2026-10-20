@@ -63,7 +63,7 @@ sketch:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
@@ -80,7 +80,7 @@ Verify it with the real Arduino toolchain without touching a connected board:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
@@ -91,14 +91,14 @@ connected matching board:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
 If more than one matching board is connected, or a specific port is required, select it explicitly:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink -Djuno.port=/dev/cu.YOUR_PORT
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.port=/dev/cu.YOUR_PORT
 ```
 
 Uploading overwrites the board's current firmware. The built-in LED (pin 13) should then blink once
@@ -108,7 +108,7 @@ To compile another example, override the configured entry point. For example, `S
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.serial.SerialCounter
+  -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialCounter
 ```
 
 Open an interactive serial monitor (115200 baud by default, matching every juno-examples program's
@@ -124,13 +124,13 @@ Press `Ctrl+C` to exit.
 
 ### Example: SerialCounter (reading Serial output)
 
-[`juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/serial/SerialCounter.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/serial/SerialCounter.java) counts
+[`juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialCounter.java`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialCounter.java) counts
 up once a second over USB serial, so it doubles as a check that the toolchain and the board's
 serial port both work end to end:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.serial.SerialCounter
+  -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialCounter
 ```
 
 Then open the serial monitor at the same baud rate the sketch uses
@@ -319,7 +319,7 @@ register, so this doesn't run out of registers regardless of how large or branch
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 ```
 

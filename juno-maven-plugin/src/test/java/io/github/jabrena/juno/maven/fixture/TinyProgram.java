@@ -2,7 +2,7 @@ package io.github.jabrena.juno.maven.fixture;
 
 import io.github.jabrena.juno.api.hardware.MCU;
 
-import io.github.jabrena.juno.api.hardware.io.gpio.DigitalOutput;
+import io.github.jabrena.juno.api.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.api.util.Delay;
 
 /** Minimal Juno-compilable program: a Mojo test's closed-world classpath entry point, not a build-time example. */

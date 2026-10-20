@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.tft;
 
-import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.gpio.Gpio;
 
 /**
  * Points the TFT driver, touch panel and bus included, at one {@link Gpio}, so a test in any package can drive the

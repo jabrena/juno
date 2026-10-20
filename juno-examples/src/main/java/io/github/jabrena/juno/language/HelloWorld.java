@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.BaudRate;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 
 public class HelloWorld {
     public static void main(String[] args) {

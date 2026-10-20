@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api;
 
 import io.github.jabrena.juno.annotations.Watchdog;
-import io.github.jabrena.juno.api.hardware.io.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.BaudRate;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.util.Delay;
 
 /**

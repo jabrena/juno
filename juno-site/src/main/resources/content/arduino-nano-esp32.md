@@ -37,12 +37,12 @@ capabilities are not wired yet; Juno rejects a program that uses them at compile
 ## Build and run
 
 Install the core once with `arduino-cli core install arduino:esp32`. `Blink` builds for any board,
-and [`SerialBlink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/io/serial/SerialBlink.java)
+and [`SerialBlink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBlink.java)
 targets the Nano ESP32 and reports every LED change at 115200 baud:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.gpio.Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-nano-esp32
 ```
 
@@ -51,7 +51,7 @@ the plugin cannot pick one alone. Upload through the DFU port and monitor the se
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.io.serial.SerialBlink -Djuno.port=1-1
+  -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialBlink -Djuno.port=1-1
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 \
   -Djuno.port=/dev/cu.usbmodem<ID> -Djuno.baudRate=115200
 ```

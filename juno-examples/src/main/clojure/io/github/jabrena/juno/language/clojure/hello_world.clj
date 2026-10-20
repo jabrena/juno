@@ -1,6 +1,6 @@
 (ns io.github.jabrena.juno.language.clojure.hello-world
   (:gen-class)
-  (:import [io.github.jabrena.juno.api.hardware.io.serial BaudRate Serial]))
+  (:import [io.github.jabrena.juno.api.hardware.serial BaudRate Serial]))
 
 (defn -main [& _args]
   (Serial/begin BaudRate/BAUD_115200)

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.hid;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.io.gpio.DigitalOutput;
+import io.github.jabrena.juno.api.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.api.util.Delay;
 
 /**

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.tft;
 
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.gpio.Gpio;
 import io.github.jabrena.juno.api.hardware.led.LedMatrixFontAscii;
 import io.github.jabrena.juno.api.util.Delay;
 

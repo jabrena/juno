@@ -2,7 +2,7 @@ package io.github.jabrena.juno.games.doom;
 
 import io.github.jabrena.juno.api.hardware.BoardMemory;
 import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
 
 /**

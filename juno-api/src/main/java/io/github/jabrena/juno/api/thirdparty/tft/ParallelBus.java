@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.tft;
 
-import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.gpio.Gpio;
 
 /**
  * An 8-bit parallel output bus, as display shields wire it: eight data pins written together, latched by a write

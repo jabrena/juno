@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.lcd;
 
-import io.github.jabrena.juno.api.hardware.io.gpio.Gpio;
+import io.github.jabrena.juno.api.hardware.gpio.Gpio;
 import io.github.jabrena.juno.api.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

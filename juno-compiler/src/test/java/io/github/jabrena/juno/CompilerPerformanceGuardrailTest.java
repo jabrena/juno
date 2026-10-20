@@ -19,7 +19,7 @@ class CompilerPerformanceGuardrailTest {
     void shouldNotRegressTheArithmeticBenchmark() throws Exception {
         assertWithinBaseline("ArithmeticBench", """
                 package benchmark;
-                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.serial.Serial;
                 public final class ArithmeticBench {
                     static int run(int iterations) {
                         int result = 0;
@@ -40,7 +40,7 @@ class CompilerPerformanceGuardrailTest {
     void shouldNotRegressTheArrayBenchmark() throws Exception {
         assertWithinBaseline("ArrayBench", """
                 package benchmark;
-                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.serial.Serial;
                 public final class ArrayBench {
                     static int run(int count) {
                         int[] values = new int[16];
@@ -65,7 +65,7 @@ class CompilerPerformanceGuardrailTest {
     void shouldNotRegressTheStackBenchmark() throws Exception {
         assertWithinBaseline("StackBench", """
                 package benchmark;
-                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.serial.Serial;
                 public final class StackBench {
                     static int run(int seed) {
                         int a = seed + 1;
@@ -94,7 +94,7 @@ class CompilerPerformanceGuardrailTest {
     void shouldNotRegressTheAllocationBenchmark() throws Exception {
         assertWithinBaseline("AllocationBench", """
                 package benchmark;
-                import io.github.jabrena.juno.api.hardware.io.serial.Serial;
+                import io.github.jabrena.juno.api.hardware.serial.Serial;
                 public final class AllocationBench {
                     record Point(int x, int y) {}
                     static int run(int count) {

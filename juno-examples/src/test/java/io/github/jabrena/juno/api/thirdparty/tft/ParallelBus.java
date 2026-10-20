@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.thirdparty.tft;
 
-import io.github.jabrena.juno.api.hardware.io.gpio.EmulatedShield;
+import io.github.jabrena.juno.api.hardware.gpio.EmulatedShield;
 
 /**
  * Test double for the {@code juno} artifact's native {@code ParallelBus}, shadowing it on the test classpath (test
