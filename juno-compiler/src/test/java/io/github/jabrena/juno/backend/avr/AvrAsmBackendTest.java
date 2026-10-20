@@ -259,10 +259,186 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects features that do not fit the classic UNO R3")
     void shouldRejectFeaturesThatDoNotFitTheClassicUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3Wifi", "Wifi.status();",
+        assertThatThrownBy(() -> compileR3("demo.R3Matrix", "MCU.getLedMatrix().begin();", ""))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3 has no onboard LED matrix");
+    }
+
+    @Test
+    @DisplayName("The UNO R3 joins a network through the WiFi Shield's legacy WiFi library")
+    void shouldJoinANetworkThroughTheLegacyWifiShieldLibrary() throws Exception {
+        // Given
+        CompilationResult result = compileR3("demo.R3ShieldWifi", """
+                        int[] ip = new int[4];
+                        Wifi.begin("ssid", "password");
+                        Serial.println(Wifi.status());
+                        Wifi.localIP(ip);
+                """, """
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                """);
+
+        // When & Then
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFi.h>")
+                .contains("WiFi.begin(const_cast<char*>(ssid), password);")
+                .contains("extern \"C\" int32_t juno_wifi_status() {")
+                .doesNotContain("WiFiNINA", "beginAP");
+    }
+
+    @Test
+    @DisplayName("The UNO R3 sends plain HTTP in pieces the WiFi Shield firmware's SPI buffer holds")
+    void shouldSendPlainHttpInPiecesTheShieldFirmwareHolds() throws Exception {
+        // Given
+        CompilationResult result = compileR3("demo.R3ShieldHttp", """
+                        byte[] body = new byte[16];
+                        byte[] headers = new byte[16];
+                        int[] status = new int[2];
+                        Serial.println(HttpClient.get("http://example.com/", body, 16, headers, 16, status));
+                """, """
+                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                """);
+
+        // When & Then
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFi.h>")
+                .contains("class JunoShieldClient : public WiFiClient {")
+                .contains("size_t piece = size - sent < 64 ? size - sent : 64;")
+                .contains("return juno_http_run<JunoShieldClient>(\"GET\"")
+                .doesNotContain("WiFiSSLClient", "JunoHttpsClient");
+    }
+
+    @Test
+    @DisplayName("Rejects HTTPS on the UNO R3")
+    void shouldRejectHttpsOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3ShieldHttps", """
+                        byte[] body = new byte[16];
+                        byte[] headers = new byte[16];
+                        int[] status = new int[2];
+                        HttpClient.get("https://example.com/", body, 16, headers, 16, status);
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3 does not provide a supported TLS client");
+    }
+
+    @Test
+    @DisplayName("Rejects the LCD Keypad Shield together with the WiFi Shield on the UNO R3: they share D4, D7 and D10")
+    void shouldRejectTheLcdKeypadShieldWithTheWifiShieldOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3LcdWifi", """
+                        LcdKeypadShield lcd = new LcdKeypadShield();
+                        lcd.begin();
+                        Wifi.begin("ssid", "password");
+                """, """
+                import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                """))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("LcdKeypadShield cannot be used with the Arduino WiFi Shield on UNO R3")
+                .hasMessageContaining("D4, D7 and D10");
+    }
+
+    @Test
+    @DisplayName("Rejects the LCD Keypad Shield with the SNTP clock on the UNO R3, which needs the WiFi Shield too")
+    void shouldRejectTheLcdKeypadShieldWithTheSntpClockOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3LcdClock", """
+                        LcdKeypadShield lcd = new LcdKeypadShield();
+                        lcd.begin();
+                        lcd.print(java.time.LocalDateTime.now().getSecond(), 2);
+                """, "import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("cannot be stacked");
+    }
+
+    @Test
+    @DisplayName("Accepts the LCD Keypad Shield on the UNO R3 without networking")
+    void shouldAcceptTheLcdKeypadShieldWithoutNetworkingOnTheUnoR3() throws Exception {
+        // When
+        CompilationResult result = compileR3("demo.R3Lcd", """
+                        LcdKeypadShield lcd = new LcdKeypadShield();
+                        lcd.begin();
+                        lcd.print(7, 2);
+                """, "import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;");
+
+        // Then
+        assertThat(result.runtimeShim()).doesNotContain("#include <WiFi.h>");
+    }
+
+    @Test
+    @DisplayName("Accepts the LCD Keypad Shield with Wi-Fi on the UNO WiFi Rev2, whose radio does not use those pins")
+    void shouldAcceptTheLcdKeypadShieldWithWifiOnTheUnoWifiRev2() throws Exception {
+        // When
+        CompilationResult result = compile("demo.Rev2LcdWifi", """
+                        LcdKeypadShield lcd = new LcdKeypadShield();
+                        lcd.begin();
+                        Wifi.begin("ssid", "password");
+                """, """
+                import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                """);
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <WiFiNINA.h>");
+    }
+
+    @Test
+    @DisplayName("Rejects an access point on the UNO R3")
+    void shouldRejectAnAccessPointOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3ShieldAp", "Wifi.beginAP(\"juno\", \"password\");",
                 "import io.github.jabrena.juno.hardware.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("UNO R3 has no onboard WiFi module");
+                .hasMessageContaining("UNO R3's WiFi library cannot start an access point");
+    }
+
+    @Test
+    @DisplayName("The UNO R3 sends UDP through the WiFi Shield's WiFiUDP, without multicast and in SPI-sized pieces")
+    void shouldSendUdpThroughTheWifiShieldsWifiUdp() throws Exception {
+        // Given
+        CompilationResult result = compileR3("demo.R3ShieldUdp", """
+                        byte[] payload = new byte[8];
+                        int[] source = new int[Udp.ENDPOINT_SIZE];
+                        Serial.println(Udp.listen(4210));
+                        Serial.println(Udp.broadcast(4210, payload, payload.length));
+                        Serial.println(Udp.receive(payload, payload.length, source));
+                """, """
+                import io.github.jabrena.juno.hardware.net.udp.Udp;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                """);
+
+        // When & Then
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFiUdp.h>")
+                .contains("class JunoShieldUdp : public WiFiUDP {")
+                .contains("uint8_t beginMulticast(IPAddress, uint16_t) {")
+                .contains("static JunoShieldUdp juno_udp;")
+                .doesNotContain("WiFiNINA");
+    }
+
+    @Test
+    @DisplayName("The UNO R3 opens TCP connections through the WiFi Shield's client, in SPI-sized pieces")
+    void shouldOpenTcpThroughTheWifiShieldsClient() throws Exception {
+        // Given
+        CompilationResult result = compileR3("demo.R3ShieldTcp", """
+                        int[] endpoint = {192, 168, 1, 10};
+                        byte[] payload = new byte[8];
+                        Serial.println(Tcp.open(endpoint, 80) ? 1 : 0);
+                        Serial.println(Tcp.write(payload, payload.length));
+                        Serial.println(Tcp.read(payload, 0, payload.length, 1000));
+                        Tcp.close();
+                """, """
+                import io.github.jabrena.juno.hardware.net.tcp.Tcp;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                """);
+
+        // When & Then
+        assertThat(result.runtimeShim())
+                .contains("class JunoShieldClient : public WiFiClient {")
+                .contains("using JunoTcpClient = JunoShieldClient;")
+                .contains("static JunoTcpClient juno_tcp_client;");
     }
 
     @Test
@@ -663,7 +839,7 @@ class AvrAsmBackendTest {
                         Serial.println(Udp.listen(4210));
                 """, """
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.net.Udp;
+                import io.github.jabrena.juno.hardware.net.udp.Udp;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 """);
@@ -674,6 +850,29 @@ class AvrAsmBackendTest {
                 .contains("#include <WiFiUdp.h>")
                 .contains("static WiFiUDP juno_udp;")
                 .contains("extern \"C\" int32_t juno_avr_thunk_juno_http_get() {");
+    }
+
+    @Test
+    @DisplayName("Opens TCP connections through WiFiNINA's client on the UNO WiFi Rev2")
+    void shouldOpenTcpThroughWifiNinasClientOnTheUnoWifiRev2() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.AvrTcp", """
+                        int[] endpoint = {192, 168, 1, 10};
+                        byte[] payload = new byte[8];
+                        Serial.println(Tcp.open(endpoint, 80) ? 1 : 0);
+                        Serial.println(Tcp.write(payload, payload.length));
+                        Serial.println(Tcp.read(payload, 0, payload.length, 1000));
+                        Tcp.close();
+                """, """
+                import io.github.jabrena.juno.hardware.net.tcp.Tcp;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                """);
+
+        // When & Then
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFiNINA.h>")
+                .contains("using JunoTcpClient = WiFiClient;")
+                .contains("extern \"C\" int32_t juno_tcp_open(");
     }
 
     @Test

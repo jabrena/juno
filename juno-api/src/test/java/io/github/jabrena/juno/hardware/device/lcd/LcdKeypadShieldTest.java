@@ -139,6 +139,26 @@ class LcdKeypadShieldTest {
         verify(pins).pinMode(PIN_BACKLIGHT, Gpio.getOutput());
     }
 
+    @Test
+    @DisplayName("Print with a width zero-pads the digits")
+    void shouldZeroPadTheDigitsToTheWidth() {
+        // When
+        lcd.print(7, 2);
+
+        // Then
+        assertThat(emitted()).containsExactly("3@1", "0@1", "3@1", "7@1");
+    }
+
+    @Test
+    @DisplayName("Print with a width keeps every digit of a wider value and signs a negative one")
+    void shouldKeepEveryDigitAndSignANegativeValue() {
+        // When
+        lcd.print(-2026, 2);
+
+        // Then
+        assertThat(emitted()).containsExactly("2@1", "D@1", "3@1", "2@1", "3@1", "0@1", "3@1", "2@1", "3@1", "6@1");
+    }
+
     @ParameterizedTest(name = "reading {0} maps to key {1}")
     @MethodSource("buttonLadder")
     @DisplayName("Read button maps the analog ladder to its key")
