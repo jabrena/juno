@@ -28,7 +28,7 @@ final class NetworkShimLibraries {
      * for {@code juno_io_offload} (see {@link IoRuntime}): run in place, or on the I/O worker while the caller is
      * parked, in which case the request's text is copied first and the caller holds one HTTP lease.
      */
-    String httpHelpers(Set<ShimFeature> features, String httpsClientType, boolean worker) {
+    String httpHelpers(Set<ShimFeature> features, String httpClientType, String httpsClientType, boolean worker) {
         StringBuilder helpers = new StringBuilder(runtimeSource.load("common/http-client.cpp"));
         if (features.contains(ShimFeature.HTTPS)) {
             helpers.append("""
@@ -51,7 +51,8 @@ final class NetworkShimLibraries {
         if (features.contains(ShimFeature.HTTPS_REQUEST_BUFFER)) {
             helpers.append(runtimeSource.load("common/https-request-buffer.cpp"));
         }
-        return helpers.toString().replace("${JUNO_HTTPS_CLIENT_TYPE}", httpsClientType)
+        return helpers.toString().replace("${JUNO_HTTP_CLIENT_TYPE}", httpClientType)
+                .replace("${JUNO_HTTPS_CLIENT_TYPE}", httpsClientType)
                 .replace("${JUNO_HTTP_RUN_PREPARE}", worker ? """
                       JunoHttpGuard guard(nullptr);
                       char hostCopy[JUNO_IO_TEXT_COPY_BYTES];
@@ -74,7 +75,7 @@ final class NetworkShimLibraries {
      * heap allocator {@code new} for anything Java-visible) plus a single "current" {@code
      * WiFiClient} held across one {@code accept()}/{@code respond()} pair — this hardware can only
      * meaningfully serve one request at a time, so there is no connection-handle scheme.
-     * {@code accept()} mirrors {@link #httpHelpers(Set, String, boolean)}'s response-parsing state machine, reversed
+     * {@code accept()} mirrors {@link #httpHelpers(Set, String, String, boolean)}'s response-parsing state machine, reversed
      * to parse a request line and headers instead of a status line.
      */
     String httpServerHelpers(String transport, boolean worker) {
@@ -93,7 +94,7 @@ final class NetworkShimLibraries {
      * the unrelated client types involved: {@code ESP_SSLClient} ({@code Smtp}'s STARTTLS
      * upgrade wrapper around a plain {@code WiFiClient}) and the core-selected implicit-TLS
      * client used by {@code Pop3Client} — the same template-over-client-type approach as
-     * {@link #httpHelpers(Set, String, boolean)}'s {@code juno_http_request}, reused here because there is no common
+     * {@link #httpHelpers(Set, String, String, boolean)}'s {@code juno_http_request}, reused here because there is no common
      * base class between the two client types worth naming.
      */
     String emailHelpers(Set<ShimFeature> features, String tlsClientDeclaration) {

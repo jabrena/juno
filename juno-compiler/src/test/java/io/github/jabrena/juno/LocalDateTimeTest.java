@@ -49,8 +49,8 @@ class LocalDateTimeTest {
     }
 
     @Test
-    @DisplayName("The runtime shim declares the time API request and the offline check")
-    void shouldDeclareTheTimeApiRequestAndTheOfflineCheckInTheShim() throws Exception {
+    @DisplayName("The runtime shim declares the default SNTP request on its own socket and the offline check")
+    void shouldDeclareTheSntpRequestAndTheOfflineCheckInTheShim() throws Exception {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
@@ -69,11 +69,11 @@ class LocalDateTimeTest {
 
         // When & Then
         assertThat(result.runtimeShim()).contains(
-                "timeapi.io",
-                "/api/Time/current/zone?timeZone=UTC",
+                "static WiFiUDP juno_sntp_udp;",
+                "juno_sntp_udp.beginPacket(\"pool.ntp.org\", static_cast<uint16_t>(123))",
                 "juno_wifi_status() != 3",
-                "juno_https_get",
-                "juno_local_date_time_now");
+                "juno_local_date_time_now")
+                .doesNotContain("juno_https_get", "timeapi.io");
     }
 
     @Test
@@ -128,7 +128,7 @@ class LocalDateTimeTest {
         CompilationResult result = compile("""
                 public static void main() {
                     java.util.Properties properties = new java.util.Properties();
-                    boolean configured = io.github.jabrena.juno.hardware.net.InternetClock.configure(properties);
+                    boolean configured = io.github.jabrena.juno.hardware.net.udp.SntpClock.configure(properties);
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                 }
                 """);
@@ -139,20 +139,21 @@ class LocalDateTimeTest {
     }
 
     @Test
-    @DisplayName("The override reads the URL and JSON path properties in the shim")
-    void shouldReadTheUrlAndJsonPathPropertiesInTheShim() throws Exception {
+    @DisplayName("The override reads the SNTP host and port properties in the shim")
+    void shouldReadTheSntpHostAndPortPropertiesInTheShim() throws Exception {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
                     java.util.Properties properties = new java.util.Properties();
-                    boolean configured = io.github.jabrena.juno.hardware.net.InternetClock.configure(properties);
+                    boolean configured = io.github.jabrena.juno.hardware.net.udp.SntpClock.configure(properties);
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                 }
                 """);
 
         // When & Then
         assertThat(result.runtimeShim()).contains(
-                "time.api.url", "time.api.jsonPath", "juno_properties_get");
+                "\"sntp.host\"", "\"sntp.port\"", "juno_properties_get",
+                "juno_sntp_udp.beginPacket(juno_local_date_time_host,");
     }
 
     @Test
@@ -170,14 +171,14 @@ class LocalDateTimeTest {
     }
 
     @Test
-    @DisplayName("Rejects the internet clock on a board without HTTPS")
-    void shouldRejectTheInternetClockOnABoardWithoutHttps() throws Exception {
+    @DisplayName("Rejects the internet clock on a board without Wi-Fi")
+    void shouldRejectTheInternetClockOnABoardWithoutWifi() throws Exception {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
                 import io.github.jabrena.juno.annotations.Board;
-                @Board(ArduinoUnoR3.class)
+                @Board(ArduinoNanoEsp32.class)
                 public final class OfflineClock {
                     public static void main() {
                         java.time.LocalDateTime value = java.time.LocalDateTime.now();
@@ -189,7 +190,33 @@ class LocalDateTimeTest {
         // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OfflineClock"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("HTTPS networking");
+                .hasMessageContaining("Nano ESP32 has no onboard WiFi module");
+    }
+
+    @Test
+    @DisplayName("Runs the SNTP clock on the UNO R3 through the WiFi Shield's UDP socket")
+    void shouldRunTheSntpClockOnTheUnoR3ThroughTheWifiShield() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+                import io.github.jabrena.juno.annotations.Board;
+                @Board(ArduinoUnoR3.class)
+                public final class ShieldClock {
+                    public static void main() {
+                        java.time.LocalDateTime value = java.time.LocalDateTime.now();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.ShieldClock", source, "25");
+
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ShieldClock");
+
+        // Then
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFiUdp.h>", "static JunoShieldUdp juno_sntp_udp;")
+                .doesNotContain("juno_https_get");
     }
 
     @Test
@@ -219,7 +246,7 @@ class LocalDateTimeTest {
     }
 
     @Test
-    @DisplayName("The UNO WiFi Rev2 shim includes WiFiNINA and the time API")
+    @DisplayName("The UNO WiFi Rev2 shim includes WiFiNINA and the SNTP server")
     void shouldIncludeWifiNinaAndTheTimeApiInTheRev2Shim() throws Exception {
         // Given
         String source = """
@@ -239,7 +266,7 @@ class LocalDateTimeTest {
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiRev2Clock");
 
         // When & Then
-        assertThat(result.runtimeShim()).contains("#include <WiFiNINA.h>", "timeapi.io");
+        assertThat(result.runtimeShim()).contains("#include <WiFiNINA.h>", "#include <WiFiUdp.h>", "pool.ntp.org");
     }
 
     private CompilationResult compile(String members) throws Exception {

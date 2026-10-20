@@ -465,7 +465,7 @@ data for display on the LED matrix.
 
 ## Boards talking to each other over UDP
 
-[`Udp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/Udp.java)
+[`Udp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/udp/Udp.java)
 works on both the UNO R4 WiFi and the UNO Q, and unlike the HTTP client its payloads are runtime
 `byte[]` buffers. That makes it the way for boards to exchange data they compute. Miner 2 builds a
 small, decentralized factorization network on it (see [Games](../games#network)). Code they share, such as SHA-256 and the factorizer, lives in

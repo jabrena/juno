@@ -205,7 +205,7 @@ public final class IntrinsicLowering {
         shim(Intrinsic.LOCAL_DATE_TIME_CONFIGURE, "juno_local_date_time_configure", Result.WORD, List.of(arg(0)),
                 ShimFeature.LOCAL_DATE_TIME, ShimFeature.LOCAL_DATE_TIME_CONFIG, ShimFeature.SD);
         shim(Intrinsic.LOCAL_DATE_TIME_NOW, "juno_local_date_time_now", Result.WORD, List.of(),
-                ShimFeature.LOCAL_DATE_TIME, ShimFeature.LOCAL_DATE_TIME_NOW, ShimFeature.WIFI, ShimFeature.HTTPS);
+                ShimFeature.LOCAL_DATE_TIME, ShimFeature.LOCAL_DATE_TIME_NOW, ShimFeature.WIFI, ShimFeature.SNTP);
         shim(Intrinsic.LOCAL_DATE_TIME_MIN, "juno_local_date_time_min", Result.WORD, List.of(),
                 ShimFeature.LOCAL_DATE_TIME);
         shim(Intrinsic.LOCAL_DATE_TIME_GET_YEAR, "juno_local_date_time_get_year", Result.WORD,

@@ -15,6 +15,7 @@ public:
   uint8_t beginMulticast(IPAddress, uint16_t) { return 1; }
   void stop() {}
   int beginPacket(IPAddress, uint16_t) { return 1; }
+  int beginPacket(const char*, uint16_t) { return 1; }
   int endPacket() { return 1; }
   size_t write(const uint8_t*, size_t size) { return size; }
   int parsePacket() { return 0; }

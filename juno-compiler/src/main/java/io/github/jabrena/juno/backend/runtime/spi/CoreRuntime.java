@@ -148,6 +148,16 @@ public interface CoreRuntime {
         return "";
     }
 
+    /** Declares the internet clock's own SNTP socket, {@code juno_sntp_udp}, of the same type as {@link #udpDeclaration()}. */
+    default String sntpUdpDeclaration() {
+        return udpDeclaration().replace("juno_udp", "juno_sntp_udp");
+    }
+
+    /** The plain-HTTP client type {@code HttpClient}'s {@code http://} requests connect through. */
+    default String httpClientType() {
+        return "WiFiClient";
+    }
+
     /** The type of the client {@link #httpsClientDeclaration()} declares as {@code client}. */
     default String httpsClientType() {
         return httpsClientDeclaration().replace(" client;", "").strip();

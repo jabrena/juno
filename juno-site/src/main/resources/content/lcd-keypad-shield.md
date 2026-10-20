@@ -39,6 +39,7 @@ lcd.home();                  // cursor to (0, 0), keep contents
 lcd.setCursor(0, 1);         // column 0-15, row 0-1
 lcd.print("Hello");          // print text at the cursor, no wrapping
 lcd.print(42);               // print an int in decimal
+lcd.print(7, 2);             // "07": zero-padded to 2 digits, builds no runtime String
 lcd.backlight(false);        // turn the backlight off (or on)
 
 int button = lcd.readButton(); // undebounced read of the currently pressed button
@@ -114,6 +115,11 @@ completion — a good reference for a multi-screen, button-driven program built 
 
 ## Notes
 
+- It cannot be stacked with the [Arduino WiFi Shield](../arduino-one-r3) on a UNO R3: both shields use D4, D7 and D10
+  (this shield's LCD data and backlight, that one's SD-card chip select, handshake line and Wi-Fi chip select).
+  The compiler rejects a UNO R3 program that uses `LcdKeypadShield` together with `Wifi`, `Udp`, `Tcp`,
+  `HttpClient` or `LocalDateTime.now()`. The UNO R4 WiFi, UNO Q and UNO WiFi Rev2 reach their radio without
+  those pins, so there the two work together.
 - `backlight(true)` floats the backlight pin (`INPUT`) rather than driving it `HIGH`, because the
   shield's backlight LED has no current-limiting resistor on some board revisions and driving the
   pin `HIGH` can pull the shared 5V rail down hard enough to keep the LCD from initializing at all.

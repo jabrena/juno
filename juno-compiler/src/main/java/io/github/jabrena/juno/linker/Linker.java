@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public final class Linker {
 
     private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
+    private final ShieldPinConflicts shieldPinConflicts = new ShieldPinConflicts(intrinsicRegistry, REQUIRED_CAPABILITIES);
 
     private final SupportedJdkMethods supportedJdkMethods = new SupportedJdkMethods();
 
@@ -107,6 +108,7 @@ public final class Linker {
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
             requireCapability(declaredBoards, Capability.WATCHDOG, "");
         }
+        shieldPinConflicts.validate(board, reachability.methods());
         return new Program(entryPoint, reachability.methods(), classes, board,
                 mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches(), reachability.lambdaSites(),
                 clojureFunctions);
@@ -286,14 +288,16 @@ public final class Linker {
         require(required, Capability.SECURE_ENTROPY, Intrinsic.UUID_RANDOM);
         require(required, Capability.LED_MATRIX, Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME,
                 Intrinsic.LED_MATRIX_COLUMNS, Intrinsic.LED_MATRIX_CLEAR);
-        require(required, Capability.WIFI, Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_BEGIN_AP, Intrinsic.WIFI_STATUS, Intrinsic.WIFI_LOCAL_IP,
+        require(required, Capability.WIFI_ACCESS_POINT, Intrinsic.WIFI_BEGIN_AP);
+        // LocalDateTime.now() synchronizes over SNTP, a UDP exchange every Wi-Fi board can make.
+        require(required, Capability.WIFI, Intrinsic.LOCAL_DATE_TIME_NOW);
+        require(required, Capability.WIFI, Intrinsic.WIFI_BEGIN, Intrinsic.WIFI_STATUS, Intrinsic.WIFI_LOCAL_IP,
                 Intrinsic.WIFI_GATEWAY_IP, Intrinsic.WIFI_MAC_ADDRESS, Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
                 Intrinsic.UDP_STOP, Intrinsic.TCP_OPEN, Intrinsic.TCP_WRITE, Intrinsic.TCP_READ, Intrinsic.TCP_CLOSE);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
                 Intrinsic.HTTPS_POST, Intrinsic.HTTPS_POST_BUFFER, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH,
                 Intrinsic.HTTPS_QUERY,
                 Intrinsic.HTTPS_REQUEST_BUFFER);
-        require(required, Capability.HTTPS_CLIENT, Intrinsic.LOCAL_DATE_TIME_NOW);
         // A URL-based request needs Wi-Fi whatever its scheme; whether it also needs plain HTTP or TLS is only known
         // from the URL literal, which the lowering checks against the board (HttpUrlCall).
         require(required, Capability.WIFI, Intrinsic.HTTP_URL_GET, Intrinsic.HTTP_URL_GET_PATH_BUFFER,

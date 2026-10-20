@@ -4,7 +4,7 @@ import io.github.jabrena.juno.games.blockchain.Bytes;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
 import io.github.jabrena.juno.games.blockchain.Sha256;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.net.Udp;
+import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.chain.BlockFormat;

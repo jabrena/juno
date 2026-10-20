@@ -67,7 +67,9 @@ public enum ShimFeature {
     LOCAL_DATE_TIME,
     /** Internet-backed UTC synchronization used by {@code LocalDateTime.now()}. */
     LOCAL_DATE_TIME_NOW,
-    /** SD-loaded {@code application.properties} can override the internet clock endpoint and JSON path. */
+    /** The internet clock's SNTP exchange, on its own UDP socket. */
+    SNTP,
+    /** SD-loaded {@code application.properties} can override the internet clock's SNTP server and port. */
     LOCAL_DATE_TIME_CONFIG,
     /** {@code java.math.BigInteger}/{@code BigDecimal}/{@code MathContext}: immutable arena blocks. */
     BIG_NUMBERS,

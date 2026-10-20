@@ -20,7 +20,7 @@
  *       ({@link io.github.jabrena.juno.hardware.BoardMemory}) and the board the program was compiled for
  *       ({@link io.github.jabrena.juno.hardware.BoardModel}), the Wi-Fi/UDP/HTTP/JSON/email networking stack
  *       ({@code hardware.net}, {@code hardware.net.http}, {@code hardware.net.email}) with the
- *       {@link io.github.jabrena.juno.hardware.net.InternetClock} configuration for the internet-backed
+ *       {@link io.github.jabrena.juno.hardware.net.udp.SntpClock} configuration for the internet-backed
  *       {@link java.time.LocalDateTime#now()} subset, and the monotonic uptime clock ({@code hardware.time},
  *       {@link io.github.jabrena.juno.hardware.time.Clock}), for measuring elapsed time without blocking,
  *       and attached shields, sensors and devices ({@code hardware.device}): {@code grove} (the passive

@@ -24,6 +24,16 @@ public enum Capability {
             return board.displayName() + " has no onboard WiFi module";
         }
     },
+    WIFI_ACCESS_POINT("Wifi.beginAP") {
+        @Override
+        public String unsupportedReason(Board board) {
+            if (board.supports(WIFI)) {
+                return board.displayName() + "'s WiFi library cannot start an access point; join a network with "
+                        + "Wifi.begin instead";
+            }
+            return WIFI.unsupportedReason(board);
+        }
+    },
     HTTP_CLIENT("HttpClient") {
         @Override
         public String unsupportedReason(Board board) {

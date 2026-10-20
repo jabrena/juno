@@ -45,5 +45,8 @@ RUN arduino-cli lib install Servo SdFat
 # which the megaavr core does not bundle.
 RUN arduino-cli lib install WiFiNINA
 
+# The UNO R3 reaches the retired shield's HDG104 module through the legacy WiFi library.
+RUN arduino-cli lib install WiFi@1.2.7
+
 WORKDIR /sketches
 CMD ["sleep", "infinity"]

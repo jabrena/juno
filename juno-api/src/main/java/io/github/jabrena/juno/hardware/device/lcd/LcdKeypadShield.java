@@ -14,6 +14,11 @@ import io.github.jabrena.juno.util.Delay;
  * intrinsic: every operation here is built from {@link Gpio#pinMode}, {@link Gpio#digitalWrite},
  * {@link Gpio#analogRead}, and {@link Delay}, the same way {@link io.github.jabrena.juno.hardware.led.LedCanvas}
  * is built from {@link io.github.jabrena.juno.hardware.led.LedMatrix}.
+ *
+ * <p>It cannot be stacked with the Arduino WiFi Shield on a UNO R3: both shields are wired to D4, D7 and D10 (this
+ * shield's LCD data and backlight, that one's SD-card chip select, handshake line and Wi-Fi chip select), so the
+ * compiler rejects a UNO R3 program that uses this shield together with {@code Wifi}, {@code Udp}, {@code Tcp},
+ * {@code HttpClient} or {@code LocalDateTime.now()}.
  */
 public final class LcdKeypadShield {
     /** No button is currently pressed. */
@@ -68,6 +73,14 @@ public final class LcdKeypadShield {
     private static final int COMMAND_SETTLE_MICROS = 200;
 
     private final Gpio gpio;
+    private final int pinRs = PIN_RS;
+    private final int pinEnable = PIN_ENABLE;
+    private final int pinD4 = PIN_D4;
+    private final int pinD5 = PIN_D5;
+    private final int pinD6 = PIN_D6;
+    private final int pinD7 = PIN_D7;
+    private final int pinBacklight = PIN_BACKLIGHT;
+    private final int pinButtons = PIN_BUTTONS;
 
     /** A shield on the board's own pins. Create it once, at startup, and share it. */
     public LcdKeypadShield() {
@@ -81,15 +94,15 @@ public final class LcdKeypadShield {
 
     /** Configures the shield's pins, runs the HD44780 4-bit init sequence, and turns the backlight on. */
     public void begin() {
-        gpio.pinMode(PIN_RS, Gpio.getOutput());
-        gpio.pinMode(PIN_ENABLE, Gpio.getOutput());
-        gpio.pinMode(PIN_D4, Gpio.getOutput());
-        gpio.pinMode(PIN_D5, Gpio.getOutput());
-        gpio.pinMode(PIN_D6, Gpio.getOutput());
-        gpio.pinMode(PIN_D7, Gpio.getOutput());
-        gpio.pinMode(PIN_BUTTONS, Gpio.getInput());
-        gpio.digitalWrite(PIN_RS, false);
-        gpio.digitalWrite(PIN_ENABLE, false);
+        gpio.pinMode(pinRs, Gpio.getOutput());
+        gpio.pinMode(pinEnable, Gpio.getOutput());
+        gpio.pinMode(pinD4, Gpio.getOutput());
+        gpio.pinMode(pinD5, Gpio.getOutput());
+        gpio.pinMode(pinD6, Gpio.getOutput());
+        gpio.pinMode(pinD7, Gpio.getOutput());
+        gpio.pinMode(pinButtons, Gpio.getInput());
+        gpio.digitalWrite(pinRs, false);
+        gpio.digitalWrite(pinEnable, false);
         backlight(true);
 
         // HD44780 datasheet fig. 24: force 8-bit mode three times, then switch to 4-bit mode.
@@ -137,11 +150,11 @@ public final class LcdKeypadShield {
      * initializing.
      */
     public void backlight(boolean on) {
-        gpio.digitalWrite(PIN_BACKLIGHT, false);
+        gpio.digitalWrite(pinBacklight, false);
         if (on) {
-            gpio.pinMode(PIN_BACKLIGHT, Gpio.getInput());
+            gpio.pinMode(pinBacklight, Gpio.getInput());
         } else {
-            gpio.pinMode(PIN_BACKLIGHT, Gpio.getOutput());
+            gpio.pinMode(pinBacklight, Gpio.getOutput());
         }
     }
 
@@ -156,6 +169,36 @@ public final class LcdKeypadShield {
     /** Prints {@code value} in decimal, starting at the cursor. */
     public void print(int value) {
         print(String.valueOf(value));
+    }
+
+    /**
+     * Prints {@code value} in decimal, left-padded with zeros to at least {@code width} digits (so {@code print(7, 2)}
+     * shows {@code 07}), starting at the cursor. Unlike {@link #print(int)}, this never builds a runtime
+     * {@code String}, so a display redrawn in a loop allocates nothing. A negative value gets a leading {@code -}.
+     */
+    public void print(int value, int width) {
+        if (value == Integer.MIN_VALUE) {
+            print("-2147483648");
+            return;
+        }
+        int magnitude = value;
+        if (magnitude < 0) {
+            writeData('-');
+            magnitude = -magnitude;
+        }
+        int divisor = 1;
+        int digits = 1;
+        while (divisor <= magnitude / 10) {
+            divisor = divisor * 10;
+            digits = digits + 1;
+        }
+        for (int pad = digits; pad < width; pad++) {
+            writeData('0');
+        }
+        while (divisor > 0) {
+            writeData('0' + magnitude / divisor % 10);
+            divisor = divisor / 10;
+        }
     }
 
     /**
@@ -176,7 +219,7 @@ public final class LcdKeypadShield {
      * {@link #UP}, {@link #DOWN}, {@link #LEFT}, {@link #SELECT}.
      */
     public int readButton() {
-        int reading = gpio.analogRead(PIN_BUTTONS);
+        int reading = gpio.analogRead(pinButtons);
         if (reading < RIGHT_THRESHOLD) {
             return RIGHT;
         }
@@ -196,27 +239,27 @@ public final class LcdKeypadShield {
     }
 
     private void command(int value) {
-        gpio.digitalWrite(PIN_RS, false);
+        gpio.digitalWrite(pinRs, false);
         writeNibble((value >> 4) & 0x0F);
         writeNibble(value & 0x0F);
         Delay.micros(COMMAND_SETTLE_MICROS);
     }
 
     private void writeData(int value) {
-        gpio.digitalWrite(PIN_RS, true);
+        gpio.digitalWrite(pinRs, true);
         writeNibble((value >> 4) & 0x0F);
         writeNibble(value & 0x0F);
         Delay.micros(COMMAND_SETTLE_MICROS);
     }
 
     private void writeNibble(int nibble) {
-        gpio.digitalWrite(PIN_D4, (nibble & 0x1) != 0);
-        gpio.digitalWrite(PIN_D5, (nibble & 0x2) != 0);
-        gpio.digitalWrite(PIN_D6, (nibble & 0x4) != 0);
-        gpio.digitalWrite(PIN_D7, (nibble & 0x8) != 0);
-        gpio.digitalWrite(PIN_ENABLE, true);
+        gpio.digitalWrite(pinD4, (nibble & 0x1) != 0);
+        gpio.digitalWrite(pinD5, (nibble & 0x2) != 0);
+        gpio.digitalWrite(pinD6, (nibble & 0x4) != 0);
+        gpio.digitalWrite(pinD7, (nibble & 0x8) != 0);
+        gpio.digitalWrite(pinEnable, true);
         Delay.micros(ENABLE_PULSE_MICROS);
-        gpio.digitalWrite(PIN_ENABLE, false);
+        gpio.digitalWrite(pinEnable, false);
         Delay.micros(NIBBLE_SETTLE_MICROS);
     }
 }

@@ -11,7 +11,7 @@ import io.github.jabrena.juno.games.gladiator.arena.Side;
 import io.github.jabrena.juno.games.gladiator.gladiator.Brain;
 import io.github.jabrena.juno.games.gladiator.gladiator.Senses;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
-import io.github.jabrena.juno.hardware.net.Udp;
+import io.github.jabrena.juno.hardware.net.udp.Udp;
 
 /**
  * The local arena and CPU opponent used by UNO Q Solo mode, independent of display and touch input: a new

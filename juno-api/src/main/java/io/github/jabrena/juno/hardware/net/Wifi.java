@@ -2,7 +2,8 @@ package io.github.jabrena.juno.hardware.net;
 
 /**
  * WiFi connection control recognized as compiler intrinsics by Juno, backed by the Arduino
- * board networking stack ({@code WiFiS3} on UNO R4 WiFi, {@code Arduino_RouterBridge} on UNO Q).
+ * board networking stack ({@code WiFiS3} on UNO R4 WiFi, {@code WiFiNINA} on UNO WiFi Rev2,
+ * {@code Arduino_RouterBridge} on UNO Q, and the retired Arduino WiFi Shield's legacy {@code WiFi} library on UNO R3).
  *
  * <p>{@code ssid}/{@code password} may be string literals, compile-time values resolved from
  * {@code System.getenv("NAME")}, or stable runtime strings returned by APIs such as
@@ -15,6 +16,13 @@ public final class Wifi {
 
     /** The {@link #status} value once connected, mirroring Arduino's {@code WL_CONNECTED}. */
     public static final int STATUS_CONNECTED = 3;
+
+    /**
+     * The {@link #status} value when the board gets no answer from its Wi-Fi hardware, mirroring Arduino's
+     * {@code WL_NO_SHIELD}, e.g. a UNO R3 whose Arduino WiFi Shield is missing or not seated. With no shield at all the
+     * legacy library may instead keep waiting on the shield's D7 handshake line.
+     */
+    public static final int STATUS_NO_SHIELD = 255;
 
     /** The {@link #status} value once {@link #beginAP} is serving, mirroring {@code WL_AP_LISTENING} (UNO R4 WiFi only). */
     public static final int STATUS_AP_LISTENING = 7;

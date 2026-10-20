@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -20,12 +21,13 @@ class LocalDateTimeRuntimeTest {
     Path temporaryDirectory;
 
     @Test
-    @DisplayName("Returns the minimum while offline, then advances the synchronized clock across a leap day")
-    void shouldReturnMinimumWhileOfflineThenAdvanceTheSynchronizedClockAcrossLeapDay() throws Exception {
+    @DisplayName("Synchronizes over SNTP: sends a client request and turns the server's 1900-based seconds into UTC")
+    void shouldSynchronizeOverSntp() throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        String runtime = new LocalDateTimeRuntime(Map.of(
-                "JUNO_LOCAL_DATE_TIME_JSON_PATH", "data.current.dateTime")).helpers(true);
+        long ntpSeconds = Instant.parse("2024-02-29T12:34:56Z").getEpochSecond() + 2_208_988_800L;
+        String runtime = new LocalDateTimeRuntime(Map.of("JUNO_SNTP_HOST", "time.example", "JUNO_SNTP_PORT", "1123"))
+                .helpers(true, false, "static FakeUdp juno_sntp_udp;");
         String driver = """
                 #include <cstdint>
                 #include <cstdlib>
@@ -45,45 +47,55 @@ class LocalDateTimeRuntimeTest {
                 static uint32_t juno_gc_block_size(uint32_t) { return 64u; }
 
                 static uint32_t fakeMillis = 0;
-                static int32_t fakeWifiStatus = 0;
-                static int32_t requests = 0;
-                static const char* response =
-                    "{\\\"data\\\":{\\\"current\\\":{"
-                    "\\\"dateTime\\\":\\\"2024-02-28T23:59:59.1234567\\\"}}}";
                 static unsigned long millis() { return fakeMillis; }
-                extern "C" int32_t juno_wifi_status() { return fakeWifiStatus; }
-                extern "C" int32_t juno_https_get(const char*, int32_t, const char*, uint8_t* body,
-                    int32_t bodyCapacity, uint8_t*, int32_t, int32_t* status) {
-                  requests++;
-                  int32_t length = static_cast<int32_t>(std::strlen(response));
-                  if (length > bodyCapacity) length = bodyCapacity;
-                  std::memcpy(body, response, static_cast<size_t>(length));
-                  status[0] = 200;
-                  status[1] = 0;
-                  return length;
-                }
+                static void delay(unsigned long) { fakeMillis += 10; }
+                extern "C" int32_t juno_wifi_status() { return 3; }
+
+                static const uint32_t serverSeconds = %dul;
+                class FakeUdp {
+                 public:
+                  uint8_t request[48] = {0};
+                  const char* host = nullptr;
+                  uint16_t port = 0;
+                  bool open = false;
+                  int begin(uint16_t) { open = true; return 1; }
+                  int beginPacket(const char* name, uint16_t remotePort) { host = name; port = remotePort; return 1; }
+                  size_t write(const uint8_t* data, size_t size) { std::memcpy(request, data, size); return size; }
+                  int endPacket() { return 1; }
+                  int parsePacket() { return 48; }
+                  int read(uint8_t* data, size_t size) {
+                    std::memset(data, 0, size);
+                    data[0] = 0x24;  // version 4, mode 4 (server)
+                    data[1] = 2;     // stratum 2
+                    data[40] = static_cast<uint8_t>(serverSeconds >> 24);
+                    data[41] = static_cast<uint8_t>(serverSeconds >> 16);
+                    data[42] = static_cast<uint8_t>(serverSeconds >> 8);
+                    data[43] = static_cast<uint8_t>(serverSeconds);
+                    return static_cast<int>(size);
+                  }
+                  void stop() { open = false; }
+                };
 
                 %s
 
                 int main() {
-                  if (juno_local_date_time_now() != juno_local_date_time_min()) return 1;
-                  if (requests != 0) return 2;
-                  fakeWifiStatus = 3;
-                  juno_local_date_time_now();
-                  if (requests != 1) return 3;
                   JunoLocalDateTime fetched;
-                  if (!juno_local_date_time_fetch(&fetched)) return 4;
-                  if (fetched.year != 2024 || fetched.month != 2 || fetched.day != 28
-                      || fetched.hour != 23 || fetched.minute != 59 || fetched.second != 59) return 5;
-                  JunoLocalDateTime advanced = juno_local_date_time_advance(fetched, 2u);
-                  if (advanced.month != 2 || advanced.day != 29 || advanced.hour != 0
-                      || advanced.minute != 0 || advanced.second != 1) return 6;
-                  if (requests != 2) return 7;
+                  if (!juno_local_date_time_fetch(&fetched)) return 1;
+                  if (juno_sntp_udp.request[0] != 0x1B) return 2;
+                  if (std::strcmp(juno_sntp_udp.host, "time.example") != 0 || juno_sntp_udp.port != 1123) return 3;
+                  if (juno_sntp_udp.open) return 4;
+                  if (fetched.year != 2024 || fetched.month != 2 || fetched.day != 29
+                      || fetched.hour != 12 || fetched.minute != 34 || fetched.second != 56) return 5;
                   return 0;
                 }
-                """.formatted(runtime);
-        Path source = temporaryDirectory.resolve("local-date-time-driver.cpp");
-        Path executable = temporaryDirectory.resolve("local-date-time-driver");
+                """.formatted(ntpSeconds, runtime);
+
+        assertThat(compileAndRun(compiler, "local-date-time-sntp-driver", driver)).isEqualTo(0);
+    }
+
+    private int compileAndRun(String compiler, String name, String driver) throws Exception {
+        Path source = temporaryDirectory.resolve(name + ".cpp");
+        Path executable = temporaryDirectory.resolve(name);
         Files.writeString(source, driver, StandardCharsets.UTF_8);
 
         Process compile = new ProcessBuilder(compiler, "-std=c++17", "-O1", "-w", "-o",
@@ -94,7 +106,36 @@ class LocalDateTimeRuntimeTest {
 
         Process run = new ProcessBuilder(executable.toString()).redirectErrorStream(true).start();
         assertThat(run.waitFor(10, TimeUnit.SECONDS)).isTrue();
-        assertThat(run.exitValue()).isEqualTo(0);
+        return run.exitValue();
+    }
+
+    @Test
+    @DisplayName("Emits JUNO_SNTP_HOST and JUNO_SNTP_PORT into the SNTP request")
+    void shouldEmitTheConfiguredSntpServerIntoTheRequest() {
+        // When
+        String helpers = new LocalDateTimeRuntime(Map.of("JUNO_SNTP_HOST", "time.google.com", "JUNO_SNTP_PORT", "1123"))
+                .helpers(true, false, "static WiFiUDP juno_sntp_udp;");
+
+        // Then
+        assertThat(helpers).contains(
+                "static WiFiUDP juno_sntp_udp;",
+                "juno_sntp_udp.beginPacket(\"time.google.com\", static_cast<uint16_t>(1123))");
+    }
+
+    @Test
+    @DisplayName("An SD-card override starts from the build's SNTP server and reads sntp.host and sntp.port")
+    void shouldStartTheSdCardOverrideFromTheBuildsSntpServer() {
+        // When
+        String helpers = new LocalDateTimeRuntime(Map.of()).helpers(true, true, "static WiFiUDP juno_sntp_udp;");
+
+        // Then
+        assertThat(helpers).contains(
+                "static char juno_local_date_time_host[64] = \"pool.ntp.org\";",
+                "static int32_t juno_local_date_time_port = 123;",
+                "\"sntp.host\"",
+                "\"sntp.port\"",
+                "juno_sntp_udp.beginPacket(juno_local_date_time_host,")
+                .doesNotContain("juno_https_get", "time.api.url");
     }
 
     private String availableCppCompiler() {

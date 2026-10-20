@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
-import io.github.jabrena.juno.hardware.net.Udp;
+import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
 import io.github.jabrena.juno.hardware.net.email.Smtp;
