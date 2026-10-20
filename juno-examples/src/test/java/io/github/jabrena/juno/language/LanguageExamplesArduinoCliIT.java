@@ -1,11 +1,13 @@
 package io.github.jabrena.juno.language;
 
 import io.github.jabrena.juno.CompilationResult;
+import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.annotations.Watchdog;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.classfile.ClassFileReader;
 import io.github.jabrena.juno.classfile.JavaClass;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -68,6 +70,7 @@ class LanguageExamplesArduinoCliIT {
     private static final String LANGUAGE_PACKAGE = "io/github/jabrena/juno/language";
     private static final String UNSUPPORTED_FEATURE = UnsupportedFeature.class.getName();
     private static final String MAIN_DESCRIPTOR = "([Ljava/lang/String;)V";
+    private static final String XTENSA_NOT_YET = "The Xtensa assembly backend (Nano ESP32) does not support this yet";
     private static final ArduinoCliBoardScope BOARD_SCOPE = ArduinoCliBoardScope.configured();
 
     private static final Map<Board, Object> CORE_LOCKS = new ConcurrentHashMap<>();
@@ -87,7 +90,18 @@ class LanguageExamplesArduinoCliIT {
     @ParameterizedTest(name = "{0} ({1})")
     @MethodSource("examples")
     void compilesAndLinksWithArduinoCli(Example example, Board board) throws Exception {
-        Path sketch = generateSketch(example, board);
+        Path sketch;
+        try {
+            sketch = generateSketch(example, board);
+        } catch (CompileException rejected) {
+            // The Nano ESP32's Xtensa backend does not lower long/float/double, lambdas or threads yet; an example
+            // that declares no board is skipped there, but only for that backend's own diagnostic.
+            if (board != Board.NANO_ESP32 || !rejected.getMessage().startsWith(XTENSA_NOT_YET)) {
+                throw rejected;
+            }
+            Assumptions.abort(rejected.getMessage());
+            return;
+        }
         String target = "/sketches/" + board.id() + "/" + sketch.getFileName();
         ARDUINO_CLI.copyFileToContainer(MountableFile.forHostPath(sketch), target);
 

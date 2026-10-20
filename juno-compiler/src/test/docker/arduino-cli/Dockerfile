@@ -3,8 +3,10 @@
 # The test builds this image on first use and Docker caches it afterwards.
 FROM debian:bookworm-slim
 
+# python3 and pyserial: the arduino:esp32 core's build recipes run Python scripts (partition table,
+# pre-build hooks) and esptool.py, which imports serial.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && apt-get install -y --no-install-recommends ca-certificates curl python3 python3-serial \
     && rm -rf /var/lib/apt/lists/*
 
 ARG ARDUINO_CLI_VERSION=1.3.1
@@ -16,15 +18,16 @@ RUN case "$(dpkg --print-architecture)" in \
     && curl -fsSL "https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_${asset}.tar.gz" \
         | tar -xz -C /usr/local/bin arduino-cli
 
-# The platforms of every @Board target (UNO R3, UNO R4 WiFi, UNO Q and UNO WiFi Rev2); pin any with
+# The platforms of every @Board target (UNO R3, UNO R4 WiFi, UNO Q, UNO WiFi Rev2 and Nano ESP32); pin any with
 # --build-arg CORE=arduino:renesas_uno@<version> / ZEPHYR_CORE=arduino:zephyr@<version> /
-# MEGAAVR_CORE=arduino:megaavr@<version> / AVR_CORE=arduino:avr@<version>.
+# MEGAAVR_CORE=arduino:megaavr@<version> / AVR_CORE=arduino:avr@<version> / ESP32_CORE=arduino:esp32@<version>.
 ARG CORE=arduino:renesas_uno
 ARG ZEPHYR_CORE=arduino:zephyr
 ARG MEGAAVR_CORE=arduino:megaavr
 ARG AVR_CORE=arduino:avr
+ARG ESP32_CORE=arduino:esp32
 RUN arduino-cli core update-index \
-    && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${MEGAAVR_CORE}" "${AVR_CORE}"
+    && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${MEGAAVR_CORE}" "${AVR_CORE}" "${ESP32_CORE}"
 
 # Optional library some TFT programs (e.g. RatonLocoTFT) need; not bundled with either core above,
 # see juno-site/src/main/resources/content/hid.md.
