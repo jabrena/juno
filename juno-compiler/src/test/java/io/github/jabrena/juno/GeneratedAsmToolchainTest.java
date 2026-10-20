@@ -84,7 +84,7 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.net.InternetClock;
+                import io.github.jabrena.juno.hardware.net.udp.SntpClock;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import java.time.LocalDateTime;
                 import java.util.Properties;
@@ -93,7 +93,7 @@ class GeneratedAsmToolchainTest {
                     public static void main(String[] args) {
                         Wifi.begin("ssid", "password");
                         Properties properties = new Properties();
-                        InternetClock.configure(properties);
+                        SntpClock.configure(properties);
                         LocalDateTime value = LocalDateTime.now();
                         boolean offline = value.equals(LocalDateTime.MIN);
                         int fields = value.getYear() + value.getMonthValue() + value.getDayOfMonth()
@@ -784,7 +784,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.net.Udp;
+                import io.github.jabrena.juno.hardware.net.udp.Udp;
                 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                 public final class AsmUdp {
                     public static void main(String[] args) {

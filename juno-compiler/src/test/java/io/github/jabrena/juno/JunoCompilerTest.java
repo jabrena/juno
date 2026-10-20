@@ -1274,7 +1274,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.net.Udp;
+                    import io.github.jabrena.juno.hardware.net.udp.Udp;
                     @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
                     public final class PortableUdp {
                         public static void main(String[] args) {

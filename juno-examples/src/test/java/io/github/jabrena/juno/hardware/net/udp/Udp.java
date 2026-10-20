@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.net;
+package io.github.jabrena.juno.hardware.net.udp;
 
 /**
  * Test double shadowing the {@code juno} artifact's native {@code Udp}: a network with no other boards.

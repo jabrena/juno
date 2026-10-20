@@ -1,12 +1,12 @@
-package io.github.jabrena.juno.api.hardware.net.time;
+package io.github.jabrena.juno.api.hardware.net.udp;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
-import io.github.jabrena.juno.hardware.net.InternetClock;
 import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.net.udp.SntpClock;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -17,24 +17,26 @@ import java.time.LocalDateTime;
 import java.util.Properties;
 
 /**
- * Prints UTC obtained by {@link LocalDateTime#now()}, with Wi-Fi and optional clock settings loaded from the SD card.
+ * {@link SntpTime} configured from the SD card instead of the build: prints UTC obtained by {@link LocalDateTime#now()}
+ * over SNTP, with the Wi-Fi credentials and an optional SNTP server loaded from {@code application.properties} and
+ * applied with {@link SntpClock#configure}. The card's chip-select line is D10.
  *
  * <p>Example {@code application.properties}:
  * <pre>{@code
  * wifi.ssid=your-network
  * wifi.password=your-password
- * time.api.url=https://gateway.timeapi.world/timezone/Etc/UTC
- * time.api.jsonPath=utc_datetime
+ * sntp.host=time.google.com
+ * sntp.port=123
  * }</pre>
  *
- * <p>The two {@code time.api.*} entries are optional; without them the compiled environment configuration, or the
- * built-in TimeAPI.io {@code dateTime} default, is used.
+ * <p>The two {@code sntp.*} entries are optional; without them the build-time {@code JUNO_SNTP_HOST} and
+ * {@code JUNO_SNTP_PORT}, or the built-in {@code pool.ntp.org} on port 123, are used.
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
-public final class InternetTime {
+public final class SntpTimeSD {
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
-    private InternetTime() {
+    private SntpTimeSD() {
     }
 
     public static void main(String[] args) throws IOException {
@@ -61,7 +63,7 @@ public final class InternetTime {
             return;
         }
 
-        InternetClock.configure(properties);
+        SntpClock.configure(properties);
         Wifi.begin(ssid, password);
         int attempts = 0;
         while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {

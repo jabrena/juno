@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.net;
+package io.github.jabrena.juno.hardware.net.tcp;
 
 /**
  * Allocation-free TCP transport recognized as compiler intrinsics by Juno.
