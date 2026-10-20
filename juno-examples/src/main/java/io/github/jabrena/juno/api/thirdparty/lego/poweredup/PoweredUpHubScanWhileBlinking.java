@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.hardware.serial.BaudRate;
 import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 import io.github.jabrena.juno.api.util.Delay;
 
 import java.util.concurrent.StructuredTaskScope;

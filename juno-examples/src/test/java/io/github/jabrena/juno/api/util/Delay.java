@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.util;
 
-import io.github.jabrena.juno.api.time.SimulatedClock;
+import io.github.jabrena.juno.api.hardware.time.SimulatedClock;
 
 /**
  * Test double shadowing the {@code juno} artifact's native {@code Delay}: waiting advances

@@ -6,8 +6,8 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.serial.BaudRate;
 import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.net.Udp;
-import io.github.jabrena.juno.api.net.Wifi;
+import io.github.jabrena.juno.api.hardware.net.Udp;
+import io.github.jabrena.juno.api.hardware.net.Wifi;
 
 /** Joining a network, then a UDP exchange. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})

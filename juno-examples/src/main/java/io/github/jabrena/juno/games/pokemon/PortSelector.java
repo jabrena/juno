@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.pokemon;
 
-import io.github.jabrena.juno.api.net.Udp;
+import io.github.jabrena.juno.api.hardware.net.Udp;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.api.util.Delay;
 

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.supabase.commons;
 
-import io.github.jabrena.juno.api.net.http.HttpClient;
+import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
 
 /**
  * Example allocation-free, bounded client for Supabase's PostgREST data API. One instance is created at startup with

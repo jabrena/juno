@@ -32,7 +32,7 @@ final class TftEmulator {
     /** Runs {@code mainClass} until {@code stopAtMillis} of simulated time and captures the screen. */
     static BufferedImage run(String mainClass, int stopAtMillis, List<Tap> taps) throws Exception {
         try (URLClassLoader loader = isolatedLoader()) {
-            Class<?> clock = loader.loadClass("io.github.jabrena.juno.api.time.SimulatedClock");
+            Class<?> clock = loader.loadClass("io.github.jabrena.juno.api.hardware.time.SimulatedClock");
             Class<?> delay = loader.loadClass("io.github.jabrena.juno.api.util.Delay");
             Class<?> gpio = loader.loadClass("io.github.jabrena.juno.api.hardware.gpio.EmulatedShield");
             Class<?> shield = loader.loadClass("io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield");
@@ -85,7 +85,7 @@ final class TftEmulator {
             throws Exception {
         List<BufferedImage> frames = new ArrayList<>();
         try (URLClassLoader loader = isolatedLoader()) {
-            Class<?> clock = loader.loadClass("io.github.jabrena.juno.api.time.SimulatedClock");
+            Class<?> clock = loader.loadClass("io.github.jabrena.juno.api.hardware.time.SimulatedClock");
             Class<?> delay = loader.loadClass("io.github.jabrena.juno.api.util.Delay");
             Class<?> gpio = loader.loadClass("io.github.jabrena.juno.api.hardware.gpio.EmulatedShield");
             Class<?> shield = loader.loadClass("io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield");

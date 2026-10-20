@@ -1,10 +1,9 @@
 package io.github.jabrena.juno.usecases.miner.peers;
 
 import io.github.jabrena.juno.api.hardware.MCU;
-
+import io.github.jabrena.juno.api.hardware.net.Wifi;
 import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.net.Wifi;
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.blockchain.Bytes;
 

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.testing;
 
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

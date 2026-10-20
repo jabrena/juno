@@ -6,7 +6,7 @@ import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 import io.github.jabrena.juno.api.hardware.gpio.Gpio;
 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
 import io.github.jabrena.juno.api.hardware.serial.Serial;

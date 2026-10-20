@@ -5,7 +5,7 @@ import io.github.jabrena.juno.api.hardware.EmulatedMemory;
 import io.github.jabrena.juno.api.hardware.EmulatedUnoQ;
 import io.github.jabrena.juno.api.hardware.gpio.EmulatedShield;
 import io.github.jabrena.juno.api.hardware.led.EmulatedLedMatrix;
-import io.github.jabrena.juno.api.time.SimulatedClock;
+import io.github.jabrena.juno.api.hardware.time.SimulatedClock;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 

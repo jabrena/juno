@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.internal;
 
-import io.github.jabrena.juno.api.time.Clock;
+import io.github.jabrena.juno.api.hardware.time.Clock;
 
 /**
  * The board's {@link Clock}: each method is a clock intrinsic the compiler lowers to the Arduino core call, so it has
