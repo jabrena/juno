@@ -34,6 +34,7 @@ final class FakeRcx implements H8Simulator.Rom {
     private int countdownAtMessage = -1;
     private int idlePolls;
     private int receivedFlagAddress = -1;
+    private int brickButtonClick;
     private final Set<Integer> icons = new TreeSet<>();
     private final Set<Integer> everLit = new TreeSet<>();
     private final List<String> displayCalls = new ArrayList<>();
@@ -57,6 +58,14 @@ final class FakeRcx implements H8Simulator.Rom {
     /** What reading input 0-2 reports: its raw value and converted value, or {@code step} added per read if not 0. */
     void sensorReading(int input, int raw, int value, int step) {
         readings[input] = new int[] {raw, value, step};
+    }
+
+    /**
+     * Holds the brick's {@code buttons} (Run 0x01, View 0x02, Prgm 0x04) for one {@code read_buttons} once the main
+     * loop has polled for a message, then releases them.
+     */
+    void clickBrickButton(int buttons) {
+        brickButtonClick = buttons;
     }
 
     /** Once the messages run out, the auto power-off countdown reaches zero instead of the run ending. */
@@ -211,6 +220,14 @@ final class FakeRcx implements H8Simulator.Rom {
                 }
                 replies.add(reply);
                 return 0;
+            }
+            case RcxRom.INIT_BUTTONS -> calls.add("init buttons");
+            case RcxRom.READ_BUTTONS -> {
+                int held = mainLoopRunning ? brickButtonClick : 0;
+                if (held != 0) {
+                    brickButtonClick = 0;
+                }
+                cpu.writeWord(cpu.stackArgument(0), held);
             }
             case RcxRom.CONTROL_MOTOR -> calls.add("motor %X %d %d".formatted(r6, cpu.stackArgument(0),
                     cpu.stackArgument(1)));

@@ -22,7 +22,7 @@ Nano ESP32's ESP32-S3 (GPIO, delays and serial so far).
   </tr>
   <tr>
     <td align="center" width="50%">
-      <strong>Arduino One WiFi Rev2</strong><br>
+      <strong>Arduino One R3 WiFi Rev2</strong><br>
       <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-r3-wifi-rev2.png" alt="Arduino UNO WiFi Rev2">
     </td>
     <td align="center" width="50%">

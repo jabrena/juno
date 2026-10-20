@@ -170,7 +170,8 @@ class RcxRemoteFirmwareTest {
                             .isTrue();
                 }
             }
-            assertThat(rcx.icons()).containsExactlyInAnyOrder(RcxRom.LCD_ICONS + 0x07, RcxRom.LCD_ICONS + 0x10);
+            assertThat(rcx.icons()).as("walking figure, A's forward arrow and the IR cone of the last message")
+                    .containsExactlyInAnyOrder(RcxRom.LCD_ICONS + 0x07, RcxRom.LCD_ICONS + 0x10, RcxRom.LCD_ICONS + 0x1C);
             assertThat(rcx.displayed()).isEqualTo(-1);
         }
 
@@ -253,6 +254,33 @@ class RcxRemoteFirmwareTest {
             // Then
             assertThat(rcx.replies()).containsExactly(new int[] {0x4D}, new int[] {0x45});
             assertThat(rcx.everLit()).doesNotContain(0x3005, 0x3021);
+        }
+
+        @ParameterizedTest
+        @ValueSource(booleans = {false, true})
+        @DisplayName("Animates the IR cones after a valid message: short range, then both, then none")
+        void shouldAnimateTheIrConesAfterAValidMessage(boolean blank) {
+            // Given
+            if (blank) {
+                rcx.receive(0x82, 0, 0);
+            } else {
+                rcx.receive(0x10);
+            }
+            rcx.idlePolls(30);
+
+            // When
+            run();
+
+            // Then
+            List<String> calls = rcx.displayCalls();
+            int reply = calls.indexOf("reply");
+            int shortCone = calls.indexOf("set 301c");
+            int longCone = calls.indexOf("set 301d");
+            assertThat(shortCone).as("short cone with the reply").isBetween(0, reply);
+            assertThat(calls.subList(0, reply)).doesNotContain("set 301d");
+            assertThat(longCone).as("long cone on the next tick").isGreaterThan(reply);
+            assertThat(rcx.icons()).as("cones gone once the animation ends")
+                    .doesNotContain(RcxRom.LCD_ICONS + 0x1C, RcxRom.LCD_ICONS + 0x1D);
         }
 
         @Test
@@ -435,7 +463,7 @@ class RcxRemoteFirmwareTest {
         @DisplayName("Leaves unknown messages unanswered")
         void shouldLeaveUnknownMessagesUnanswered() {
             // Given
-            rcx.receive(0xF7, 1);
+            rcx.receive(0x67, 1);
             rcx.receive(0x10);
 
             // When
@@ -444,6 +472,212 @@ class RcxRemoteFirmwareTest {
             // Then
             assertThat(rcx.replies()).containsExactly(new int[] {0xEF});
             assertThat(rcx.displayed()).isEqualTo(-1);
+        }
+    }
+
+    @Nested
+    @DisplayName("Remote control")
+    class RemoteControl {
+
+        @Test
+        @DisplayName("Runs an output while its remote button is held and floats it once let go, without replying")
+        void shouldRunAnOutputWhileItsRemoteButtonIsHeld() {
+            // Given
+            rcx.receive(0xD2, 0x00, 0x08);
+            rcx.receive(0xDA, 0x00, 0x08);
+            rcx.receive(0xD2, 0x01, 0x00);
+            rcx.receive(0xDA, 0x00, 0x00);
+
+            // When
+            run();
+
+            // Then
+            assertThat(callsAfterBoot()).containsSubsequence(
+                    "motor 2000 1 7", "motor 2000 1 7", "motor 2000 4 7", "motor 2002 2 7", "motor 2002 4 7");
+            assertThat(rcx.replies()).isEmpty();
+            assertThat(rcx.everLit()).contains(RcxRom.LCD_ICONS + 0x10, RcxRom.LCD_ICONS + 0x15);
+        }
+
+        @Test
+        @DisplayName("Leaves outputs the remote did not start running when its buttons are let go")
+        void shouldLeaveOutputsTheRemoteDidNotStartRunning() {
+            // Given
+            rcx.receive(0x21, 0x80 | 0x2);
+            rcx.receive(0xD2, 0x00, 0x08);
+            rcx.receive(0xDA, 0x00, 0x00);
+
+            // When
+            run();
+
+            // Then
+            assertThat(callsAfterBoot()).endsWith("motor 2000 4 7", "motor 2001 1 7", "motor 2002 4 7");
+        }
+
+        @Test
+        @DisplayName("Floats every output on the stop button")
+        void shouldFloatEveryOutputOnTheStopButton() {
+            // Given
+            rcx.receive(0x21, 0x80 | 0x7);
+            rcx.receive(0xD2, 0x40, 0x00);
+
+            // When
+            run();
+
+            // Then
+            assertThat(callsAfterBoot()).endsWith("motor 2000 4 7", "motor 2001 4 7", "motor 2002 4 7");
+        }
+
+        @Test
+        @DisplayName("Beeps once per press of the sound button however often the remote repeats it")
+        void shouldBeepOncePerPressOfTheSoundButton() {
+            // Given
+            rcx.receive(0xD2, 0x80, 0x00);
+            rcx.receive(0xDA, 0x80, 0x00);
+            rcx.receive(0xD2, 0x00, 0x00);
+            rcx.receive(0xDA, 0x80, 0x00);
+
+            // When
+            run();
+
+            // Then
+            assertThat(callsAfterBoot().stream().filter(call -> call.startsWith("sound"))).containsExactly(
+                    "sound 1", "sound 1");
+        }
+
+        @ParameterizedTest
+        @CsvSource({"0xD2, 0x00, 0x02, 2", "0xF7, 0x2A, 0x00, 42"})
+        @DisplayName("Keeps the message from a message button or the message command for a poll of source 15")
+        void shouldKeepTheMessageForAPollOfSource15(int opcode, int first, int second, int message) {
+            // Given
+            rcx.receive(opcode, first, second);
+            rcx.receive(0x12, 15, 0);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.replies()).containsExactly(new int[] {0xED, message, 0});
+        }
+
+        @Test
+        @DisplayName("Restarts the idle countdown on remote buttons, which get no reply")
+        void shouldRestartTheIdleCountdownOnRemoteButtons() {
+            // Given
+            rcx.countdownAtMessage(1);
+            rcx.receive(0xD2, 0x00, 0x00);
+
+            // When
+            H8Simulator cpu = run(new RcxRemoteFirmware(2));
+
+            // Then
+            assertThat(cpu.readWord(RcxRemoteFirmware.SHUTOFF_MINUTES)).isEqualTo(2);
+            assertThat(rcx.calls()).doesNotContain("sleep");
+        }
+    }
+
+    @Nested
+    @DisplayName("The brick's buttons and text on the display")
+    class BrickButtonsAndText {
+
+        private int[] lcd(H8Simulator cpu) {
+            int[] bytes = new int[RcxDisplayText.LCD_BYTES];
+            for (int i = 0; i < bytes.length; i++) {
+                bytes[i] = cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + i);
+            }
+            return bytes;
+        }
+
+        private void sendText(String text) {
+            for (int position = 0; position < text.length(); position++) {
+                rcx.receive(position % 2 == 0 ? 0x82 : 0x8A, position, text.charAt(position));
+            }
+        }
+
+        @Test
+        @DisplayName("Builds JUno from the font and the digits' segment bits as the hardware-confirmed bytes")
+        void shouldBuildJunoFromTheFontAsTheHardwareConfirmedBytes() {
+            // When & Then
+            assertThat(RcxDisplayText.lcdBytes("JUno")).containsExactly(0xA0, 0x02, 0x00, 0x88, 0x08, 0x88, 0x80, 0x8A, 0xAA);
+        }
+
+        @Test
+        @DisplayName("Shows a character the font lacks blank, and a missing lower case as its upper case")
+        void shouldShowUnknownCharactersBlankAndLowerCaseAsUpperCase() {
+            // When & Then
+            assertThat(RcxDisplayText.segments('#')).isZero();
+            assertThat(RcxDisplayText.segments('a')).isEqualTo(RcxDisplayText.segments('A'));
+            assertThat(RcxDisplayText.segments('o')).isNotEqualTo(RcxDisplayText.segments('O'));
+        }
+
+        @ParameterizedTest
+        @CsvSource({"0x02, true", "0x04, true", "0x01, true", "0x02, false"})
+        @DisplayName("A click changes nothing on the brick and is handed to one poll")
+        void shouldChangeNothingOnAClickAndHandItToOnePoll(int button, boolean withIcons) {
+            // Given
+            rcx.clickBrickButton(button);
+            rcx.receive(0x10);
+            rcx.receive(0x12, RcxBrickButtons.SOURCE_CLICKED, 0);
+            rcx.receive(0x1A, RcxBrickButtons.SOURCE_CLICKED, 0);
+
+            // When
+            H8Simulator cpu = run(new RcxRemoteFirmware(RcxRemoteFirmware.DEFAULT_AUTO_OFF_MINUTES, withIcons));
+
+            // Then
+            assertThat(lcd(cpu)).as("JUno stays").containsExactly(RcxDisplayText.lcdBytes("JUno"));
+            assertThat(rcx.replies()).containsExactly(new int[] {0xEF}, new int[] {0xED, button, 0}, new int[] {0xE5, 0, 0});
+            assertThat(rcx.calls()).contains("init buttons");
+            if (withIcons) {
+                assertThat(rcx.icons()).as("the standing figure stays").contains(RcxRom.LCD_ICONS + 0x06);
+            }
+        }
+
+        @ParameterizedTest
+        @ValueSource(booleans = {true, false})
+        @DisplayName("Shows text sent a character at a time in place of a number, with only the IR cones")
+        void shouldShowTextSentACharacterAtATime(boolean withIcons) {
+            // Given
+            rcx.receive(0x72, 42, 0);
+            sendText("VIEW");
+
+            // When
+            H8Simulator cpu = run(new RcxRemoteFirmware(RcxRemoteFirmware.DEFAULT_AUTO_OFF_MINUTES, withIcons));
+
+            // Then
+            assertThat(lcd(cpu)).containsExactly(RcxDisplayText.lcdBytes("VIEW"));
+            assertThat(RcxDisplayText.lcdBytes("VIEW")).isEqualTo(RcxDisplayText.lcdBytes("UIEu"));
+            assertThat(rcx.icons()).isSubsetOf(RcxRom.LCD_ICONS + 0x1C, RcxRom.LCD_ICONS + 0x1D);
+            assertThat(rcx.replies()).hasSize(5);
+        }
+
+        @ParameterizedTest
+        @ValueSource(booleans = {true, false})
+        @DisplayName("Blanks all four characters for a position past the last")
+        void shouldBlankTheTextForAPositionPastTheLast(boolean withIcons) {
+            // Given
+            sendText("RUN");
+            rcx.receive(0x82, 0xFF, 0);
+
+            // When
+            H8Simulator cpu = run(new RcxRemoteFirmware(RcxRemoteFirmware.DEFAULT_AUTO_OFF_MINUTES, withIcons));
+
+            // Then
+            assertThat(lcd(cpu)).containsOnly(0);
+            assertThat(rcx.icons()).isSubsetOf(RcxRom.LCD_ICONS + 0x1C);
+        }
+
+        @Test
+        @DisplayName("A number shown after text replaces it and brings the icons back")
+        void shouldReplaceTextWithANumberShownAfterIt() {
+            // Given
+            sendText("PRGM");
+            rcx.receive(0x72, 42, 0);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.displayed()).isEqualTo(42);
+            assertThat(rcx.icons()).contains(RcxRom.LCD_ICONS + 0x06);
         }
     }
 
@@ -579,21 +813,32 @@ class RcxRemoteFirmwareTest {
             assertThat(callsAfterBoot()).containsSubsequence("motor 2000 1 7", "sleep", "clear memory", BOOT_BEEP);
         }
 
-        @Test
-        @DisplayName("Sleeps with a clear display once the ROM handlers are stopped")
-        void shouldSleepWithAClearDisplayOnceTheRomHandlersAreStopped() {
+        @ParameterizedTest
+        @CsvSource({"true, true", "true, false", "false, true", "false, false"})
+        @DisplayName("Sleeps with a blank display, icons included, by auto power-off or On-Off")
+        void shouldSleepWithABlankDisplay(boolean autoOff, boolean withIcons) {
             // Given
             // The ROM's handlers draw some icons by themselves: clearing before stopping them left stray segments.
-            rcx.idleElapses();
+            if (autoOff) {
+                rcx.idleElapses();
+            } else {
+                rcx.pressPowerButton();
+            }
             rcx.receive(0xB2, 0x0E, 1);
 
             // When
-            run();
+            H8Simulator cpu = run(new RcxRemoteFirmware(RcxRemoteFirmware.DEFAULT_AUTO_OFF_MINUTES, withIcons));
 
             // Then
             List<String> calls = rcx.displayCalls();
-            assertThat(calls.subList(calls.size() - 3, calls.size())).containsExactly("timer off", "clear display", "refresh");
+            int timerOff = calls.indexOf("timer off");
+            assertThat(calls.subList(0, timerOff)).as("blanked as soon as the power-off starts").endsWith(
+                    "clear display", "refresh");
+            assertThat(calls.subList(timerOff, calls.size())).containsExactly("timer off", "clear display", "refresh");
             assertThat(rcx.icons()).isEmpty();
+            for (int i = 0; i < 9; i++) {
+                assertThat(cpu.readByte(RcxRom.LCD_DISPLAY_MEMORY + i)).as("LCD byte %d", i).isZero();
+            }
             assertThat(rcx.calls()).endsWith("sleep");
         }
 

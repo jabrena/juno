@@ -3,7 +3,7 @@ package io.github.jabrena.juno.backend.h8300;
 /**
  * What every part of {@link RcxRemoteFirmware} assembles with: the assembler, the ROM calls, unique labels, and the
  * message buffers with the shared entry points for replying. A command handler reads its arguments from
- * {@link #REQUEST} and ends with {@link #replyWith} or a jump to {@link #REPLY_ACK}.
+ * {@link #REQUEST} and ends with {@link #replyWith}, or a jump to {@link #REPLY_ACK} or {@link #NO_REPLY}.
  */
 final class RcxCode {
     /** The received message: opcode, arguments, checksum. */
@@ -15,6 +15,8 @@ final class RcxCode {
     static final String REPLY_ACK = "reply_ack";
     /** Replies with the number of bytes in r0. */
     static final String SEND_REPLY = "send_reply";
+    /** Redraws the display and goes back to the main loop without replying, for messages LEGO's firmware never answers. */
+    static final String NO_REPLY = "no_reply";
     /** The main loop, for messages that get no reply. */
     static final String LOOP = "loop";
     /** Subroutine: draws the display's number, or {@code JUno} before the first command, without refreshing. */

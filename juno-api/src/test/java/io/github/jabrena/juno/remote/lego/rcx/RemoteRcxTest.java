@@ -275,13 +275,31 @@ class RemoteRcxTest {
         // Given
         Infrared.replies.addAll(RcxFrames.replyTo(0x72));
         Infrared.replies.addAll(RcxFrames.replyTo(0xB2));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x82));
 
         // When
         boolean number = remote.getLcd().showNumber(7);
         boolean icon = remote.getLcd().showIcon(RcxLcd.ICON_DATALOG, true);
+        boolean cleared = remote.getLcd().clear();
 
         // Then
-        assertThat(new boolean[] {number, icon}).containsExactly(true, true);
+        assertThat(new boolean[] {number, icon, cleared}).containsExactly(true, true, true);
+    }
+
+    @Test
+    @DisplayName("The brick's buttons report the clicks, or -1 without a reply")
+    void shouldReportTheBrickButtonsClicks() {
+        // Given
+        Infrared.replies.addAll(RcxFrames.replyTo(0x12, RcxButtons.VIEW | RcxButtons.RUN, 0x00));
+
+        // When
+        int clicked = remote.getButtons().clicked();
+        int unanswered = remote.getButtons().clicked();
+
+        // Then
+        assertThat(clicked).isEqualTo(RcxButtons.VIEW | RcxButtons.RUN);
+        assertThat(unanswered).isEqualTo(-1);
+        assertThat(remote.getButtons()).isSameAs(remote.getButtons());
     }
 
     @Test

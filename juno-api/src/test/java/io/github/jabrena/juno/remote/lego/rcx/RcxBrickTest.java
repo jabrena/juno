@@ -323,6 +323,51 @@ class RcxBrickTest {
     }
 
     @Test
+    @DisplayName("Clearing the display sends two unused arguments, as its opcode's low bits require")
+    void shouldClearTheDisplayWithTwoUnusedArguments() {
+        // Given
+        // On the brick, 0x82 sent without arguments got no answer: the ROM reads the argument count from the opcode.
+        Infrared.replies.addAll(RcxFrames.replyTo(0x82));
+
+        // When
+        boolean cleared = brick.clearDisplay();
+
+        // Then
+        assertThat(cleared).isTrue();
+        assertThat(Infrared.written).as("header, opcode, two arguments and checksum, each with its complement")
+                .hasSize(3 + 2 * 4);
+        assertThat(new int[] {argumentPair(0), argumentPair(1)}).as("position past the last blanks all four")
+                .containsExactly(0xFF, 0);
+    }
+
+    @Test
+    @DisplayName("Showing text sends one character per digit, blank past its end")
+    void shouldShowTextOneCharacterPerDigit() {
+        // Given
+        for (int i = 0; i < 4; i++) {
+            Infrared.replies.addAll(RcxFrames.replyTo(0x82));
+        }
+
+        // When
+        boolean shown = brick.showText("RUN");
+
+        // Then
+        assertThat(shown).isTrue();
+        assertThat(Infrared.written).as("the last command: position 3, a space")
+                .containsSubsequence(0x03, 0xFC, 0x20, 0xDF);
+    }
+
+    @Test
+    @DisplayName("Showing text reports no acknowledgement when the brick is silent")
+    void shouldReportNoAcknowledgementForTextWhenTheBrickIsSilent() {
+        // When
+        boolean shown = brick.showText("VIEW");
+
+        // Then
+        assertThat(shown).isFalse();
+    }
+
+    @Test
     @DisplayName("Playing a tone is acknowledged by the brick")
     void shouldAcknowledgeAPlayedTone() {
         // Given

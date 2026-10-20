@@ -141,6 +141,33 @@ while (!bumper.isPressed()) {
 wheels.stop();
 ```
 
+### The Arduino as the RCX remote control
+
+`RemoteRcx.sendButtons` sends what the RCX Remote Control (9709) sends: its button state, as a mask of the
+`RemoteRcx` button constants, repeated while a button is held and sent with no button on release. LEGO's firmware
+drives the motors from it, and so does Juno's own (`RcxRemoteFirmware`): a motor button runs its output while held
+and floats it once let go, while outputs started by direct commands keep running; STOP floats every output, SOUND
+beeps, and the message buttons set the brick's message to 1-3 (poll source 15); the program buttons are ignored. The
+display shows the running motors' arrows, and the buttons keep the brick from switching itself off, as commands do.
+
+### The brick's own buttons
+
+With Juno's firmware, clicking View, Prgm or Run changes nothing on the brick: it remembers the click, and
+`RemoteRcx.getButtons().clicked()` returns the buttons clicked since the previous call as a mask of
+`RcxButtons.VIEW`, `PRGM` and `RUN`. The program decides what the display shows: `getLcd().showText("RUN")` writes
+up to four characters on the digits (as close as a seven-segment display gets, so `VIEW` shows as `UIEu`), and
+`getLcd().clear()` blanks it. On-Off still shows `JUno`; a program can start with a clean display by clearing it.
+While text or the blank display shows, the only icons are the IR cones, which animate after every message the brick
+receives.
+[`RcxBrickButtons`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxBrickButtons.java)
+blanks the display, then shows and prints each clicked button's name:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.RcxBrickButtons \
+  -Djuno.board=arduino-uno-r4-wifi
+```
+
 ## Example: a touch screen remote
 
 [`PoweredUpHubHello`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpHubHello.java)
