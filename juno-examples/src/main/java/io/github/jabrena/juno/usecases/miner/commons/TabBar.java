@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.commons;
 
-import io.github.jabrena.juno.api.mvc.Navigator;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.mvc.Navigator;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
 
 /**

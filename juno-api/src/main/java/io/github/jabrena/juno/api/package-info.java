@@ -31,8 +31,8 @@
  *   <li>{@code util} — general-purpose utilities: blocking millisecond/microsecond delays
  *       ({@link io.github.jabrena.juno.api.util.Delay}), seeded pseudorandom numbers
  *       ({@link io.github.jabrena.juno.api.util.Random}) and UUID byte conversion
- *       ({@link io.github.jabrena.juno.api.util.UuidCodec}).</li>
- *   <li>{@code mvc} — views, navigation and a frame-loop controller for multi-screen TFT programs.</li>
+ *       ({@link io.github.jabrena.juno.api.util.UuidCodec}), plus views, navigation and a frame-loop
+ *       controller for multi-screen TFT programs ({@code util.mvc}).</li>
  * </ul>
  *
  * <p>Classes in this package and its subpackages are final, non-instantiable utility types (or,

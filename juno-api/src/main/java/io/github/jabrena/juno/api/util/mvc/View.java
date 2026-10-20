@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.mvc;
+package io.github.jabrena.juno.api.util.mvc;
 
 /**
  * One screen of a multi-view program. A view renders the model it was given and turns touches into actions; to hand

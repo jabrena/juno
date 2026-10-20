@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.mvc;
+package io.github.jabrena.juno.api.util.mvc;
 
 /**
  * What a {@link View} uses to hand over control. Views are named by the {@code int} ids the program registered them

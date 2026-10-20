@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.mvc;
+package io.github.jabrena.juno.api.util.mvc;
 
 import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.hardware.time.Clock;

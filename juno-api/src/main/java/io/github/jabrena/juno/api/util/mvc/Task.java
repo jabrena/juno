@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.mvc;
+package io.github.jabrena.juno.api.util.mvc;
 
 /**
  * Background work a {@link ViewRouter} advances a little every frame, before the active view renders: the

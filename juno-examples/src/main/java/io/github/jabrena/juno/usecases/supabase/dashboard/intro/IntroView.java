@@ -2,9 +2,9 @@ package io.github.jabrena.juno.usecases.supabase.dashboard.intro;
 
 import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.mvc.Navigator;
-import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.mvc.Navigator;
+import io.github.jabrena.juno.api.util.mvc.View;
 
 /** Dashboard-owned startup intro: Java, then Arduino, before handing control to the gathering view. */
 public final class IntroView implements View {

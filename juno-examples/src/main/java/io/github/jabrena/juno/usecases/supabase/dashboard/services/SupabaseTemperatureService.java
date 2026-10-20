@@ -4,7 +4,7 @@ import io.github.jabrena.juno.api.hardware.MCU;
 import io.github.jabrena.juno.api.hardware.net.Wifi;
 import io.github.jabrena.juno.api.hardware.serial.Serial;
 import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.mvc.Task;
+import io.github.jabrena.juno.api.util.mvc.Task;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseClient;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseContentRange;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseResponse;

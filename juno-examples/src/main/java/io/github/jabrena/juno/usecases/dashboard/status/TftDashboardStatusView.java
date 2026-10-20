@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.usecases.dashboard.status;
 
-import io.github.jabrena.juno.api.mvc.Navigator;
-import io.github.jabrena.juno.api.mvc.View;
 import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.api.util.mvc.Navigator;
+import io.github.jabrena.juno.api.util.mvc.View;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.StatusFile;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState.WifiStatus;

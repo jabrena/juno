@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.doom2.services;
 
 import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.mvc.Task;
 import io.github.jabrena.juno.api.thirdparty.sd.SdCard;
+import io.github.jabrena.juno.api.util.mvc.Task;
 import io.github.jabrena.juno.games.doom2.commons.Doom2State;
 
 /**
