@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxFirmware;
+
 /** Allocation-free transfer bookkeeping after construction; only acknowledged blocks advance the offset. */
 final class RcxDownloadProgress {
     private static final int FIRST_BLOCK_BYTES = 64;

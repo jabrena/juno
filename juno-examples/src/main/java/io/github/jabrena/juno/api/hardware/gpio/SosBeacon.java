@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.hardware.gpio;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Flashes SOS in Morse on the built-in LED, forever. {@link MorseLed} is handed the board's {@link Gpio}, which is

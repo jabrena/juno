@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BUTTON_HEIGHT_MOTOR;
 import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.MARGIN;

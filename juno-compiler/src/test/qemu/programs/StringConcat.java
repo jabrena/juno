@@ -4,8 +4,8 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** javac's StringConcatFactory bootstrap across every supported operand kind, compared with OpenJDK. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})

@@ -30,7 +30,7 @@ class CrossMethodExceptionsTest {
 
     private static final String CALLEE_THROWS = """
             package demo;
-            import io.github.jabrena.juno.api.hardware.serial.Serial;
+            import io.github.jabrena.juno.hardware.serial.Serial;
             public final class Crossing {
                 static int parse(int value) {
                     if (value < 0) {
@@ -60,7 +60,7 @@ class CrossMethodExceptionsTest {
             import io.github.jabrena.juno.annotations.ArduinoUnoQ;
             import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.api.hardware.serial.Serial;
+            import io.github.jabrena.juno.hardware.serial.Serial;
             @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
             public final class Resources {
                 static final class Pin implements AutoCloseable {
@@ -160,7 +160,7 @@ class CrossMethodExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Quiet {
                     static int twice(int value) { return value * 2; }
                     public static void main(String[] args) {
@@ -209,7 +209,7 @@ class CrossMethodExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Cleanup {
                     static void fail() { throw new IllegalStateException("boom"); }
                     static void work() {
@@ -247,7 +247,7 @@ class CrossMethodExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Cleanup {
                     static void fail() { throw new IllegalStateException("boom"); }
                     static void work() {
@@ -359,7 +359,7 @@ class CrossMethodExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Divide {
                     static int ratio(int total, int count) {
                         return total / count;
@@ -391,7 +391,7 @@ class CrossMethodExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Panics {
                     static int ratio(int total, int count) {
                         return total / count;
@@ -411,7 +411,7 @@ class CrossMethodExceptionsTest {
     private String compilePartial() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Partial {
                     static void fail(int kind) {
                         if (kind == 0) {

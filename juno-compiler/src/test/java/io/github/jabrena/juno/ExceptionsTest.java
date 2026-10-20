@@ -28,7 +28,7 @@ class ExceptionsTest {
 
     private static final String VALIDATION = """
             package demo;
-            import io.github.jabrena.juno.api.hardware.serial.Serial;
+            import io.github.jabrena.juno.hardware.serial.Serial;
             public final class Validation {
                 static int check(int value) {
                     try {
@@ -102,9 +102,9 @@ class ExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.time.Clock;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.time.Clock;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Selector {
                     public static void main(String[] args) {
                         RuntimeException picked = MCU.getClock().millis() == 0
@@ -136,7 +136,7 @@ class ExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Cleanup {
                     public static void main(String[] args) {
                         try {
@@ -166,7 +166,7 @@ class ExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Nested {
                     public static void main(String[] args) {
                         try {
@@ -200,7 +200,7 @@ class ExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Uncaught {
                     public static void main(String[] args) {
                         try {
@@ -229,7 +229,7 @@ class ExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Uncaught {
                     public static void main(String[] args) {
                         try {
@@ -254,7 +254,7 @@ class ExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Sensors {
                     static final class SensorException extends RuntimeException {
                         final int code;
@@ -292,7 +292,7 @@ class ExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Sensors {
                     static final class SensorException extends RuntimeException {
                         final int code;
@@ -413,9 +413,9 @@ class ExceptionsTest {
     private static String divisionSource() {
         return """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.time.Clock;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.time.Clock;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Division {
                     static int ratio(int total, int count) {
                         try {

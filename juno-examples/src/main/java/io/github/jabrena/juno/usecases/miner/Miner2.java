@@ -3,11 +3,9 @@ package io.github.jabrena.juno.usecases.miner;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.util.mvc.ViewRouter;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.miner.blocks.BlocksView;
 import io.github.jabrena.juno.usecases.miner.chain.BlockPool;
 import io.github.jabrena.juno.usecases.miner.chain.ChainView;
@@ -22,6 +20,8 @@ import io.github.jabrena.juno.usecases.miner.peers.NodeId;
 import io.github.jabrena.juno.usecases.miner.peers.PeersView;
 import io.github.jabrena.juno.usecases.miner.services.Miner2Persistence;
 import io.github.jabrena.juno.usecases.miner.services.NodeService;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.mvc.ViewRouter;
 
 import java.util.UUID;
 

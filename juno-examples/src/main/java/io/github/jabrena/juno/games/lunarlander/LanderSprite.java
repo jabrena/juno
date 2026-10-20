@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.lunarlander;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /** Defines the pixels of the lander and rotates them around its center. */
 final class LanderSprite {

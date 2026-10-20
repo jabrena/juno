@@ -2,7 +2,9 @@ package io.github.jabrena.juno.api.hardware.serial;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Demonstrates integer output over the Arduino UNO R4 WiFi's USB serial connection. The program

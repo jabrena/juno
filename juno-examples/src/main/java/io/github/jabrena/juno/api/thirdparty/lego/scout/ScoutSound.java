@@ -1,8 +1,9 @@
 package io.github.jabrena.juno.api.thirdparty.lego.scout;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.lego.scout.ScoutRemote;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Plays sound on a Scout brick's own speaker over infrared, after printing its battery voltage over Serial: first the six built-in sounds, then

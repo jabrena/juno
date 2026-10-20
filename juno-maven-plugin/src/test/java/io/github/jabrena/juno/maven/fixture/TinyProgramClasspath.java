@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.maven.fixture;
 
-import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;

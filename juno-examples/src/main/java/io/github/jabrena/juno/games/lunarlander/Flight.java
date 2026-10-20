@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.games.lunarlander;
 
-import io.github.jabrena.juno.api.hardware.MCU;
+import io.github.jabrena.juno.hardware.MCU;
 
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.Random;
 
 /** Owns one lander's state and advances its flight physics. */
 final class Flight {

@@ -35,8 +35,8 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
@@ -60,8 +60,8 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
@@ -82,8 +82,8 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
@@ -108,8 +108,8 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
@@ -132,7 +132,7 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.util.Delay;
+                import io.github.jabrena.juno.util.Delay;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
@@ -161,8 +161,8 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;

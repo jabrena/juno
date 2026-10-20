@@ -2,10 +2,9 @@ package io.github.jabrena.juno.usecases.dashboard;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.ViewRouter;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardViews;
 import io.github.jabrena.juno.usecases.dashboard.commons.ux.TftFpsWidget;
@@ -14,6 +13,7 @@ import io.github.jabrena.juno.usecases.dashboard.services.SdCardService;
 import io.github.jabrena.juno.usecases.dashboard.services.WifiService;
 import io.github.jabrena.juno.usecases.dashboard.status.TftDashboardStatusView;
 import io.github.jabrena.juno.usecases.dashboard.storage.TftDashboardStorageView;
+import io.github.jabrena.juno.util.mvc.ViewRouter;
 
 /**
  * A touch dashboard that stays responsive while slow SD-card and Wi-Fi work runs in the background, built as

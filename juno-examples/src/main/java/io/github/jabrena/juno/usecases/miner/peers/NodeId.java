@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.usecases.miner.peers;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.blockchain.Bytes;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * A node's identity: a random version-4 UUID drawn when the node boots, 16 bytes that peers use to tell

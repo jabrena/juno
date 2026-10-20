@@ -21,7 +21,7 @@ class LocalDateTimeTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    io.github.jabrena.juno.api.hardware.net.Wifi.begin("ssid", "password");
+                    io.github.jabrena.juno.hardware.net.Wifi.begin("ssid", "password");
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                     boolean offline = value.equals(java.time.LocalDateTime.MIN);
                     int year = value.getYear();
@@ -54,7 +54,7 @@ class LocalDateTimeTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    io.github.jabrena.juno.api.hardware.net.Wifi.begin("ssid", "password");
+                    io.github.jabrena.juno.hardware.net.Wifi.begin("ssid", "password");
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                     boolean offline = value.equals(java.time.LocalDateTime.MIN);
                     int year = value.getYear();
@@ -82,7 +82,7 @@ class LocalDateTimeTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    io.github.jabrena.juno.api.hardware.net.Wifi.begin("ssid", "password");
+                    io.github.jabrena.juno.hardware.net.Wifi.begin("ssid", "password");
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                     boolean offline = value.equals(java.time.LocalDateTime.MIN);
                     int year = value.getYear();
@@ -128,7 +128,7 @@ class LocalDateTimeTest {
         CompilationResult result = compile("""
                 public static void main() {
                     java.util.Properties properties = new java.util.Properties();
-                    boolean configured = io.github.jabrena.juno.api.hardware.net.InternetClock.configure(properties);
+                    boolean configured = io.github.jabrena.juno.hardware.net.InternetClock.configure(properties);
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                 }
                 """);
@@ -145,7 +145,7 @@ class LocalDateTimeTest {
         CompilationResult result = compile("""
                 public static void main() {
                     java.util.Properties properties = new java.util.Properties();
-                    boolean configured = io.github.jabrena.juno.api.hardware.net.InternetClock.configure(properties);
+                    boolean configured = io.github.jabrena.juno.hardware.net.InternetClock.configure(properties);
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                 }
                 """);

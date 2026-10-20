@@ -4,10 +4,11 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.net.http.HttpClient;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.Delay;
 
 /** One HTTPS request, used as the serial baseline for {@link ParallelHttpsGet}. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoR3WiFiRev2.class, ArduinoUnoQ.class})

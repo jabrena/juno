@@ -1,8 +1,9 @@
 package io.github.jabrena.juno.api.thirdparty.ir;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.ir.Infrared;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Checks an IR transmitter module (e.g. HX-53) and receiver module (e.g. HX-M121 or VS1838B) wired to

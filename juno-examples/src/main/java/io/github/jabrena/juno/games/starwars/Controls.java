@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.games.starwars;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * The touch panel: the pilot screen, then in flight the crosshair. Drag moves the crosshair; a short

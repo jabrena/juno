@@ -68,7 +68,7 @@ final class NetworkShimLibraries {
     }
 
     /**
-     * Backs {@link io.github.jabrena.juno.api.hardware.net.http.HttpServer}: a single static {@code
+     * Backs {@link io.github.jabrena.juno.hardware.net.http.HttpServer}: a single static {@code
      * WiFiServer} (constructed via placement-new into static storage once {@code begin(port)}
      * runs, since {@code WiFiServer} has no default constructor and this backend never calls the
      * heap allocator {@code new} for anything Java-visible) plus a single "current" {@code

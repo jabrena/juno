@@ -1,12 +1,15 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
-import io.github.jabrena.juno.api.hardware.BoardMemory;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.BoardMemory;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.net.http.HttpMethod;
+import io.github.jabrena.juno.hardware.net.http.HttpServer;
+import io.github.jabrena.juno.hardware.net.http.HttpStatus;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * A minimal REST endpoint for the experimental {@code Thumb2AsmBackend}: connects to WiFi with

@@ -4,8 +4,8 @@ description: "Emulating a USB HID mouse from a sketch."
 layout: page
 ---
 
-[`Mouse`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/hid/Mouse.java)
-(`io.github.jabrena.juno.api.hardware.hid`) lets a Juno program act as a USB HID mouse, moving the
+[`Mouse`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/hid/Mouse.java)
+(`io.github.jabrena.juno.hardware.hid`) lets a Juno program act as a USB HID mouse, moving the
 pointer of whatever computer the board's USB port is plugged into. `MCU.getMouse()` hands out the
 board's mouse, whose methods are compiler intrinsics backed by the Arduino `Mouse` library; a unit
 test passes `mock(Mouse.class)` instead (see [Injectable APIs](../apis)). Get it once, at startup,
@@ -28,8 +28,8 @@ and pass it to the code that moves the pointer.
 ## API
 
 ```java
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.hid.Mouse;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.hid.Mouse;
 
 Mouse mouse = MCU.getMouse();
 mouse.begin();
@@ -45,9 +45,9 @@ arguments within that range — a larger value wraps around instead of clamping.
 ```java
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.hardware.hid.Mouse;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.hardware.hid.Mouse;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class MouseSquare {

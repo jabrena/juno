@@ -1,10 +1,11 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BOTTOM_HEIGHT;
 import static io.github.jabrena.juno.api.thirdparty.lego.poweredup.PoweredUpState.BOTTOM_Y;

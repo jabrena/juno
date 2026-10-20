@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.tempest;
 
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * The flippers: spawning, climbing out of the tube, and crawling or grabbing along the rim. Split

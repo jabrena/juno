@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.tempest;
 
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.util.Random;
 
 /** The CPU pilot: lets flippers close in before engaging, like a person spotting them. */
 final class AutopilotTempest {

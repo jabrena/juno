@@ -2,13 +2,13 @@ package io.github.jabrena.juno.games.doom;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * DOOM in wireframe on the ELEGOO 2.8" TFT touch screen shield, after the original 1993 game by id Software.

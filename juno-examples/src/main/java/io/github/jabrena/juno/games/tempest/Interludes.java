@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.tempest;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * The transitions between phases, in the style of the other arcade games' title and results cards:

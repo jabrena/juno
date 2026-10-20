@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.games.gladiator.view;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.games.gladiator.arena.Coliseum;
 import io.github.jabrena.juno.games.gladiator.arena.Eyes;
 import io.github.jabrena.juno.games.gladiator.arena.Match;
 import io.github.jabrena.juno.games.gladiator.arena.Side;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /**
  * The ARENA's screen: the coliseum seen from above, as in the aerial picture, with the sand, the red pillars, the

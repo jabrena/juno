@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.hardware.gpio;
 
+import io.github.jabrena.juno.hardware.gpio.Gpio;
+
 /**
  * Plays a Morse pattern on one LED, one time unit per {@link #tick()}, and loops it. The pins come in as a
  * {@link Gpio}, so a unit test can hand it {@code mock} instead of the board's.

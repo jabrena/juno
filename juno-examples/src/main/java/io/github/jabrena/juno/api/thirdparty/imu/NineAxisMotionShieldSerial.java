@@ -1,8 +1,9 @@
 package io.github.jabrena.juno.api.thirdparty.imu;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.imu.NineAxisMotionShield;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Prints the orientation of the Arduino 9 Axis Motion Shield over USB serial, several times a second.

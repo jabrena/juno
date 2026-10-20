@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.serial.Serial;
 
 /**
  * What a frame costs on the board, for {@code juno:monitor}: every {@link #PERIOD} frames it prints the average

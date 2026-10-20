@@ -2,8 +2,8 @@ package io.github.jabrena.juno.language.scala
 
 import scala.annotation.static
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate
-import io.github.jabrena.juno.api.hardware.serial.Serial
+import io.github.jabrena.juno.hardware.serial.BaudRate
+import io.github.jabrena.juno.hardware.serial.Serial
 
 final class HelloWorld
 

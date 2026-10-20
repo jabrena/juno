@@ -1,12 +1,12 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.net.Udp;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
 import io.github.jabrena.juno.games.blockchain.Bytes;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
 import io.github.jabrena.juno.games.blockchain.Sha256;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.net.Udp;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.chain.BlockFormat;
 import io.github.jabrena.juno.usecases.miner.chain.BlockPool;
 import io.github.jabrena.juno.usecases.miner.chain.ChainProtocol;

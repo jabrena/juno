@@ -3,8 +3,9 @@ package io.github.jabrena.juno.api.hardware.led;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.led.LedCanvas;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * A self-playing Snake on the built-in LED matrix. The body is a fixed-size

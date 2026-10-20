@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.api.thirdparty.lcd.pomodoro;
 
-import io.github.jabrena.juno.api.hardware.MCU;
+import io.github.jabrena.juno.hardware.MCU;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * The live countdown: row 0 shows "Pomodoro", row 1 shows "Time left: MM:SS", updating once a

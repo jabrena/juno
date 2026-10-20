@@ -6,19 +6,19 @@ layout: page
 
 The [Grove Base Shield](https://wiki.seeedstudio.com/Base_Shield_V2/) is a passive adapter for
 the UNO headers. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins; Juno exposes their
-map through [`GroveBaseShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/GroveBaseShield.java).
+map through [`GroveBaseShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/grove/GroveBaseShield.java).
 
 ## Grove Temperature and Humidity Sensor Pro
 
-[`GroveDht22`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveDht22.java)
+[`GroveDht22`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/grove/sensors/GroveDht22.java)
 is a library-free, allocation-free driver for Seeed's [Grove Temperature and Humidity Sensor
 Pro](https://wiki.seeedstudio.com/Grove-Temperature_and_Humidity_Sensor_Pro/), which uses the
 DHT22 (AM2302) frame format. Plug the module into the shield's D4 socket: the shield supplies
 `GND` and `VCC`, and the driver reads the `SIG` wire on `D4`.
 
 ```java
-import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
-import io.github.jabrena.juno.api.thirdparty.grove.sensors.GroveDht22;
+import io.github.jabrena.juno.thirdparty.grove.GroveBaseShield;
+import io.github.jabrena.juno.thirdparty.grove.sensors.GroveDht22;
 
 GroveDht22 dht22 = new GroveDht22();   // create once, at startup
 int[] reading = new int[GroveDht22.READING_LENGTH];
@@ -47,7 +47,7 @@ UNO Q targets.
 ## DHT11, temperature, sound and light batch
 
 The DHT11 is a separate, whole-number sensor from the DHT22-format Temperature and Humidity
-Sensor Pro. Use [`GroveDht11`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/thirdparty/grove/sensors/GroveDht11.java)
+Sensor Pro. Use [`GroveDht11`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/thirdparty/grove/sensors/GroveDht11.java)
 for the [Seeed DHT11 module](https://www.seeedstudio.com/Grove-Temperature-Humidity-Sensor-DHT11.html).
 The DHT11 signal is digital, so connect it to **D4** (or another digital socket and pass that pin
 to the driver).

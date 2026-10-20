@@ -6,7 +6,7 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.Location;
 import io.github.jabrena.juno.annotations.Watchdog;
-import io.github.jabrena.juno.api.thirdparty.lego.rcxfirmware.RcxFirmwareImage;
+import io.github.jabrena.juno.thirdparty.lego.rcxfirmware.RcxFirmwareImage;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -19,7 +19,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 /**
  * Examples are user programs: they may use only juno-api and the JDK, never the compiler.
  *
- * <p>Examples share package names with juno-api and juno-compiler (e.g. {@code io.github.jabrena.juno.api.hardware.gpio}), so
+ * <p>Examples share package names with juno-api and juno-compiler (e.g. {@code io.github.jabrena.juno.hardware.gpio}), so
  * the rule tells them apart by where each class comes from rather than by package. API classes are taken from
  * juno-api's own output, not resolved through the test classpath, where this module's test fakes shadow some of them.
  */

@@ -4,16 +4,16 @@ description: "Timing: Delay and Clock."
 layout: page
 ---
 
-[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/time/Clock.java)
-(`io.github.jabrena.juno.api.hardware.time`) reads the board's monotonic uptime clock. `MCU.getClock()` reads
+[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/time/Clock.java)
+(`io.github.jabrena.juno.hardware.time`) reads the board's monotonic uptime clock. `MCU.getClock()` reads
 the real timer: its calls compile to the Arduino core's `millis()`/`micros()` with no extra call in
 between. `port` reads any
-[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/hardware/time/Clock.java)
+[`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/time/Clock.java)
 instead, which is how a unit test controls time (see [Testing](#testing-code-that-reads-the-clock)).
 Create a program's clocks once, at startup, as you would any other object.
 
 ```java
-import io.github.jabrena.juno.api.hardware.time.Clock;
+import io.github.jabrena.juno.hardware.time.Clock;
 
 private static final Clock CLOCK = MCU.getClock();
 
@@ -32,7 +32,7 @@ with `<`/`>`.
 
 ## `Clock` vs. `Delay`
 
-[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/api/util/Delay.java) (`millis`/`micros`) blocks
+[`Delay`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/util/Delay.java) (`millis`/`micros`) blocks
 the program for a fixed duration and does nothing else meanwhile. `Clock` instead reports elapsed
 time, so a program built around it can do other work — polling a button, updating a display,
 handling network I/O — while still acting on a schedule. Reach for `Clock` whenever a loop needs
@@ -44,9 +44,9 @@ the classic single-LED blink.
 ```java
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.hardware.gpio.DigitalOutput;
-import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class ClockBlink {

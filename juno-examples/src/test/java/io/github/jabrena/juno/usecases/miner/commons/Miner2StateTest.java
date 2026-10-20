@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.commons;
 
-import io.github.jabrena.juno.api.util.UuidCodec;
 import io.github.jabrena.juno.usecases.miner.chain.BlockPool;
+import io.github.jabrena.juno.util.UuidCodec;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;

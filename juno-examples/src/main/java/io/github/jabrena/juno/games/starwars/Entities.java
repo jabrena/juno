@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.starwars;
 
-import io.github.jabrena.juno.api.util.Random;
+import io.github.jabrena.juno.util.Random;
 
 /**
  * Everything in the world, packed as {@value #ENTITIES} records of {@value #E_STRIDE} ints: fighters,

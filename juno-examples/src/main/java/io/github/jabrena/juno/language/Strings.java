@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.Delay;
 
 /** Demonstrates strings: literals, length, charAt, equals, {@code String.valueOf}, concatenation, and a StringBuilder. */
 public final class Strings {

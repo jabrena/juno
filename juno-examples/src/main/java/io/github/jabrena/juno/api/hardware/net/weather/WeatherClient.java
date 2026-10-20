@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
-import io.github.jabrena.juno.api.hardware.net.http.Json;
+import io.github.jabrena.juno.hardware.net.http.HttpClient;
+import io.github.jabrena.juno.hardware.net.http.Json;
 
 /** Fetches and reads Madrid's current weather from Open-Meteo. */
 public final class WeatherClient {

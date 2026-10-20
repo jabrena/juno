@@ -3,11 +3,9 @@ package io.github.jabrena.juno.usecases.supabase.dashboard;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
-import io.github.jabrena.juno.api.util.mvc.ViewRouter;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseClient;
 import io.github.jabrena.juno.usecases.supabase.commons.SupabaseResponse;
 import io.github.jabrena.juno.usecases.supabase.dashboard.commons.TemperatureDashboardState;
@@ -16,6 +14,8 @@ import io.github.jabrena.juno.usecases.supabase.dashboard.intro.IntroView;
 import io.github.jabrena.juno.usecases.supabase.dashboard.services.SupabaseTemperatureService;
 import io.github.jabrena.juno.usecases.supabase.dashboard.status.TemperatureHistogramView;
 import io.github.jabrena.juno.usecases.supabase.publisher.SupabaseGroveTemperatures;
+import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.mvc.ViewRouter;
 
 /**
  * Reads every row of the {@code sensor-data} table written by {@link SupabaseGroveTemperatures}, calculates the median

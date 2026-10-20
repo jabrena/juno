@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.view;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.games.gladiator.gladiator.Brain;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /**
  * Vector line art: the opponent as a billboard, a run of segments {@code x0, z0, x1, z1} in world units (x across

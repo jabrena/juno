@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.usecases.miner.intro;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
-import io.github.jabrena.juno.api.util.mvc.View;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Views;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.View;
 
 /**
  * Miner 2's startup intro, shown once: the Java logo for {@link #STEP_MILLIS}, then an Arduino board turned on its side

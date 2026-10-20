@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.gladiator.view;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.games.gladiator.arena.Coliseum;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /**
  * The opponent in a {@link View}: a {@link Figure} standing where the arena last saw it, always turned to the viewer

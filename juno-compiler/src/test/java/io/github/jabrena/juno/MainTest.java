@@ -171,8 +171,8 @@ class MainTest {
     private void compileFixture() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.MCU;
-                import io.github.jabrena.juno.api.hardware.gpio.Gpio;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Fixture {
                     public static void main(String[] args) {
                         MCU.getGpio().pinMode(13, Gpio.getOutput());

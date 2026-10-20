@@ -37,7 +37,7 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 @Board(%1$s.class)
                 public final class Worker {
                     static final class Job implements Runnable {
@@ -338,8 +338,8 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
-                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 @Board(%s.class)
                 public final class Fetch {
                     public static void main() throws Exception {
@@ -361,7 +361,7 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 @Board(%1$s.class)
                 public final class ParallelFetch {
                     static final class First {
@@ -480,9 +480,9 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
-                import io.github.jabrena.juno.api.hardware.net.Wifi;
-                import io.github.jabrena.juno.api.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 @Board(ArduinoUnoQ.class)
                 public final class Fetch {
                     public static void main() throws Exception {
@@ -600,7 +600,7 @@ class ThreadsTest {
     @DisplayName("Delay becomes a sleep that lets other threads run")
     void shouldTurnDelayIntoASleepThatLetsOtherThreadsRun() throws Exception {
         // Given
-        String body = START_AND_JOIN + "io.github.jabrena.juno.api.util.Delay.millis(10);\n";
+        String body = START_AND_JOIN + "io.github.jabrena.juno.util.Delay.millis(10);\n";
         CompilationResult result = compile("ArduinoUnoR4WiFi", body);
 
         // When & Then
@@ -655,7 +655,7 @@ class ThreadsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Worker {
                     static void spawn(Runnable work) throws Exception {
                         try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
@@ -682,7 +682,7 @@ class ThreadsTest {
         // Given
         String reachable = """
                 package demo;
-                import io.github.jabrena.juno.api.hardware.serial.Serial;
+                import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Worker {
                     static void spawn(Runnable work) throws Exception {
                         try (var scope = java.util.concurrent.StructuredTaskScope.open()) {

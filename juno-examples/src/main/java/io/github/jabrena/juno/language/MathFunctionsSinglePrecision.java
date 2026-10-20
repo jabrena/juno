@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Demonstrates {@code java.lang.Math} on {@code float} values. Every call here builds on every board:

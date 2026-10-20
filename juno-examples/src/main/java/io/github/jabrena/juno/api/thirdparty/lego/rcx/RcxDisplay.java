@@ -1,8 +1,11 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxLink;
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Writes numbers on the RCX's display from the Arduino: a countdown from 10 to -10, one number a second, then the

@@ -1,13 +1,13 @@
 package io.github.jabrena.juno.usecases.miner.cover;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
-import io.github.jabrena.juno.api.util.mvc.View;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Header;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Views;
 import io.github.jabrena.juno.usecases.miner.services.NodeService;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.View;
 
 /**
  * Miner 2's cover: the MINER title with a PLAY button that opens the blocks board and starts the node. The Wi-Fi and

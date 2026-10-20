@@ -1,9 +1,9 @@
 package demo;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.i2c.I2c;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.i2c.I2c;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** Register access on an I2C device. */
 public final class I2cApi {

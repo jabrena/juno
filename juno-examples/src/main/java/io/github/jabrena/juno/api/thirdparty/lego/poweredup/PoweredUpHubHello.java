@@ -1,8 +1,9 @@
 package io.github.jabrena.juno.api.thirdparty.lego.poweredup;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * The smallest Powered Up example: connects to a LEGO Powered Up hub (Technic Hub, Move Hub or City

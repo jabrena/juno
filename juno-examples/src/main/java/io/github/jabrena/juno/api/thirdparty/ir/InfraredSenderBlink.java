@@ -1,8 +1,9 @@
 package io.github.jabrena.juno.api.thirdparty.ir;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.ir.Infrared;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Checks an IR transmitter module on its own: it sends the 38 kHz carrier for one second, in short bursts

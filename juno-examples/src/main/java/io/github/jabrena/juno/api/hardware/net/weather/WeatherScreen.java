@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /** Everything {@link WeatherTFT} draws on the TFT shield except the seven-segment clock. */
 final class WeatherScreen {

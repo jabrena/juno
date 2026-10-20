@@ -3,7 +3,7 @@ package demo;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** Virtual threads on the preemptive scheduler: start, join, isAlive, sleep and yield on each board's thread port. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})

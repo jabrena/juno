@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.commons.ux;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /**
  * One line of text at a fixed position, in a chosen font size and foreground color, on the dashboard's navy

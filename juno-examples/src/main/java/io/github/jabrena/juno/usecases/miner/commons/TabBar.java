@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.usecases.miner.commons;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.mvc.Navigator;
 
 /**
  * The row of tabs along the bottom of the portrait 240x320 screen, one per view in {@link Miner2Views} order. Every

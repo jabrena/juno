@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.pacman;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Score, lives, level progress, the ghost record layout, screen geometry, and the rules governing

@@ -1,13 +1,13 @@
 package io.github.jabrena.juno.games.doom2.skill;
 
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
-import io.github.jabrena.juno.api.util.mvc.View;
 import io.github.jabrena.juno.games.doom2.commons.ChoiceList;
 import io.github.jabrena.juno.games.doom2.commons.Doom2State;
 import io.github.jabrena.juno.games.doom2.commons.Doom2Views;
 import io.github.jabrena.juno.games.doom2.commons.Screen;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.View;
 
 /** DOOM's skill menu, after the episode: which monsters and pickups each map places, and how hard they hit. */
 public final class SkillSelectionView implements View {

@@ -1,8 +1,5 @@
 package io.github.jabrena.juno.games.gladiator;
 
-import io.github.jabrena.juno.api.hardware.gpio.EmulatedShield;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Random;
 import io.github.jabrena.juno.games.gladiator.arena.GladiatorClass;
 import io.github.jabrena.juno.games.gladiator.arena.Match;
 import io.github.jabrena.juno.games.gladiator.gladiator.Report;
@@ -14,6 +11,9 @@ import io.github.jabrena.juno.games.gladiator.view.ClassWireframe;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
+import io.github.jabrena.juno.hardware.gpio.EmulatedShield;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 

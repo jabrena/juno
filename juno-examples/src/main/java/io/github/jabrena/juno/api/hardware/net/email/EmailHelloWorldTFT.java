@@ -3,11 +3,13 @@ package io.github.jabrena.juno.api.hardware.net.email;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.net.Wifi;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.net.email.Pop3Client;
+import io.github.jabrena.juno.hardware.net.email.Smtp;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Touch-screen version of {@link EmailHelloWorldLCD}. After Wi-Fi connects, a tap sends a

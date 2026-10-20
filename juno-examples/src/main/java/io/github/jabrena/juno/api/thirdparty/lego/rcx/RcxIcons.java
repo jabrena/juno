@@ -1,8 +1,11 @@
 package io.github.jabrena.juno.api.thirdparty.lego.rcx;
 
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxBrick;
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxLink;
+import io.github.jabrena.juno.thirdparty.lego.rcx.RcxRemote;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Tours the RCX display from the Arduino, once: lights each icon in turn for a moment, then every segment, then runs

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.commons;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 
 /** Draws Miner2's title and live Wi-Fi and SD-card indicators without redrawing an unchanged header. */
 public final class Miner2Header {

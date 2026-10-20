@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.util.mvc.Task;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2State;
+import io.github.jabrena.juno.util.mvc.Task;
 
 /**
  * Owns the node's work: the controller advances it one step per frame, on the main thread, before the active view

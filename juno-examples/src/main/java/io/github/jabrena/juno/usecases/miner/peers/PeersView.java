@@ -1,17 +1,17 @@
 package io.github.jabrena.juno.usecases.miner.peers;
 
-import io.github.jabrena.juno.api.hardware.MCU;
-import io.github.jabrena.juno.api.hardware.time.Clock;
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.mvc.Navigator;
-import io.github.jabrena.juno.api.util.mvc.View;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Header;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2State;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Views;
 import io.github.jabrena.juno.usecases.miner.commons.TabBar;
 import io.github.jabrena.juno.usecases.miner.services.NodeService;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.View;
 
 /**
  * The nodes this node has heard from, one row per slot of its {@link PeerTable}: the first word of the peer's UUID,

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.api.thirdparty.tft.TftTouchShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.thirdparty.tft.TftTouchShield;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Pilot selection and touch controls. A HUMAN marine turns with the left and right thirds of the

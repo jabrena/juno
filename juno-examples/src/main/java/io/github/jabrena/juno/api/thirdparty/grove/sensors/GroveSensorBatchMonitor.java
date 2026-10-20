@@ -2,10 +2,14 @@ package io.github.jabrena.juno.api.thirdparty.grove.sensors;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.grove.GroveBaseShield;
-import io.github.jabrena.juno.api.util.Delay;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.grove.GroveBaseShield;
+import io.github.jabrena.juno.thirdparty.grove.sensors.GroveDht11;
+import io.github.jabrena.juno.thirdparty.grove.sensors.GroveLightSensorV12;
+import io.github.jabrena.juno.thirdparty.grove.sensors.GroveSoundSensorV16;
+import io.github.jabrena.juno.thirdparty.grove.sensors.GroveTemperatureSensorV12;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * Monitors the new Grove sensor batch: DHT11 on D4, temperature v1.2 on A0, sound v1.6 on A1,

@@ -2,9 +2,9 @@ package io.github.jabrena.juno.api.thirdparty.lcd.pomodoro;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.serial.BaudRate;
-import io.github.jabrena.juno.api.hardware.serial.Serial;
-import io.github.jabrena.juno.api.thirdparty.lcd.LcdKeypadShield;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.thirdparty.lcd.LcdKeypadShield;
 
 /**
  * A Pomodoro timer on the LCD Keypad Shield. This class owns the state machine and the one piece
