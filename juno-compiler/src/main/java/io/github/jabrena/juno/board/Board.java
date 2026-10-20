@@ -37,7 +37,13 @@ public enum Board {
     UNO_R3_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2", "arduino-uno-r3-wifi-rev2", "UNO WiFi Rev2",
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
             EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
-                    Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG));
+                    Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG)),
+    /**
+     * The ESP32-S3 Nano: GPIO, delays and USB serial so far; none of the optional capabilities is wired to its core
+     * yet.
+     */
+    NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32", "arduino-nano-esp32", "Nano ESP32",
+            "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO, EnumSet.noneOf(Capability.class));
 
     private final String apiClassName;
     private final String id;

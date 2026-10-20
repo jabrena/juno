@@ -4,6 +4,7 @@ import io.github.jabrena.juno.backend.AsmBackend;
 import io.github.jabrena.juno.backend.GeneratedCode;
 import io.github.jabrena.juno.backend.avr.AvrAsmBackend;
 import io.github.jabrena.juno.backend.thumb2.Thumb2AsmBackend;
+import io.github.jabrena.juno.backend.xtensa.XtensaAsmBackend;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.Program;
@@ -73,6 +74,7 @@ public final class JunoCompiler {
         return switch (board.core().architecture()) {
             case THUMB2 -> new Thumb2AsmBackend(gcLoggingEnabled, board, runtimeConfig);
             case AVR -> new AvrAsmBackend(gcLoggingEnabled, board, runtimeConfig);
+            case XTENSA -> new XtensaAsmBackend(gcLoggingEnabled, board, runtimeConfig);
         };
     }
 }

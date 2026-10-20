@@ -166,6 +166,7 @@ public final class ProgramLayout {
     public record DataDirectives(String word, String align, String bss, String lengthWord) {
         public static final DataDirectives THUMB2 = new DataDirectives(".word", ".align 2", ".bss", ".word");
         public static final DataDirectives AVR = new DataDirectives(".long", ".balign 4", ".section .bss", ".short");
+        public static final DataDirectives XTENSA = new DataDirectives(".long", ".balign 4", ".section .bss", ".long");
     }
 
     private DataDirectives directives = DataDirectives.THUMB2;

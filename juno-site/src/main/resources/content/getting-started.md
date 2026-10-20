@@ -132,6 +132,7 @@ Juno compiles for, and `juno:verify`/`juno:upload` build for its Arduino CLI FQB
 | `@Board(ArduinoUnoR4WiFi.class)` | Arduino UNO R4 WiFi | `arduino:renesas_uno:unor4wifi` |
 | `@Board(ArduinoUnoR3WiFiRev2.class)` | Arduino UNO R3 WiFi Rev2 | `arduino:megaavr:uno2018` |
 | `@Board(ArduinoUnoR3.class)` | Arduino UNO R3 | `arduino:avr:uno` |
+| `@Board(ArduinoNanoEsp32.class)` | Arduino Nano ESP32 (GPIO, delays and serial so far; see [Nano ESP32](../arduino-nano-esp32)) | `arduino:esp32:nano_nora` |
 
 A class with no `@Board` annotation is not restricted to one board: it builds for the board named by
 `-Djuno.board=<id>`, which is required. GPIO, time and Serial are broadly

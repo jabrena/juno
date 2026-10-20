@@ -228,14 +228,17 @@ public final class IntrinsicLowering {
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */
     private void registerGpio(CoreRuntime coreRuntime, UnoGeneration generation, boolean usesThreads) {
-        shim(Intrinsic.DIGITAL_OUTPUT_OF, "pinMode", Result.FIRST_ARGUMENT, List.of(arg(0), immediate(1))); // OUTPUT
-        shim(Intrinsic.GPIO_PIN_MODE, "pinMode", Result.NONE, List.of(arg(0), arg(1)));
-        shim(Intrinsic.DIGITAL_OUTPUT_HIGH, "digitalWrite", Result.NONE, List.of(RECEIVER, immediate(1)));
-        shim(Intrinsic.DIGITAL_OUTPUT_LOW, "digitalWrite", Result.NONE, List.of(RECEIVER, immediate(0)));
-        shim(Intrinsic.GPIO_DIGITAL_WRITE, "digitalWrite", Result.NONE, List.of(arg(0), arg(1)));
-        shim(Intrinsic.GPIO_DIGITAL_READ, "digitalRead", Result.WORD, List.of(arg(0)));
-        shim(Intrinsic.GPIO_ANALOG_READ, "analogRead", Result.WORD, List.of(arg(0)));
-        shim(Intrinsic.GPIO_ANALOG_WRITE, "analogWrite", Result.NONE, List.of(arg(0), arg(1)));
+        String pinMode = coreRuntime.gpioFunction("pinMode");
+        String digitalWrite = coreRuntime.gpioFunction("digitalWrite");
+        shim(Intrinsic.DIGITAL_OUTPUT_OF, pinMode, Result.FIRST_ARGUMENT, List.of(arg(0), immediate(1))); // OUTPUT
+        shim(Intrinsic.GPIO_PIN_MODE, pinMode, Result.NONE, List.of(arg(0), arg(1)));
+        shim(Intrinsic.DIGITAL_OUTPUT_HIGH, digitalWrite, Result.NONE, List.of(RECEIVER, immediate(1)));
+        shim(Intrinsic.DIGITAL_OUTPUT_LOW, digitalWrite, Result.NONE, List.of(RECEIVER, immediate(0)));
+        shim(Intrinsic.GPIO_DIGITAL_WRITE, digitalWrite, Result.NONE, List.of(arg(0), arg(1)));
+        shim(Intrinsic.GPIO_DIGITAL_READ, coreRuntime.gpioFunction("digitalRead"), Result.WORD, List.of(arg(0)));
+        shim(Intrinsic.GPIO_ANALOG_READ, coreRuntime.gpioFunction("analogRead"), Result.WORD, List.of(arg(0)));
+        shim(Intrinsic.GPIO_ANALOG_WRITE, coreRuntime.gpioFunction("analogWrite"), Result.NONE,
+                List.of(arg(0), arg(1)));
         shim(Intrinsic.CLOCK_MILLIS, "millis", Result.WORD, List.of());
         shim(Intrinsic.CLOCK_MICROS, "micros", Result.WORD, List.of());
         shim(Intrinsic.RANDOM_SEED, "juno_random_seed", Result.NONE, List.of(arg(0)), ShimFeature.RANDOM);

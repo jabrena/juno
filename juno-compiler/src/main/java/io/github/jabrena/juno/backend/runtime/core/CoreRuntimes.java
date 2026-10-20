@@ -12,6 +12,7 @@ public final class CoreRuntimes {
             case RENESAS_UNO -> new RenesasCoreRuntime();
             case ZEPHYR -> new ZephyrCoreRuntime();
             case MEGAAVR -> new MegaAvrCoreRuntime();
+            case ESP32 -> new Esp32CoreRuntime();
         };
     }
 }
