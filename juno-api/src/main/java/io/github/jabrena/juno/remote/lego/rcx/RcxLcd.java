@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
 /**
- * An RCX brick's display, from {@link RemoteRcx#getLcd()}. Both commands need Juno's own RCX firmware
+ * An RCX brick's display, from {@link RemoteRcx#getLcd()}. Its commands need Juno's own RCX firmware
  * ({@code RcxRemoteFirmware}); LEGO's firmware does not know them and does not answer.
  */
 public final class RcxLcd {
@@ -58,5 +58,23 @@ public final class RcxLcd {
      */
     public boolean showIcon(int icon, boolean lit) {
         return brick.showIcon(icon, lit);
+    }
+
+    /**
+     * Blanks the display, its number and icons too (but for the IR cones that show the brick receiving), until
+     * {@link #showNumber} or {@link #showText}. Returns whether the brick acknowledged.
+     */
+    public boolean clear() {
+        return brick.clearDisplay();
+    }
+
+    /**
+     * Shows the first four characters of {@code text} in place of a number, with no icons but the IR cones, until
+     * {@link #showNumber}. A seven-segment display approximates some letters ({@code "VIEW"} shows as {@code UIEu})
+     * and shows characters it cannot draw blank. Sends one command per digit; returns whether the brick acknowledged
+     * them all.
+     */
+    public boolean showText(String text) {
+        return brick.showText(text);
     }
 }

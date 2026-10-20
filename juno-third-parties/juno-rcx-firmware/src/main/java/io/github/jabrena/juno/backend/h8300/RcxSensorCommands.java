@@ -4,8 +4,10 @@ import io.github.jabrena.juno.backend.h8300.RcxRom.Argument;
 
 /**
  * The input commands of {@link RcxRemoteFirmware}: set type (0x32), set mode (0x42), clear (0xD1) and poll (0x12)
- * for inputs 0-2. Each input has a ROM {@code sensor_t} that {@code read_sensor} converts by its mode, read when a
- * poll asks for it and whenever the ROM's A/D handler flags fresh readings, so rotation and edge counts keep up.
+ * for inputs 0-2 (polling the message is left to {@link RcxRemoteControl}, and the brick's clicked buttons to
+ * {@link RcxBrickButtons}). Each input has a ROM {@code sensor_t}
+ * that {@code read_sensor} converts by its mode, read when a poll asks for it and whenever the ROM's A/D handler flags
+ * fresh readings, so rotation and edge counts keep up.
  * Setting a type picks LEGO's default mode for it and powers light and rotation sensors.
  */
 final class RcxSensorCommands {
@@ -39,6 +41,8 @@ final class RcxSensorCommands {
     private static final int SOURCE_MODE = 11;
     private static final int SOURCE_RAW = 12;
     private static final int SOURCE_BOOLEAN = 13;
+    /** The last message, which {@link RcxRemoteControl} keeps. */
+    private static final int SOURCE_MESSAGE = 15;
 
     private static final String UPDATE_ONE = "update_sensor";
     private static final String POWER_ONE = "power_sensor";
@@ -113,10 +117,14 @@ final class RcxSensorCommands {
         code.replyWith(1);
     }
 
-    /** Replies with the input's value, raw reading, boolean, type or mode; 0 for any other source. */
+    /** Replies with the input's value, raw reading, boolean, type or mode, or the message; 0 for any other source. */
     private void poll() {
         assembler.label(POLL);
         assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R0L);
+        assembler.compareImmediate(SOURCE_MESSAGE, H8ByteRegister.R0L);
+        code.jumpIf(H8Condition.EQUAL, RcxRemoteControl.POLL_MESSAGE);
+        assembler.compareImmediate(RcxBrickButtons.SOURCE_CLICKED, H8ByteRegister.R0L);
+        code.jumpIf(H8Condition.EQUAL, RcxBrickButtons.POLL_CLICKED);
         assembler.compareImmediate(SOURCE_VALUE, H8ByteRegister.R0L);
         code.jumpIf(H8Condition.CARRY_SET, POLL_ZERO);
         assembler.compareImmediate(SOURCE_BOOLEAN + 1, H8ByteRegister.R0L);

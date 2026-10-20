@@ -26,8 +26,9 @@ import java.util.Objects;
  * <tr><td>0x32</td><td>input 0-2 type: raw, touch, temperature, light, rotation</td><td>none</td></tr>
  * <tr><td>0x42</td><td>input 0-2 mode: LEGO slope and mode bits</td><td>none</td></tr>
  * <tr><td>0xD1</td><td>clear input 0-2's value</td><td>none</td></tr>
- * <tr><td>0x12</td><td>poll input 0-2: value (source 9), type (10), mode (11), raw (12), boolean (13)</td>
- * <td>the value (low, high); 0 for other sources</td></tr>
+ * <tr><td>0x12</td><td>poll input 0-2: value (source 9), type (10), mode (11), raw (12), boolean (13); the
+ * last message (source 15); or, Juno's own, the brick's buttons clicked since the last such poll (source 0x60: Run
+ * 0x01, View 0x02, Prgm 0x04)</td><td>the value (low, high); 0 for other sources</td></tr>
  * <tr><td>0x51</td><td>play system sound 0-5</td><td>none</td></tr>
  * <tr><td>0x23</td><td>play tone: frequency in Hz (low, high), duration</td><td>none</td></tr>
  * <tr><td>0x30</td><td>battery level</td><td>millivolts (low, high)</td></tr>
@@ -35,14 +36,25 @@ import java.util.Objects;
  * LEGO's firmware</td><td>none</td></tr>
  * <tr><td>0xB2</td><td>display icon 0x06-0x20 ({@link RcxRom#LCD_ICONS}), then 1 lit or 0 left to the brick; Juno's
  * own</td><td>none</td></tr>
+ * <tr><td>0x82</td><td>show text: position 0-3, left to right, then an ASCII character; any other position blanks
+ * all four. The display then shows the text and only the IR cones until a number is shown. Juno's own</td>
+ * <td>none</td></tr>
+ * <tr><td>0xD2</td><td>the RCX Remote Control's buttons (high, low): motor buttons run their output while held,
+ * message buttons set the message to 1-3, stop floats every output, sound beeps; program buttons are ignored</td>
+ * <td>no reply, as the remote expects none</td></tr>
+ * <tr><td>0xF7</td><td>set the message (0-255)</td><td>no reply</td></tr>
  * </table>
  *
- * <p>Other messages get no reply. The display shows {@code JUno} until a number is shown, and lights its icons from the brick's state as well as on request (see {@code RcxDisplayIcons}):
+ * <p>Other messages get no reply. The brick's View, Prgm and Run clicks change nothing on it; they are only kept for
+ * the poll of source 0x60 (see {@code RcxBrickButtons}). The display shows {@code JUno} until a number or text is shown
+ * (see {@code RcxDisplayText}), and lights its icons from the brick's state as well as on request (see
+ * {@code RcxDisplayIcons}):
  * running motors' arrows, pressed touch sensors, low battery, and the minifigure, walking while a motor runs. Outputs
  * start floating, forward, at full power, as LEGO's firmware leaves them. After
- * {@link #DEFAULT_AUTO_OFF_MINUTES} minutes without a command (as LEGO's firmware), it floats the outputs, stops
- * powering the sensors and puts the brick to sleep; On-Off wakes it without losing the firmware,
- * starting it afresh as after the download. A normal On-Off press
+ * {@link #DEFAULT_AUTO_OFF_MINUTES} minutes without a message (as LEGO's firmware; remote buttons and messages count
+ * too), it floats the outputs, stops powering the sensors, blanks the whole display, icons included, and puts the
+ * brick to sleep; On-Off wakes it without losing the firmware, starting it afresh as after the download. A normal
+ * On-Off press
  * does the same immediately. Holding On-Off for two seconds instead floats the outputs, deletes the downloaded
  * firmware and returns the brick to its ROM downloader, so another firmware can be installed without removing a
  * battery.
@@ -98,6 +110,14 @@ public final class RcxRemoteFirmware {
      * toggle bit clear) never reached the firmware, while 0xAA and other free opcodes worked with either toggle.
      */
     private static final int OPCODE_SET_ICON = 0xB2;
+    /**
+     * Juno's own: one character of text. On the brick, 0x82 arrives with either toggle bit, and only with its two
+     * arguments: the ROM takes an opcode's low three bits as its argument count.
+     */
+    private static final int OPCODE_SET_CHARACTER = 0x82;
+    /** The RCX Remote Control's button state. */
+    private static final int OPCODE_REMOTE_BUTTONS = 0xD2;
+    private static final int OPCODE_SET_MESSAGE = 0xF7;
     /** Tenths of a second between icon redraws, the walking figure's step. */
     private static final int ICON_TICK_TENTHS = 3;
     /** Holding On-Off this long deliberately returns the brick to its ROM downloader. */
@@ -115,8 +135,6 @@ public final class RcxRemoteFirmware {
     private static final int SOUND_BEEP_BEEP = 1;
     private static final int SOUND_CLICK = 0;
     private static final int SOUND_VALUES = 0x07;
-    /** LCD bytes for {@code JUno}, left to right, using the four numeric seven-segment positions. */
-    private static final int[] JUNO_DISPLAY = {0xA0, 0x02, 0x00, 0x88, 0x08, 0x88, 0x80, 0x8A, 0xAA};
 
     private final int autoOffMinutes;
     private final boolean withIcons;
@@ -126,6 +144,9 @@ public final class RcxRemoteFirmware {
     private final RcxMotorCommands motors = new RcxMotorCommands(code);
     private final RcxSensorCommands sensors = new RcxSensorCommands(code);
     private final RcxDisplayIcons icons = new RcxDisplayIcons(code);
+    private final RcxRemoteControl remote = new RcxRemoteControl(code, motors);
+    private final RcxBrickButtons buttons = new RcxBrickButtons(code);
+    private final RcxDisplayText text = new RcxDisplayText(code);
 
     public RcxRemoteFirmware() {
         this(DEFAULT_AUTO_OFF_MINUTES);
@@ -183,12 +204,16 @@ public final class RcxRemoteFirmware {
         showNumber();
         reply();
         showBrand();
+        blankDisplay();
         updateDisplay();
         powerOff();
         motors.handlers();
         sensors.handlers();
+        remote.handlers();
+        buttons.handlers();
+        text.handlers(NUMBER_SHOWN);
         if (withIcons) {
-            icons.handlers(motors, sensors);
+            icons.handlers(motors, sensors, text);
         }
         assembler.string(RcxRom.UNLOCK_TEXT);
         return assembler.assemble("start");
@@ -211,6 +236,7 @@ public final class RcxRemoteFirmware {
         rom.call(RcxRom.INIT_TIMER, COUNTERS, DISPATCH);
         rom.call(RcxRom.INIT_SENSORS);
         rom.call(RcxRom.INIT_POWER);
+        rom.call(RcxRom.INIT_BUTTONS);
         rom.call(RcxRom.INIT_SERIAL, RECEIVED_FLAG, COUNTERS, 1, 1);
         assembler.call(RcxSensorCommands.POWER_ALL);
         restartAutoOff();
@@ -240,6 +266,7 @@ public final class RcxRemoteFirmware {
         assembler.storeByte(H8ByteRegister.R6L, ANALOG_READY);
         assembler.call(RcxSensorCommands.UPDATE_ALL);
         assembler.label(received);
+        assembler.call(RcxBrickButtons.CHECK);
         if (withIcons) {
             String noTick = code.newLabel();
             assembler.moveImmediate(ICON_TICK_TENTHS, H8Register.R5);
@@ -256,6 +283,11 @@ public final class RcxRemoteFirmware {
         code.jumpIf(H8Condition.EQUAL, RcxCode.LOOP);
         code.clearWord(RECEIVED_LENGTH);
         rom.call(RcxRom.RECEIVE_DATA, RcxCode.REQUEST, RcxCode.REQUEST_CAPACITY, RECEIVED_LENGTH);
+        // Every message keeps the brick awake, including those that get no reply, such as the remote's buttons.
+        restartAutoOff();
+        if (withIcons) {
+            icons.signalReceived();
+        }
     }
 
     /** Writes the reply's opcode and jumps to the command's handler. */
@@ -281,6 +313,9 @@ public final class RcxRemoteFirmware {
         if (withIcons) {
             handler(OPCODE_SET_ICON, RcxDisplayIcons.SET_ICON);
         }
+        handler(OPCODE_SET_CHARACTER, RcxDisplayText.SET_CHARACTER);
+        handler(OPCODE_REMOTE_BUTTONS, RcxRemoteControl.BUTTONS);
+        handler(OPCODE_SET_MESSAGE, RcxRemoteControl.SET_MESSAGE);
         assembler.jump(RcxCode.LOOP);
     }
 
@@ -346,22 +381,27 @@ public final class RcxRemoteFirmware {
         assembler.store(H8Register.R1, SHOWN_NUMBER);
         assembler.moveImmediate(1, H8Register.R0);
         assembler.store(H8Register.R0, NUMBER_SHOWN);
+        text.hideText();
         code.replyWith(1);
     }
 
     /**
-     * Restarts the auto power-off countdown and redraws the display, then sends the reply, retrying
-     * while the serial port is still busy, so the brick is ready for the next command once the Arduino hears it.
+     * Redraws the display, then sends the reply, retrying while the serial port is still busy, so the brick is ready
+     * for the next command once the Arduino hears it; {@link RcxCode#NO_REPLY} only redraws.
      */
     private void reply() {
+        String redraw = withIcons ? RcxDisplayIcons.UPDATE : "update_display";
+        assembler.label(RcxCode.NO_REPLY);
+        assembler.call(redraw);
+        assembler.jump(RcxCode.LOOP);
+
         assembler.label(RcxCode.REPLY_ACK);
         assembler.moveImmediate(1, H8Register.R0);
         assembler.label(RcxCode.SEND_REPLY);
         assembler.store(H8Register.R0, REPLY_LENGTH);
         // Redraw before replying: the Arduino sends its next command as soon as the reply arrives, and on the brick a
         // command that came while the display was still being redrawn after the reply was lost.
-        restartAutoOff();
-        assembler.call(withIcons ? RcxDisplayIcons.UPDATE : "update_display");
+        assembler.call(redraw);
         assembler.label("send_retry");
         assembler.load(REPLY_LENGTH, H8Register.R5);
         rom.call(RcxRom.SEND_DATA, Argument.constant(RcxRom.SEND_SHORT), Argument.constant(0),
@@ -390,7 +430,9 @@ public final class RcxRemoteFirmware {
         assembler.load(TENTHS, H8Register.R6);
         code.jumpIf(H8Condition.EQUAL, RcxCode.LOOP);
 
+        // Auto power-off and a short On-Off press both end here: the display goes dark at once, icons included.
         assembler.label("power_off");
+        assembler.call("blank_display");
         motors.floatAll();
         waitWhileOnOffHeld();
         rom.call(RcxRom.PLAY_SYSTEM_SOUND, RcxRom.SOUND_PLAY, SOUND_CLICK);
@@ -406,6 +448,7 @@ public final class RcxRemoteFirmware {
         assembler.jump("start");
 
         assembler.label("delete_firmware");
+        assembler.call("blank_display");
         motors.floatAll();
         waitWhileOnOffHeld();
         shutDownHandlers();
@@ -417,15 +460,29 @@ public final class RcxRemoteFirmware {
     }
 
     /**
-     * Stops the ROM's serial, sensor and timer handlers, then clears the display: the handlers draw some icons by
-     * themselves, so clearing first left stray segments on the sleeping brick.
+     * Stops the ROM's serial, sensor and timer handlers, then blanks the display again: the handlers draw some icons by
+     * themselves, so clearing only before stopping them left stray segments on the sleeping brick.
      */
     private void shutDownHandlers() {
         rom.call(RcxRom.SHUTDOWN_SERIAL);
         rom.call(RcxRom.SHUTDOWN_SENSORS);
         rom.call(RcxRom.SHUTDOWN_TIMER);
+        assembler.call("blank_display");
+    }
+
+    /**
+     * Subroutine: clears the display, then zeroes every byte of the LCD memory too, since {@code JUno} is written there
+     * directly rather than through the ROM's display state, and refreshes the LCD.
+     */
+    private void blankDisplay() {
+        assembler.label("blank_display");
         rom.call(RcxRom.CLEAR_DISPLAY);
+        assembler.moveImmediate(0, H8ByteRegister.R6L);
+        for (int i = 0; i < RcxDisplayText.LCD_BYTES; i++) {
+            assembler.storeByte(H8ByteRegister.R6L, RcxRom.LCD_DISPLAY_MEMORY + i);
+        }
         rom.call(RcxRom.REFRESH_DISPLAY);
+        assembler.returnFromSubroutine();
     }
 
     /** Sets the ROM's power-off countdown back to the full idle time. */
@@ -438,25 +495,19 @@ public final class RcxRemoteFirmware {
     private void showBrand() {
         assembler.label("show_brand");
         rom.call(RcxRom.CLEAR_DISPLAY);
-        writeBrand();
+        text.drawBrand();
         rom.call(RcxRom.REFRESH_DISPLAY);
         assembler.returnFromSubroutine();
     }
 
-    /** Writes {@code JUno}'s segments straight into the LCD memory. */
-    private void writeBrand() {
-        for (int i = 0; i < JUNO_DISPLAY.length; i++) {
-            assembler.moveImmediate(JUNO_DISPLAY[i], H8ByteRegister.R6L);
-            assembler.storeByte(H8ByteRegister.R6L, RcxRom.LCD_DISPLAY_MEMORY + i);
-        }
-    }
-
     /**
-     * Subroutines: {@link RcxCode#DRAW_NUMBER} draws the number 0x72 set, signed, or else {@code JUno};
+     * Subroutines: {@link RcxCode#DRAW_NUMBER} draws the number 0x72 set, signed, or else the text 0x82 set, or else
+     * {@code JUno};
      * {@code update_display} draws it and refreshes the LCD.
      */
     private void updateDisplay() {
         String brand = code.newLabel();
+        String shownText = code.newLabel();
         assembler.label("update_display");
         assembler.call(RcxCode.DRAW_NUMBER);
         rom.call(RcxRom.REFRESH_DISPLAY);
@@ -470,7 +521,11 @@ public final class RcxRemoteFirmware {
                 Argument.constant(RcxRom.LCD_NO_COMMA));
         assembler.returnFromSubroutine();
         assembler.label(brand);
-        writeBrand();
+        text.branchIfTextShown(shownText);
+        text.drawBrand();
+        assembler.returnFromSubroutine();
+        assembler.label(shownText);
+        text.drawText();
         assembler.returnFromSubroutine();
     }
 

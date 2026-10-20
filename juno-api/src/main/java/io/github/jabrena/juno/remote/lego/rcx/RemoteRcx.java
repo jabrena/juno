@@ -45,6 +45,7 @@ public final class RemoteRcx {
     private final RcxLcd lcd;
     private final RcxAudio audio;
     private final RcxBattery battery;
+    private final RcxButtons buttons;
     private final RcxFirmware firmware;
 
     /**
@@ -72,6 +73,7 @@ public final class RemoteRcx {
         this.lcd = new RcxLcd(brick);
         this.audio = new RcxAudio(brick);
         this.battery = new RcxBattery(brick);
+        this.buttons = new RcxButtons(brick);
         this.firmware = new RcxFirmware(link, clock);
     }
 
@@ -154,6 +156,11 @@ public final class RemoteRcx {
     /** The batteries. */
     public RcxBattery getBattery() {
         return battery;
+    }
+
+    /** The brick's own View, Prgm and Run buttons; needs Juno's own RCX firmware. */
+    public RcxButtons getButtons() {
+        return buttons;
     }
 
     /** The firmware loader, which the brick's boot ROM answers even with no firmware installed. */

@@ -4,8 +4,9 @@ import io.github.jabrena.juno.backend.h8300.RcxRom.Argument;
 
 /**
  * The output commands of {@link RcxRemoteFirmware}: on/off/float (0x21), direction (0xE1) and power (0x13), each
- * selecting outputs A, B, C with the low three bits of its first argument. The firmware keeps every output's LEGO
- * state and hands all three to the ROM's {@code control_motor} after each change.
+ * selecting outputs A, B, C with the low three bits of its first argument, and the remote's motor and stop buttons
+ * ({@link #remoteDrive}). The firmware keeps every output's LEGO state and hands all three to the ROM's
+ * {@code control_motor} after each change.
  */
 final class RcxMotorCommands {
     static final String ON_OFF_FLOAT = "on_off_float";
@@ -19,6 +20,8 @@ final class RcxMotorCommands {
     private static final int DIRECTIONS = 0xC050;
     /** Per output, one word each: power 0-7. */
     private static final int POWERS = 0xC056;
+    /** Per output, one word each: non-zero while a remote button runs it, so letting go floats only those outputs. */
+    private static final int REMOTE_DRIVEN = 0xC100;
     private static final int OUTPUTS = 3;
     private static final int MODE_BITS = 0xC0;
     private static final int MODE_OFF = 0x40;
@@ -27,6 +30,14 @@ final class RcxMotorCommands {
     private static final int SOURCE_CONSTANT = 2;
     private static final int POWER_BITS = 0x07;
     private static final int MODE_ON = 0x80;
+    /**
+     * The remote's forward and backward buttons of outputs A, B and C, each as the offset of its byte in the
+     * high-byte-first button state and its bit there.
+     */
+    private static final int[][] REMOTE_FORWARD = {{1, 0x08}, {1, 0x10}, {1, 0x20}};
+    private static final int[][] REMOTE_BACKWARD = {{1, 0x40}, {1, 0x80}, {0, 0x01}};
+    /** The remote's stop button: high byte, bit 0x40. */
+    private static final int REMOTE_STOP = 0x40;
     /** The display's backward and forward arrow icons of outputs A, B and C. */
     private static final int[][] ARROWS = {{0x0F, 0x10}, {0x12, 0x13}, {0x15, 0x16}};
 
@@ -55,6 +66,57 @@ final class RcxMotorCommands {
             assembler.store(H8Register.R0, MODES + 2 * output);
         }
         assembler.call(APPLY);
+    }
+
+    /**
+     * Drives the outputs from the remote's button state at {@code buttons} (high byte first), as LEGO's firmware does:
+     * an output runs forward or backward at its power while its button is held, and floats once let go; outputs the
+     * remote did not start keep running. Stop floats every output.
+     */
+    void remoteDrive(int buttons) {
+        for (int output = 0; output < OUTPUTS; output++) {
+            String forward = code.newLabel();
+            String backward = code.newLabel();
+            String on = code.newLabel();
+            String next = code.newLabel();
+            branchIfHeld(buttons, REMOTE_FORWARD[output], forward);
+            branchIfHeld(buttons, REMOTE_BACKWARD[output], backward);
+            assembler.load(REMOTE_DRIVEN + 2 * output, H8Register.R0);
+            assembler.branch(H8Condition.EQUAL, next);
+            assembler.moveImmediate(0, H8Register.R0);
+            assembler.store(H8Register.R0, MODES + 2 * output);
+            assembler.store(H8Register.R0, REMOTE_DRIVEN + 2 * output);
+            assembler.branch(H8Condition.ALWAYS, next);
+            assembler.label(forward);
+            assembler.moveImmediate(DIRECTION_FORWARD, H8Register.R0);
+            assembler.branch(H8Condition.ALWAYS, on);
+            assembler.label(backward);
+            assembler.moveImmediate(0, H8Register.R0);
+            assembler.label(on);
+            assembler.store(H8Register.R0, DIRECTIONS + 2 * output);
+            assembler.moveImmediate(MODE_ON, H8Register.R0);
+            assembler.store(H8Register.R0, MODES + 2 * output);
+            assembler.store(H8Register.R0, REMOTE_DRIVEN + 2 * output);
+            assembler.label(next);
+        }
+        String apply = code.newLabel();
+        assembler.loadByte(buttons, H8ByteRegister.R0L);
+        assembler.and(REMOTE_STOP, H8ByteRegister.R0L);
+        assembler.branch(H8Condition.EQUAL, apply);
+        assembler.moveImmediate(0, H8Register.R0);
+        for (int output = 0; output < OUTPUTS; output++) {
+            assembler.store(H8Register.R0, MODES + 2 * output);
+            assembler.store(H8Register.R0, REMOTE_DRIVEN + 2 * output);
+        }
+        assembler.label(apply);
+        assembler.call(APPLY);
+    }
+
+    /** Branches to {@code target} if the button {@code {offset, bit}} of the state at {@code buttons} is held. */
+    private void branchIfHeld(int buttons, int[] button, String target) {
+        assembler.loadByte(buttons + button[0], H8ByteRegister.R0L);
+        assembler.and(button[1], H8ByteRegister.R0L);
+        assembler.branch(H8Condition.NOT_EQUAL, target);
     }
 
     /** All the command handlers and the {@link #APPLY} subroutine. */

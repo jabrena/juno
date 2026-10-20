@@ -60,9 +60,18 @@ public final class RcxBrick {
     private static final int OPCODE_SHOW_NUMBER = 0x72;
     /** Juno's firmware's icon command; the brick never delivers a frame whose opcode byte is exactly 0xA2. */
     private static final int OPCODE_SET_ICON = 0xB2;
+    /**
+     * Juno's firmware's text command: a position 0-3 and an ASCII character, or a position past 3 to blank all four.
+     * The ROM takes an opcode's low three bits as its argument count, so both arguments are always sent.
+     */
+    private static final int OPCODE_SET_CHARACTER = 0x82;
+    private static final int TEXT_POSITIONS = 4;
+    private static final int BLANK_ALL = 0xFF;
     private static final int OPCODE_SET_INPUT_TYPE = 0x32;
     private static final int OPCODE_SET_INPUT_MODE = 0x42;
     private static final int SOURCE_SENSOR_VALUE = 9;
+    /** Juno's firmware's poll source for the brick's clicked buttons; LEGO's firmware has none. */
+    private static final int SOURCE_CLICKED_BUTTONS = 0x60;
     private static final int TYPE_TOUCH = 1;
     private static final int MODE_BOOLEAN = 0x20;
 
@@ -203,6 +212,30 @@ public final class RcxBrick {
     }
 
     /**
+     * Blanks the display, its number and icons too (but for the IR cones), until a number or text is shown. Needs
+     * Juno's own RCX firmware ({@code RcxRemoteFirmware}); LEGO's firmware does not answer. Returns whether the brick
+     * acknowledged.
+     */
+    public boolean clearDisplay() {
+        return link.request(OPCODE_SET_CHARACTER, BLANK_ALL, 0, 2) >= 0;
+    }
+
+    /**
+     * Shows the first four characters of {@code text} on the display's four digits, left to right, blank past its
+     * end, as a seven-segment display draws them (letters such as V, W and M are approximated, and characters it
+     * cannot draw show blank). Sends one command per digit; needs Juno's own RCX firmware. Returns whether the brick
+     * acknowledged every one.
+     */
+    public boolean showText(String text) {
+        boolean acknowledged = true;
+        for (int position = 0; position < TEXT_POSITIONS; position++) {
+            int character = position < text.length() ? text.charAt(position) & 0x7F : ' ';
+            acknowledged &= link.request(OPCODE_SET_CHARACTER, position, character, 2) >= 0;
+        }
+        return acknowledged;
+    }
+
+    /**
      * Lights the display icon {@code icon}, {@code RcxLcd.ICON_*}, or with {@code lit} false hands it back to the brick, which
      * lights some icons from its own state: running motors' arrows, pressed touch sensors, low battery, and the
      * minifigure, standing and walking while a motor runs. Needs Juno's own RCX firmware ({@code RcxRemoteFirmware});
@@ -221,6 +254,15 @@ public final class RcxBrick {
     public boolean playTone(int frequencyHz, int durationCentiseconds) {
         return link.request(OPCODE_PLAY_TONE, frequencyHz & 0xFF, (frequencyHz >> 8) & 0xFF,
                 durationCentiseconds & 0xFF, 3) >= 0;
+    }
+
+    /**
+     * The brick's own buttons clicked since the previous call, Run 0x01, View 0x02, Prgm 0x04, or {@code -1} if no
+     * reply. Polls Juno's own source {@value #SOURCE_CLICKED_BUTTONS}, which only Juno's RCX firmware answers.
+     */
+    public int clickedButtons() {
+        int arguments = link.request(OPCODE_POLL, SOURCE_CLICKED_BUTTONS, 0, 2);
+        return arguments < 2 ? -1 : link.argument0 | (link.argument1 << 8);
     }
 
     /** Whether the touch sensor on {@code input} is pressed; {@code false} also when the brick did not answer. */
