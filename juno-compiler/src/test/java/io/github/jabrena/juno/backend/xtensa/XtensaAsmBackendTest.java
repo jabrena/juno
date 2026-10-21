@@ -54,6 +54,30 @@ class XtensaAsmBackendTest {
             import io.github.jabrena.juno.hardware.serial.Serial;
             """;
 
+    private static final String LONGS = """
+                    long value = MCU.getGpio().analogRead(0);
+                    long other = MCU.getGpio().analogRead(1) + 1L;
+                    int shift = MCU.getGpio().analogRead(2);
+                    long mixed = value * value + other - value / other + value % other;
+                    mixed = (mixed & other) | (mixed ^ value);
+                    mixed = (mixed << shift) + (mixed >> shift) + (mixed >>> shift) - mixed;
+                    if (mixed > other) {
+                        mixed = -mixed;
+                    }
+                    Serial.println((int) (mixed + 5_000_000_000L));
+            """;
+    private static final String FLOATS = """
+                    int raw = MCU.getGpio().analogRead(3);
+                    float reading = raw;
+                    float volts = reading * 1.5f + 0.25f - reading / 3f + reading % 2f;
+                    if (volts > 2.0f) {
+                        volts = -volts;
+                    }
+                    long ticks = (long) volts;
+                    float back = ticks;
+                    Serial.println((int) (volts + back));
+            """;
+
     private static final String SHAPES = """
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
@@ -299,15 +323,96 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects long arithmetic, which the Xtensa backend does not lower yet")
-    void shouldRejectLongArithmetic() {
+    @DisplayName("Lowers long arithmetic, shifts and comparisons to the shim's juno_l* helpers in register pairs")
+    void shouldLowerLongArithmetic() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.NanoLong", LONGS, SERIAL_IMPORTS);
+
         // When & Then
-        assertThatThrownBy(() -> compile("demo.NanoLong", """
-                        long value = MCU.getGpio().analogRead(0);
-                        Serial.println(value * value);
+        assertThat(result.assembly())
+                .contains("call8 juno_lmul\n", "call8 juno_ladd\n", "call8 juno_lsub\n", "call8 juno_ldiv\n")
+                .contains("call8 juno_lrem\n", "call8 juno_land\n", "call8 juno_lor\n", "call8 juno_lxor\n")
+                .contains("call8 juno_lshl\n", "call8 juno_lshr\n", "call8 juno_lushr\n", "call8 juno_lneg\n")
+                .contains("call8 juno_lcmp\n", "srai a8, a8, 31\n")
+                .containsPattern("s32i a10, a1, \\d+\n    s32i a11, a1, \\d+\n");
+        assertThat(result.runtimeShim()).contains("extern \"C\" int64_t juno_ladd(int64_t a, int64_t b)");
+    }
+
+    @Test
+    @DisplayName("Lowers float arithmetic, comparisons and conversions to the shim's juno_f* helpers")
+    void shouldLowerFloatArithmetic() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.NanoFloat", FLOATS, SERIAL_IMPORTS);
+
+        // When & Then
+        assertThat(result.assembly())
+                .contains("call8 juno_i2f\n", "call8 juno_fmul\n", "call8 juno_fadd\n", "call8 juno_fsub\n")
+                .contains("call8 juno_fdiv\n", "call8 juno_frem\n", "call8 juno_f2i\n", "call8 juno_fcmp\n")
+                .contains("call8 juno_l2f\n", "call8 juno_f2l\n")
+                .contains("movi a8, " + Float.floatToRawIntBits(1.5f) + "\n")
+                .contains("movi a9, " + Integer.MIN_VALUE + "\n    xor a8, a8, a9\n");
+        assertThat(result.runtimeShim())
+                .contains("#include <math.h>", "extern \"C\" JUNO_ASM_ABI float juno_fadd(float a, float b)");
+    }
+
+    @Test
+    @DisplayName("Passes and returns long and float values across generated methods")
+    void shouldPassWideValuesBetweenMethods() throws Exception {
+        // Given
+        CompilationResult result = compileSource("demo.NanoWideCalls", """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                @Board(ArduinoNanoEsp32.class)
+                public final class NanoWideCalls {
+                    static long total;
+                    static float scale = 0.5f;
+                    static long twice(int pad, long value) {
+                        return value + value + pad;
+                    }
+                    static float scaled(float value) {
+                        return value * scale;
+                    }
+                    public static void main(String[] args) {
+                        int raw = MCU.getGpio().analogRead(0);
+                        total = twice(raw, raw * 1000L);
+                        Serial.println((int) (total >>> 3));
+                        Serial.println((int) scaled(raw));
+                    }
+                }
+                """);
+
+        // When & Then
+        assertThat(result.assembly())
+                .contains("call8 juno_ladd\n", "call8 juno_fmul\n")
+                .containsPattern("call8 juno_fn\\d+\n    s32i a10, a1, \\d+\n    s32i a11, a1, ");
+    }
+
+    @Test
+    @DisplayName("Rejects double arithmetic, which the Xtensa backend does not lower yet")
+    void shouldRejectDoubleArithmetic() {
+        // When & Then
+        assertThatThrownBy(() -> compile("demo.NanoDouble", """
+                        double value = MCU.getGpio().analogRead(0);
+                        Serial.println((int) (value * value));
                 """, SERIAL_IMPORTS))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("The Xtensa assembly backend (Nano ESP32) does not support this yet");
+    }
+
+    @Test
+    @DisplayName("Long and float programs assemble with the ESP32-S3 toolchain")
+    void shouldAssembleWideArithmeticWithTheXtensaToolchain() throws Exception {
+        // Given
+        String gcc = availableXtensaGcc();
+        Assumptions.assumeTrue(gcc != null, "No xtensa-esp32s3-elf-gcc toolchain available");
+        CompilationResult result = compile("demo.NanoWideSmoke", LONGS + FLOATS,
+                SERIAL_IMPORTS);
+
+        // When & Then
+        assemble(gcc, "NanoWideSmoke", result);
     }
 
     @Test

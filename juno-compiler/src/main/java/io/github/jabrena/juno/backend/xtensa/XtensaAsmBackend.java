@@ -55,10 +55,10 @@ import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.WORD;
  * a call needing more fails to compile, as do threads.
  *
  * <h2>Scope</h2>
- * This first cut lowers what GPIO, delay and serial programs need: {@code int} arithmetic and comparisons, branches
- * and {@code switch}, static and instance calls, interface dispatch, objects, fields, statics and arrays. The
- * {@code long}/{@code float}/{@code double} operations, lambdas and threads are not lowered yet; a program using one
- * fails with a {@link CompileException} rather than generating code that was never checked.
+ * This first cut lowers what GPIO, delay and serial programs need: {@code int}, {@code long} and {@code float}
+ * arithmetic and comparisons, branches and {@code switch}, static and instance calls, interface dispatch, objects,
+ * fields, statics and arrays. The {@code double} operations, lambdas and threads are not lowered yet; a program
+ * using one fails with a {@link CompileException} rather than generating code that was never checked.
  */
 public final class XtensaAsmBackend implements AsmBackend {
     /**
@@ -88,6 +88,7 @@ public final class XtensaAsmBackend implements AsmBackend {
     private XtensaEmitter xtensa;
     private XtensaIntArithmeticLowering ints;
     private XtensaMemoryLowering memory;
+    private XtensaWideArithmeticLowering wides;
     private IntrinsicLowering intrinsics;
 
     /**
@@ -127,6 +128,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         xtensa = new XtensaEmitter(layout.stringLiteralSymbols());
         ints = new XtensaIntArithmeticLowering(xtensa);
         memory = new XtensaMemoryLowering(xtensa, layout);
+        wides = new XtensaWideArithmeticLowering(xtensa, features);
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new XtensaIntrinsicTarget(xtensa), coreRuntime, board.generation(),
                 features, usedMath, false);
@@ -322,7 +324,7 @@ public final class XtensaAsmBackend implements AsmBackend {
                 xtensa.call(output, "juno_panic");
                 output.append(nonNull).append(":\n");
             }
-            default -> throw Architecture.XTENSA.unsupported(instruction.getClass().getSimpleName());
+            default -> wides.emit(output, frame, instruction);
         }
     }
 
