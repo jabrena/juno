@@ -53,14 +53,20 @@ import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.WORD;
  * other directly: a function opens with {@code entry a1, N}, reserving its slots at {@code a1+0} upwards plus the 32
  * bytes of register-window save areas GCC reserves, and returns with {@code retw} (the result in {@code a2}, or
  * {@code a2}/{@code a3}). A call passes its first six argument words in {@code a10}-{@code a15} through {@code call8}
- * and the rest at {@code a1+0} upwards, the bottom of a frame that then keeps its slots above them. Threads fail to
- * compile.
+ * and the rest at {@code a1+0} upwards, the bottom of a frame that then keeps its slots above them.
  *
  * <h2>Scope</h2>
  * This first cut lowers what GPIO, delay and serial programs need: {@code int}, {@code long}, {@code float}
  * and {@code double} arithmetic and comparisons, branches and {@code switch}, static and instance calls, interface
- * dispatch, objects, fields, statics and arrays. Lambdas and threads are not lowered yet; a program using one fails
- * with a {@link CompileException} rather than generating code that was never checked.
+ * dispatch, lambdas and method references, objects, fields, statics and arrays, plus threads and structured
+ * concurrency. Anything else fails with a {@link CompileException} rather than generating code that was never checked.
+ *
+ * <h2>Threads</h2>
+ * Juno threads are FreeRTOS tasks of which only one, the holder of a baton, runs Java code (see
+ * {@code ThreadRuntime#esp32Port}). They are preempted at safepoints, as on AVR: once its time slice is over a
+ * thread hands the CPU over on its next loop backedge ({@code juno_thread_backedge}) or method entry
+ * ({@code juno_thread_safepoint}). No register holds a value across those calls, so nothing but the stack needs
+ * saving.
  */
 public final class XtensaAsmBackend implements AsmBackend {
     /**
@@ -85,12 +91,14 @@ public final class XtensaAsmBackend implements AsmBackend {
     private final boolean gcLoggingEnabled;
     private final Board board;
     private final RuntimeConfig runtimeConfig;
+    private boolean usesThreads;
     private MethodRef entryPoint;
     private ProgramLayout layout;
     private XtensaEmitter xtensa;
     private XtensaIntArithmeticLowering ints;
     private XtensaMemoryLowering memory;
     private XtensaWideArithmeticLowering wides;
+    private XtensaLambdaLowering lambdas;
     private IntrinsicLowering intrinsics;
 
     /**
@@ -110,9 +118,7 @@ public final class XtensaAsmBackend implements AsmBackend {
 
     @Override
     public GeneratedCode generate(IrProgram program) {
-        if (runtimeEntryPoints.usesThreads(program)) {
-            throw Architecture.XTENSA.unsupported("threads");
-        }
+        usesThreads = runtimeEntryPoints.usesThreads(program);
         if (program.watchdogTimeoutMillis().isPresent()) {
             throw Architecture.XTENSA.unsupported("@Watchdog");
         }
@@ -120,7 +126,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         for (int index = 0; index < program.methods().size(); index++) {
             MethodRef reference = program.methods().get(index).reference();
             String label = reference.equals(entryPoint) ? "juno_" + simpleName(reference) + "_asm"
-                    : "juno_fn" + index;
+                    : RuntimeEntryPoints.SYMBOLS.getOrDefault(reference, "juno_fn" + index);
             functionLabels.put(reference, label);
             if (reference.name().equals("<clinit>")) {
                 clinitLabels.add(label);
@@ -131,9 +137,10 @@ public final class XtensaAsmBackend implements AsmBackend {
         ints = new XtensaIntArithmeticLowering(xtensa);
         memory = new XtensaMemoryLowering(xtensa, layout);
         wides = new XtensaWideArithmeticLowering(xtensa, features);
+        lambdas = new XtensaLambdaLowering(xtensa, layout, memory, functionLabels);
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new XtensaIntrinsicTarget(xtensa), coreRuntime, board.generation(),
-                features, usedMath, false);
+                features, usedMath, usesThreads);
 
         StringBuilder text = new StringBuilder();
         for (IrMethod method : program.methods()) {
@@ -183,7 +190,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         int frameBytes = outgoingBytes + roundUp(frame.frameSize(), STACK_ALIGNMENT) + FRAME_OVERHEAD_BYTES;
         output.append('\n')
                 .append("    .balign 4\n");
-        if (isEntryPoint) {
+        if (isEntryPoint || RuntimeEntryPoints.SYMBOLS.containsValue(label)) {
             output.append("    .global ").append(label).append('\n');
         }
         output.append("    .type ").append(label).append(", @function\n")
@@ -194,6 +201,12 @@ public final class XtensaAsmBackend implements AsmBackend {
             emitEntryPrologue(output, frame, frameBytes, outgoingBytes);
         }
         emitParameterSpill(output, frame, method, frameBytes);
+        if (usesThreads && !isEntryPoint) {
+            // A safepoint: every value is in its slot, so another thread may run here once this one's time slice is
+            // over. With the backedges this bounds how long a thread runs unpreempted, loop-free recursion included;
+            // the runtime ignores it for a cooperative structured subtask.
+            xtensa.call(output, "juno_thread_safepoint");
+        }
         if (isEntryPoint) {
             for (String clinitLabel : clinitLabels) {
                 xtensa.call(output, clinitLabel);
@@ -327,6 +340,8 @@ public final class XtensaAsmBackend implements AsmBackend {
             case IrInstruction.Call call -> emitResolvedCall(output, frame, call.method(), call.arguments(),
                     call.target());
             case IrInstruction.InterfaceCall call -> emitInterfaceCall(output, frame, call);
+            case IrInstruction.LambdaCreate lambda -> lambdas.emitCreate(output, frame, lambda);
+            case IrInstruction.LambdaCall call -> lambdas.emitCall(output, frame, call);
             case IrInstruction.IntrinsicCall call -> intrinsics.emit(output, frame, call);
             case IrInstruction.NewObject object -> memory.emitNewObject(output, frame, object);
             case IrInstruction.LoadField load -> memory.emitLoadField(output, frame, load);
@@ -386,9 +401,6 @@ public final class XtensaAsmBackend implements AsmBackend {
     private void emitInterfaceCall(StringBuilder output, FrameLayout frame, IrInstruction.InterfaceCall call) {
         String done = xtensa.newLabel(".LinterfaceDone");
         for (var target : call.targets()) {
-            if (target.isLambda()) {
-                throw Architecture.XTENSA.unsupported("lambdas");
-            }
             String next = xtensa.newLabel(".LinterfaceNext");
             String matches = xtensa.newLabel(".LinterfaceMatch");
             xtensa.load(output, frame, A, call.arguments().getFirst());
@@ -397,7 +409,12 @@ public final class XtensaAsmBackend implements AsmBackend {
             output.append("    beq a8, a9, ").append(matches).append('\n')
                     .append("    j ").append(next).append('\n')
                     .append(matches).append(":\n");
-            emitResolvedCall(output, frame, target.method(), call.arguments(), call.target());
+            if (target.isLambda()) {
+                lambdas.emitCall(output, frame, new IrInstruction.LambdaCall(call.target(),
+                        Objects.requireNonNull(target.lambda()), call.arguments()));
+            } else {
+                emitResolvedCall(output, frame, target.method(), call.arguments(), call.target());
+            }
             output.append("    j ").append(done).append('\n')
                     .append(next).append(":\n");
         }
@@ -429,7 +446,7 @@ public final class XtensaAsmBackend implements AsmBackend {
             }
             case IrTerminator.Return returned -> {
                 if (isEntryPoint) {
-                    emitEscapeCheck(output);
+                    emitMainExit(output);
                 }
                 returned.value().ifPresent(value -> {
                     if (value.type().isWide()) {
@@ -462,10 +479,25 @@ public final class XtensaAsmBackend implements AsmBackend {
         return ".L" + label + "block" + block;
     }
 
-    /** Lets FreeRTOS run other tasks on every loop backedge, through the core's {@code yield()}. */
+    /**
+     * Lets FreeRTOS run other tasks on every loop backedge, through the core's {@code yield()}, and with Juno threads
+     * also hands the CPU to the next one once this thread's time slice is over.
+     */
     private void emitYieldIfBackedge(StringBuilder output, int blockStart, int target) {
         if (target <= blockStart) {
-            xtensa.call(output, "yield");
+            xtensa.call(output, usesThreads ? "juno_thread_backedge" : "yield");
+        }
+    }
+
+    /**
+     * Where {@code main} returns: report an exception nobody caught, then, as the JVM does, let every other non-daemon
+     * thread finish before the program ends.
+     */
+    private void emitMainExit(StringBuilder output) {
+        emitEscapeCheck(output);
+        if (usesThreads) {
+            features.add(ShimFeature.THREADS);
+            xtensa.call(output, "juno_thread_main_exit");
         }
     }
 

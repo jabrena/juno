@@ -27,7 +27,7 @@ own backend instead of the Thumb-2 or AVR one.
 
 This is the first step of Nano ESP32 support: `Gpio`, `DigitalOutput`, `Delay` and `Serial` over
 the native USB port, with `int`, `long`, `float` and `double` arithmetic, objects, arrays, static and
-interface calls. Pins keep the numbers printed on the board: the core builds with
+interface calls, lambdas and method references. Pins keep the numbers printed on the board: the core builds with
 `BOARD_HAS_PIN_REMAP`, and Juno calls `pinMode`/`digitalWrite` through wrappers compiled under
 that remapping, so `MCU.getGpio().getBuiltinLed()` is `13` and drives GPIO48.
 
@@ -36,12 +36,23 @@ keep Java semantics (a `long` division by zero stops the program, float-to-int c
 comparisons are false); the ESP32 toolchain compiles the `float` helpers to the ESP32-S3's
 single-precision FPU (`double` has no FPU and runs as soft-float), and the double-precision
 `java.lang.Math` functions use the toolchain's libm. [`SerialWideMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialWideMath.java)
-prints a block of `long` and `float` results, and
+prints a block of `long` and `float` results and
 [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java)
-one of `double` and `Math` results, to compare with a desktop JVM run.
+one of `double` and `Math` results, both to compare with a desktop JVM run;
+[`SerialLambdas`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialLambdas.java)
+exercises every lambda and method-reference shape.
 
-Lambdas, threads, `@Watchdog`, Wi-Fi and the other optional capabilities are
-not wired yet; Juno rejects a program that uses them at compile time.
+Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope` and `ScopedValue` work too. Each
+Juno thread is a FreeRTOS task with its own 8 KiB stack (`-Djuno.Xss` changes it), and only one
+runs Java code at a time. A busy thread hands the CPU over at its next loop iteration or method
+call once its 1 ms time slice is over, so a spin loop cannot starve the others. At most four
+threads run at once, `main` included, unless `-Djuno.maxThreads` raises it; starting a fifth stops
+the program with `[juno-thread] too many threads`.
+[`SerialThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java)
+runs each of them once at startup and then prints the results.
+
+`@Watchdog`, Wi-Fi and the other optional capabilities are not wired yet; Juno rejects a program
+that uses them at compile time.
 
 ## Build and run
 

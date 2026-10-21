@@ -315,9 +315,36 @@ class CoreRuntimeTest {
                 esp32Feature("ParallelBus", CoreRuntime::parallelBusHelpers),
                 esp32Feature("SD cards", runtime -> runtime.sdHelpers(1, 1, 1, 1, 1)),
                 esp32Feature("flash usage queries", CoreRuntime::flashHelpers),
-                esp32Feature("a cryptographic entropy source", CoreRuntime::uuidRandomHelpers),
-                esp32Feature("threads", CoreRuntime::threadIncludes),
-                esp32Feature("threads", runtime -> runtime.threadPort(RuntimeConfig.DEFAULT)));
+                esp32Feature("a cryptographic entropy source", CoreRuntime::uuidRandomHelpers));
+    }
+
+    @Test
+    @DisplayName("The ESP32 thread port is FreeRTOS tasks with an 8 KiB default stack, preempted at safepoints")
+    void shouldPortThreadsToFreeRtosTasksOnTheEsp32() {
+        // Given
+        CoreRuntime esp32 = coreRuntimes.of(ArduinoCore.ESP32);
+
+        // When
+        String port = esp32.threadPort(RuntimeConfig.DEFAULT);
+
+        // Then
+        assertThat(esp32.threadIncludes()).contains("#include <freertos/semphr.h>", "#include <freertos/task.h>");
+        assertThat(port).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
+                "JUNO_THREAD_STACK_BYTES = 8192u", "xTaskCreateStaticPinnedToCore", "xSemaphoreTake");
+        assertThat(esp32.preemptsAsynchronously()).isFalse();
+    }
+
+    @Test
+    @DisplayName("The ESP32 thread port takes the configured slots and stack")
+    void shouldApplyTheConfiguredSlotsAndStackToTheEsp32ThreadPort() {
+        // Given
+        RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.of(4096));
+
+        // When
+        String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(config);
+
+        // Then
+        assertThat(port).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 4096u");
     }
 
     private static Arguments esp32Feature(String feature, Consumer<CoreRuntime> use) {

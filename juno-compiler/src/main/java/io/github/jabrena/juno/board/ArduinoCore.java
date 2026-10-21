@@ -25,9 +25,10 @@ public enum ArduinoCore {
             RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES),
     /**
      * {@code arduino:esp32}: the Nano ESP32's FreeRTOS-based core, whose {@code pinMode}/{@code digitalWrite} are
-     * macros mapping the board's printed pin numbers to ESP32-S3 GPIO numbers.
+     * macros mapping the board's printed pin numbers to ESP32-S3 GPIO numbers. A Juno thread's FreeRTOS task gets
+     * 8 KiB of stack by default: windowed-ABI frames carry 32 bytes of save area each and the S3 has RAM to spare.
      */
-    ESP32("ESP32", Architecture.XTENSA, RuntimeLimits.MIN_THREAD_STACK_BYTES, 0, 0, 0);
+    ESP32("ESP32", Architecture.XTENSA, 8192, 0, 0, 0);
 
     private final String displayName;
     private final Architecture architecture;
