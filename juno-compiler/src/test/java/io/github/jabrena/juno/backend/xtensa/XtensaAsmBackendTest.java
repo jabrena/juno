@@ -91,6 +91,49 @@ class XtensaAsmBackendTest {
                     Serial.println((int) (mixed + back + wide));
             """;
 
+    private static final String LAMBDAS = """
+            package demo;
+            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+            import io.github.jabrena.juno.annotations.Board;
+            import io.github.jabrena.juno.hardware.MCU;
+            import io.github.jabrena.juno.hardware.serial.Serial;
+            @Board(ArduinoNanoEsp32.class)
+            public final class NanoLambdas {
+                interface Operation {
+                    int apply(int value);
+                }
+                interface Factory {
+                    Box create(int value);
+                }
+                static final class Box {
+                    private final int value;
+                    Box(int value) {
+                        this.value = value;
+                    }
+                    int plus(int amount) {
+                        return value + amount;
+                    }
+                }
+                static final class Doubler implements Operation {
+                    public int apply(int value) {
+                        return value * 2;
+                    }
+                }
+                public static void main(String[] args) {
+                    int raw = MCU.getGpio().analogRead(0);
+                    int offset = raw & 7;
+                    Operation square = value -> value * value;
+                    Operation captured = value -> value + offset + raw;
+                    Box box = new Box(raw);
+                    Operation bound = box::plus;
+                    Factory factory = Box::new;
+                    Operation[] mixed = {new Doubler(), square, captured};
+                    Serial.println(square.apply(raw) + captured.apply(1) + bound.apply(2)
+                            + factory.create(raw).plus(3) + mixed[raw % 3].apply(4));
+                }
+            }
+            """;
+
     private static final String SHAPES = """
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
@@ -503,6 +546,33 @@ class XtensaAsmBackendTest {
                 .contains("sext a8, a8, 15\n", "extui a8, a8, 0, 16\n", "bltu a8, a9, .LboundsOk")
                 .contains("bge a9, a8, ", "blt a9, a8, ", "call8 juno_panic\n")
                 .containsPattern("bne a8, a9, \\.Lswitchnext\\d+\n");
+    }
+
+    @Test
+    @DisplayName("Lowers non-capturing and capturing lambdas, method references and lambda interface targets")
+    void shouldLowerLambdas() throws Exception {
+        // Given
+        CompilationResult result = compileSource("demo.NanoLambdas", LAMBDAS);
+
+        // When & Then
+        assertThat(result.assembly())
+                .contains("juno_lambda_0:\n    .long ", "movi a8, juno_lambda_0\n")
+                .contains("call8 juno_alloc\n")
+                .containsPattern("s32i a9, a8, 4\n")
+                .containsPattern("l32i a8, a1, \\d+\n    l32i a10, a8, 4\n")
+                .containsPattern("call8 juno_fn\\d+\n");
+    }
+
+    @Test
+    @DisplayName("Lambda programs assemble with the ESP32-S3 toolchain")
+    void shouldAssembleLambdasWithTheXtensaToolchain() throws Exception {
+        // Given
+        String gcc = availableXtensaGcc();
+        Assumptions.assumeTrue(gcc != null, "No xtensa-esp32s3-elf-gcc toolchain available");
+        CompilationResult result = compileSource("demo.NanoLambdas", LAMBDAS);
+
+        // When & Then
+        assemble(gcc, "NanoLambdas", result);
     }
 
     @Test
