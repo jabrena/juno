@@ -569,13 +569,16 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects the access-point and UDP networking the Nano ESP32 has no capability for yet")
-    void shouldRejectUnwiredNetworking() {
-        // When & Then
-        assertThatThrownBy(() -> compile("demo.NanoAp", "Arduino.getWifi().beginAP(\"ap\", \"secret\");",
-                "import io.github.jabrena.juno.hardware.Arduino; import io.github.jabrena.juno.hardware.net.Wifi;"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Nano ESP32's WiFi library cannot start an access point");
+    @DisplayName("Lowers Wifi.beginAP through the core's softAP helpers")
+    void shouldLowerAccessPointOnTheSoftAp() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoAp", """
+                        Arduino.getWifi().beginAP("juno-ap", "secret123");
+                """, "import io.github.jabrena.juno.hardware.Arduino;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap(", "WiFi.softAP(ssid, password)");
+        assertThat(result.runtimeShim()).doesNotContain("WiFi.beginAP");
     }
 
     @Test

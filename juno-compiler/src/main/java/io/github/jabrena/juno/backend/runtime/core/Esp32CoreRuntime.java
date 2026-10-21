@@ -74,10 +74,10 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return "#include <WiFi.h>\n";
     }
 
-    /** Station mode only: the core's {@code WiFi} class has no {@code beginAP}, so the access point stays out. */
+    /** Station and access-point helpers over the core's {@code WiFi} class ({@code softAP} for the access point). */
     @Override
     public String wifiHelpers() {
-        return runtimeSource.load("esp32/wifi-station.cpp");
+        return runtimeSource.load("esp32/wifi.cpp");
     }
 
     /** A {@code WiFiServer} on the station interface; the shared request parser reads its accepted clients. */

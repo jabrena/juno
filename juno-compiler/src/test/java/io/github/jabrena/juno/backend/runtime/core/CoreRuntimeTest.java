@@ -372,7 +372,7 @@ class CoreRuntimeTest {
         // When & Then
         assertThat(runtime.wifiIncludes(false)).isEqualTo("#include <WiFi.h>\n");
         assertThat(runtime.wifiHelpers()).contains("juno_wifi_begin(", "juno_wifi_mac_address(")
-                .doesNotContain("beginAP");
+                .doesNotContain("WiFi.beginAP");
     }
 
     private static Arguments esp32Feature(String feature, Consumer<CoreRuntime> use) {

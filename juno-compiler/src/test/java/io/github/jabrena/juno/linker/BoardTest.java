@@ -49,7 +49,7 @@ class BoardTest {
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.WATCHDOG, true),
                 arguments(Board.NANO_ESP32, Capability.WIFI, true),
                 arguments(Board.NANO_ESP32, Capability.ONBOARD_WIFI, true),
-                arguments(Board.NANO_ESP32, Capability.WIFI_ACCESS_POINT, false),
+                arguments(Board.NANO_ESP32, Capability.WIFI_ACCESS_POINT, true),
                 arguments(Board.NANO_ESP32, Capability.HTTP_CLIENT, true),
                 arguments(Board.NANO_ESP32, Capability.HTTPS_CLIENT, true),
                 arguments(Board.NANO_ESP32, Capability.HTTP_SERVER, true),

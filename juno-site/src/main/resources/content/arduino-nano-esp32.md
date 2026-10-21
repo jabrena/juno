@@ -80,8 +80,12 @@ client does not check the server's certificate chain yet.
 
 `HttpServer` runs on the station address:
 [`NanoHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java)
-prints the board's address and answers `GET /status` on port 80. The access point (`beginAP`), UDP, TCP,
-BLE and the other optional capabilities are not wired yet; Juno rejects a program that uses them
+prints the board's address and answers `GET /status` on port 80.
+
+`Arduino.getWifi().beginAP(ssid, password)` starts the board's own access point, so a phone or laptop can
+join the Nano ESP32 directly, as in
+[`NanoAccessPointSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoAccessPointSD.java).
+UDP, TCP, BLE and the other optional capabilities are not wired yet; Juno rejects a program that uses them
 at compile time.
 
 ## Nano Connector Carrier
