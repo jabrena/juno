@@ -466,6 +466,24 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Lowers a plain HTTP GET through the shared HTTP codec over the WiFi.h client")
+    void shouldLowerPlainHttpOnTheWifiClient() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoHttp", """
+                        byte[] body = new byte[64];
+                        byte[] headers = new byte[32];
+                        int[] statusAndHeadersLength = new int[2];
+                        HttpClient.get("http://example.com/", body, body.length, headers, headers.length,
+                                statusAndHeadersLength);
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_http_get(");
+        assertThat(result.runtimeShim()).contains("#include <WiFi.h>");
+        assertThat(result.runtimeShim()).doesNotContain("WiFiSSLClient");
+    }
+
+    @Test
     @DisplayName("Rejects the access-point and UDP networking the Nano ESP32 has no capability for yet")
     void shouldRejectUnwiredNetworking() {
         // When & Then

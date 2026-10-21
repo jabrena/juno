@@ -64,9 +64,11 @@ Wi-Fi works in station mode through the module's onboard radio: `Arduino.getWifi
 with `begin(ssid, password)` and reports `status()`, `localIP()`, `gatewayIP()` and `macAddress()`.
 [`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java)
 reads the credentials from `application.properties` on the carrier's microSD card (see
-[SD Card Storage](../storage)). The access point (`beginAP`), UDP, TCP, HTTP and HTTPS clients and
-servers, email, BLE and the other optional capabilities are not wired yet; Juno rejects a program
-that uses them at compile time.
+[SD Card Storage](../storage)). Plain HTTP works through `HttpClient`: the host is a literal in the
+program and the request path can come from the card, as in
+[`NanoHttpGetSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpGetSD.java).
+The access point (`beginAP`), UDP, TCP, HTTPS and HttpServer, email, BLE and the other optional
+capabilities are not wired yet; Juno rejects a program that uses them at compile time.
 
 ## Nano Connector Carrier
 

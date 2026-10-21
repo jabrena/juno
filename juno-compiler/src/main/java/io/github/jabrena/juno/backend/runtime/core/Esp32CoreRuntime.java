@@ -100,9 +100,10 @@ final class Esp32CoreRuntime implements CoreRuntime {
         throw unsupported("TLS networking");
     }
 
+    /** The plain-HTTP client is the {@code WiFiClient} that {@code WiFi.h} already declares. */
     @Override
     public String httpsClientDeclaration() {
-        throw unsupported("TLS networking");
+        return "WiFiClientSecure client;";
     }
 
     @Override
