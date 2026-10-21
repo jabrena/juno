@@ -2,11 +2,13 @@ package io.github.jabrena.juno.backend.xtensa;
 
 import io.github.jabrena.juno.backend.FrameLayout;
 import io.github.jabrena.juno.backend.ProgramLayout;
-import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.ThrowableTypes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.A;
 import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.B;
@@ -138,17 +140,37 @@ final class XtensaMemoryLowering {
     }
 
     void emitNewMultiArray(StringBuilder output, FrameLayout frame, IrInstruction.NewMultiArray array) {
-        if (array.dimensions().size() != 2) {
-            throw Architecture.XTENSA.unsupported("array nesting deeper than 2 dimensions: " + array.dimensions());
-        }
-        int outerCount = array.dimensions().get(0);
-        int innerCount = array.dimensions().get(1);
-        allocateArray(output, outerCount, WORD);
+        allocateArray(output, array.dimensions().getFirst(), WORD);
         xtensa.store(output, frame, C, array.target());
-        for (int index = 0; index < outerCount; index++) {
-            allocateArray(output, innerCount, elementSize(array.leafType()));
-            xtensa.load(output, frame, A, array.target());
+        emitNestedArrays(output, frame, array, List.of());
+    }
+
+    /** Materializes each reference array in depth-first order, resolving its parent from the root after every call. */
+    private void emitNestedArrays(StringBuilder output, FrameLayout frame, IrInstruction.NewMultiArray array,
+                                  List<Integer> parentIndexes) {
+        int parentDimension = parentIndexes.size();
+        if (parentDimension == array.dimensions().size() - 1) {
+            return;
+        }
+        int childLength = array.dimensions().get(parentDimension + 1);
+        int childElementSize = parentDimension + 1 == array.dimensions().size() - 1
+                ? elementSize(array.leafType()) : WORD;
+        for (int index = 0; index < array.dimensions().get(parentDimension); index++) {
+            allocateArray(output, childLength, childElementSize);
+            loadNestedArray(output, frame, array.target(), parentIndexes);
             xtensa.storeWordAt(output, C, A, index * WORD);
+            List<Integer> childIndexes = new ArrayList<>(parentIndexes);
+            childIndexes.add(index);
+            emitNestedArrays(output, frame, array, List.copyOf(childIndexes));
+        }
+    }
+
+    /** Resolves a reference array through its known compile-time indexes into {@code a8}. */
+    private void loadNestedArray(StringBuilder output, FrameLayout frame, Value root, List<Integer> indexes) {
+        xtensa.load(output, frame, A, root);
+        for (int index : indexes) {
+            xtensa.loadWordAt(output, B, A, index * WORD);
+            output.append("    mov a8, a9\n");
         }
     }
 

@@ -3,6 +3,7 @@ package io.github.jabrena.juno.backend.runtime;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
+import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 
 import java.util.List;
@@ -39,8 +40,7 @@ public final class RuntimeShim {
     private final Set<ShimFeature> features;
     private final Set<Intrinsic> usedMath;
     private final List<String> throwableClasses;
-    private final boolean usesWatchdog;
-    private final int watchdogTimeoutMillis;
+    private final Optional<WatchdogRuntime> watchdog;
     private final RuntimeConfig config;
 
     /**
@@ -59,8 +59,7 @@ public final class RuntimeShim {
         this.features = features;
         this.usedMath = usedMath;
         this.throwableClasses = throwableClasses;
-        this.usesWatchdog = watchdogTimeoutMillis.isPresent();
-        this.watchdogTimeoutMillis = watchdogTimeoutMillis.orElse(0);
+        this.watchdog = watchdogTimeoutMillis.map(core::watchdog);
     }
 
     public String generate() {
@@ -138,23 +137,26 @@ public final class RuntimeShim {
         if (uses(ShimFeature.BIG_NUMBERS)) {
             shim.append("#include <stdlib.h>\n");
         }
-        // WDT (like Arduino_LED_Matrix above) is bundled with the renesas_uno core, not a separate
-        // library install — only pulled in for programs whose entry-point class carries @Watchdog.
-        if (usesWatchdog) {
-            shim.append("#include <WDT.h>\n");
-        }
+        watchdog.ifPresent(watchdogRuntime -> shim.append(watchdogRuntime.includes()));
     }
 
     /** Panic handler, yield hook, watchdog, arena allocator and collector, LED matrix and Serial. */
     private String coreRuntime() {
-        String watchdogRefresh = usesWatchdog ? "WDT.refresh();" : "";
-        String watchdogPanicMessage = usesWatchdog
-                ? "Serial.println(\"[juno-watchdog] panic: board will reset via watchdog in "
-                        + watchdogTimeoutMillis + "ms\");"
-                : "";
-        String watchdogBeginFunction = usesWatchdog
-                ? "\nextern \"C\" void juno_watchdog_begin() {\n  WDT.begin(" + watchdogTimeoutMillis + "u);\n}\n"
-                : "";
+        String watchdogRefresh = watchdog.isPresent() ? "juno_watchdog_refresh();" : "";
+        String watchdogPanicMessage = watchdog.map(watchdogRuntime ->
+                "Serial.println(\"[juno-watchdog] panic: board will reset via watchdog in "
+                        + watchdogRuntime.effectiveTimeoutMillis() + "ms\");").orElse("");
+        String watchdogFunctions = watchdog.map(watchdogRuntime -> """
+
+                extern "C" void juno_watchdog_refresh() {
+                  ${JUNO_WATCHDOG_REFRESH}
+                }
+
+                extern "C" void juno_watchdog_begin() {
+                  ${JUNO_WATCHDOG_BEGIN}
+                }
+                """.replace("${JUNO_WATCHDOG_REFRESH}", watchdogRuntime.refresh())
+                .replace("${JUNO_WATCHDOG_BEGIN}", watchdogRuntime.begin())).orElse("");
         // With threads every live thread's stack is a root, not just the one running (see ThreadRuntime).
         String gcStackScan = uses(ShimFeature.THREADS)
                 ? "juno_thread_gc_scan(&stackMarker);"
@@ -163,11 +165,14 @@ public final class RuntimeShim {
                 ? "static void juno_thread_gc_scan(const uint8_t* marker);\n"
                 : "";
         String ledMatrixFunctions = ledMatrixFunctions();
-        String yieldFunction = core.yieldFunction();
-        return runtimeSource.load("thumb2/panic.cpp").replace("${JUNO_YIELD_FUNCTION}", yieldFunction)
+        String yieldFunction = watchdog.isPresent() ? core.watchdogYieldFunction() : core.yieldFunction();
+        String watchdogRefreshDeclaration = watchdog.isPresent()
+                ? "extern \"C\" void juno_watchdog_refresh();\n" : "";
+        return runtimeSource.load("thumb2/panic.cpp")
+                .replace("${JUNO_YIELD_FUNCTION}", watchdogRefreshDeclaration + yieldFunction)
                 .replace("${JUNO_WATCHDOG_REFRESH}", watchdogRefresh)
                 .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogPanicMessage)
-                .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogBeginFunction)
+                .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogFunctions)
                 + allocatorRuntime.source(config.arenaBytes(), 4, gcLoggingEnabled, gcStackScan, gcThreadDeclaration)
                 + runtimeSource.load("thumb2/serial.cpp").replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions);
     }

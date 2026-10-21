@@ -586,6 +586,51 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Allocates and indexes primitive arrays nested deeper than two dimensions")
+    void shouldLowerThreeDimensionalArrays() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.NanoThreeDimensionalArray", """
+                        int[][][] values = new int[2][3][4];
+                        values[1][2][3] = 42;
+                        Serial.println(values[1][2][3]);
+                """, SERIAL_IMPORTS);
+
+        // When & Then
+        assertThat(result.assembly())
+                .contains("movi a10, 12\n", "movi a10, 16\n", "movi a10, 20\n")
+                .contains("call8 juno_alloc\n");
+        String gcc = availableXtensaGcc();
+        Assumptions.assumeTrue(gcc != null, "No xtensa-esp32s3-elf-gcc toolchain available");
+        assemble(gcc, "NanoThreeDimensionalArray", result);
+    }
+
+    @Test
+    @DisplayName("Enables and refreshes the Nano ESP32 task watchdog")
+    void shouldLowerTheEsp32Watchdog() throws Exception {
+        // Given
+        CompilationResult result = compileSource("demo.NanoWatchdog", """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.Watchdog;
+                @Board(ArduinoNanoEsp32.class)
+                @Watchdog(timeoutMillis = 3001)
+                public final class NanoWatchdog {
+                    public static void main(String[] args) {
+                        for (;;) {
+                        }
+                    }
+                }
+                """);
+
+        // When & Then
+        assertThat(result.assembly()).contains("call8 juno_watchdog_begin\n", "call8 yield\n");
+        assertThat(result.runtimeShim()).contains("#include <esp_task_wdt.h>", "esp_task_wdt_init(4u, true);",
+                "esp_task_wdt_add(nullptr);", "esp_task_wdt_reset();", "extern \"C\" void yield()")
+                .doesNotContain("#include <WDT.h>");
+    }
+
+    @Test
     @DisplayName("Fields, narrow arrays, switches, comparisons and interface dispatch assemble with the toolchain")
     void shouldAssembleTheWiderInstructionSet() throws Exception {
         // Given

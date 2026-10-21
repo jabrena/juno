@@ -103,8 +103,16 @@ final class Esp32CoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String watchdogYieldFunction() {
+        return yieldFunction() + runtimeSource.load("esp32/watchdog-yield.cpp");
+    }
+
+    @Override
     public WatchdogRuntime watchdog(int timeoutMillis) {
-        throw unsupported("@Watchdog");
+        int timeoutSeconds = Math.ceilDiv(timeoutMillis, 1000);
+        return new WatchdogRuntime("#include <esp_task_wdt.h>\n",
+                "esp_task_wdt_init(" + timeoutSeconds + "u, true);\nesp_task_wdt_add(nullptr);",
+                "esp_task_wdt_reset();", Math.multiplyExact(timeoutSeconds, 1000));
     }
 
     @Override

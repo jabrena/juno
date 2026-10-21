@@ -106,6 +106,14 @@ public interface CoreRuntime {
      */
     String yieldFunction();
 
+    /**
+     * The yield glue when a generated program enables {@code @Watchdog}. Most cores use the same glue; cores whose
+     * weak Arduino {@code yield()} needs overriding can add that override only to watchdog-enabled sketches.
+     */
+    default String watchdogYieldFunction() {
+        return yieldFunction();
+    }
+
     /** Core-specific hardware-watchdog setup for the requested timeout. */
     WatchdogRuntime watchdog(int timeoutMillis);
 
