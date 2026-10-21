@@ -461,6 +461,18 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Generates UUIDs from the ESP32 hardware random-number generator")
+    void shouldGenerateUuidsOnTheNano() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoUuid", """
+                        Serial.println(java.util.UUID.randomUUID().toString());
+                """, "import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("esp_fill_random(target, length)", "juno_throw_raise(");
+    }
+
+    @Test
     @DisplayName("Reads a file from the Nano Connector Carrier's microSD slot through the SdFat shim helpers")
     void shouldLowerSdCardAccessOnTheConnectorCarrier() throws Exception {
         // Given

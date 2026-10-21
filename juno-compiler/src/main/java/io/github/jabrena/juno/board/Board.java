@@ -47,13 +47,14 @@ public enum Board {
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG)),
     /**
-     * The ESP32-S3 Nano: GPIO, delays, USB serial and SPI SD cards so far, the double-precision libm its newlib
-     * toolchain ships, and structured concurrency over FreeRTOS tasks; none of the other optional capabilities is
-     * wired to its core yet.
+     * The ESP32-S3 Nano: GPIO, delays, USB serial, SPI SD cards, the hardware random-number generator behind
+     * {@code UUID.randomUUID()}, the double-precision libm its newlib toolchain ships, and structured concurrency over
+     * FreeRTOS tasks; none of the other optional capabilities is wired to its core yet.
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32", "arduino-nano-esp32", "Nano ESP32",
             "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO,
-            EnumSet.of(Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY, Capability.WATCHDOG));
+            EnumSet.of(Capability.SECURE_ENTROPY, Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY,
+                    Capability.WATCHDOG));
 
     private final String apiClassName;
     private final String id;

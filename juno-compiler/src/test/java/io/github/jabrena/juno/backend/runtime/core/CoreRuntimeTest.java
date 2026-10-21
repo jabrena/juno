@@ -321,8 +321,7 @@ class CoreRuntimeTest {
                 esp32Feature("TLS networking", CoreRuntime::httpsHelpers),
                 esp32Feature("TLS networking", CoreRuntime::httpsClientDeclaration),
                 esp32Feature("ParallelBus", CoreRuntime::parallelBusHelpers),
-                esp32Feature("flash usage queries", CoreRuntime::flashHelpers),
-                esp32Feature("a cryptographic entropy source", CoreRuntime::uuidRandomHelpers));
+                esp32Feature("flash usage queries", CoreRuntime::flashHelpers));
     }
 
     @Test
@@ -366,6 +365,16 @@ class CoreRuntimeTest {
 
         // Then
         assertThat(port).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 4096u");
+    }
+
+    @Test
+    @DisplayName("The ESP32 core fills UUIDs from its hardware random-number generator")
+    void shouldFillUuidsFromTheEsp32HardwareRandom() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ESP32);
+
+        // When & Then
+        assertThat(runtime.uuidRandomHelpers()).contains("esp_fill_random(target, length)", "return false;");
     }
 
     private static Arguments esp32Feature(String feature, Consumer<CoreRuntime> use) {

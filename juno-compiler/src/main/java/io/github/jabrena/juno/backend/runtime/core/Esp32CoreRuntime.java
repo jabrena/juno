@@ -135,7 +135,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String uuidRandomHelpers() {
-        throw unsupported("a cryptographic entropy source");
+        return runtimeSource.load("esp32/uuid-random.cpp");
     }
 
     @Override
