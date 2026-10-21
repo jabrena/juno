@@ -29,7 +29,13 @@ This is the first step of Nano ESP32 support: `Gpio`, `DigitalOutput`, `Delay` a
 the native USB port, with `int`, `long`, `float` and `double` arithmetic, objects, arrays, static and
 interface calls, lambdas and method references. Pins keep the numbers printed on the board: the core builds with
 `BOARD_HAS_PIN_REMAP`, and Juno calls `pinMode`/`digitalWrite` through wrappers compiled under
-that remapping, so `MCU.getGpio().getBuiltinLed()` is `13` and drives GPIO48.
+that remapping, so `MCU.getGpio().getBuiltinLed()` is `13` and drives GPIO48. Analog pins keep
+Juno's UNO numbers: `Gpio.getA0()` to `Gpio.getA5()` (14 to 19) reach the Nano's A0 to A5, which its
+core numbers 17 to 22, so Grove drivers and pin maps such as `GroveBaseShield` work unchanged. As a
+result, the onboard RGB LED's core numbers (14 to 16) cannot be reached through `Gpio`.
+The runtime resolves these portable identifiers through the core's named `D0`–`D13` and `A0`–`A5`
+pins, so GPIO and SD chip-select still reach the same physical pins when the core is configured
+with **By GPIO number (legacy)**. Do not pass raw ESP32 GPIO numbers to Juno's GPIO or SD APIs.
 
 `long`, `float` and `double` operations go through the same runtime helpers as on the other boards, which
 keep Java semantics (a `long` division by zero stops the program, float-to-int casts saturate, NaN
@@ -51,8 +57,46 @@ the program with `[juno-thread] too many threads`.
 [`SerialThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java)
 runs each of them once at startup and then prints the results.
 
-`@Watchdog`, Wi-Fi and the other optional capabilities are not wired yet; Juno rejects a program
+`SdCard` works over the board's SPI pins (D11 to D13) through the same SdFat runtime as the UNO
+boards; see the Nano Connector Carrier below for a ready-made slot.
+
+Wi-Fi and the other optional capabilities are not wired yet; Juno rejects a program
 that uses them at compile time.
+
+## Nano Connector Carrier
+
+The Arduino Nano Connector Carrier (ASX00061) is passive: every connector is a Nano header pin, and
+`NanoConnectorCarrier` names them so programs don't hard-code numbers:
+
+| Connector | Nano pins | `NanoConnectorCarrier` |
+|---|---|---|
+| microSD slot (SPI) | CS D4 (D2/D3 by solder jumper), MOSI D11, MISO D12, SCK D13 | `getSdChipSelect()`, `getSdChipSelectJumperD2()`/`D3()`, `getSpiMosi()`/`Miso()`/`Sck()` |
+| Grove A0/A1 (analog) | A0 signal, A1 | `getGroveA0()`; wires `getA0()`, `getA1()` |
+| Grove A2/A3 (analog) | A2 signal, A3 | `getGroveA2()`; wires `getA2()`, `getA3()` |
+| Grove UART | RX D0 (signal), TX D1 | `getGroveUart()`; wires `getUartRx()`, `getUartTx()` |
+| Grove I2C and Qwiic | SDA A4, SCL A5 | `getI2cSda()`, `getI2cScl()` (one bus, `MCU.getI2c()`) |
+
+As with `GroveBaseShield`, plug a single-signal Grove module in and pass the socket's getter to its
+driver: `pir.begin(carrier.getGroveA2())`. The analog sockets work for digital modules too. Keep
+digital modules out of the I2C socket: its bus pull-ups held a Grove PIR's output at about 1.4 V at
+rest, neither low nor high. The class Javadoc has a diagram of the connectors, and pin details are in
+the [ASX00061 datasheet](https://docs.arduino.cc/resources/datasheets/ASX00061-datasheet.pdf).
+
+The input selector switch sets the Grove connectors' VCC to 3.3 V or 5 V; use 3.3 V with the Nano
+ESP32. The Qwiic connector is always 3.3 V.
+
+```java
+NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+if (SdCard.begin(carrier.getSdChipSelect())) {
+    // read or write files on the microSD card
+}
+int light = new GroveLightSensorV12().rawValue(carrier.getGroveA0());
+```
+
+[`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java)
+exercises the microSD slot end to end and reports each step over serial;
+[`NanoCarrierGroveSensors`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/carrier/NanoCarrierGroveSensors.java)
+reads a Grove PIR in the A2/A3 socket and a light sensor in A0/A1.
 
 ## Build and run
 
