@@ -3,7 +3,9 @@ package io.github.jabrena.juno.hardware.gpio;
 /**
  * The board's GPIO pins. {@link io.github.jabrena.juno.hardware.MCU#getGpio()} is the board's own pins, which the compiler lowers to the Arduino core
  * calls; a unit test passes {@code mock(Gpio.class)} instead. Pin numbers and modes come from the static getters
- * ({@link #getD13()}, {@link #getOutput()}): the Uno-header numbering, identical on the UNO R4 WiFi and the UNO Q.
+ * ({@link #getD13()}, {@link #getOutput()}): portable pin identifiers, D0-D13 as 0-13 and A0-A5 as 14-19.
+ * The runtime translates these identifiers to the linked board's pins and modes; they are not raw MCU GPIO
+ * numbers. On the Nano ESP32, for example, D13 reaches GPIO48 and A4 reaches GPIO11.
  * Get the board's pins once, at startup, and pass them to the classes that need them.
  */
 public interface Gpio {
@@ -20,7 +22,7 @@ public interface Gpio {
 
     void toggle(int pin);
 
-    /** The linked board's onboard LED pin: the UNO R4 WiFi's pin 13, the UNO Q's LED3 red channel. */
+    /** The linked board's onboard LED pin: D13 on the UNO R4 WiFi and Nano ESP32, LED3 red on the UNO Q. */
     int getBuiltinLed();
 
     /** The pin number of D0, usable wherever a pin is expected. */

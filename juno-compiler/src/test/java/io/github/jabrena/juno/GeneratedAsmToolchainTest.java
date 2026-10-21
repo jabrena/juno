@@ -37,6 +37,24 @@ class GeneratedAsmToolchainTest {
     @TempDir
     Path temporaryDirectory;
 
+    @ParameterizedTest(name = "GPIO numbering mode: {0}")
+    @ValueSource(booleans = {false, true})
+    @DisplayName("Nano GPIO reaches the same physical pins in both Arduino core numbering modes")
+    void shouldMapNanoPinsInBothNumberingModes(boolean gpioNumbers) throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String runtime = Files.readString(Path.of("src/main/resources/runtime/esp32/core-glue.cpp"));
+        String harness = Files.readString(Path.of("src/test/resources/esp32-gpio-harness.cpp"));
+        String source = "#define GPIO_NUMBERS " + (gpioNumbers ? 1 : 0) + "\n"
+                + harness.replace("// ESP32_CORE_GLUE", runtime);
+
+        Process run = compileAndStart(compiler, source, "esp32-gpio");
+
+        assertThat(run.waitFor(20, TimeUnit.SECONDS)).isTrue();
+        String diagnostics = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as(diagnostics).isZero();
+    }
+
     @Test
     @DisplayName("AVR task allocations stay below the parked main stack")
     void shouldKeepAvrTaskAllocationsBelowTheParkedMainStack() throws Exception {

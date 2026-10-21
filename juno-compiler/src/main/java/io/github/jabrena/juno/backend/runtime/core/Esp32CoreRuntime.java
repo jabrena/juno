@@ -3,6 +3,7 @@ package io.github.jabrena.juno.backend.runtime.core;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
+import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
@@ -17,8 +18,8 @@ import java.util.Map;
  * {@code pinMode}/{@code digitalWrite} and friends into macros translating the printed pin number ({@code D13}) to
  * the ESP32-S3 GPIO number (48); the real symbols take GPIO numbers, so the assembly reaches them through
  * {@code juno_*} wrappers compiled with the macros in effect. Threads are FreeRTOS tasks handing a baton (see
- * {@link ThreadRuntime#esp32Port}). Everything else beyond GPIO, delays, serial and threads is not wired to this core
- * yet and fails at compile time.
+ * {@link ThreadRuntime#esp32Port}). SD cards use the shared SdFat helpers over the core's default SPI pins. Everything
+ * else beyond GPIO, delays, serial, threads and SD cards is not wired to this core yet and fails at compile time.
  */
 final class Esp32CoreRuntime implements CoreRuntime {
     private static final Map<String, String> PIN_REMAP_WRAPPERS = Map.of(
@@ -29,6 +30,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
             "analogWrite", "juno_analog_write");
 
     private final RuntimeSource runtimeSource = new RuntimeSource();
+    private final ShimLibraries shimLibraries = new ShimLibraries();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
 
     @Override
@@ -122,7 +124,8 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
-        throw unsupported("SD cards");
+        return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes,
+                "", "juno_sd.begin(juno_nano_pin(chipSelectPin))");
     }
 
     @Override
