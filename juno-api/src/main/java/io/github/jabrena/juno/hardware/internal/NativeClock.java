@@ -11,7 +11,7 @@ public final class NativeClock implements Clock {
     public static final NativeClock INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.MCU#getClock()} returns: the board's timer, unless a
+     * What {@link io.github.jabrena.juno.hardware.Arduino#getClock()} returns: the board's timer, unless a
      * whole-program emulator in a test replaced it.
      */
     private static Clock clock;
@@ -24,13 +24,13 @@ public final class NativeClock implements Clock {
     private NativeClock() {
     }
 
-    /** The clock {@link io.github.jabrena.juno.hardware.MCU#getClock()} hands out. */
+    /** The clock {@link io.github.jabrena.juno.hardware.Arduino#getClock()} hands out. */
     public static Clock clock() {
         return clock;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.MCU#getClock()} hand out {@code replacement}: for a
+     * Makes {@link io.github.jabrena.juno.hardware.Arduino#getClock()} hand out {@code replacement}: for a
      * whole-program emulator in a test, never on the board.
      */
     public static void setClock(Clock replacement) {

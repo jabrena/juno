@@ -3,7 +3,7 @@ package demo;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.hardware.led.LedMatrix;
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LedMatrixApi {
     public static void main(String[] args) {
-        LedMatrix matrix = MCU.getLedMatrix();
+        LedMatrix matrix = Arduino.getLedMatrix();
         matrix.begin();
         matrix.loadFrame(0x3184a444, 0x44042081, 0x100a0, 0);
         Delay.millis(10);

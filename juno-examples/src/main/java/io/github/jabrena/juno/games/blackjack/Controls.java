@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.blackjack;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -12,7 +12,7 @@ import static io.github.jabrena.juno.games.blackjack.Blackjack.HAND_X;
 import static io.github.jabrena.juno.games.blackjack.Blackjack.HEADER_HEIGHT;
 
 final class Controls {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     static boolean autopilot;
 
     private Controls() {

@@ -24,8 +24,8 @@ import io.github.jabrena.juno.hardware.time.Clock;
  * {@code mock(Wifi.class)}, {@code mock(Clock.class)}, {@code mock(BoardModel.class)} or
  * {@code mock(BoardMemory.class)} instead.
  */
-public final class MCU {
-    private MCU() {
+public final class Arduino {
+    private Arduino() {
     }
 
     /** The board's pins. */

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.led;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.util.Delay;
@@ -16,7 +16,7 @@ import io.github.jabrena.juno.util.Delay;
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class LedMatrixAsciiScroll {
     public static void main(String[] args) {
-        LedMatrix matrix = MCU.getLedMatrix();
+        LedMatrix matrix = Arduino.getLedMatrix();
         matrix.begin();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 

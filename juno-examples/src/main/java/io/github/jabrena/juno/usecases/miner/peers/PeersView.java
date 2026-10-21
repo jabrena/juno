@@ -2,7 +2,7 @@ package io.github.jabrena.juno.usecases.miner.peers;
 
 import io.github.jabrena.juno.games.blockchain.GameScreen;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Header;
@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.mvc.View;
  * only when what it shows changes; a peer moves from alive to suspect on its own, as heartbeats stop arriving.
  */
 public final class PeersView implements View {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     /** The status row of the first peer slot; the slots take the rows below it. */
     static final int FIRST_PEER_ROW = 2;
 

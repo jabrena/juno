@@ -11,7 +11,7 @@ public final class NativeBoardModel implements BoardModel {
     public static final NativeBoardModel INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.MCU#getBoardModel()} returns: the board's answer, unless a
+     * What {@link io.github.jabrena.juno.hardware.Arduino#getBoardModel()} returns: the board's answer, unless a
      * whole-program emulator in a test replaced it.
      */
     private static BoardModel boardModel;
@@ -24,13 +24,13 @@ public final class NativeBoardModel implements BoardModel {
     private NativeBoardModel() {
     }
 
-    /** The board model {@link io.github.jabrena.juno.hardware.MCU#getBoardModel()} hands out. */
+    /** The board model {@link io.github.jabrena.juno.hardware.Arduino#getBoardModel()} hands out. */
     public static BoardModel boardModel() {
         return boardModel;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.MCU#getBoardModel()} hand out {@code replacement}: for a
+     * Makes {@link io.github.jabrena.juno.hardware.Arduino#getBoardModel()} hand out {@code replacement}: for a
      * whole-program emulator in a test, never on the board.
      */
     public static void setBoardModel(BoardModel replacement) {

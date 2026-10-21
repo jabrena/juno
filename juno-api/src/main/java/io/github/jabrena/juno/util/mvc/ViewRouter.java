@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.util.mvc;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -34,7 +34,7 @@ public final class ViewRouter implements Navigator {
 
     /** A router that renders a frame every {@code framePeriodMs} of the board's clock. */
     public ViewRouter(int framePeriodMs) {
-        this(framePeriodMs, MCU.getClock());
+        this(framePeriodMs, Arduino.getClock());
     }
 
     /** A router that renders a frame every {@code framePeriodMs} of {@code clock}: a mocked one in a unit test. */

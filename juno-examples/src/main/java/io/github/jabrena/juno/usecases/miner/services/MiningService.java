@@ -3,7 +3,7 @@ package io.github.jabrena.juno.usecases.miner.services;
 import io.github.jabrena.juno.games.blockchain.Bytes;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
 import io.github.jabrena.juno.games.blockchain.Sha256;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -20,7 +20,7 @@ import io.github.jabrena.juno.usecases.miner.commons.Miner2State;
  * rest of the frame to the views and the network.
  */
 final class MiningService {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     /** Nonces tried between two looks at the clock. */
     static final int SLICE = 32;
     /** How long one step mines; the frame is a little longer. */

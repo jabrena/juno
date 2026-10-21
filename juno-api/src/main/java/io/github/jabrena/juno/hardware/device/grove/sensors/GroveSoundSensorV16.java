@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 
@@ -14,7 +14,7 @@ public final class GroveSoundSensorV16 {
 
     /** A sensor on the board's own pins. Create it once, at startup. */
     public GroveSoundSensorV16() {
-        this(MCU.getGpio());
+        this(Arduino.getGpio());
     }
 
     /** A sensor read through {@code gpio}: a mocked one in a unit test. */

@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.net.http.Json;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.Delay;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class HttpsMethods {
-    private static final Wifi WIFI = MCU.getWifi();
+    private static final Wifi WIFI = Arduino.getWifi();
 
     private static final String HTTPBIN_URL = "https://httpbin.org/anything";
     private static final String HTTPBUN_URL = "https://httpbun.com/anything";

@@ -12,7 +12,7 @@ public final class NativeLedMatrix implements LedMatrix {
     public static final NativeLedMatrix INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.MCU#getLedMatrix()} returns: the board's matrix, unless a
+     * What {@link io.github.jabrena.juno.hardware.Arduino#getLedMatrix()} returns: the board's matrix, unless a
      * whole-program emulator in a test replaced it.
      */
     private static LedMatrix ledMatrix;
@@ -25,13 +25,13 @@ public final class NativeLedMatrix implements LedMatrix {
     private NativeLedMatrix() {
     }
 
-    /** The matrix {@link io.github.jabrena.juno.hardware.MCU#getLedMatrix()} hands out. */
+    /** The matrix {@link io.github.jabrena.juno.hardware.Arduino#getLedMatrix()} hands out. */
     public static LedMatrix ledMatrix() {
         return ledMatrix;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.MCU#getLedMatrix()} hand out {@code replacement}: for a
+     * Makes {@link io.github.jabrena.juno.hardware.Arduino#getLedMatrix()} hand out {@code replacement}: for a
      * whole-program emulator or a unit test, never on the board.
      */
     public static void setLedMatrix(LedMatrix replacement) {

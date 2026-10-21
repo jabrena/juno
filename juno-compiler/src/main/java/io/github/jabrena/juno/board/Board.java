@@ -19,7 +19,7 @@ public enum Board {
     /**
      * The classic ATmega328P UNO: basic GPIO, serial and shield APIs within its 2 KB of SRAM, and Wi-Fi, UDP, TCP and
      * plain HTTP through the retired Arduino WiFi Shield's legacy {@code WiFi} library (no access point or HTTPS), reached
-     * through {@code ArduinoWifiShield.getWifi()}: the board has no onboard radio, so {@code MCU.getWifi()} is rejected.
+     * through {@code ArduinoWifiShield.getWifi()}: the board has no onboard radio, so {@code Arduino.getWifi()} is rejected.
      */
     UNO_R3("io/github/jabrena/juno/annotations/ArduinoUnoR3", "arduino-uno-r3", "UNO R3", "arduino:avr:uno",
             ArduinoCore.CLASSIC_AVR, UnoGeneration.R3,

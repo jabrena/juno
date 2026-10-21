@@ -14,7 +14,7 @@ class BoardMemoryTest {
     @DisplayName("The board's memory is one shared instance")
     void shouldHandOutOneInstanceForTheBoard() {
         // When & Then
-        assertThat(MCU.getBoardMemory()).isSameAs(MCU.getBoardMemory()).isSameAs(NativeBoardMemory.INSTANCE);
+        assertThat(Arduino.getBoardMemory()).isSameAs(Arduino.getBoardMemory()).isSameAs(NativeBoardMemory.INSTANCE);
     }
 
     @Test
@@ -29,8 +29,8 @@ class BoardMemoryTest {
 
         // Then
         try {
-            assertThat(MCU.getBoardMemory()).isSameAs(emptyArena);
-            assertThat(MCU.getBoardMemory().arenaCapacityBytes()).isEqualTo(8192);
+            assertThat(Arduino.getBoardMemory()).isSameAs(emptyArena);
+            assertThat(Arduino.getBoardMemory().arenaCapacityBytes()).isEqualTo(8192);
         } finally {
             NativeBoardMemory.setBoardMemory(NativeBoardMemory.INSTANCE);
         }

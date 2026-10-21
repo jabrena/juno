@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.serial;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -25,7 +25,7 @@ public final class SerialBlink {
      */
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(Arduino.getGpio().getBuiltinLed());
         Delay.millis(2000);
 
         int cycle = 0;

@@ -2,7 +2,7 @@ package io.github.jabrena.juno.games.redbaron;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -22,7 +22,7 @@ import io.github.jabrena.juno.util.Random;
  */
 @Board(ArduinoUnoQ.class)
 public final class RedBaron {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     private static final int FRAME_MILLIS = 40;
     private static final int COVER_TIMEOUT_MILLIS = 60_000;
 

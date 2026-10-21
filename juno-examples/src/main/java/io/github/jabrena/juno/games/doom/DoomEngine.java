@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.doom;
 
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.BoardMemory;
-import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Random;
@@ -13,9 +13,9 @@ import io.github.jabrena.juno.util.Random;
  * there is one engine per program; the renderer's buffers are allocated here, once, after the WAD-sized tables.
  */
 public final class DoomEngine {
-    private static final BoardMemory MEMORY = MCU.getBoardMemory();
+    private static final BoardMemory MEMORY = Arduino.getBoardMemory();
     /** The engine's clock, shared with {@link Loading} and Doom2's views so the program allocates one. */
-    public static final Clock CLOCK = MCU.getClock();
+    public static final Clock CLOCK = Arduino.getClock();
     public static final int PLAYING = 0;
     public static final int WON = 1;
     public static final int DIED = 2;

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.net;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ class WifiTest {
     @DisplayName("The board's Wi-Fi radio is one shared instance")
     void shouldHandOutOneInstanceForTheBoard() {
         // When & Then
-        assertThat(MCU.getWifi()).isSameAs(MCU.getWifi()).isSameAs(NativeWifi.INSTANCE);
+        assertThat(Arduino.getWifi()).isSameAs(Arduino.getWifi()).isSameAs(NativeWifi.INSTANCE);
     }
 
     @Test
@@ -28,7 +28,7 @@ class WifiTest {
 
         // Then
         try {
-            assertThat(MCU.getWifi()).isSameAs(replacement);
+            assertThat(Arduino.getWifi()).isSameAs(replacement);
         } finally {
             NativeWifi.setWifi(NativeWifi.INSTANCE);
         }

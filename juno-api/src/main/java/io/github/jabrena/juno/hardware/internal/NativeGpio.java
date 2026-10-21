@@ -11,7 +11,7 @@ public final class NativeGpio implements Gpio {
     public static final NativeGpio INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.MCU#getGpio()} returns: the board's pins, unless a whole-program
+     * What {@link io.github.jabrena.juno.hardware.Arduino#getGpio()} returns: the board's pins, unless a whole-program
      * emulator in a test replaced them.
      */
     private static Gpio gpio;
@@ -24,13 +24,13 @@ public final class NativeGpio implements Gpio {
     private NativeGpio() {
     }
 
-    /** The pins {@link io.github.jabrena.juno.hardware.MCU#getGpio()} hands out. */
+    /** The pins {@link io.github.jabrena.juno.hardware.Arduino#getGpio()} hands out. */
     public static Gpio gpio() {
         return gpio;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.MCU#getGpio()} hand out {@code replacement}: for a
+     * Makes {@link io.github.jabrena.juno.hardware.Arduino#getGpio()} hand out {@code replacement}: for a
      * whole-program emulator in a test, never on the board.
      */
     public static void setGpio(Gpio replacement) {
