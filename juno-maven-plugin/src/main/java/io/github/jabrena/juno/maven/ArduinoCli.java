@@ -73,17 +73,26 @@ final class ArduinoCli {
 
     /**
      * The port of the one connected board with {@code fqbn}, or {@code configuredPort} after checking such a board
-     * is really connected there.
+     * is really connected there. A board listed on several protocols, such as the Nano ESP32's DFU and serial ports,
+     * resolves to its only serial port: the monitor needs it, and the upload tool finds the board by itself.
      */
     String resolvePort(String fqbn, Optional<String> configuredPort) {
         String requiredFqbn = requireText(fqbn, "FQBN");
-        List<String> matching = boardList().stream()
+        List<DetectedPort> matchingPorts = boardList().stream()
                 .filter(port -> port.hosts(requiredFqbn))
-                .map(DetectedPort::address)
                 .toList();
+        List<String> matching = addresses(matchingPorts);
         return configuredPort.map(String::trim).filter(port -> !port.isBlank())
                 .map(requested -> requireConnected(requested, requiredFqbn, matching))
-                .orElseGet(() -> onlyMatching(requiredFqbn, matching));
+                .orElseGet(() -> onlyMatching(requiredFqbn, matching, serialAddresses(matchingPorts)));
+    }
+
+    private List<String> addresses(List<DetectedPort> ports) {
+        return ports.stream().map(DetectedPort::address).toList();
+    }
+
+    private List<String> serialAddresses(List<DetectedPort> ports) {
+        return addresses(ports.stream().filter(port -> port.protocol().equals("serial")).toList());
     }
 
     List<DetectedPort> boardList() {
@@ -101,13 +110,18 @@ final class ArduinoCli {
         return requested;
     }
 
-    private String onlyMatching(String fqbn, List<String> matching) {
+    private String onlyMatching(String fqbn, List<String> matching, List<String> serialMatching) {
         return switch (matching.size()) {
             case 0 -> throw new ArduinoCliException("No connected board matching " + fqbn
                     + " was found. Connect the board or set -Djuno.port=<port> after checking juno:boards.");
             case 1 -> matching.getFirst();
-            default -> throw new ArduinoCliException("Multiple boards matching " + fqbn + " were found: "
-                    + String.join(", ", matching) + ". Select one with -Djuno.port=<port>.");
+            default -> {
+                if (serialMatching.size() == 1) {
+                    yield serialMatching.getFirst();
+                }
+                throw new ArduinoCliException("Multiple boards matching " + fqbn + " were found: "
+                        + String.join(", ", matching) + ". Select one with -Djuno.port=<port>.");
+            }
         };
     }
 
