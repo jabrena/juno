@@ -28,6 +28,7 @@ import java.util.Properties;
  */
 public final class WifiStatusSDTFT {
     private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = TftTouchShield.getSdCard();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
@@ -199,12 +200,12 @@ public final class WifiStatusSDTFT {
     }
 
     private static WifiCredentials loadCredentials() throws IOException {
-        if (!SdCard.begin()) {
+        if (!SD_CARD.begin()) {
             Serial.println("SD card initialization failed");
             return null;
         }
 
-        InputStream file = SdCard.open("application.properties");
+        InputStream file = SD_CARD.open("application.properties");
         if (file == null) {
             Serial.println("application.properties not found");
             return null;

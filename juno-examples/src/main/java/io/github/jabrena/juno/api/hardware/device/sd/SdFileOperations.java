@@ -7,8 +7,8 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.BoardModel;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
+import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
-import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -22,9 +22,8 @@ import java.io.InputStream;
  * each step reported over USB serial so the behavior can be checked remotely with a serial monitor
  * instead of pulling the card to inspect it by hand.
  *
- * <p>On an UNO R4 WiFi or UNO Q, wire a standard SPI SD card breakout with its chip-select line on D10 (the
- * default {@link SdCard#begin()} pin). On a Nano ESP32, plug it into a {@link NanoConnectorCarrier}, whose microSD
- * slot selects the card on D4. Upload, then watch the result:
+ * <p>On an UNO R4 WiFi or UNO Q, put the card in a {@link DataLoggerShield}, which selects it on D10. On a Nano
+ * ESP32, plug it into a {@link NanoConnectorCarrier}, whose microSD slot selects the card on D4. Upload, then watch the result:
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:upload \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.device.sd.SdFileOperations -Djuno.board=arduino-nano-esp32
@@ -34,29 +33,30 @@ import java.io.InputStream;
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoNanoEsp32.class})
 public final class SdFileOperations {
     private static final String PATH = "juno-sd-demo.txt";
+    private static final SdCard SD_CARD = sdCard();
 
     public static void main(String[] args) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        if (!SdCard.begin(chipSelectPin())) {
+        if (!SD_CARD.begin()) {
             Serial.println("SD card initialization failed");
             return;
         }
         Serial.println("SD card ready");
 
-        SdCard.remove(PATH); // start from a clean slate on every run
-        report("exists before create", SdCard.exists(PATH));
+        SD_CARD.remove(PATH); // start from a clean slate on every run
+        report("exists before create", SD_CARD.exists(PATH));
 
-        report("create (append line 1)", SdCard.appendLine(PATH, "line 1"));
-        report("append line 2", SdCard.appendLine(PATH, "line 2"));
-        report("exists after append", SdCard.exists(PATH));
+        report("create (append line 1)", SD_CARD.appendLine(PATH, "line 1"));
+        report("append line 2", SD_CARD.appendLine(PATH, "line 2"));
+        report("exists after append", SD_CARD.exists(PATH));
 
         Serial.println("reading back:");
         readBack();
 
-        report("remove", SdCard.remove(PATH));
-        report("exists after remove", SdCard.exists(PATH));
+        report("remove", SD_CARD.remove(PATH));
+        report("exists after remove", SD_CARD.exists(PATH));
 
         Serial.println("done");
         while (true) {
@@ -64,10 +64,10 @@ public final class SdFileOperations {
         }
     }
 
-    /** D10 for a breakout on the UNO boards; of the boards above, only the Nano ESP32 is neither. */
-    private static int chipSelectPin() {
+    /** The Data Logger Shield's card on the UNO boards; of the boards above, only the Nano ESP32 is neither. */
+    private static SdCard sdCard() {
         BoardModel model = MCU.getBoardModel();
-        return model.isR4() || model.isQ() ? Gpio.getD10() : new NanoConnectorCarrier().getSdChipSelect();
+        return model.isR4() || model.isQ() ? new DataLoggerShield().getSdCard() : new NanoConnectorCarrier().getSdCard();
     }
 
     private static void report(String label, boolean value) {
@@ -77,7 +77,7 @@ public final class SdFileOperations {
     }
 
     private static void readBack() throws IOException {
-        InputStream file = SdCard.open(PATH);
+        InputStream file = SD_CARD.open(PATH);
         if (file == null) {
             Serial.println("  (could not open)");
             return;

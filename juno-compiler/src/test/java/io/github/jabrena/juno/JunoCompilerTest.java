@@ -1406,14 +1406,16 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.net.Wifi;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     import java.io.IOException;
                     import java.io.InputStream;
                     import java.util.Properties;
                     public final class SdConfiguration {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                         public static void main(String[] args) throws IOException {
-                            if (!SdCard.begin() || !SdCard.exists("application.properties")) return;
-                            InputStream file = SdCard.open("application.properties");
+                            if (!SD_CARD.begin() || !SD_CARD.exists("application.properties")) return;
+                            InputStream file = SD_CARD.open("application.properties");
                             if (file == null) return;
                             if (file.available() > 0) {
                                 Properties properties = new Properties();
@@ -1465,17 +1467,19 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.time.Clock;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class HighScoreLog {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                         public static void main(String[] args) {
-                            SdCard.begin();
+                            SD_CARD.begin();
                             StringBuilder line = new StringBuilder(16);
                             line.append("JAB-");
                             String score = String.valueOf(MCU.getClock().millis());
                             for (int i = 0; i < score.length(); i++) {
                                 line.append(score.charAt(i));
                             }
-                            SdCard.appendLine("tempest-high-scores.txt", line.toString());
+                            SD_CARD.appendLine("tempest-high-scores.txt", line.toString());
                         }
                     }
                     """;
@@ -1509,12 +1513,14 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.time.Clock;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class DynamicHighScorePath {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                         public static void main(String[] args) {
-                            SdCard.begin();
+                            SD_CARD.begin();
                             String path = MCU.getClock().millis() > 0 ? "a.txt" : "b.txt";
-                            SdCard.appendLine(path, "JAB-5000");
+                            SD_CARD.appendLine(path, "JAB-5000");
                         }
                     }
                     """;
@@ -1531,14 +1537,16 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class SaveState {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                         public static void main(String[] args) {
-                            SdCard.begin();
-                            SdCard.remove("state.txt");
-                            SdCard.appendText("state.txt", "score=");
-                            SdCard.appendText("state.txt", String.valueOf(42));
-                            SdCard.appendText("state.txt", "\\n");
+                            SD_CARD.begin();
+                            SD_CARD.remove("state.txt");
+                            SD_CARD.appendText("state.txt", "score=");
+                            SD_CARD.appendText("state.txt", String.valueOf(42));
+                            SD_CARD.appendText("state.txt", "\\n");
                         }
                     }
                     """;
@@ -1568,12 +1576,14 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.time.Clock;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class DynamicStatePath {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                         public static void main(String[] args) {
-                            SdCard.begin();
+                            SD_CARD.begin();
                             String path = MCU.getClock().millis() > 0 ? "a.txt" : "b.txt";
-                            SdCard.appendText(path, "x");
+                            SD_CARD.appendText(path, "x");
                         }
                     }
                     """;
@@ -1590,15 +1600,17 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     public final class LogSize {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                         public static void main(String[] args) {
-                            SdCard.begin();
-                            if (SdCard.size("log.txt") > 1024) {
-                                SdCard.remove("log.txt");
+                            SD_CARD.begin();
+                            if (SD_CARD.size("log.txt") > 1024) {
+                                SD_CARD.remove("log.txt");
                             }
-                            Serial.println(SdCard.size("log.txt"));
+                            Serial.println(SD_CARD.size("log.txt"));
                         }
                     }
                     """;
@@ -1619,11 +1631,13 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     public final class DeleteHighScoreLog {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                         public static void main(String[] args) {
-                            SdCard.begin();
-                            SdCard.remove("tempest-high-scores.txt");
+                            SD_CARD.begin();
+                            SD_CARD.remove("tempest-high-scores.txt");
                         }
                     }
                     """;
@@ -1647,6 +1661,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     import java.io.EOFException;
@@ -1654,8 +1669,9 @@ class JunoCompilerTest {
                     import java.io.IOException;
                     import java.io.RandomAccessFile;
                     public final class WadHeader {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                         public static void main(String[] args) {
-                            SdCard.begin();
+                            SD_CARD.begin();
                             // Declared before the try: javac reuses a try block's local slots for its catch variables.
                             byte[] header = new byte[12];
                             try (RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "r")) {
@@ -1844,13 +1860,15 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     public final class SdRoom {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                         public static void main(String[] args) {
-                            SdCard.begin();
-                            Serial.println(SdCard.totalKiB());
-                            Serial.println(SdCard.freeKiB());
+                            SD_CARD.begin();
+                            Serial.println(SD_CARD.totalKiB());
+                            Serial.println(SD_CARD.freeKiB());
                         }
                     }
                     """;

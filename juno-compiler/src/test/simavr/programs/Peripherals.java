@@ -2,6 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
@@ -25,6 +26,7 @@ import java.util.Properties;
  */
 @Board(ArduinoUnoR3WiFiRev2.class)
 public final class Peripherals {
+    private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
     static void printBytes(byte[] bytes, int length) {
         for (int i = 0; i < length; i++) {
             Serial.print((char) bytes[i] + "");
@@ -87,22 +89,22 @@ public final class Peripherals {
         Serial.println((char) received[0] + "" + (char) received[3]);
         Udp.stop();
 
-        Serial.println(SdCard.begin() ? "sd ready" : "sd failed");
-        Serial.println(SdCard.size("config.txt"));
+        Serial.println(SD_CARD.begin() ? "sd ready" : "sd failed");
+        Serial.println(SD_CARD.size("config.txt"));
         Properties config = new Properties();
-        InputStream file = SdCard.open("config.txt");
+        InputStream file = SD_CARD.open("config.txt");
         config.load(file);
         file.close();
         Serial.println(config.getProperty("ssid"));
         Serial.println(config.getProperty("port"));
         Serial.println(config.getProperty("name"));
         Serial.println(config.getProperty("missing", "fallback"));
-        SdCard.remove("log.txt");
-        SdCard.appendLine("log.txt", "first");
-        SdCard.appendText("log.txt", "x=" + 42);
-        Serial.println(SdCard.size("log.txt"));
-        Serial.println(SdCard.exists("log.txt") ? "log exists" : "no log");
-        InputStream log = SdCard.open("log.txt");
+        SD_CARD.remove("log.txt");
+        SD_CARD.appendLine("log.txt", "first");
+        SD_CARD.appendText("log.txt", "x=" + 42);
+        Serial.println(SD_CARD.size("log.txt"));
+        Serial.println(SD_CARD.exists("log.txt") ? "log exists" : "no log");
+        InputStream log = SD_CARD.open("log.txt");
         StringBuilder line = new StringBuilder(16);
         while (log.available() > 0) {
             line.append((char) log.read());

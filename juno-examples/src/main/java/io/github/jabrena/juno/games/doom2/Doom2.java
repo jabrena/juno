@@ -59,7 +59,7 @@ public final class Doom2 {
         controller.register(Doom2Views.REPORT, new ReportView(controller, model, engine, mapLoader));
         controller.start(Doom2Views.COVER);
 
-        DoomStartupService startup = new DoomStartupService(model);
+        DoomStartupService startup = new DoomStartupService(model, TftTouchShield.getSdCard());
         startup.begin();
         controller.background(startup);
         controller.run();

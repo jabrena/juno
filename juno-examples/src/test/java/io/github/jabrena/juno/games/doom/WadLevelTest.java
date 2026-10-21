@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,15 +41,13 @@ class WadLevelTest {
     }
 
     @AfterEach
-    void removeTheCard() {
-        SdCard.present = false;
+    void forgetTheWad() {
         World.fromWad = false;
     }
 
     @Test
     void withoutACardTheBuiltInMapIsPlayed() {
-        SdCard.present = false;
-
+        // The emulated board's SD card is not inserted.
         World.load();
 
         assertThat(World.fromWad).isFalse();

@@ -421,8 +421,17 @@ public enum Intrinsic {
     private static final Set<Intrinsic> WIFI_OPERATIONS = EnumSet.of(WIFI_BEGIN, WIFI_BEGIN_AP, WIFI_STATUS,
             WIFI_LOCAL_IP, WIFI_GATEWAY_IP, WIFI_MAC_ADDRESS);
 
+    /**
+     * The SD-card calls behind {@code SdCard}, declared on {@code NativeSdCard}: the board has one SD bus, so they never
+     * read the card object they are called on (only its Java {@code begin()} reads the chip select it holds), but they
+     * wait on the card, so they do not inline either.
+     */
+    private static final Set<Intrinsic> SD_CARD_OPERATIONS = EnumSet.of(SD_BEGIN, SD_EXISTS, SD_SIZE, SD_OPEN,
+            SD_APPEND_LINE, SD_APPEND_TEXT, SD_REMOVE, SD_TOTAL_KIB, SD_FREE_KIB);
+
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {
-        return PORT_OPERATIONS.contains(this) || WIFI_OPERATIONS.contains(this);
+        return PORT_OPERATIONS.contains(this) || WIFI_OPERATIONS.contains(this)
+                || SD_CARD_OPERATIONS.contains(this);
     }
 }

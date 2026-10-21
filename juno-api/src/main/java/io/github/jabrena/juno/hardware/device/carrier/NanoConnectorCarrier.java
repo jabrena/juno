@@ -1,13 +1,16 @@
 package io.github.jabrena.juno.hardware.device.carrier;
 
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.internal.NativeSdCard;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Pin map for the passive Arduino Nano Connector Carrier (ASX00061): a microSD card slot on SPI, four Grove
  * sockets and one Qwiic connector, all wired to ordinary Nano header pins. Like
  * {@link io.github.jabrena.juno.hardware.device.grove.GroveBaseShield} it adds no protocol or runtime object, so
- * these pins can be passed directly to {@link io.github.jabrena.juno.hardware.device.sd.SdCard}, to a Grove driver
- * or to {@link Gpio}.
+ * these pins can be passed directly to a Grove driver or to {@link Gpio}; the microSD slot's card is
+ * {@link #getSdCard()}.
  *
  * <p>The carrier seen from its connector side, USB cable at the bottom; {@code *} marks each Grove socket's yellow
  * signal wire (Grove pin 1):
@@ -46,16 +49,20 @@ import io.github.jabrena.juno.hardware.gpio.Gpio;
  * The Grove sockets' VCC is 3.3 V or 5 V, chosen by the carrier's input selector switch; the Qwiic connector and the
  * microSD slot are always 3.3 V. Set the switch to 3.3 V for a 3.3 V board such as the Nano ESP32.
  *
- * <p>Use {@link #getSdChipSelect()} with {@code SdCard.begin(int)}: the slot's chip select is D4, not the
- * {@code SdCard.begin()} default D10. Its SPI clock is D13, which the Nano ESP32 shares with its built-in LED, so a
+ * <p>{@link #getSdCard()} selects the card on D4, the slot's chip select, rather than the UNO shields' D10; after
+ * moving the slot's solder jumper, pass {@link #getSdChipSelectJumperD2()} or {@link #getSdChipSelectJumperD3()} to
+ * {@link SdCard#begin(int)} instead. Its SPI clock is D13, which the Nano ESP32 shares with its built-in LED, so a
  * program reading the card should not blink that LED.
  *
  * @see <a href="https://docs.arduino.cc/resources/datasheets/ASX00061-datasheet.pdf">Nano Connector Carrier datasheet</a>
  * @see <a href="https://docs.arduino.cc/tutorials/nano-connector-carrier/getting-started-nano-connector-carrier/">Getting started with the Nano Connector Carrier</a>
  */
 public final class NanoConnectorCarrier {
-    /** The microSD slot's chip select as shipped. */
-    private static final int SD_CHIP_SELECT = Gpio.getD4();
+    /**
+     * The microSD slot's chip select as shipped. A compile-time constant, so a card taken in another class's static
+     * initializer never reads it before this class's own initializer has run.
+     */
+    private static final int SD_CHIP_SELECT = 4;
     /** The chip selects the carrier's solder jumpers can move the microSD slot to. */
     private static final int SD_CHIP_SELECT_JUMPER_D2 = Gpio.getD2();
     private static final int SD_CHIP_SELECT_JUMPER_D3 = Gpio.getD3();
@@ -79,7 +86,22 @@ public final class NanoConnectorCarrier {
     private static final int UART_RX = Gpio.getD0();
     private static final int UART_TX = Gpio.getD1();
 
+    private @Nullable SdCard sdCard;
+
     public NanoConnectorCarrier() {
+    }
+
+    /**
+     * The card in the microSD slot; its {@link SdCard#begin()} selects it on D4. The same
+     * instance every call.
+     */
+    public SdCard getSdCard() {
+        SdCard card = sdCard;
+        if (card == null) {
+            card = NativeSdCard.sdCard(SD_CHIP_SELECT);
+            sdCard = card;
+        }
+        return card;
     }
 
     /** The signal pin of a module in the Grove A0/A1 socket: A0. */
@@ -97,7 +119,7 @@ public final class NanoConnectorCarrier {
         return UART_RX;
     }
 
-    /** The microSD slot's chip select, D4, for {@code SdCard.begin(int)}. */
+    /** The microSD slot's chip select, D4. */
     public int getSdChipSelect() {
         return SD_CHIP_SELECT;
     }

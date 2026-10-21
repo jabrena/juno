@@ -6,8 +6,15 @@ import java.io.InputStream;
  * Access to an SPI SD card, backed by the Arduino {@code SdFat} library with long-file-name support
  * enabled.
  *
- * <p>Call {@link #begin()} for the standard D10 chip-select pin, or {@link #begin(int)} for custom
- * wiring, before opening or writing files. Every {@code path} must currently be a compile-time
+ * <p>Take the card from the shield or carrier that holds its socket, once, at startup:
+ * {@link DataLoggerShield#getSdCard()}, {@link io.github.jabrena.juno.hardware.device.tft.TftTouchShield#getSdCard()},
+ * {@link io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield#getSdCard()},
+ * {@link io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield#getSdCard()} or
+ * {@link io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier#getSdCard()}. A unit test passes
+ * {@code mock(SdCard.class)} instead.
+ *
+ * <p>Call {@link #begin()} for the chip-select pin of the socket the card came from, or {@link #begin(int)} for
+ * custom wiring, before opening or writing files. Every {@code path} must currently be a compile-time
  * string literal and use the SD card's root as its base. {@link #open(String)} is read-only; the three writers,
  * {@link #appendLine(String, String)} (adds a line) and {@link #appendText(String, String)} (adds raw text),
  * each open the file, write, and close it again rather than keeping a writable handle open. To replace a file,
@@ -24,30 +31,22 @@ import java.io.InputStream;
  *       records over several calls; each call ends its line with a newline.</li>
  * </ul>
  *
- * <p>Hardware: any SPI SD socket wired to the board's SPI pins and a chip-select pin works, for example the
- * SD socket of the ELEGOO 2.8" TFT touch shield (see {@link io.github.jabrena.juno.hardware.device.tft.TftTouchShield}) or
- * a data logger module such as the AZ-Delivery one, which pairs the card with a real-time clock. Pass its
- * chip-select pin to {@link #begin(int)} when it is not D10.
- *
  * @see <a href="https://www.az-delivery.de/en/products/datenlogger-modul">AZ-Delivery data logger module</a>
  * @see <a href="https://fr.elegoo.com/products/elegoo-uno-r3-2-8-inch-touch-screen-tft-touch-screen-320x240-with-sd-card-socket-with-technical-data">ELEGOO 2.8 inch TFT touch screen with SD card socket</a>
  */
-public final class SdCard {
-    private static final int DEFAULT_CHIP_SELECT_PIN = 10;
+public interface SdCard {
 
-    private SdCard() {
-    }
+    /**
+     * Initializes the card on the chip-select pin of the socket it came from (D10 on the data logger and TFT shields,
+     * D4 on the Arduino WiFi Shield and the Nano Connector Carrier) and returns whether it was detected successfully.
+     */
+    boolean begin();
 
-    /** Initializes the card using the standard Arduino shield chip-select pin, D10. */
-    public static boolean begin() {
-        return begin(DEFAULT_CHIP_SELECT_PIN);
-    }
-
-    /** Initializes the card and returns whether it was detected successfully. */
-    public static native boolean begin(int chipSelectPin);
+    /** Initializes the card on {@code chipSelectPin} and returns whether it was detected successfully. */
+    boolean begin(int chipSelectPin);
 
     /** Returns whether {@code path} exists on the card. */
-    public static native boolean exists(String path);
+    boolean exists(String path);
 
     /**
      * Returns the size of {@code path} in bytes, or {@code -1} when it does not exist or cannot be opened. A
@@ -55,17 +54,17 @@ public final class SdCard {
      * has grown too large or a file is empty; {@link java.io.InputStream#available()} only says whether bytes
      * remain.
      */
-    public static native int size(String path);
+    int size(String path);
 
     /** Opens {@code path} for reading, or returns {@code null} when it cannot be opened. */
-    public static native InputStream open(String path);
+    InputStream open(String path);
 
     /**
      * Appends {@code line} plus a newline to {@code path}, creating the file first if it does not
      * exist yet. Unlike {@code open()}, {@code line} may be a runtime string. Returns whether the
      * write succeeded.
      */
-    public static native boolean appendLine(String path, String line);
+    boolean appendLine(String path, String line);
 
     /**
      * Appends {@code text} to {@code path} exactly as given, creating the file first if it does not exist
@@ -73,16 +72,16 @@ public final class SdCard {
      * (each piece within the runtime-string limit above) or be raw text such as CSV fields. Returns
      * whether the write succeeded.
      */
-    public static native boolean appendText(String path, String text);
+    boolean appendText(String path, String text);
 
     /** Deletes {@code path} from the card. Returns whether it was removed. */
-    public static native boolean remove(String path);
+    boolean remove(String path);
 
     /**
      * The card volume's total capacity in KiB, or {@code -1} before a successful {@link #begin()}. Reads only the
      * volume header, so it returns at once.
      */
-    public static native int totalKiB();
+    int totalKiB();
 
     /**
      * The card volume's free space in KiB, or {@code -1} before a successful {@link #begin()}. A FAT32 card's own
@@ -91,5 +90,5 @@ public final class SdCard {
      * which can take a minute on a large card; the count pauses between slices so other threads keep running, but
      * the calling thread waits for all of it, so call this from a background thread and keep the result.
      */
-    public static native int freeKiB();
+    int freeKiB();
 }

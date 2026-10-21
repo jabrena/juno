@@ -12,6 +12,19 @@ link the desktop JDK's `Hashtable` implementation into the sketch. `SdFat` is us
 Arduino's legacy `SD` library because `application.properties` is a long filename; the legacy
 library is limited to DOS 8.3 names.
 
+`SdCard` is an interface: take the card from the shield or carrier that holds its socket, once, at
+startup, and pass it to the classes that need it. A unit test passes `mock(SdCard.class)` instead.
+
+| Socket | Card | Chip select |
+|---|---|---|
+| AZDelivery Data Logger Shield | `new DataLoggerShield().getSdCard()` | D10 |
+| ELEGOO 2.8" TFT touch shield | `TftTouchShield.getSdCard()` | D10 |
+| LCD Keypad Shield (stacked on a data logger) | `new LcdKeypadShield().getSdCard()` | D10 |
+| Arduino WiFi Shield (UNO R3) | `new ArduinoWifiShield().getSdCard()` | D4 |
+| Nano Connector Carrier | `new NanoConnectorCarrier().getSdCard()` | D4 |
+
+The card's `begin()` selects it on its socket's pin; `begin(chipSelectPin)` takes any other pin.
+
 ## Card contents
 
 Create `application.properties` in the SD card root:
@@ -40,14 +53,14 @@ shield directly on the UNO R4 WiFi; its SD interface uses the classic UNO SPI pi
 | VCC | module-appropriate supply |
 | GND | GND |
 
-`SdCard.begin()` uses D10 by default, matching this shield and the standard Arduino shield layout.
+`new DataLoggerShield().getSdCard()` is this shield's card, and its `begin()` selects it on D10.
 The shield also contains an RTC, but this example does not initialize or use it. The card must be
 formatted as FAT16 or FAT32; exFAT is not supported by the shield's documented SD setup.
 
-If a different reader or shield routes CS elsewhere, call `SdCard.begin(chipSelectPin)` explicitly.
+If a different reader routes CS elsewhere, call the card's `begin(chipSelectPin)` explicitly.
 
-The ELEGOO 2.8" TFT touch screen shield's microSD socket also uses D10, and shares no pins with its
-display: see [`WifiStatusSDTFT`](../tft-touch-shield#examples) for the same flow shown on the TFT.
+The ELEGOO 2.8" TFT touch screen shield's microSD socket (`TftTouchShield.getSdCard()`) also uses D10,
+and shares no pins with its display: see [`WifiStatusSDTFT`](../tft-touch-shield#examples) for the same flow shown on the TFT.
 On UNO WiFi Rev2, Juno automatically drives the shield's D11-D13 SD connection with software SPI,
 leaving the board's ICSP-routed hardware SPI bus available to the NINA-W102 Wi-Fi module.
 
@@ -63,17 +76,19 @@ SPI pins, with its chip select on D4 rather than D10:
 | MISO | D12 |
 | SCK | D13 (also the built-in LED) |
 
-Take the pin from `NanoConnectorCarrier` instead of hard-coding it:
+Take the card from `NanoConnectorCarrier`, whose `begin()` selects it on D4:
 
 ```java
-if (SdCard.begin(new NanoConnectorCarrier().getSdChipSelect())) {
-    InputStream file = SdCard.open("application.properties");
+SdCard sdCard = new NanoConnectorCarrier().getSdCard();
+if (sdCard.begin()) {
+    InputStream file = sdCard.open("application.properties");
     // ...
 }
 ```
 
 [`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java)
-creates, appends to, reads back and removes a file. It uses D4 on the Nano ESP32 and D10 on the UNO boards.
+creates, appends to, reads back and removes a file. It uses the carrier's card on the Nano ESP32 and a Data
+Logger Shield's on the UNO boards.
 Because SCK is the built-in LED's pin, a program using the card should not blink that LED.
 
 ## Build
@@ -93,8 +108,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-if (SdCard.begin()) {
-    InputStream file = SdCard.open("application.properties");
+SdCard sdCard = new DataLoggerShield().getSdCard();
+if (sdCard.begin()) {
+    InputStream file = sdCard.open("application.properties");
     Properties properties = new Properties();
     properties.load(file);
     file.close();
@@ -121,7 +137,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 byte[] header = new byte[12];
-if (SdCard.begin()) {
+if (TftTouchShield.getSdCard().begin()) {
     try (RandomAccessFile file = new RandomAccessFile("DATA.BIN", "r")) {
         file.readFully(header);                // the first 12 bytes
         file.seek(file.length() - 16);         // jump anywhere in the file

@@ -59,7 +59,9 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   arena (8 KiB, 1 KiB on AVR) and no `OutOfMemoryError`, so the API stays `final` classes of static intrinsics over
   primitives and caller-owned buffers (`Gpio`, `I2c`, `Mouse`, `LedMatrix`, `Wifi`, `Clock`, `BoardModel` and `BoardMemory` are the exception: interfaces whose
   board instances come from `MCU.getGpio()`/`MCU.getI2c()`/`MCU.getMouse()`/`MCU.getLedMatrix()`/`MCU.getWifi()`/`MCU.getClock()`/`MCU.getBoardModel()`/`MCU.getBoardMemory()`
-  (on the UNO R3, which has no radio, `Wifi` comes from `new ArduinoWifiShield().getWifi()`), so code using them can be unit-tested with a mock), and an example allocates its buffers and objects once at startup and never
+  (on the UNO R3, which has no radio, `Wifi` comes from `new ArduinoWifiShield().getWifi()`), and `SdCard`, whose
+  instances come from the `getSdCard()` of the shield holding the socket (`DataLoggerShield`, `TftTouchShield`,
+  `LcdKeypadShield`, `ArduinoWifiShield`, `NanoConnectorCarrier`), so code using them can be unit-tested with a mock), and an example allocates its buffers and objects once at startup and never
   inside its main loop. Follow `skills/juno-zero-allocation` when adding an API entry or an example, and
   `skills/juno-debugging` when a program misbehaves between the source and the board.
 

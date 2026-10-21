@@ -2,7 +2,7 @@ package io.github.jabrena.juno.games.doom;
 
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.device.sd.SdCard;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /**
@@ -154,7 +154,7 @@ final class World {
      */
     static void load() {
         fromWad = false;
-        boolean card = SdCard.begin();
+        boolean card = TftTouchShield.getSdCard().begin();
         boolean room = card && MEMORY.arenaCapacityBytes() - MEMORY.arenaUsedBytes()
                 >= WAD_ARENA_BYTES + PLAN_ARENA_BYTES + RENDER_ARENA_BYTES;
         episodesInWad = room ? WadLevel.episodes() : 0;

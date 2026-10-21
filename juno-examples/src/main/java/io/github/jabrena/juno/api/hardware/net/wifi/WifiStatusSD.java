@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -22,6 +23,7 @@ import java.util.Properties;
  */
 public final class WifiStatusSD {
     private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
@@ -58,12 +60,12 @@ public final class WifiStatusSD {
     }
 
     private static WifiCredentials loadCredentials() throws IOException {
-        if (!SdCard.begin()) {
+        if (!SD_CARD.begin()) {
             Serial.println("SD card initialization failed");
             return null;
         }
 
-        InputStream file = SdCard.open("application.properties");
+        InputStream file = SD_CARD.open("application.properties");
         if (file == null) {
             Serial.println("application.properties not found");
             return null;

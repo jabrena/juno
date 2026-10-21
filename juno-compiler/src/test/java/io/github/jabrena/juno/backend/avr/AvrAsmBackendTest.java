@@ -753,8 +753,8 @@ class AvrAsmBackendTest {
     @DisplayName("Uses software SPI for shield SD cards in the shim")
     void shouldUseSoftwareSpiForShieldSdCardsInTheShim() throws Exception {
         // Given
-        CompilationResult result = compile("demo.AvrSd", "SdCard.begin();",
-                "import io.github.jabrena.juno.hardware.device.sd.SdCard;");
+        CompilationResult result = compile("demo.AvrSd", "new DataLoggerShield().getSdCard().begin();",
+                "import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;");
 
         // When & Then
         assertThat(result.runtimeShim())

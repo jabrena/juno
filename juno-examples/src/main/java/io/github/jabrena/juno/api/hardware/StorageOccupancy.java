@@ -7,16 +7,17 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Reports how full the board's storage is over USB serial: the program flash, the Juno arena, and an SD card
- * on D10 when one is present. Flash and the card are measured once at startup (counting the card's free space
- * scans its whole allocation table) and the whole report repeats every two seconds, so a monitor attached late
- * still sees it.
+ * Reports how full the board's storage is over USB serial: the program flash, the Juno arena, and the card in a
+ * Data Logger Shield (SD chip select on D10) when one is present. Flash and the card are measured once at startup
+ * (counting the card's free space scans its whole allocation table) and the whole report repeats every two seconds,
+ * so a monitor attached late still sees it.
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:upload \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.StorageOccupancy
@@ -30,6 +31,7 @@ public final class StorageOccupancy {
 
     public static void main(String[] args) {
         final BoardMemory memory = MCU.getBoardMemory();
+        final SdCard sdCard = new DataLoggerShield().getSdCard();
         final int reportPeriodMs = 2000;
 
         Serial.begin(BaudRate.BAUD_115200);
@@ -39,9 +41,9 @@ public final class StorageOccupancy {
         int flashCapacity = memory.flashCapacityBytes();
         int sdTotalKiB = -1;
         int sdUsedKiB = -1;
-        if (SdCard.begin()) {
-            sdTotalKiB = SdCard.totalKiB();
-            sdUsedKiB = sdTotalKiB - SdCard.freeKiB();
+        if (sdCard.begin()) {
+            sdTotalKiB = sdCard.totalKiB();
+            sdUsedKiB = sdTotalKiB - sdCard.freeKiB();
         }
 
         while (true) {

@@ -31,6 +31,7 @@ public final class WifiStatusSDLcd {
     private static final Wifi WIFI = MCU.getWifi();
 
     private final LcdKeypadShield lcd = new LcdKeypadShield();
+    private final SdCard sdCard = lcd.getSdCard();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
     public static void main(String[] args) throws IOException {
@@ -84,12 +85,12 @@ public final class WifiStatusSDLcd {
     }
 
     private WifiCredentials loadCredentials() throws IOException {
-        if (!SdCard.begin()) {
+        if (!sdCard.begin()) {
             Serial.println("SD card initialization failed");
             return null;
         }
 
-        InputStream file = SdCard.open("application.properties");
+        InputStream file = sdCard.open("application.properties");
         if (file == null) {
             Serial.println("application.properties not found");
             return null;

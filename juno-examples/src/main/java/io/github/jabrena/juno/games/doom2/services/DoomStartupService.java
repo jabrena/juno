@@ -12,16 +12,18 @@ import io.github.jabrena.juno.util.mvc.Task;
  */
 public final class DoomStartupService implements Task {
     private final Doom2State model;
+    private final SdCard sdCard;
     private final DoomWadCatalog catalog = new DoomWadCatalog();
     private boolean done;
 
-    public DoomStartupService(Doom2State model) {
+    public DoomStartupService(Doom2State model, SdCard sdCard) {
         this.model = model;
+        this.sdCard = sdCard;
     }
 
     /** Initializes the SD card before the first frame; without it, startup completes at once. */
     public void begin() {
-        boolean ready = SdCard.begin();
+        boolean ready = sdCard.begin();
         model.publishCardReady(ready);
         if (!ready) {
             model.publishEpisodesInWad(0);

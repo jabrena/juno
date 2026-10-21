@@ -40,6 +40,7 @@ import java.util.Properties;
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class WeatherTFT {
     private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = TftTouchShield.getSdCard();
 
     private final Clock clock = MCU.getClock();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
@@ -162,11 +163,11 @@ public final class WeatherTFT {
     // ---- Network ----
 
     private boolean connectWifi() throws IOException {
-        if (!SdCard.begin()) {
+        if (!SD_CARD.begin()) {
             Serial.println("SD card initialization failed");
             return false;
         }
-        InputStream file = SdCard.open("application.properties");
+        InputStream file = SD_CARD.open("application.properties");
         if (file == null) {
             Serial.println("application.properties not found");
             return false;

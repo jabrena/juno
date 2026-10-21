@@ -1,9 +1,12 @@
 package io.github.jabrena.juno.hardware.device.tft;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.led.LedMatrixFontAscii;
 import io.github.jabrena.juno.util.Delay;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Driver for the ELEGOO 2.8" TFT touch screen shield ("Pantalla Táctil TFT de 2,8 pulgadas"): a
@@ -17,9 +20,8 @@ import io.github.jabrena.juno.util.Delay;
  * Fills in colors whose two bytes are equal (e.g. {@link #BLACK}, {@link #WHITE}) are the fastest: the data pins
  * are set once and only the write strobe toggles.
  *
- * <p>The SD socket is an ordinary SPI card reader with chip select on D10: use
- * {@link io.github.jabrena.juno.hardware.device.sd.SdCard#begin()} as-is. It shares no pins with the
- * display or touch panel.
+ * <p>The SD socket is an ordinary SPI card reader with chip select on D10: {@link #getSdCard()} is its card. It
+ * shares no pins with the display or touch panel.
  *
  * <p>The touch panel shares its pins with the display bus (X- = display RS, Y+ = display CS, X+/Y-
  * = data lines 0/1), so {@link #readTouch()} temporarily reconfigures them and restores the display
@@ -73,6 +75,8 @@ public final class TftTouchShield {
     static final int PIN_RS = 16;    // A2, command (low) / data (high)
     static final int PIN_CS = 17;    // A3
     private static final int PIN_RESET = 18; // A4
+    /** The microSD socket's chip select. */
+    private static final int SD_CHIP_SELECT = 10;
 
     // ELEGOO's published calibration for the 2.8" panel (raw ADC readings at the screen edges). Raw X
     // grows with the display's x while raw Y runs opposite to its y, as confirmed on real hardware.
@@ -126,7 +130,22 @@ public final class TftTouchShield {
     private static int touchRawY;
     private static int touchPressure;
 
+    private static @Nullable SdCard sdCard;
+
     private TftTouchShield() {
+    }
+
+    /**
+     * The card in the shield's microSD socket; its {@link SdCard#begin()} selects it on D10. The same
+     * instance every call.
+     */
+    public static SdCard getSdCard() {
+        SdCard card = sdCard;
+        if (card == null) {
+            card = NativeSdCard.sdCard(SD_CHIP_SELECT);
+            sdCard = card;
+        }
+        return card;
     }
 
     /**
