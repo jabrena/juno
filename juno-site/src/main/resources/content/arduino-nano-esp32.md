@@ -37,6 +37,11 @@ The runtime resolves these portable identifiers through the core's named `D0`–
 pins, so GPIO and SD chip-select still reach the same physical pins when the core is configured
 with **By GPIO number (legacy)**. Do not pass raw ESP32 GPIO numbers to Juno's GPIO or SD APIs.
 
+`java.math` works too: `BigInteger`, `BigDecimal` and `MathContext` run in the arena with the JDK's
+rounding and text rules, and `BigDecimal.sqrt` and the `double` conversions use the core's `strtod`.
+[`SerialBigNumbers`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBigNumbers.java)
+prints a few exact results once.
+
 `long`, `float` and `double` operations go through the same runtime helpers as on the other boards, which
 keep Java semantics (a `long` division by zero stops the program, float-to-int casts saturate, NaN
 comparisons are false); the ESP32 toolchain compiles the `float` helpers to the ESP32-S3's

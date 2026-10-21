@@ -461,6 +461,20 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Lowers java.math BigInteger and BigDecimal onto the Nano's strtod-backed shim")
+    void shouldLowerBigNumbersOnTheNano() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoBig", """
+                        java.math.BigInteger value = java.math.BigInteger.TWO.pow(64);
+                        Serial.println(value.toString());
+                        Serial.println(new java.math.BigDecimal(2).sqrt(new java.math.MathContext(20)).toString());
+                """, "import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_big_integer_double_value", "strtod(");
+    }
+
+    @Test
     @DisplayName("Reads a file from the Nano Connector Carrier's microSD slot through the SdFat shim helpers")
     void shouldLowerSdCardAccessOnTheConnectorCarrier() throws Exception {
         // Given
