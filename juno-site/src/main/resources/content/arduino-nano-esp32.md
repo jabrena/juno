@@ -67,8 +67,11 @@ reads the credentials from `application.properties` on the carrier's microSD car
 [SD Card Storage](../storage)). Plain HTTP works through `HttpClient`: the host is a literal in the
 program and the request path can come from the card, as in
 [`NanoHttpGetSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpGetSD.java).
-The access point (`beginAP`), UDP, TCP, HTTPS and HttpServer, email, BLE and the other optional
-capabilities are not wired yet; Juno rejects a program that uses them at compile time.
+HTTPS works the same way through `HttpClient.requestHttps`, with the host and path read from the
+card. The Nano's TLS client does not check the server's certificate chain yet; the connection is
+encrypted, but the server's identity is not verified. The access point (`beginAP`), UDP, TCP,
+HttpServer, email, BLE and the other optional capabilities are not wired yet; Juno rejects a program
+that uses them at compile time.
 
 ## Nano Connector Carrier
 

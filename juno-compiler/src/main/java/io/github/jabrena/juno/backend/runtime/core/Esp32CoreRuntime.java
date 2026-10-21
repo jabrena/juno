@@ -92,18 +92,25 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String httpsInclude() {
-        throw unsupported("TLS networking");
+        return "#include <WiFiClientSecure.h>\n";
     }
 
+    /**
+     * The TLS client skips certificate-chain validation, as the shim's STARTTLS wrapper already does; the core's
+     * embedded CA bundle would need an SDK symbol this core does not ship with, so the chain is not checked yet.
+     */
     @Override
     public String httpsHelpers() {
-        throw unsupported("TLS networking");
+        return """
+                struct JunoEspTlsClient : WiFiClientSecure {
+                  JunoEspTlsClient() { setInsecure(); }
+                };
+                """;
     }
 
-    /** The plain-HTTP client is the {@code WiFiClient} that {@code WiFi.h} already declares. */
     @Override
     public String httpsClientDeclaration() {
-        return "WiFiClientSecure client;";
+        return "JunoEspTlsClient client;";
     }
 
     @Override

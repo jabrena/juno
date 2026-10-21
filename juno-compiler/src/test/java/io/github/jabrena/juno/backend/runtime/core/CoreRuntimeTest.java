@@ -316,8 +316,6 @@ class CoreRuntimeTest {
                 esp32Feature("UDP networking", runtime -> runtime.wifiIncludes(true)),
                 esp32Feature("an HTTP server", CoreRuntime::httpServerTransport),
                 esp32Feature("UDP networking", CoreRuntime::udpDeclaration),
-                esp32Feature("TLS networking", CoreRuntime::httpsInclude),
-                esp32Feature("TLS networking", CoreRuntime::httpsHelpers),
                 esp32Feature("ParallelBus", CoreRuntime::parallelBusHelpers),
                 esp32Feature("flash usage queries", CoreRuntime::flashHelpers),
                 esp32Feature("a cryptographic entropy source", CoreRuntime::uuidRandomHelpers));

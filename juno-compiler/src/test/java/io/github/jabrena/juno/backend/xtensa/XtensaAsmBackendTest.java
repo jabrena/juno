@@ -484,6 +484,26 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Lowers an HTTPS request through the WiFiClientSecure shim helpers")
+    void shouldLowerHttpsOnTheWifiClientSecure() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoHttps", """
+                        byte[] path = new byte[16];
+                        byte[] noHeaders = new byte[1];
+                        byte[] body = new byte[64];
+                        byte[] headers = new byte[32];
+                        int[] statusAndHeadersLength = new int[2];
+                        HttpClient.requestHttps("example.com", 443, "GET", path, 1, noHeaders, 0, null, -1, body,
+                                body.length, headers, headers.length, statusAndHeadersLength);
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <WiFiClientSecure.h>",
+                "struct JunoEspTlsClient : WiFiClientSecure", "setInsecure()", "juno_https_");
+        assertThat(result.runtimeShim()).doesNotContain("WiFiSSLClient");
+    }
+
+    @Test
     @DisplayName("Rejects the access-point and UDP networking the Nano ESP32 has no capability for yet")
     void shouldRejectUnwiredNetworking() {
         // When & Then
