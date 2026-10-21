@@ -92,6 +92,7 @@ public final class XtensaAsmBackend implements AsmBackend {
     private final Board board;
     private final RuntimeConfig runtimeConfig;
     private boolean usesThreads;
+    private boolean usesWatchdog;
     private MethodRef entryPoint;
     private ProgramLayout layout;
     private XtensaEmitter xtensa;
@@ -119,9 +120,7 @@ public final class XtensaAsmBackend implements AsmBackend {
     @Override
     public GeneratedCode generate(IrProgram program) {
         usesThreads = runtimeEntryPoints.usesThreads(program);
-        if (program.watchdogTimeoutMillis().isPresent()) {
-            throw Architecture.XTENSA.unsupported("@Watchdog");
-        }
+        usesWatchdog = program.watchdogTimeoutMillis().isPresent();
         entryPoint = program.entryPoint();
         for (int index = 0; index < program.methods().size(); index++) {
             MethodRef reference = program.methods().get(index).reference();
@@ -199,6 +198,9 @@ public final class XtensaAsmBackend implements AsmBackend {
         if (isEntryPoint) {
             // Uses only a8-a10, so the incoming arguments in a2-a7 survive it for the spill below.
             emitEntryPrologue(output, frame, frameBytes, outgoingBytes);
+            if (usesWatchdog) {
+                xtensa.call(output, "juno_watchdog_begin");
+            }
         }
         emitParameterSpill(output, frame, method, frameBytes);
         if (usesThreads && !isEntryPoint) {
@@ -485,6 +487,9 @@ public final class XtensaAsmBackend implements AsmBackend {
      */
     private void emitYieldIfBackedge(StringBuilder output, int blockStart, int target) {
         if (target <= blockStart) {
+            if (usesWatchdog && usesThreads) {
+                xtensa.call(output, "juno_watchdog_refresh");
+            }
             xtensa.call(output, usesThreads ? "juno_thread_backedge" : "yield");
         }
     }

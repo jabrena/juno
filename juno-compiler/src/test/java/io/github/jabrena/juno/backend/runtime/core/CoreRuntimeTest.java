@@ -244,6 +244,15 @@ class CoreRuntimeTest {
     }
 
     @Test
+    @DisplayName("The ESP32 task watchdog rounds milliseconds up to whole seconds")
+    void shouldProvideTheEsp32WatchdogSequence() {
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).watchdog(3001))
+                .extracting("includes", "begin", "refresh", "effectiveTimeoutMillis")
+                .containsExactly("#include <esp_task_wdt.h>\n",
+                        "esp_task_wdt_init(4u, true);\nesp_task_wdt_add(nullptr);", "esp_task_wdt_reset();", 4000);
+    }
+
+    @Test
     @DisplayName("The Zephyr core rejects a watchdog because its subsystem is not enabled")
     void shouldRejectAWatchdogOnZephyr() {
         // When & Then
@@ -311,7 +320,6 @@ class CoreRuntimeTest {
                 esp32Feature("TLS networking", CoreRuntime::httpsInclude),
                 esp32Feature("TLS networking", CoreRuntime::httpsHelpers),
                 esp32Feature("TLS networking", CoreRuntime::httpsClientDeclaration),
-                esp32Feature("@Watchdog", runtime -> runtime.watchdog(1000)),
                 esp32Feature("ParallelBus", CoreRuntime::parallelBusHelpers),
                 esp32Feature("SD cards", runtime -> runtime.sdHelpers(1, 1, 1, 1, 1)),
                 esp32Feature("flash usage queries", CoreRuntime::flashHelpers),
