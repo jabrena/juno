@@ -40,8 +40,17 @@ prints a block of `long` and `float` results, and
 [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java)
 one of `double` and `Math` results, to compare with a desktop JVM run.
 
-Lambdas, threads, `@Watchdog`, Wi-Fi and the other optional capabilities are
-not wired yet; Juno rejects a program that uses them at compile time.
+Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope` and `ScopedValue` work too. Each
+Juno thread is a FreeRTOS task with its own 8 KiB stack (`-Djuno.Xss` changes it), and only one
+runs Java code at a time. A busy thread hands the CPU over at its next loop iteration or method
+call once its 1 ms time slice is over, so a spin loop cannot starve the others. At most four
+threads run at once, `main` included, unless `-Djuno.maxThreads` raises it; starting a fifth stops
+the program with `[juno-thread] too many threads`.
+[`SerialThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java)
+runs each of them once at startup and then prints the results.
+
+Lambdas, `@Watchdog`, Wi-Fi and the other optional capabilities are not wired yet; Juno rejects a
+program that uses them at compile time.
 
 ## Build and run
 
