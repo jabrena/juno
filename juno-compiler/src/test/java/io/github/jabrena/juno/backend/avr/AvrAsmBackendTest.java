@@ -948,7 +948,7 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
                 """))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Smtp.send (STARTTLS) requires @Board(ArduinoUnoR4WiFi.class)")
+                .hasMessageContaining("Smtp.send (STARTTLS) requires @Board(ArduinoUnoR4WiFi.class or ArduinoNanoEsp32.class)")
                 .hasMessageContaining("use Smtp.sendTls with implicit TLS, usually port 465");
     }
 
