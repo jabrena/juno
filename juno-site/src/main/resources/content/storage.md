@@ -98,7 +98,7 @@ if (SdCard.begin()) {
     Properties properties = new Properties();
     properties.load(file);
     file.close();
-    Wifi.begin(
+    MCU.getWifi().begin(
         properties.getProperty("wifi.ssid"),
         properties.getProperty("wifi.password"));
 }
