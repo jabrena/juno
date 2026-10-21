@@ -20,6 +20,10 @@ import java.util.Properties;
  */
 public record WifiSettings(String ssid, String password) {
     public static final String FILE = "application.properties";
+    /** The {@link #FILE} key naming the network. */
+    public static final String SSID_KEY = "wifi.ssid";
+    /** The {@link #FILE} key holding the network's password. */
+    public static final String PASSWORD_KEY = "wifi.password";
     /** No network of its own to join, for a board whose connection is set up elsewhere. */
     public static final WifiSettings NONE = new WifiSettings("", "");
 
@@ -42,8 +46,8 @@ public record WifiSettings(String ssid, String password) {
             Serial.println("Unreadable settings file");
             return null;
         }
-        String network = properties.getProperty("wifi.ssid");
-        String secret = properties.getProperty("wifi.password");
+        String network = properties.getProperty(SSID_KEY);
+        String secret = properties.getProperty(PASSWORD_KEY);
         if (network == null || secret == null) {
             Serial.println("Missing wifi.ssid or password");
             return null;
