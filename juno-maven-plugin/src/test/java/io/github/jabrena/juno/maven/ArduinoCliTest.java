@@ -174,6 +174,37 @@ class ArduinoCliTest {
         }
 
         @Test
+        @DisplayName("Picks the serial port of a board also listed on a DFU port")
+        void shouldPickTheSerialPortOfABoardAlsoListedOnADfuPort() {
+            // Given
+            String nanoEsp32 = Board.NANO_ESP32.fqbn();
+            FakeExecutor executor = new FakeExecutor().respond(0, boardList(
+                    detected("1-1.3", "dfu", nanoEsp32),
+                    detected("/dev/cu.usbmodem123", "serial", nanoEsp32)));
+            ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
+
+            // When
+            String port = cli.resolvePort(nanoEsp32, Optional.empty());
+
+            // Then
+            assertThat(port).isEqualTo("/dev/cu.usbmodem123");
+        }
+
+        @Test
+        @DisplayName("Asks for a port when several matching serial ports are connected")
+        void shouldAskForAPortWhenSeveralMatchingSerialPortsAreConnected() {
+            // Given
+            FakeExecutor executor = new FakeExecutor().respond(0, boardList(
+                    detected("COM3", "serial", FQBN), detected("COM4", "serial", FQBN)));
+            ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
+
+            // When & Then
+            assertThatThrownBy(() -> cli.resolvePort(FQBN, Optional.empty()))
+                    .isInstanceOf(ArduinoCliException.class)
+                    .hasMessageContaining("Multiple boards");
+        }
+
+        @Test
         @DisplayName("Reports when no matching board is connected")
         void shouldReportWhenNoMatchingBoardIsConnected() {
             // Given
@@ -223,6 +254,11 @@ class ArduinoCliTest {
                 ? ""
                 : "\"matching_boards\":[{\"name\":\"Board\",\"fqbn\":\"" + fqbn + "\"}],";
         return "{" + matchingBoards + "\"port\":{\"address\":\"" + address + "\"}}";
+    }
+
+    private static String detected(String address, String protocol, String fqbn) {
+        return "{\"matching_boards\":[{\"name\":\"Board\",\"fqbn\":\"" + fqbn + "\"}],"
+                + "\"port\":{\"address\":\"" + address + "\",\"protocol\":\"" + protocol + "\"}}";
     }
 
     private static Command captured(List<String> arguments) {
