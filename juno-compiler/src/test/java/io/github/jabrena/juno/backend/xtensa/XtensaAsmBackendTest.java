@@ -522,6 +522,39 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Passes SD-sourced strings to Smtp.sendTls as runtime values, in their parameter slots")
+    void shouldLowerRuntimeStringsToSmtpSendTls() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoMail", """
+                        String host = new StringBuilder().append("smtp.example.com").toString();
+                        String user = new StringBuilder().append("user").toString();
+                        String password = new StringBuilder().append("secret").toString();
+                        String from = new StringBuilder().append("from@example.com").toString();
+                        String to = new StringBuilder().append("to@example.com").toString();
+                        String subject = new StringBuilder().append("subject").toString();
+                        String body = new StringBuilder().append("body").toString();
+                        Serial.println(Smtp.sendTls(host, 465, user, password, from, to, subject, body));
+                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.assembly()).contains("juno_smtp_send_tls");
+        assertThat(result.runtimeShim()).contains("juno_smtp_send_tls(");
+    }
+
+    @Test
+    @DisplayName("Rejects an Smtp call that mixes literal and runtime String arguments")
+    void shouldRejectMixedLiteralAndRuntimeSmtpStrings() {
+        // When & Then
+        assertThatThrownBy(() -> compile("demo.NanoMixedMail", """
+                        String host = new StringBuilder().append("smtp.example.com").toString();
+                        Serial.println(Smtp.sendTls(host, 465, "user", "secret", "from@example.com", "to@example.com",
+                                "subject", "body"));
+                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("mixes literal and runtime String arguments");
+    }
+
+    @Test
     @DisplayName("Rejects the access-point and UDP networking the Nano ESP32 has no capability for yet")
     void shouldRejectUnwiredNetworking() {
         // When & Then
