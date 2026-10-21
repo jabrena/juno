@@ -454,8 +454,8 @@ class XtensaAsmBackendTest {
     @DisplayName("Rejects networking, which the Nano ESP32 has no capability for yet")
     void shouldRejectNetworking() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.NanoWifi", "Wifi.status();",
-                "import io.github.jabrena.juno.hardware.net.Wifi;"))
+        assertThatThrownBy(() -> compile("demo.NanoWifi", "MCU.getWifi().status();",
+                "import io.github.jabrena.juno.hardware.MCU; import io.github.jabrena.juno.hardware.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("Nano ESP32 has no onboard WiFi module");
     }

@@ -5,6 +5,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import java.util.concurrent.Callable;
@@ -40,7 +41,7 @@ public final class IoWhileWaiting {
     }
 
     public static void main(String[] args) throws Exception {
-        Wifi.begin("juno", "secret");
+        MCU.getWifi().begin("juno", "secret");
         byte[] body = new byte[BODY];
         byte[] headers = new byte[HEADERS];
         int[] status = new int[2];

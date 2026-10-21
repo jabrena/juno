@@ -10,7 +10,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
- * {@link Wifi} and {@link HttpServer} (it adds no intrinsics, and costs nothing in a program that
+ * {@link MCU#getWifi()} and {@link HttpServer} (it adds no intrinsics, and costs nothing in a program that
  * does not call it). {@link #run} opens an access point, serves an HTML form on port 80 and joins
  * the network the user submits. The caller must have started {@link Serial} first.
  *
@@ -32,6 +32,9 @@ import io.github.jabrena.juno.util.Delay;
 public final class WifiProvisioner {
     /** The clock this class reads; a unit test in this package swaps in {@code mock}. */
     static Clock clock = MCU.getClock();
+
+    /** The radio this class drives; a unit test in this package swaps in a fake. */
+    static Wifi wifi = MCU.getWifi();
 
     private static final int CONNECT_TIMEOUT_MS = 15000;
     private static final int MAX_FIELD = 31;
@@ -82,8 +85,8 @@ public final class WifiProvisioner {
     }
 
     private static void startAccessPoint(String apSsid, String apPassword) {
-        Wifi.beginAP(apSsid, apPassword);
-        while (Wifi.status() != Wifi.STATUS_AP_LISTENING && Wifi.status() != Wifi.STATUS_CONNECTED) {
+        wifi.beginAP(apSsid, apPassword);
+        while (wifi.status() != Wifi.STATUS_AP_LISTENING && wifi.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(200);
         }
         Serial.print("Access point ready: ");
@@ -101,7 +104,7 @@ public final class WifiProvisioner {
 
         Serial.print("Credentials received for: ");
         Serial.println(ssid.toString());
-        if (Wifi.status() == Wifi.STATUS_CONNECTED) {
+        if (wifi.status() == Wifi.STATUS_CONNECTED) {
             // UNO Q: Linux owns Wi-Fi, so there is nothing for the MCU to join.
             Serial.print("Apply on Linux: nmcli device wifi connect ");
             Serial.print(ssid.toString());
@@ -110,12 +113,12 @@ public final class WifiProvisioner {
             return true;
         }
 
-        Wifi.begin(ssid.toString(), password.toString());
+        wifi.begin(ssid.toString(), password.toString());
         int deadline = clock.millis() + CONNECT_TIMEOUT_MS;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && clock.millis() < deadline) {
+        while (wifi.status() != Wifi.STATUS_CONNECTED && clock.millis() < deadline) {
             Delay.millis(250);
         }
-        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        if (wifi.status() != Wifi.STATUS_CONNECTED) {
             Serial.println("Connection failed, reopening the setup network");
             return false;
         }
@@ -168,7 +171,7 @@ public final class WifiProvisioner {
 
     private static void printLocalIP() {
         int[] ip = new int[4];
-        Wifi.localIP(ip);
+        wifi.localIP(ip);
         Serial.print("Connected. IP: ");
         Serial.print(ip[0]);
         Serial.print(".");

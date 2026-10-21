@@ -1244,11 +1244,12 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.net.Wifi;
                     public final class WifiConnect {
                         public static void main(String[] args) {
-                            Wifi.begin("TestNetwork-SSID", "test-password-123");
-                            int status = Wifi.status();
+                            MCU.getWifi().begin("TestNetwork-SSID", "test-password-123");
+                            int status = MCU.getWifi().status();
                         }
                     }
                     """;
@@ -1373,10 +1374,11 @@ class JunoCompilerTest {
             assertThat(pathValue != null && !pathValue.isEmpty()).as("test environment must define PATH").isTrue();
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.net.Wifi;
                     public final class WifiConnectFromEnv {
                         public static void main(String[] args) {
-                            Wifi.begin(System.getenv("PATH"), "password");
+                            MCU.getWifi().begin(System.getenv("PATH"), "password");
                         }
                     }
                     """;
@@ -1402,6 +1404,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.net.Wifi;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
                     import java.io.IOException;
@@ -1419,7 +1422,7 @@ class JunoCompilerTest {
                                 if (properties.size() > 0) {
                                     String ssid = properties.getProperty("wifi.ssid");
                                     String password = properties.getProperty("wifi.password", "");
-                                    if (ssid != null) Wifi.begin(ssid, password);
+                                    if (ssid != null) MCU.getWifi().begin(ssid, password);
                                 }
                             } else {
                                 file.read();
@@ -1869,10 +1872,11 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.net.Wifi;
                     public final class WifiConnectFromMissingEnv {
                         public static void main(String[] args) {
-                            Wifi.begin(System.getenv("JUNO_TEST_WIFI_SSID_NOT_SET"), "password");
+                            MCU.getWifi().begin(System.getenv("JUNO_TEST_WIFI_SSID_NOT_SET"), "password");
                         }
                     }
                     """;
@@ -2114,12 +2118,13 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                     import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.net.Wifi;
                     import io.github.jabrena.juno.hardware.net.http.HttpClient;
                     @Board(ArduinoUnoQ.class)
                     public final class UnoQHttps {
                         public static void main(String[] args) {
-                            Wifi.begin("ignored-on-q", "ignored-on-q");
+                            MCU.getWifi().begin("ignored-on-q", "ignored-on-q");
                             byte[] path = new byte[8];
                             path[0] = '/';
                             byte[] response = new byte[64];
@@ -3896,6 +3901,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.net.Wifi;
                     public final class UsesCredentials {
                         static Credentials kept;
@@ -3905,7 +3911,7 @@ class JunoCompilerTest {
                             String runtimeSsid = String.valueOf(42);
                             Credentials credentials = new Credentials(runtimeSsid, "secret");
                             kept = credentials;  // escapes: stays a heap object with this layout
-                            Wifi.begin(credentials.ssid(), credentials.password());
+                            MCU.getWifi().begin(credentials.ssid(), credentials.password());
                         }
                     }
                     """;

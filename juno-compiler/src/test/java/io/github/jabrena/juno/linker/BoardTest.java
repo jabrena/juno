@@ -491,6 +491,7 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.udp.Udp;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
@@ -499,7 +500,7 @@ class BoardTest {
                 @Board(ArduinoUnoQ.class)
                 public final class WifiOnUnoQ {
                     public static void main(String[] args) {
-                        Wifi.status();
+                        MCU.getWifi().status();
                         Udp.listen(5000);
                         byte[] body = new byte[8];
                         byte[] headers = new byte[8];

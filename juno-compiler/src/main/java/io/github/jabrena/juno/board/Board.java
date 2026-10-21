@@ -18,21 +18,22 @@ import java.util.stream.Collectors;
 public enum Board {
     /**
      * The classic ATmega328P UNO: basic GPIO, serial and shield APIs within its 2 KB of SRAM, and Wi-Fi, UDP, TCP and
-     * plain HTTP through the retired Arduino WiFi Shield's legacy {@code WiFi} library (no access point or HTTPS).
+     * plain HTTP through the retired Arduino WiFi Shield's legacy {@code WiFi} library (no access point or HTTPS), reached
+     * through {@code ArduinoWifiShield.getWifi()}: the board has no onboard radio, so {@code MCU.getWifi()} is rejected.
      */
     UNO_R3("io/github/jabrena/juno/annotations/ArduinoUnoR3", "arduino-uno-r3", "UNO R3", "arduino:avr:uno",
             ArduinoCore.CLASSIC_AVR, UnoGeneration.R3,
             EnumSet.of(Capability.WIFI, Capability.HTTP_CLIENT, Capability.WATCHDOG)),
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi", "arduino-uno-r4-wifi", "UNO R4 WiFi",
             "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO, UnoGeneration.R4,
-            EnumSet.of(Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
-                    Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
+            EnumSet.of(Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI, Capability.ONBOARD_WIFI,
+                    Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
                     Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
             ArduinoCore.ZEPHYR, UnoGeneration.Q, EnumSet.of(Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI,
-                    Capability.WIFI_ACCESS_POINT, Capability.HTTPS_CLIENT,
+                    Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.BLUETOOTH_LE, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS,
                     Capability.DOUBLE_MATH)),
@@ -42,8 +43,8 @@ public enum Board {
      */
     UNO_R3_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2", "arduino-uno-r3-wifi-rev2", "UNO WiFi Rev2",
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
-            EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT,
-                    Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
+            EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
+                    Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG)),
     /**
      * The ESP32-S3 Nano: GPIO, delays, USB serial and SPI SD cards so far, the double-precision libm its newlib

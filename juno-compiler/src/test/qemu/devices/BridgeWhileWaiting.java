@@ -5,6 +5,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import java.util.concurrent.Callable;
@@ -58,9 +59,9 @@ public final class BridgeWhileWaiting {
         Thread watcher = Thread.startVirtualThread(BridgeWhileWaiting::watch);
 
         begin();
-        Wifi.begin("juno", "secret");
+        MCU.getWifi().begin("juno", "secret");
         String bridge = verdict();
-        Serial.println((Wifi.status() == Wifi.STATUS_CONNECTED ? "bridge up: " : "bridge down: ") + bridge);
+        Serial.println((MCU.getWifi().status() == Wifi.STATUS_CONNECTED ? "bridge up: " : "bridge down: ") + bridge);
 
         begin();
         int length = HttpClient.get("https://example.com/", body, BODY, headers, HEADERS, status);
