@@ -316,7 +316,8 @@ class XtensaAsmBackendTest {
 
         // When & Then
         assertThat(result.runtimeShim())
-                .contains("extern \"C\" void juno_pin_mode(int32_t pin, int32_t mode) {\n  pinMode(pin, mode);")
+                .contains("extern \"C\" void juno_pin_mode(int32_t pin, int32_t mode) {\n"
+                        + "  pinMode(pin, mode == 1 ? OUTPUT : mode == 2 ? INPUT_PULLUP : INPUT);")
                 .contains("extern \"C\" void juno_digital_write(int32_t pin, int32_t value) {")
                 .doesNotContain("extern \"C\" void yield()", "Arduino_LED_Matrix");
     }
