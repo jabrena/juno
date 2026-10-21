@@ -20,6 +20,9 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,6 +92,29 @@ class XtensaAsmBackendTest {
                     float narrow = (float) mixed;
                     double wide = narrow;
                     Serial.println((int) (mixed + back + wide));
+            """;
+
+    /** Recursive, so neither helper is inlined and every call really passes its words. */
+    private static final String MANY_ARGUMENTS = """
+            package demo;
+            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+            import io.github.jabrena.juno.annotations.Board;
+            import io.github.jabrena.juno.hardware.MCU;
+            import io.github.jabrena.juno.hardware.serial.Serial;
+            @Board(ArduinoNanoEsp32.class)
+            public final class NanoWide {
+                static int sum(int a, int b, int c, int d, int e, int f, int g) {
+                    return a <= 0 ? b + c + d + e + f + g : sum(a - 1, b, c, d, e, f, g);
+                }
+                static long mixed(int a, int b, int c, int d, int e, long f, int g, int h) {
+                    return a <= 0 ? f + g * 3 + h * 5 + b + c + d + e : mixed(a - 1, b, c, d, e, f, g, h);
+                }
+                public static void main(String[] args) {
+                    int raw = MCU.getGpio().analogRead(0);
+                    Serial.println(sum(raw, 1, 2, 3, 4, 5, 6));
+                    Serial.println(mixed(raw, raw + 1, 2, 3, 4, raw * 1000L, raw + 7, raw + 8));
+                }
+            }
             """;
 
     private static final String SHAPES = """
@@ -506,27 +532,52 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects a call that needs more than six argument words")
-    void shouldRejectMoreThanSixArgumentWords() {
+    @DisplayName("Passes argument words beyond the sixth on the stack, below the caller's slots")
+    void shouldPassArgumentWordsBeyondTheSixthOnTheStack() throws Exception {
+        // Given
+        CompilationResult result = compileSource("demo.NanoWide", MANY_ARGUMENTS);
+
         // When & Then
-        assertThatThrownBy(() -> compileSource("demo.NanoWide", """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                @Board(ArduinoNanoEsp32.class)
-                public final class NanoWide {
-                    static int sum(int a, int b, int c, int d, int e, int f, int g) {
-                        return a <= 0 ? b + c + d + e + f + g : sum(a - 1, b, c, d, e, f, g);
-                    }
-                    public static void main(String[] args) {
-                        Serial.println(sum(MCU.getGpio().analogRead(0), 1, 2, 3, 4, 5, 6));
-                    }
-                }
-                """))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("more than 6 argument words");
+        assertThat(result.assembly())
+                .containsPattern("l32i a8, a1, \\d+\n    s32i a8, a1, 0\n")
+                .containsPattern("s32i a8, a1, 8\n    l32i a8, a1, \\d+\n    s32i a8, a1, 12\n")
+                .containsPattern("l32i a9, a1, \\d+\n    s32i a9, a1, \\d+\n")
+                .doesNotContain("more than 6 argument words");
+    }
+
+    @Test
+    @DisplayName("A long that no longer fits the registers moves to the stack, leaving a7 unused as GCC does")
+    void shouldMoveALongThatOverflowsTheRegistersToTheStack() throws Exception {
+        // Given
+        CompilationResult result = compileSource("demo.NanoWide", MANY_ARGUMENTS);
+
+        // When & Then
+        // mixed(int a, int b, int c, int d, int e, long f, int g, int h): a-e in a2-a6, f at stack words 0-1, g and h
+        // at stack words 2-3, as GCC's own callee reads them (sp + frame + 0, 4, 8, 12).
+        assertThat(Stream.of(result.assembly().split("\n    \\.type "))
+                .anyMatch(function -> readsStackWords(function, 0, 4, 8, 12))).isTrue();
+    }
+
+    @Test
+    @DisplayName("Calls with stack arguments assemble with the ESP32-S3 toolchain")
+    void shouldAssembleStackArgumentsWithTheXtensaToolchain() throws Exception {
+        // Given
+        String gcc = availableXtensaGcc();
+        Assumptions.assumeTrue(gcc != null, "No xtensa-esp32s3-elf-gcc toolchain available");
+        CompilationResult result = compileSource("demo.NanoWide", MANY_ARGUMENTS);
+
+        // When & Then
+        assemble(gcc, "NanoWide", result);
+    }
+
+    /** Whether {@code function} copies incoming stack words at these offsets above its frame into its slots. */
+    private boolean readsStackWords(String function, int... offsets) {
+        Matcher entry = Pattern.compile("entry a1, (\\d+)\n").matcher(function);
+        if (!entry.find()) {
+            return false;
+        }
+        int frameBytes = Integer.parseInt(entry.group(1));
+        return IntStream.of(offsets).allMatch(offset -> function.contains("l32i a9, a1, " + (frameBytes + offset) + "\n"));
     }
 
     private void assemble(String gcc, String name, CompilationResult result) throws Exception {
