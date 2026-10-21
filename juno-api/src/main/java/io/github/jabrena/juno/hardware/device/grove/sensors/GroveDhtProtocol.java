@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -22,7 +22,7 @@ final class GroveDhtProtocol {
 
     /** A reader on the board's own pins and timer. */
     GroveDhtProtocol() {
-        this(MCU.getGpio(), MCU.getClock());
+        this(Arduino.getGpio(), Arduino.getClock());
     }
 
     /** A reader on {@code gpio} and {@code clock}: mocked or simulated ones in a unit test. */

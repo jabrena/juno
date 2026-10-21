@@ -1,4 +1,4 @@
-# JUno: Java for Arduino One
+# JUno: Java for Arduino
 
 JUno `/ˈxu.no/` is an ahead-of-time compiler for running a practical subset of Java on Arduino boards. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly,
@@ -29,6 +29,13 @@ Nano ESP32's ESP32-S3 (GPIO, delays and serial so far).
       <strong>Arduino One R3</strong><br>
       <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-r3.png" alt="Arduino UNO R3">
     </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Arduino Nano ESP32</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32">
+    </td>
+    <td width="50%"></td>
   </tr>
 </table>
 
@@ -78,6 +85,11 @@ Nano ESP32's ESP32-S3 (GPIO, delays and serial so far).
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="220"></td>
     <td>Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock on the UNO R3 (shield firmware 1.1.0). No access point or HTTPS.</td>
   </tr>
+  <tr>
+    <td><strong>Arduino Nano Connector Carrier</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="220"></td>
+    <td>Passive carrier for the Arduino Nano ESP32: microSD card slot on SPI, four Grove sockets, and one Qwiic connector.</td>
+  </tr>
   </tbody>
 </table>
 
@@ -97,7 +109,7 @@ supported board. Its built-in LED alternates on and off every 500 ms (one full c
 ```java
 package io.github.jabrena.juno.api.hardware.gpio;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
 
@@ -105,7 +117,7 @@ public final class Blink {
 
     public static void main(String[] args) {
 
-        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(Arduino.getGpio().getBuiltinLed());
 
         while (true) {
             led.high();

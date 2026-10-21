@@ -29,7 +29,7 @@ This is the first step of Nano ESP32 support: `Gpio`, `DigitalOutput`, `Delay` a
 the native USB port, with `int`, `long`, `float` and `double` arithmetic, objects, arrays, static and
 interface calls, lambdas and method references. Pins keep the numbers printed on the board: the core builds with
 `BOARD_HAS_PIN_REMAP`, and Juno calls `pinMode`/`digitalWrite` through wrappers compiled under
-that remapping, so `MCU.getGpio().getBuiltinLed()` is `13` and drives GPIO48. Analog pins keep
+that remapping, so `Arduino.getGpio().getBuiltinLed()` is `13` and drives GPIO48. Analog pins keep
 Juno's UNO numbers: `Gpio.getA0()` to `Gpio.getA5()` (14 to 19) reach the Nano's A0 to A5, which its
 core numbers 17 to 22, so Grove drivers and pin maps such as `GroveBaseShield` work unchanged. As a
 result, the onboard RGB LED's core numbers (14 to 16) cannot be reached through `Gpio`.
@@ -74,7 +74,7 @@ The Arduino Nano Connector Carrier (ASX00061) is passive: every connector is a N
 | Grove A0/A1 (analog) | A0 signal, A1 | `getGroveA0()`; wires `getA0()`, `getA1()` |
 | Grove A2/A3 (analog) | A2 signal, A3 | `getGroveA2()`; wires `getA2()`, `getA3()` |
 | Grove UART | RX D0 (signal), TX D1 | `getGroveUart()`; wires `getUartRx()`, `getUartTx()` |
-| Grove I2C and Qwiic | SDA A4, SCL A5 | `getI2cSda()`, `getI2cScl()` (one bus, `MCU.getI2c()`) |
+| Grove I2C and Qwiic | SDA A4, SCL A5 | `getI2cSda()`, `getI2cScl()` (one bus, `Arduino.getI2c()`) |
 
 As with `GroveBaseShield`, plug a single-signal Grove module in and pass the socket's getter to its
 driver: `pir.begin(carrier.getGroveA2())`. The analog sockets work for digital modules too. Keep

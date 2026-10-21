@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.lcd.pomodoro;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.Delay;
  * local monotonic clock), so accuracy doesn't depend on how long each tick's own work takes.
  */
 final class RunPomodoro {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     private static final int SECONDS_PER_MINUTE = 60;
     private static final int MILLIS_PER_SECOND = 1000;
     private static final int TICK_MILLIS = 200;

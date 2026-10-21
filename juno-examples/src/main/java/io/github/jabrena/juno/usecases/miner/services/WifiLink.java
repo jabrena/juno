@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
 import io.github.jabrena.juno.games.blockchain.NodeIo;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -13,7 +13,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * that drops. Credentials are the build-time {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD}, as in {@code NodeIo}.
  */
 final class WifiLink {
-    private static final Wifi WIFI = MCU.getWifi();
+    private static final Wifi WIFI = Arduino.getWifi();
 
     static final int IDLE = 0;
     static final int JOINING = 1;

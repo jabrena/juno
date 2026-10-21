@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -52,7 +52,7 @@ import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.WI
  */
 public class PoweredUpHubTFT {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
 
     private final PoweredUpState s = new PoweredUpState();
 

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.miner.intro;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Views;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.mvc.View;
  * for as long, then it hands over to the cover. Returning to the cover from the chain never shows it again.
  */
 public final class IntroView implements View {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     /** How long each image stays on screen after it has been drawn, so slow drawing does not eat into it. */
     static final int STEP_MILLIS = 3000;
     static final int NONE = -1;

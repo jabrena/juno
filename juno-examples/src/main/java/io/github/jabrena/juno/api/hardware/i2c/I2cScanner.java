@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.i2c;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -36,7 +36,7 @@ public final class I2cScanner {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
-        I2c i2c = MCU.getI2c();
+        I2c i2c = Arduino.getI2c();
         i2c.begin();
 
         while (true) {

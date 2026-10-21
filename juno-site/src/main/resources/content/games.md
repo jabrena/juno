@@ -302,7 +302,7 @@ The emulator runs one board at a time with no network, so the picture above come
 ## Testing without the board
 
 `./mvnw test` plays every game on an emulated shield, on any machine and in CI. Before any test
-runs, `EmulatedBoardExtension` points every `MCU.getGpio()` and `MCU.getClock()` at plain Java ports
+runs, `EmulatedBoardExtension` points every `Arduino.getGpio()` and `Arduino.getClock()` at plain Java ports
 instead of the board's (the `juno:compile`/`juno:upload` goals still use the real ones). The other
 `native` hardware classes are replaced by test doubles that come first on the test classpath:
 

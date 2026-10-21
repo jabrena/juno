@@ -1,13 +1,13 @@
 package io.github.jabrena.juno.games.startrek;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
 /** Touch input: steering, the three buttons, the header that hands the helm over, and the pilot screen. */
 final class Controls {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     /** The HUMAN and CPU buttons of the pilot screen. */
     private static final int CHOICE_X = 20;
     private static final int CHOICE_Y = 104;

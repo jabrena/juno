@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.led;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.util.Delay;
 
@@ -15,7 +15,7 @@ public final class LedMatrixHeart {
     private static final int HEART_WORD_2 = 0x100a0040;
 
     public static void main(String[] args) {
-        LedMatrix matrix = MCU.getLedMatrix();
+        LedMatrix matrix = Arduino.getLedMatrix();
         matrix.begin();
         while (true) {
             matrix.loadFrame(HEART_WORD_0, HEART_WORD_1, HEART_WORD_2);

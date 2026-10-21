@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.net;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
@@ -10,7 +10,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
- * {@link MCU#getWifi()} and {@link HttpServer} (it adds no intrinsics, and costs nothing in a program that
+ * {@link Arduino#getWifi()} and {@link HttpServer} (it adds no intrinsics, and costs nothing in a program that
  * does not call it). {@link #run} opens an access point, serves an HTML form on port 80 and joins
  * the network the user submits. The caller must have started {@link Serial} first.
  *
@@ -31,10 +31,10 @@ import io.github.jabrena.juno.util.Delay;
  */
 public final class WifiProvisioner {
     /** The clock this class reads; a unit test in this package swaps in {@code mock}. */
-    static Clock clock = MCU.getClock();
+    static Clock clock = Arduino.getClock();
 
     /** The radio this class drives; a unit test in this package swaps in a fake. */
-    static Wifi wifi = MCU.getWifi();
+    static Wifi wifi = Arduino.getWifi();
 
     private static final int CONNECT_TIMEOUT_MS = 15000;
     private static final int MAX_FIELD = 31;

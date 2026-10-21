@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.util.Delay;
@@ -16,7 +16,7 @@ public final class DisplayData {
 
     /** Takes the board's LED matrix and creates the fixed display buffers once for reuse throughout the application. */
     public DisplayData() {
-        matrix = MCU.getLedMatrix();
+        matrix = Arduino.getLedMatrix();
         frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
         message = new int[MAX_MESSAGE_CHARS];
     }

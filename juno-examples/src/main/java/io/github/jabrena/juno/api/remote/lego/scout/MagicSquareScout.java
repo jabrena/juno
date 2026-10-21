@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.scout;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -16,7 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * {@code TURN_MILLIS}, which you tune for your vehicle. Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquareScout {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final int STRAIGHT_MILLIS = 3000;
     private static final int TURN_MILLIS = 700;

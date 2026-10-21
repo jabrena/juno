@@ -3,7 +3,7 @@ package io.github.jabrena.juno.usecases.miner.chain;
 import io.github.jabrena.juno.games.blockchain.Bytes;
 import io.github.jabrena.juno.games.blockchain.GameScreen;
 import io.github.jabrena.juno.games.blockchain.Sha256;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Header;
@@ -21,7 +21,7 @@ import io.github.jabrena.juno.util.mvc.View;
  * the tip moves, and the nodes row only when its counts change.
  */
 public final class ChainView implements View {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     private final Navigator navigator;
     private final Miner2State model;
     private final Miner2Header header;

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.games.pokemon;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
@@ -29,9 +29,9 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class PokemonBattle {
-    private static final Wifi WIFI = MCU.getWifi();
+    private static final Wifi WIFI = Arduino.getWifi();
 
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     private static final int DISCOVERY_INTERVAL_MILLIS = 700;
     private static final int RESEND_MILLIS = 1000;
 

@@ -4,8 +4,8 @@ import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.BoardModel;
-import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
@@ -66,7 +66,7 @@ public final class SdFileOperations {
 
     /** The Data Logger Shield's card on the UNO boards; of the boards above, only the Nano ESP32 is neither. */
     private static SdCard sdCard() {
-        BoardModel model = MCU.getBoardModel();
+        BoardModel model = Arduino.getBoardModel();
         return model.isR4() || model.isQ() ? new DataLoggerShield().getSdCard() : new NanoConnectorCarrier().getSdCard();
     }
 

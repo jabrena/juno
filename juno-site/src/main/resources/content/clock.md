@@ -5,7 +5,7 @@ layout: page
 ---
 
 [`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/time/Clock.java)
-(`io.github.jabrena.juno.hardware.time`) reads the board's monotonic uptime clock. `MCU.getClock()` reads
+(`io.github.jabrena.juno.hardware.time`) reads the board's monotonic uptime clock. `Arduino.getClock()` reads
 the real timer: its calls compile to the Arduino core's `millis()`/`micros()` with no extra call in
 between. `port` reads any
 [`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/time/Clock.java)
@@ -15,7 +15,7 @@ Create a program's clocks once, at startup, as you would any other object.
 ```java
 import io.github.jabrena.juno.hardware.time.Clock;
 
-private static final Clock CLOCK = MCU.getClock();
+private static final Clock CLOCK = Arduino.getClock();
 
 int uptimeMillis = CLOCK.millis();
 int uptimeMicros = CLOCK.micros();
@@ -55,8 +55,8 @@ public final class ClockBlink {
     private static final int BLINK_INTERVAL_MILLIS = 500;
 
     public static void main(String[] args) {
-        Clock clock = MCU.getClock();
-        Gpio gpio = MCU.getGpio();
+        Clock clock = Arduino.getClock();
+        Gpio gpio = Arduino.getGpio();
         DigitalOutput led = DigitalOutput.of(LED_PIN);
         gpio.pinMode(BUTTON_PIN, Gpio.getInputPullup());
 

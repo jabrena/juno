@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class PoweredUpHubScanWhileBlinking {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     private static final int STARTUP_MILLIS = 5_000;
     private static final int SCAN_TIMEOUT_MILLIS = 30_000;
     private static final int PROGRESS_MILLIS = 500;

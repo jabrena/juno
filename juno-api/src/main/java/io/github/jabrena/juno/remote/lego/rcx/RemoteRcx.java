@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.time.Clock;
 
@@ -54,7 +54,7 @@ public final class RemoteRcx {
      * the pins. Share {@code link} with any other RCX class, so they share one toggle bit.
      */
     public RemoteRcx(RcxLink link, int receivePin, int transmitPin) {
-        this(link, receivePin, transmitPin, MCU.getClock());
+        this(link, receivePin, transmitPin, Arduino.getClock());
     }
 
     /** As the three-argument constructor, timing the button hold and firmware waits on {@code clock}: a simulated clock in a unit test. */

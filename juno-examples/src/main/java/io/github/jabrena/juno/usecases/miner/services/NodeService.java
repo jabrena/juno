@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2State;
@@ -13,7 +13,7 @@ import io.github.jabrena.juno.util.mvc.Task;
  * the cover keeps drawing while the node connects; the network and the miner wait until the link is up.
  */
 public final class NodeService implements Task {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     private final Miner2State model;
     private final NetworkService network;
     private final MiningService mining;

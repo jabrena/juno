@@ -4,7 +4,7 @@ package io.github.jabrena.juno.annotations;
  * Selects the classic Arduino UNO R3 as {@link Board @Board}'s target: Juno programs run on its ATmega328P, an 8-bit
  * AVR with 2 KB SRAM and 32 KB flash, under Arduino's {@code arduino:avr} core. It supports the basic GPIO, analog,
  * serial, I2C, SPI and shield APIs that fit its memory; it has no LED matrix, native USB HID, arbitrary precision
- * numbers, task scheduler or onboard radio, so {@code MCU.getWifi()} does not compile for it. With the retired Arduino
+ * numbers, task scheduler or onboard radio, so {@code Arduino.getWifi()} does not compile for it. With the retired Arduino
  * WiFi Shield stacked on it, the {@code Wifi} from {@code new ArduinoWifiShield().getWifi()} ({@code begin},
  * {@code status}, {@code localIP}, {@code gatewayIP}, {@code macAddress}), {@code Udp}, {@code Tcp} and
  * plain-HTTP {@code HttpClient} requests run through Arduino's legacy {@code WiFi} library; there is no access point

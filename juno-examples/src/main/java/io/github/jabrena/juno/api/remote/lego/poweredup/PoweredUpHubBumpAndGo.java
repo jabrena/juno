@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -39,7 +39,7 @@ public class PoweredUpHubBumpAndGo {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        PoweredUpHubBumpAndGo app = new PoweredUpHubBumpAndGo(MCU.getGpio(), MCU.getClock());
+        PoweredUpHubBumpAndGo app = new PoweredUpHubBumpAndGo(Arduino.getGpio(), Arduino.getClock());
         app.gpio.pinMode(LEFT_BUMPER_PIN, Gpio.getInputPullup());
         app.gpio.pinMode(RIGHT_BUMPER_PIN, Gpio.getInputPullup());
         Serial.println("Waiting for a Powered Up hub...");

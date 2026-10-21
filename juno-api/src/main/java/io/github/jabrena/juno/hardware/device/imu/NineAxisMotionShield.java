@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.imu;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.util.Delay;
@@ -67,7 +67,7 @@ public final class NineAxisMotionShield {
 
     /** A shield on the board's own pins and I2C bus. Create it once, at startup. */
     public NineAxisMotionShield() {
-        this(MCU.getGpio(), MCU.getI2c());
+        this(Arduino.getGpio(), Arduino.getI2c());
     }
 
     /**

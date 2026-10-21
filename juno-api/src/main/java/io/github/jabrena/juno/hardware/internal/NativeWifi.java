@@ -11,7 +11,7 @@ public final class NativeWifi implements Wifi {
     public static final NativeWifi INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.MCU#getWifi()} and
+     * What {@link io.github.jabrena.juno.hardware.Arduino#getWifi()} and
      * {@link io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield#getWifi()} return: the board's radio,
      * unless a whole-program emulator in a test replaced it.
      */
@@ -25,13 +25,13 @@ public final class NativeWifi implements Wifi {
     private NativeWifi() {
     }
 
-    /** The radio {@link io.github.jabrena.juno.hardware.MCU#getWifi()} hands out. */
+    /** The radio {@link io.github.jabrena.juno.hardware.Arduino#getWifi()} hands out. */
     public static Wifi wifi() {
         return wifi;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.MCU#getWifi()} hand out {@code replacement}: for a
+     * Makes {@link io.github.jabrena.juno.hardware.Arduino#getWifi()} hand out {@code replacement}: for a
      * whole-program emulator in a test, never on the board.
      */
     public static void setWifi(Wifi replacement) {

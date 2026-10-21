@@ -4,7 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -26,9 +26,9 @@ import java.util.concurrent.StructuredTaskScope;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoR3WiFiRev2.class, ArduinoUnoQ.class})
 public final class ParallelHttpsGet {
-    private static final Wifi WIFI = MCU.getWifi();
+    private static final Wifi WIFI = Arduino.getWifi();
 
-    private final Clock clock = MCU.getClock();
+    private final Clock clock = Arduino.getClock();
     private static final String FIRST_URL = "https://example.com/?request=first";
     private static final String SECOND_URL = "https://example.com/?request=second";
 

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.time.Clock;
 
 /**
@@ -28,7 +28,7 @@ public final class PoweredUpHubRemote {
 
     /** A hub controller on the board's own Bluetooth stack and timer. Create it once, at startup. */
     public PoweredUpHubRemote() {
-        this(NativePoweredUpPort.INSTANCE, MCU.getClock());
+        this(NativePoweredUpPort.INSTANCE, Arduino.getClock());
     }
 
     /** A hub controller that drives {@code port} and times its waits on {@code clock}: fakes in a unit test. */

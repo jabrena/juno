@@ -4,14 +4,14 @@ import io.github.jabrena.juno.games.gladiator.view.ClassWireframe;
 import io.github.jabrena.juno.games.gladiator.view.Figure;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
 /** The CPU-opponent reveal and the final result screens around a Solo bout. */
 public final class SoloPresentation {
-    private static final Clock CLOCK = MCU.getClock();
+    private static final Clock CLOCK = Arduino.getClock();
     public static final int RESULT_MILLIS = 5000;
 
     private static final int FRAME_MILLIS = 50;

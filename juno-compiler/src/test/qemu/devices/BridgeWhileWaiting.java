@@ -2,10 +2,10 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import java.util.concurrent.Callable;
@@ -24,7 +24,7 @@ import java.util.concurrent.StructuredTaskScope;
 public final class BridgeWhileWaiting {
     static final int BODY = 32;
     static final int HEADERS = 64;
-    static final Clock CLOCK = MCU.getClock();
+    static final Clock CLOCK = Arduino.getClock();
     static volatile boolean stop;
     static volatile boolean waiting;
     static volatile int started;
@@ -59,9 +59,9 @@ public final class BridgeWhileWaiting {
         Thread watcher = Thread.startVirtualThread(BridgeWhileWaiting::watch);
 
         begin();
-        MCU.getWifi().begin("juno", "secret");
+        Arduino.getWifi().begin("juno", "secret");
         String bridge = verdict();
-        Serial.println((MCU.getWifi().status() == Wifi.STATUS_CONNECTED ? "bridge up: " : "bridge down: ") + bridge);
+        Serial.println((Arduino.getWifi().status() == Wifi.STATUS_CONNECTED ? "bridge up: " : "bridge down: ") + bridge);
 
         begin();
         int length = HttpClient.get("https://example.com/", body, BODY, headers, HEADERS, status);

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
+import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.BoardMemory;
-import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
@@ -30,10 +30,10 @@ import io.github.jabrena.juno.util.Delay;
  * (arena usage that only ever grows) versus healthy reclamation (usage that rises and falls).
  */
 public final class HttpServerStatus {
-    private static final Wifi WIFI = MCU.getWifi();
+    private static final Wifi WIFI = Arduino.getWifi();
 
-    private static final BoardMemory MEMORY = MCU.getBoardMemory();
-    private final Clock clock = MCU.getClock();
+    private static final BoardMemory MEMORY = Arduino.getBoardMemory();
+    private final Clock clock = Arduino.getClock();
     /** How often to print an arena-usage heartbeat over Serial, in milliseconds. */
     private static final int HEARTBEAT_INTERVAL_MS = 5000;
 
