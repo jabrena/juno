@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
 import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -17,6 +18,8 @@ import io.github.jabrena.juno.usecases.miner.peers.PeerTable;
  * slices, so it shares the pool with the miner without a lock.
  */
 final class NetworkService {
+    private static final Wifi WIFI = MCU.getWifi();
+
     /** Packets served per step; a step comes once a frame, so this is several hundred a second. */
     private static final int PACKETS_PER_STEP = 16;
     /** How often a node asks the network for the current tip, even when it believes it is up to date. */
@@ -75,7 +78,7 @@ final class NetworkService {
      */
     void begin(int now) {
         lastHeard = now;
-        Wifi.localIP(model.address());
+        WIFI.localIP(model.address());
         ChainProtocol.writeRequest(reply, ChainProtocol.GET_TIP);
         broadcast();
     }
@@ -137,7 +140,7 @@ final class NetworkService {
         }
         nextStats = now + STATS_MILLIS;
         int[] address = model.address();
-        Wifi.localIP(address);
+        WIFI.localIP(address);
         Serial.print("NET " + address[0] + "." + address[1] + "." + address[2] + "." + address[3]);
         Serial.print(" rx " + model.received() + " bad " + model.ignored());
         Serial.print(" restarts " + model.restarts());

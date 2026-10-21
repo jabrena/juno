@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.games.blockchain;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -7,6 +8,8 @@ import io.github.jabrena.juno.util.Delay;
 
 /** Wi-Fi/UDP start-up and serial formatting shared by the blockchain games. */
 public final class NodeIo {
+    private static final Wifi WIFI = MCU.getWifi();
+
     /** UDP port every node listens on and broadcasts to. */
     public static final int PORT = 4210;
 
@@ -21,8 +24,8 @@ public final class NodeIo {
      */
     public static void connect() {
         Serial.println("Connecting Wi-Fi");
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
-        while (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }
         while (!Udp.listen(PORT)) {

@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.net.http.Json;
@@ -11,6 +12,8 @@ import io.github.jabrena.juno.util.Delay;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class HttpsMethods {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final String HTTPBIN_URL = "https://httpbin.org/anything";
     private static final String HTTPBUN_URL = "https://httpbun.com/anything";
 
@@ -54,16 +57,16 @@ public final class HttpsMethods {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        Wifi.begin(
+        WIFI.begin(
                 System.getenv("JUNO_WIFI_SSID"),
                 System.getenv("JUNO_WIFI_PASSWORD"));
 
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Serial.println("WiFi connection failed");
             return;
         }

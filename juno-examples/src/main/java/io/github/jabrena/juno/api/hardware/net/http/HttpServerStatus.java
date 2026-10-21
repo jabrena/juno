@@ -30,6 +30,8 @@ import io.github.jabrena.juno.util.Delay;
  * (arena usage that only ever grows) versus healthy reclamation (usage that rises and falls).
  */
 public final class HttpServerStatus {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final BoardMemory MEMORY = MCU.getBoardMemory();
     private final Clock clock = MCU.getClock();
     /** How often to print an arena-usage heartbeat over Serial, in milliseconds. */
@@ -122,8 +124,8 @@ public final class HttpServerStatus {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
-        while (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }
         Serial.println("WiFi connected");
@@ -131,7 +133,7 @@ public final class HttpServerStatus {
 
     private void printLocalIP() {
         int[] ip = new int[4];
-        Wifi.localIP(ip);
+        WIFI.localIP(ip);
         Serial.print("IP: ");
         Serial.print(ip[0]);
         Serial.print(".");

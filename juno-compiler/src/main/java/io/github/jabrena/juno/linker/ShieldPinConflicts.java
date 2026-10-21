@@ -21,6 +21,7 @@ import java.util.Set;
  */
 final class ShieldPinConflicts {
     private static final String LCD_KEYPAD_SHIELD = "io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield";
+    private static final String WIFI_SHIELD = "io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield";
     private static final Set<Capability> WIFI_SHIELD_CAPABILITIES = EnumSet.of(Capability.WIFI,
             Capability.HTTP_CLIENT);
     private static final int INVOKEVIRTUAL = 182;
@@ -51,8 +52,7 @@ final class ShieldPinConflicts {
                     continue;
                 }
                 MethodRef called = method.owner().constantPool().methodRef(instruction.operandA());
-                Optional<Capability> capability = intrinsicRegistry.resolve(called).map(requiredCapabilities::get);
-                if (capability.isPresent() && WIFI_SHIELD_CAPABILITIES.contains(capability.get())) {
+                if (needsWifiShield(called)) {
                     throw new CompileException("LcdKeypadShield cannot be used with the Arduino WiFi Shield on "
                             + board.displayName() + ": both shields are wired to D4, D7 and D10 (the LCD's data and "
                             + "backlight lines are the WiFi Shield's SD chip select, handshake and Wi-Fi chip select), "
@@ -62,5 +62,14 @@ final class ShieldPinConflicts {
                 }
             }
         }
+    }
+
+    /** Whether {@code called} is the WiFi Shield itself or a network intrinsic that only the shield provides. */
+    private boolean needsWifiShield(MethodRef called) {
+        if (called.owner().equals(WIFI_SHIELD)) {
+            return true;
+        }
+        Optional<Capability> capability = intrinsicRegistry.resolve(called).map(requiredCapabilities::get);
+        return capability.isPresent() && WIFI_SHIELD_CAPABILITIES.contains(capability.get());
     }
 }

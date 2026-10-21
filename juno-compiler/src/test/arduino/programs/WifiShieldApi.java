@@ -4,6 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.net.tcp.Tcp;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
+import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -15,16 +16,17 @@ public final class WifiShieldApi {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
 
-        Wifi.begin("ci-ssid", "ci-password");
+        Wifi wifi = new ArduinoWifiShield().getWifi();
+        wifi.begin("ci-ssid", "ci-password");
 
-        if (Wifi.status() == Wifi.STATUS_CONNECTED) {
+        if (wifi.status() == Wifi.STATUS_CONNECTED) {
             int[] address = new int[4];
-            Wifi.localIP(address);
+            wifi.localIP(address);
             Serial.println(address[3]);
-            Wifi.gatewayIP(address);
+            wifi.gatewayIP(address);
             Serial.println(address[3]);
             int[] mac = new int[6];
-            Wifi.macAddress(mac);
+            wifi.macAddress(mac);
             Serial.println(mac[5]);
             byte[] payload = new byte[8];
             int[] source = new int[Udp.ENDPOINT_SIZE];

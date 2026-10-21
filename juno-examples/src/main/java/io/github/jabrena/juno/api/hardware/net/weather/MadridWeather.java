@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.weather;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -34,6 +35,8 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class MadridWeather {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final int TIME_TEXT_BUFFER_SIZE = 32;
 
     private static void processWeather(DisplayData display, byte[] response, byte[] headers,
@@ -67,15 +70,15 @@ public final class MadridWeather {
 
     private static void connectWifi(DisplayData display) {
         display.showMessage("Connecting");
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
 
         int waitedSeconds = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(1000);
             waitedSeconds = waitedSeconds + 1;
             if (waitedSeconds % 5 == 0) {
-                Serial.print("Still connecting, Wifi.status()=");
-                Serial.println(Wifi.status());
+                Serial.print("Still connecting, WIFI.status()=");
+                Serial.println(WIFI.status());
             }
         }
         Serial.println("WiFi connected");

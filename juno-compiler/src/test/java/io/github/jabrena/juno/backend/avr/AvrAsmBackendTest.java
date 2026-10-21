@@ -270,10 +270,12 @@ class AvrAsmBackendTest {
         // Given
         CompilationResult result = compileR3("demo.R3ShieldWifi", """
                         int[] ip = new int[4];
-                        Wifi.begin("ssid", "password");
-                        Serial.println(Wifi.status());
-                        Wifi.localIP(ip);
+                        Wifi wifi = new ArduinoWifiShield().getWifi();
+                        wifi.begin("ssid", "password");
+                        Serial.println(wifi.status());
+                        wifi.localIP(ip);
                 """, """
+                import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 """);
@@ -330,9 +332,10 @@ class AvrAsmBackendTest {
         assertThatThrownBy(() -> compileR3("demo.R3LcdWifi", """
                         LcdKeypadShield lcd = new LcdKeypadShield();
                         lcd.begin();
-                        Wifi.begin("ssid", "password");
+                        new ArduinoWifiShield().getWifi().begin("ssid", "password");
                 """, """
                 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
+                import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 """))
                 .isInstanceOf(CompileException.class)
@@ -374,9 +377,10 @@ class AvrAsmBackendTest {
         CompilationResult result = compile("demo.Rev2LcdWifi", """
                         LcdKeypadShield lcd = new LcdKeypadShield();
                         lcd.begin();
-                        Wifi.begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                 """, """
                 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 """);
 
@@ -385,11 +389,24 @@ class AvrAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Rejects the board's own Wi-Fi on the UNO R3, which has no radio and goes through the WiFi Shield")
+    void shouldRejectOnboardWifiOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3OnboardWifi", "MCU.getWifi().begin(\"ssid\", \"password\");",
+                "import io.github.jabrena.juno.hardware.net.Wifi;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("MCU.getWifi requires @Board(")
+                .hasMessageContaining("UNO R3 has no onboard Wi-Fi radio")
+                .hasMessageContaining("new ArduinoWifiShield().getWifi()");
+    }
+
+    @Test
     @DisplayName("Rejects an access point on the UNO R3")
     void shouldRejectAnAccessPointOnTheUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3ShieldAp", "Wifi.beginAP(\"juno\", \"password\");",
-                "import io.github.jabrena.juno.hardware.net.Wifi;"))
+        assertThatThrownBy(() -> compileR3("demo.R3ShieldAp",
+                "new ArduinoWifiShield().getWifi().beginAP(\"juno\", \"password\");",
+                "import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3's WiFi library cannot start an access point");
     }
@@ -834,12 +851,13 @@ class AvrAsmBackendTest {
                         byte[] body = new byte[32];
                         byte[] headers = new byte[32];
                         int[] status = new int[2];
-                        Wifi.begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                         Serial.println(HttpClient.get("http://example.com/", body, 32, headers, 32, status));
                         Serial.println(Udp.listen(4210));
                 """, """
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import io.github.jabrena.juno.hardware.net.udp.Udp;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 """);

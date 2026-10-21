@@ -56,6 +56,13 @@ public final class Linker {
 
     /** The on-board {@link Capability} each capability-dependent intrinsic needs; every other intrinsic is portable. */
     private static final Map<Intrinsic, Capability> REQUIRED_CAPABILITIES = requiredCapabilities();
+    /**
+     * The on-board {@link Capability} each capability-dependent ordinary API method needs: the board's own radio, which
+     * the UNO R3 lacks (it reaches the Arduino WiFi Shield's instead).
+     */
+    private static final Map<MethodRef, Capability> REQUIRED_METHOD_CAPABILITIES = Map.of(
+            new MethodRef("io/github/jabrena/juno/hardware/MCU", "getWifi", "()Lio/github/jabrena/juno/hardware/net/Wifi;"),
+            Capability.ONBOARD_WIFI);
     private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",
             "drawText", "([[ZLjava/lang/String;II)V");
     private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",
@@ -228,8 +235,10 @@ public final class Linker {
 
     private void enqueueCall(MethodRef called, MethodRef caller, List<Board> declaredBoards,
             Map<String, JavaClass> classes, Deque<MethodRef> work) {
-        intrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get).ifPresent(capability ->
-                requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
+        intrinsicRegistry.resolve(called).map(REQUIRED_CAPABILITIES::get)
+                .or(() -> Optional.ofNullable(REQUIRED_METHOD_CAPABILITIES.get(called)))
+                .ifPresent(capability ->
+                        requireCapability(declaredBoards, capability, " (used from " + caller.displayName() + ")"));
         threadSupport.validateCall(called);
         lockSupport.validateCall(called);
         atomicSupport.validateCall(called);

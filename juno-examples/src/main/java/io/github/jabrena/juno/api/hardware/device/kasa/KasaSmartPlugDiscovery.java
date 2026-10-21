@@ -21,6 +21,8 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class KasaSmartPlugDiscovery {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final Clock CLOCK = MCU.getClock();
     private static final int DISCOVERY_INTERVAL_MILLIS = 3000;
     private static final int WIFI_POLL_MILLIS = 500;
@@ -77,7 +79,7 @@ public final class KasaSmartPlugDiscovery {
             Udp.stop();
             showStatus("Connecting WiFi...");
             Serial.println("Kasa: connecting WiFi");
-            Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+            WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
             state = JOINING;
             nextPoll = now;
         }
@@ -88,7 +90,7 @@ public final class KasaSmartPlugDiscovery {
             }
             nextPoll = now + WIFI_POLL_MILLIS;
             if (state == JOINING) {
-                if (Wifi.status() == Wifi.STATUS_CONNECTED) {
+                if (WIFI.status() == Wifi.STATUS_CONNECTED) {
                     state = LISTENING;
                     nextPoll = now;
                     showStatus("Opening discovery...");
@@ -108,7 +110,7 @@ public final class KasaSmartPlugDiscovery {
                 }
                 return;
             }
-            if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+            if (WIFI.status() != Wifi.STATUS_CONNECTED) {
                 startWifi(now);
             }
         }

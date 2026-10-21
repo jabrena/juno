@@ -4,6 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -13,6 +14,8 @@ import io.github.jabrena.juno.util.Delay;
 /** One HTTPS request, used as the serial baseline for {@link ParallelHttpsGet}. */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoR3WiFiRev2.class, ArduinoUnoQ.class})
 public final class SingleHttpsGet {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final String URL = "https://example.com/?request=single";
 
     public static void main(String[] args) {
@@ -33,13 +36,13 @@ public final class SingleHttpsGet {
     }
 
     private static boolean connectWifi() {
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        if (Wifi.status() == Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() == Wifi.STATUS_CONNECTED) {
             Serial.println("wifi connected");
             return true;
         }

@@ -51,12 +51,12 @@ other secrets to an `http://` URL.
 
 Do not put Wi-Fi credentials directly in Java source. Either load them at runtime from an SD-card
 properties file (see [docs/STORAGE.md](../storage)) or pass compile-time environment-variable reads
-to `Wifi.begin` — see
+to `Wifi.begin` (on the `Wifi` that `MCU.getWifi()` returns) — see
 [docs/APIS.md](../apis#supplying-compile-time-credentials-with-systemgetenv) for the full
 mechanism, including the `.env`/`juno-maven-plugin` alternative and its security caveats:
 
 ```java
-Wifi.begin(
+MCU.getWifi().begin(
         System.getenv("JUNO_WIFI_SSID"),
         System.getenv("JUNO_WIFI_PASSWORD"));
 ```
@@ -77,22 +77,29 @@ Unlike HTTP hosts, paths, and bodies, `Wifi.begin` also accepts stable runtime s
 
 ## Connecting to Wi-Fi
 
+Get the board's radio once, at startup: `MCU.getWifi()` on the boards with onboard Wi-Fi (UNO R4 WiFi,
+UNO WiFi Rev2, UNO Q). The UNO R3 has no radio of its own, so the compiler rejects `MCU.getWifi()`
+there; stack the retired [Arduino WiFi Shield](https://docs.arduino.cc/retired/shields/arduino-wifi-shield/)
+and take the same `Wifi` from `new ArduinoWifiShield().getWifi()` instead. A unit test passes
+`mock(Wifi.class)`.
+
 `Wifi.begin` starts the connection. Poll `Wifi.status()` until it equals
 `Wifi.STATUS_CONNECTED`. A bounded retry loop lets the program report or display a failure instead
 of waiting forever:
 
 ```java
-Wifi.begin(
+Wifi wifi = MCU.getWifi();
+wifi.begin(
         System.getenv("JUNO_WIFI_SSID"),
         System.getenv("JUNO_WIFI_PASSWORD"));
 
 int attempts = 0;
-while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
+while (wifi.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
     Delay.millis(1000);
     attempts = attempts + 1;
 }
 
-if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+if (wifi.status() != Wifi.STATUS_CONNECTED) {
     Serial.println("WiFi connection failed");
 }
 ```
@@ -379,26 +386,29 @@ import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.net.http.Json;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 
 @Board(ArduinoUnoR4WiFi.class)
 public final class InternetExample {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final String URL = "http://api.open-meteo.com/v1/forecast?latitude=40.4168"
             + "&longitude=-3.7038&current=temperature_2m";
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        Wifi.begin(
+        WIFI.begin(
                 System.getenv("JUNO_WIFI_SSID"),
                 System.getenv("JUNO_WIFI_PASSWORD"));
 
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
 
-        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() != Wifi.STATUS_CONNECTED) {
             while (true) {
                 Serial.println("WiFi connection failed");
                 Delay.millis(5000);

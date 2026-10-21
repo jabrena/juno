@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
 import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -12,6 +13,8 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * that drops. Credentials are the build-time {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD}, as in {@code NodeIo}.
  */
 final class WifiLink {
+    private static final Wifi WIFI = MCU.getWifi();
+
     static final int IDLE = 0;
     static final int JOINING = 1;
     static final int LISTENING = 2;
@@ -36,7 +39,7 @@ final class WifiLink {
         // Close the old socket first: on the UNO Q its port stays held after a restart, so listening again fails.
         Udp.stop();
         connected = false;
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         state = JOINING;
         nextPoll = now;
     }
@@ -57,7 +60,7 @@ final class WifiLink {
             return;
         }
         nextPoll = now + POLL_MILLIS;
-        connected = Wifi.status() == Wifi.STATUS_CONNECTED;
+        connected = WIFI.status() == Wifi.STATUS_CONNECTED;
         if (state == JOINING && connected) {
             state = LISTENING;
             nextPoll = now;

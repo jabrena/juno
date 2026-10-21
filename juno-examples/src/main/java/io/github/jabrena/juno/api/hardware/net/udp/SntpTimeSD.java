@@ -4,6 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.udp.SntpClock;
@@ -34,6 +35,8 @@ import java.util.Properties;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
 public final class SntpTimeSD {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
     private SntpTimeSD() {
@@ -64,9 +67,9 @@ public final class SntpTimeSD {
         }
 
         SntpClock.configure(properties);
-        Wifi.begin(ssid, password);
+        WIFI.begin(ssid, password);
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }

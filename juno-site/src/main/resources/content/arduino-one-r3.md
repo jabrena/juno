@@ -131,13 +131,32 @@ Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
 | `PortNoise.collectSeed(...)` | Yes, non-cryptographic | Samples a user-provided physical noise circuit, GPIO and timer jitter; it is unsuitable for secrets or UUID v4 generation |
 | `Mouse` | No | The sketch MCU has no native USB HID support |
 | `LedMatrix` | No | The R3 has no onboard 12x8 LED matrix |
-| Wi-Fi and Bluetooth | Not applicable | No onboard wireless hardware |
+| `MCU.getWifi()` | No | The R3 has no onboard radio; Juno rejects this call at compile time |
+| Wi-Fi through the Arduino WiFi Shield | Yes | `new ArduinoWifiShield().getWifi()`, then `Udp`, `Tcp` and plain-HTTP `HttpClient`; no access point or HTTPS |
+| Bluetooth | Not applicable | No onboard wireless hardware |
 | DAC, RTC and CAN | Not applicable | These peripherals are not built into the R3 board |
 
 The most important practical limit is SRAM. Juno limits the R3 arena to 1 kB and rejects APIs that
-need task stacks, arbitrary-precision arithmetic, networking, an LED matrix or native USB HID. A
+need task stacks, arbitrary-precision arithmetic, HTTPS, an LED matrix or native USB HID. A
 sketch passing the Arduino compiler's global-memory report can still overflow at runtime because
 that report does not calculate the maximum Juno call stack.
+
+### Wi-Fi through the Arduino WiFi Shield
+
+The R3 has no radio, so `MCU.getWifi()` does not compile for it. Stack the retired
+[Arduino WiFi Shield](https://docs.arduino.cc/retired/shields/arduino-wifi-shield/) and take its
+`Wifi` from the shield instead:
+
+```java
+Wifi wifi = new ArduinoWifiShield().getWifi();
+wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+```
+
+The shield runs Arduino's legacy `WiFi` library over SPI and reserves D10 (Wi-Fi chip select), D4
+(its SD card) and D7 (handshake), so it cannot be stacked with the LCD Keypad Shield. It joins
+networks only (no access point) and speaks plain HTTP, not HTTPS. Only small network programs fit
+next to the library: build them with `-Djuno.Xmx=512`, as `UdpEcho`, `TcpEcho`, `SntpTime` and
+`PlainHttpWeather` do.
 
 ## Official references
 

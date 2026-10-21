@@ -103,13 +103,14 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.net.udp.SntpClock;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import java.time.LocalDateTime;
                 import java.util.Properties;
                 @Board(ArduinoUnoR4WiFi.class)
                 public final class AsmLocalDateTime {
                     public static void main(String[] args) {
-                        Wifi.begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                         Properties properties = new Properties();
                         SntpClock.configure(properties);
                         LocalDateTime value = LocalDateTime.now();
@@ -659,10 +660,11 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 import io.github.jabrena.juno.hardware.net.http.Json;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 public final class AsmNetworking {
                     public static void main(String[] args) {
-                        Wifi.begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
@@ -704,12 +706,13 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
                 import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 @Board(ArduinoUnoQ.class)
                 public final class AsmUnoQHttps {
                     public static void main(String[] args) {
-                        Wifi.begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
@@ -1422,6 +1425,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import java.io.IOException;
@@ -1437,7 +1441,7 @@ class GeneratedAsmToolchainTest {
                         file.close();
                         String ssid = properties.getProperty("wifi.ssid");
                         String password = properties.getProperty("wifi.password");
-                        if (ssid != null && password != null) Wifi.begin(ssid, password);
+                        if (ssid != null && password != null) MCU.getWifi().begin(ssid, password);
                     }
                 }
                 """;
@@ -1579,12 +1583,13 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpServer;
                 @Board(%1$s.class)
                 public final class %2$s {
                     public static void main(String[] args) {
-                        Wifi.beginAP("juno-setup", "junosetup");
+                        MCU.getWifi().beginAP("juno-setup", "junosetup");
                         HttpServer.begin(80);
                         byte[] body = new byte[64];
                         if (HttpServer.accept(body, body.length) >= 0) {

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -26,6 +27,8 @@ import java.util.Properties;
  * is needed.
  */
 public final class WifiStatusSDTFT {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
     private static final int MARGIN = 10;
@@ -80,17 +83,17 @@ public final class WifiStatusSDTFT {
         TftTouchShield.print(credentials.ssid());
 
         Serial.println("Starting WiFi from SD properties");
-        Wifi.begin(credentials.ssid(), credentials.password());
+        WIFI.begin(credentials.ssid(), credentials.password());
 
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             showWifiStatus();
             Delay.millis(1000);
             attempts = attempts + 1;
         }
         showWifiStatus();
 
-        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Serial.println("WiFi connection failed");
             showState("Error     ", TftTouchShield.RED);
             return false;
@@ -106,7 +109,7 @@ public final class WifiStatusSDTFT {
     }
 
     private static void showWifiStatus() {
-        int status = Wifi.status();
+        int status = WIFI.status();
         Serial.print("WiFi status: ");
         Serial.println(status);
 
@@ -127,12 +130,12 @@ public final class WifiStatusSDTFT {
      */
     private static void showAddresses() {
         int[] address = new int[4];
-        Wifi.localIP(address);
+        WIFI.localIP(address);
         showAddress("IP:  ", address, IP_Y);
-        Wifi.gatewayIP(address);
+        WIFI.gatewayIP(address);
         showAddress("GW:  ", address, GATEWAY_Y);
         int[] mac = new int[6];
-        Wifi.macAddress(mac);
+        WIFI.macAddress(mac);
         showMac(mac);
     }
 

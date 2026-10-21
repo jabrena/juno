@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.services;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
@@ -12,6 +13,8 @@ import io.github.jabrena.juno.util.Delay;
  * credentials the SD-card service reads, and never touches the card itself.
  */
 public final class WifiService {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final int MAX_CONNECTION_ATTEMPTS = 10;
 
     private final TftDashboardState model;
@@ -38,12 +41,12 @@ public final class WifiService {
         if (credentials == null) {
             return new WifiStatus(false);
         }
-        Wifi.begin(credentials.ssid(), credentials.password());
+        WIFI.begin(credentials.ssid(), credentials.password());
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        return new WifiStatus(Wifi.status() == Wifi.STATUS_CONNECTED);
+        return new WifiStatus(WIFI.status() == Wifi.STATUS_CONNECTED);
     }
 }

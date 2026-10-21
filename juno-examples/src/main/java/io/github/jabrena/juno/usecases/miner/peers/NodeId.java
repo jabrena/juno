@@ -16,6 +16,8 @@ import io.github.jabrena.juno.util.Random;
  * never draw the same sequence, however close their boot times are.
  */
 public final class NodeId {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final Clock CLOCK = MCU.getClock();
     public static final int SIZE = 16;
 
@@ -27,7 +29,7 @@ public final class NodeId {
     /** Fills {@code uuid[0..SIZE)} with a new random UUID; call it once Wi-Fi is up, so the address is known. */
     public static void generate(byte[] uuid) {
         int[] address = new int[4];
-        Wifi.localIP(address);
+        WIFI.localIP(address);
         Random.seed(CLOCK.micros() ^ (address[0] << 24 | address[1] << 16 | address[2] << 8 | address[3]));
         for (int i = 0; i < SIZE; i++) {
             // More boot-clock jitter goes into every byte, on top of the seeded sequence.

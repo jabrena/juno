@@ -3,6 +3,7 @@ package demo;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import java.util.concurrent.StructuredTaskScope;
@@ -20,7 +21,7 @@ public final class RuntimeStackOverflow {
     static final int HEADERS = 32;
 
     public static void main(String[] args) throws Exception {
-        Wifi.begin("juno", "secret");
+        MCU.getWifi().begin("juno", "secret");
         byte[] path = {'/', 'r', 'e', 'a', 'd', 'i', 'n', 'g', 's'};
         byte[] body = new byte[BODY];
         byte[] headers = new byte[HEADERS];

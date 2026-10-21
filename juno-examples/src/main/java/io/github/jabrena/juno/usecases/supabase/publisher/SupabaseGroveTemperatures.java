@@ -35,6 +35,8 @@ import java.time.LocalDateTime;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class SupabaseGroveTemperatures {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final GroveBaseShield SHIELD = new GroveBaseShield();
     private static final Clock CLOCK = MCU.getClock();
     private static final int DHT22_PIN = SHIELD.getD4();
@@ -90,14 +92,14 @@ public final class SupabaseGroveTemperatures {
     private boolean connect() {
         Serial.begin(BaudRate.BAUD_115200);
 
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
 
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < WIFI_ATTEMPTS) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < WIFI_ATTEMPTS) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Serial.println("WiFi connection failed");
             return false;
         }

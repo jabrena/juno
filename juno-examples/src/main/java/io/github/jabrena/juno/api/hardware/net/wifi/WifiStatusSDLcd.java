@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -27,6 +28,8 @@ import java.util.Properties;
  * the shields. This program never changes the LCD backlight after SD-card initialization.
  */
 public final class WifiStatusSDLcd {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private final LcdKeypadShield lcd = new LcdKeypadShield();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
@@ -51,17 +54,17 @@ public final class WifiStatusSDLcd {
         }
 
         Serial.println("Starting WiFi from SD properties");
-        Wifi.begin(credentials.ssid(), credentials.password());
+        WIFI.begin(credentials.ssid(), credentials.password());
 
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Serial.print("WiFi status: ");
-            Serial.println(Wifi.status());
+            Serial.println(WIFI.status());
             Delay.millis(1000);
             attempts = attempts + 1;
         }
 
-        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Serial.println("WiFi connection failed");
             showStatus("Error           ");
             return;
@@ -70,7 +73,7 @@ public final class WifiStatusSDLcd {
         showStatus("Connected       ");
         while (true) {
             Serial.print("WiFi status: ");
-            Serial.println(Wifi.status());
+            Serial.println(WIFI.status());
             Delay.millis(1000);
         }
     }

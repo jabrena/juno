@@ -34,10 +34,10 @@ Compiling it with plain `javac` (as `juno-examples`'s own Maven build does, on e
 fine and produces a real `.class` file — it is only *Juno's own* compiler that treats the call
 specially.
 
-### Injectable APIs: `Gpio`, `I2c`, `Mouse`, `LedMatrix`, `Clock`, `BoardModel` and `BoardMemory`
+### Injectable APIs: `Gpio`, `I2c`, `Mouse`, `LedMatrix`, `Wifi`, `Clock`, `BoardModel` and `BoardMemory`
 
 A `native` method has no body, so a unit test on a desktop JVM can neither run nor mock it. `Gpio`,
-`I2c`, `Mouse`, `LedMatrix`, `Clock`, `BoardModel` and `BoardMemory` therefore keep their intrinsics behind a type that a test can replace:
+`I2c`, `Mouse`, `LedMatrix`, `Wifi`, `Clock`, `BoardModel` and `BoardMemory` therefore keep their intrinsics behind a type that a test can replace:
 
 | You write | What you get | On the board |
 |---|---|---|
@@ -45,22 +45,24 @@ A `native` method has no body, so a unit test on a desktop JVM can neither run n
 | `MCU.getI2c()` | the `I2c` interface, one shared instance | `hardware.internal.NativeI2c`, whose `native` methods are the I2C register intrinsics over `Wire` |
 | `MCU.getMouse()` | the `Mouse` interface, one shared instance | `hardware.internal.NativeMouse`, whose `native` methods are the USB HID intrinsics over the `Mouse` library |
 | `MCU.getLedMatrix()` | the `LedMatrix` interface, one shared instance | `hardware.internal.NativeLedMatrix`, whose `native` methods are the LED matrix intrinsics over `Arduino_LED_Matrix` (`columns()` folds to the target board's width) |
+| `MCU.getWifi()` | the `Wifi` interface, one shared instance | `hardware.internal.NativeWifi`, whose `native` methods are the Wi-Fi intrinsics over the board's networking library; the UNO R3 has no onboard radio, so the compiler rejects this call there |
+| `new ArduinoWifiShield().getWifi()` | the same `Wifi` interface | the UNO R3's way onto Wi-Fi: the retired [Arduino WiFi Shield](https://docs.arduino.cc/retired/shields/arduino-wifi-shield/) and its legacy `WiFi` library, through the same `NativeWifi` |
 | `MCU.getClock()` | the `Clock` interface, one shared instance | `hardware.internal.NativeClock`, whose `native` methods are the clock intrinsics |
 | `MCU.getBoardModel()` | the `BoardModel` interface, one shared instance | `hardware.internal.NativeBoardModel`, whose `native` methods the compiler folds to the target board's constants |
 | `MCU.getBoardMemory()` | the `BoardMemory` interface, one shared instance | `hardware.internal.NativeBoardMemory`, whose `native` methods report Juno's arena and the program's flash footprint |
-| `mock(Gpio.class)` / `mock(I2c.class)` / `mock(Mouse.class)` / `mock(LedMatrix.class)` / `mock(Clock.class)` / `mock(BoardModel.class)` / `mock(BoardMemory.class)` | a Mockito mock or a fake | only in a test |
+| `mock(Gpio.class)` / `mock(I2c.class)` / `mock(Mouse.class)` / `mock(LedMatrix.class)` / `mock(Wifi.class)` / `mock(Clock.class)` / `mock(BoardModel.class)` / `mock(BoardMemory.class)` | a Mockito mock or a fake | only in a test |
 
-The compiler keys these intrinsics on the `NativeGpio`/`NativeI2c`/`NativeMouse`/`NativeLedMatrix`/`NativeClock`/`NativeBoardModel`/`NativeBoardMemory` methods. On the board
+The compiler keys these intrinsics on the `NativeGpio`/`NativeI2c`/`NativeMouse`/`NativeLedMatrix`/`NativeWifi`/`NativeClock`/`NativeBoardModel`/`NativeBoardMemory` methods. On the board
 `Gpio` has one reachable implementation, so a call through it, such as
 `MCU.getGpio().digitalWrite(13, true)`, compiles to a single `bl digitalWrite`. Take `MCU.getGpio()`,
-`MCU.getI2c()`, `MCU.getMouse()`, `MCU.getLedMatrix()` and `MCU.getClock()` once, at startup, and pass them to the classes that need them; such a
+`MCU.getI2c()`, `MCU.getMouse()`, `MCU.getLedMatrix()`, `MCU.getWifi()` and `MCU.getClock()` once, at startup, and pass them to the classes that need them; such a
 class takes a `Gpio`, `I2c`, `Mouse`, `LedMatrix` or `Clock` in its constructor (the I2C drivers, such as `NineAxisMotionShield`
 and `PwmServoShield`, do), and its test passes a mock instead.
 
 An API class that is still static, such as the TFT driver, holds a package-private
 `static Gpio gpio = MCU.getGpio()`, which its own tests replace with a mock; `LedCanvas` asks
 `MCU.getLedMatrix()` for the width and to show a frame, so its tests install a mock with `NativeLedMatrix.setLedMatrix(...)`. A whole-program emulator,
-such as the examples' TFT screenshot tests, instead calls `NativeGpio.setGpio(...)`, `NativeI2c.setI2c(...)`, `NativeMouse.setMouse(...)`, `NativeLedMatrix.setLedMatrix(...)`, `NativeClock.setClock(...)`, `NativeBoardModel.setBoardModel(...)` and `NativeBoardMemory.setBoardMemory(...)` before the program
+such as the examples' TFT screenshot tests, instead calls `NativeGpio.setGpio(...)`, `NativeI2c.setI2c(...)`, `NativeMouse.setMouse(...)`, `NativeLedMatrix.setLedMatrix(...)`, `NativeWifi.setWifi(...)`, `NativeClock.setClock(...)`, `NativeBoardModel.setBoardModel(...)` and `NativeBoardMemory.setBoardMemory(...)` before the program
 starts.
 
 ## Consuming an API: `HttpClient` walkthrough
@@ -100,7 +102,7 @@ reads it the same way — a direct `System.getenv("LITERAL_NAME")` call, resolve
 compile time as described above:
 
 ```java
-Wifi.begin(
+MCU.getWifi().begin(
         System.getenv("JUNO_WIFI_SSID"),
         System.getenv("JUNO_WIFI_PASSWORD"));
 ```

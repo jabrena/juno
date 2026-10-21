@@ -49,6 +49,8 @@ import io.github.jabrena.juno.util.Random;
  */
 @Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
 public final class Gladiator {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final Clock CLOCK = MCU.getClock();
     private static final BoardModel BOARD = MCU.getBoardModel();
     private static final int ARENA = 0;
@@ -126,8 +128,8 @@ public final class Gladiator {
         TftTouchShield.fillScreen(ViewList.BACKGROUND);
         Hud.centered("CONNECTING WIFI", 110, 2, TftTouchShield.CYAN, ViewList.BACKGROUND);
         Serial.println("Connecting Wi-Fi");
-        Wifi.begin(settings.ssid(), settings.password());
-        while (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        WIFI.begin(settings.ssid(), settings.password());
+        while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }
         while (!Udp.listen(GladiatorProtocol.PORT)) {

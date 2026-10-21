@@ -414,8 +414,15 @@ public enum Intrinsic {
         return PORT_OPERATIONS.contains(this) || INLINABLE_OPERATIONS.contains(this);
     }
 
+    /**
+     * The Wi-Fi calls behind {@code Wifi}, declared on the stateless {@code NativeWifi}: they never read the radio object
+     * they are called on, but they wait on the network, so unlike the port operations they do not inline.
+     */
+    private static final Set<Intrinsic> WIFI_OPERATIONS = EnumSet.of(WIFI_BEGIN, WIFI_BEGIN_AP, WIFI_STATUS,
+            WIFI_LOCAL_IP, WIFI_GATEWAY_IP, WIFI_MAC_ADDRESS);
+
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {
-        return PORT_OPERATIONS.contains(this);
+        return PORT_OPERATIONS.contains(this) || WIFI_OPERATIONS.contains(this);
     }
 }

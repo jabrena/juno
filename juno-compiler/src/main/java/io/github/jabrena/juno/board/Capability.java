@@ -34,6 +34,16 @@ public enum Capability {
             return WIFI.unsupportedReason(board);
         }
     },
+    ONBOARD_WIFI("MCU.getWifi") {
+        @Override
+        public String unsupportedReason(Board board) {
+            if (board.supports(WIFI)) {
+                return board.displayName() + " has no onboard Wi-Fi radio; stack the Arduino WiFi Shield and get its "
+                        + "Wi-Fi with new ArduinoWifiShield().getWifi() instead";
+            }
+            return WIFI.unsupportedReason(board);
+        }
+    },
     HTTP_CLIENT("HttpClient") {
         @Override
         public String unsupportedReason(Board board) {

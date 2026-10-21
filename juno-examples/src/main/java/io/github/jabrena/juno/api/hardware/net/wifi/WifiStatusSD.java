@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -20,6 +21,8 @@ import java.util.Properties;
  * Everything is reported over Serial at 115200 baud.
  */
 public final class WifiStatusSD {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
     public static void main(String[] args) throws IOException {
@@ -33,23 +36,23 @@ public final class WifiStatusSD {
         }
 
         Serial.println("Starting WiFi from SD properties");
-        Wifi.begin(credentials.ssid(), credentials.password());
+        WIFI.begin(credentials.ssid(), credentials.password());
 
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
-            Serial.println("WiFi status: " + Wifi.status());
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+            Serial.println("WiFi status: " + WIFI.status());
             Delay.millis(1000);
             attempts = attempts + 1;
         }
 
-        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Serial.println("WiFi connection failed");
             return;
         }
 
         Serial.println("WiFi connected");
         while (true) {
-            Serial.println("WiFi status: " + Wifi.status());
+            Serial.println("WiFi status: " + WIFI.status());
             Delay.millis(1000);
         }
     }
