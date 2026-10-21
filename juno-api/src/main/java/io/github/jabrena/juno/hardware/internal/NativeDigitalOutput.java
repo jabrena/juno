@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.gpio.internal;
+package io.github.jabrena.juno.hardware.internal;
 
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 

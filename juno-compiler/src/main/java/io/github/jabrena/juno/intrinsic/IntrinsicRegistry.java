@@ -97,7 +97,7 @@ public final class IntrinsicRegistry {
                     Intrinsic.STRING_BUILDER_APPEND_STRING),
             Map.entry(new MethodRef("java/lang/StringBuilder", "toString", "()Ljava/lang/String;"),
                     Intrinsic.STRING_BUILDER_TO_STRING),
-            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/gpio/internal/NativeDigitalOutput", "of",
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeDigitalOutput", "of",
                     "(I)Lio/github/jabrena/juno/hardware/gpio/DigitalOutput;"), Intrinsic.DIGITAL_OUTPUT_OF),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/gpio/DigitalOutput", "high", "()V"),
                     Intrinsic.DIGITAL_OUTPUT_HIGH),

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.gpio;
 
-import io.github.jabrena.juno.hardware.gpio.internal.NativeDigitalOutput;
+import io.github.jabrena.juno.hardware.internal.NativeDigitalOutput;
 /**
  * A zero-cost GPIO handle. Juno represents instances as their integer pin number, so no heap
  * allocation or object header remains in the generated program. The operations are GPIO intrinsics
