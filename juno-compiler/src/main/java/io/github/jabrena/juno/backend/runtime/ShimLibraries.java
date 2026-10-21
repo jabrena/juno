@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.backend.runtime;
 
 import io.github.jabrena.juno.RuntimeLimits;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 
 import java.util.List;
@@ -45,6 +46,11 @@ public final class ShimLibraries {
      * notifications on that characteristic carry the sensor values {@code enableSensor} asked for.
      */
     String legoPoweredUpHelpers(boolean threads) {
+        return legoPoweredUpHelpers(threads, CoreRuntime.BleNames.ARDUINO_BLE);
+    }
+
+    /** {@link #legoPoweredUpHelpers(boolean)} over the BLE central {@code names} of the core. */
+    String legoPoweredUpHelpers(boolean threads, CoreRuntime.BleNames names) {
         String wait = threads
                 ? """
                   extern "C" void juno_thread_yield();
@@ -56,7 +62,10 @@ public final class ShimLibraries {
                   }""";
         // Continuation lines line up with the ${JUNO_LEGO_WAIT} placeholder's column in the template.
         return runtimeSource.load("common/lego-powered-up.cpp")
-                .replace("${JUNO_LEGO_WAIT}", wait.replace("\n", "\n                "));
+                .replace("${JUNO_LEGO_WAIT}", wait.replace("\n", "\n                "))
+                .replace("BLEDevice", names.device())
+                .replace("BLECharacteristic", names.characteristic())
+                .replace("BLE.", names.central() + ".");
     }
 
 

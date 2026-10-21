@@ -60,6 +60,12 @@ runs each of them once at startup and then prints the results.
 `SdCard` works over the board's SPI pins (D11 to D13) through the same SdFat runtime as the UNO
 boards; see the Nano Connector Carrier below for a ready-made slot.
 
+`PoweredUpHubRemote` connects to a LEGO Powered UP hub over Bluetooth LE. The Nano's radio is driven by the
+core's BLE library through a small adapter, since `ArduinoBLE` (used on the UNO R4 WiFi and UNO Q) does not
+run on this chip. [`NanoPoweredUpHubInfo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/NanoPoweredUpHubInfo.java)
+prints the hub's type, battery and signal strength and only reads from the hub. The adapter is not yet confirmed on
+hardware.
+
 Wi-Fi and the other optional capabilities are not wired yet; Juno rejects a program
 that uses them at compile time.
 

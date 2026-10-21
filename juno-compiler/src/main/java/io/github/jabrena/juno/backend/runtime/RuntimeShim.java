@@ -97,7 +97,7 @@ public final class RuntimeShim {
         }
         // ArduinoBLE is another optional library (arduino-cli lib install ArduinoBLE), like Mouse above.
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
-            shim.append("#include <ArduinoBLE.h>\n");
+            shim.append(core.bleIncludes());
         }
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
@@ -208,7 +208,8 @@ public final class RuntimeShim {
             shim.append(shimLibraries.servoHelpers());
         }
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
-            shim.append(shimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS)));
+            shim.append(core.bleHelpers());
+            shim.append(shimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS), core.bleNames()));
         }
         if (uses(ShimFeature.PARALLEL_BUS)) {
             shim.append(core.parallelBusHelpers());

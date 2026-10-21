@@ -53,7 +53,8 @@ public enum Board {
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32", "arduino-nano-esp32", "Nano ESP32",
             "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO,
-            EnumSet.of(Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY, Capability.WATCHDOG));
+            EnumSet.of(Capability.BLUETOOTH_LE, Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY,
+                    Capability.WATCHDOG));
 
     private final String apiClassName;
     private final String id;

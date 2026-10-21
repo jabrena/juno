@@ -138,6 +138,29 @@ final class Esp32CoreRuntime implements CoreRuntime {
         throw unsupported("a cryptographic entropy source");
     }
 
+    /** The core's BLE library, which the adapter below drives through the names of {@link #bleNames()}. */
+    @Override
+    public String bleIncludes() {
+        return """
+                #include <BLEAdvertisedDevice.h>
+                #include <BLEClient.h>
+                #include <BLEDevice.h>
+                #include <BLERemoteCharacteristic.h>
+                #include <BLERemoteService.h>
+                #include <BLEScan.h>
+                """;
+    }
+
+    @Override
+    public String bleHelpers() {
+        return runtimeSource.load("esp32/ble.cpp");
+    }
+
+    @Override
+    public BleNames bleNames() {
+        return new BleNames("JunoBLEDevice", "JunoBLECharacteristic", "juno_ble");
+    }
+
     @Override
     public String threadIncludes() {
         return "#include <freertos/FreeRTOS.h>\n#include <freertos/semphr.h>\n#include <freertos/task.h>\n";

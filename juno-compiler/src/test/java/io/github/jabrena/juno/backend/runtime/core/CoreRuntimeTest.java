@@ -368,6 +368,16 @@ class CoreRuntimeTest {
         assertThat(port).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 4096u");
     }
 
+    @Test
+    @DisplayName("The ESP32 core names its own BLE adapter, while the UNO boards keep ArduinoBLE")
+    void shouldNameTheEsp32BleAdapter() {
+        // Then
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).bleNames())
+                .isEqualTo(new CoreRuntime.BleNames("JunoBLEDevice", "JunoBLECharacteristic", "juno_ble"));
+        assertThat(coreRuntimes.of(ArduinoCore.RENESAS_UNO).bleNames()).isEqualTo(CoreRuntime.BleNames.ARDUINO_BLE);
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).bleHelpers()).contains("class JunoBLEDevice");
+    }
+
     private static Arguments esp32Feature(String feature, Consumer<CoreRuntime> use) {
         return arguments(feature, use);
     }
