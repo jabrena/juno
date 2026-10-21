@@ -555,6 +555,20 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Lowers Smtp.send's STARTTLS upgrade through the ESP_SSLClient wrapper on the ESP32 core")
+    void shouldLowerStarttlsOnTheEsp32Core() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoStarttls", """
+                        Serial.println(Smtp.send("smtp.example.com", 587, "user", "secret", "from@example.com",
+                                "to@example.com", "subject", "body"));
+                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <ESP_SSLClient.h>", "juno_smtp_send(",
+                "ESP_SSLClient client;", "connectSSL()");
+    }
+
+    @Test
     @DisplayName("Rejects the access-point and UDP networking the Nano ESP32 has no capability for yet")
     void shouldRejectUnwiredNetworking() {
         // When & Then

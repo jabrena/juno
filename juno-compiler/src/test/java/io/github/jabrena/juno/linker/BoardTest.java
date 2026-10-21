@@ -54,6 +54,7 @@ class BoardTest {
                 arguments(Board.NANO_ESP32, Capability.HTTPS_CLIENT, true),
                 arguments(Board.NANO_ESP32, Capability.HTTP_SERVER, true),
                 arguments(Board.NANO_ESP32, Capability.TLS_EMAIL, true),
+                arguments(Board.NANO_ESP32, Capability.SMTP_STARTTLS, true),
                 arguments(Board.NANO_ESP32, Capability.WATCHDOG, true));
     }
 

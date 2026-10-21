@@ -74,8 +74,9 @@ server, credential and message field read from the card:
 [`NanoSmtpSendSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java)
 sends one message and [`NanoPop3InboxSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java)
 counts the mailbox's messages. A runtime `String` holds 31 bytes, so the password, subject and body must fit in
-31 bytes each. The email client does not check the server's certificate chain yet, and STARTTLS (`Smtp.send`)
-is not wired yet.
+31 bytes each. STARTTLS (`Smtp.send`, port 587) upgrades a plain connection with the `ESP_SSLClient`
+library, as on the UNO R4 WiFi: install it once with `arduino-cli lib install ESP_SSLClient`. The email
+client does not check the server's certificate chain yet.
 
 `HttpServer` runs on the station address:
 [`NanoHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java)
