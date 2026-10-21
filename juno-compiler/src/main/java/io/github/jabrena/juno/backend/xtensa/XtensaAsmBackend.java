@@ -57,8 +57,8 @@ import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.WORD;
  * <h2>Scope</h2>
  * This first cut lowers what GPIO, delay and serial programs need: {@code int}, {@code long}, {@code float}
  * and {@code double} arithmetic and comparisons, branches and {@code switch}, static and instance calls, interface
- * dispatch, objects, fields, statics and arrays. Lambdas and threads are not lowered yet; a program using one fails
- * with a {@link CompileException} rather than generating code that was never checked.
+ * dispatch, lambdas and method references, objects, fields, statics and arrays. Threads are not lowered yet; a
+ * program using one fails with a {@link CompileException} rather than generating code that was never checked.
  */
 public final class XtensaAsmBackend implements AsmBackend {
     /**
@@ -89,6 +89,7 @@ public final class XtensaAsmBackend implements AsmBackend {
     private XtensaIntArithmeticLowering ints;
     private XtensaMemoryLowering memory;
     private XtensaWideArithmeticLowering wides;
+    private XtensaLambdaLowering lambdas;
     private IntrinsicLowering intrinsics;
 
     /**
@@ -129,6 +130,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         ints = new XtensaIntArithmeticLowering(xtensa);
         memory = new XtensaMemoryLowering(xtensa, layout);
         wides = new XtensaWideArithmeticLowering(xtensa, features);
+        lambdas = new XtensaLambdaLowering(xtensa, layout, memory, functionLabels);
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new XtensaIntrinsicTarget(xtensa), coreRuntime, board.generation(),
                 features, usedMath, false);
@@ -301,6 +303,8 @@ public final class XtensaAsmBackend implements AsmBackend {
             case IrInstruction.Call call -> emitResolvedCall(output, frame, call.method(), call.arguments(),
                     call.target());
             case IrInstruction.InterfaceCall call -> emitInterfaceCall(output, frame, call);
+            case IrInstruction.LambdaCreate lambda -> lambdas.emitCreate(output, frame, lambda);
+            case IrInstruction.LambdaCall call -> lambdas.emitCall(output, frame, call);
             case IrInstruction.IntrinsicCall call -> intrinsics.emit(output, frame, call);
             case IrInstruction.NewObject object -> memory.emitNewObject(output, frame, object);
             case IrInstruction.LoadField load -> memory.emitLoadField(output, frame, load);
@@ -360,9 +364,6 @@ public final class XtensaAsmBackend implements AsmBackend {
     private void emitInterfaceCall(StringBuilder output, FrameLayout frame, IrInstruction.InterfaceCall call) {
         String done = xtensa.newLabel(".LinterfaceDone");
         for (var target : call.targets()) {
-            if (target.isLambda()) {
-                throw Architecture.XTENSA.unsupported("lambdas");
-            }
             String next = xtensa.newLabel(".LinterfaceNext");
             String matches = xtensa.newLabel(".LinterfaceMatch");
             xtensa.load(output, frame, A, call.arguments().getFirst());
@@ -371,7 +372,12 @@ public final class XtensaAsmBackend implements AsmBackend {
             output.append("    beq a8, a9, ").append(matches).append('\n')
                     .append("    j ").append(next).append('\n')
                     .append(matches).append(":\n");
-            emitResolvedCall(output, frame, target.method(), call.arguments(), call.target());
+            if (target.isLambda()) {
+                lambdas.emitCall(output, frame, new IrInstruction.LambdaCall(call.target(),
+                        Objects.requireNonNull(target.lambda()), call.arguments()));
+            } else {
+                emitResolvedCall(output, frame, target.method(), call.arguments(), call.target());
+            }
             output.append("    j ").append(done).append('\n')
                     .append(next).append(":\n");
         }

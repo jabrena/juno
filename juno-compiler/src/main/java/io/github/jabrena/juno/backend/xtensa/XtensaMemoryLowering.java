@@ -33,9 +33,14 @@ final class XtensaMemoryLowering {
     }
 
     void emitNewObject(StringBuilder output, FrameLayout frame, IrInstruction.NewObject object) {
-        allocate(output, layout.objectSize(object.className()), WORD);
-        int classId = layout.throwableClasses().indexOf(object.className());
-        Integer typeId = layout.objectTypeId(object.className());
+        emitNewObject(output, frame, object.className(), object.target());
+    }
+
+    /** Allocates a zero-filled {@code className} object, tags it with its type id and stores it to {@code target}. */
+    void emitNewObject(StringBuilder output, FrameLayout frame, String className, Value target) {
+        allocate(output, layout.objectSize(className), WORD);
+        int classId = layout.throwableClasses().indexOf(className);
+        Integer typeId = layout.objectTypeId(className);
         if (classId >= 0) {
             // juno_alloc zero-fills, so the message word already starts out null.
             xtensa.loadImmediate(output, B, classId);
@@ -44,7 +49,7 @@ final class XtensaMemoryLowering {
             xtensa.loadImmediate(output, B, typeId);
             xtensa.storeWordAt(output, B, C, 0);
         }
-        xtensa.store(output, frame, C, object.target());
+        xtensa.store(output, frame, C, target);
     }
 
     /** {@code juno_alloc(size, alignment)}; the zero-filled block comes back in {@code a10}. */
