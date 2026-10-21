@@ -80,9 +80,10 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return runtimeSource.load("esp32/wifi-station.cpp");
     }
 
+    /** A {@code WiFiServer} on the station interface; the shared request parser reads its accepted clients. */
     @Override
     public String httpServerTransport() {
-        throw unsupported("an HTTP server");
+        return runtimeSource.load("esp32/http-server-transport.cpp");
     }
 
     @Override

@@ -314,7 +314,6 @@ class CoreRuntimeTest {
                 esp32Feature("an LED matrix", CoreRuntime::ledMatrixType),
                 esp32Feature("an LED matrix", CoreRuntime::ledMatrixColumns),
                 esp32Feature("UDP networking", runtime -> runtime.wifiIncludes(true)),
-                esp32Feature("an HTTP server", CoreRuntime::httpServerTransport),
                 esp32Feature("UDP networking", CoreRuntime::udpDeclaration),
                 esp32Feature("ParallelBus", CoreRuntime::parallelBusHelpers),
                 esp32Feature("flash usage queries", CoreRuntime::flashHelpers),

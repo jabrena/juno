@@ -504,6 +504,24 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Lowers HttpServer through a WiFiServer transport with placement new")
+    void shouldLowerHttpServerOnTheWifiServer() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoServer", """
+                        byte[] body = new byte[64];
+                        HttpServer.begin(80);
+                        if (HttpServer.accept(body, body.length) >= 0) {
+                            HttpServer.respond(200, "text/plain", "online");
+                        }
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpServer;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_http_server_begin(", "WiFiServer(static_cast<uint16_t>(port))",
+                "#include <new>");
+        assertThat(result.runtimeShim()).doesNotContain("BridgeTCPServer");
+    }
+
+    @Test
     @DisplayName("Rejects the access-point and UDP networking the Nano ESP32 has no capability for yet")
     void shouldRejectUnwiredNetworking() {
         // When & Then
