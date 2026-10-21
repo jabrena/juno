@@ -58,8 +58,11 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://docs.arduino.cc/tutorials/nano-connector-carrier/getting-started-nano-connector-carrier/">Getting started with the Nano Connector Carrier</a>
  */
 public final class NanoConnectorCarrier {
-    /** The microSD slot's chip select as shipped. */
-    private static final int SD_CHIP_SELECT = Gpio.getD4();
+    /**
+     * The microSD slot's chip select as shipped. A compile-time constant, so a card taken in another class's static
+     * initializer never reads it before this class's own initializer has run.
+     */
+    private static final int SD_CHIP_SELECT = 4;
     /** The chip selects the carrier's solder jumpers can move the microSD slot to. */
     private static final int SD_CHIP_SELECT_JUMPER_D2 = Gpio.getD2();
     private static final int SD_CHIP_SELECT_JUMPER_D3 = Gpio.getD3();

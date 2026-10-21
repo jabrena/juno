@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.hardware.device.wifi;
 
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
-import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -18,8 +17,11 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://docs.arduino.cc/retired/shields/arduino-wifi-shield/">Arduino WiFi Shield</a>
  */
 public final class ArduinoWifiShield {
-    /** The microSD socket's chip select. */
-    private static final int SD_CHIP_SELECT = Gpio.getD4();
+    /**
+     * The microSD socket's chip select. A compile-time constant, so a card taken in another class's static initializer
+     * never reads it before this class's own initializer has run.
+     */
+    private static final int SD_CHIP_SELECT = 4;
 
     private @Nullable SdCard sdCard;
 

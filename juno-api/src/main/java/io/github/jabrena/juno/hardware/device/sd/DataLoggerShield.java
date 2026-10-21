@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.hardware.device.sd;
 
-import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import org.jspecify.annotations.Nullable;
 
@@ -15,8 +14,11 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://www.az-delivery.de/en/products/datenlogger-modul">AZ-Delivery data logger module</a>
  */
 public final class DataLoggerShield {
-    /** The SD socket's chip select. */
-    private static final int SD_CHIP_SELECT = Gpio.getD10();
+    /**
+     * The SD socket's chip select. A compile-time constant, so a card taken in another class's static initializer
+     * never reads it before this class's own initializer has run.
+     */
+    private static final int SD_CHIP_SELECT = 10;
 
     private @Nullable SdCard sdCard;
 
