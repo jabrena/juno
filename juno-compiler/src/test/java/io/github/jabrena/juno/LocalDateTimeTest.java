@@ -190,7 +190,7 @@ class LocalDateTimeTest {
         // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OfflineClock"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Nano ESP32 has no onboard WiFi module");
+                .hasMessageContaining("UDP networking on the ESP32 core");
     }
 
     @Test

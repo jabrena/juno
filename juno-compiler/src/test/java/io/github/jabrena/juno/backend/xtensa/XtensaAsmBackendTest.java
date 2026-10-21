@@ -451,13 +451,28 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects networking, which the Nano ESP32 has no capability for yet")
-    void shouldRejectNetworking() {
+    @DisplayName("Lowers the onboard Wi-Fi station calls through the WiFi.h shim helpers")
+    void shouldLowerOnboardWifi() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoWifi", """
+                        Arduino.getWifi().begin("net", "secret");
+                        Serial.println(Arduino.getWifi().status());
+                """, "import io.github.jabrena.juno.hardware.Arduino; import io.github.jabrena.juno.hardware.serial.Serial;"
+                + " import io.github.jabrena.juno.hardware.serial.BaudRate;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <WiFi.h>").contains("juno_wifi_begin");
+        assertThat(result.runtimeShim()).doesNotContain("WiFiS3.h").doesNotContain("beginAP");
+    }
+
+    @Test
+    @DisplayName("Rejects the access-point and UDP networking the Nano ESP32 has no capability for yet")
+    void shouldRejectUnwiredNetworking() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.NanoWifi", "Arduino.getWifi().status();",
+        assertThatThrownBy(() -> compile("demo.NanoAp", "Arduino.getWifi().beginAP(\"ap\", \"secret\");",
                 "import io.github.jabrena.juno.hardware.Arduino; import io.github.jabrena.juno.hardware.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Nano ESP32 has no onboard WiFi module");
+                .hasMessageContaining("Nano ESP32's WiFi library cannot start an access point");
     }
 
     @Test

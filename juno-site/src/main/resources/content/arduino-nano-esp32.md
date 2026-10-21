@@ -60,7 +60,12 @@ runs each of them once at startup and then prints the results.
 `SdCard` works over the board's SPI pins (D11 to D13) through the same SdFat runtime as the UNO
 boards; see the Nano Connector Carrier below for a ready-made slot.
 
-Wi-Fi and the other optional capabilities are not wired yet; Juno rejects a program
+Wi-Fi works in station mode through the module's onboard radio: `Arduino.getWifi()` joins a network
+with `begin(ssid, password)` and reports `status()`, `localIP()`, `gatewayIP()` and `macAddress()`.
+[`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java)
+reads the credentials from `application.properties` on the carrier's microSD card (see
+[SD Card Storage](../storage)). The access point (`beginAP`), UDP, TCP, HTTP and HTTPS clients and
+servers, email, BLE and the other optional capabilities are not wired yet; Juno rejects a program
 that uses them at compile time.
 
 ## Nano Connector Carrier

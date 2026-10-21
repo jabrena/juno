@@ -19,7 +19,8 @@ import java.util.Map;
  * the ESP32-S3 GPIO number (48); the real symbols take GPIO numbers, so the assembly reaches them through
  * {@code juno_*} wrappers compiled with the macros in effect. Threads are FreeRTOS tasks handing a baton (see
  * {@link ThreadRuntime#esp32Port}). SD cards use the shared SdFat helpers over the core's default SPI pins. Everything
- * else beyond GPIO, delays, serial, threads and SD cards is not wired to this core yet and fails at compile time.
+ * else beyond GPIO, delays, serial, threads, SD cards and station-mode Wi-Fi is not wired to this core yet and fails at
+ * compile time.
  */
 final class Esp32CoreRuntime implements CoreRuntime {
     private static final Map<String, String> PIN_REMAP_WRAPPERS = Map.of(
@@ -64,14 +65,19 @@ final class Esp32CoreRuntime implements CoreRuntime {
         throw unsupported("an LED matrix");
     }
 
+    /** {@code WiFi.h} covers the station and access-point calls; the UDP and TCP classes are not wired yet. */
     @Override
     public String wifiIncludes(boolean udp) {
-        throw unsupported("networking");
+        if (udp) {
+            throw unsupported("UDP networking");
+        }
+        return "#include <WiFi.h>\n";
     }
 
+    /** Station mode only: the core's {@code WiFi} class has no {@code beginAP}, so the access point stays out. */
     @Override
     public String wifiHelpers() {
-        throw unsupported("networking");
+        return runtimeSource.load("esp32/wifi-station.cpp");
     }
 
     @Override
