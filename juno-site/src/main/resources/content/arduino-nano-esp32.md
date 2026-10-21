@@ -26,18 +26,21 @@ own backend instead of the Thumb-2 or AVR one.
 ## What Juno supports
 
 This is the first step of Nano ESP32 support: `Gpio`, `DigitalOutput`, `Delay` and `Serial` over
-the native USB port, with `int`, `long` and `float` arithmetic, objects, arrays, static and
+the native USB port, with `int`, `long`, `float` and `double` arithmetic, objects, arrays, static and
 interface calls. Pins keep the numbers printed on the board: the core builds with
 `BOARD_HAS_PIN_REMAP`, and Juno calls `pinMode`/`digitalWrite` through wrappers compiled under
 that remapping, so `MCU.getGpio().getBuiltinLed()` is `13` and drives GPIO48.
 
-`long` and `float` operations go through the same runtime helpers as on the other boards, which
+`long`, `float` and `double` operations go through the same runtime helpers as on the other boards, which
 keep Java semantics (a `long` division by zero stops the program, float-to-int casts saturate, NaN
 comparisons are false); the ESP32 toolchain compiles the `float` helpers to the ESP32-S3's
-single-precision FPU. [`SerialWideMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialWideMath.java)
-prints a block of `long` and `float` results to compare with a desktop JVM run.
+single-precision FPU (`double` has no FPU and runs as soft-float), and the double-precision
+`java.lang.Math` functions use the toolchain's libm. [`SerialWideMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialWideMath.java)
+prints a block of `long` and `float` results, and
+[`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java)
+one of `double` and `Math` results, to compare with a desktop JVM run.
 
-`double` arithmetic, lambdas, threads, `@Watchdog`, Wi-Fi and the other optional capabilities are
+Lambdas, threads, `@Watchdog`, Wi-Fi and the other optional capabilities are
 not wired yet; Juno rejects a program that uses them at compile time.
 
 ## Build and run

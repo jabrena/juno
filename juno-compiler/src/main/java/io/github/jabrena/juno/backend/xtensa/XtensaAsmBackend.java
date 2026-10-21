@@ -55,10 +55,10 @@ import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.WORD;
  * a call needing more fails to compile, as do threads.
  *
  * <h2>Scope</h2>
- * This first cut lowers what GPIO, delay and serial programs need: {@code int}, {@code long} and {@code float}
- * arithmetic and comparisons, branches and {@code switch}, static and instance calls, interface dispatch, objects,
- * fields, statics and arrays. The {@code double} operations, lambdas and threads are not lowered yet; a program
- * using one fails with a {@link CompileException} rather than generating code that was never checked.
+ * This first cut lowers what GPIO, delay and serial programs need: {@code int}, {@code long}, {@code float}
+ * and {@code double} arithmetic and comparisons, branches and {@code switch}, static and instance calls, interface
+ * dispatch, objects, fields, statics and arrays. Lambdas and threads are not lowered yet; a program using one fails
+ * with a {@link CompileException} rather than generating code that was never checked.
  */
 public final class XtensaAsmBackend implements AsmBackend {
     /**
