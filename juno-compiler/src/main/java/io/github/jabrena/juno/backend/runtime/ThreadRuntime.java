@@ -36,8 +36,9 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
  *
  * <p>Only how a stack is created, how control moves between two of them and where the tick comes from differ per
  * board; that lives in the {@link CoreRuntime}'s port ({@link #renesasPort}, {@link #zephyrPort},
- * {@link #avrPort}): the UNO R4 has no RTOS, so a few lines of assembly swap stack pointers; the UNO Q already runs
- * on Zephyr, whose own threads carry the stacks while a baton semaphore keeps exactly one of them running Java code.
+ * {@link #esp32Port}, {@link #avrPort}): the UNO R4 has no RTOS, so a few lines of assembly swap stack pointers; the
+ * UNO Q already runs on Zephyr and the Nano ESP32 on FreeRTOS, whose own threads carry the stacks while a baton
+ * semaphore keeps exactly one of them running Java code. The Nano ESP32 is preempted at safepoints, like AVR.
  */
 public final class ThreadRuntime {
     private final IoRuntime ioRuntime = new IoRuntime();
@@ -85,6 +86,16 @@ public final class ThreadRuntime {
      */
     public String zephyrPort(int maxThreads, int stackBytes) {
         return runtimeSource.load("zephyr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
+    }
+
+    /**
+     * The Nano ESP32's port: like the UNO Q's, every Juno thread is an RTOS task (here FreeRTOS, which the
+     * {@code arduino:esp32} core already runs) parked on its own baton semaphore, so only the baton holder runs Java
+     * code. There is no asynchronous tick: the backend emits safepoints, as on AVR.
+     */
+    public String esp32Port(int maxThreads, int stackBytes) {
+        return runtimeSource.load("esp32/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 

@@ -134,6 +134,44 @@ class XtensaAsmBackendTest {
             }
             """;
 
+    private static final String THREADS = """
+            package demo;
+            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+            import io.github.jabrena.juno.annotations.Board;
+            import io.github.jabrena.juno.hardware.MCU;
+            import io.github.jabrena.juno.hardware.serial.Serial;
+            @Board(ArduinoNanoEsp32.class)
+            public final class NanoThreads {
+                static final class Total {
+                    int value;
+                }
+                static final class Counter implements Runnable {
+                    private final Total total;
+                    private final int limit;
+                    Counter(Total total, int limit) {
+                        this.total = total;
+                        this.limit = limit;
+                    }
+                    public void run() {
+                        for (int index = 0; index < limit; index++) {
+                            synchronized (total) {
+                                total.value = total.value + 1;
+                            }
+                        }
+                    }
+                }
+                public static void main(String[] args) throws InterruptedException {
+                    int limit = MCU.getGpio().analogRead(0);
+                    Total total = new Total();
+                    Thread first = Thread.startVirtualThread(new Counter(total, limit));
+                    Thread second = Thread.startVirtualThread(new Counter(total, limit));
+                    first.join();
+                    second.join();
+                    Serial.println(total.value);
+                }
+            }
+            """;
+
     private static final String SHAPES = """
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
@@ -573,6 +611,37 @@ class XtensaAsmBackendTest {
 
         // When & Then
         assemble(gcc, "NanoLambdas", result);
+    }
+
+    @Test
+    @DisplayName("Threads get safepoints on method entry and backedges, a global entry symbol and a main-exit join")
+    void shouldLowerThreadsWithSafepoints() throws Exception {
+        // Given
+        CompilationResult result = compileSource("demo.NanoThreads", THREADS);
+
+        // When & Then
+        assertThat(result.assembly())
+                .contains("    .global juno_thread_entry\n", "juno_thread_entry:\n")
+                .contains("call8 juno_thread_start_virtual\n", "call8 juno_thread_join\n")
+                .contains("call8 juno_monitor_enter\n", "call8 juno_monitor_exit\n")
+                .contains("call8 juno_thread_backedge\n", "call8 juno_thread_main_exit\n")
+                .containsPattern("entry a1, \\d+\n(    s32i a\\d, a1, \\d+\n)*    call8 juno_thread_safepoint\n")
+                .doesNotContain("call8 yield\n", "juno_java_code_start");
+        assertThat(result.runtimeShim())
+                .contains("#include <freertos/semphr.h>", "xTaskCreateStaticPinnedToCore", "juno_thread_backedge")
+                .doesNotContain("juno_preempt_tick");
+    }
+
+    @Test
+    @DisplayName("A thread program assembles with the ESP32-S3 toolchain")
+    void shouldAssembleThreadsWithTheXtensaToolchain() throws Exception {
+        // Given
+        String gcc = availableXtensaGcc();
+        Assumptions.assumeTrue(gcc != null, "No xtensa-esp32s3-elf-gcc toolchain available");
+        CompilationResult result = compileSource("demo.NanoThreads", THREADS);
+
+        // When & Then
+        assemble(gcc, "NanoThreads", result);
     }
 
     @Test

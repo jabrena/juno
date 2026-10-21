@@ -3,9 +3,11 @@ package io.github.jabrena.juno.backend.runtime.core;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
+import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
+import io.github.jabrena.juno.board.ArduinoCore;
 
 import java.util.Map;
 
@@ -14,8 +16,9 @@ import java.util.Map;
  * plain C symbols the assembly calls directly. The board builds with {@code BOARD_HAS_PIN_REMAP}, which turns
  * {@code pinMode}/{@code digitalWrite} and friends into macros translating the printed pin number ({@code D13}) to
  * the ESP32-S3 GPIO number (48); the real symbols take GPIO numbers, so the assembly reaches them through
- * {@code juno_*} wrappers compiled with the macros in effect. Everything beyond GPIO, delays and serial is not
- * wired to this core yet and fails at compile time.
+ * {@code juno_*} wrappers compiled with the macros in effect. Threads are FreeRTOS tasks handing a baton (see
+ * {@link ThreadRuntime#esp32Port}). Everything else beyond GPIO, delays, serial and threads is not wired to this core
+ * yet and fails at compile time.
  */
 final class Esp32CoreRuntime implements CoreRuntime {
     private static final Map<String, String> PIN_REMAP_WRAPPERS = Map.of(
@@ -26,6 +29,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
             "analogWrite", "juno_analog_write");
 
     private final RuntimeSource runtimeSource = new RuntimeSource();
+    private final ThreadRuntime threadRuntime = new ThreadRuntime();
 
     @Override
     public String delayMillisFunction() {
@@ -125,12 +129,19 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String threadIncludes() {
-        throw unsupported("threads");
+        return "#include <freertos/FreeRTOS.h>\n#include <freertos/semphr.h>\n#include <freertos/task.h>\n";
+    }
+
+    /** FreeRTOS tasks carry the stacks; the backend preempts at safepoints rather than from a tick. */
+    @Override
+    public String threadPort(RuntimeConfig config) {
+        return threadRuntime.esp32Port(config.maxThreads(),
+                config.threadStackBytes(ArduinoCore.ESP32.defaultThreadStackBytes()));
     }
 
     @Override
-    public String threadPort(RuntimeConfig config) {
-        throw unsupported("threads");
+    public boolean preemptsAsynchronously() {
+        return false;
     }
 
     private CompileException unsupported(String feature) {
