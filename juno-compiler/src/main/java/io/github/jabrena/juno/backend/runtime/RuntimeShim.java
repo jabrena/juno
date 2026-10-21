@@ -236,7 +236,7 @@ public final class RuntimeShim {
                 new ShimFeatureBlock(ShimFeature.WIFI, core::wifiHelpers),
                 new ShimFeatureBlock(ShimFeature.UDP, () -> networkShimLibraries.udpHelpers(core.udpDeclaration())),
                 new ShimFeatureBlock(ShimFeature.TCP, () -> networkShimLibraries.tcpHelpers(core.tcpClientHelpers())),
-                new ShimFeatureBlock(ShimFeature.SD, shimLibraries::sdHelpers),
+                new ShimFeatureBlock(ShimFeature.SD, () -> core.sdHelpers(4, 16, 32, 64, 96)),
                 new ShimFeatureBlock(ShimFeature.SD_CAPACITY, shimLibraries::sdCapacityHelpers),
                 new ShimFeatureBlock(ShimFeature.LONG, shimLibraries::longHelpers),
                 new ShimFeatureBlock(ShimFeature.FLOAT, shimLibraries::floatHelpers),

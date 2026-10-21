@@ -321,7 +321,6 @@ class CoreRuntimeTest {
                 esp32Feature("TLS networking", CoreRuntime::httpsHelpers),
                 esp32Feature("TLS networking", CoreRuntime::httpsClientDeclaration),
                 esp32Feature("ParallelBus", CoreRuntime::parallelBusHelpers),
-                esp32Feature("SD cards", runtime -> runtime.sdHelpers(1, 1, 1, 1, 1)),
                 esp32Feature("flash usage queries", CoreRuntime::flashHelpers),
                 esp32Feature("a cryptographic entropy source", CoreRuntime::uuidRandomHelpers));
     }
@@ -340,6 +339,20 @@ class CoreRuntimeTest {
         assertThat(port).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
                 "JUNO_THREAD_STACK_BYTES = 8192u", "xTaskCreateStaticPinnedToCore", "xSemaphoreTake");
         assertThat(esp32.preemptsAsynchronously()).isFalse();
+    }
+
+    @Test
+    @DisplayName("The ESP32 core reuses the shared SdFat helpers on its default SPI pins")
+    void shouldShareTheSdHelpersOnTheEsp32() {
+        // Given
+        CoreRuntime esp32 = coreRuntimes.of(ArduinoCore.ESP32);
+
+        // When
+        String helpers = esp32.sdHelpers(4, 16, 32, 64, 96);
+
+        // Then
+        assertThat(helpers).contains("static SdFat32 juno_sd;", "juno_sd.begin(juno_nano_pin(chipSelectPin))",
+                "JUNO_SD_MAX_OPEN_FILES = 4;");
     }
 
     @Test

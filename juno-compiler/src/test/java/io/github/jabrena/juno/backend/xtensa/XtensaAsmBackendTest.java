@@ -343,9 +343,26 @@ class XtensaAsmBackendTest {
         // When & Then
         assertThat(result.runtimeShim())
                 .contains("extern \"C\" void juno_pin_mode(int32_t pin, int32_t mode) {\n"
-                        + "  pinMode(pin, mode == 1 ? OUTPUT : mode == 2 ? INPUT_PULLUP : INPUT);")
+                        + "  pinMode(juno_nano_pin(pin), mode == 1 ? OUTPUT : mode == 2 ? INPUT_PULLUP : INPUT);")
                 .contains("extern \"C\" void juno_digital_write(int32_t pin, int32_t value) {")
                 .doesNotContain("extern \"C\" void yield()", "Arduino_LED_Matrix");
+    }
+
+    @Test
+    @DisplayName("Juno's A0-A5 numbers (14-19) reach the Nano's A0-A5 instead of its RGB LED pins")
+    void shouldTranslateAnalogPinNumbersToTheNanosOwn() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.NanoAnalog", """
+                        Serial.begin(BaudRate.BAUD_115200);
+                        Serial.println(MCU.getGpio().analogRead(Gpio.getA0()));
+                """, SERIAL_IMPORTS + "import io.github.jabrena.juno.hardware.gpio.Gpio;\n");
+
+        // When & Then
+        assertThat(result.assembly()).contains("movi a10, 14\n", "call8 juno_analog_read\n");
+        assertThat(result.runtimeShim())
+                .contains("A0, A1, A2, A3, A4, A5", "return pin >= 0 && pin < 20 ? pins[pin] : pin;")
+                .contains("return analogRead(juno_nano_pin(pin));", "digitalWrite(juno_nano_pin(pin), value);")
+                .contains("return digitalRead(juno_nano_pin(pin));", "analogWrite(juno_nano_pin(pin), value);");
     }
 
     @Test
@@ -441,6 +458,41 @@ class XtensaAsmBackendTest {
                 "import io.github.jabrena.juno.hardware.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("Nano ESP32 has no onboard WiFi module");
+    }
+
+    @Test
+    @DisplayName("Reads a file from the Nano Connector Carrier's microSD slot through the SdFat shim helpers")
+    void shouldLowerSdCardAccessOnTheConnectorCarrier() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.NanoSd", """
+                        Serial.begin(BaudRate.BAUD_115200);
+                        if (SdCard.begin(new NanoConnectorCarrier().getSdChipSelect())) {
+                            InputStream file = SdCard.open("app.txt");
+                            if (file != null) {
+                                try {
+                                    while (file.available() > 0) {
+                                        Serial.println(file.read());
+                                    }
+                                    file.close();
+                                } catch (java.io.IOException failure) {
+                                    Serial.println("read failed");
+                                }
+                            }
+                        }
+                """, SERIAL_IMPORTS + """
+                import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
+                import io.github.jabrena.juno.hardware.device.sd.SdCard;
+                import java.io.InputStream;
+                """);
+
+        // When & Then
+        assertThat(result.assembly())
+                .contains("call8 juno_sd_begin\n", "call8 juno_sd_open\n", "call8 juno_sd_file_available\n")
+                .contains("call8 juno_sd_file_read\n", "call8 juno_sd_file_close\n");
+        assertThat(result.runtimeShim())
+                .contains("#include <SPI.h>\n#include <SdFat.h>\n", "static SdFat32 juno_sd;")
+                .contains("extern \"C\" int32_t juno_sd_begin(int32_t chipSelectPin) {")
+                .contains("juno_sd.begin(juno_nano_pin(chipSelectPin))");
     }
 
     @Test

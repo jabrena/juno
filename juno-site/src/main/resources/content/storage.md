@@ -51,6 +51,31 @@ display: see [`WifiStatusSDTFT`](../tft-touch-shield#examples) for the same flow
 On UNO WiFi Rev2, Juno automatically drives the shield's D11-D13 SD connection with software SPI,
 leaving the board's ICSP-routed hardware SPI bus available to the NINA-W102 Wi-Fi module.
 
+## Nano Connector Carrier
+
+On a Nano ESP32, the Arduino Nano Connector Carrier (ASX00061) has a microSD slot on the Nano's
+SPI pins, with its chip select on D4 rather than D10:
+
+| microSD slot | Nano pin |
+|---|---|
+| CS | D4 (solder jumpers can move it to D2 or D3) |
+| MOSI | D11 |
+| MISO | D12 |
+| SCK | D13 (also the built-in LED) |
+
+Take the pin from `NanoConnectorCarrier` instead of hard-coding it:
+
+```java
+if (SdCard.begin(new NanoConnectorCarrier().getSdChipSelect())) {
+    InputStream file = SdCard.open("application.properties");
+    // ...
+}
+```
+
+[`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java)
+creates, appends to, reads back and removes a file. It uses D4 on the Nano ESP32 and D10 on the UNO boards.
+Because SCK is the built-in LED's pin, a program using the card should not blink that LED.
+
 ## Build
 
 Install the Arduino `SdFat` library once, then compile the example through the real toolchain:
