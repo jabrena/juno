@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.A;
+import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.B;
 import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.WORD;
 
 /**
@@ -51,8 +52,8 @@ import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.WORD;
  * Generated functions follow the windowed-register ABI GCC uses on this core, so C code and generated code call each
  * other directly: a function opens with {@code entry a1, N}, reserving its slots at {@code a1+0} upwards plus the 32
  * bytes of register-window save areas GCC reserves, and returns with {@code retw} (the result in {@code a2}, or
- * {@code a2}/{@code a3}). A call passes up to six argument words in {@code a10}-{@code a15} through {@code call8};
- * a call needing more fails to compile.
+ * {@code a2}/{@code a3}). A call passes its first six argument words in {@code a10}-{@code a15} through {@code call8}
+ * and the rest at {@code a1+0} upwards, the bottom of a frame that then keeps its slots above them.
  *
  * <h2>Scope</h2>
  * This first cut lowers what GPIO, delay and serial programs need: {@code int}, {@code long}, {@code float}
@@ -163,11 +164,30 @@ public final class XtensaAsmBackend implements AsmBackend {
         return owner.substring(owner.lastIndexOf('/') + 1);
     }
 
+    /**
+     * Emits {@code method}, first with no outgoing stack-argument area; only when one of its calls turns out to pass
+     * words on the stack is it emitted again with that area reserved below its slots, the label counter rewound so
+     * the second text numbers its labels exactly as the first would have.
+     */
     private void emitMethod(StringBuilder output, IrMethod method) {
+        int labels = xtensa.labelMark();
+        StringBuilder text = new StringBuilder();
+        emitMethod(text, method, 0);
+        int stackArgumentBytes = xtensa.stackArgumentBytes();
+        if (stackArgumentBytes > 0) {
+            xtensa.rewindLabels(labels);
+            text.setLength(0);
+            emitMethod(text, method, roundUp(stackArgumentBytes, STACK_ALIGNMENT));
+        }
+        output.append(text);
+    }
+
+    private void emitMethod(StringBuilder output, IrMethod method, int outgoingBytes) {
         String label = Objects.requireNonNull(functionLabels.get(method.reference()));
         boolean isEntryPoint = method.reference().equals(entryPoint);
         FrameLayout frame = FrameLayout.packed(method);
-        int frameBytes = roundUp(frame.frameSize(), STACK_ALIGNMENT) + FRAME_OVERHEAD_BYTES;
+        xtensa.beginFrame(outgoingBytes);
+        int frameBytes = outgoingBytes + roundUp(frame.frameSize(), STACK_ALIGNMENT) + FRAME_OVERHEAD_BYTES;
         output.append('\n')
                 .append("    .balign 4\n");
         if (isEntryPoint || RuntimeEntryPoints.SYMBOLS.containsValue(label)) {
@@ -178,9 +198,9 @@ public final class XtensaAsmBackend implements AsmBackend {
                 .append("    entry a1, ").append(frameBytes).append('\n');
         if (isEntryPoint) {
             // Uses only a8-a10, so the incoming arguments in a2-a7 survive it for the spill below.
-            emitEntryPrologue(output, frame, frameBytes);
+            emitEntryPrologue(output, frame, frameBytes, outgoingBytes);
         }
-        emitParameterSpill(output, frame, method);
+        emitParameterSpill(output, frame, method, frameBytes);
         if (usesThreads && !isEntryPoint) {
             // A safepoint: every value is in its slot, so another thread may run here once this one's time slice is
             // over. With the backedges this bounds how long a thread runs unpreempted, loop-free recursion included;
@@ -211,7 +231,7 @@ public final class XtensaAsmBackend implements AsmBackend {
      * Records the stack top the conservative collector scans up to (the caller's stack pointer, right above this
      * frame), then zeroes {@link #STACK_ZERO_BYTES} below the frame and the frame's own slots.
      */
-    private void emitEntryPrologue(StringBuilder output, FrameLayout frame, int frameBytes) {
+    private void emitEntryPrologue(StringBuilder output, FrameLayout frame, int frameBytes, int outgoingBytes) {
         xtensa.loadAddress(output, A, "juno_gc_stack_top");
         output.append("    addi a9, a1, ").append(frameBytes).append('\n');
         xtensa.storeWordAt(output, "a9", A, 0);
@@ -222,7 +242,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         emitZeroLoop(output, ".LjunoZeroStack");
         if (frame.frameSize() > 0) {
             output.append("    mov a8, a1\n");
-            xtensa.loadImmediate(output, "a9", frame.frameSize());
+            xtensa.loadImmediate(output, "a9", outgoingBytes + frame.frameSize());
             output.append("    add a9, a9, a1\n");
             emitZeroLoop(output, ".LjunoZeroFrame");
         }
@@ -242,9 +262,10 @@ public final class XtensaAsmBackend implements AsmBackend {
 
     /**
      * Copies the incoming argument words this method reads (JVMS 2.6.1 slot order, a {@code long}/{@code double}
-     * starting at an even word as the ABI pairs registers) from {@code a2}-{@code a7} into their local slots.
+     * starting at an even word as the ABI pairs registers) into their local slots: words 0-5 from {@code a2}-{@code a7},
+     * the rest from the caller's outgoing area, which starts right above this frame at {@code a1 + frameBytes}.
      */
-    private void emitParameterSpill(StringBuilder output, FrameLayout frame, IrMethod method) {
+    private void emitParameterSpill(StringBuilder output, FrameLayout frame, IrMethod method, int frameBytes) {
         Set<Integer> readLocals = method.blocks().stream()
                 .flatMap(block -> block.instructions().stream())
                 .filter(IrInstruction.LoadLocal.class::isInstance)
@@ -263,14 +284,18 @@ public final class XtensaAsmBackend implements AsmBackend {
                 word++;
             }
             int words = wide ? 2 : 1;
-            if (word + words > XtensaEmitter.REGISTER_ARGUMENT_WORDS) {
-                throw Architecture.XTENSA.unsupported("more than " + XtensaEmitter.REGISTER_ARGUMENT_WORDS
-                        + " argument words in " + method.reference().displayName());
-            }
             if (readLocals.contains(slot)) {
                 for (int index = 0; index < words; index++) {
-                    xtensa.spillSlot(output, XtensaEmitter.incomingRegister(word + index),
-                            frame.localOffset(slot) + index * WORD);
+                    int argument = word + index;
+                    int offset = frame.localOffset(slot) + index * WORD;
+                    if (argument < XtensaEmitter.REGISTER_ARGUMENT_WORDS) {
+                        xtensa.spillSlot(output, XtensaEmitter.incomingRegister(argument), offset);
+                    } else {
+                        // B, not A: spillSlot may need A to address a far slot.
+                        xtensa.loadFrameWord(output, B,
+                                frameBytes + (argument - XtensaEmitter.REGISTER_ARGUMENT_WORDS) * WORD);
+                        xtensa.spillSlot(output, B, offset);
+                    }
                 }
             }
             slot += words;

@@ -31,7 +31,7 @@ final class XtensaEmitter {
     static final String C = "a10";
     /** Bytes of one Java word. */
     static final int WORD = FrameLayout.WORD;
-    /** Argument words a {@code call8} passes in registers; this backend passes none on the stack. */
+    /** Argument words a {@code call8} passes in registers; the rest go on the stack, below the caller's slots. */
     static final int REGISTER_ARGUMENT_WORDS = 6;
 
     /** Largest offset {@code l32i}/{@code s32i} encode (an unsigned 8-bit count of words). */
@@ -41,6 +41,10 @@ final class XtensaEmitter {
 
     private final Map<String, String> stringLiteralSymbols;
     private int labelCounter;
+    /** Bytes at the bottom of the current frame, below its slots, that hold outgoing stack arguments. */
+    private int slotBase;
+    /** The most outgoing stack-argument bytes any call in the current method has needed. */
+    private int stackArgumentBytes;
 
     XtensaEmitter(Map<String, String> stringLiteralSymbols) {
         this.stringLiteralSymbols = stringLiteralSymbols;
@@ -48,6 +52,30 @@ final class XtensaEmitter {
 
     String newLabel(String prefix) {
         return prefix + labelCounter++;
+    }
+
+    /** The label counter, for {@link #rewindLabels} to restore when a method is emitted a second time. */
+    int labelMark() {
+        return labelCounter;
+    }
+
+    void rewindLabels(int mark) {
+        labelCounter = mark;
+    }
+
+    /**
+     * Starts a method whose slots sit {@code outgoingBytes} above {@code a1}, leaving the bottom of the frame to the
+     * stack arguments of its calls (the windowed ABI passes argument word {@code i >= 6} at the caller's
+     * {@code a1 + 4 * (i - 6)}).
+     */
+    void beginFrame(int outgoingBytes) {
+        slotBase = outgoingBytes;
+        stackArgumentBytes = 0;
+    }
+
+    /** The outgoing stack-argument bytes the current method's calls have needed so far. */
+    int stackArgumentBytes() {
+        return stackArgumentBytes;
     }
 
     /** {@code register = value}; the assembler turns a value that does not fit {@code movi} into a literal load. */
@@ -101,7 +129,16 @@ final class XtensaEmitter {
         accessSlot(output, "s32i", register, offset, A);
     }
 
-    private void accessSlot(StringBuilder output, String instruction, String register, int offset, String address) {
+    private void accessSlot(StringBuilder output, String instruction, String register, int slotOffset, String address) {
+        accessFrame(output, instruction, register, slotBase + slotOffset, address);
+    }
+
+    /** Loads the word {@code offset} bytes above {@code a1}, outside the slots: an incoming stack argument. */
+    void loadFrameWord(StringBuilder output, String register, int offset) {
+        accessFrame(output, "l32i", register, offset, register);
+    }
+
+    private void accessFrame(StringBuilder output, String instruction, String register, int offset, String address) {
         if (offset <= MAX_WORD_OFFSET) {
             output.append("    ").append(instruction).append(' ').append(register).append(", a1, ").append(offset)
                     .append('\n');
@@ -134,13 +171,21 @@ final class XtensaEmitter {
         }
     }
 
-    /** Calls {@code function} with {@code words} in {@code a10}-{@code a15}; the result waits in {@code a10}/{@code a11}. */
+    /**
+     * Calls {@code function} with its first six {@code words} in {@code a10}-{@code a15} and the rest stored at
+     * {@code a1+0} upwards, below the slots (see {@link #beginFrame}); the result waits in {@code a10}/{@code a11}.
+     */
     void emitCall(StringBuilder output, FrameLayout frame, String function, List<WordSource> words) {
-        if (words.size() > REGISTER_ARGUMENT_WORDS) {
-            throw Architecture.XTENSA.unsupported("a call with more than " + REGISTER_ARGUMENT_WORDS
-                    + " argument words (" + function + ")");
+        int stackWords = Math.max(0, words.size() - REGISTER_ARGUMENT_WORDS);
+        if (stackWords * WORD > MAX_WORD_OFFSET) {
+            throw Architecture.XTENSA.unsupported("a call with " + words.size() + " argument words (" + function + ")");
         }
-        for (int index = 0; index < words.size(); index++) {
+        for (int index = 0; index < stackWords; index++) {
+            loadWord(output, frame, words.get(REGISTER_ARGUMENT_WORDS + index), A);
+            storeWordAt(output, A, "a1", index * WORD);
+        }
+        stackArgumentBytes = Math.max(stackArgumentBytes, stackWords * WORD);
+        for (int index = 0; index < Math.min(words.size(), REGISTER_ARGUMENT_WORDS); index++) {
             loadWord(output, frame, words.get(index), argumentRegister(index));
         }
         call(output, function);
