@@ -1427,14 +1427,16 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import java.io.IOException;
                 import java.io.InputStream;
                 import java.util.Properties;
                 public final class AsmSdProperties {
+                    private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                     public static void main(String[] args) throws IOException {
-                        if (!SdCard.begin()) return;
-                        InputStream file = SdCard.open("application.properties");
+                        if (!SD_CARD.begin()) return;
+                        InputStream file = SD_CARD.open("application.properties");
                         if (file == null) return;
                         Properties properties = new Properties();
                         properties.load(file);
@@ -1465,15 +1467,17 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmStorageOccupancy {
+                    private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                     public static void main(String[] args) {
                         Serial.println(MCU.getBoardMemory().flashUsedBytes());
                         Serial.println(MCU.getBoardMemory().flashCapacityBytes());
-                        if (!SdCard.begin()) return;
-                        Serial.println(SdCard.totalKiB());
-                        Serial.println(SdCard.freeKiB());
+                        if (!SD_CARD.begin()) return;
+                        Serial.println(SD_CARD.totalKiB());
+                        Serial.println(SD_CARD.freeKiB());
                     }
                 }
                 """;
@@ -1496,13 +1500,15 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
+                import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import java.io.IOException;
                 import java.io.RandomAccessFile;
                 public final class AsmSdRandomAccess {
+                    private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                     public static void main(String[] args) {
-                        if (!SdCard.begin()) return;
+                        if (!SD_CARD.begin()) return;
                         byte[] entry = new byte[16];
                         try (RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "r")) {
                             wad.seek(wad.length() - entry.length);

@@ -466,8 +466,9 @@ class XtensaAsmBackendTest {
         // Given
         CompilationResult result = compile("demo.NanoSd", """
                         Serial.begin(BaudRate.BAUD_115200);
-                        if (SdCard.begin(new NanoConnectorCarrier().getSdChipSelect())) {
-                            InputStream file = SdCard.open("app.txt");
+                        SdCard sdCard = new NanoConnectorCarrier().getSdCard();
+                        if (sdCard.begin()) {
+                            InputStream file = sdCard.open("app.txt");
                             if (file != null) {
                                 try {
                                     while (file.available() > 0) {

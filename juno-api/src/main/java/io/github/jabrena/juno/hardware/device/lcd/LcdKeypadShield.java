@@ -1,8 +1,11 @@
 package io.github.jabrena.juno.hardware.device.lcd;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.util.Delay;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Driver for the common "LCD Keypad Shield" (a 16x2 HD44780-compatible character LCD in 4-bit
@@ -41,6 +44,8 @@ public final class LcdKeypadShield {
     private static final int PIN_D6 = 6;
     private static final int PIN_D7 = 7;
     private static final int PIN_BACKLIGHT = 10;
+    /** The chip select of the SD card stacked under this shield, the same pin as the backlight. */
+    private static final int PIN_SD_CHIP_SELECT = 10;
     private static final int PIN_BUTTONS = 14; // A0
 
     // Analog reading upper bounds for each button, ascending along the shield's resistor ladder.
@@ -81,6 +86,7 @@ public final class LcdKeypadShield {
     private final int pinD7 = PIN_D7;
     private final int pinBacklight = PIN_BACKLIGHT;
     private final int pinButtons = PIN_BUTTONS;
+    private @Nullable SdCard sdCard;
 
     /** A shield on the board's own pins. Create it once, at startup, and share it. */
     public LcdKeypadShield() {
@@ -90,6 +96,21 @@ public final class LcdKeypadShield {
     /** A shield driven through {@code gpio}: a mocked one in a unit test. */
     public LcdKeypadShield(Gpio gpio) {
         this.gpio = gpio;
+    }
+
+    /**
+     * The SD card read through this shield: the shield has no socket of its own, so it is the card of the
+     * {@link io.github.jabrena.juno.hardware.device.sd.DataLoggerShield} stacked under it, selected on D10. D10 is
+     * also this shield's backlight line: isolate or reroute it before stacking, and do not call
+     * {@link #backlight(boolean)} once the card is initialized. The same instance every call.
+     */
+    public SdCard getSdCard() {
+        SdCard card = sdCard;
+        if (card == null) {
+            card = NativeSdCard.sdCard(PIN_SD_CHIP_SELECT);
+            sdCard = card;
+        }
+        return card;
     }
 
     /** Configures the shield's pins, runs the HD44780 4-bit init sequence, and turns the backlight on. */

@@ -8,6 +8,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import java.io.IOException;
@@ -20,6 +21,7 @@ import java.io.InputStream;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
 public final class SdCardApi {
+    private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
     // Constants are inlined as literals, which is what SdCard's compile-time path rule needs.
     private static final String STATE_FILE = "STATE.TXT";
     private static final String LOG_FILE = "LOG.TXT";
@@ -28,7 +30,7 @@ public final class SdCardApi {
     private static final int SAMPLES = 3;
 
     public static void main(String[] args) throws IOException {
-        SdCard.begin(Gpio.getD10());
+        SD_CARD.begin();
 
         SdCardApi app = new SdCardApi();
         app.saveAndReadState();
@@ -42,8 +44,8 @@ public final class SdCardApi {
      * remove() it first and rebuild it with appendText(), which adds raw text and no newline.
      */
     private void saveAndReadState() throws IOException {
-        SdCard.remove(STATE_FILE);
-        SdCard.appendText(STATE_FILE, "level=3\n");
+        SD_CARD.remove(STATE_FILE);
+        SD_CARD.appendText(STATE_FILE, "level=3\n");
         // One record written piece by piece: each runtime string stays under 32 bytes, whatever the data type.
         int score = 42;
         long uptime = MCU.getClock().millis() * 1000L;
@@ -51,32 +53,32 @@ public final class SdCardApi {
         double temperature = 21.5;
         boolean armed = score > 0;
         char grade = 'A';
-        SdCard.appendText(STATE_FILE, "score=" + String.valueOf(score) + ";");
-        SdCard.appendText(STATE_FILE, "uptime=" + uptime + ";");
-        SdCard.appendText(STATE_FILE, "ratio=" + ratio + ";");
-        SdCard.appendText(STATE_FILE, "temp=" + String.valueOf(temperature) + ";");
-        SdCard.appendText(STATE_FILE, "armed=" + armed + ";");
-        SdCard.appendText(STATE_FILE, "grade=" + grade + "\n");
+        SD_CARD.appendText(STATE_FILE, "score=" + String.valueOf(score) + ";");
+        SD_CARD.appendText(STATE_FILE, "uptime=" + uptime + ";");
+        SD_CARD.appendText(STATE_FILE, "ratio=" + ratio + ";");
+        SD_CARD.appendText(STATE_FILE, "temp=" + String.valueOf(temperature) + ";");
+        SD_CARD.appendText(STATE_FILE, "armed=" + armed + ";");
+        SD_CARD.appendText(STATE_FILE, "grade=" + grade + "\n");
 
-        Serial.println(SdCard.exists(STATE_FILE));
-        try (InputStream state = SdCard.open(STATE_FILE)) {
+        Serial.println(SD_CARD.exists(STATE_FILE));
+        try (InputStream state = SD_CARD.open(STATE_FILE)) {
             while (state.available() > 0) {
                 Serial.print(state.read());
             }
         }
-        SdCard.remove(STATE_FILE);
+        SD_CARD.remove(STATE_FILE);
     }
 
     /** Log: one entry per call with appendLine(), which ends each entry with a newline; the file only grows. */
     private void logEvents() {
-        SdCard.appendLine(LOG_FILE, "boot");
-        SdCard.appendLine(LOG_FILE, "uptime=" + MCU.getClock().millis());
-        SdCard.appendLine(LOG_FILE, "done");
+        SD_CARD.appendLine(LOG_FILE, "boot");
+        SD_CARD.appendLine(LOG_FILE, "uptime=" + MCU.getClock().millis());
+        SD_CARD.appendLine(LOG_FILE, "done");
         // size() is -1 when the file is missing; a log that grew past a limit can be started afresh.
-        int logBytes = SdCard.size(LOG_FILE);
+        int logBytes = SD_CARD.size(LOG_FILE);
         Serial.println(logBytes);
         if (logBytes > MAX_LOG_BYTES) {
-            SdCard.remove(LOG_FILE);
+            SD_CARD.remove(LOG_FILE);
         }
     }
 
@@ -87,26 +89,26 @@ public final class SdCardApi {
      * it stays under 32 bytes whatever its data type.
      */
     private void writeCsv() {
-        if (!SdCard.exists(CSV_FILE)) {
-            SdCard.appendLine(CSV_FILE, "sample,millis,raw,volts,armed");
+        if (!SD_CARD.exists(CSV_FILE)) {
+            SD_CARD.appendLine(CSV_FILE, "sample,millis,raw,volts,armed");
         }
         for (int sample = 0; sample < SAMPLES; sample++) {
             int millis = MCU.getClock().millis();
             int raw = MCU.getGpio().analogRead(Gpio.getA0());
             double volts = raw * 5.0 / 1023.0;
             boolean armed = raw > 512;
-            SdCard.appendText(CSV_FILE, String.valueOf(sample) + ",");
-            SdCard.appendText(CSV_FILE, millis + ",");
-            SdCard.appendText(CSV_FILE, raw + ",");
-            SdCard.appendText(CSV_FILE, String.valueOf(volts) + ",");
-            SdCard.appendLine(CSV_FILE, "" + armed);
+            SD_CARD.appendText(CSV_FILE, String.valueOf(sample) + ",");
+            SD_CARD.appendText(CSV_FILE, millis + ",");
+            SD_CARD.appendText(CSV_FILE, raw + ",");
+            SD_CARD.appendText(CSV_FILE, String.valueOf(volts) + ",");
+            SD_CARD.appendLine(CSV_FILE, "" + armed);
         }
-        Serial.println(SdCard.size(CSV_FILE));
+        Serial.println(SD_CARD.size(CSV_FILE));
     }
 
     /** Capacity: the volume's size and free space in KiB. Counting the free space scans the whole FAT, so ask once. */
     private void reportCapacity() {
-        Serial.println(SdCard.totalKiB());
-        Serial.println(SdCard.freeKiB());
+        Serial.println(SD_CARD.totalKiB());
+        Serial.println(SD_CARD.freeKiB());
     }
 }

@@ -17,11 +17,17 @@ public final class Miner2Persistence {
     private static final String FACTOR_FILE = "MINER2.FAC";
     private static final String RUN_FILE = "MINER2.RUN";
 
+    private final SdCard sdCard;
     private boolean ready;
+
+    /** A journal on {@code sdCard}, which {@link #loadOrCreateIdentity} starts. */
+    public Miner2Persistence(SdCard sdCard) {
+        this.sdCard = sdCard;
+    }
 
     /** Loads the saved node identity, or creates and saves one when no valid identity exists yet. */
     public UUID loadOrCreateIdentity() {
-        ready = SdCard.begin();
+        ready = sdCard.begin();
         UUID identity = ready ? readIdentity() : null;
         if (identity != null) {
             return identity;
@@ -39,10 +45,10 @@ public final class Miner2Persistence {
      * color below {@code colors}. Call it after {@link #loadOrCreateIdentity}, which starts the card.
      */
     public int loadColor(int colors) {
-        if (!ready || !SdCard.exists(COLOR_FILE)) {
+        if (!ready || !sdCard.exists(COLOR_FILE)) {
             return -1;
         }
-        java.io.InputStream file = SdCard.open(COLOR_FILE);
+        java.io.InputStream file = sdCard.open(COLOR_FILE);
         if (file == null) {
             return -1;
         }
@@ -60,8 +66,8 @@ public final class Miner2Persistence {
         if (!ready) {
             return;
         }
-        SdCard.remove(COLOR_FILE);
-        SdCard.appendText(COLOR_FILE, color + "\n");
+        sdCard.remove(COLOR_FILE);
+        sdCard.appendText(COLOR_FILE, color + "\n");
     }
 
     /** Whether the SD card was available when the identity was loaded. */
@@ -76,11 +82,11 @@ public final class Miner2Persistence {
         byte[] blocks = pool.blocks();
         int base = tip * BlockFormat.MAX_SIZE;
         // The nonce is the final four bytes of the fixed 80-byte header.
-        SdCard.appendLine(RUN_FILE, "height=" + pool.height(tip) + " nonce=" + Bytes.readInt(blocks, base + 76));
+        sdCard.appendLine(RUN_FILE, "height=" + pool.height(tip) + " nonce=" + Bytes.readInt(blocks, base + 76));
         int count = blocks[base + BlockFormat.COUNT] & 0xff;
         for (int i = 0; i < count; i++) {
             int factor = base + BlockFormat.FACTORS + i * 9;
-            SdCard.appendLine(FACTOR_FILE, "" + Bytes.readLong(blocks, factor)
+            sdCard.appendLine(FACTOR_FILE, "" + Bytes.readLong(blocks, factor)
                     + "^" + (blocks[factor + 8] & 0xff));
         }
     }
@@ -92,21 +98,21 @@ public final class Miner2Persistence {
         }
         byte[] blocks = pool.blocks();
         int base = tip * BlockFormat.MAX_SIZE;
-        SdCard.appendLine(CHAIN_FILE, "height=" + pool.height(tip));
-        SdCard.appendLine(CHAIN_FILE, "work=" + pool.work(tip));
-        SdCard.appendLine(CHAIN_FILE, "miner=" + Bytes.readInt(blocks, base + BlockFormat.MINER));
+        sdCard.appendLine(CHAIN_FILE, "height=" + pool.height(tip));
+        sdCard.appendLine(CHAIN_FILE, "work=" + pool.work(tip));
+        sdCard.appendLine(CHAIN_FILE, "miner=" + Bytes.readInt(blocks, base + BlockFormat.MINER));
         int count = blocks[base + BlockFormat.COUNT] & 0xff;
         for (int i = 0; i < count; i++) {
             int factor = base + BlockFormat.FACTORS + i * 9;
-            SdCard.appendLine(CHAIN_FILE, "f=" + Bytes.readLong(blocks, factor) + "^" + (blocks[factor + 8] & 0xff));
+            sdCard.appendLine(CHAIN_FILE, "f=" + Bytes.readLong(blocks, factor) + "^" + (blocks[factor + 8] & 0xff));
         }
     }
 
     private UUID readIdentity() {
-        if (!SdCard.exists(ID_FILE)) {
+        if (!sdCard.exists(ID_FILE)) {
             return null;
         }
-        java.io.InputStream file = SdCard.open(ID_FILE);
+        java.io.InputStream file = sdCard.open(ID_FILE);
         if (file == null) {
             return null;
         }
@@ -134,14 +140,14 @@ public final class Miner2Persistence {
     }
 
     private void writeIdentity(UUID identity) {
-        SdCard.remove(ID_FILE);
+        sdCard.remove(ID_FILE);
         long mostSignificantBits = identity.getMostSignificantBits();
         long leastSignificantBits = identity.getLeastSignificantBits();
-        SdCard.appendText(ID_FILE, hexWord((int) (mostSignificantBits >>> 32)));
-        SdCard.appendText(ID_FILE, hexWord((int) mostSignificantBits));
-        SdCard.appendText(ID_FILE, hexWord((int) (leastSignificantBits >>> 32)));
-        SdCard.appendText(ID_FILE, hexWord((int) leastSignificantBits));
-        SdCard.appendText(ID_FILE, "\n");
+        sdCard.appendText(ID_FILE, hexWord((int) (mostSignificantBits >>> 32)));
+        sdCard.appendText(ID_FILE, hexWord((int) mostSignificantBits));
+        sdCard.appendText(ID_FILE, hexWord((int) (leastSignificantBits >>> 32)));
+        sdCard.appendText(ID_FILE, hexWord((int) leastSignificantBits));
+        sdCard.appendText(ID_FILE, "\n");
     }
 
     private static String hexWord(int value) {

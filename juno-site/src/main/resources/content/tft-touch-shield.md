@@ -35,7 +35,7 @@ used by ELEGOO's `Elegoo_TFTLCD` and `TouchScreen` libraries:
 
 The touch panel shares pins with the display bus, so `readTouch()` temporarily reconfigures them
 and restores the bus before it returns. The SD socket shares nothing with the display, so
-[`SdCard.begin()`](../storage) (chip select on D10) works unchanged alongside it.
+its card, [`TftTouchShield.getSdCard()`](../storage) (chip select on D10), works unchanged alongside it.
 
 ## API
 

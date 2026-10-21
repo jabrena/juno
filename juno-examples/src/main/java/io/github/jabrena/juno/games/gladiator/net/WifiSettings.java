@@ -23,13 +23,13 @@ public record WifiSettings(String ssid, String password) {
     /** No network of its own to join, for a board whose connection is set up elsewhere. */
     public static final WifiSettings NONE = new WifiSettings("", "");
 
-    /** Reads the network from the card; null, saying why over serial, when the card or either key is missing. */
-    public static WifiSettings load() {
-        if (!SdCard.begin()) {
+    /** Reads the network from {@code sdCard}; null, saying why over serial, when the card or either key is missing. */
+    public static WifiSettings load(SdCard sdCard) {
+        if (!sdCard.begin()) {
             Serial.println("No SD card");
             return null;
         }
-        InputStream file = SdCard.open(FILE);
+        InputStream file = sdCard.open(FILE);
         if (file == null) {
             Serial.println("No application.properties");
             return null;

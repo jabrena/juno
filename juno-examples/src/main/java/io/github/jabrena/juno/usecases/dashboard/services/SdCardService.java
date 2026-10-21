@@ -20,19 +20,21 @@ public final class SdCardService {
     private static final String STATUS_FILE = "STATUS.TXT";
 
     private final TftDashboardState model;
+    private final SdCard sdCard;
     private boolean statusFileWritten;
 
-    public SdCardService(TftDashboardState model) {
+    public SdCardService(TftDashboardState model, SdCard sdCard) {
         this.model = model;
+        this.sdCard = sdCard;
     }
 
     /** Starts the card and logs the start-up to STATUS.TXT; on the main thread, before {@link #start()}. */
     public void begin() {
-        model.publishCardReady(SdCard.begin());
+        model.publishCardReady(sdCard.begin());
         if (!model.cardReady()) {
             return;
         }
-        statusFileWritten = SdCard.appendLine(STATUS_FILE, "dashboard startup");
+        statusFileWritten = sdCard.appendLine(STATUS_FILE, "dashboard startup");
         if (!statusFileWritten) {
             Serial.println("Could not write STATUS.TXT");
         }
@@ -44,9 +46,9 @@ public final class SdCardService {
     }
 
     private void run() {
-        model.publishStatusFile(new StatusFile(statusFileWritten ? SdCard.size(STATUS_FILE) : -1));
+        model.publishStatusFile(new StatusFile(statusFileWritten ? sdCard.size(STATUS_FILE) : -1));
         model.publishCredentials(loadCredentials());
-        model.publishSdCapacity(new SdCapacity(SdCard.totalKiB(), SdCard.freeKiB()));
+        model.publishSdCapacity(new SdCapacity(sdCard.totalKiB(), sdCard.freeKiB()));
     }
 
     /** The Wi-Fi credentials from application.properties on the card, or null when there are none. */
@@ -56,7 +58,7 @@ public final class SdCardService {
             return null;
         }
         try {
-            InputStream file = SdCard.open("application.properties");
+            InputStream file = sdCard.open("application.properties");
             if (file == null) {
                 Serial.println("application.properties not found");
                 return null;

@@ -57,7 +57,7 @@ public final class DashboardTFT {
         // Draw before the SD start-up, so the screen is never blank while the card starts.
         router.start(TftDashboardViews.HOME);
 
-        SdCardService sdCard = new SdCardService(model);
+        SdCardService sdCard = new SdCardService(model, TftTouchShield.getSdCard());
         sdCard.begin();
         sdCard.start();
         new WifiService(model).start();

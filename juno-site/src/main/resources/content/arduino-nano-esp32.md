@@ -70,7 +70,7 @@ The Arduino Nano Connector Carrier (ASX00061) is passive: every connector is a N
 
 | Connector | Nano pins | `NanoConnectorCarrier` |
 |---|---|---|
-| microSD slot (SPI) | CS D4 (D2/D3 by solder jumper), MOSI D11, MISO D12, SCK D13 | `getSdChipSelect()`, `getSdChipSelectJumperD2()`/`D3()`, `getSpiMosi()`/`Miso()`/`Sck()` |
+| microSD slot (SPI) | CS D4 (D2/D3 by solder jumper), MOSI D11, MISO D12, SCK D13 | `getSdCard()`, `getSdChipSelect()`, `getSdChipSelectJumperD2()`/`D3()`, `getSpiMosi()`/`Miso()`/`Sck()` |
 | Grove A0/A1 (analog) | A0 signal, A1 | `getGroveA0()`; wires `getA0()`, `getA1()` |
 | Grove A2/A3 (analog) | A2 signal, A3 | `getGroveA2()`; wires `getA2()`, `getA3()` |
 | Grove UART | RX D0 (signal), TX D1 | `getGroveUart()`; wires `getUartRx()`, `getUartTx()` |
@@ -87,7 +87,8 @@ ESP32. The Qwiic connector is always 3.3 V.
 
 ```java
 NanoConnectorCarrier carrier = new NanoConnectorCarrier();
-if (SdCard.begin(carrier.getSdChipSelect())) {
+SdCard sdCard = carrier.getSdCard();
+if (sdCard.begin()) {
     // read or write files on the microSD card
 }
 int light = new GroveLightSensorV12().rawValue(carrier.getGroveA0());

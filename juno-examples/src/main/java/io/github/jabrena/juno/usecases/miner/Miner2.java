@@ -56,7 +56,7 @@ public final class Miner2 {
 
     private void run() {
 
-        Miner2Persistence persistence = new Miner2Persistence();
+        Miner2Persistence persistence = new Miner2Persistence(TftTouchShield.getSdCard());
         UUID uuid = persistence.loadOrCreateIdentity();
         Miner2State model = new Miner2State(new BlockPool(INITIAL_BITS, RETARGET_INTERVAL, TARGET_SECONDS), uuid);
         int color = persistence.loadColor(BitBoard.COLORS);

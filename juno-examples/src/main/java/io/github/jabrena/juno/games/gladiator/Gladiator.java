@@ -116,7 +116,7 @@ public final class Gladiator {
         if (online) {
             return true;
         }
-        WifiSettings settings = WifiSettings.load();
+        WifiSettings settings = WifiSettings.load(TftTouchShield.getSdCard());
         if (settings == null) {
             if (!BOARD.isQ()) {
                 Hud.message("NO WIFI SETTINGS", "Put application.properties on the SD card", TftTouchShield.ORANGE);
