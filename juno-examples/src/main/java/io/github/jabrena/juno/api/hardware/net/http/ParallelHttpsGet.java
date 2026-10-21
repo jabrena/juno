@@ -26,6 +26,8 @@ import java.util.concurrent.StructuredTaskScope;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoR3WiFiRev2.class, ArduinoUnoQ.class})
 public final class ParallelHttpsGet {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private final Clock clock = MCU.getClock();
     private static final String FIRST_URL = "https://example.com/?request=first";
     private static final String SECOND_URL = "https://example.com/?request=second";
@@ -170,13 +172,13 @@ public final class ParallelHttpsGet {
     }
 
     private boolean connectWifi() {
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        if (Wifi.status() == Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() == Wifi.STATUS_CONNECTED) {
             Serial.println("wifi connected");
             return true;
         }

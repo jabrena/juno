@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.tcp;
 
+import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.tcp.Tcp;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
@@ -16,6 +17,8 @@ import io.github.jabrena.juno.util.Delay;
  * with {@code -Djuno.Xmx=512}).
  */
 public final class TcpEcho {
+    private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
+
     private static final int DISCOVERY_PORT = 4210;
     private static final int ECHO_PORT = 7007;
     private static final int LINE_LENGTH = 11;
@@ -85,13 +88,13 @@ public final class TcpEcho {
     }
 
     private static boolean connectWifi() {
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Serial.println("wifi connection failed");
             return false;
         }

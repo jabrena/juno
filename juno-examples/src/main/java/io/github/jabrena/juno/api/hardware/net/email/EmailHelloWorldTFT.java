@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.email;
 import io.github.jabrena.juno.annotations.ArduinoUnoQ;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
@@ -19,6 +20,8 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class EmailHelloWorldTFT {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final int POP3_PORT = 995;
     private static final int SMTP_PORT = 465;
     private static final int CONNECT_RETRY_ATTEMPTS = 5;
@@ -138,8 +141,8 @@ public final class EmailHelloWorldTFT {
 
     private static void connectWifi() {
         Serial.println("Starting WiFi");
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
-        while (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }
         Serial.println("WiFi connected");

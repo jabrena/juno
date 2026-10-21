@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
+import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -15,6 +16,8 @@ import io.github.jabrena.juno.util.Delay;
  * the R3's 32 KB of flash next to the WiFi library.
  */
 public final class PlainHttpWeather {
+    private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
+
     private static final String API_URL = "http://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038"
             + "&current=temperature_2m&timezone=Europe%2FMadrid";
     private static final byte[] TEMPERATURE_KEY = {'"', 't', 'e', 'm', 'p', 'e', 'r', 'a', 't', 'u', 'r', 'e', '_', '2', 'm',
@@ -85,13 +88,13 @@ public final class PlainHttpWeather {
     }
 
     private static boolean connectWifi() {
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        if (Wifi.status() == Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() == Wifi.STATUS_CONNECTED) {
             Serial.println("wifi connected");
             return true;
         }

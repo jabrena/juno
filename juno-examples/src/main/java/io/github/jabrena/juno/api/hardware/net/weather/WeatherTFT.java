@@ -39,6 +39,8 @@ import java.util.Properties;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class WeatherTFT {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private final Clock clock = MCU.getClock();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int REFRESH_MILLIS = 10 * 60 * 1000;
@@ -179,13 +181,13 @@ public final class WeatherTFT {
             return false;
         }
 
-        Wifi.begin(ssid, password);
+        WIFI.begin(ssid, password);
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        return Wifi.status() == Wifi.STATUS_CONNECTED;
+        return WIFI.status() == Wifi.STATUS_CONNECTED;
     }
 
     /**

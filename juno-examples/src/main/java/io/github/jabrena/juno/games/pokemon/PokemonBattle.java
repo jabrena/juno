@@ -29,6 +29,8 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
 public final class PokemonBattle {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final Clock CLOCK = MCU.getClock();
     private static final int DISCOVERY_INTERVAL_MILLIS = 700;
     private static final int RESEND_MILLIS = 1000;
@@ -77,8 +79,8 @@ public final class PokemonBattle {
 
     private static void connectWifi() {
         showMessage("CONNECTING WIFI", TftTouchShield.CYAN);
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
-        while (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }
         showMessage("WIFI CONNECTED", TftTouchShield.GREEN);

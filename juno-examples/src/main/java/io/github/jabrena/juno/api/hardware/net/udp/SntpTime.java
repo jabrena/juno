@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.udp;
 
+import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -14,6 +15,8 @@ import java.time.LocalDateTime;
  * WiFi Shield (build it with {@code -Djuno.Xmx=512}).
  */
 public final class SntpTime {
+    private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
+
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
     private SntpTime() {
@@ -22,13 +25,13 @@ public final class SntpTime {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         int attempts = 0;
-        while (Wifi.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        if (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Serial.println("wifi connection failed");
             return;
         }

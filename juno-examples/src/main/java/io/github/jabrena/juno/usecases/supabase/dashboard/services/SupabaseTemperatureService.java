@@ -20,6 +20,8 @@ import java.util.concurrent.StructuredTaskScope;
  * preference, avoiding a standalone count request.
  */
 public final class SupabaseTemperatureService implements Task {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final Clock CLOCK = MCU.getClock();
     public static final int PAGE_ROWS = 50;
 
@@ -67,7 +69,7 @@ public final class SupabaseTemperatureService implements Task {
         }
         started = true;
         Serial.println("Connecting WiFi");
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         nextWifiCheck = CLOCK.millis() + RETRY_DELAY_MILLIS;
     }
 
@@ -87,7 +89,7 @@ public final class SupabaseTemperatureService implements Task {
     }
 
     private void connectStep() {
-        if (Wifi.status() == Wifi.STATUS_CONNECTED) {
+        if (WIFI.status() == Wifi.STATUS_CONNECTED) {
             reading = true;
             model.publishReading();
             Serial.println("WiFi connected");

@@ -28,6 +28,8 @@ import io.github.jabrena.juno.util.Delay;
  * are compile-time literals).
  */
 public final class HttpServerBacklight {
+    private static final Wifi WIFI = MCU.getWifi();
+
     private static final BoardMemory MEMORY = MCU.getBoardMemory();
     private final LcdKeypadShield lcd = new LcdKeypadShield();
     private final Clock clock = MCU.getClock();
@@ -105,8 +107,8 @@ public final class HttpServerBacklight {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        Wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
-        while (Wifi.status() != Wifi.STATUS_CONNECTED) {
+        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }
         Serial.println("WiFi connected");
@@ -114,7 +116,7 @@ public final class HttpServerBacklight {
 
     private void printLocalIP() {
         int[] ip = new int[4];
-        Wifi.localIP(ip);
+        WIFI.localIP(ip);
         Serial.print("IP: ");
         Serial.print(ip[0]);
         Serial.print(".");

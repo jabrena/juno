@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -13,15 +14,17 @@ import io.github.jabrena.juno.util.Delay;
  * nothing until connected).
  */
 public final class WifiStatus {
+    private static final Wifi WIFI = MCU.getWifi();
+
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Serial.println("Starting WiFi");
-        Wifi.begin(
+        WIFI.begin(
             System.getenv("JUNO_WIFI_SSID"),
             System.getenv("JUNO_WIFI_PASSWORD"));
 
         while (true) {
-            Serial.println("WiFi status: " + Wifi.status());
+            Serial.println("WiFi status: " + WIFI.status());
             Delay.millis(1000);
         }
     }
