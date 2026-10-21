@@ -163,6 +163,14 @@ public interface CoreRuntime {
         return httpsClientDeclaration().replace(" client;", "").strip();
     }
 
+    /**
+     * Whether the core's thread port brings a tick that preempts generated code at any instruction (the Thumb-2
+     * cores' {@code juno_preempt_tick}); otherwise the backend emits safepoints on loop backedges and method entries.
+     */
+    default boolean preemptsAsynchronously() {
+        return true;
+    }
+
     /** Core-specific header the thread port needs ({@code ""} when the core brings none). */
     String threadIncludes();
 
