@@ -12,17 +12,20 @@ import io.github.jabrena.juno.ir.Value;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.A;
 import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.B;
+import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.C;
 
 /**
- * {@code long} and {@code float} instructions. A {@code long} is a split low/high pair of word slots and a
- * {@code float} its raw IEEE-754 bits in one word, so every nontrivial operation is a call to the same
+ * {@code long}, {@code float} and {@code double} instructions. A {@code long} is a split low/high pair of word
+ * slots and a {@code float} its raw IEEE-754 bits in one word, so every nontrivial operation is a call to the same
  * {@code extern "C"} shim helpers the Thumb-2 backend uses ({@code juno_ladd}, {@code juno_fadd}, ...): the windowed
  * ABI passes a {@code float} in an {@code a} register and an {@code int64_t} in an even-aligned register pair, which
  * is exactly the word layout below, and the ESP32 toolchain compiles the float helpers to the ESP32-S3's
- * single-precision FPU. Only constants, sign flips and plain word moves stay inline. {@code double} is not lowered.
+ * single-precision FPU. A {@code double} fills an even-aligned register pair the same way; with no double-precision
+ * FPU, its helpers compile to libgcc soft-float. Only constants, sign flips and plain word moves stay inline.
  */
 final class XtensaWideArithmeticLowering {
     private final XtensaEmitter xtensa;
@@ -123,12 +126,77 @@ final class XtensaWideArithmeticLowering {
                 callForLong(output, frame, "juno_f2l", words(conversion.value()), conversion.targetLow(),
                         conversion.targetHigh());
             }
+            case IrInstruction.DoubleConst constant -> {
+                long bits = Double.doubleToRawLongBits(constant.value());
+                xtensa.loadImmediate(output, A, (int) bits);
+                xtensa.loadImmediate(output, B, (int) (bits >>> 32));
+                xtensa.store64(output, frame, A, B, constant.target());
+            }
+            case IrInstruction.DoubleBinary binary -> {
+                features.add(ShimFeature.DOUBLE);
+                callForDouble(output, frame, doubleHelperFor(binary.operation()),
+                        concat(doubleWords(binary.left()), doubleWords(binary.right())), binary.target());
+            }
+            case IrInstruction.DoubleNegate negate -> {
+                // The sign bit of a low-word/high-word split double is bit 31 of the high word.
+                xtensa.load64(output, frame, A, B, negate.value());
+                xtensa.loadImmediate(output, C, Integer.MIN_VALUE);
+                output.append("    xor a9, a9, a10\n");
+                xtensa.store64(output, frame, A, B, negate.target());
+            }
+            case IrInstruction.DoubleCompare compare -> {
+                features.add(ShimFeature.DOUBLE);
+                List<WordSource> operands = concat(doubleWords(compare.left()), doubleWords(compare.right()));
+                callForWord(output, frame, "juno_dcmp",
+                        concat(operands, List.of(new WordSource.Immediate(compare.nanResult()))), compare.target());
+            }
+            case IrInstruction.IntToDouble conversion -> {
+                features.add(ShimFeature.DOUBLE);
+                callForDouble(output, frame, "juno_i2d", words(conversion.value()), conversion.target());
+            }
+            case IrInstruction.DoubleToInt conversion -> {
+                features.add(ShimFeature.DOUBLE);
+                callForWord(output, frame, "juno_d2i", doubleWords(conversion.value()), conversion.target());
+            }
+            case IrInstruction.FloatToDouble conversion -> {
+                features.add(ShimFeature.DOUBLE);
+                callForDouble(output, frame, "juno_f2d", words(conversion.value()), conversion.target());
+            }
+            case IrInstruction.DoubleToFloat conversion -> {
+                features.add(ShimFeature.DOUBLE);
+                callForWord(output, frame, "juno_d2f", doubleWords(conversion.value()), conversion.target());
+            }
+            case IrInstruction.LongToDouble conversion -> {
+                features.add(ShimFeature.DOUBLE);
+                callForDouble(output, frame, "juno_l2d", words(conversion.valueLow(), conversion.valueHigh()),
+                        conversion.target());
+            }
+            case IrInstruction.DoubleToLong conversion -> {
+                features.add(ShimFeature.DOUBLE);
+                callForLong(output, frame, "juno_d2l", doubleWords(conversion.value()), conversion.targetLow(),
+                        conversion.targetHigh());
+            }
             default -> throw Architecture.XTENSA.unsupported(instruction.getClass().getSimpleName());
         }
     }
 
     private List<WordSource> words(Value... values) {
         return Arrays.stream(values).<WordSource>map(WordSource.FromValue::new).toList();
+    }
+
+    /** A {@code double}'s low then high word, the order of the register pair the ABI passes it in. */
+    private List<WordSource> doubleWords(Value value) {
+        return List.of(new WordSource.FromValueLow(value), new WordSource.FromValueHigh(value));
+    }
+
+    private List<WordSource> concat(List<WordSource> first, List<WordSource> second) {
+        return Stream.concat(first.stream(), second.stream()).toList();
+    }
+
+    private void callForDouble(StringBuilder output, FrameLayout frame, String function, List<WordSource> words,
+                               Value target) {
+        xtensa.emitCall(output, frame, function, words);
+        xtensa.store64(output, frame, "a10", "a11", target);
     }
 
     private void callForWord(StringBuilder output, FrameLayout frame, String function, List<WordSource> words,
@@ -166,6 +234,16 @@ final class XtensaWideArithmeticLowering {
             case SHIFT_RIGHT -> "juno_lshr";
             case UNSIGNED_SHIFT_RIGHT -> "juno_lushr";
             default -> throw new IllegalStateException("Not a long shift operation: " + operation);
+        };
+    }
+
+    private String doubleHelperFor(FloatBinaryOp operation) {
+        return switch (operation) {
+            case ADD -> "juno_dadd";
+            case SUBTRACT -> "juno_dsub";
+            case MULTIPLY -> "juno_dmul";
+            case DIVIDE -> "juno_ddiv";
+            case REMAINDER -> "juno_drem";
         };
     }
 

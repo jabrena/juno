@@ -78,6 +78,19 @@ class XtensaAsmBackendTest {
                     Serial.println((int) (volts + back));
             """;
 
+    private static final String DOUBLES = """
+                    double sample = MCU.getGpio().analogRead(4);
+                    double mixed = sample * 0.1 + 2.5 - sample / 3.0 + sample % 2.0;
+                    if (mixed > 2.0) {
+                        mixed = -mixed;
+                    }
+                    long ticks = (long) mixed;
+                    double back = ticks;
+                    float narrow = (float) mixed;
+                    double wide = narrow;
+                    Serial.println((int) (mixed + back + wide));
+            """;
+
     private static final String SHAPES = """
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
@@ -391,15 +404,48 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects double arithmetic, which the Xtensa backend does not lower yet")
-    void shouldRejectDoubleArithmetic() {
+    @DisplayName("Lowers double arithmetic, comparisons and conversions to the shim's juno_d* helpers in register pairs")
+    void shouldLowerDoubleArithmetic() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.NanoDouble", DOUBLES, SERIAL_IMPORTS);
+
         // When & Then
-        assertThatThrownBy(() -> compile("demo.NanoDouble", """
-                        double value = MCU.getGpio().analogRead(0);
-                        Serial.println((int) (value * value));
-                """, SERIAL_IMPORTS))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("The Xtensa assembly backend (Nano ESP32) does not support this yet");
+        long bits = Double.doubleToRawLongBits(0.1);
+        assertThat(result.assembly())
+                .contains("call8 juno_i2d\n", "call8 juno_dmul\n", "call8 juno_dadd\n", "call8 juno_dsub\n")
+                .contains("call8 juno_ddiv\n", "call8 juno_drem\n", "call8 juno_dcmp\n", "call8 juno_d2i\n")
+                .contains("call8 juno_l2d\n", "call8 juno_d2l\n", "call8 juno_f2d\n", "call8 juno_d2f\n")
+                .contains("movi a8, " + (int) bits + "\n    movi a9, " + (int) (bits >>> 32) + "\n")
+                .contains("movi a10, " + Integer.MIN_VALUE + "\n    xor a9, a9, a10\n");
+        assertThat(result.runtimeShim()).contains("extern \"C\" JUNO_ASM_ABI double juno_dadd(double a, double b)");
+    }
+
+    @Test
+    @DisplayName("Allows the double-precision Math functions, which the ESP32 toolchain's libm provides")
+    void shouldLowerDoublePrecisionMath() throws Exception {
+        // Given
+        CompilationResult result = compile("demo.NanoMath", """
+                        double angle = MCU.getGpio().analogRead(0) / 100.0;
+                        Serial.println(Math.sin(angle) + Math.sqrt(angle) + Math.pow(angle, 3) + Math.atan2(angle, 2));
+                """, SERIAL_IMPORTS);
+
+        // When & Then
+        assertThat(result.runtimeShim()).contains("sin(", "sqrt(", "pow(", "atan2(");
+        assertThat(result.assembly()).containsPattern("call8 juno_math_\\w+\n");
+    }
+
+    @Test
+    @DisplayName("Double programs and Math functions assemble with the ESP32-S3 toolchain")
+    void shouldAssembleDoubleArithmeticWithTheXtensaToolchain() throws Exception {
+        // Given
+        String gcc = availableXtensaGcc();
+        Assumptions.assumeTrue(gcc != null, "No xtensa-esp32s3-elf-gcc toolchain available");
+        CompilationResult result = compile("demo.NanoDoubleSmoke", DOUBLES + """
+                        Serial.println(Math.sin(sample) + Math.pow(sample, 0.5));
+                """, SERIAL_IMPORTS);
+
+        // When & Then
+        assemble(gcc, "NanoDoubleSmoke", result);
     }
 
     @Test

@@ -46,11 +46,11 @@ public enum Board {
                     Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG)),
     /**
-     * The ESP32-S3 Nano: GPIO, delays and USB serial so far; none of the optional capabilities is wired to its core
-     * yet.
+     * The ESP32-S3 Nano: GPIO, delays and USB serial so far, plus the double-precision libm its newlib toolchain
+     * ships; none of the other optional capabilities is wired to its core yet.
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32", "arduino-nano-esp32", "Nano ESP32",
-            "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO, EnumSet.noneOf(Capability.class));
+            "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO, EnumSet.of(Capability.DOUBLE_MATH));
 
     private final String apiClassName;
     private final String id;
