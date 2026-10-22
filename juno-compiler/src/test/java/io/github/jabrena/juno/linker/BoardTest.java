@@ -49,9 +49,15 @@ class BoardTest {
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.WATCHDOG, true),
                 arguments(Board.NANO_ESP32, Capability.WIFI, true),
                 arguments(Board.NANO_ESP32, Capability.ONBOARD_WIFI, true),
-                arguments(Board.NANO_ESP32, Capability.WIFI_ACCESS_POINT, false),
+                arguments(Board.NANO_ESP32, Capability.WIFI_ACCESS_POINT, true),
                 arguments(Board.NANO_ESP32, Capability.HTTP_CLIENT, true),
                 arguments(Board.NANO_ESP32, Capability.HTTPS_CLIENT, true),
+                arguments(Board.NANO_ESP32, Capability.HTTP_SERVER, true),
+                arguments(Board.NANO_ESP32, Capability.TLS_EMAIL, true),
+                arguments(Board.NANO_ESP32, Capability.SMTP_STARTTLS, true),
+                arguments(Board.NANO_ESP32, Capability.SECURE_ENTROPY, true),
+                arguments(Board.NANO_ESP32, Capability.BIG_NUMBERS, true),
+                arguments(Board.NANO_ESP32, Capability.BLUETOOTH_LE, true),
                 arguments(Board.NANO_ESP32, Capability.WATCHDOG, true));
     }
 

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.backend.runtime.MathRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
@@ -73,6 +74,28 @@ public final class IntrinsicLowering {
         @Override
         public WordSource resolve(IrInstruction.IntrinsicCall call) {
             return new WordSource.StringAddress(call.literalArguments().get(index));
+        }
+    }
+
+    /**
+     * One declared parameter of a call whose {@code String} parameters may be literals or runtime values. When every
+     * string is a literal, the literals sit in {@code literalArguments} and the runtime list skips them; when none is,
+     * the runtime list holds every parameter in order.
+     */
+    private record Parameter(int parameter, List<Integer> stringParameters) implements Operand {
+        @Override
+        public WordSource resolve(IrInstruction.IntrinsicCall call) {
+            boolean literals = !call.literalArguments().isEmpty();
+            if (literals && call.literalArguments().size() != stringParameters.size()) {
+                throw new CompileException("a call mixes literal and runtime String arguments; pass every String"
+                        + " argument as a literal or as a runtime value");
+            }
+            int rank = stringParameters.indexOf(parameter);
+            if (rank >= 0 && literals) {
+                return new WordSource.StringAddress(call.literalArguments().get(rank));
+            }
+            int skipped = literals ? (int) stringParameters.stream().filter(index -> index < parameter).count() : 0;
+            return new WordSource.FromValue(call.arguments().get(parameter - skipped));
         }
     }
 
@@ -624,19 +647,18 @@ public final class IntrinsicLowering {
     }
 
     private void registerEmail() {
+        List<Integer> smtpStrings = List.of(0, 2, 3, 4, 5, 6, 7);
         shim(Intrinsic.SMTP_SEND, "juno_smtp_send", Result.WORD,
-                List.of(literal(0), arg(0), literal(1), literal(2), literal(3), literal(4), literal(5), literal(6)),
-                ShimFeature.SMTP);
+                parameters(smtpStrings, 0, 1, 2, 3, 4, 5, 6, 7), ShimFeature.SMTP);
         shim(Intrinsic.SMTP_SEND_TLS, "juno_smtp_send_tls", Result.WORD,
-                List.of(literal(0), arg(0), literal(1), literal(2), literal(3), literal(4), literal(5), literal(6)),
-                ShimFeature.SMTP_TLS);
+                parameters(smtpStrings, 0, 1, 2, 3, 4, 5, 6, 7), ShimFeature.SMTP_TLS);
+        List<Integer> pop3Strings = List.of(0, 2, 3);
         shim(Intrinsic.POP3_MESSAGE_COUNT, "juno_pop3_message_count", Result.WORD,
-                List.of(literal(0), arg(0), literal(1), literal(2)), ShimFeature.POP3);
+                parameters(pop3Strings, 0, 1, 2, 3), ShimFeature.POP3);
         shim(Intrinsic.POP3_READ_LATEST, "juno_pop3_read_latest", Result.WORD,
-                List.of(literal(0), arg(0), literal(1), literal(2), arg(1), arg(2), arg(3), arg(4), arg(5)),
-                ShimFeature.POP3);
+                parameters(pop3Strings, 0, 1, 2, 3, 4, 5, 6, 7, 8), ShimFeature.POP3);
         shim(Intrinsic.POP3_READ_SUBJECT, "juno_pop3_read_subject", Result.WORD,
-                List.of(literal(0), arg(0), literal(1), literal(2), arg(1), arg(2), arg(3)), ShimFeature.POP3);
+                parameters(pop3Strings, 0, 1, 2, 3, 4, 5, 6), ShimFeature.POP3);
     }
 
     /** {@code Json}: the scanner is compiled Java; only copying a value's raw text into a runtime String is native. */
@@ -666,6 +688,20 @@ public final class IntrinsicLowering {
 
     private Operand literal(int index) {
         return new Literal(index);
+    }
+
+    /**
+     * The operands for a call whose declared parameters are {@code 0..n-1}: the {@code stringParameters} are its
+     * {@code String} parameters, each passed as a literal or a runtime value; the rest are runtime values. Either every
+     * string is a literal, which leaves the literals out of the runtime list, or none is, and a call that mixes the two
+     * is rejected.
+     */
+    private List<Operand> parameters(List<Integer> stringParameters, int... declared) {
+        List<Operand> operands = new ArrayList<>(declared.length);
+        for (int parameter : declared) {
+            operands.add(new Parameter(parameter, stringParameters));
+        }
+        return List.copyOf(operands);
     }
 
     private Operand immediate(int value) {
