@@ -35,6 +35,11 @@ final class ArduinoCli {
         run(captured("core", "install", requireText(platform, "platform")));
     }
 
+    void installCore(String platform, String additionalUrl) {
+        run(captured("core", "install", requireText(platform, "platform"), "--additional-urls",
+                requireText(additionalUrl, "additional URL")));
+    }
+
     void installLibrary(String library) {
         run(captured("lib", "install", requireText(library, "library")));
     }

@@ -23,14 +23,14 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    @DisplayName("Installs the core, then every optional library")
-    void shouldInstallTheCoreThenEveryOptionalLibrary() throws Exception {
+    @DisplayName("Installs the supported cores, then every optional library")
+    void shouldInstallTheSupportedCoresThenEveryOptionalLibrary() throws Exception {
         // Given
         InstallDepsMojo mojo = lookupConfiguredMojo();
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
         FakeExecutor executor = new FakeExecutor();
-        for (int step = 0; step < 6; step++) {
+        for (int step = 0; step < 7; step++) {
             executor.respond(0, "installed");
         }
         mojo.useExecutor(executor);
@@ -39,13 +39,16 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
         mojo.execute();
 
         // Then
-        assertThat(executor.invocations()).hasSize(6);
+        assertThat(executor.invocations()).hasSize(7);
         assertThat(executor.invocations().get(0).arguments())
                 .containsExactly("arduino-cli", "core", "install", "arduino:renesas_uno");
-        assertThat(executor.invocations().subList(1, 6))
+        assertThat(executor.invocations().get(1).arguments())
+                .containsExactly("arduino-cli", "core", "install", "m5stack:esp32", "--additional-urls",
+                        "https://static-cdn.m5stack.com/resource/arduino/package_m5stack_index.json");
+        assertThat(executor.invocations().subList(2, 7))
                 .extracting(command -> command.arguments().get(3))
                 .containsExactly("Mouse", "ArduinoBLE", "ESP_SSLClient", "Servo", "SdFat");
-        assertThat(log.infos()).anyMatch(line -> line.contains("Installing Arduino dependencies (6 steps)"));
+        assertThat(log.infos()).anyMatch(line -> line.contains("Installing Arduino dependencies (7 steps)"));
         assertThat(log.infos()).anyMatch(line -> line.contains("installation completed in"));
     }
 
