@@ -11,6 +11,14 @@ import static org.mockito.Mockito.mock;
 @DisplayName("Wifi")
 class WifiTest {
     @Test
+    @DisplayName("The portable development access point is open and named JunoAP")
+    void shouldExposeOpenDevelopmentAccessPointDefaults() {
+        // Then
+        assertThat(Wifi.DEFAULT_ACCESS_POINT_SSID).isEqualTo("JunoAP");
+        assertThat(Wifi.DEFAULT_ACCESS_POINT_PASSWORD).isEmpty();
+    }
+
+    @Test
     @DisplayName("The board's Wi-Fi radio is one shared instance")
     void shouldHandOutOneInstanceForTheBoard() {
         // When & Then

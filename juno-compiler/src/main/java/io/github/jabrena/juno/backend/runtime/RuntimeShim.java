@@ -6,6 +6,7 @@ import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -56,7 +57,8 @@ public final class RuntimeShim {
         this.core = core;
         this.config = config;
         this.gcLoggingEnabled = gcLoggingEnabled;
-        this.features = features;
+        // The UUID helpers raise a Java exception for an invalid value, so a UUID program needs the exception helpers too.
+        this.features = features.contains(ShimFeature.UUID) ? withExceptions(features) : features;
         this.usedMath = usedMath;
         this.throwableClasses = throwableClasses;
         this.watchdog = watchdogTimeoutMillis.map(core::watchdog);
@@ -97,7 +99,7 @@ public final class RuntimeShim {
         }
         // ArduinoBLE is another optional library (arduino-cli lib install ArduinoBLE), like Mouse above.
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
-            shim.append("#include <ArduinoBLE.h>\n");
+            shim.append(core.bleIncludes());
         }
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
@@ -208,7 +210,8 @@ public final class RuntimeShim {
             shim.append(shimLibraries.servoHelpers());
         }
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
-            shim.append(shimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS)));
+            shim.append(core.bleHelpers());
+            shim.append(shimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS), core.bleNames()));
         }
         if (uses(ShimFeature.PARALLEL_BUS)) {
             shim.append(core.parallelBusHelpers());
@@ -312,5 +315,12 @@ public final class RuntimeShim {
         } else if (uses(ShimFeature.THREAD_BASICS)) {
             shim.append(threadRuntime.basics(core.delayMillisFunction()));
         }
+    }
+
+    private static Set<ShimFeature> withExceptions(Set<ShimFeature> features) {
+        Set<ShimFeature> withExceptions = EnumSet.noneOf(ShimFeature.class);
+        withExceptions.addAll(features);
+        withExceptions.add(ShimFeature.EXCEPTIONS);
+        return withExceptions;
     }
 }
