@@ -7,7 +7,6 @@ class JunoBLEDevice;
 class JunoBLECharacteristic;
 typedef void (*JunoBleHandler)(JunoBLEDevice device, JunoBLECharacteristic characteristic);
 
-static const int JUNO_BLE_SCAN_SECONDS = 30;
 static const int JUNO_BLE_BYTES = 32;
 static const int JUNO_BLE_QUEUE = 8;
 
@@ -74,9 +73,9 @@ class JunoBLECharacteristic {
     return juno_ble_value_length;
   }
 
-  void writeValue(const uint8_t* data, int length, bool withoutResponse) {
+  void writeValue(const uint8_t* data, int length, bool withResponse) {
     if (remote == nullptr) return;
-    remote->writeValue(const_cast<uint8_t*>(data), static_cast<size_t>(length), !withoutResponse);
+    remote->writeValue(const_cast<uint8_t*>(data), static_cast<size_t>(length), withResponse);
   }
 
   void setEventHandler(int event, JunoBleHandler handler) {
@@ -200,7 +199,8 @@ class JunoBLEBle {
     BLEScan* scan = BLEDevice::getScan();
     scan->setActiveScan(true);
     scan->setAdvertisedDeviceCallbacks(&juno_ble_scan_callbacks, false);
-    scan->start(JUNO_BLE_SCAN_SECONDS, nullptr, false);
+    // ArduinoBLE scans until stopScan(); zero gives the ESP32 controller the same lifetime.
+    scan->start(0, nullptr, false);
   }
 
   // The advertisement found since the last call, or an invalid device when there is none.
@@ -216,6 +216,9 @@ class JunoBLEBle {
       juno_ble_found = false;
     }
     portEXIT_CRITICAL(&juno_ble_mux);
+    // The shared runtime can wait indefinitely in connect(0), without any Java loop backedge.
+    // Block briefly outside the critical section so the RTOS can run its other tasks.
+    if (!device.valid) delay(1);
     return device;
   }
 
