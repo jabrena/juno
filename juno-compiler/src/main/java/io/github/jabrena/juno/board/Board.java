@@ -56,8 +56,8 @@ public enum Board {
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32", "arduino-nano-esp32", "Nano ESP32",
             "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO,
-            EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT, Capability.ONBOARD_WIFI,
-                    Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER,
+            EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
+                    Capability.ONBOARD_WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER,
                     Capability.TLS_EMAIL, Capability.SMTP_STARTTLS, Capability.DOUBLE_MATH,
                     Capability.STRUCTURED_CONCURRENCY, Capability.WATCHDOG));
 
