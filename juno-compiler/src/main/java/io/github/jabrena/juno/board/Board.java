@@ -47,14 +47,19 @@ public enum Board {
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG)),
     /**
-     * The ESP32-S3 Nano: GPIO, delays, USB serial, SPI SD cards, the onboard Wi-Fi of its NORA-W106 module (station
-     * mode only, with UDP and SNTP), the double-precision libm its newlib toolchain ships, and structured concurrency over FreeRTOS
+     * The ESP32-S3 Nano: GPIO, delays, USB serial, SPI SD cards, the onboard Wi-Fi of its NORA-W106 module (station and
+     * access-point modes, with UDP and SNTP), plain HTTP and HTTPS requests (checked against Mozilla's root
+     * certificates), an HTTP server on station Wi-Fi, email over implicit TLS and STARTTLS (SMTP and POP3), Bluetooth
+     * LE for {@code PoweredUpHubRemote}, the hardware random-number generator behind {@code UUID.randomUUID()},
+     * {@code java.math}, the double-precision libm its newlib toolchain ships, and structured concurrency over FreeRTOS
      * tasks; the other optional capabilities are not wired to its core yet.
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32", "arduino-nano-esp32", "Nano ESP32",
             "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO,
-            EnumSet.of(Capability.WIFI, Capability.ONBOARD_WIFI, Capability.DOUBLE_MATH,
-                    Capability.STRUCTURED_CONCURRENCY, Capability.WATCHDOG));
+            EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
+                    Capability.ONBOARD_WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER,
+                    Capability.TLS_EMAIL, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE, Capability.BIG_NUMBERS,
+                    Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY, Capability.WATCHDOG));
 
     private final String apiClassName;
     private final String id;

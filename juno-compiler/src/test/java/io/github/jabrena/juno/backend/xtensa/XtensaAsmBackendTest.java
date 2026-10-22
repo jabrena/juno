@@ -466,13 +466,163 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects the access-point and UDP networking the Nano ESP32 has no capability for yet")
-    void shouldRejectUnwiredNetworking() {
+    @DisplayName("Lowers a plain HTTP GET through the shared HTTP codec over the WiFi.h client")
+    void shouldLowerPlainHttpOnTheWifiClient() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoHttp", """
+                        byte[] body = new byte[64];
+                        byte[] headers = new byte[32];
+                        int[] statusAndHeadersLength = new int[2];
+                        HttpClient.get("http://example.com/", body, body.length, headers, headers.length,
+                                statusAndHeadersLength);
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_http_get(");
+        assertThat(result.runtimeShim()).contains("#include <WiFi.h>");
+        assertThat(result.runtimeShim()).doesNotContain("WiFiSSLClient");
+    }
+
+    @Test
+    @DisplayName("Lowers an HTTPS request through a WiFiClientSecure that checks Mozilla's root certificates")
+    void shouldLowerHttpsOnTheWifiClientSecure() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoHttps", """
+                        byte[] path = new byte[16];
+                        byte[] noHeaders = new byte[1];
+                        byte[] body = new byte[64];
+                        byte[] headers = new byte[32];
+                        int[] statusAndHeadersLength = new int[2];
+                        HttpClient.requestHttps("example.com", 443, "GET", path, 1, noHeaders, 0, null, -1, body,
+                                body.length, headers, headers.length, statusAndHeadersLength);
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <WiFiClientSecure.h>",
+                "struct JunoEspTlsClient : WiFiClientSecure", "setCACertBundle(juno_ca_bundle)",
+                "static const uint8_t juno_ca_bundle[] = {", "juno_https_");
+        assertThat(result.runtimeShim()).doesNotContain("setInsecure()");
+        assertThat(result.runtimeShim()).doesNotContain("WiFiSSLClient");
+    }
+
+    @Test
+    @DisplayName("Lowers HttpServer through a WiFiServer transport with placement new")
+    void shouldLowerHttpServerOnTheWifiServer() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoServer", """
+                        byte[] body = new byte[64];
+                        HttpServer.begin(80);
+                        if (HttpServer.accept(body, body.length) >= 0) {
+                            HttpServer.respond(200, "text/plain", "online");
+                        }
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpServer;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_http_server_begin(", "WiFiServer(static_cast<uint16_t>(port))",
+                "#include <new>");
+        assertThat(result.runtimeShim()).doesNotContain("BridgeTCPServer");
+    }
+
+    @Test
+    @DisplayName("Passes SD-sourced strings to Smtp.sendTls as runtime values, in their parameter slots")
+    void shouldLowerRuntimeStringsToSmtpSendTls() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoMail", """
+                        String host = new StringBuilder().append("smtp.example.com").toString();
+                        String user = new StringBuilder().append("user").toString();
+                        String password = new StringBuilder().append("secret").toString();
+                        String from = new StringBuilder().append("from@example.com").toString();
+                        String to = new StringBuilder().append("to@example.com").toString();
+                        String subject = new StringBuilder().append("subject").toString();
+                        String body = new StringBuilder().append("body").toString();
+                        Serial.println(Smtp.sendTls(host, 465, user, password, from, to, subject, body));
+                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.assembly()).contains("juno_smtp_send_tls");
+        assertThat(result.runtimeShim()).contains("juno_smtp_send_tls(");
+    }
+
+    @Test
+    @DisplayName("Rejects an Smtp call that mixes literal and runtime String arguments")
+    void shouldRejectMixedLiteralAndRuntimeSmtpStrings() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.NanoAp", "Arduino.getWifi().beginAP(\"ap\", \"secret\");",
-                "import io.github.jabrena.juno.hardware.Arduino; import io.github.jabrena.juno.hardware.net.Wifi;"))
+        assertThatThrownBy(() -> compile("demo.NanoMixedMail", """
+                        String host = new StringBuilder().append("smtp.example.com").toString();
+                        Serial.println(Smtp.sendTls(host, 465, "user", "secret", "from@example.com", "to@example.com",
+                                "subject", "body"));
+                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Nano ESP32's WiFi library cannot start an access point");
+                .hasMessageContaining("mixes literal and runtime String arguments");
+    }
+
+    @Test
+    @DisplayName("Lowers Smtp.send's STARTTLS upgrade through the ESP_SSLClient wrapper on the ESP32 core")
+    void shouldLowerStarttlsOnTheEsp32Core() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoStarttls", """
+                        Serial.println(Smtp.send("smtp.example.com", 587, "user", "secret", "from@example.com",
+                                "to@example.com", "subject", "body"));
+                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <ESP_SSLClient.h>", "juno_smtp_send(",
+                "ESP_SSLClient client;", "connectSSL()");
+    }
+
+    @Test
+    @DisplayName("Lowers Wifi.beginAP through the core's softAP helpers")
+    void shouldLowerAccessPointOnTheSoftAp() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoAp", """
+                        Arduino.getWifi().beginAP("juno-ap", "secret123");
+                """, "import io.github.jabrena.juno.hardware.Arduino;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap(", "WiFi.softAP(ssid, password)");
+        assertThat(result.runtimeShim()).doesNotContain("WiFi.beginAP");
+    }
+
+    @Test
+    @DisplayName("Generates UUIDs from the ESP32 hardware random-number generator")
+    void shouldGenerateUuidsOnTheNano() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoUuid", """
+                        Serial.println(java.util.UUID.randomUUID().toString());
+                """, "import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("esp_fill_random(target, length)", "juno_throw_raise(");
+    }
+
+    @Test
+    @DisplayName("Lowers java.math BigInteger and BigDecimal onto the Nano's strtod-backed shim")
+    void shouldLowerBigNumbersOnTheNano() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoBig", """
+                        java.math.BigInteger value = java.math.BigInteger.TWO.pow(64);
+                        Serial.println(value.toString());
+                        Serial.println(new java.math.BigDecimal(2).sqrt(new java.math.MathContext(20)).toString());
+                """, "import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_big_integer_double_value", "strtod(");
+    }
+
+    @Test
+    @DisplayName("Runs PoweredUpHubRemote over the ESP32 BLE library through the juno_ble adapter")
+    void shouldRunPoweredUpOverTheEsp32Ble() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoHub", """
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        Serial.println(hub.connect(0) ? 1 : 0);
+                """, "import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;"
+                + " import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <BLEDevice.h>", "JunoBLECharacteristic",
+                "juno_ble.scanForUuid(");
+        assertThat(result.runtimeShim()).doesNotContain("#include <ArduinoBLE.h>");
     }
 
     @Test
