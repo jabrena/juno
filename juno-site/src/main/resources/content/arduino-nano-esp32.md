@@ -75,7 +75,9 @@ HTTPS works the same way through `HttpClient.requestHttps`, with the host and pa
 card. The Nano's TLS client checks the server's certificate chain against Mozilla's trusted root
 certificates, which Juno bundles into the program (about 55 KB of flash). A server whose chain does not
 end in one of them fails to connect. The core's TLS library has no calendar clock, so a certificate's
-validity dates are not checked. Email works over implicit TLS, `Smtp.sendTls` on port 465 and `Pop3Client` on port 995, with every
+validity dates are not checked.
+
+Email works over implicit TLS, `Smtp.sendTls` on port 465 and `Pop3Client` on port 995, with every
 server, credential and message field read from the card:
 [`NanoSmtpSendSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java)
 sends one message and [`NanoPop3InboxSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java)
