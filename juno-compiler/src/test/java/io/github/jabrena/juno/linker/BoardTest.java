@@ -57,6 +57,7 @@ class BoardTest {
                 arguments(Board.NANO_ESP32, Capability.SMTP_STARTTLS, true),
                 arguments(Board.NANO_ESP32, Capability.SECURE_ENTROPY, true),
                 arguments(Board.NANO_ESP32, Capability.BIG_NUMBERS, true),
+                arguments(Board.NANO_ESP32, Capability.BLUETOOTH_LE, true),
                 arguments(Board.NANO_ESP32, Capability.WATCHDOG, true));
     }
 
