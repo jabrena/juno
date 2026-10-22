@@ -64,10 +64,14 @@ Wi-Fi works in station mode through the module's onboard radio: `Arduino.getWifi
 with `begin(ssid, password)` and reports `status()`, `localIP()`, `gatewayIP()` and `macAddress()`.
 [`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java)
 reads the credentials from `application.properties` on the carrier's microSD card (see
-[SD Card Storage](../storage)). Plain HTTP works through `HttpClient`: the host is a literal in the
+[SD Card Storage](../storage)). UDP works over the core's `WiFiUDP`, so `Udp` and the SNTP clock behind
+`LocalDateTime.now()` run on the Nano too:
+[`NanoSntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java)
+prints UTC with the Wi-Fi credentials and an optional `sntp.host`/`sntp.port` read from the card.
+Plain HTTP works through `HttpClient`: the host is a literal in the
 program and the request path can come from the card, as in
 [`NanoHttpGetSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpGetSD.java).
-The access point (`beginAP`), UDP, TCP, HTTPS and HttpServer, email, BLE and the other optional
+The access point (`beginAP`), TCP, HTTPS and HttpServer, email, BLE and the other optional
 capabilities are not wired yet; Juno rejects a program that uses them at compile time.
 
 ## Nano Connector Carrier
