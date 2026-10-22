@@ -65,13 +65,10 @@ final class Esp32CoreRuntime implements CoreRuntime {
         throw unsupported("an LED matrix");
     }
 
-    /** {@code WiFi.h} covers the station and access-point calls; the UDP and TCP classes are not wired yet. */
+    /** {@code WiFi.h} covers the station calls; {@code WiFiUdp.h} adds the UDP socket {@code Udp} and SNTP use. */
     @Override
     public String wifiIncludes(boolean udp) {
-        if (udp) {
-            throw unsupported("UDP networking");
-        }
-        return "#include <WiFi.h>\n";
+        return udp ? "#include <WiFi.h>\n#include <WiFiUdp.h>\n" : "#include <WiFi.h>\n";
     }
 
     /** Station mode only: the core's {@code WiFi} class has no {@code beginAP}, so the access point stays out. */
@@ -88,7 +85,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String udpDeclaration() {
-        throw unsupported("UDP networking");
+        return "static WiFiUDP juno_udp;";
     }
 
     @Override
@@ -97,14 +94,16 @@ final class Esp32CoreRuntime implements CoreRuntime {
     }
 
     /**
-     * The TLS client skips certificate-chain validation, as the shim's STARTTLS wrapper already does; the core's
-     * embedded CA bundle would need an SDK symbol this core does not ship with, so the chain is not checked yet.
+     * The TLS client checks the server's chain against Mozilla's trusted roots, bundled as the core's
+     * {@code setCACertBundle} format from {@code esp32/ca-certificates.pem} (curl's extract of Mozilla's list, MPL 2.0).
+     * The core's TLS library has no calendar clock, so certificate validity dates are not checked.
      */
     @Override
     public String httpsHelpers() {
-        return """
+        return CertificateBundle.fromPem(runtimeSource.load("esp32/ca-certificates.pem")).cArray("juno_ca_bundle")
+                + """
                 struct JunoEspTlsClient : WiFiClientSecure {
-                  JunoEspTlsClient() { setInsecure(); }
+                  JunoEspTlsClient() { setCACertBundle(juno_ca_bundle); }
                 };
                 """;
     }

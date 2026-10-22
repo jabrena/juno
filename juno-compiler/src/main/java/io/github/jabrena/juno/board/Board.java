@@ -48,8 +48,10 @@ public enum Board {
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG)),
     /**
      * The ESP32-S3 Nano: GPIO, delays, USB serial, SPI SD cards, the onboard Wi-Fi of its NORA-W106 module (station
-     * mode only), plain HTTP and HTTPS requests (certificates not checked yet), an HTTP server on station Wi-Fi, email over implicit TLS and STARTTLS (SMTP and POP3), the double-precision libm its newlib toolchain ships, and structured
-     * concurrency over FreeRTOS tasks; the other optional capabilities are not wired to its core yet.
+     * mode only, with UDP and SNTP), plain HTTP and HTTPS requests (checked against Mozilla's root certificates), an
+     * HTTP server on station Wi-Fi, email over implicit TLS and STARTTLS (SMTP and POP3), the double-precision libm its
+     * newlib toolchain ships, and structured concurrency over FreeRTOS tasks; the other optional capabilities are not
+     * wired to its core yet.
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32", "arduino-nano-esp32", "Nano ESP32",
             "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO,

@@ -18,7 +18,7 @@ import java.util.Properties;
 /**
  * Joins the Wi-Fi network named in {@code application.properties} on the microSD card of a Nano Connector Carrier,
  * then sends an HTTPS GET every ten seconds with the Nano ESP32's {@link HttpClient#requestHttps}. The host and the
- * request path both come from the card. The TLS client does not check the server's certificate chain yet. Prints the
+ * request path both come from the card. The TLS client checks the server's chain against Mozilla's root certificates. Prints the
  * status, the body length and the first bytes of the body at 115200 baud.
  *
  * <p>The card needs {@code wifi.ssid}, {@code wifi.password}, {@code https.host} (a DNS name under 31 characters,
