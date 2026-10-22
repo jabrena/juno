@@ -16,9 +16,10 @@ import java.util.Properties;
 
 /**
  * Starts a Wi-Fi access point named in {@code application.properties} on the microSD card of a Nano Connector Carrier,
- * so a phone or laptop can join the Nano ESP32 directly. Prints the board's address (192.168.4.1 unless the core
- * changes it) and the status every five seconds at 115200 baud; {@link Wifi#STATUS_AP_LISTENING} ({@code 7}) means the
- * access point is up.
+ * so a phone or laptop can join the Nano ESP32 directly. Without a card or configuration file, it starts an open
+ * network named {@link Wifi#DEFAULT_ACCESS_POINT_SSID}. Prints the board's address (192.168.4.1 unless the core changes
+ * it) and the status every five seconds at 115200 baud; {@link Wifi#STATUS_AP_LISTENING} ({@code 7}) means the access
+ * point is up.
  *
  * <p>The card needs {@code ap.ssid} and {@code ap.password}. The passphrase must be at least eight characters (WPA2);
  * leave {@code ap.password} empty to open the network.
@@ -33,6 +34,8 @@ public final class NanoAccessPointSD {
     private static final Wifi WIFI = Arduino.getWifi();
     private static final SdCard SD_CARD = new NanoConnectorCarrier().getSdCard();
 
+    private static final AccessPoint DEFAULT_ACCESS_POINT = new AccessPoint(Wifi.DEFAULT_ACCESS_POINT_SSID,
+            Wifi.DEFAULT_ACCESS_POINT_PASSWORD);
     private static final int STATUS_INTERVAL_MS = 5000;
 
     private NanoAccessPointSD() {
@@ -43,10 +46,6 @@ public final class NanoAccessPointSD {
         Delay.millis(2000);
 
         AccessPoint accessPoint = loadAccessPoint();
-        if (accessPoint == null) {
-            return;
-        }
-
         WIFI.beginAP(accessPoint.ssid(), accessPoint.password());
         printAddress();
         while (true) {
@@ -71,23 +70,19 @@ public final class NanoAccessPointSD {
 
     private static AccessPoint loadAccessPoint() throws IOException {
         if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return null;
+            Serial.println("SD card unavailable; starting open JunoAP");
+            return DEFAULT_ACCESS_POINT;
         }
         InputStream file = SD_CARD.open("application.properties");
         if (file == null) {
-            Serial.println("application.properties not found");
-            return null;
+            Serial.println("application.properties not found; starting open JunoAP");
+            return DEFAULT_ACCESS_POINT;
         }
         Properties properties = new Properties();
         properties.load(file);
         file.close();
-        String ssid = properties.getProperty("ap.ssid");
-        String password = properties.getProperty("ap.password");
-        if (ssid == null || password == null) {
-            Serial.println("ap.ssid or ap.password is missing");
-            return null;
-        }
+        String ssid = properties.getProperty("ap.ssid", Wifi.DEFAULT_ACCESS_POINT_SSID);
+        String password = properties.getProperty("ap.password", Wifi.DEFAULT_ACCESS_POINT_PASSWORD);
         return new AccessPoint(ssid, password);
     }
 
