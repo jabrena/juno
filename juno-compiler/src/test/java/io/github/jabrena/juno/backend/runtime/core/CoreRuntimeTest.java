@@ -314,8 +314,7 @@ class CoreRuntimeTest {
                 esp32Feature("an LED matrix", CoreRuntime::ledMatrixType),
                 esp32Feature("an LED matrix", CoreRuntime::ledMatrixColumns),
                 esp32Feature("ParallelBus", CoreRuntime::parallelBusHelpers),
-                esp32Feature("flash usage queries", CoreRuntime::flashHelpers),
-                esp32Feature("a cryptographic entropy source", CoreRuntime::uuidRandomHelpers));
+                esp32Feature("flash usage queries", CoreRuntime::flashHelpers));
     }
 
     @Test
@@ -373,6 +372,26 @@ class CoreRuntimeTest {
         assertThat(runtime.udpDeclaration()).isEqualTo("static WiFiUDP juno_udp;");
         assertThat(runtime.wifiHelpers()).contains("juno_wifi_begin(", "juno_wifi_mac_address(")
                 .doesNotContain("WiFi.beginAP");
+    }
+
+    @Test
+    @DisplayName("The ESP32 core fills UUIDs from its hardware random-number generator")
+    void shouldFillUuidsFromTheEsp32HardwareRandom() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ESP32);
+
+        // When & Then
+        assertThat(runtime.uuidRandomHelpers()).contains("esp_fill_random(target, length)", "return false;");
+    }
+
+    @Test
+    @DisplayName("The ESP32 core names its own BLE adapter, while the UNO boards keep ArduinoBLE")
+    void shouldNameTheEsp32BleAdapter() {
+        // Then
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).bleNames())
+                .isEqualTo(new CoreRuntime.BleNames("JunoBLEDevice", "JunoBLECharacteristic", "juno_ble"));
+        assertThat(coreRuntimes.of(ArduinoCore.RENESAS_UNO).bleNames()).isEqualTo(CoreRuntime.BleNames.ARDUINO_BLE);
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).bleHelpers()).contains("class JunoBLEDevice");
     }
 
     private static Arguments esp32Feature(String feature, Consumer<CoreRuntime> use) {

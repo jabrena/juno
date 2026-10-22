@@ -188,4 +188,28 @@ public interface CoreRuntime {
      * {@code JUNO_THREAD_STACK_BYTES} constants, sized from {@code config}.
      */
     String threadPort(RuntimeConfig config);
+
+    /**
+     * The BLE central names the LEGO Powered UP runtime is written against: {@code ArduinoBLE}'s device, characteristic
+     * and scanner object. A core with another BLE library names its own adapter here.
+     */
+    record BleNames(String device, String characteristic, String central) {
+        /** {@code ArduinoBLE}, the library the UNO R4 WiFi and UNO Q use. */
+        public static final BleNames ARDUINO_BLE = new BleNames("BLEDevice", "BLECharacteristic", "BLE");
+    }
+
+    /** The BLE central names the LEGO runtime uses on this core. */
+    default BleNames bleNames() {
+        return BleNames.ARDUINO_BLE;
+    }
+
+    /** Core-specific headers of the BLE central. */
+    default String bleIncludes() {
+        return "#include <ArduinoBLE.h>\n";
+    }
+
+    /** Core-specific adapter the LEGO runtime calls, emitted before it; empty when the core provides ArduinoBLE itself. */
+    default String bleHelpers() {
+        return "";
+    }
 }

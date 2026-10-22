@@ -584,6 +584,48 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Generates UUIDs from the ESP32 hardware random-number generator")
+    void shouldGenerateUuidsOnTheNano() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoUuid", """
+                        Serial.println(java.util.UUID.randomUUID().toString());
+                """, "import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("esp_fill_random(target, length)", "juno_throw_raise(");
+    }
+
+    @Test
+    @DisplayName("Lowers java.math BigInteger and BigDecimal onto the Nano's strtod-backed shim")
+    void shouldLowerBigNumbersOnTheNano() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoBig", """
+                        java.math.BigInteger value = java.math.BigInteger.TWO.pow(64);
+                        Serial.println(value.toString());
+                        Serial.println(new java.math.BigDecimal(2).sqrt(new java.math.MathContext(20)).toString());
+                """, "import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("juno_big_integer_double_value", "strtod(");
+    }
+
+    @Test
+    @DisplayName("Runs PoweredUpHubRemote over the ESP32 BLE library through the juno_ble adapter")
+    void shouldRunPoweredUpOverTheEsp32Ble() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoHub", """
+                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        Serial.println(hub.connect(0) ? 1 : 0);
+                """, "import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;"
+                + " import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <BLEDevice.h>", "JunoBLECharacteristic",
+                "juno_ble.scanForUuid(");
+        assertThat(result.runtimeShim()).doesNotContain("#include <ArduinoBLE.h>");
+    }
+
+    @Test
     @DisplayName("Reads a file from the Nano Connector Carrier's microSD slot through the SdFat shim helpers")
     void shouldLowerSdCardAccessOnTheConnectorCarrier() throws Exception {
         // Given
