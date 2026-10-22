@@ -65,13 +65,10 @@ final class Esp32CoreRuntime implements CoreRuntime {
         throw unsupported("an LED matrix");
     }
 
-    /** {@code WiFi.h} covers the station and access-point calls; the UDP and TCP classes are not wired yet. */
+    /** {@code WiFi.h} covers the station calls; {@code WiFiUdp.h} adds the UDP socket {@code Udp} and SNTP use. */
     @Override
     public String wifiIncludes(boolean udp) {
-        if (udp) {
-            throw unsupported("UDP networking");
-        }
-        return "#include <WiFi.h>\n";
+        return udp ? "#include <WiFi.h>\n#include <WiFiUdp.h>\n" : "#include <WiFi.h>\n";
     }
 
     /** Station mode only: the core's {@code WiFi} class has no {@code beginAP}, so the access point stays out. */
@@ -87,7 +84,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String udpDeclaration() {
-        throw unsupported("UDP networking");
+        return "static WiFiUDP juno_udp;";
     }
 
     @Override

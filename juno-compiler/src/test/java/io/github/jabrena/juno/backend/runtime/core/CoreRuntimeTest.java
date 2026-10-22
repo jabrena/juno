@@ -313,9 +313,7 @@ class CoreRuntimeTest {
         return Stream.of(
                 esp32Feature("an LED matrix", CoreRuntime::ledMatrixType),
                 esp32Feature("an LED matrix", CoreRuntime::ledMatrixColumns),
-                esp32Feature("UDP networking", runtime -> runtime.wifiIncludes(true)),
                 esp32Feature("an HTTP server", CoreRuntime::httpServerTransport),
-                esp32Feature("UDP networking", CoreRuntime::udpDeclaration),
                 esp32Feature("TLS networking", CoreRuntime::httpsInclude),
                 esp32Feature("TLS networking", CoreRuntime::httpsHelpers),
                 esp32Feature("TLS networking", CoreRuntime::httpsClientDeclaration),
@@ -375,6 +373,8 @@ class CoreRuntimeTest {
 
         // When & Then
         assertThat(runtime.wifiIncludes(false)).isEqualTo("#include <WiFi.h>\n");
+        assertThat(runtime.wifiIncludes(true)).isEqualTo("#include <WiFi.h>\n#include <WiFiUdp.h>\n");
+        assertThat(runtime.udpDeclaration()).isEqualTo("static WiFiUDP juno_udp;");
         assertThat(runtime.wifiHelpers()).contains("juno_wifi_begin(", "juno_wifi_mac_address(")
                 .doesNotContain("beginAP");
     }
