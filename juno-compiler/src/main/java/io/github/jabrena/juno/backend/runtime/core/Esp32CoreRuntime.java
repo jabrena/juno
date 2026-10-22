@@ -93,14 +93,16 @@ final class Esp32CoreRuntime implements CoreRuntime {
     }
 
     /**
-     * The TLS client skips certificate-chain validation, as the shim's STARTTLS wrapper already does; the core's
-     * embedded CA bundle would need an SDK symbol this core does not ship with, so the chain is not checked yet.
+     * The TLS client checks the server's chain against Mozilla's trusted roots, bundled as the core's
+     * {@code setCACertBundle} format from {@code esp32/ca-certificates.pem} (curl's extract of Mozilla's list, MPL 2.0).
+     * The core's TLS library has no calendar clock, so certificate validity dates are not checked.
      */
     @Override
     public String httpsHelpers() {
-        return """
+        return CertificateBundle.fromPem(runtimeSource.load("esp32/ca-certificates.pem")).cArray("juno_ca_bundle")
+                + """
                 struct JunoEspTlsClient : WiFiClientSecure {
-                  JunoEspTlsClient() { setInsecure(); }
+                  JunoEspTlsClient() { setCACertBundle(juno_ca_bundle); }
                 };
                 """;
     }
