@@ -30,13 +30,25 @@ public class PoweredUpHubHello {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
+        Delay.millis(2000);
+        Serial.println("PoweredUpHubHello started");
         while (true) {
             if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                HUB.connect(0);
-                Serial.println("Connected, battery " + HUB.batteryPercent() + " %");
+                if (!HUB.connect(10000)) {
+                    Serial.println("No connection; retrying");
+                    Delay.millis(1000);
+                    continue;
+                }
+                Serial.print("Connected, battery ");
+                Serial.print(HUB.batteryPercent());
+                Serial.println(" %");
             }
             for (int i = 0; i < COLORS.length; i++) {
+                if (!HUB.isConnected()) {
+                    Serial.println("Hub disconnected");
+                    break;
+                }
                 HUB.setLedColor(COLORS[i]);
                 Delay.millis(COLOR_MILLIS);
             }

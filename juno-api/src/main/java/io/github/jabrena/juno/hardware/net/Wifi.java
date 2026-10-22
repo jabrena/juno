@@ -15,6 +15,12 @@ package io.github.jabrena.juno.hardware.net;
  */
 public interface Wifi {
 
+    /** Default name for Juno's open, local-development access point. */
+    String DEFAULT_ACCESS_POINT_SSID = "JunoAP";
+
+    /** An empty passphrase deliberately makes {@link #DEFAULT_ACCESS_POINT_SSID} an open network. */
+    String DEFAULT_ACCESS_POINT_PASSWORD = "";
+
     /** The {@link #status} value once connected, mirroring Arduino's {@code WL_CONNECTED}. */
     int STATUS_CONNECTED = 3;
 

@@ -36,7 +36,30 @@ public final class IntrinsicRegistry {
             new IntrinsicParameter(Intrinsic.BIG_INTEGER_PARSE, 0),
             new IntrinsicParameter(Intrinsic.BIG_DECIMAL_PARSE, 0),
             new IntrinsicParameter(Intrinsic.HTTPS_REQUEST_BUFFER, 0),
-            new IntrinsicParameter(Intrinsic.HTTPS_REQUEST_BUFFER, 2));
+            new IntrinsicParameter(Intrinsic.HTTPS_REQUEST_BUFFER, 2),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 0),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 2),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 3),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 4),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 5),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 6),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 7),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 0),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 2),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 3),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 4),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 5),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 6),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 7),
+            new IntrinsicParameter(Intrinsic.POP3_MESSAGE_COUNT, 0),
+            new IntrinsicParameter(Intrinsic.POP3_MESSAGE_COUNT, 2),
+            new IntrinsicParameter(Intrinsic.POP3_MESSAGE_COUNT, 3),
+            new IntrinsicParameter(Intrinsic.POP3_READ_LATEST, 0),
+            new IntrinsicParameter(Intrinsic.POP3_READ_LATEST, 2),
+            new IntrinsicParameter(Intrinsic.POP3_READ_LATEST, 3),
+            new IntrinsicParameter(Intrinsic.POP3_READ_SUBJECT, 0),
+            new IntrinsicParameter(Intrinsic.POP3_READ_SUBJECT, 2),
+            new IntrinsicParameter(Intrinsic.POP3_READ_SUBJECT, 3));
 
     /**
      * Parameters that accept a runtime {@code String} but still take the literal path (a {@code .asciz}
@@ -45,7 +68,30 @@ public final class IntrinsicRegistry {
      */
     private static final Set<IntrinsicParameter> LITERAL_WHEN_KNOWN_PARAMETERS = Set.of(
             new IntrinsicParameter(Intrinsic.SERIAL_PRINT_STRING, 0),
-            new IntrinsicParameter(Intrinsic.SERIAL_PRINTLN_STRING, 0));
+            new IntrinsicParameter(Intrinsic.SERIAL_PRINTLN_STRING, 0),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 0),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 2),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 3),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 4),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 5),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 6),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND, 7),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 0),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 2),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 3),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 4),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 5),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 6),
+            new IntrinsicParameter(Intrinsic.SMTP_SEND_TLS, 7),
+            new IntrinsicParameter(Intrinsic.POP3_MESSAGE_COUNT, 0),
+            new IntrinsicParameter(Intrinsic.POP3_MESSAGE_COUNT, 2),
+            new IntrinsicParameter(Intrinsic.POP3_MESSAGE_COUNT, 3),
+            new IntrinsicParameter(Intrinsic.POP3_READ_LATEST, 0),
+            new IntrinsicParameter(Intrinsic.POP3_READ_LATEST, 2),
+            new IntrinsicParameter(Intrinsic.POP3_READ_LATEST, 3),
+            new IntrinsicParameter(Intrinsic.POP3_READ_SUBJECT, 0),
+            new IntrinsicParameter(Intrinsic.POP3_READ_SUBJECT, 2),
+            new IntrinsicParameter(Intrinsic.POP3_READ_SUBJECT, 3));
 
     private record IntrinsicParameter(Intrinsic intrinsic, int parameterIndex) {
     }
