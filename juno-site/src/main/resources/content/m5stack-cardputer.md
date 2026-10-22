@@ -43,6 +43,17 @@ if (sd.begin()) {
     Serial.println("SD card ready");
 }
 ```
+
+## Wi-Fi
+
+`M5.getWifi()` returns the Cardputer's built-in ESP32-S3 radio. It uses the existing `Wifi` interface for station and
+access point modes, so application services can receive a mock in unit tests.
+
+```java
+Wifi wifi = M5.getWifi();
+wifi.beginAP("JunoCardputer", "juno1234");
+Serial.println(wifi.status());
+```
 Install the Juno Maven plugin, then run `juno:install-deps` once to install the M5Stack ESP32 board
 package along with the other supported board cores and libraries. Compile and upload the example:
 

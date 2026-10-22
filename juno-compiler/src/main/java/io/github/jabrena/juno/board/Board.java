@@ -60,9 +60,10 @@ public enum Board {
                     Capability.ONBOARD_WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER,
                     Capability.TLS_EMAIL, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE, Capability.BIG_NUMBERS,
                     Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY, Capability.WATCHDOG)),
-    /** M5Stack Cardputer: first-cut ESP32-S3 support for USB serial output. */
+    /** M5Stack Cardputer: ESP32-S3 support for USB serial, GPIO, SD storage, and onboard Wi-Fi. */
     M5_CARDPUTER("io/github/jabrena/juno/annotations/M5Cardputer", "m5stack-cardputer", "M5Stack Cardputer",
-            "m5stack:esp32:m5stack_cardputer", ArduinoCore.ESP32, UnoGeneration.NANO, Set.of());
+            "m5stack:esp32:m5stack_cardputer", ArduinoCore.ESP32, UnoGeneration.NANO,
+            EnumSet.of(Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT));
 
     private final String apiClassName;
     private final String id;

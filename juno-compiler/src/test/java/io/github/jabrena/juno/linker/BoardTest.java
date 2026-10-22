@@ -58,7 +58,10 @@ class BoardTest {
                 arguments(Board.NANO_ESP32, Capability.SECURE_ENTROPY, true),
                 arguments(Board.NANO_ESP32, Capability.BIG_NUMBERS, true),
                 arguments(Board.NANO_ESP32, Capability.BLUETOOTH_LE, true),
-                arguments(Board.NANO_ESP32, Capability.WATCHDOG, true));
+                arguments(Board.NANO_ESP32, Capability.WATCHDOG, true),
+                arguments(Board.M5_CARDPUTER, Capability.WIFI, true),
+                arguments(Board.M5_CARDPUTER, Capability.ONBOARD_WIFI, true),
+                arguments(Board.M5_CARDPUTER, Capability.WIFI_ACCESS_POINT, true));
     }
 
     @Test

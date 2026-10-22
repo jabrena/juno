@@ -4,6 +4,8 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
+import io.github.jabrena.juno.hardware.internal.NativeWifi;
+import io.github.jabrena.juno.hardware.net.Wifi;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -35,5 +37,10 @@ public final class M5 {
             sdCard = card;
         }
         return card;
+    }
+
+    /** The Cardputer's built-in ESP32-S3 Wi-Fi radio. */
+    public static Wifi getWifi() {
+        return NativeWifi.wifi();
     }
 }

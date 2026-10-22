@@ -105,6 +105,36 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles Cardputer Wi-Fi access through the M5 facade")
+        void shouldCompileCardputerWifiThroughM5() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.annotations.M5Cardputer;
+                    import io.github.jabrena.juno.hardware.M5;
+                    import io.github.jabrena.juno.hardware.net.Wifi;
+                    @Board(M5Cardputer.class)
+                    public final class CardputerWifi {
+                        public static void main(String[] args) {
+                            Wifi wifi = M5.getWifi();
+                            wifi.beginAP("JunoCardputer", "juno1234");
+                            wifi.status();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerWifi", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerWifi");
+
+            // Then
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.assembly()).contains("call8 juno_wifi_begin_ap", "call8 juno_wifi_status");
+            assertThat(result.runtimeShim()).contains("#include <WiFi.h>", "WiFi.softAP");
+        }
+
+        @Test
         @DisplayName("Compiles an unannotated basic program for the requested UNO R3")
         void shouldCompileAnUnannotatedBasicProgramForTheRequestedUnoR3() throws Exception {
             // Given

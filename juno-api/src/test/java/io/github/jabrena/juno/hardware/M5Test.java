@@ -3,6 +3,7 @@ package io.github.jabrena.juno.hardware;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
+import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -26,5 +27,12 @@ class M5Test {
         // Then
         assertThat(card).isSameAs(M5.getSd()).isInstanceOf(NativeSdCard.class);
         assertThat(((NativeSdCard) card).chipSelectPin()).isEqualTo(12);
+    }
+
+    @Test
+    @DisplayName("The Cardputer's Wi-Fi radio is one shared instance")
+    void shouldHandOutOneWifiInstance() {
+        // When & Then
+        assertThat(M5.getWifi()).isSameAs(M5.getWifi()).isSameAs(NativeWifi.INSTANCE);
     }
 }
