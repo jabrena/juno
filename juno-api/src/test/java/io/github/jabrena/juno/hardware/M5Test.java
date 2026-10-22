@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.hardware;
 
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
+import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -13,5 +15,16 @@ class M5Test {
     void shouldHandOutOneGpioInstance() {
         // When & Then
         assertThat(M5.getGpio()).isSameAs(M5.getGpio()).isSameAs(NativeGpio.INSTANCE);
+    }
+
+    @Test
+    @DisplayName("The Cardputer's SD socket is one shared card on GPIO12")
+    void shouldHandOutOneSdCardOnGpio12() {
+        // When
+        SdCard card = M5.getSd();
+
+        // Then
+        assertThat(card).isSameAs(M5.getSd()).isInstanceOf(NativeSdCard.class);
+        assertThat(((NativeSdCard) card).chipSelectPin()).isEqualTo(12);
     }
 }

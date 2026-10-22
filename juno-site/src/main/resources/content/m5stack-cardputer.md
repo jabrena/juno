@@ -32,6 +32,17 @@ while (true) {
 prints `Hello, World!` once a second, after a short startup pause so the serial monitor has time to
 connect.
 
+## SD card
+
+`M5.getSd()` returns the Cardputer's built-in microSD socket. Calling `begin()` uses its standard SPI wiring: chip
+select GPIO12, MOSI GPIO14, MISO GPIO39, and clock GPIO40.
+
+```java
+SdCard sd = M5.getSd();
+if (sd.begin()) {
+    Serial.println("SD card ready");
+}
+```
 Install the Juno Maven plugin, then run `juno:install-deps` once to install the M5Stack ESP32 board
 package along with the other supported board cores and libraries. Compile and upload the example:
 

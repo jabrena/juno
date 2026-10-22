@@ -1460,6 +1460,35 @@ class JunoCompilerTest {
         Path temporaryDirectory;
 
         @Test
+        @DisplayName("Lowers the Cardputer's built-in SD card through the M5 facade")
+        void shouldLowerTheCardputerSdCardThroughM5() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.annotations.M5Cardputer;
+                    import io.github.jabrena.juno.hardware.M5;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
+                    @Board(M5Cardputer.class)
+                    public final class CardputerSd {
+                        private static final SdCard SD = M5.getSd();
+                        public static void main(String[] args) {
+                            if (SD.begin()) SD.exists("settings.txt");
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerSd", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerSd");
+
+            // Then
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.assembly()).contains("call8 juno_sd_begin", "call8 juno_sd_exists");
+            assertThat(result.runtimeShim()).contains("juno_sd.begin(juno_nano_pin(chipSelectPin))");
+        }
+
+        @Test
         @DisplayName("Lowers SD card files, properties and runtime Wi-Fi credentials")
         void shouldLowerSdCardFilesPropertiesAndRuntimeWifiCredentials() throws Exception {
             // Given
