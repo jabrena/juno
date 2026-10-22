@@ -484,7 +484,7 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Lowers an HTTPS request through the WiFiClientSecure shim helpers")
+    @DisplayName("Lowers an HTTPS request through a WiFiClientSecure that checks Mozilla's root certificates")
     void shouldLowerHttpsOnTheWifiClientSecure() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoHttps", """
@@ -499,7 +499,9 @@ class XtensaAsmBackendTest {
 
         // Then
         assertThat(result.runtimeShim()).contains("#include <WiFiClientSecure.h>",
-                "struct JunoEspTlsClient : WiFiClientSecure", "setInsecure()", "juno_https_");
+                "struct JunoEspTlsClient : WiFiClientSecure", "setCACertBundle(juno_ca_bundle)",
+                "static const uint8_t juno_ca_bundle[] = {", "juno_https_");
+        assertThat(result.runtimeShim()).doesNotContain("setInsecure()");
         assertThat(result.runtimeShim()).doesNotContain("WiFiSSLClient");
     }
 

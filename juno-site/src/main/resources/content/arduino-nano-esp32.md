@@ -64,14 +64,20 @@ Wi-Fi works in station mode through the module's onboard radio: `Arduino.getWifi
 with `begin(ssid, password)` and reports `status()`, `localIP()`, `gatewayIP()` and `macAddress()`.
 [`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java)
 reads the credentials from `application.properties` on the carrier's microSD card (see
-[SD Card Storage](../storage)). Plain HTTP works through `HttpClient`: the host is a literal in the
+[SD Card Storage](../storage)). UDP works over the core's `WiFiUDP`, so `Udp` and the SNTP clock behind
+`LocalDateTime.now()` run on the Nano too:
+[`NanoSntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java)
+prints UTC with the Wi-Fi credentials and an optional `sntp.host`/`sntp.port` read from the card.
+Plain HTTP works through `HttpClient`: the host is a literal in the
 program and the request path can come from the card, as in
 [`NanoHttpGetSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpGetSD.java).
 HTTPS works the same way through `HttpClient.requestHttps`, with the host and path read from the
-card. The Nano's TLS client does not check the server's certificate chain yet; the connection is
-encrypted, but the server's identity is not verified. `HttpServer` runs on the station address:
+card. The Nano's TLS client checks the server's certificate chain against Mozilla's trusted root
+certificates, which Juno bundles into the program (about 55 KB of flash). A server whose chain does not
+end in one of them fails to connect. The core's TLS library has no calendar clock, so a certificate's
+validity dates are not checked. `HttpServer` runs on the station address:
 [`NanoHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java)
-prints the board's address and answers `GET /status` on port 80. The access point (`beginAP`), UDP, TCP,
+prints the board's address and answers `GET /status` on port 80. The access point (`beginAP`), TCP,
 email, BLE and the other optional capabilities are not wired yet; Juno rejects a program that uses them
 at compile time.
 
