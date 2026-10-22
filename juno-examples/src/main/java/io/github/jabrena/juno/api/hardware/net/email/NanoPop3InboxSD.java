@@ -21,8 +21,8 @@ import java.util.Properties;
  * minute. The server and the credentials come from the card. Prints the count, or the failing status, at 115200 baud.
  *
  * <p>The card needs {@code wifi.ssid}, {@code wifi.password}, {@code pop3.host}, {@code pop3.username} and
- * {@code pop3.password}. A runtime {@code String} holds 31 bytes, so keep the password within that length. The TLS
- * client does not check the server's certificate chain yet.
+ * {@code pop3.password}. A runtime {@code String} holds 31 bytes, so keep the password within that length.
+ * The TLS client checks the server's chain against Mozilla's root certificates.
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:upload \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.NanoPop3InboxSD -Djuno.board=arduino-nano-esp32

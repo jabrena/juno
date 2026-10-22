@@ -24,8 +24,8 @@ import java.util.Properties;
  *
  * <p>The card needs {@code wifi.ssid}, {@code wifi.password}, {@code smtp.host}, {@code smtp.username},
  * {@code smtp.password}, {@code smtp.from}, {@code smtp.to}, {@code smtp.subject} and {@code smtp.body}. A runtime
- * {@code String} holds 31 bytes, so keep the password, the subject and the body within that length. The TLS client
- * does not check the server's certificate chain yet.
+ * {@code String} holds 31 bytes, so keep the password, the subject and the body within that length. Unlike
+ * {@link Smtp#sendTls}, the STARTTLS wrapper ({@code ESP_SSLClient}) does not check the server's certificate chain yet.
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:upload \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.NanoSmtpStarttlsSD -Djuno.board=arduino-nano-esp32
