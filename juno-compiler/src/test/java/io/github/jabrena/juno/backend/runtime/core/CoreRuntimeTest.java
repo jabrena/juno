@@ -313,13 +313,6 @@ class CoreRuntimeTest {
         return Stream.of(
                 esp32Feature("an LED matrix", CoreRuntime::ledMatrixType),
                 esp32Feature("an LED matrix", CoreRuntime::ledMatrixColumns),
-                esp32Feature("networking", runtime -> runtime.wifiIncludes(false)),
-                esp32Feature("networking", CoreRuntime::wifiHelpers),
-                esp32Feature("an HTTP server", CoreRuntime::httpServerTransport),
-                esp32Feature("UDP networking", CoreRuntime::udpDeclaration),
-                esp32Feature("TLS networking", CoreRuntime::httpsInclude),
-                esp32Feature("TLS networking", CoreRuntime::httpsHelpers),
-                esp32Feature("TLS networking", CoreRuntime::httpsClientDeclaration),
                 esp32Feature("ParallelBus", CoreRuntime::parallelBusHelpers),
                 esp32Feature("flash usage queries", CoreRuntime::flashHelpers));
     }
@@ -365,6 +358,20 @@ class CoreRuntimeTest {
 
         // Then
         assertThat(port).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 4096u");
+    }
+
+    @Test
+    @DisplayName("The ESP32 core includes the station-mode WiFi.h and its shim helpers without an access point")
+    void shouldWireTheEsp32StationWifi() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ESP32);
+
+        // When & Then
+        assertThat(runtime.wifiIncludes(false)).isEqualTo("#include <WiFi.h>\n");
+        assertThat(runtime.wifiIncludes(true)).isEqualTo("#include <WiFi.h>\n#include <WiFiUdp.h>\n");
+        assertThat(runtime.udpDeclaration()).isEqualTo("static WiFiUDP juno_udp;");
+        assertThat(runtime.wifiHelpers()).contains("juno_wifi_begin(", "juno_wifi_mac_address(")
+                .doesNotContain("WiFi.beginAP");
     }
 
     @Test

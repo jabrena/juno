@@ -171,26 +171,29 @@ class LocalDateTimeTest {
     }
 
     @Test
-    @DisplayName("Rejects the internet clock on a board without Wi-Fi")
-    void shouldRejectTheInternetClockOnABoardWithoutWifi() throws Exception {
+    @DisplayName("Runs the SNTP clock on the Nano ESP32 over the core's WiFiUDP")
+    void shouldRunTheSntpClockOnTheNanoEsp32() throws Exception {
         // Given
         String source = """
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
                 import io.github.jabrena.juno.annotations.Board;
                 @Board(ArduinoNanoEsp32.class)
-                public final class OfflineClock {
+                public final class NanoClock {
                     public static void main() {
                         java.time.LocalDateTime value = java.time.LocalDateTime.now();
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.OfflineClock", source, "25");
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoClock", source, "25");
 
-        // When & Then
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OfflineClock"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Nano ESP32 has no onboard WiFi module");
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoClock");
+
+        // Then
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFiUdp.h>", "static WiFiUDP juno_sntp_udp;")
+                .doesNotContain("WiFiS3.h");
     }
 
     @Test
