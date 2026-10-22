@@ -5,9 +5,26 @@ layout: page
 ---
 
 Juno's first Cardputer support adds the board target and an example that sends text over USB
-serial. The example uses Juno's existing `Serial` and `Delay` APIs. The M5 device facade will be
-the entry point for Cardputer peripherals as those APIs are added. Display, keyboard and other
+serial. The example uses Juno's existing `Serial` and `Delay` APIs. The `M5` device facade is the
+entry point for Cardputer peripherals. Display, keyboard and other
 Cardputer peripherals are not part of this first step.
+
+## GPIO
+
+`M5.getGpio()` returns the Cardputer's GPIO interface. The following example toggles GPIO2 on the
+HY2.0-4P port once a second:
+
+```java
+Gpio gpio = M5.getGpio();
+int groveOutput = Gpio.getD2();
+gpio.pinMode(groveOutput, Gpio.getOutput());
+while (true) {
+    gpio.digitalWrite(groveOutput, true);
+    Delay.millis(1000);
+    gpio.digitalWrite(groveOutput, false);
+    Delay.millis(1000);
+}
+```
 
 ## Hello World
 
