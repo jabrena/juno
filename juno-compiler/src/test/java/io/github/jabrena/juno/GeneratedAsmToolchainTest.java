@@ -56,6 +56,25 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    @DisplayName("Nano BLE keeps scanning for late hubs, yields while waiting and preserves write response mode")
+    void shouldWaitForLateNanoHubsAndPreserveBleWriteMode() throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String runtime = Files.readString(Path.of("src/main/resources/runtime/esp32/ble.cpp"));
+        String harness = Files.readString(Path.of("src/test/resources/esp32-ble-harness.cpp"));
+
+        Process run = compileAndStart(compiler, harness.replace("// ESP32_BLE", runtime), "esp32-ble");
+
+        boolean finished = run.waitFor(20, TimeUnit.SECONDS);
+        if (!finished) {
+            run.destroyForcibly();
+        }
+        assertThat(finished).isTrue();
+        String diagnostics = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as(diagnostics).isZero();
+    }
+
+    @Test
     @DisplayName("AVR task allocations stay below the parked main stack")
     void shouldKeepAvrTaskAllocationsBelowTheParkedMainStack() throws Exception {
         // Given

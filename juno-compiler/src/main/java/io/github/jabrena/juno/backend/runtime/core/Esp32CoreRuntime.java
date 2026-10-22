@@ -71,15 +71,16 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return udp ? "#include <WiFi.h>\n#include <WiFiUdp.h>\n" : "#include <WiFi.h>\n";
     }
 
-    /** Station mode only: the core's {@code WiFi} class has no {@code beginAP}, so the access point stays out. */
+    /** Station and access-point helpers over the core's {@code WiFi} class ({@code softAP} for the access point). */
     @Override
     public String wifiHelpers() {
-        return runtimeSource.load("esp32/wifi-station.cpp");
+        return runtimeSource.load("esp32/wifi.cpp");
     }
 
+    /** A {@code WiFiServer} on the station interface; the shared request parser reads its accepted clients. */
     @Override
     public String httpServerTransport() {
-        throw unsupported("an HTTP server");
+        return runtimeSource.load("esp32/http-server-transport.cpp");
     }
 
     @Override
@@ -89,18 +90,27 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String httpsInclude() {
-        throw unsupported("TLS networking");
+        return "#include <WiFiClientSecure.h>\n";
     }
 
+    /**
+     * The TLS client checks the server's chain against Mozilla's trusted roots, bundled as the core's
+     * {@code setCACertBundle} format from {@code esp32/ca-certificates.pem} (curl's extract of Mozilla's list, MPL 2.0).
+     * The core's TLS library has no calendar clock, so certificate validity dates are not checked.
+     */
     @Override
     public String httpsHelpers() {
-        throw unsupported("TLS networking");
+        return CertificateBundle.fromPem(runtimeSource.load("esp32/ca-certificates.pem")).cArray("juno_ca_bundle")
+                + """
+                struct JunoEspTlsClient : WiFiClientSecure {
+                  JunoEspTlsClient() { setCACertBundle(juno_ca_bundle); }
+                };
+                """;
     }
 
-    /** The plain-HTTP client is the {@code WiFiClient} that {@code WiFi.h} already declares. */
     @Override
     public String httpsClientDeclaration() {
-        return "WiFiClientSecure client;";
+        return "JunoEspTlsClient client;";
     }
 
     @Override
@@ -139,7 +149,30 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String uuidRandomHelpers() {
-        throw unsupported("a cryptographic entropy source");
+        return runtimeSource.load("esp32/uuid-random.cpp");
+    }
+
+    /** The core's BLE library, which the adapter below drives through the names of {@link #bleNames()}. */
+    @Override
+    public String bleIncludes() {
+        return """
+                #include <BLEAdvertisedDevice.h>
+                #include <BLEClient.h>
+                #include <BLEDevice.h>
+                #include <BLERemoteCharacteristic.h>
+                #include <BLERemoteService.h>
+                #include <BLEScan.h>
+                """;
+    }
+
+    @Override
+    public String bleHelpers() {
+        return runtimeSource.load("esp32/ble.cpp");
+    }
+
+    @Override
+    public BleNames bleNames() {
+        return new BleNames("JunoBLEDevice", "JunoBLECharacteristic", "juno_ble");
     }
 
     @Override
