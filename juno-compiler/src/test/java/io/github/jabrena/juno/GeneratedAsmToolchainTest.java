@@ -45,7 +45,8 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String runtime = Files.readString(Path.of("src/main/resources/runtime/esp32/core-glue.cpp"));
         String harness = Files.readString(Path.of("src/test/resources/esp32-gpio-harness.cpp"));
-        String source = "#define GPIO_NUMBERS " + (gpioNumbers ? 1 : 0) + "\n"
+        String source = "#define BOARD_HAS_PIN_REMAP 1\n"
+                + "#define GPIO_NUMBERS " + (gpioNumbers ? 1 : 0) + "\n"
                 + harness.replace("// ESP32_CORE_GLUE", runtime);
 
         Process run = compileAndStart(compiler, source, "esp32-gpio");

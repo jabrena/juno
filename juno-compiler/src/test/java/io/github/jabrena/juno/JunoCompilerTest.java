@@ -875,6 +875,38 @@ class JunoCompilerTest {
         Path temporaryDirectory;
 
         @Test
+        @DisplayName("Compiles an M5 Cardputer Hello World through Serial")
+        void shouldCompileM5CardputerHelloWorldToUsbSerial() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.annotations.M5Cardputer;
+                    import io.github.jabrena.juno.hardware.serial.BaudRate;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(M5Cardputer.class)
+                    public final class M5HelloWorld {
+                        public static void main(String[] args) {
+                            Serial.begin(BaudRate.BAUD_115200);
+                            Serial.println("Hello, World!");
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.M5HelloWorld", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.M5HelloWorld");
+
+            // Then
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.report().board().fqbn()).isEqualTo("m5stack:esp32:m5stack_cardputer");
+            assertThat(result.assembly()).contains("call8 juno_serial_begin", "call8 juno_serial_println_str",
+                    "Hello, World!");
+            assertThat(result.runtimeShim())
+                    .contains("Serial.begin", "Serial.println", "defined(BOARD_HAS_PIN_REMAP)", "#else\n  return pin;");
+        }
+
+        @Test
         @DisplayName("Lowers the serial intrinsics for begin, print and println")
         void shouldLowerTheSerialIntrinsics() throws Exception {
             // Given

@@ -14,7 +14,7 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 | Goal | Default phase | What it does |
 |---|---|---|
 | `juno:env` | `generate-sources` | Reads a git-ignored `.env` file and exports its entries into the Maven JVM's real process environment. |
-| `juno:install-deps` | (none — run explicitly) | Installs the Arduino core and every optional library any current example needs (e.g. `Mouse`, `ESP_SSLClient`), once per machine. |
+| `juno:install-deps` | (none — run explicitly) | Installs the supported Arduino cores (including M5Stack ESP32) and every optional library any current example needs, once per machine. |
 | `juno:compile` | `process-classes` | Runs Juno's compiler for `<mainClass>` and writes the generated `.S` assembly, `Shim.cpp` runtime, and `.ino` wrapper. |
 | `juno:verify` | `verify` | Runs `juno:compile`, then compiles the generated sketch with `arduino-cli compile` — no board required. |
 | `juno:upload` | (none — run explicitly) | Runs `juno:compile` and `juno:verify`, resolves the board's serial port, and flashes it with `arduino-cli upload`. |
@@ -53,7 +53,7 @@ many programs, so every `compile`, `verify` or `upload` names one, for example
 | `juno.main` | `compile`, `verify`, `upload` | *(required)* | Fully qualified entry-point class. |
 | `juno.outputDirectory` | `compile`, `verify`, `upload` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
 | `juno.gcLog` | `compile`, `verify`, `upload` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../features)). |
-| `juno.board` | `compile`, `verify`, `upload`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`, `arduino-uno-r3`, `arduino-uno-r3-wifi-rev2`). |
+| `juno.board` | `compile`, `verify`, `upload`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`, `arduino-uno-r3`, `arduino-uno-r3-wifi-rev2`, `arduino-nano-esp32`, `m5stack-cardputer`). |
 | `juno.arduinoCli` | `verify`, `upload`, `boards`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `upload`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `upload`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
@@ -66,7 +66,7 @@ always wins for a given run.
 ## Typical workflow
 
 ```bash
-# Once per machine: install the core and every optional library any example needs
+# Once per machine: install supported cores and every optional library any example needs
 ./mvnw -f juno-examples/pom.xml juno:install-deps
 
 # Compile and check with arduino-cli
