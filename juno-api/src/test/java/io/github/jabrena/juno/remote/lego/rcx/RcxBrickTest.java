@@ -358,6 +358,26 @@ class RcxBrickTest {
     }
 
     @Test
+    @DisplayName("Showing a caller-owned character buffer sends one character per digit")
+    void shouldShowCharacterBufferOneCharacterPerDigit() {
+        // Given
+        for (int i = 0; i < 4; i++) {
+            Infrared.replies.addAll(RcxFrames.replyTo(0x82));
+        }
+
+        // When
+        boolean shown = brick.showText(new char[] {'T', 'I', 'M', 'E'});
+
+        // Then
+        assertThat(shown).isTrue();
+        assertThat(Infrared.written)
+                .containsSubsequence(0x00, 0xFF, 0x54, 0xAB)
+                .containsSubsequence(0x01, 0xFE, 0x49, 0xB6)
+                .containsSubsequence(0x02, 0xFD, 0x4D, 0xB2)
+                .containsSubsequence(0x03, 0xFC, 0x45, 0xBA);
+    }
+
+    @Test
     @DisplayName("Showing text reports no acknowledgement when the brick is silent")
     void shouldReportNoAcknowledgementForTextWhenTheBrickIsSilent() {
         // When

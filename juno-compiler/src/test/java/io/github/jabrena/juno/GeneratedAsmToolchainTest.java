@@ -1144,6 +1144,7 @@ class GeneratedAsmToolchainTest {
                         rcx.getAudio().playSound(RcxAudio.SOUND_BEEP);
                         rcx.getAudio().playTone(440, 50);
                         rcx.getLcd().showNumber(light.lightPercent() + rcx.getSensor2().readValue());
+                        rcx.getLcd().showText(new char[] {'T', 'E', 'S', 'T'});
                         rcx.getLcd().showIcon(RcxLcd.ICON_WALKING, true);
                         light.begin();
                         rotation.begin();

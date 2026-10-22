@@ -77,4 +77,12 @@ public final class RcxLcd {
     public boolean showText(String text) {
         return brick.showText(text);
     }
+
+    /**
+     * Shows the first four characters of caller-owned {@code text}. This overload lets a program reuse a character
+     * buffer for changing display text without allocating a new {@link String}.
+     */
+    public boolean showText(char[] text) {
+        return brick.showText(text);
+    }
 }

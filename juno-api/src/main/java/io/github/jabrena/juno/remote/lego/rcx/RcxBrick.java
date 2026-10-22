@@ -236,6 +236,19 @@ public final class RcxBrick {
     }
 
     /**
+     * Shows the first four characters of caller-owned {@code text}, blanking positions past its end. This variant
+     * avoids creating a new {@link String} when a program updates text in a reusable buffer.
+     */
+    public boolean showText(char[] text) {
+        boolean acknowledged = true;
+        for (int position = 0; position < TEXT_POSITIONS; position++) {
+            int character = position < text.length ? text[position] & 0x7F : ' ';
+            acknowledged &= link.request(OPCODE_SET_CHARACTER, position, character, 2) >= 0;
+        }
+        return acknowledged;
+    }
+
+    /**
      * Lights the display icon {@code icon}, {@code RcxLcd.ICON_*}, or with {@code lit} false hands it back to the brick, which
      * lights some icons from its own state: running motors' arrows, pressed touch sensors, low battery, and the
      * minifigure, standing and walking while a motor runs. Needs Juno's own RCX firmware ({@code RcxRemoteFirmware});
