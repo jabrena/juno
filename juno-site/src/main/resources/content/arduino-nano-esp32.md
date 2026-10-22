@@ -37,6 +37,11 @@ The runtime resolves these portable identifiers through the core's named `D0`–
 pins, so GPIO and SD chip-select still reach the same physical pins when the core is configured
 with **By GPIO number (legacy)**. Do not pass raw ESP32 GPIO numbers to Juno's GPIO or SD APIs.
 
+`java.math` works too: `BigInteger`, `BigDecimal` and `MathContext` run in the arena with the JDK's
+rounding and text rules, and `BigDecimal.sqrt` and the `double` conversions use the core's `strtod`.
+[`SerialBigNumbers`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBigNumbers.java)
+prints a few exact results once.
+
 `long`, `float` and `double` operations go through the same runtime helpers as on the other boards, which
 keep Java semantics (a `long` division by zero stops the program, float-to-int casts saturate, NaN
 comparisons are false); the ESP32 toolchain compiles the `float` helpers to the ESP32-S3's
@@ -59,6 +64,12 @@ runs each of them once at startup and then prints the results.
 
 `SdCard` works over the board's SPI pins (D11 to D13) through the same SdFat runtime as the UNO
 boards; see the Nano Connector Carrier below for a ready-made slot.
+
+`PoweredUpHubRemote` connects to a LEGO Powered UP hub over Bluetooth LE. The Nano's radio is driven by the
+core's BLE library through a small adapter, since `ArduinoBLE` (used on the UNO R4 WiFi and UNO Q) does not
+run on this chip. [`NanoPoweredUpHubInfo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/NanoPoweredUpHubInfo.java)
+prints the hub's type, battery and signal strength and only reads from the hub. The adapter is not yet confirmed on
+hardware.
 
 `UUID.randomUUID()` fills its 16 bytes from the ESP32-S3's hardware random-number generator through
 `esp_fill_random`.
@@ -100,8 +111,8 @@ prints the board's address and answers `GET /status` on port 80.
 `Arduino.getWifi().beginAP(ssid, password)` starts the board's own access point, so a phone or laptop can
 join the Nano ESP32 directly, as in
 [`NanoAccessPointSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoAccessPointSD.java).
-TCP, BLE and the other optional capabilities are not wired yet; Juno rejects a program that uses them
-at compile time.
+TCP and the other optional capabilities are not wired yet; Juno rejects a program that uses them at
+compile time.
 
 ## Nano Connector Carrier
 
