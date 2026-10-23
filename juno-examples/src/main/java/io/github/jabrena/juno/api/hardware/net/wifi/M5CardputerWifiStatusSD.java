@@ -1,8 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.annotations.M5Cardputer;
-import io.github.jabrena.juno.hardware.M5;
+import io.github.jabrena.juno.hardware.M5StackCardputer;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -15,11 +14,11 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /** Connects to the Wi-Fi network configured on the Cardputer's SD card and shows its status on the built-in display. */
-@Board(M5Cardputer.class)
+@Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
 public final class M5CardputerWifiStatusSD {
-    private static final Wifi WIFI = M5.getWifi();
-    private static final SdCard SD_CARD = M5.getSd();
-    private static final Display DISPLAY = M5.getDisplay();
+    private static final Wifi WIFI = M5StackCardputer.getWifi();
+    private static final SdCard SD_CARD = M5StackCardputer.getSd();
+    private static final Display DISPLAY = M5StackCardputer.getDisplay();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int MARGIN = 8;

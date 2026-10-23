@@ -5,7 +5,7 @@ layout: page
 ---
 
 Juno's first Cardputer support adds the board target and an example that sends text over USB
-serial. The example uses Juno's existing `Serial` and `Delay` APIs. The `M5` device facade is the
+serial. The example uses Juno's existing `Serial` and `Delay` APIs. The `M5StackCardputer` device facade is the
 entry point for Cardputer peripherals.
 
 ## Hello World
@@ -16,11 +16,11 @@ connect.
 
 ## SD card
 
-`M5.getSd()` returns the Cardputer's built-in microSD socket. Calling `begin()` uses its standard SPI wiring: chip
+`M5StackCardputer.getSd()` returns the Cardputer's built-in microSD socket. Calling `begin()` uses its standard SPI wiring: chip
 select GPIO12, MOSI GPIO14, MISO GPIO39, and clock GPIO40.
 
 ```java
-SdCard sd = M5.getSd();
+SdCard sd = M5StackCardputer.getSd();
 if (sd.begin()) {
     Serial.println("SD card ready");
 }
@@ -28,14 +28,14 @@ if (sd.begin()) {
 
 ## Wi-Fi
 
-`M5.getWifi()` returns the Cardputer's built-in ESP32-S3 radio. It uses the existing `Wifi` interface for station and
+`M5StackCardputer.getWifi()` returns the Cardputer's built-in ESP32-S3 radio. It uses the existing `Wifi` interface for station and
 access point modes, so application services can receive a mock in unit tests.
 
 [`M5CardputerWifi`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifi.java)
 starts an access point and reports its status over USB serial.
 
 ```java
-Wifi wifi = M5.getWifi();
+Wifi wifi = M5StackCardputer.getWifi();
 wifi.beginAP("JunoCardputer", "juno1234");
 Serial.println(wifi.status());
 ```
@@ -59,11 +59,11 @@ Compile and upload it with:
 
 ## Display
 
-`M5.getDisplay()` returns the Cardputer's 240 by 135 pixel color display. Colors use RGB565 values, with common colors
+`M5StackCardputer.getDisplay()` returns the Cardputer's 240 by 135 pixel color display. Colors use RGB565 values, with common colors
 available as constants and `Display.color(red, green, blue)` for custom colors. Call `begin()` once before drawing.
 
 ```java
-Display display = M5.getDisplay();
+Display display = M5StackCardputer.getDisplay();
 display.begin();
 display.fillScreen(Display.BLACK);
 display.fillRect(8, 8, display.width() - 16, 4, Display.BLUE);
@@ -78,11 +78,11 @@ receive a mock `Display` in desktop unit tests.
 
 ## Keyboard
 
-`M5.getKeyboard()` returns the Cardputer's built-in keyboard. Initialize it once, call `update()` in the main loop,
+`M5StackCardputer.getKeyboard()` returns the Cardputer's built-in keyboard. Initialize it once, call `update()` in the main loop,
 and inspect the state after `isChanged()` reports a transition.
 
 ```java
-Keyboard keyboard = M5.getKeyboard();
+Keyboard keyboard = M5StackCardputer.getKeyboard();
 keyboard.begin();
 while (true) {
     keyboard.update();

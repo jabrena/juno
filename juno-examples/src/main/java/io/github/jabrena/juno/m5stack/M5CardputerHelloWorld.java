@@ -1,13 +1,12 @@
 package io.github.jabrena.juno.m5stack;
 
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.annotations.M5Cardputer;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /** Prints a message over the M5Stack Cardputer's USB serial connection for {@code juno:monitor}. */
-@Board(M5Cardputer.class)
+@Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
 public final class M5CardputerHelloWorld {
     private M5CardputerHelloWorld() {
     }
