@@ -2,7 +2,7 @@ package io.github.jabrena.juno.usecases.zelda.cover;
 
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
-import io.github.jabrena.juno.usecases.zelda.KeyboardView;
+import io.github.jabrena.juno.usecases.zelda.common.KeyboardView;
 import io.github.jabrena.juno.util.mvc.Navigator;
 
 /** Zelda fan cover screen with a slowly twinkling star field and a centered Triforce. */

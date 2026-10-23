@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.zelda;
+package io.github.jabrena.juno.usecases.zelda.common;
 
 import io.github.jabrena.juno.util.mvc.View;
 
