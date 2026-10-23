@@ -22,11 +22,12 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
      * current Juno example needs: {@code Mouse} for {@code RatonLoco}, {@code ArduinoBLE} for
      * {@code PoweredUpHubRemote} (e.g. {@code LegoTrain}), {@code ESP_SSLClient} for
      * {@code Smtp}'s {@code STARTTLS} upgrade, {@code Servo} for {@code Servo}-driven examples,
-     * and {@code SdFat} for long-file-name-capable removable-storage examples.
+     * {@code SdFat} for long-file-name-capable removable-storage examples, and {@code M5Cardputer} plus its compatible
+     * {@code M5GFX} release for the built-in display and keyboard.
      * Update this list whenever a new example starts needing another one.
      */
     private static final List<String> OPTIONAL_LIBRARIES = List.of(
-            "Mouse", "ArduinoBLE", "ESP_SSLClient", "Servo", "SdFat");
+            "Mouse", "ArduinoBLE", "ESP_SSLClient", "Servo", "SdFat", "M5Cardputer@1.1.1", "M5GFX@0.2.31");
 
     /** The arduino-cli platform backing the Renesas UNO targets. */
     private static final String CORE_PLATFORM = "arduino:renesas_uno";

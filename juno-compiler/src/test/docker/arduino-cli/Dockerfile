@@ -46,6 +46,12 @@ RUN arduino-cli lib install Arduino_RouterBridge
 # Libraries the generated shims include for the Servo and SdCard APIs.
 RUN arduino-cli lib install Servo SdFat
 
+# The Cardputer facade uses its official library for the built-in display and keyboard. Pin M5GFX after resolving
+# dependencies because 0.2.34 does not compile with the current M5Stack ESP32 core, while 0.2.31 satisfies
+# M5Unified's declared >=0.2.31 requirement.
+RUN arduino-cli lib install M5Cardputer@1.1.1 \
+    && arduino-cli lib install M5GFX@0.2.31
+
 # The UNO WiFi Rev2 reaches its NINA-W102 Wi-Fi module (Wi-Fi, UDP, HTTP, HTTPS, TLS mail) through WiFiNINA,
 # which the megaavr core does not bundle.
 RUN arduino-cli lib install WiFiNINA
