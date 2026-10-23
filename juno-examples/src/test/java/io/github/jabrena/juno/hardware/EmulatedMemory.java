@@ -4,7 +4,7 @@ import io.github.jabrena.juno.hardware.internal.NativeBoardMemory;
 
 /**
  * Juno's arena and the program's flash for whole-program tests: a {@link BoardMemory} that
- * {@code Arduino.getBoardMemory()} returns once {@link #install()} has run. The JVM has no Juno arena, so it reports an
+ * {@code ArduinoOne.getBoardMemory()} returns once {@link #install()} has run. The JVM has no Juno arena, so it reports an
  * empty one of the default size, or of {@code -Djuno.emulator.arenaBytes=<bytes>} to play a program built with a
  * bigger {@code juno.Xmx}; the flash is the UNO Q's empty sketch partition, the board the emulator models.
  */
@@ -16,7 +16,7 @@ public final class EmulatedMemory implements BoardMemory {
     private EmulatedMemory() {
     }
 
-    /** Makes {@code Arduino.getBoardMemory()} from now on report this emulated arena instead of asking the board. */
+    /** Makes {@code ArduinoOne.getBoardMemory()} from now on report this emulated arena instead of asking the board. */
     public static void install() {
         NativeBoardMemory.setBoardMemory(INSTANCE);
     }

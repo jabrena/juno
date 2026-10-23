@@ -3,7 +3,7 @@ package io.github.jabrena.juno.usecases.supabase.publisher;
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht22;
@@ -35,10 +35,10 @@ import java.time.LocalDateTime;
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class SupabaseGroveTemperatures {
-    private static final Wifi WIFI = Arduino.getWifi();
+    private static final Wifi WIFI = ArduinoOne.getWifi();
 
     private static final GroveBaseShield SHIELD = new GroveBaseShield();
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int DHT22_PIN = SHIELD.getD4();
     private static final int DHT11_PIN = SHIELD.getD2();
     private static final int THERMISTOR_PIN = SHIELD.getA0();

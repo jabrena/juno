@@ -35,12 +35,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Arduino.getGpio().pinMode(13, value);
+                        ArduinoOne.getGpio().pinMode(13, value);
                     }
                 }
                 """;
@@ -60,12 +60,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Arduino.getGpio().pinMode(13, value);
+                        ArduinoOne.getGpio().pinMode(13, value);
                     }
                 }
                 """;
@@ -82,12 +82,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Arduino.getGpio().pinMode(13, value);
+                        ArduinoOne.getGpio().pinMode(13, value);
                     }
                 }
                 """;
@@ -108,12 +108,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Arduino.getGpio().pinMode(13, value);
+                        ArduinoOne.getGpio().pinMode(13, value);
                     }
                 }
                 """;
@@ -161,12 +161,12 @@ class BytecodeToIrTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Simple {
                     public static void main(String[] args) {
                         int value = 1 + 2;
-                        Arduino.getGpio().pinMode(13, value);
+                        ArduinoOne.getGpio().pinMode(13, value);
                     }
                 }
                 """;

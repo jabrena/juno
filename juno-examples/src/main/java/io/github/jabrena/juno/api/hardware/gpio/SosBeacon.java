@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.gpio;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Delay;
 
@@ -19,7 +19,7 @@ public final class SosBeacon {
     };
 
     public static void main(String[] args) {
-        Gpio gpio = Arduino.getGpio();
+        Gpio gpio = ArduinoOne.getGpio();
         MorseLed led = new MorseLed(gpio, gpio.getBuiltinLed(), SOS);
 
         while (true) {

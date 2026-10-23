@@ -3,7 +3,7 @@ package io.github.jabrena.juno.games.chess;
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -51,7 +51,7 @@ import static io.github.jabrena.juno.games.chess.SceneRenderer.showStatus;
  */
 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
 public final class Chess {
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;
     static final int SEARCH_DEPTH = 3;
 

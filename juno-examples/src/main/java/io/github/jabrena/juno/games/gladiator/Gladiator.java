@@ -15,7 +15,7 @@ import io.github.jabrena.juno.games.gladiator.screen.SoloFlow;
 import io.github.jabrena.juno.games.gladiator.view.ClassWireframe;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.BoardModel;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -49,10 +49,10 @@ import io.github.jabrena.juno.util.Random;
  */
 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
 public final class Gladiator {
-    private static final Wifi WIFI = Arduino.getWifi();
+    private static final Wifi WIFI = ArduinoOne.getWifi();
 
-    private static final Clock CLOCK = Arduino.getClock();
-    private static final BoardModel BOARD = Arduino.getBoardModel();
+    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final BoardModel BOARD = ArduinoOne.getBoardModel();
     private static final int ARENA = 0;
 
     /** The screen's line list, which every role draws into, and the class models of the title and the Solo screens. */

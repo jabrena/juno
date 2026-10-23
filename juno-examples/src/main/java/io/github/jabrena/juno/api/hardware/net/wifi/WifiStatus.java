@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -14,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
  * nothing until connected).
  */
 public final class WifiStatus {
-    private static final Wifi WIFI = Arduino.getWifi();
+    private static final Wifi WIFI = ArduinoOne.getWifi();
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);

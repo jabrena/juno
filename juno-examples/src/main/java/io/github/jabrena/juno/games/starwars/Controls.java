@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.starwars;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -11,7 +11,7 @@ import io.github.jabrena.juno.util.Delay;
  * CPU or back.
  */
 final class Controls {
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     /** A touch this short (in frames) that barely moved is a tap, and fires on release. */
     private static final int TAP_FRAMES = 8;
     private static final int DRAG_PIXELS = 20;

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.hardware;
 
 /**
- * Which board the program was compiled for. {@link Arduino#getBoardModel()} is the board's own answer, which the compiler
+ * Which board the program was compiled for. {@link ArduinoOne#getBoardModel()} is the board's own answer, which the compiler
  * folds to a constant for the target board; a unit test passes {@code mock(BoardModel.class)} instead. A program
  * asks the question without naming a board, so the same source runs on every board and each one answers for itself.
  */

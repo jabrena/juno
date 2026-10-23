@@ -481,7 +481,7 @@ class ThreadsTest {
                 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 @Board(ArduinoOneQBoard.class)
@@ -491,7 +491,7 @@ class ThreadsTest {
                         byte[] headers = new byte[32];
                         int[] status = new int[2];
                         %s
-                        Arduino.getWifi().begin("juno", "secret");
+                        ArduinoOne.getWifi().begin("juno", "secret");
                         Serial.println(HttpClient.get("https://example.com/", body, body.length, headers,
                                 headers.length, status));
                     }

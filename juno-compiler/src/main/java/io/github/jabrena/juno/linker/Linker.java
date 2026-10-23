@@ -61,8 +61,10 @@ public final class Linker {
      * the UNO R3 lacks (it reaches the Arduino WiFi Shield's instead).
      */
     private static final Map<MethodRef, Capability> REQUIRED_METHOD_CAPABILITIES = Map.of(
-            new MethodRef("io/github/jabrena/juno/hardware/Arduino", "getWifi", "()Lio/github/jabrena/juno/hardware/net/Wifi;"),
-            Capability.ONBOARD_WIFI);
+            new MethodRef("io/github/jabrena/juno/hardware/ArduinoOne", "getWifi",
+                    "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI,
+            new MethodRef("io/github/jabrena/juno/hardware/ArduinoNano", "getWifi",
+                    "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI);
     private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",
             "drawText", "([[ZLjava/lang/String;II)V");
     private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",

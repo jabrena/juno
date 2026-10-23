@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -14,7 +14,7 @@ public final class RcxLink {
 
     /** A link on the board's own timer. Create it once, at startup, and share it with every class that talks to the brick. */
     public RcxLink() {
-        this(Arduino.getClock());
+        this(ArduinoOne.getClock());
     }
 
     /** A link that times its replies on {@code clock}: a simulated one in a unit test. */

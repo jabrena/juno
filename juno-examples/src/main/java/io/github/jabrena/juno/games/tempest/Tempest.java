@@ -3,7 +3,7 @@ package io.github.jabrena.juno.games.tempest;
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -38,12 +38,12 @@ import io.github.jabrena.juno.util.Random;
  *
  * <p>Tempest uses only {@link Clock}, {@link Delay}, {@link Random}, and the {@link TftTouchShield}
  * (itself built from {@code Gpio}/{@code Delay}), none of which are board-specific, so it targets both
- * boards the shield fits: pick which one to build for with {@code -Djuno.board=arduino-uno-q} or
- * {@code -Djuno.board=arduino-uno-r4-wifi}.
+ * boards the shield fits: pick which one to build for with {@code -Djuno.board=arduino-one-q} or
+ * {@code -Djuno.board=arduino-one-r4-wifi}.
  */
 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
 public final class Tempest {
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int FRAME_MILLIS = 25;
 
     private Tempest() {

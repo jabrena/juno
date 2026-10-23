@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.zelda.common.mvc;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -28,7 +28,7 @@ public final class KeyboardViewRouter implements Navigator {
 
     /** A router using the board clock. */
     public KeyboardViewRouter(int framePeriodMs, Keyboard keyboard) {
-        this(framePeriodMs, keyboard, Arduino.getClock());
+        this(framePeriodMs, keyboard, ArduinoOne.getClock());
     }
 
     /** A router using {@code clock}, which can be mocked in a unit test. */

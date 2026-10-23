@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
 import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
@@ -30,7 +30,7 @@ public final class StorageOccupancy {
     }
 
     public static void main(String[] args) {
-        final BoardMemory memory = Arduino.getBoardMemory();
+        final BoardMemory memory = ArduinoOne.getBoardMemory();
         final SdCard sdCard = new DataLoggerShield().getSdCard();
         final int reportPeriodMs = 2000;
 

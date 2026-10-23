@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -22,7 +22,7 @@ import java.util.Properties;
  * Everything is reported over Serial at 115200 baud.
  */
 public final class WifiStatusSD {
-    private static final Wifi WIFI = Arduino.getWifi();
+    private static final Wifi WIFI = ArduinoOne.getWifi();
     private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;

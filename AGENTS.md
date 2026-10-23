@@ -94,15 +94,15 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware
 
 # Generate Blink. The plugin has no default program: always pass -Djuno.main.
-./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-one-r4-wifi
 
 # Generate Blink and compile it with the real Arduino toolchain (safe: does not touch hardware)
-./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-one-r4-wifi
 
 # Select another example by fully qualified class name
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialCounter \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 
 # Compile the small API/shield fixtures (juno-compiler/src/test/arduino/programs) for each board with the real
 # arduino-cli inside Docker (Testcontainers; needs Docker)
@@ -113,10 +113,10 @@ java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.j
 ./mvnw -pl juno-compiler -am -Pqemu verify
 
 # Flash the generated program; auto-detects one matching board, or accepts -Djuno.port=<PORT>
-./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-one-r4-wifi
 
 # Attach the serial monitor at 9600 baud (override with -Djuno.baudRate=<RATE>)
-./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-one-r4-wifi
 
 # Live-preview the documentation site while editing juno-site/src/main/resources/content/*.md
 ./mvnw -f juno-site/pom.xml quarkus:dev

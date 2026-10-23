@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.gpio;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.time.Clock;
 
 /**
@@ -17,7 +17,7 @@ public final class PortNoise {
 
     /** Samples the board's own pins and timer. */
     public PortNoise() {
-        this(Arduino.getGpio(), Arduino.getClock());
+        this(ArduinoOne.getGpio(), ArduinoOne.getClock());
     }
 
     /** Samples {@code gpio} and {@code clock}: mocked ones in a unit test. */

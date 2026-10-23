@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.gpio;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
 
@@ -13,7 +13,7 @@ public class Blink {
 
     public static void main(String[] args) {
 
-        DigitalOutput led = DigitalOutput.of(Arduino.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(ArduinoOne.getGpio().getBuiltinLed());
 
         while (true) {
             led.high();

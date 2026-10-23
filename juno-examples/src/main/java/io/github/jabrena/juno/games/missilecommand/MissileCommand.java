@@ -2,7 +2,7 @@ package io.github.jabrena.juno.games.missilecommand;
 
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -36,7 +36,7 @@ import io.github.jabrena.juno.util.Random;
  */
 @Board(ArduinoOneQBoard.class)
 public final class MissileCommand {
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int FRAME_MILLIS = 20;
     private static final int COVER_TIMEOUT_MILLIS = 60_000;
 

@@ -34,7 +34,7 @@ class InliningAndScalarReplacementTest {
     void shouldKeepACallToAMethodThatCallsSomethingElse() throws Exception {
         // Given
         String assembly = compile("""
-                static void blink(int pin) { Arduino.getGpio().digitalWrite(pin, true); Delay.millis(5); }
+                static void blink(int pin) { ArduinoOne.getGpio().digitalWrite(pin, true); Delay.millis(5); }
                 public static void main(String[] args) { blink(13); blink(12); }
                 """);
 
@@ -132,7 +132,7 @@ class InliningAndScalarReplacementTest {
     private String compile(String members) throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.util.Delay;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 import io.github.jabrena.juno.util.Random;

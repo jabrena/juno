@@ -11,7 +11,7 @@ public final class NativeWifi implements Wifi {
     public static final NativeWifi INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.Arduino#getWifi()},
+     * What {@link io.github.jabrena.juno.hardware.ArduinoOne#getWifi()},
      * {@link io.github.jabrena.juno.hardware.M5StackCardputer#getWifi()}, and
      * {@link io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield#getWifi()} return: the board's radio,
      * unless a whole-program emulator in a test replaced it.

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.chess;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -10,7 +10,7 @@ import static io.github.jabrena.juno.games.chess.Chess.BOARD_Y;
 import static io.github.jabrena.juno.games.chess.Chess.CELL;
 
 final class Controls {
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     static boolean autopilot;
 
     private Controls() {

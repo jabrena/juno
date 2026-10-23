@@ -102,12 +102,12 @@ class ExceptionsTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.hardware.time.Clock;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Selector {
                     public static void main(String[] args) {
-                        RuntimeException picked = Arduino.getClock().millis() == 0
+                        RuntimeException picked = ArduinoOne.getClock().millis() == 0
                                 ? new IllegalArgumentException("a")
                                 : new IllegalStateException("b");
                         try {
@@ -413,7 +413,7 @@ class ExceptionsTest {
     private static String divisionSource() {
         return """
                 package demo;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.hardware.time.Clock;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class Division {
@@ -442,7 +442,7 @@ class ExceptionsTest {
                     public static void main(String[] args) {
                         Serial.println(ratio(10, 0));
                         Serial.println(wideRemainder(10L, 0L));
-                        Serial.println(unguarded(10, 2) + 10 / Arduino.getClock().millis());
+                        Serial.println(unguarded(10, 2) + 10 / ArduinoOne.getClock().millis());
                     }
                 }
                 """;

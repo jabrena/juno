@@ -143,7 +143,7 @@ attempts). Confirmed running on a real UNO R4 WiFi with this shield.
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.chess.Chess \
-  -Djuno.board=arduino-uno-q   # or arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-q   # or arduino-one-r4-wifi
 ```
 
 [`Chess`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/chess/Chess.java) plays you
@@ -163,7 +163,7 @@ required.
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack \
-  -Djuno.board=arduino-uno-q   # or arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-q   # or arduino-one-r4-wifi
 ```
 
 [`Blackjack`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blackjack/Blackjack.java) plays
@@ -177,7 +177,7 @@ run out), and a single 52-card deck is reshuffled when fewer than 15 cards remai
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.battleship.Battleship \
-  -Djuno.board=arduino-uno-q   # or arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-q   # or arduino-one-r4-wifi
 ```
 
 [`Battleship`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/battleship/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks. Battleship declares both boards (`@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})`), so `-Djuno.board` is required.

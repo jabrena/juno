@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.servo;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.util.Delay;
 
@@ -56,7 +56,7 @@ public final class PwmServoShield {
 
     /** A shield on the board's own I2C bus. Create it once, at startup. */
     public PwmServoShield() {
-        this(Arduino.getI2c());
+        this(ArduinoOne.getI2c());
     }
 
     /** A shield driven through {@code i2c}: a mocked one in a unit test. */

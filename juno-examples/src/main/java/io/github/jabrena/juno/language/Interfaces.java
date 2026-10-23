@@ -3,7 +3,7 @@ package io.github.jabrena.juno.language;
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -18,7 +18,7 @@ public final class Interfaces {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
 
-        Gpio gpio = Arduino.getGpio();
+        Gpio gpio = ArduinoOne.getGpio();
         Interfaces interfaces = new Interfaces();
         Scale scale = interfaces.choose(gpio.analogRead(0) > 512);
         int result = scale.apply(100);
