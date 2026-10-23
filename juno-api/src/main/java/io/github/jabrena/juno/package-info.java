@@ -12,7 +12,7 @@
  * <p>The API lives in subpackages, grouped by the hardware or concern they address:
  * <ul>
  *   <li>{@code hardware} — the board's own peripherals, handed out by
- *       {@link io.github.jabrena.juno.hardware.Arduino}: general-purpose I/O ({@code hardware.gpio},
+ *       {@link io.github.jabrena.juno.hardware.ArduinoOne}: general-purpose I/O ({@code hardware.gpio},
  *       {@link io.github.jabrena.juno.hardware.gpio.Gpio}, {@link io.github.jabrena.juno.hardware.gpio.DigitalOutput}),
  *       I2C ({@code hardware.i2c}), serial port I/O ({@code hardware.serial}), USB HID mouse control
  *       ({@code hardware.hid}), the UNO R4 WiFi's built-in LED matrix with its frame/canvas helpers and

@@ -14,7 +14,7 @@ class BoardModelTest {
     @DisplayName("The board's model is one shared instance")
     void shouldHandOutOneInstanceForTheBoard() {
         // When & Then
-        assertThat(Arduino.getBoardModel()).isSameAs(Arduino.getBoardModel()).isSameAs(NativeBoardModel.INSTANCE);
+        assertThat(ArduinoOne.getBoardModel()).isSameAs(ArduinoOne.getBoardModel()).isSameAs(NativeBoardModel.INSTANCE);
     }
 
     @Test
@@ -29,8 +29,8 @@ class BoardModelTest {
 
         // Then
         try {
-            assertThat(Arduino.getBoardModel()).isSameAs(unoQ);
-            assertThat(Arduino.getBoardModel().isQ()).isTrue();
+            assertThat(ArduinoOne.getBoardModel()).isSameAs(unoQ);
+            assertThat(ArduinoOne.getBoardModel().isQ()).isTrue();
         } finally {
             NativeBoardModel.setBoardModel(NativeBoardModel.INSTANCE);
         }

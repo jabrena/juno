@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.gpio;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ class GpioTest {
     @DisplayName("The board's pins are one shared instance")
     void shouldHandOutOneInstanceForTheBoard() {
         // When & Then
-        assertThat(Arduino.getGpio()).isSameAs(Arduino.getGpio()).isSameAs(NativeGpio.INSTANCE);
+        assertThat(ArduinoOne.getGpio()).isSameAs(ArduinoOne.getGpio()).isSameAs(NativeGpio.INSTANCE);
     }
 
     @Test

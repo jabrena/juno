@@ -3,7 +3,7 @@ package io.github.jabrena.juno.hardware.net;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 
 /**
- * The board's Wi-Fi radio for whole-program tests: a {@link Wifi} that {@code Arduino.getWifi()} and
+ * The board's Wi-Fi radio for whole-program tests: a {@link Wifi} that {@code ArduinoOne.getWifi()} and
  * {@code ArduinoWifiShield.getWifi()} return once {@link #install()} has run. It is always connected, at 192.168.1.2.
  */
 public final class EmulatedWifi implements Wifi {
@@ -13,7 +13,7 @@ public final class EmulatedWifi implements Wifi {
     private EmulatedWifi() {
     }
 
-    /** Makes {@code Arduino.getWifi()} from now on hand out this emulated radio instead of the board's. */
+    /** Makes {@code ArduinoOne.getWifi()} from now on hand out this emulated radio instead of the board's. */
     public static void install() {
         NativeWifi.setWifi(INSTANCE);
     }

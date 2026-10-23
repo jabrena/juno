@@ -11,7 +11,7 @@ public final class NativeI2c implements I2c {
     public static final NativeI2c INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.Arduino#getI2c()} returns: the board's bus, unless a whole-program
+     * What {@link io.github.jabrena.juno.hardware.ArduinoOne#getI2c()} returns: the board's bus, unless a whole-program
      * emulator in a test replaced it.
      */
     private static I2c i2c;
@@ -24,13 +24,13 @@ public final class NativeI2c implements I2c {
     private NativeI2c() {
     }
 
-    /** The bus {@link io.github.jabrena.juno.hardware.Arduino#getI2c()} hands out. */
+    /** The bus {@link io.github.jabrena.juno.hardware.ArduinoOne#getI2c()} hands out. */
     public static I2c i2c() {
         return i2c;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.Arduino#getI2c()} hand out {@code replacement}: for a
+     * Makes {@link io.github.jabrena.juno.hardware.ArduinoOne#getI2c()} hand out {@code replacement}: for a
      * whole-program emulator in a test, never on the board.
      */
     public static void setI2c(I2c replacement) {

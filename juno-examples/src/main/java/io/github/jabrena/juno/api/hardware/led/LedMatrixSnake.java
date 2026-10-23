@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.led;
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
 import io.github.jabrena.juno.util.Delay;
 
@@ -36,7 +36,7 @@ public final class LedMatrixSnake {
         int foodPos = packPos(9, 2);
         int rngState = 12345;
 
-        Arduino.getLedMatrix().begin();
+        ArduinoOne.getLedMatrix().begin();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {

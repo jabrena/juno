@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.lunarlander;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -8,7 +8,7 @@ import io.github.jabrena.juno.util.Random;
 
 /** Owns one lander's state and advances its flight physics. */
 final class Flight {
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int FRAME_MILLIS = 30;
     private static final int BURN_PER_FRAME = 3;
     private static final float GRAVITY = 0.010f;

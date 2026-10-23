@@ -1,7 +1,7 @@
 /**
  * The built-in LED matrix of the UNO R4 WiFi (12x8) and the UNO Q (13x8):
  * {@link io.github.jabrena.juno.hardware.led.LedMatrix}, the raw {@code begin}/{@code loadFrame}/{@code clear}
- * operations that {@link io.github.jabrena.juno.hardware.Arduino#getLedMatrix()} hands out, and
+ * operations that {@link io.github.jabrena.juno.hardware.ArduinoOne#getLedMatrix()} hands out, and
  * {@link io.github.jabrena.juno.hardware.led.LedCanvas}, a {@code boolean[HEIGHT][MAX_WIDTH]} pixel buffer
  * with shape and text drawing helpers that render into it and send it to the board's matrix with
  * {@code show}.

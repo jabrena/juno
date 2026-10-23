@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.services;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
@@ -13,7 +13,7 @@ import io.github.jabrena.juno.util.Delay;
  * credentials the SD-card service reads, and never touches the card itself.
  */
 public final class WifiService {
-    private static final Wifi WIFI = Arduino.getWifi();
+    private static final Wifi WIFI = ArduinoOne.getWifi();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 10;
 

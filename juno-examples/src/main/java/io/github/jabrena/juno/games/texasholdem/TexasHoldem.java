@@ -3,7 +3,7 @@ package io.github.jabrena.juno.games.texasholdem;
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -45,7 +45,7 @@ import static io.github.jabrena.juno.games.texasholdem.Table.playHand;
  */
 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
 public final class TexasHoldem {
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;
     static final int SEATS = 4;
     static final int START_CHIPS = 1000;

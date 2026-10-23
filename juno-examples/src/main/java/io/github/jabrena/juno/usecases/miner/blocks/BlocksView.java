@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.blocks;
 
 import io.github.jabrena.juno.games.blockchain.GameScreen;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.commons.BitBoard;
@@ -21,7 +21,7 @@ import io.github.jabrena.juno.util.mvc.View;
  * redrawn.
  */
 public final class BlocksView implements View {
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     static final int COLUMNS = 8;
     static final int ROWS = (BitBoard.SIZE + COLUMNS - 1) / COLUMNS;
     static final int PITCH_X = 30;

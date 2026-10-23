@@ -52,7 +52,7 @@ public enum Capability {
             return WIFI.unsupportedReason(board);
         }
     },
-    ONBOARD_WIFI("Arduino.getWifi") {
+    ONBOARD_WIFI("ArduinoOne.getWifi") {
         @Override
         public String unsupportedReason(Board board) {
             if (board.supports(WIFI)) {

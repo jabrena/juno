@@ -42,7 +42,7 @@ import org.jspecify.annotations.Nullable;
  *       (white) wires are {@link #getA1()} and {@link #getA3()}.</li>
  *   <li>{@link #getGroveUart()}: RX on D0; TX on D1 is {@link #getUartTx()}. These are the Nano's hardware serial
  *       pins, free on the Nano ESP32, whose {@code Serial} is USB.</li>
- *   <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through {@code Arduino.getI2c()}. Use it for I2C
+ *   <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through {@code ArduinoOne.getI2c()}. Use it for I2C
  *       modules only: the bus pull-ups distort a digital module's output, and a Grove PIR measured about 1.4 V at
  *       rest here, neither low nor high. Plug such a module into an analog socket instead.</li>
  * </ul>

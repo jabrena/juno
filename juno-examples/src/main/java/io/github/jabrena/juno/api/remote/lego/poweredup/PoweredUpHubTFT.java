@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -40,7 +40,7 @@ import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.WI
  *       a {@code -} and a {@code +} button that change its power in steps of {@code POWER_STEP} percent
  *       and shows the tacho (position) value under it; a port with a sensor shows the sensor's name; an
  *       empty port stays blank. Below are a STOP button that brakes every motor and a ZERO button that
- *       sets the tacho values to 0 (an offset kept on the Arduino; the hub's own position is not
+ *       sets the tacho values to 0 (an offset kept on the ArduinoOne; the hub's own position is not
  *       changed).</li>
  *   <li><b>PAIR</b>: the first two motors the hub detected, driven as a pair. SYNC links them into one
  *       virtual port, so a single {@code -} / {@code +} sets both at once with one command; with SYNC off
@@ -52,7 +52,7 @@ import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.WI
  */
 public class PoweredUpHubTFT {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
 
     private final PoweredUpState s = new PoweredUpState();
 

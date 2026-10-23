@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -19,7 +19,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * or no WAD, the built-in map is played instead, sized by its own counts.
  */
 final class World {
-    private static final BoardMemory MEMORY = Arduino.getBoardMemory();
+    private static final BoardMemory MEMORY = ArduinoOne.getBoardMemory();
     // The largest figure among E1M1-E4M9 for each table, rounded up; monsters and pickups as Ultra-Violence places them.
     static final int MAX_VERTICES = 1632;
     static final int MAX_LINES = 1776;

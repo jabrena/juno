@@ -18,7 +18,7 @@ import io.github.jabrena.juno.util.Delay;
  * <pre>
  * ./mvnw -f juno-examples/pom.xml compile juno:compile \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.device.lcd.LcdKeypadWifiShieldConflict \
- *   -Djuno.board=arduino-uno-r3
+ *   -Djuno.board=arduino-one-r3
  * # LcdKeypadShield cannot be used with the Arduino WiFi Shield on UNO R3: both shields are wired to D4, D7 and D10 ...
  * </pre>
  *

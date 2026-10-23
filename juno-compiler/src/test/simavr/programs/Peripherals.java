@@ -7,7 +7,7 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
 import io.github.jabrena.juno.hardware.net.email.Smtp;
@@ -34,10 +34,10 @@ public final class Peripherals {
     }
 
     public static void main(String[] args) throws IOException {
-        Arduino.getWifi().begin("juno", "secret");
-        Serial.println(Arduino.getWifi().status() == Wifi.STATUS_CONNECTED ? "wifi up" : "wifi down");
+        ArduinoOne.getWifi().begin("juno", "secret");
+        Serial.println(ArduinoOne.getWifi().status() == Wifi.STATUS_CONNECTED ? "wifi up" : "wifi down");
         int[] ip = new int[4];
-        Arduino.getWifi().localIP(ip);
+        ArduinoOne.getWifi().localIP(ip);
         Serial.println(ip[0] + "." + ip[1] + "." + ip[2] + "." + ip[3]);
 
         byte[] body = new byte[64];

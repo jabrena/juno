@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.weather;
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -35,7 +35,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class MadridWeather {
-    private static final Wifi WIFI = Arduino.getWifi();
+    private static final Wifi WIFI = ArduinoOne.getWifi();
 
     private static final int TIME_TEXT_BUFFER_SIZE = 32;
 

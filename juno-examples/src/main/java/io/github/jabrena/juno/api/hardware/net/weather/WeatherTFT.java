@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.weather;
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -39,10 +39,10 @@ import java.util.Properties;
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class WeatherTFT {
-    private static final Wifi WIFI = Arduino.getWifi();
+    private static final Wifi WIFI = ArduinoOne.getWifi();
     private static final SdCard SD_CARD = TftTouchShield.getSdCard();
 
-    private final Clock clock = Arduino.getClock();
+    private final Clock clock = ArduinoOne.getClock();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int REFRESH_MILLIS = 10 * 60 * 1000;
     private static final int RETRY_MILLIS = 60 * 1000;

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.email;
 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
@@ -25,7 +25,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class EmailHelloWorldLCD {
-    private static final Wifi WIFI = Arduino.getWifi();
+    private static final Wifi WIFI = ArduinoOne.getWifi();
 
     private final LcdKeypadShield lcd = new LcdKeypadShield();
     private static final int POP3_PORT = 995;

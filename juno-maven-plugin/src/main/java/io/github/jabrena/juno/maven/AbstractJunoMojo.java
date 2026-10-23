@@ -44,7 +44,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     private boolean gcLog;
 
     /**
-     * Target board (e.g. {@code arduino-uno-r4-wifi}, {@code arduino-uno-q}), required when the entry point has no
+     * Target board (e.g. {@code arduino-one-r4-wifi}, {@code arduino-one-q}), required when the entry point has no
      * {@code @Board} annotation or declares more than one board; the compiler fails rather than picking one silently.
      * Ignored when the entry point declares a single board.
      */

@@ -85,6 +85,18 @@ class BoardTest {
     }
 
     @Test
+    @DisplayName("The One boards resolve from their renamed board IDs")
+    void shouldResolveTheOneBoardsFromTheirIds() {
+        assertThat(Board.fromId("arduino-one-q")).isEqualTo(Board.UNO_Q);
+        assertThat(Board.fromId("arduino-one-r4-wifi")).isEqualTo(Board.UNO_R4_WIFI);
+        assertThat(Board.fromId("arduino-one-r3-wifi-rev2")).isEqualTo(Board.UNO_R3_WIFI_REV2);
+        assertThat(Board.fromId("arduino-one-r3")).isEqualTo(Board.UNO_R3);
+        assertThatThrownBy(() -> Board.fromId("arduino-uno-q"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("arduino-one-q");
+    }
+
+    @Test
     @DisplayName("A requested board is required when the class has no annotation")
     void shouldRequireARequestedBoardWithoutAnAnnotation() throws Exception {
         // Given
@@ -164,14 +176,14 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 @Board(ArduinoOneQBoard.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
-                        Arduino.getLedMatrix().begin();
-                        Arduino.getLedMatrix().loadFrame(1, 2, 3, 4);
-                        int columns = Arduino.getLedMatrix().columns();
-                        Arduino.getLedMatrix().clear();
+                        ArduinoOne.getLedMatrix().begin();
+                        ArduinoOne.getLedMatrix().loadFrame(1, 2, 3, 4);
+                        int columns = ArduinoOne.getLedMatrix().columns();
+                        ArduinoOne.getLedMatrix().clear();
                     }
                 }
                 """;
@@ -193,14 +205,14 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 @Board(ArduinoOneQBoard.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
-                        Arduino.getLedMatrix().begin();
-                        Arduino.getLedMatrix().loadFrame(1, 2, 3, 4);
-                        int columns = Arduino.getLedMatrix().columns();
-                        Arduino.getLedMatrix().clear();
+                        ArduinoOne.getLedMatrix().begin();
+                        ArduinoOne.getLedMatrix().loadFrame(1, 2, 3, 4);
+                        int columns = ArduinoOne.getLedMatrix().columns();
+                        ArduinoOne.getLedMatrix().clear();
                     }
                 }
                 """;
@@ -420,11 +432,11 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
-                        Arduino.getLedMatrix().begin();
+                        ArduinoOne.getLedMatrix().begin();
                     }
                 }
                 """;
@@ -445,11 +457,11 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
-                        Arduino.getLedMatrix().begin();
+                        ArduinoOne.getLedMatrix().begin();
                     }
                 }
                 """;
@@ -524,7 +536,7 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.udp.Udp;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
@@ -533,7 +545,7 @@ class BoardTest {
                 @Board(ArduinoOneQBoard.class)
                 public final class WifiOnUnoQ {
                     public static void main(String[] args) {
-                        Arduino.getWifi().status();
+                        ArduinoOne.getWifi().status();
                         Udp.listen(5000);
                         byte[] body = new byte[8];
                         byte[] headers = new byte[8];
@@ -599,13 +611,13 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
-                import io.github.jabrena.juno.hardware.Arduino;
+                import io.github.jabrena.juno.hardware.ArduinoOne;
                 @Board(ArduinoOneR4WiFiBoard.class)
                 public final class OnUnoR4 {
                     public static void main(String[] args) {
                         Delay.millis(1);
-                        Arduino.getLedMatrix().begin();
-                        int columns = Arduino.getLedMatrix().columns();
+                        ArduinoOne.getLedMatrix().begin();
+                        int columns = ArduinoOne.getLedMatrix().columns();
                     }
                 }
                 """;

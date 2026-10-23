@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -31,7 +31,7 @@ import io.github.jabrena.juno.util.Delay;
 public class PoweredUpGyroBoy {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final NineAxisMotionShield IMU = new NineAxisMotionShield();
-    private static final Clock CLOCK = Arduino.getClock();
+    private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int LEFT = PoweredUpHubRemote.PORT_A;
     private static final int RIGHT = PoweredUpHubRemote.PORT_B;
 

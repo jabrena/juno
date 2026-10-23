@@ -8,7 +8,7 @@ import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.net.tcp.Tcp;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.net.Wifi;
 
 /** Joining a network, then a UDP exchange and a TCP exchange. */
@@ -17,16 +17,16 @@ public final class WifiUdpApi {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
 
-        Arduino.getWifi().begin("ci-ssid", "ci-password");
+        ArduinoOne.getWifi().begin("ci-ssid", "ci-password");
 
-        if (Arduino.getWifi().status() == Wifi.STATUS_CONNECTED) {
+        if (ArduinoOne.getWifi().status() == Wifi.STATUS_CONNECTED) {
             int[] address = new int[4];
-            Arduino.getWifi().localIP(address);
+            ArduinoOne.getWifi().localIP(address);
             Serial.println(address[3]);
-            Arduino.getWifi().gatewayIP(address);
+            ArduinoOne.getWifi().gatewayIP(address);
             Serial.println(address[3]);
             int[] mac = new int[6];
-            Arduino.getWifi().macAddress(mac);
+            ArduinoOne.getWifi().macAddress(mac);
             Serial.println(mac[5]);
             byte[] payload = new byte[8];
             Udp.listen(4210);

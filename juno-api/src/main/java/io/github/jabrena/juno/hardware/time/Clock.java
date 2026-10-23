@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.hardware.time;
 
 /**
- * The board's monotonic clock. {@link io.github.jabrena.juno.hardware.Arduino#getClock()} is the board's own timer,
+ * The board's monotonic clock. {@link io.github.jabrena.juno.hardware.ArduinoOne#getClock()} is the board's own timer,
  * which the compiler lowers to the Arduino core calls; a unit test passes {@code mock(Clock.class)} instead. Get it
  * once, at startup, and pass it to the classes that need it.
  */
