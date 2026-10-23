@@ -6,8 +6,7 @@ layout: page
 
 Juno's first Cardputer support adds the board target and an example that sends text over USB
 serial. The example uses Juno's existing `Serial` and `Delay` APIs. The `M5` device facade is the
-entry point for Cardputer peripherals. Display, keyboard and other
-Cardputer peripherals are not part of this first step.
+entry point for Cardputer peripherals.
 
 ## GPIO
 
@@ -54,8 +53,52 @@ Wifi wifi = M5.getWifi();
 wifi.beginAP("JunoCardputer", "juno1234");
 Serial.println(wifi.status());
 ```
+
+## Display
+
+`M5.getDisplay()` returns the Cardputer's 240 by 135 pixel color display. Colors use RGB565 values, with common colors
+available as constants and `Display.color(red, green, blue)` for custom colors. Call `begin()` once before drawing.
+
+```java
+Display display = M5.getDisplay();
+display.begin();
+display.fillScreen(Display.BLACK);
+display.fillRect(8, 8, display.width() - 16, 4, Display.BLUE);
+display.setCursor(12, 24);
+display.setTextColor(Display.GREEN, Display.BLACK);
+display.setTextSize(2);
+display.println("Hello, Juno!");
+```
+
+The display interface also provides `height()`, `drawPixel(...)`, `print(...)`, and `println(...)`. Applications can
+receive a mock `Display` in desktop unit tests.
+
+## Keyboard
+
+`M5.getKeyboard()` returns the Cardputer's built-in keyboard. Initialize it once, call `update()` in the main loop,
+and inspect the state after `isChanged()` reports a transition.
+
+```java
+Keyboard keyboard = M5.getKeyboard();
+keyboard.begin();
+while (true) {
+    keyboard.update();
+    if (keyboard.isChanged() && keyboard.isPressed()) {
+        for (int index = 0; index < keyboard.keyCount(); index++) {
+            Serial.println(keyboard.keyAt(index));
+        }
+    }
+    Delay.millis(20);
+}
+```
+
+`keyAt(...)` returns printable character codes or `Keyboard.BACKSPACE`, `Keyboard.TAB`, and `Keyboard.ENTER`.
+`isKeyPressed(...)` checks one character or control key. Shift, Control, Alt, Fn, and Option have dedicated state
+methods, so no array or collection needs to be allocated while polling.
+
 Install the Juno Maven plugin, then run `juno:install-deps` once to install the M5Stack ESP32 board
-package along with the other supported board cores and libraries. Compile and upload the example:
+package and the official M5Cardputer library along with the other supported board cores and libraries. Compile and
+upload the example:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
