@@ -15,9 +15,9 @@ public final class ThemeSelectorView implements KeyboardView {
     private static final int CARDPUTER_ESCAPE = '`';
     private static final int UP = ';';
     private static final int DOWN = '.';
-    private static final int VISIBLE_ROWS = 5;
-    private static final int FIRST_ROW_Y = 37;
-    private static final int ROW_HEIGHT = 14;
+    private static final int VISIBLE_ROWS = 6;
+    private static final int FIRST_ROW_Y = 9;
+    private static final int ROW_HEIGHT = 16;
 
     private final Navigator navigator;
     private final Display display;
@@ -48,11 +48,6 @@ public final class ThemeSelectorView implements KeyboardView {
     private void draw() {
         display.fillScreen(Display.BLACK);
         display.setTextSize(1);
-        display.fillRect(0, 0, 240, 28, Display.BLUE);
-        display.fillRect(0, 26, 240, 2, Display.YELLOW);
-        display.setTextColor(Display.YELLOW, Display.BLUE);
-        display.setCursor(8, 9);
-        display.println("Select the theme");
 
         int lastVisibleIndex = firstVisibleIndex + VISIBLE_ROWS;
         if (lastVisibleIndex > ZeldaSoundtrackThemes.COUNT) {
@@ -65,11 +60,11 @@ public final class ThemeSelectorView implements KeyboardView {
         }
         display.setTextColor(Display.CYAN, Display.BLACK);
         if (firstVisibleIndex > 0) {
-            display.setCursor(224, 34);
+            display.setCursor(224, 6);
             display.println("^");
         }
         if (lastVisibleIndex < ZeldaSoundtrackThemes.COUNT) {
-            display.setCursor(224, 92);
+            display.setCursor(224, 94);
             display.println("v");
         }
 
@@ -77,7 +72,7 @@ public final class ThemeSelectorView implements KeyboardView {
         display.fillRect(0, 107, 240, 2, Display.YELLOW);
         display.setTextColor(Display.WHITE, Display.BLUE);
         display.setCursor(8, 117);
-        display.println("Esc | Enter");
+        display.println("Back: Esc | Play: Enter");
     }
 
     @Override
