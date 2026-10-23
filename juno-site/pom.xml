@@ -15,7 +15,7 @@
     <properties>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.40.1</quarkus.platform.version>
+        <quarkus.platform.version>3.40.1.1</quarkus.platform.version>
         <roq.version>2.2.0</roq.version>
         <skipITs>true</skipITs>
         <!-- A static site has no unit tests to mutate; the root -Ppitest profile skips it. -->
