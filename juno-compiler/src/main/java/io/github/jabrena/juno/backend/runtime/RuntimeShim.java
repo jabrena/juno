@@ -94,6 +94,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.MOUSE)) {
             shim.append("#include <Mouse.h>\n");
         }
+        if (uses(ShimFeature.M5_DEVICE)) {
+            shim.append("#include <M5Cardputer.h>\n");
+        }
         if (uses(ShimFeature.SERVO)) {
             shim.append("#include <Servo.h>\n");
         }
@@ -203,6 +206,15 @@ public final class RuntimeShim {
 
     private void appendPeripheralHelpers(StringBuilder shim) {
         shim.append(ioRuntime.preludeFor(core, features));
+        if (uses(ShimFeature.M5_DEVICE)) {
+            shim.append(runtimeSource.load("common/m5-device.cpp"));
+        }
+        if (uses(ShimFeature.M5_DISPLAY)) {
+            shim.append(runtimeSource.load("common/m5-display.cpp"));
+        }
+        if (uses(ShimFeature.M5_KEYBOARD)) {
+            shim.append(runtimeSource.load("common/m5-keyboard.cpp"));
+        }
         if (uses(ShimFeature.MOUSE)) {
             shim.append(shimLibraries.mouseHelpers());
         }
