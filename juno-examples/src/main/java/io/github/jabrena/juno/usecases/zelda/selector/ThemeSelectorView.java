@@ -15,9 +15,9 @@ public final class ThemeSelectorView implements KeyboardView {
     private static final int CARDPUTER_ESCAPE = '`';
     private static final int UP = ';';
     private static final int DOWN = '.';
-    private static final int VISIBLE_ROWS = 6;
+    private static final int VISIBLE_ROWS = 4;
     private static final int FIRST_ROW_Y = 2;
-    private static final int ROW_HEIGHT = 17;
+    private static final int ROW_HEIGHT = 25;
 
     private final Navigator navigator;
     private final Display display;
@@ -47,7 +47,7 @@ public final class ThemeSelectorView implements KeyboardView {
 
     private void draw() {
         display.fillScreen(Display.BLACK);
-        display.setTextSize(2);
+        display.setTextSize(3);
 
         int lastVisibleIndex = firstVisibleIndex + VISIBLE_ROWS;
         if (lastVisibleIndex > ZeldaSoundtrackThemes.COUNT) {
