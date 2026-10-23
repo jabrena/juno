@@ -18,6 +18,12 @@ public enum Capability {
             return board.displayName() + " has no onboard LED matrix";
         }
     },
+    M5_DISPLAY("M5.getDisplay") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no M5Stack Cardputer display";
+        }
+    },
     WIFI("Wifi") {
         @Override
         public String unsupportedReason(Board board) {

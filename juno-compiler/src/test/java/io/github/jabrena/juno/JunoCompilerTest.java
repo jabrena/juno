@@ -135,6 +135,82 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles Cardputer display access through the M5 facade")
+        void shouldCompileCardputerDisplayThroughM5() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.annotations.M5Cardputer;
+                    import io.github.jabrena.juno.hardware.M5;
+                    import io.github.jabrena.juno.hardware.display.Display;
+                    @Board(M5Cardputer.class)
+                    public final class CardputerDisplay {
+                        public static void main(String[] args) {
+                            Display display = M5.getDisplay();
+                            display.begin();
+                            display.fillScreen(Display.BLACK);
+                            display.drawPixel(1, 2, Display.RED);
+                            display.fillRect(3, 4, 5, 6, Display.BLUE);
+                            display.setCursor(8, 10);
+                            display.setTextColor(Display.GREEN, Display.BLACK);
+                            display.setTextSize(2);
+                            display.println("Hello, Juno!");
+                            display.width();
+                            display.height();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerDisplay", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerDisplay");
+
+            // Then
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.assembly()).contains(
+                    "call8 juno_m5_display_begin",
+                    "call8 juno_m5_display_fill_screen",
+                    "call8 juno_m5_display_draw_pixel",
+                    "call8 juno_m5_display_fill_rect",
+                    "call8 juno_m5_display_set_cursor",
+                    "call8 juno_m5_display_set_text_color",
+                    "call8 juno_m5_display_set_text_size",
+                    "call8 juno_m5_display_println",
+                    "call8 juno_m5_display_width",
+                    "call8 juno_m5_display_height");
+            assertThat(result.runtimeShim()).contains(
+                    "#include <M5Cardputer.h>",
+                    "M5Cardputer.begin(keyboard)",
+                    "M5Cardputer.Display.fillScreen",
+                    "M5Cardputer.Display.println");
+        }
+
+        @Test
+        @DisplayName("Rejects the Cardputer display on another ESP32 board")
+        void shouldRejectCardputerDisplayOnAnotherEsp32Board() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.M5;
+                    @Board(ArduinoNanoEsp32.class)
+                    public final class NanoDisplay {
+                        public static void main(String[] args) {
+                            M5.getDisplay().begin();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoDisplay", source);
+
+            // When & Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoDisplay"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("M5.getDisplay requires @Board(M5Cardputer.class)");
+        }
+
+        @Test
         @DisplayName("Compiles an unannotated basic program for the requested UNO R3")
         void shouldCompileAnUnannotatedBasicProgramForTheRequestedUnoR3() throws Exception {
             // Given
@@ -963,6 +1039,7 @@ class JunoCompilerTest {
                     "Hello, World!");
             assertThat(result.runtimeShim())
                     .contains("Serial.begin", "Serial.println", "defined(BOARD_HAS_PIN_REMAP)", "#else\n  return pin;");
+            assertThat(result.runtimeShim()).doesNotContain("#include <M5Cardputer.h>");
         }
 
         @Test

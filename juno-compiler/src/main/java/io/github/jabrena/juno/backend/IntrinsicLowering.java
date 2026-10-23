@@ -516,6 +516,28 @@ public final class IntrinsicLowering {
 
     /** USB mouse, servos, LEGO Powered Up hubs, and the Wi-Fi radio. */
     private void registerPeripherals() {
+        shim(Intrinsic.M5_DISPLAY_BEGIN, "juno_m5_display_begin", Result.NONE, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_WIDTH, "juno_m5_display_width", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_HEIGHT, "juno_m5_display_height", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_FILL_SCREEN, "juno_m5_display_fill_screen", Result.NONE, List.of(arg(0)),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_DRAW_PIXEL, "juno_m5_display_draw_pixel", Result.NONE,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_FILL_RECT, "juno_m5_display_fill_rect", Result.NONE,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4)), ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_SET_CURSOR, "juno_m5_display_set_cursor", Result.NONE,
+                List.of(arg(0), arg(1)), ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_SET_TEXT_COLOR, "juno_m5_display_set_text_color", Result.NONE,
+                List.of(arg(0), arg(1)), ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_SET_TEXT_SIZE, "juno_m5_display_set_text_size", Result.NONE, List.of(arg(0)),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_PRINT_STRING, "juno_m5_display_print", Result.NONE, List.of(STRING_ARGUMENT),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_PRINTLN_STRING, "juno_m5_display_println", Result.NONE, List.of(STRING_ARGUMENT),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
         shim(Intrinsic.MOUSE_BEGIN, "juno_mouse_begin", Result.NONE, List.of(), ShimFeature.MOUSE);
         shim(Intrinsic.MOUSE_MOVE, "juno_mouse_move", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.MOUSE);
         shim(Intrinsic.SERVO_OF, "juno_servo_attach", Result.FIRST_ARGUMENT, List.of(arg(0)), ShimFeature.SERVO);

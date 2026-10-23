@@ -8,6 +8,10 @@ package io.github.jabrena.juno.backend.runtime.spi;
 public enum ShimFeature {
     /** {@code LedMatrix}: the board's {@code Arduino_LED_Matrix} library, with the core-bundled header. */
     LED_MATRIX,
+    /** Shared one-time initialization for M5Stack Cardputer peripherals. */
+    M5_DEVICE,
+    /** The M5Stack Cardputer's built-in color display. */
+    M5_DISPLAY,
     MOUSE,
     SERVO,
     /** {@code PoweredUpHubRemote}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */

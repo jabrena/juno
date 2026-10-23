@@ -1,7 +1,9 @@
 package io.github.jabrena.juno.hardware;
 
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
+import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
@@ -42,5 +44,10 @@ public final class M5 {
     /** The Cardputer's built-in ESP32-S3 Wi-Fi radio. */
     public static Wifi getWifi() {
         return NativeWifi.wifi();
+    }
+
+    /** The Cardputer's 240 by 135 pixel color display. */
+    public static Display getDisplay() {
+        return NativeDisplay.display();
     }
 }
