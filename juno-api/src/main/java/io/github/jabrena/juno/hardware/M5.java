@@ -5,8 +5,10 @@ import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
+import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
+import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import org.jspecify.annotations.Nullable;
 
@@ -49,5 +51,10 @@ public final class M5 {
     /** The Cardputer's 240 by 135 pixel color display. */
     public static Display getDisplay() {
         return NativeDisplay.display();
+    }
+
+    /** The Cardputer's built-in keyboard. */
+    public static Keyboard getKeyboard() {
+        return NativeKeyboard.keyboard();
     }
 }

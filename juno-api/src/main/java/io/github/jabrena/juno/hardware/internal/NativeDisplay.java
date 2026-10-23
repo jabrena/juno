@@ -54,6 +54,9 @@ public final class NativeDisplay implements Display {
     public native void setTextSize(int size);
 
     @Override
+    public native void print(char character);
+
+    @Override
     public native void print(String text);
 
     @Override

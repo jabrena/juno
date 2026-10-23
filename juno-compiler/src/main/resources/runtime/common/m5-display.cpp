@@ -35,6 +35,10 @@ extern "C" void juno_m5_display_set_text_size(int32_t size) {
   M5Cardputer.Display.setTextSize(size);
 }
 
+extern "C" void juno_m5_display_print_char(int32_t character) {
+  M5Cardputer.Display.print(static_cast<char>(character));
+}
+
 extern "C" void juno_m5_display_print(const char* text) {
   M5Cardputer.Display.print(text);
 }

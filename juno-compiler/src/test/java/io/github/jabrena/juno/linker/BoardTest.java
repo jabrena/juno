@@ -63,7 +63,9 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.ONBOARD_WIFI, true),
                 arguments(Board.M5_CARDPUTER, Capability.WIFI_ACCESS_POINT, true),
                 arguments(Board.M5_CARDPUTER, Capability.M5_DISPLAY, true),
-                arguments(Board.NANO_ESP32, Capability.M5_DISPLAY, false));
+                arguments(Board.NANO_ESP32, Capability.M5_DISPLAY, false),
+                arguments(Board.M5_CARDPUTER, Capability.M5_KEYBOARD, true),
+                arguments(Board.NANO_ESP32, Capability.M5_KEYBOARD, false));
     }
 
     @Test
@@ -560,7 +562,8 @@ class BoardTest {
     @DisplayName("The UNO R4 WiFi supports every capability except Cardputer-specific hardware")
     void shouldSupportEveryGeneralCapabilityOnTheUnoR4WiFi() {
         // When & Then
-        assertThat(Capability.values()).filteredOn(capability -> capability != Capability.M5_DISPLAY)
+        assertThat(Capability.values()).filteredOn(capability -> capability != Capability.M5_DISPLAY
+                        && capability != Capability.M5_KEYBOARD)
                 .allMatch(Board.UNO_R4_WIFI::supports);
     }
 

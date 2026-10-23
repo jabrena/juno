@@ -534,10 +534,36 @@ public final class IntrinsicLowering {
                 List.of(arg(0), arg(1)), ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
         shim(Intrinsic.M5_DISPLAY_SET_TEXT_SIZE, "juno_m5_display_set_text_size", Result.NONE, List.of(arg(0)),
                 ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_PRINT_CHAR, "juno_m5_display_print_char", Result.NONE, List.of(arg(0)),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
         shim(Intrinsic.M5_DISPLAY_PRINT_STRING, "juno_m5_display_print", Result.NONE, List.of(STRING_ARGUMENT),
                 ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
         shim(Intrinsic.M5_DISPLAY_PRINTLN_STRING, "juno_m5_display_println", Result.NONE, List.of(STRING_ARGUMENT),
                 ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_KEYBOARD_BEGIN, "juno_m5_keyboard_begin", Result.NONE, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_UPDATE, "juno_m5_keyboard_update", Result.NONE, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_IS_CHANGED, "juno_m5_keyboard_is_changed", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_IS_PRESSED, "juno_m5_keyboard_is_pressed", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_IS_KEY_PRESSED, "juno_m5_keyboard_is_key_pressed", Result.WORD, List.of(arg(0)),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_KEY_COUNT, "juno_m5_keyboard_key_count", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_KEY_AT, "juno_m5_keyboard_key_at", Result.WORD, List.of(arg(0)),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_IS_SHIFT_PRESSED, "juno_m5_keyboard_is_shift_pressed", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_IS_CONTROL_PRESSED, "juno_m5_keyboard_is_control_pressed", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_IS_ALT_PRESSED, "juno_m5_keyboard_is_alt_pressed", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_IS_FN_PRESSED, "juno_m5_keyboard_is_fn_pressed", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_KEYBOARD_IS_OPTION_PRESSED, "juno_m5_keyboard_is_option_pressed", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
         shim(Intrinsic.MOUSE_BEGIN, "juno_mouse_begin", Result.NONE, List.of(), ShimFeature.MOUSE);
         shim(Intrinsic.MOUSE_MOVE, "juno_mouse_move", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.MOUSE);
         shim(Intrinsic.SERVO_OF, "juno_servo_attach", Result.FIRST_ARGUMENT, List.of(arg(0)), ShimFeature.SERVO);

@@ -73,6 +73,29 @@ display.println("Hello, Juno!");
 The display interface also provides `height()`, `drawPixel(...)`, `print(...)`, and `println(...)`. Applications can
 receive a mock `Display` in desktop unit tests.
 
+## Keyboard
+
+`M5.getKeyboard()` returns the Cardputer's built-in keyboard. Initialize it once, call `update()` in the main loop,
+and inspect the state after `isChanged()` reports a transition.
+
+```java
+Keyboard keyboard = M5.getKeyboard();
+keyboard.begin();
+while (true) {
+    keyboard.update();
+    if (keyboard.isChanged() && keyboard.isPressed()) {
+        for (int index = 0; index < keyboard.keyCount(); index++) {
+            Serial.println(keyboard.keyAt(index));
+        }
+    }
+    Delay.millis(20);
+}
+```
+
+`keyAt(...)` returns printable character codes or `Keyboard.BACKSPACE`, `Keyboard.TAB`, and `Keyboard.ENTER`.
+`isKeyPressed(...)` checks one character or control key. Shift, Control, Alt, Fn, and Option have dedicated state
+methods, so no array or collection needs to be allocated while polling.
+
 Install the Juno Maven plugin, then run `juno:install-deps` once to install the M5Stack ESP32 board
 package and the official M5Cardputer library along with the other supported board cores and libraries. Compile and
 upload the example:

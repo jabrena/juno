@@ -155,6 +155,7 @@ class JunoCompilerTest {
                             display.setCursor(8, 10);
                             display.setTextColor(Display.GREEN, Display.BLACK);
                             display.setTextSize(2);
+                            display.print('x');
                             display.println("Hello, Juno!");
                             display.width();
                             display.height();
@@ -176,6 +177,7 @@ class JunoCompilerTest {
                     "call8 juno_m5_display_set_cursor",
                     "call8 juno_m5_display_set_text_color",
                     "call8 juno_m5_display_set_text_size",
+                    "call8 juno_m5_display_print_char",
                     "call8 juno_m5_display_println",
                     "call8 juno_m5_display_width",
                     "call8 juno_m5_display_height");
@@ -183,6 +185,7 @@ class JunoCompilerTest {
                     "#include <M5Cardputer.h>",
                     "M5Cardputer.begin(keyboard)",
                     "M5Cardputer.Display.fillScreen",
+                    "M5Cardputer.Display.print(static_cast<char>(",
                     "M5Cardputer.Display.println");
         }
 
@@ -208,6 +211,88 @@ class JunoCompilerTest {
             assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoDisplay"))
                     .isInstanceOf(CompileException.class)
                     .hasMessageContaining("M5.getDisplay requires @Board(M5Cardputer.class)");
+        }
+
+        @Test
+        @DisplayName("Compiles Cardputer keyboard access through the M5 facade")
+        void shouldCompileCardputerKeyboardThroughM5() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.annotations.M5Cardputer;
+                    import io.github.jabrena.juno.hardware.M5;
+                    import io.github.jabrena.juno.hardware.keyboard.Keyboard;
+                    @Board(M5Cardputer.class)
+                    public final class CardputerKeyboard {
+                        public static void main(String[] args) {
+                            M5.getDisplay().begin();
+                            Keyboard keyboard = M5.getKeyboard();
+                            keyboard.begin();
+                            keyboard.update();
+                            if (keyboard.isChanged() && keyboard.isPressed()) {
+                                keyboard.isKeyPressed('a');
+                                keyboard.keyCount();
+                                keyboard.keyAt(0);
+                                keyboard.isShiftPressed();
+                                keyboard.isControlPressed();
+                                keyboard.isAltPressed();
+                                keyboard.isFnPressed();
+                                keyboard.isOptionPressed();
+                            }
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerKeyboard", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerKeyboard");
+
+            // Then
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.assembly()).contains(
+                    "call8 juno_m5_display_begin",
+                    "call8 juno_m5_keyboard_begin",
+                    "call8 juno_m5_keyboard_update",
+                    "call8 juno_m5_keyboard_is_changed",
+                    "call8 juno_m5_keyboard_is_pressed",
+                    "call8 juno_m5_keyboard_is_key_pressed",
+                    "call8 juno_m5_keyboard_key_count",
+                    "call8 juno_m5_keyboard_key_at",
+                    "call8 juno_m5_keyboard_is_shift_pressed",
+                    "call8 juno_m5_keyboard_is_control_pressed",
+                    "call8 juno_m5_keyboard_is_alt_pressed",
+                    "call8 juno_m5_keyboard_is_fn_pressed",
+                    "call8 juno_m5_keyboard_is_option_pressed");
+            assertThat(result.runtimeShim()).contains(
+                    "#include <M5Cardputer.h>",
+                    "M5Cardputer.Keyboard.begin()",
+                    "M5Cardputer.Keyboard.updateKeyList()",
+                    "M5Cardputer.Keyboard.keysState().shift");
+        }
+
+        @Test
+        @DisplayName("Rejects the Cardputer keyboard on another ESP32 board")
+        void shouldRejectCardputerKeyboardOnAnotherEsp32Board() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.M5;
+                    @Board(ArduinoNanoEsp32.class)
+                    public final class NanoKeyboard {
+                        public static void main(String[] args) {
+                            M5.getKeyboard().begin();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoKeyboard", source);
+
+            // When & Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoKeyboard"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("M5.getKeyboard requires @Board(M5Cardputer.class)");
         }
 
         @Test
