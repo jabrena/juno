@@ -116,7 +116,7 @@ stop();
 
 `TURN_MILLIS` is the time a spin on the spot takes for 90 degrees; tune it for your vehicle.
 `MagicSquareRcx` in `lego.rcx` and `MagicSquareScout` in `lego.scout` do the same over infrared with
-an RCX or Scout brick, using `RemoteRcx` and `ScoutRemote`.
+an RCX or Scout brick, using `RemoteRcx` and `RemoteScout`.
 
 ### The RCX as a remote brick
 
