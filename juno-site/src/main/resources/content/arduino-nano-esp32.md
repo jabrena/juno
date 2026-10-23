@@ -29,7 +29,7 @@ This is the first step of Nano ESP32 support: `Gpio`, `DigitalOutput`, `Delay` a
 the native USB port, with `int`, `long`, `float` and `double` arithmetic, objects, arrays, static and
 interface calls, lambdas and method references. Pins keep the numbers printed on the board: the core builds with
 `BOARD_HAS_PIN_REMAP`, and Juno calls `pinMode`/`digitalWrite` through wrappers compiled under
-that remapping, so `Arduino.getGpio().getBuiltinLed()` is `13` and drives GPIO48. Analog pins keep
+that remapping, so `ArduinoNano.getGpio().getBuiltinLed()` is `13` and drives GPIO48. Analog pins keep
 Juno's UNO numbers: `Gpio.getA0()` to `Gpio.getA5()` (14 to 19) reach the Nano's A0 to A5, which its
 core numbers 17 to 22, so Grove drivers and pin maps such as `GroveBaseShield` work unchanged. As a
 result, the onboard RGB LED's core numbers (14 to 16) cannot be reached through `Gpio`.
@@ -77,7 +77,7 @@ hardware.
 prints a new one every two seconds. Espressif documents that the generator is only fully random while the
 radio is on; the Nano's UUIDs are therefore fresh but may be weaker before Wi-Fi or Bluetooth start.
 
-Wi-Fi works in station mode through the module's onboard radio: `Arduino.getWifi()` joins a network
+Wi-Fi works in station mode through the module's onboard radio: `ArduinoNano.getWifi()` joins a network
 with `begin(ssid, password)` and reports `status()`, `localIP()`, `gatewayIP()` and `macAddress()`.
 [`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java)
 reads the credentials from `application.properties` on the carrier's microSD card (see
@@ -108,7 +108,7 @@ check the server's certificate chain yet, on the Nano or the UNO R4 WiFi.
 [`NanoHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java)
 prints the board's address and answers `GET /status` on port 80.
 
-`Arduino.getWifi().beginAP(ssid, password)` starts the board's own access point, so a phone or laptop can
+`ArduinoNano.getWifi().beginAP(ssid, password)` starts the board's own access point, so a phone or laptop can
 join the Nano ESP32 directly, as in
 [`NanoAccessPointSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoAccessPointSD.java).
 TCP and the other optional capabilities are not wired yet; Juno rejects a program that uses them at
@@ -125,7 +125,7 @@ The Arduino Nano Connector Carrier (ASX00061) is passive: every connector is a N
 | Grove A0/A1 (analog) | A0 signal, A1 | `getGroveA0()`; wires `getA0()`, `getA1()` |
 | Grove A2/A3 (analog) | A2 signal, A3 | `getGroveA2()`; wires `getA2()`, `getA3()` |
 | Grove UART | RX D0 (signal), TX D1 | `getGroveUart()`; wires `getUartRx()`, `getUartTx()` |
-| Grove I2C and Qwiic | SDA A4, SCL A5 | `getI2cSda()`, `getI2cScl()` (one bus, `Arduino.getI2c()`) |
+| Grove I2C and Qwiic | SDA A4, SCL A5 | `getI2cSda()`, `getI2cScl()` (one bus, `ArduinoNano.getI2c()`) |
 
 As with `GroveBaseShield`, plug a single-signal Grove module in and pass the socket's getter to its
 driver: `pir.begin(carrier.getGroveA2())`. The analog sockets work for digital modules too. Keep

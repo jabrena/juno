@@ -165,7 +165,7 @@ blanks the display, then shows and prints each clicked button's name:
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.RcxBrickButtons \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 ```
 
 ## Example: a touch screen remote
@@ -188,7 +188,7 @@ disconnects, and four tabs choose the view:
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpHubTFT \
-  -Djuno.board=arduino-uno-q
+  -Djuno.board=arduino-one-q
 ```
 
 The device type numbers, the tacho values and the hold command follow the community documentation of the
@@ -235,7 +235,7 @@ public final class LegoTrain {
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.remote.lego.LegoTrain \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+  -Djuno.board=arduino-one-r4-wifi   # or arduino-one-q
 ```
 
 Switch the hub on after the upload; the sketch connects to it and prints the hub type on the

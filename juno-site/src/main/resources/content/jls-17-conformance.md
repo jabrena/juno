@@ -87,17 +87,17 @@ Choose a class and board:
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.language.concurrency.VolatileHappensBefore \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 ```
 
-The other scheduler-capable board IDs are `arduino-uno-q` and `arduino-uno-r3-wifi-rev2`.
+The other scheduler-capable board IDs are `arduino-one-q` and `arduino-one-r3-wifi-rev2`.
 
 After receiving permission to overwrite a connected board, replace `juno:verify` with `juno:upload`, then monitor the
 same board and compare its one-line output with the matrix above:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:monitor \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 ```
 
 ## Run the automated checks

@@ -109,7 +109,7 @@ Generate and compile a Juno example for the R3 through the Maven plugin:
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r3
+  -Djuno.board=arduino-one-r3
 ```
 
 Uploading changes the firmware on a connected physical board. Find the port with
@@ -118,7 +118,7 @@ Uploading changes the firmware on a connected physical board. Find the port with
 ## Juno compatibility
 
 The UNO R3 is a declared Juno target. Select it with `@Board(ArduinoOneR3Board.class)` or the board id
-`arduino-uno-r3`. Programs without `@Board` can target it with `-Djuno.board=arduino-uno-r3`.
+`arduino-one-r3`. Programs without `@Board` can target it with `-Djuno.board=arduino-one-r3`.
 Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
 
 | Juno API or feature | UNO R3 | Notes |
@@ -131,7 +131,7 @@ Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
 | `PortNoise.collectSeed(...)` | Yes, non-cryptographic | Samples a user-provided physical noise circuit, GPIO and timer jitter; it is unsuitable for secrets or UUID v4 generation |
 | `Mouse` | No | The sketch MCU has no native USB HID support |
 | `LedMatrix` | No | The R3 has no onboard 12x8 LED matrix |
-| `Arduino.getWifi()` | No | The R3 has no onboard radio; Juno rejects this call at compile time |
+| `ArduinoOne.getWifi()` | No | The R3 has no onboard radio; Juno rejects this call at compile time |
 | Wi-Fi through the Arduino WiFi Shield | Yes | `new ArduinoWifiShield().getWifi()`, then `Udp`, `Tcp` and plain-HTTP `HttpClient`; no access point or HTTPS |
 | Bluetooth | Not applicable | No onboard wireless hardware |
 | DAC, RTC and CAN | Not applicable | These peripherals are not built into the R3 board |
@@ -143,7 +143,7 @@ that report does not calculate the maximum Juno call stack.
 
 ### Wi-Fi through the Arduino WiFi Shield
 
-The R3 has no radio, so `Arduino.getWifi()` does not compile for it. Stack the retired
+The R3 has no radio, so `ArduinoOne.getWifi()` does not compile for it. Stack the retired
 [Arduino WiFi Shield](https://docs.arduino.cc/retired/shields/arduino-wifi-shield/) and take its
 `Wifi` from the shield instead:
 

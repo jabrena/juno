@@ -51,12 +51,12 @@ other secrets to an `http://` URL.
 
 Do not put Wi-Fi credentials directly in Java source. Either load them at runtime from an SD-card
 properties file (see [docs/STORAGE.md](../storage)) or pass compile-time environment-variable reads
-to `Wifi.begin` (on the `Wifi` that `Arduino.getWifi()` returns) — see
+to `Wifi.begin` (on the `Wifi` that `ArduinoOne.getWifi()` returns) — see
 [docs/APIS.md](../apis#supplying-compile-time-credentials-with-systemgetenv) for the full
 mechanism, including the `.env`/`juno-maven-plugin` alternative and its security caveats:
 
 ```java
-Arduino.getWifi().begin(
+ArduinoOne.getWifi().begin(
         System.getenv("JUNO_WIFI_SSID"),
         System.getenv("JUNO_WIFI_PASSWORD"));
 ```
@@ -77,8 +77,8 @@ Unlike HTTP hosts, paths, and bodies, `Wifi.begin` also accepts stable runtime s
 
 ## Connecting to Wi-Fi
 
-Get the board's radio once, at startup: `Arduino.getWifi()` on the boards with onboard Wi-Fi (UNO R4 WiFi,
-UNO WiFi Rev2, UNO Q). The UNO R3 has no radio of its own, so the compiler rejects `Arduino.getWifi()`
+Get the board's radio once, at startup: `ArduinoOne.getWifi()` on the boards with onboard Wi-Fi (UNO R4 WiFi,
+UNO WiFi Rev2, UNO Q). The UNO R3 has no radio of its own, so the compiler rejects `ArduinoOne.getWifi()`
 there; stack the retired [Arduino WiFi Shield](https://docs.arduino.cc/retired/shields/arduino-wifi-shield/)
 and take the same `Wifi` from `new ArduinoWifiShield().getWifi()` instead. A unit test passes
 `mock(Wifi.class)`.
@@ -88,7 +88,7 @@ and take the same `Wifi` from `new ArduinoWifiShield().getWifi()` instead. A uni
 of waiting forever:
 
 ```java
-Wifi wifi = Arduino.getWifi();
+Wifi wifi = ArduinoOne.getWifi();
 wifi.begin(
         System.getenv("JUNO_WIFI_SSID"),
         System.getenv("JUNO_WIFI_PASSWORD"));
@@ -386,12 +386,12 @@ import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.net.http.Json;
-import io.github.jabrena.juno.hardware.Arduino;
+import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.net.Wifi;
 
 @Board(ArduinoOneR4WiFiBoard.class)
 public final class InternetExample {
-    private static final Wifi WIFI = Arduino.getWifi();
+    private static final Wifi WIFI = ArduinoOne.getWifi();
 
     private static final String URL = "http://api.open-meteo.com/v1/forecast?latitude=40.4168"
             + "&longitude=-3.7038&current=temperature_2m";
@@ -517,7 +517,7 @@ has no leader. Every board is an equal node that mines, validates and relays blo
   and the UNO R4 WiFi builds without extra stack settings.
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-uno-r4-wifi \
+./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-one-r4-wifi \
   -Djuno.main=io.github.jabrena.juno.usecases.miner.Miner2
 ```
 

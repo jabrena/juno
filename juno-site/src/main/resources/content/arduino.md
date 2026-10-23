@@ -64,7 +64,7 @@ sketch:
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 ```
 
 The plugin generates a complete Arduino sketch directory:
@@ -81,7 +81,7 @@ Verify it with the real Arduino toolchain without touching a connected board:
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 ```
 
 `juno:verify` derives the FQBN from the entry point's `@Board` annotation, or from the required
@@ -92,7 +92,7 @@ connected matching board:
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 ```
 
 If more than one matching board is connected, or a specific port is required, select it explicitly:
@@ -116,7 +116,7 @@ Open an interactive serial monitor (115200 baud by default, matching every juno-
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:monitor \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 ```
 
 Use `-Djuno.baudRate=...` to select another baud rate and `-Djuno.port=...` to select a port.
@@ -138,7 +138,7 @@ Then open the serial monitor at the same baud rate the sketch uses
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:monitor \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 ```
 
 The intended output is `0`, `1`, `2`, ... once a second. Press `Ctrl+C` to exit the monitor.
@@ -266,7 +266,7 @@ It needs the `ArduinoBLE` library (not bundled with the `arduino:renesas_uno` co
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.remote.lego.LegoTrain \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+  -Djuno.board=arduino-one-r4-wifi   # or arduino-one-q
 ```
 
 ### Example: InboxCount (basic email support)
@@ -320,7 +320,7 @@ register, so this doesn't run out of registers regardless of how large or branch
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+  -Djuno.board=arduino-one-r4-wifi   # or arduino-one-q
 ```
 
 The plugin creates the `.S`, `<Name>Shim.cpp`, and matching `.ino` wrapper together in the isolated

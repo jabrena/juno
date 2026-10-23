@@ -71,16 +71,16 @@ Use the following commands for the complete `Blink` workflow. Pick one target wi
 # Generate and verify with arduino-cli
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+  -Djuno.board=arduino-one-r4-wifi   # or arduino-one-q
 
 # Upload
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+  -Djuno.board=arduino-one-r4-wifi   # or arduino-one-q
 
 # Monitor
 ./mvnw -f juno-examples/pom.xml juno:monitor \
-  -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-one-r4-wifi
 ```
 
 Upload and monitor auto-detect the port when exactly one matching board is connected. Otherwise,
@@ -238,8 +238,8 @@ Stop the server with `Ctrl+C`.
 
 - https://dev.java/
 - https://store.arduino.cc/products/uno-r4-wifi
-- https://store.arduino.cc/products/arduino-uno-rev3
-- https://store.arduino.cc/products/arduino-uno-wifi-rev2
+- https://store.arduino.cc/products/arduino-one-rev3
+- https://store.arduino.cc/products/arduino-one-wifi-rev2
 - https://lejos.sourceforge.io/
 - https://lejos.sourceforge.io/nxt/nxj/api/index.html
 - https://tinyvm.sourceforge.net/
