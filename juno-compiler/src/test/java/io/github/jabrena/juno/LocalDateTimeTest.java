@@ -176,9 +176,9 @@ class LocalDateTimeTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
-                @Board(ArduinoNanoEsp32.class)
+                @Board(ArduinoNanoEsp32Board.class)
                 public final class NanoClock {
                     public static void main() {
                         java.time.LocalDateTime value = java.time.LocalDateTime.now();
@@ -202,9 +202,9 @@ class LocalDateTimeTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
                 import io.github.jabrena.juno.annotations.Board;
-                @Board(ArduinoUnoR3.class)
+                @Board(ArduinoUnoR3Board.class)
                 public final class ShieldClock {
                     public static void main() {
                         java.time.LocalDateTime value = java.time.LocalDateTime.now();
@@ -228,10 +228,10 @@ class LocalDateTimeTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import java.time.LocalDateTime;
-                @Board(ArduinoUnoR3WiFiRev2.class)
+                @Board(ArduinoUnoR3WiFiRev2Board.class)
                 public final class WifiRev2Clock {
                     public static void main() {
                         LocalDateTime value = LocalDateTime.now();
@@ -254,10 +254,10 @@ class LocalDateTimeTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import java.time.LocalDateTime;
-                @Board(ArduinoUnoR3WiFiRev2.class)
+                @Board(ArduinoUnoR3WiFiRev2Board.class)
                 public final class WifiRev2Clock {
                     public static void main() {
                         LocalDateTime value = LocalDateTime.now();
@@ -275,9 +275,9 @@ class LocalDateTimeTest {
     private CompilationResult compile(String members) throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                @Board(ArduinoUnoR4WiFi.class)
+                @Board(ArduinoUnoR4WiFiBoard.class)
                 public final class Tasks {
                 %s
                 }

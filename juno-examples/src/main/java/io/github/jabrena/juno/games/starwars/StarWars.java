@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.starwars;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -49,7 +49,7 @@ import io.github.jabrena.juno.util.Random;
  * {@link Interludes} show the header and the scenes in between. This class runs the game and is the
  * one place that dispatches on the {@link Phase}.
  */
-@Board(ArduinoUnoQ.class)
+@Board(ArduinoUnoQBoard.class)
 public final class StarWars {
     private static final Clock CLOCK = Arduino.getClock();
     private static final int FRAME_MILLIS = 30;

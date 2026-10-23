@@ -1,8 +1,8 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * shift, and loops whose bounds checks the range analysis removes. Inputs come from an array so javac cannot fold
  * the expressions away.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
 public final class Optimizations {
     private static final int[] INPUTS = {0, 1, -1, 7, -7, 255, 256, 4095, 4096, -4096, 65535, 0x12345678,
             Integer.MAX_VALUE, Integer.MIN_VALUE};

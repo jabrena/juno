@@ -12,7 +12,7 @@ package io.github.jabrena.juno.annotations;
  * (Wi-Fi), D4 (its SD card) and D7 (handshake), and a shield that does not answer makes {@code Wifi.status()} report
  * {@code Wifi.STATUS_NO_SHIELD}. Only small network programs fit: build them with {@code -Djuno.Xmx=512}.
  */
-public final class ArduinoUnoR3 implements BoardSupported {
-    private ArduinoUnoR3() {
+public final class ArduinoUnoR3Board implements BoardSupported {
+    private ArduinoUnoR3Board() {
     }
 }

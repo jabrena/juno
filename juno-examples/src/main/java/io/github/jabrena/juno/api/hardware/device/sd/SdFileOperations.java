@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.hardware.device.sd;
 
-import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.BoardModel;
@@ -30,7 +30,7 @@ import java.io.InputStream;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoNanoEsp32.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
 public final class SdFileOperations {
     private static final String PATH = "juno-sd-demo.txt";
     private static final SdCard SD_CARD = sdCard();

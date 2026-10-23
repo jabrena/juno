@@ -1,8 +1,8 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import java.util.concurrent.Callable;
@@ -14,7 +14,7 @@ import java.util.concurrent.StructuredTaskScope;
  * is preemptive. So a spinning subtask still makes progress while the owner runs a loop-free recursion, two computing
  * subtasks interleave through their loops, and a fail-fast scope cancels a sibling that is spinning.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
 public final class StructuredScheduling {
     static volatile boolean stop;
     static volatile int progress;

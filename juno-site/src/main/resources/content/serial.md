@@ -88,7 +88,7 @@ Concatenating an arbitrary object remains unsupported because it requires broade
 opens the connection and prints an incrementing counter, one value per line, once a second:
 
 ```java
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class SerialCounter {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);

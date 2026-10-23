@@ -1,7 +1,7 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import java.math.BigDecimal;
@@ -10,7 +10,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 /** Long big-number loops on the 8 KB arena: every iteration leaves garbage, so the collector runs mid-computation. */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class BigNumbersGc {
     private static final MathContext PRECISION = new MathContext(50);
 

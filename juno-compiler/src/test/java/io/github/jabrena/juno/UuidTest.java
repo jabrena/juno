@@ -142,10 +142,10 @@ class UuidTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import java.util.UUID;
-                @Board(ArduinoUnoR3.class)
+                @Board(ArduinoUnoR3Board.class)
                 public final class Tasks {
                     public static void main() {
                         UUID value = UUID.randomUUID();

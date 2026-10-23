@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.serial;
 
-import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.Watchdog;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -20,7 +20,7 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>The board's USB port re-enumerates when the program starts, so it waits two seconds before the first line.
  */
-@Board(ArduinoNanoEsp32.class)
+@Board(ArduinoNanoEsp32Board.class)
 @Watchdog(timeoutMillis = 3000)
 public final class SerialNestedArrays {
     private static final int PANIC_ROUND = 5;

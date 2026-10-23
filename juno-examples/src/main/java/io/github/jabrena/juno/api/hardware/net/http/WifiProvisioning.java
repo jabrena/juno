@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.net.WifiProvisioner;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -15,7 +15,7 @@ import io.github.jabrena.juno.util.Delay;
  * Serial at 115200 baud. On UNO Q the hotspot must be started on the Linux side first; see
  * {@link WifiProvisioner} for what each board does with the submitted credentials.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class WifiProvisioning {
     private static final String AP_SSID = "juno";
     private static final String AP_PASSWORD = "juno";

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.email;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
@@ -24,7 +24,7 @@ import io.github.jabrena.juno.util.Delay;
  * Pop3Client#readSubject}, {@link #LIST_PAGE_SIZE} per screen, UP/DOWN to page and SELECT to go
  * back to the Inbox submenu).
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class EmailClient {
     private static final Wifi WIFI = Arduino.getWifi();
 

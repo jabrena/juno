@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.hardware.net.udp;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
@@ -34,7 +34,7 @@ import java.util.Properties;
  * <p>The two {@code sntp.*} entries are optional; without them the build-time {@code JUNO_SNTP_HOST} and
  * {@code JUNO_SNTP_PORT}, or the built-in {@code pool.ntp.org} on port 123, are used.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
 public final class SntpTimeSD {
     private static final Wifi WIFI = Arduino.getWifi();
     private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();

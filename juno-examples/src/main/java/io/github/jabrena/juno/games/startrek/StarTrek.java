@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.startrek;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -44,7 +44,7 @@ import io.github.jabrena.juno.util.Random;
  * {@link Controls} and {@link AutopilotST} take the helm, and {@link SceneRenderer},
  * {@link BridgeView} and {@link DisplayList} draw the vector views. This class runs the game.
  */
-@Board(ArduinoUnoQ.class)
+@Board(ArduinoUnoQBoard.class)
 public final class StarTrek {
     private static final Clock CLOCK = Arduino.getClock();
     private static final int FRAME_MILLIS = 40;

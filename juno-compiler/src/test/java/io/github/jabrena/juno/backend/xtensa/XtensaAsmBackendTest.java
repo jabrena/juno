@@ -96,11 +96,11 @@ class XtensaAsmBackendTest {
 
     private static final String LAMBDAS = """
             package demo;
-            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
             import io.github.jabrena.juno.hardware.Arduino;
             import io.github.jabrena.juno.hardware.serial.Serial;
-            @Board(ArduinoNanoEsp32.class)
+            @Board(ArduinoNanoEsp32Board.class)
             public final class NanoLambdas {
                 interface Operation {
                     int apply(int value);
@@ -139,11 +139,11 @@ class XtensaAsmBackendTest {
 
     private static final String THREADS = """
             package demo;
-            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
             import io.github.jabrena.juno.hardware.Arduino;
             import io.github.jabrena.juno.hardware.serial.Serial;
-            @Board(ArduinoNanoEsp32.class)
+            @Board(ArduinoNanoEsp32Board.class)
             public final class NanoThreads {
                 static final class Total {
                     int value;
@@ -178,11 +178,11 @@ class XtensaAsmBackendTest {
     /** Recursive, so neither helper is inlined and every call really passes its words. */
     private static final String MANY_ARGUMENTS = """
             package demo;
-            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
             import io.github.jabrena.juno.hardware.Arduino;
             import io.github.jabrena.juno.hardware.serial.Serial;
-            @Board(ArduinoNanoEsp32.class)
+            @Board(ArduinoNanoEsp32Board.class)
             public final class NanoWide {
                 static int sum(int a, int b, int c, int d, int e, int f, int g) {
                     return a <= 0 ? b + c + d + e + f + g : sum(a - 1, b, c, d, e, f, g);
@@ -200,11 +200,11 @@ class XtensaAsmBackendTest {
 
     private static final String SHAPES = """
             package demo;
-            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+            import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
             import io.github.jabrena.juno.hardware.Arduino;
             import io.github.jabrena.juno.hardware.serial.Serial;
-            @Board(ArduinoNanoEsp32.class)
+            @Board(ArduinoNanoEsp32Board.class)
             public final class NanoShapes {
                 interface Shape {
                     int area();
@@ -272,11 +272,11 @@ class XtensaAsmBackendTest {
     private CompilationResult compile(String className, String body, String imports) throws Exception {
         return compileSource(className, """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.Arduino;
                 %s
-                @Board(ArduinoNanoEsp32.class)
+                @Board(ArduinoNanoEsp32Board.class)
                 public final class %s {
                     public static void main(String[] args) {
                 %s
@@ -306,9 +306,9 @@ class XtensaAsmBackendTest {
     @DisplayName("The Nano ESP32 resolves from its API class name and annotation argument")
     void shouldResolveTheNanoEsp32FromItsApiClassName() {
         // When & Then
-        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoNanoEsp32"))
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoNanoEsp32Board"))
                 .isEqualTo(Board.NANO_ESP32);
-        assertThat(Board.NANO_ESP32.annotationArgument()).isEqualTo("ArduinoNanoEsp32.class");
+        assertThat(Board.NANO_ESP32.annotationArgument()).isEqualTo("ArduinoNanoEsp32Board.class");
     }
 
     @Test
@@ -395,11 +395,11 @@ class XtensaAsmBackendTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.Arduino;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                @Board(ArduinoNanoEsp32.class)
+                @Board(ArduinoNanoEsp32Board.class)
                 public final class NanoCalls {
                     static int mix(int a, int b, int c) {
                         return a <= 0 ? b - c : mix(a - 1, a * b, c);
@@ -700,11 +700,11 @@ class XtensaAsmBackendTest {
         // Given
         CompilationResult result = compileSource("demo.NanoWideCalls", """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.Arduino;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                @Board(ArduinoNanoEsp32.class)
+                @Board(ArduinoNanoEsp32Board.class)
                 public final class NanoWideCalls {
                     static long total;
                     static float scale = 0.5f;
@@ -828,10 +828,10 @@ class XtensaAsmBackendTest {
         // Given
         CompilationResult result = compileSource("demo.NanoWatchdog", """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.Watchdog;
-                @Board(ArduinoNanoEsp32.class)
+                @Board(ArduinoNanoEsp32Board.class)
                 @Watchdog(timeoutMillis = 3001)
                 public final class NanoWatchdog {
                     public static void main(String[] args) {

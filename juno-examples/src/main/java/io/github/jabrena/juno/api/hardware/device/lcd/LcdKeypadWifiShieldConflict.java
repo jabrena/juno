@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.device.lcd;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR3;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
@@ -25,7 +25,7 @@ import io.github.jabrena.juno.util.Delay;
  * <p>The same source builds for the UNO R4 WiFi, whose radio does not use those pins. The credentials are
  * placeholders: on the UNO R3 the program never gets built.
  */
-@Board({ArduinoUnoR3.class, ArduinoUnoR4WiFi.class})
+@Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class})
 public final class LcdKeypadWifiShieldConflict {
     private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
 

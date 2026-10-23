@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.language.concurrency;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>The plain and volatile totals depend on how the threads interleave, so they can fall short of the expected value
  * on any run. The other three always reach it.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LostUpdates {
     private static final int INCREMENTS = 1000;
     private static final int EXPECTED = 2 * INCREMENTS;

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.email;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * Pop3Client#messageCount}'s Javadoc for what each error code means. Every poll is also logged to
  * Serial.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class InboxCount {
     private static final Wifi WIFI = Arduino.getWifi();
 

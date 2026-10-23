@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.led;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.Delay;
  * Cycles a filled square, an outlined square, a filled rectangle, and an outlined rectangle on the
  * built-in LED matrix using {@code LedCanvas}.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixRectangles {
     public static void main(String[] args) {
         LedMatrix matrix = Arduino.getLedMatrix();

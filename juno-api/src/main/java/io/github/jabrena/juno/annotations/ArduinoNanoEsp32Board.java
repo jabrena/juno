@@ -6,7 +6,7 @@ package io.github.jabrena.juno.annotations;
  * {@code DigitalOutput}, {@code Delay} and {@code Serial} over the native USB port, with pins numbered as printed on
  * the board ({@code D13} is the built-in LED). Its Wi-Fi and Bluetooth radios are not reachable from Juno yet.
  */
-public final class ArduinoNanoEsp32 implements BoardSupported {
-    private ArduinoNanoEsp32() {
+public final class ArduinoNanoEsp32Board implements BoardSupported {
+    private ArduinoNanoEsp32Board() {
     }
 }

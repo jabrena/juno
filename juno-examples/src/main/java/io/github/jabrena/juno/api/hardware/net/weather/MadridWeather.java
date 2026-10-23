@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -33,7 +33,7 @@ import io.github.jabrena.juno.util.Delay;
  * to a {@code double} and reformatting, so the displayed value matches Open-Meteo's own text
  * exactly rather than being subject to binary-floating-point rounding.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class MadridWeather {
     private static final Wifi WIFI = Arduino.getWifi();
 

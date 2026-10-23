@@ -1,7 +1,7 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import java.math.BigDecimal;
@@ -10,7 +10,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 /** BigInteger, BigDecimal and MathContext: arithmetic, rounding, text, comparisons and exceptions. */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class BigNumbers {
     private static final BigDecimal TWO_AND_A_HALF = new BigDecimal("2.5");
 

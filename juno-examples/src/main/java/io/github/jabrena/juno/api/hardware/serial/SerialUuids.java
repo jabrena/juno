@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.serial;
 
-import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -17,7 +17,7 @@ import java.util.UUID;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoNanoEsp32.class})
+@Board({ArduinoNanoEsp32Board.class})
 public final class SerialUuids {
     private static final int INTERVAL_MS = 2000;
 

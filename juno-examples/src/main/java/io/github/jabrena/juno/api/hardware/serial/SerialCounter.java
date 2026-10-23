@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.serial;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -18,7 +18,7 @@ import io.github.jabrena.juno.util.Delay;
  * arduino-cli monitor -p <PORT> -c baudrate=115200
  * }</pre>
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class SerialCounter {
     /**
      * Initializes USB serial output and prints an incrementing counter indefinitely.

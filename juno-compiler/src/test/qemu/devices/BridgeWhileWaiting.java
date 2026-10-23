@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -20,7 +20,7 @@ import java.util.concurrent.StructuredTaskScope;
  * ran. Then a subtask is cancelled while its request is on the worker, and the next request must still work.
  * BridgeWhileWaiting.expected holds the output by hand.
  */
-@Board(ArduinoUnoQ.class)
+@Board(ArduinoUnoQBoard.class)
 public final class BridgeWhileWaiting {
     static final int BODY = 32;
     static final int HEADERS = 64;

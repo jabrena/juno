@@ -117,7 +117,7 @@ Uploading changes the firmware on a connected physical board. Find the port with
 
 ## Juno compatibility
 
-The UNO R3 is a declared Juno target. Select it with `@Board(ArduinoUnoR3.class)` or the board id
+The UNO R3 is a declared Juno target. Select it with `@Board(ArduinoUnoR3Board.class)` or the board id
 `arduino-uno-r3`. Programs without `@Board` can target it with `-Djuno.board=arduino-uno-r3`.
 Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
 

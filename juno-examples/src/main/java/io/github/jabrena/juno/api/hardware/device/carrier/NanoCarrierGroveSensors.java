@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.carrier;
 
-import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightSensorV12;
@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoNanoEsp32.class})
+@Board({ArduinoNanoEsp32Board.class})
 public final class NanoCarrierGroveSensors {
     private NanoCarrierGroveSensors() {
     }

@@ -21,17 +21,17 @@ public enum Board {
      * plain HTTP through the retired Arduino WiFi Shield's legacy {@code WiFi} library (no access point or HTTPS), reached
      * through {@code ArduinoWifiShield.getWifi()}: the board has no onboard radio, so {@code Arduino.getWifi()} is rejected.
      */
-    UNO_R3("io/github/jabrena/juno/annotations/ArduinoUnoR3", "arduino-uno-r3", "UNO R3", "arduino:avr:uno",
+    UNO_R3("io/github/jabrena/juno/annotations/ArduinoUnoR3Board", "arduino-uno-r3", "UNO R3", "arduino:avr:uno",
             ArduinoCore.CLASSIC_AVR, UnoGeneration.R3,
             EnumSet.of(Capability.WIFI, Capability.HTTP_CLIENT, Capability.WATCHDOG)),
-    UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi", "arduino-uno-r4-wifi", "UNO R4 WiFi",
+    UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFiBoard", "arduino-uno-r4-wifi", "UNO R4 WiFi",
             "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO, UnoGeneration.R4,
             EnumSet.of(Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI, Capability.ONBOARD_WIFI,
                     Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
                     Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
-    UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQ", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
+    UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQBoard", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
             ArduinoCore.ZEPHYR, UnoGeneration.Q, EnumSet.of(Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI,
                     Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
@@ -41,7 +41,7 @@ public enum Board {
      * The ATmega4809 board: Wi-Fi, UDP, HTTP, HTTPS and TLS email through its NINA-W102 module ({@code WiFiNINA}), and the
      * GPIO, SPI and analog pins shields such as the SD card, TFT touch and LCD keypad shields use.
      */
-    UNO_R3_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2", "arduino-uno-r3-wifi-rev2", "UNO WiFi Rev2",
+    UNO_R3_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2Board", "arduino-uno-r3-wifi-rev2", "UNO WiFi Rev2",
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
             EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
@@ -54,7 +54,7 @@ public enum Board {
      * {@code java.math}, the double-precision libm its newlib toolchain ships, and structured concurrency over FreeRTOS
      * tasks; the other optional capabilities are not wired to its core yet.
      */
-    NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32", "arduino-nano-esp32", "Nano ESP32",
+    NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32Board", "arduino-nano-esp32", "Nano ESP32",
             "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO,
             EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.ONBOARD_WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER,
@@ -63,7 +63,7 @@ public enum Board {
     /**
      * M5Stack Cardputer: ESP32-S3 support for USB serial, GPIO, SD storage, onboard Wi-Fi, color display, and keyboard.
      */
-    M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputer", "m5stack-cardputer", "M5Stack Cardputer",
+    M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputerBoard", "m5stack-cardputer", "M5Stack Cardputer",
             "m5stack:esp32:m5stack_cardputer", ArduinoCore.ESP32, UnoGeneration.NANO,
             EnumSet.of(Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.M5_DISPLAY, Capability.M5_KEYBOARD));
@@ -88,7 +88,7 @@ public enum Board {
         this.capabilities = Set.copyOf(capabilities);
     }
 
-    /** {@code apiClassName} is a JVM-internal name, e.g. {@code io/github/jabrena/juno/annotations/ArduinoUnoR4WiFi}. */
+    /** {@code apiClassName} is a JVM-internal name, e.g. {@code io/github/jabrena/juno/annotations/ArduinoUnoR4WiFiBoard}. */
     public static Board fromApiClassName(String apiClassName) {
         for (Board board : values()) {
             if (board.apiClassName.equals(apiClassName)) {
@@ -144,7 +144,7 @@ public enum Board {
         return capabilities.contains(capability);
     }
 
-    /** The {@code @Board} annotation argument selecting this board, e.g. {@code ArduinoUnoR4WiFi.class}. */
+    /** The {@code @Board} annotation argument selecting this board, e.g. {@code ArduinoUnoR4WiFiBoard.class}. */
     public String annotationArgument() {
         return apiClassName.substring(apiClassName.lastIndexOf('/') + 1) + ".class";
     }

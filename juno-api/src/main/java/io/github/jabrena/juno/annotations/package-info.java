@@ -4,15 +4,15 @@
  *
  * <ul>
  *   <li>{@link io.github.jabrena.juno.annotations.Board @Board} selects the target Arduino board,
- *       e.g. {@code @Board(ArduinoUnoR4WiFi.class)}. A class with no {@code @Board} annotation
+ *       e.g. {@code @Board(ArduinoUnoR4WiFiBoard.class)}. A class with no {@code @Board} annotation
  *       must receive its target from the build request. {@link io.github.jabrena.juno.annotations.BoardSupported}
  *       is the sealed type token {@code @Board} accepts, implemented by
- *       {@link io.github.jabrena.juno.annotations.ArduinoUnoR3} (its classic 8-bit ATmega328P, under Arduino's AVR
- *       core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi},
- *       {@link io.github.jabrena.juno.annotations.ArduinoUnoQ} (its STM32U585 microcontroller,
- *       under Arduino's Zephyr core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2}
+ *       {@link io.github.jabrena.juno.annotations.ArduinoUnoR3Board} (its classic 8-bit ATmega328P, under Arduino's AVR
+ *       core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard},
+ *       {@link io.github.jabrena.juno.annotations.ArduinoUnoQBoard} (its STM32U585 microcontroller,
+ *       under Arduino's Zephyr core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board}
  *       (its 8-bit ATmega4809, under Arduino's megaAVR core) and
- *       {@link io.github.jabrena.juno.annotations.ArduinoNanoEsp32} (its Xtensa ESP32-S3, under Arduino's ESP32
+ *       {@link io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board} (its Xtensa ESP32-S3, under Arduino's ESP32
  *       core); the linker resolves the selection into a
  *       {@code io.github.jabrena.juno.board.Board} compilation target.</li>
  *   <li>{@link io.github.jabrena.juno.annotations.Watchdog @Watchdog} enables the hardware watchdog

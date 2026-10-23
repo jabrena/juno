@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.blackjack;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Delay;
@@ -35,7 +35,7 @@ import static io.github.jabrena.juno.games.blackjack.SceneRenderer.showMessage;
  * Round flow, cards, controls, rendering, suit sprites and interludes live in focused package
  * collaborators; this class owns the session loop and shared scalar state.
  */
-@Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
+@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
 public final class Blackjack {
     static final int COVER_TIMEOUT_MILLIS = 60_000;
     static final int START_BANK = 100;

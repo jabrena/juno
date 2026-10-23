@@ -68,11 +68,11 @@ class ThreadsTest {
             """;
 
     static Stream<String> boards() {
-        return Stream.of("ArduinoUnoR4WiFi", "ArduinoUnoQ");
+        return Stream.of("ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard");
     }
 
     static Stream<String> cooperativeBoards() {
-        return Stream.of("ArduinoUnoR4WiFi", "ArduinoUnoQ", "ArduinoUnoR3WiFiRev2");
+        return Stream.of("ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard", "ArduinoUnoR3WiFiRev2Board");
     }
 
     static Stream<String> userLevelThreadBodies() {
@@ -85,9 +85,9 @@ class ThreadsTest {
 
     static Stream<Arguments> httpSubtaskBoards() {
         return Stream.of(
-                arguments("ArduinoUnoR4WiFi", 2),
-                arguments("ArduinoUnoR3WiFiRev2", 1),
-                arguments("ArduinoUnoQ", 2));
+                arguments("ArduinoUnoR4WiFiBoard", 2),
+                arguments("ArduinoUnoR3WiFiRev2Board", 1),
+                arguments("ArduinoUnoQBoard", 2));
     }
 
     private CompilationResult compile(String board, String body) throws Exception {
@@ -99,7 +99,7 @@ class ThreadsTest {
     @DisplayName("A started thread enters its runnable through an exported dispatch function")
     void shouldEnterAStartedThreadsRunnableThroughAnExportedDispatchFunction() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoR4WiFi", START_AND_JOIN);
+        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN);
 
         // When & Then
         assertThat(result.assembly()).contains(".global juno_thread_entry", "juno_thread_entry:")
@@ -111,7 +111,7 @@ class ThreadsTest {
     @DisplayName("The runtime shim declares the thread entry and the stack scan")
     void shouldDeclareTheThreadEntryAndTheStackScanInTheShim() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoR4WiFi", START_AND_JOIN);
+        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN);
 
         // When & Then
         assertThat(result.runtimeShim()).contains("extern \"C\" void juno_thread_entry(int32_t runnable);",
@@ -122,7 +122,7 @@ class ThreadsTest {
     @DisplayName("The UNO R4 switches stacks with its own context switch")
     void shouldSwitchStacksOnTheUnoR4WithItsOwnContextSwitch() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
         assertThat(shim).contains("juno_context_switch:", "UNO R4 port").doesNotContain("zephyr/kernel.h");
@@ -132,7 +132,7 @@ class ThreadsTest {
     @DisplayName("The UNO R4 catches an overflow with the stack pointer and reports it from its own stack")
     void shouldCatchAnOverflowOnTheUnoR4WithTheStackPointer() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
         assertThat(shim).as("an overflow is caught by the stack pointer too, and reported from a stack of its own")
@@ -144,7 +144,7 @@ class ThreadsTest {
     @DisplayName("The UNO Q runs each thread on a Zephyr thread passing a baton")
     void shouldRunEachThreadOnAZephyrThreadPassingABaton() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoQ", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoQBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
         assertThat(shim).contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create", "k_sem_give")
@@ -155,7 +155,7 @@ class ThreadsTest {
     @DisplayName("Generated code is bracketed so the tick knows what it may interrupt")
     void shouldBracketGeneratedCodeSoTheTickKnowsWhatItMayInterrupt() throws Exception {
         // Given
-        String assembly = compile("ArduinoUnoR4WiFi", START_AND_JOIN).assembly();
+        String assembly = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).assembly();
 
         // When
         int start = assembly.indexOf("juno_java_code_start:\n");
@@ -171,7 +171,7 @@ class ThreadsTest {
     @DisplayName("The UNO R4 preempts from SysTick through a trampoline")
     void shouldPreemptFromSysTickThroughATrampolineOnTheUnoR4() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
         assertThat(shim).contains("preemptive scheduler", "SysTick_Handler:\\n", "\"  b juno_preempt_tick\\n\"",
@@ -189,7 +189,7 @@ class ThreadsTest {
     @DisplayName("The UNO Q preempts from a Zephyr timer reading the process stack")
     void shouldPreemptFromAZephyrTimerReadingTheProcessStackOnTheUnoQ() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoQ", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoQBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
         assertThat(shim).contains("k_timer_init(&juno_preempt_timer, juno_preempt_expiry, nullptr);",
@@ -202,7 +202,7 @@ class ThreadsTest {
     @DisplayName("AVR context switches preserve the native heap boundary")
     void shouldPreserveTheNativeHeapBoundaryOnAvrContextSwitches() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoR3WiFiRev2", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoR3WiFiRev2Board", START_AND_JOIN).runtimeShim();
 
         // When & Then
         assertThat(shim).contains("extern char* __malloc_heap_end;",
@@ -233,7 +233,7 @@ class ThreadsTest {
     @DisplayName("The tick never redirects a subtask; it switches at the subtask's next backedge")
     void shouldNeverRedirectASubtaskFromTheTickOnTheUnoR4() throws Exception {
         // Given
-        String arm = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        String arm = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
         assertThat(arm).contains("if (inJava && resumable && !juno_slot_cooperative(slot) && juno_preempt_resume[slot] == 0u) {");
@@ -243,7 +243,7 @@ class ThreadsTest {
     @DisplayName("A subtask skips the method-entry safepoint on AVR")
     void shouldSkipTheMethodEntrySafepointForASubtaskOnAvr() throws Exception {
         // Given
-        String avr = compile("ArduinoUnoR3WiFiRev2", START_AND_JOIN).runtimeShim();
+        String avr = compile("ArduinoUnoR3WiFiRev2Board", START_AND_JOIN).runtimeShim();
         String safepoint = avr.substring(avr.indexOf("extern \"C\" void juno_thread_safepoint() {"));
 
         // When & Then
@@ -255,7 +255,7 @@ class ThreadsTest {
     @DisplayName("Every thread switches at a backedge once its slice is over on AVR")
     void shouldSwitchEveryThreadAtABackedgeOnceItsSliceIsOverOnAvr() throws Exception {
         // Given
-        String avr = compile("ArduinoUnoR3WiFiRev2", START_AND_JOIN).runtimeShim();
+        String avr = compile("ArduinoUnoR3WiFiRev2Board", START_AND_JOIN).runtimeShim();
         String backedge = avr.substring(avr.indexOf("extern \"C\" void juno_thread_backedge() {"));
 
         // When & Then
@@ -267,7 +267,7 @@ class ThreadsTest {
     @DisplayName("The tick starts with the first thread")
     void shouldStartTheTickWithTheFirstThread() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
         String start = shim.substring(shim.indexOf("extern \"C\" void juno_thread_start(int32_t handle) {"));
 
         // When & Then
@@ -278,7 +278,7 @@ class ThreadsTest {
     @DisplayName("A backedge takes a deferred switch with no millisecond polling")
     void shouldTakeADeferredSwitchAtABackedgeWithNoMillisecondPolling() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
         String backedge = shim.substring(shim.indexOf("extern \"C\" void juno_thread_backedge() {"));
 
         // When & Then
@@ -292,7 +292,7 @@ class ThreadsTest {
     void shouldMaskInterruptsAroundWideFieldAccessWhenThreadsArePresent() throws Exception {
         // Given
         String body = START_AND_JOIN + "total = total + 3_000_000_000L;\nSerial.println(total);\n";
-        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Wide", programWithLongField("ArduinoUnoR4WiFi", body));
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Wide", programWithLongField("ArduinoUnoR4WiFiBoard", body));
 
         // When
         String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Wide").assembly();
@@ -319,7 +319,7 @@ class ThreadsTest {
     void shouldNotMaskInterruptsAroundWideFieldAccessWithoutThreads() throws Exception {
         // Given
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Wide",
-                programWithLongField("ArduinoUnoR4WiFi", "total = total + 3_000_000_000L;\nSerial.println(total);\n"));
+                programWithLongField("ArduinoUnoR4WiFiBoard", "total = total + 3_000_000_000L;\nSerial.println(total);\n"));
 
         // When
         String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Wide").assembly();
@@ -418,7 +418,7 @@ class ThreadsTest {
     @DisplayName("The UNO Q HTTPS subtasks use two I/O workers and a waiting predicate")
     void shouldUseTwoIoWorkersAndAWaitingPredicateForHttpsSubtasksOnTheUnoQ() throws Exception {
         // Given
-        String shim = parallelHttpsProgramShim("ArduinoUnoQ");
+        String shim = parallelHttpsProgramShim("ArduinoUnoQBoard");
 
         // When & Then
         assertThat(shim).contains("static constexpr uint32_t JUNO_IO_WORKER_COUNT = 2u;",
@@ -426,7 +426,7 @@ class ThreadsTest {
     }
 
     @ParameterizedTest(name = "an HTTP request waits without holding up the other threads on {0}")
-    @ValueSource(strings = {"ArduinoUnoR4WiFi", "ArduinoUnoR3WiFiRev2"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoR3WiFiRev2Board"})
     @DisplayName("An HTTP request waits without holding up the other threads")
     void shouldWaitForAnHttpRequestWithoutHoldingUpTheOtherThreads(String board) throws Exception {
         // Given
@@ -444,7 +444,7 @@ class ThreadsTest {
     @DisplayName("Without threads a wait is the plain delay and the guard is free")
     void shouldMakeAWaitThePlainDelayAndTheGuardFreeWithoutThreads() throws Exception {
         // Given
-        String shim = httpProgramShim("ArduinoUnoR4WiFi", false);
+        String shim = httpProgramShim("ArduinoUnoR4WiFiBoard", false);
 
         // When & Then
         assertThat(shim).contains("static void juno_io_wait(uint32_t millisToWait) {\n  delay(millisToWait);",
@@ -456,7 +456,7 @@ class ThreadsTest {
     @DisplayName("Cancelling a subtask aborts it and releases the devices it holds")
     void shouldAbortASubtaskAndReleaseItsDevicesWhenCancelled() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
         String cancel = shim.substring(shim.indexOf("static void juno_task_cancel(JunoThreadObject* task) {"));
 
         // When & Then
@@ -469,7 +469,7 @@ class ThreadsTest {
     @DisplayName("The cancellation path calls the subtask's abort hook")
     void shouldCallTheSubtaskAbortHookOnCancellation() throws Exception {
         // Given
-        String shim = compile("ArduinoUnoR4WiFi", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
         assertThat(shim).contains("if (entry.abort != nullptr) entry.abort(entry.handle);");
@@ -478,13 +478,13 @@ class ThreadsTest {
     private String unoQNetworkShim(boolean threads) throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import io.github.jabrena.juno.hardware.Arduino;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                @Board(ArduinoUnoQ.class)
+                @Board(ArduinoUnoQBoard.class)
                 public final class Fetch {
                     public static void main() throws Exception {
                         byte[] body = new byte[32];
@@ -568,14 +568,14 @@ class ThreadsTest {
     @DisplayName("A threaded UNO Q program without network calls has no I/O worker")
     void shouldOmitTheIoWorkerForAThreadedUnoQProgramWithoutNetworkCalls() throws Exception {
         // When & Then
-        assertThat(compile("ArduinoUnoQ", START_AND_JOIN).runtimeShim()).doesNotContain("juno_io_worker");
+        assertThat(compile("ArduinoUnoQBoard", START_AND_JOIN).runtimeShim()).doesNotContain("juno_io_worker");
     }
 
     @Test
     @DisplayName("A threaded R4 HTTP program has no I/O worker")
     void shouldOmitTheIoWorkerForAThreadedR4HttpProgram() throws Exception {
         // When & Then
-        assertThat(httpProgramShim("ArduinoUnoR4WiFi", true)).doesNotContain("juno_io_worker", "JUNO_SLOT_WAITING_IO\n");
+        assertThat(httpProgramShim("ArduinoUnoR4WiFiBoard", true)).doesNotContain("juno_io_worker", "JUNO_SLOT_WAITING_IO\n");
     }
 
     @Test
@@ -602,7 +602,7 @@ class ThreadsTest {
     void shouldTurnDelayIntoASleepThatLetsOtherThreadsRun() throws Exception {
         // Given
         String body = START_AND_JOIN + "io.github.jabrena.juno.util.Delay.millis(10);\n";
-        CompilationResult result = compile("ArduinoUnoR4WiFi", body);
+        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", body);
 
         // When & Then
         assertThat(result.assembly()).contains("bl juno_thread_delay").doesNotContain("bl delay\n");
@@ -612,7 +612,7 @@ class ThreadsTest {
     @DisplayName("Sleep and yield alone need no scheduler")
     void shouldNeedNoSchedulerForSleepAndYieldAlone() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoR4WiFi", "Thread.sleep(5);\nThread.yield();\n");
+        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", "Thread.sleep(5);\nThread.yield();\n");
 
         // When & Then
         assertThat(result.assembly()).contains("bl juno_thread_sleep", "bl juno_thread_yield")
@@ -623,7 +623,7 @@ class ThreadsTest {
     @DisplayName("Sleep and yield alone declare the sleep function without scheduler slots")
     void shouldDeclareTheSleepFunctionWithoutSchedulerSlots() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoR4WiFi", "Thread.sleep(5);\nThread.yield();\n");
+        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", "Thread.sleep(5);\nThread.yield();\n");
 
         // When & Then
         assertThat(result.runtimeShim()).contains("extern \"C\" void juno_thread_sleep(int64_t millis)")
@@ -634,7 +634,7 @@ class ThreadsTest {
     @DisplayName("Programs without threads pay nothing for them")
     void shouldPayNothingForThreadsInAProgramWithoutThreads() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoR4WiFi", "Serial.println(3);\n");
+        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", "Serial.println(3);\n");
 
         // When & Then
         assertThat(result.assembly()).doesNotContain("juno_thread");
@@ -644,7 +644,7 @@ class ThreadsTest {
     @DisplayName("A program without threads has no thread runtime in its shim")
     void shouldOmitTheThreadRuntimeFromTheShimOfAProgramWithoutThreads() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoR4WiFi", "Serial.println(3);\n");
+        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", "Serial.println(3);\n");
 
         // When & Then
         assertThat(result.runtimeShim()).doesNotContain("juno_thread", "juno_slots");
@@ -734,7 +734,7 @@ class ThreadsTest {
     @DisplayName("The UNO Q virtual-thread shim uses the Zephyr kernel")
     void shouldUseTheZephyrKernelForVirtualThreadsOnTheUnoQ() throws Exception {
         // When & Then
-        assertThat(compile("ArduinoUnoQ", VIRTUAL_THREAD).runtimeShim())
+        assertThat(compile("ArduinoUnoQBoard", VIRTUAL_THREAD).runtimeShim())
                 .contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create");
     }
 
@@ -743,7 +743,7 @@ class ThreadsTest {
     @DisplayName("User-level threads are rejected at link time")
     void shouldRejectUserLevelThreadsAtLinkTime(String body) throws Exception {
         // Given
-        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Worker", program("ArduinoUnoR4WiFi", body));
+        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Worker", program("ArduinoUnoR4WiFiBoard", body));
 
         // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Worker"))
@@ -753,7 +753,7 @@ class ThreadsTest {
     }
 
     @ParameterizedTest(name = "parallel HTTPS shim compiles as C++ for {0}")
-    @ValueSource(strings = {"ArduinoUnoR4WiFi", "ArduinoUnoQ"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
     @DisplayName("Parallel HTTPS shims compile as C++ on ARM boards")
     void shouldCompileParallelHttpsShimsAsCppOnArmBoards(String board) throws Exception {
         // Given

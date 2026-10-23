@@ -51,7 +51,7 @@ sealed interface CliCommand permits CliCommand.Help, CliCommand.Version, Compile
                 The target board is read from the entry-point class's @Board annotation
                 (io.github.jabrena.juno.annotations.Board), or from the required --board option when the
                 class has no annotation. @Board may declare more than one board (e.g.
-                @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})), in which case --board picks which one
+                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})), in which case --board picks which one
                 this build compiles for.
 
                 inspect options:

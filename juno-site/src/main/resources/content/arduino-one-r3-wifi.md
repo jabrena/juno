@@ -148,7 +148,7 @@ Uploading changes the firmware on a connected physical board. Find its port with
 
 ## Juno compatibility
 
-The UNO WiFi Rev2 is a Juno target: select it with `@Board(ArduinoUnoR3WiFiRev2.class)` (board id
+The UNO WiFi Rev2 is a Juno target: select it with `@Board(ArduinoUnoR3WiFiRev2Board.class)` (board id
 `arduino-uno-r3-wifi-rev2`). Juno compiles for it with a dedicated **AVR backend**, separate from the
 Thumb-2 one the UNO R4 WiFi and UNO Q share, and links against the `arduino:megaavr` core and the
 `WiFiNINA` library.

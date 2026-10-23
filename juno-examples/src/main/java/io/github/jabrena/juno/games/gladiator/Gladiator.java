@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.gladiator;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
 import io.github.jabrena.juno.games.gladiator.net.WifiSettings;
@@ -47,7 +47,7 @@ import io.github.jabrena.juno.util.Random;
  * the touch screen. A strike the victim did not see coming does double damage, which is what the AMBUSH gladiator
  * plays for. All roles use UDP port {@link GladiatorProtocol#PORT}; see {@link GladiatorProtocol} for the packets.
  */
-@Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
+@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
 public final class Gladiator {
     private static final Wifi WIFI = Arduino.getWifi();
 

@@ -220,7 +220,7 @@ class SynchronizationTest {
                     synchronized (GUARD) { }
                 }
                 """;
-        for (String board : new String[]{"ArduinoUnoR4WiFi", "ArduinoUnoQ"}) {
+        for (String board : new String[]{"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"}) {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.%1$s;
