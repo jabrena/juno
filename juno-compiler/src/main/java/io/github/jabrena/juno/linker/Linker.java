@@ -297,6 +297,17 @@ public final class Linker {
         require(required, Capability.SECURE_ENTROPY, Intrinsic.UUID_RANDOM);
         require(required, Capability.LED_MATRIX, Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME,
                 Intrinsic.LED_MATRIX_COLUMNS, Intrinsic.LED_MATRIX_CLEAR);
+        require(required, Capability.M5_DISPLAY, Intrinsic.M5_DISPLAY_BEGIN, Intrinsic.M5_DISPLAY_WIDTH,
+                Intrinsic.M5_DISPLAY_HEIGHT, Intrinsic.M5_DISPLAY_FILL_SCREEN, Intrinsic.M5_DISPLAY_DRAW_PIXEL,
+                Intrinsic.M5_DISPLAY_FILL_RECT, Intrinsic.M5_DISPLAY_SET_CURSOR, Intrinsic.M5_DISPLAY_SET_TEXT_COLOR,
+                Intrinsic.M5_DISPLAY_SET_TEXT_SIZE, Intrinsic.M5_DISPLAY_PRINT_STRING,
+                Intrinsic.M5_DISPLAY_PRINTLN_STRING);
+        require(required, Capability.M5_KEYBOARD, Intrinsic.M5_KEYBOARD_BEGIN, Intrinsic.M5_KEYBOARD_UPDATE,
+                Intrinsic.M5_KEYBOARD_IS_CHANGED, Intrinsic.M5_KEYBOARD_IS_PRESSED,
+                Intrinsic.M5_KEYBOARD_IS_KEY_PRESSED, Intrinsic.M5_KEYBOARD_KEY_COUNT, Intrinsic.M5_KEYBOARD_KEY_AT,
+                Intrinsic.M5_KEYBOARD_IS_SHIFT_PRESSED, Intrinsic.M5_KEYBOARD_IS_CONTROL_PRESSED,
+                Intrinsic.M5_KEYBOARD_IS_ALT_PRESSED, Intrinsic.M5_KEYBOARD_IS_FN_PRESSED,
+                Intrinsic.M5_KEYBOARD_IS_OPTION_PRESSED);
         require(required, Capability.WIFI_ACCESS_POINT, Intrinsic.WIFI_BEGIN_AP);
         // LocalDateTime.now() synchronizes over SNTP, a UDP exchange every Wi-Fi board can make.
         require(required, Capability.WIFI, Intrinsic.LOCAL_DATE_TIME_NOW);
