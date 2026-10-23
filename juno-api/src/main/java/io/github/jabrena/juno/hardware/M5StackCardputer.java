@@ -4,12 +4,14 @@ import io.github.jabrena.juno.hardware.audio.Audio;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
+import io.github.jabrena.juno.hardware.internal.NativeBattery;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.power.Battery;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -56,5 +58,10 @@ public final class M5StackCardputer {
     /** The Cardputer's built-in speaker. */
     public static Audio getAudio() {
         return NativeAudio.audio();
+    }
+
+    /** The Cardputer's built-in battery. Its charge level is estimated; voltage is reported in millivolts. */
+    public static Battery getBattery() {
+        return NativeBattery.battery();
     }
 }

@@ -570,6 +570,10 @@ public final class IntrinsicLowering {
                 ShimFeature.M5_DEVICE, ShimFeature.M5_AUDIO);
         shim(Intrinsic.M5_AUDIO_STOP, "juno_m5_audio_stop", Result.NONE, List.of(),
                 ShimFeature.M5_DEVICE, ShimFeature.M5_AUDIO);
+        shim(Intrinsic.M5_BATTERY_LEVEL_PERCENT, "juno_m5_battery_level_percent", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_BATTERY);
+        shim(Intrinsic.M5_BATTERY_VOLTAGE_MILLIVOLTS, "juno_m5_battery_voltage_millivolts", Result.WORD, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_BATTERY);
         shim(Intrinsic.MOUSE_BEGIN, "juno_mouse_begin", Result.NONE, List.of(), ShimFeature.MOUSE);
         shim(Intrinsic.MOUSE_MOVE, "juno_mouse_move", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.MOUSE);
         shim(Intrinsic.SERVO_OF, "juno_servo_attach", Result.FIRST_ARGUMENT, List.of(arg(0)), ShimFeature.SERVO);

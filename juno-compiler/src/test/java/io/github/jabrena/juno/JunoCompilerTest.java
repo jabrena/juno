@@ -188,6 +188,34 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles Cardputer battery readings through the M5StackCardputer facade")
+        void shouldCompileCardputerBatteryThroughM5StackCardputer() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.M5StackCardputer;
+                    import io.github.jabrena.juno.hardware.power.Battery;
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
+                    public final class CardputerBattery {
+                        public static void main(String[] args) {
+                            Battery battery = M5StackCardputer.getBattery();
+                            battery.levelPercent();
+                            battery.voltageMillivolts();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerBattery", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerBattery");
+
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.assembly()).contains("call8 juno_m5_battery_level_percent",
+                    "call8 juno_m5_battery_voltage_millivolts");
+            assertThat(result.runtimeShim()).contains("#include <M5Cardputer.h>",
+                    "M5Cardputer.Power.getBatteryLevel()", "M5Cardputer.Power.getBatteryVoltage()");
+        }
+
+        @Test
         @DisplayName("Rejects the Cardputer display on another ESP32 board")
         void shouldRejectCardputerDisplayOnAnotherEsp32Board() throws Exception {
             // Given

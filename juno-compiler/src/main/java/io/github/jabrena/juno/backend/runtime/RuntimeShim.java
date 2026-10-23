@@ -218,6 +218,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.M5_AUDIO)) {
             shim.append(runtimeSource.load("common/m5-audio.cpp"));
         }
+        if (uses(ShimFeature.M5_BATTERY)) {
+            shim.append(runtimeSource.load("common/m5-battery.cpp"));
+        }
         if (uses(ShimFeature.MOUSE)) {
             shim.append(shimLibraries.mouseHelpers());
         }
