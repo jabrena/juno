@@ -1,4 +1,6 @@
-package io.github.jabrena.juno.util.mvc;
+package io.github.jabrena.juno.usecases.zelda;
+
+import io.github.jabrena.juno.util.mvc.View;
 
 /** A {@link View} that receives a key transition and the current Fn modifier state. */
 public interface KeyboardView extends View {

@@ -1,9 +1,11 @@
-package io.github.jabrena.juno.util.mvc;
+package io.github.jabrena.juno.usecases.zelda;
 
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.mvc.Navigator;
+import io.github.jabrena.juno.util.mvc.Task;
 
 /** The controller for a keyboard-driven board program using {@link KeyboardView} screens. */
 public final class KeyboardViewRouter implements Navigator {
