@@ -48,10 +48,30 @@ if (sd.begin()) {
 `M5.getWifi()` returns the Cardputer's built-in ESP32-S3 radio. It uses the existing `Wifi` interface for station and
 access point modes, so application services can receive a mock in unit tests.
 
+[`M5CardputerWifi`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifi.java)
+starts an access point and reports its status over USB serial.
+
 ```java
 Wifi wifi = M5.getWifi();
 wifi.beginAP("JunoCardputer", "juno1234");
 Serial.println(wifi.status());
+```
+
+[`M5CardputerWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifiStatusSD.java)
+loads `wifi.ssid` and `wifi.password` from `application.properties` on the Cardputer's microSD card, connects to that
+network, and refreshes the connection state and numeric Wi-Fi status on the built-in display. The properties file uses
+the same format as the other SD-backed Wi-Fi examples:
+
+```properties
+wifi.ssid=your-network
+wifi.password=your-password
+```
+
+Compile and upload it with:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.net.wifi.M5CardputerWifiStatusSD
 ```
 
 ## Display
