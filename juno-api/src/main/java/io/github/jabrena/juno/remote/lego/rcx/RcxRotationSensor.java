@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-/** A rotation sensor plugged into an RCX or Scout input, e.g. {@code new RcxRotationSensor(remote.getSensor1())}. */
+/** A rotation sensor plugged into an RCX input, e.g. {@code new RcxRotationSensor(rcx.getSensor2())}. */
 public final class RcxRotationSensor {
     private final RcxSensor port;
 
-    /** A rotation sensor on {@code port}. Create it once, at startup, and call {@link #begin} after the remote's {@code begin}. */
+    /** A rotation sensor on {@code port}. Create it once, at startup, and call {@link #begin} after {@link RemoteRcx#begin}. */
     public RcxRotationSensor(RcxSensor port) {
         this.port = port;
     }

@@ -27,8 +27,8 @@
  *       Grove Base Shield pin map and allocation-free Grove sensor drivers), {@code lcd} (character LCD
  *       shields), {@code tft} (the ELEGOO 2.8" TFT touch shield and its parallel bus), {@code imu},
  *       {@code servo}, {@code ir}, {@code sd} and {@code kasa}.</li>
- *   <li>{@code remote} — remotely controlled third-party ecosystems: {@code lego} (Powered Up, RCX, Scout and
- *       Power Functions).</li>
+ *   <li>{@code remote} — remotely controlled third-party ecosystems: {@code lego} (Powered Up, RCX and Power
+ *       Functions).</li>
  *   <li>{@code util} — general-purpose utilities: blocking millisecond/microsecond delays
  *       ({@link io.github.jabrena.juno.util.Delay}), seeded pseudorandom numbers
  *       ({@link io.github.jabrena.juno.util.Random}) and UUID byte conversion

@@ -986,43 +986,6 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
-    @Test
-    @DisplayName("A LEGO Scout remote program's shim writes bytes through the library-free IR path")
-    void shouldCompileARemoteScoutProgramsShimWithACppCompiler() throws Exception {
-        // Given
-        String compiler = availableCppCompiler();
-        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
-                import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
-                import io.github.jabrena.juno.remote.lego.scout.RemoteScout;
-                public final class AsmRemoteScout {
-                    public static void main(String[] args) {
-                        RemoteScout scout = new RemoteScout();
-                        scout.begin(-1, 3);
-                        scout.ping();
-                        scout.setMode(RemoteScout.MODE_POWER);
-                        scout.playSound(2);
-                        scout.selectProgram(3);
-                        scout.sendButtons(RemoteRcx.A_FORWARD);
-                        scout.stopAll();
-                        scout.powerOff();
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmRemoteScout", source);
-
-        // When
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmRemoteScout");
-
-        // Then
-        assertThat(result.runtimeShim()).contains("juno_ir_write_byte").doesNotContain("ArduinoBLE.h");
-        Path shim = temporaryDirectory.resolve("AsmRemoteScoutShim.cpp");
-        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-        syntaxCheckCpp(compiler, shim);
-    }
-
     /** {@code ParallelBus} is the core's GPIO port registers on the UNO R4: RA {@code PCNTR3} set/reset stores. */
     @Test
     @DisplayName("A ParallelBus program's shim writes the R4 GPIO port registers and is valid C++")

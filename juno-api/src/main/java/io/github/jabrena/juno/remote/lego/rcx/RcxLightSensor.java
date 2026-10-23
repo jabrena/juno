@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-/** A light sensor plugged into an RCX or Scout input, e.g. {@code new RcxLightSensor(remote.getSensor1())}. */
+/** A light sensor plugged into an RCX input, e.g. {@code new RcxLightSensor(rcx.getSensor3())}. */
 public final class RcxLightSensor {
     private final RcxSensor port;
 
-    /** A light sensor on {@code port}. Create it once, at startup, and call {@link #begin} after the remote's {@code begin}. */
+    /** A light sensor on {@code port}. Create it once, at startup, and call {@link #begin} after {@link RemoteRcx#begin}. */
     public RcxLightSensor(RcxSensor port) {
         this.port = port;
     }

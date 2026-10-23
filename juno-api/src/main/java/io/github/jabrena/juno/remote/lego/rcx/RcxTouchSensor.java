@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-/** A touch sensor plugged into an RCX or Scout input, e.g. {@code new RcxTouchSensor(remote.getSensor1())}. */
+/** A touch sensor plugged into an RCX input, e.g. {@code new RcxTouchSensor(rcx.getSensor1())}. */
 public final class RcxTouchSensor {
     private final RcxSensor port;
 
-    /** A touch sensor on {@code port}. Create it once, at startup, and call {@link #begin} after the remote's {@code begin}. */
+    /** A touch sensor on {@code port}. Create it once, at startup, and call {@link #begin} after {@link RemoteRcx#begin}. */
     public RcxTouchSensor(RcxSensor port) {
         this.port = port;
     }
