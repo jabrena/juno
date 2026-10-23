@@ -11,16 +11,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("M5")
+@DisplayName("M5StackCardputer")
 class M5Test {
     @Test
     @DisplayName("The Cardputer's SD socket is one shared card on GPIO12")
     void shouldHandOutOneSdCardOnGpio12() {
         // When
-        SdCard card = M5.getSd();
+        SdCard card = M5StackCardputer.getSd();
 
         // Then
-        assertThat(card).isSameAs(M5.getSd()).isInstanceOf(NativeSdCard.class);
+        assertThat(card).isSameAs(M5StackCardputer.getSd()).isInstanceOf(NativeSdCard.class);
         assertThat(((NativeSdCard) card).chipSelectPin()).isEqualTo(12);
     }
 
@@ -28,14 +28,14 @@ class M5Test {
     @DisplayName("The Cardputer's Wi-Fi radio is one shared instance")
     void shouldHandOutOneWifiInstance() {
         // When & Then
-        assertThat(M5.getWifi()).isSameAs(M5.getWifi()).isSameAs(NativeWifi.INSTANCE);
+        assertThat(M5StackCardputer.getWifi()).isSameAs(M5StackCardputer.getWifi()).isSameAs(NativeWifi.INSTANCE);
     }
 
     @Test
     @DisplayName("The Cardputer's display is one shared instance")
     void shouldHandOutOneDisplayInstance() {
         // When & Then
-        assertThat(M5.getDisplay()).isSameAs(M5.getDisplay()).isSameAs(NativeDisplay.INSTANCE);
+        assertThat(M5StackCardputer.getDisplay()).isSameAs(M5StackCardputer.getDisplay()).isSameAs(NativeDisplay.INSTANCE);
     }
 
     @Test
@@ -51,6 +51,6 @@ class M5Test {
     @DisplayName("The Cardputer's keyboard is one shared instance")
     void shouldHandOutOneKeyboardInstance() {
         // When & Then
-        assertThat(M5.getKeyboard()).isSameAs(M5.getKeyboard()).isSameAs(NativeKeyboard.INSTANCE);
+        assertThat(M5StackCardputer.getKeyboard()).isSameAs(M5StackCardputer.getKeyboard()).isSameAs(NativeKeyboard.INSTANCE);
     }
 }

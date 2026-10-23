@@ -11,7 +11,7 @@ import java.io.InputStream;
  * {@link io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield#getSdCard()},
  * {@link io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield#getSdCard()} or
  * {@link io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier#getSdCard()}, or from
- * {@link io.github.jabrena.juno.hardware.M5#getSd()} for the Cardputer's built-in socket. A unit test passes
+ * {@link io.github.jabrena.juno.hardware.M5StackCardputer#getSd()} for the Cardputer's built-in socket. A unit test passes
  * {@code mock(SdCard.class)} instead.
  *
  * <p>Call {@link #begin()} for the chip-select pin of the socket the card came from, or {@link #begin(int)} for

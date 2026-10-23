@@ -76,19 +76,18 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Compiles Cardputer Wi-Fi access through the M5 facade")
-        void shouldCompileCardputerWifiThroughM5() throws Exception {
+        @DisplayName("Compiles Cardputer Wi-Fi access through the M5StackCardputer facade")
+        void shouldCompileCardputerWifiThroughM5StackCardputer() throws Exception {
             // Given
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.annotations.M5Cardputer;
-                    import io.github.jabrena.juno.hardware.M5;
+                                        import io.github.jabrena.juno.hardware.M5StackCardputer;
                     import io.github.jabrena.juno.hardware.net.Wifi;
-                    @Board(M5Cardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
                     public final class CardputerWifi {
                         public static void main(String[] args) {
-                            Wifi wifi = M5.getWifi();
+                            Wifi wifi = M5StackCardputer.getWifi();
                             wifi.beginAP("JunoCardputer", "juno1234");
                             wifi.status();
                         }
@@ -106,19 +105,18 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Compiles Cardputer display access through the M5 facade")
-        void shouldCompileCardputerDisplayThroughM5() throws Exception {
+        @DisplayName("Compiles Cardputer display access through the M5StackCardputer facade")
+        void shouldCompileCardputerDisplayThroughM5StackCardputer() throws Exception {
             // Given
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.annotations.M5Cardputer;
-                    import io.github.jabrena.juno.hardware.M5;
+                                        import io.github.jabrena.juno.hardware.M5StackCardputer;
                     import io.github.jabrena.juno.hardware.display.Display;
-                    @Board(M5Cardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
                     public final class CardputerDisplay {
                         public static void main(String[] args) {
-                            Display display = M5.getDisplay();
+                            Display display = M5StackCardputer.getDisplay();
                             display.begin();
                             display.fillScreen(Display.BLACK);
                             display.drawPixel(1, 2, Display.RED);
@@ -168,11 +166,11 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.M5;
+                    import io.github.jabrena.juno.hardware.M5StackCardputer;
                     @Board(ArduinoNanoEsp32.class)
                     public final class NanoDisplay {
                         public static void main(String[] args) {
-                            M5.getDisplay().begin();
+                            M5StackCardputer.getDisplay().begin();
                         }
                     }
                     """;
@@ -181,24 +179,23 @@ class JunoCompilerTest {
             // When & Then
             assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoDisplay"))
                     .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("M5.getDisplay requires @Board(M5Cardputer.class)");
+                    .hasMessageContaining("M5StackCardputer.getDisplay requires @Board(M5StackCardputer.class)");
         }
 
         @Test
-        @DisplayName("Compiles Cardputer keyboard access through the M5 facade")
-        void shouldCompileCardputerKeyboardThroughM5() throws Exception {
+        @DisplayName("Compiles Cardputer keyboard access through the M5StackCardputer facade")
+        void shouldCompileCardputerKeyboardThroughM5StackCardputer() throws Exception {
             // Given
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.annotations.M5Cardputer;
-                    import io.github.jabrena.juno.hardware.M5;
+                                        import io.github.jabrena.juno.hardware.M5StackCardputer;
                     import io.github.jabrena.juno.hardware.keyboard.Keyboard;
-                    @Board(M5Cardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
                     public final class CardputerKeyboard {
                         public static void main(String[] args) {
-                            M5.getDisplay().begin();
-                            Keyboard keyboard = M5.getKeyboard();
+                            M5StackCardputer.getDisplay().begin();
+                            Keyboard keyboard = M5StackCardputer.getKeyboard();
                             keyboard.begin();
                             keyboard.update();
                             if (keyboard.isChanged() && keyboard.isPressed()) {
@@ -250,11 +247,11 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.M5;
+                    import io.github.jabrena.juno.hardware.M5StackCardputer;
                     @Board(ArduinoNanoEsp32.class)
                     public final class NanoKeyboard {
                         public static void main(String[] args) {
-                            M5.getKeyboard().begin();
+                            M5StackCardputer.getKeyboard().begin();
                         }
                     }
                     """;
@@ -263,7 +260,7 @@ class JunoCompilerTest {
             // When & Then
             assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoKeyboard"))
                     .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("M5.getKeyboard requires @Board(M5Cardputer.class)");
+                    .hasMessageContaining("M5StackCardputer.getKeyboard requires @Board(M5StackCardputer.class)");
         }
 
         @Test
@@ -1066,16 +1063,15 @@ class JunoCompilerTest {
         Path temporaryDirectory;
 
         @Test
-        @DisplayName("Compiles an M5 Cardputer Hello World through Serial")
+        @DisplayName("Compiles a Cardputer Hello World through Serial")
         void shouldCompileM5CardputerHelloWorldToUsbSerial() throws Exception {
             // Given
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.annotations.M5Cardputer;
-                    import io.github.jabrena.juno.hardware.serial.BaudRate;
+                                        import io.github.jabrena.juno.hardware.serial.BaudRate;
                     import io.github.jabrena.juno.hardware.serial.Serial;
-                    @Board(M5Cardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
                     public final class M5HelloWorld {
                         public static void main(String[] args) {
                             Serial.begin(BaudRate.BAUD_115200);
@@ -1623,18 +1619,17 @@ class JunoCompilerTest {
         Path temporaryDirectory;
 
         @Test
-        @DisplayName("Lowers the Cardputer's built-in SD card through the M5 facade")
-        void shouldLowerTheCardputerSdCardThroughM5() throws Exception {
+        @DisplayName("Lowers the Cardputer's built-in SD card through the M5StackCardputer facade")
+        void shouldLowerTheCardputerSdCardThroughM5StackCardputer() throws Exception {
             // Given
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.annotations.M5Cardputer;
-                    import io.github.jabrena.juno.hardware.M5;
+                                        import io.github.jabrena.juno.hardware.M5StackCardputer;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
-                    @Board(M5Cardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
                     public final class CardputerSd {
-                        private static final SdCard SD = M5.getSd();
+                        private static final SdCard SD = M5StackCardputer.getSd();
                         public static void main(String[] args) {
                             if (SD.begin()) SD.exists("settings.txt");
                         }

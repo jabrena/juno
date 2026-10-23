@@ -70,16 +70,16 @@ class BoardTest {
 
     @Test
     @DisplayName("The M5Stack Cardputer resolves to its ESP32-S3 target")
-    void shouldResolveM5CardputerTarget() {
+    void shouldResolveM5StackCardputerTarget() {
         // Given
         Board board = Board.fromId("M5STACK-CARDPUTER");
 
         // When & Then
         assertThat(board).isEqualTo(Board.M5_CARDPUTER);
-        assertThat(board.annotationArgument()).isEqualTo("M5Cardputer.class");
+        assertThat(board.annotationArgument()).isEqualTo("M5StackCardputer.class");
         assertThat(board.fqbn()).isEqualTo("m5stack:esp32:m5stack_cardputer");
         assertThat(board.core()).isEqualTo(ArduinoCore.ESP32);
-        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/M5Cardputer")).isEqualTo(board);
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/M5StackCardputer")).isEqualTo(board);
     }
 
     @Test

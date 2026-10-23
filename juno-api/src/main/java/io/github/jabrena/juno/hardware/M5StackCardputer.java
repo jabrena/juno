@@ -15,12 +15,12 @@ import org.jspecify.annotations.Nullable;
  * compiler's intrinsics. Get each device once at startup and pass it to the classes that need it; a unit test passes a
  * mock of the device interface instead.
  */
-public final class M5 {
+public final class M5StackCardputer {
     private static final int SD_CHIP_SELECT = 12;
 
     private static @Nullable SdCard sdCard;
 
-    private M5() {
+    private M5StackCardputer() {
     }
 
     /**

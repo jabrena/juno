@@ -2,7 +2,7 @@ package io.github.jabrena.juno.hardware.display;
 
 /**
  * A board display with RGB565 colors, basic drawing operations and text output. Implementations are supplied by a
- * board facade such as {@link io.github.jabrena.juno.hardware.M5#getDisplay()} so application code can receive a mock
+ * board facade such as {@link io.github.jabrena.juno.hardware.M5StackCardputer#getDisplay()} so application code can receive a mock
  * in unit tests.
  */
 public interface Display {

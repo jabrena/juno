@@ -63,7 +63,7 @@ public enum Board {
     /**
      * M5Stack Cardputer: ESP32-S3 support for USB serial, GPIO, SD storage, onboard Wi-Fi, color display, and keyboard.
      */
-    M5_CARDPUTER("io/github/jabrena/juno/annotations/M5Cardputer", "m5stack-cardputer", "M5Stack Cardputer",
+    M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputer", "m5stack-cardputer", "M5Stack Cardputer",
             "m5stack:esp32:m5stack_cardputer", ArduinoCore.ESP32, UnoGeneration.NANO,
             EnumSet.of(Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.M5_DISPLAY, Capability.M5_KEYBOARD));

@@ -2,7 +2,7 @@ package io.github.jabrena.juno.hardware.internal;
 
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 
-/** The M5Stack Cardputer's {@link Keyboard}, implemented by compiler intrinsics over M5Cardputer.Keyboard. */
+/** The M5Stack Cardputer's {@link Keyboard}, implemented by compiler intrinsics over M5StackCardputer.Keyboard. */
 public final class NativeKeyboard implements Keyboard {
     public static final NativeKeyboard INSTANCE;
 
@@ -16,12 +16,12 @@ public final class NativeKeyboard implements Keyboard {
     private NativeKeyboard() {
     }
 
-    /** The keyboard the M5 facade hands out. */
+    /** The keyboard the M5StackCardputer facade hands out. */
     public static Keyboard keyboard() {
         return keyboard;
     }
 
-    /** Makes the M5 facade hand out {@code replacement}: for a whole-program emulator in a test, never on the board. */
+    /** Makes the M5StackCardputer facade hand out {@code replacement}: for a whole-program emulator in a test, never on the board. */
     public static void setKeyboard(Keyboard replacement) {
         keyboard = replacement;
     }

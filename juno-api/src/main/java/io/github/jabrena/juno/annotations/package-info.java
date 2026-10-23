@@ -5,7 +5,7 @@
  * <ul>
  *   <li>{@link io.github.jabrena.juno.annotations.Board @Board} selects the target Arduino board,
  *       e.g. {@code @Board(ArduinoUnoR4WiFi.class)}. A class with no {@code @Board} annotation
- *       must receive its target from the build request. {@link io.github.jabrena.juno.annotations.ArduinoBoard}
+ *       must receive its target from the build request. {@link io.github.jabrena.juno.annotations.BoardSupported}
  *       is the sealed type token {@code @Board} accepts, implemented by
  *       {@link io.github.jabrena.juno.annotations.ArduinoUnoR3} (its classic 8-bit ATmega328P, under Arduino's AVR
  *       core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi},
