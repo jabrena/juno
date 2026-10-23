@@ -76,35 +76,6 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Compiles Cardputer GPIO access through the M5 facade")
-        void shouldCompileCardputerGpioThroughM5() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.annotations.M5Cardputer;
-                    import io.github.jabrena.juno.hardware.M5;
-                    import io.github.jabrena.juno.hardware.gpio.Gpio;
-                    @Board(M5Cardputer.class)
-                    public final class CardputerGpio {
-                        public static void main(String[] args) {
-                            Gpio gpio = M5.getGpio();
-                            gpio.pinMode(Gpio.getD2(), Gpio.getOutput());
-                            gpio.digitalWrite(Gpio.getD2(), true);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerGpio", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerGpio");
-
-            // Then
-            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
-            assertThat(result.assembly()).contains("movi a10, 2", "call8 juno_pin_mode", "call8 juno_digital_write");
-        }
-
-        @Test
         @DisplayName("Compiles Cardputer Wi-Fi access through the M5 facade")
         void shouldCompileCardputerWifiThroughM5() throws Exception {
             // Given

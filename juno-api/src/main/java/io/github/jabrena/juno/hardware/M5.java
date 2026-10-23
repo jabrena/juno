@@ -2,9 +2,7 @@ package io.github.jabrena.juno.hardware;
 
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
-import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
-import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
@@ -23,11 +21,6 @@ public final class M5 {
     private static @Nullable SdCard sdCard;
 
     private M5() {
-    }
-
-    /** The Cardputer's GPIO pins, including GPIO1 and GPIO2 on its HY2.0-4P port. */
-    public static Gpio getGpio() {
-        return NativeGpio.gpio();
     }
 
     /**

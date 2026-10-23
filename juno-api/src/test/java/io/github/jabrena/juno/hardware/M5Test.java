@@ -3,7 +3,6 @@ package io.github.jabrena.juno.hardware;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
-import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
@@ -14,13 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("M5")
 class M5Test {
-    @Test
-    @DisplayName("The Cardputer's pins are one shared instance")
-    void shouldHandOutOneGpioInstance() {
-        // When & Then
-        assertThat(M5.getGpio()).isSameAs(M5.getGpio()).isSameAs(NativeGpio.INSTANCE);
-    }
-
     @Test
     @DisplayName("The Cardputer's SD socket is one shared card on GPIO12")
     void shouldHandOutOneSdCardOnGpio12() {
