@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
@@ -37,7 +37,7 @@ import java.util.Properties;
  * On UNO Q, Linux must already be connected to Wi-Fi; the credentials loaded from the SD card
  * are used only by the UNO R4 WiFi.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class WeatherTFT {
     private static final Wifi WIFI = Arduino.getWifi();
     private static final SdCard SD_CARD = TftTouchShield.getSdCard();

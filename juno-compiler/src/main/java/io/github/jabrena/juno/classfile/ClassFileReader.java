@@ -245,7 +245,7 @@ public final class ClassFileReader {
             }
         }
         if (isBoard && boardApiClassNames.isEmpty()) {
-            throw new CompileException("@Board requires at least one board, e.g. @Board(ArduinoUnoR4WiFiBoard.class)");
+            throw new CompileException("@Board requires at least one board, e.g. @Board(ArduinoOneR4WiFiBoard.class)");
         }
         return new ClassAnnotations(boardApiClassNames, watchdogTimeoutMillis);
     }

@@ -53,12 +53,12 @@ example below does.
 ## Example: showing which button is pressed
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 
-@Board(ArduinoUnoR4WiFiBoard.class)
+@Board(ArduinoOneR4WiFiBoard.class)
 public final class LcdKeypadDemo {
     public static void main(String[] args) {
         LcdKeypadShield lcd = new LcdKeypadShield();

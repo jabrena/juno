@@ -1,12 +1,12 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** Virtual threads on the preemptive scheduler: start, join, isAlive, sleep and yield on each board's thread port. */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class VirtualThreadsApi {
     private static final int[] COUNT = new int[1];
 

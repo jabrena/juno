@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.texasholdem;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -43,7 +43,7 @@ import static io.github.jabrena.juno.games.texasholdem.Table.playHand;
  * hand evaluation, deck helpers, controls, rendering, card sprites and interludes are separated
  * into package collaborators; this class orchestrates the tournament and owns shared scalar state.
  */
-@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
+@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
 public final class TexasHoldem {
     private static final Clock CLOCK = Arduino.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;

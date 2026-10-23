@@ -5,7 +5,7 @@ package io.github.jabrena.juno.annotations;
  * microcontroller (Cortex-M33) under Arduino's Zephyr core. Its LED matrix and Wi-Fi belong to the
  * board's Linux side, so the {@code LedMatrix} and network intrinsics are not available.
  */
-public final class ArduinoUnoQBoard implements BoardSupported {
-    private ArduinoUnoQBoard() {
+public final class ArduinoOneQBoard implements BoardSupported {
+    private ArduinoOneQBoard() {
     }
 }

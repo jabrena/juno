@@ -57,11 +57,11 @@ class CrossMethodExceptionsTest {
 
     private static final String TRY_WITH_RESOURCES = """
             package demo;
-            import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-            import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+            import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+            import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
             import io.github.jabrena.juno.annotations.Board;
             import io.github.jabrena.juno.hardware.serial.Serial;
-            @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+            @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
             public final class Resources {
                 static final class Pin implements AutoCloseable {
                     final int number;
@@ -277,7 +277,7 @@ class CrossMethodExceptionsTest {
     void shouldCloseTheResourceOnBothPathsAndRethrow() throws Exception {
         // Given
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Resources",
-                TRY_WITH_RESOURCES.replace("@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})\n", ""));
+                TRY_WITH_RESOURCES.replace("@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})\n", ""));
         IrProgram program = optimized("demo.Resources");
         IrMethod use = method(program, "use");
 
@@ -298,7 +298,7 @@ class CrossMethodExceptionsTest {
     void shouldRaiseOnTheExceptionalPathOfTryWithResources() throws Exception {
         // Given
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Resources",
-                TRY_WITH_RESOURCES.replace("@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})\n", ""));
+                TRY_WITH_RESOURCES.replace("@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})\n", ""));
         IrMethod use = method(optimized("demo.Resources"), "use");
 
         // When & Then
@@ -310,7 +310,7 @@ class CrossMethodExceptionsTest {
     void shouldPollOncePerUseCallInMain() throws Exception {
         // Given
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Resources",
-                TRY_WITH_RESOURCES.replace("@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})\n", ""));
+                TRY_WITH_RESOURCES.replace("@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})\n", ""));
 
         // When & Then
         assertThat(count(method(optimized("demo.Resources"), "main"), Intrinsic.THROW_CATCH)).isEqualTo(2);

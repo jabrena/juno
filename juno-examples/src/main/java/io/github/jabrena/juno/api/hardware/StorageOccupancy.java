@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.api.hardware;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
+import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.BoardMemory;
@@ -24,7 +24,7 @@ import io.github.jabrena.juno.util.Delay;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
+@Board({ArduinoOneR3Board.class, ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class, ArduinoOneR3WiFiRev2Board.class})
 public final class StorageOccupancy {
     private StorageOccupancy() {
     }

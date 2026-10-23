@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.led;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.Delay;
  * Cycles a filled circle and an outlined circle, centered on the built-in LED matrix,
  * using {@code LedCanvas}.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class LedMatrixCircles {
     private static final int CENTER_X = 5;
     private static final int CENTER_Y = 3;

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.supabase.publisher;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
@@ -33,7 +33,7 @@ import java.time.LocalDateTime;
  * Wi-Fi, TLS and the sensor drivers together exceed the UNO WiFi Rev2's 48 KiB of flash, so the program targets the
  * UNO R4 WiFi and UNO Q.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class SupabaseGroveTemperatures {
     private static final Wifi WIFI = Arduino.getWifi();
 

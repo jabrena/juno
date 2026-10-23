@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.language.concurrency;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -19,7 +19,7 @@ import java.util.concurrent.StructuredTaskScope.Subtask;
  * one subtask fails, the join throws, and the long-running sibling is cancelled. The sleeps are long enough that the
  * outcomes come out the same on every run.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class StructuredRace {
     private static final long FAST_MS = 20;
     private static final long SLOW_MS = 200;

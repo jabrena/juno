@@ -1,8 +1,8 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * itself and report starvation. Then three threads hammer shared counters through a monitor, an atomic and a lock,
  * so a preemption between a read and its write would show up as a lost update.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class, ArduinoOneR3WiFiRev2Board.class})
 public final class Preemption {
     static final Guard MONITOR = new Guard();
     static final ReentrantLock LOCK = new ReentrantLock();

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -10,7 +10,7 @@ import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
-@Board(ArduinoUnoR4WiFiBoard.class)
+@Board(ArduinoOneR4WiFiBoard.class)
 public final class HttpsMethods {
     private static final Wifi WIFI = Arduino.getWifi();
 

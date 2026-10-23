@@ -106,10 +106,10 @@ procedure.
 Annotate the Java entry point to select the UNO Q:
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.Board;
 
-@Board(ArduinoUnoQBoard.class)
+@Board(ArduinoOneQBoard.class)
 public final class Example {
     public static void main(String[] args) {
         // Program executed by the STM32U585.

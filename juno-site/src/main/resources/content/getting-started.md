@@ -39,7 +39,7 @@ This is a multi-module Maven build:
   (`io.github.jabrena.juno`: `util.Delay`, `hardware.time.Clock`, `util.Random`, `hardware.led.LedMatrix`, `hardware.gpio.Gpio`,
   `hardware.gpio.DigitalOutput`, `hardware.device.lcd.LcdKeypadShield`, `hardware.device.tft.TftTouchShield`, `hardware.hid.Mouse`, `hardware.serial.Serial`, …) and the
   `io.github.jabrena.juno.annotations` package
-  (`Board`, `BoardSupported`, `ArduinoUnoR4WiFiBoard`, `ArduinoUnoQBoard`) that entry-point classes use to select a
+  (`Board`, `BoardSupported`, `ArduinoOneR4WiFiBoard`, `ArduinoOneQBoard`) that entry-point classes use to select a
   compilation target. This is the only artifact programs compile against.
 - [`juno-compiler/`](https://github.com/jabrena/juno/tree/main/juno-compiler) — the Juno compiler itself (`classfile`, `bytecode`,
   `linker`, `backend`, …), which depends on `juno-api`. Builds `juno-compiler/target/juno-compiler-<version>.jar`, an
@@ -93,12 +93,12 @@ Hardware operations are normal Java native declarations at compile time and comp
 at link time:
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 
-@Board(ArduinoUnoR4WiFiBoard.class)
+@Board(ArduinoOneR4WiFiBoard.class)
 public final class Blink {
     public static void main(String[] args) {
         DigitalOutput led = DigitalOutput.of(13);
@@ -128,10 +128,10 @@ Juno compiles for, and `juno:verify`/`juno:upload` build for its Arduino CLI FQB
 
 | Annotation | Board | FQBN |
 |---|---|---|
-| `@Board(ArduinoUnoQBoard.class)` | Arduino UNO Q (its STM32U585 microcontroller) | `arduino:zephyr:unoq` |
-| `@Board(ArduinoUnoR4WiFiBoard.class)` | Arduino UNO R4 WiFi | `arduino:renesas_uno:unor4wifi` |
-| `@Board(ArduinoUnoR3WiFiRev2Board.class)` | Arduino UNO R3 WiFi Rev2 | `arduino:megaavr:uno2018` |
-| `@Board(ArduinoUnoR3Board.class)` | Arduino UNO R3 | `arduino:avr:uno` |
+| `@Board(ArduinoOneQBoard.class)` | Arduino UNO Q (its STM32U585 microcontroller) | `arduino:zephyr:unoq` |
+| `@Board(ArduinoOneR4WiFiBoard.class)` | Arduino UNO R4 WiFi | `arduino:renesas_uno:unor4wifi` |
+| `@Board(ArduinoOneR3WiFiRev2Board.class)` | Arduino UNO R3 WiFi Rev2 | `arduino:megaavr:uno2018` |
+| `@Board(ArduinoOneR3Board.class)` | Arduino UNO R3 | `arduino:avr:uno` |
 | `@Board(ArduinoNanoEsp32Board.class)` | Arduino Nano ESP32 (GPIO, delays and serial so far; see [Nano ESP32](../arduino-nano-esp32)) | `arduino:esp32:nano_nora` |
 
 A class with no `@Board` annotation is not restricted to one board: it builds for the board named by
@@ -147,7 +147,7 @@ compile time for the selected board. The TFT games
 target the UNO Q:
 
 ```java
-@Board(ArduinoUnoQBoard.class)
+@Board(ArduinoOneQBoard.class)
 public final class RedBaron {
 ```
 

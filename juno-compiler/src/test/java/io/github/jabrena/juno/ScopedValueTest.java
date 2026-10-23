@@ -46,10 +46,10 @@ class ScopedValueTest {
 
     static Stream<Arguments> boardsAndPrograms() {
         return Stream.of(
-                arguments("ArduinoUnoR4WiFiBoard", STANDALONE),
-                arguments("ArduinoUnoR4WiFiBoard", THREADED),
-                arguments("ArduinoUnoQBoard", STANDALONE),
-                arguments("ArduinoUnoQBoard", THREADED));
+                arguments("ArduinoOneR4WiFiBoard", STANDALONE),
+                arguments("ArduinoOneR4WiFiBoard", THREADED),
+                arguments("ArduinoOneQBoard", STANDALONE),
+                arguments("ArduinoOneQBoard", THREADED));
     }
 
     @Test

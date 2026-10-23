@@ -117,7 +117,7 @@ the full explanation, including the `--add-opens` JVM flags this goal needs (alr
   Juno derived from the entry point's `@Board` annotation; the plugin logs a warning whenever an
   override changes the effective target.
 - **"@Board declares multiple boards ...; pass the target board explicitly":** the entry point's
-  `@Board` lists more than one board (e.g. `@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})`);
+  `@Board` lists more than one board (e.g. `@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})`);
   add `-Djuno.board=<id>` naming one of them, as printed in the error.
 - **`.env` values aren't visible to `System.getenv` at compile time:** confirm the module's build
   actually runs `juno:env` (an `<execution>` with goal `env`) before `process-classes`, and that

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -34,7 +34,7 @@ import io.github.jabrena.juno.util.Random;
  * circles); {@link Hud} and {@link Interludes} own the header and the non-gameplay screens. This
  * class only orchestrates the game loop.
  */
-@Board(ArduinoUnoQBoard.class)
+@Board(ArduinoOneQBoard.class)
 public final class MissileCommand {
     private static final Clock CLOCK = Arduino.getClock();
     private static final int FRAME_MILLIS = 20;

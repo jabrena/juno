@@ -83,7 +83,7 @@ class AtomicsTest {
     @DisplayName("Every atomic operation becomes one shim call")
     void shouldBecomeOneShimCallForEveryAtomicOperation() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", ALL_THREE);
+        CompilationResult result = compile("ArduinoOneR4WiFiBoard", ALL_THREE);
 
         // When & Then
         assertThat(result.assembly()).contains("bl juno_atomic_int_new", "bl juno_atomic_long_new_default",
@@ -96,7 +96,7 @@ class AtomicsTest {
     @DisplayName("The runtime shim declares the atomic entry points")
     void shouldDeclareTheAtomicEntryPointsInTheRuntimeShim() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", ALL_THREE);
+        CompilationResult result = compile("ArduinoOneR4WiFiBoard", ALL_THREE);
 
         // When & Then
         assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_atomic_int_new(int32_t value)",
@@ -109,10 +109,10 @@ class AtomicsTest {
         // Given
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Plain", """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                @Board(ArduinoUnoR4WiFiBoard.class)
+                @Board(ArduinoOneR4WiFiBoard.class)
                 public final class Plain {
                     public static void main() {
                         Serial.println(3);
@@ -133,10 +133,10 @@ class AtomicsTest {
         // Given
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Plain", """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                @Board(ArduinoUnoR4WiFiBoard.class)
+                @Board(ArduinoOneR4WiFiBoard.class)
                 public final class Plain {
                     public static void main() {
                         Serial.println(3);
@@ -155,7 +155,7 @@ class AtomicsTest {
     @DisplayName("An atomic needs no scheduler or monitor")
     void shouldNeedNoSchedulerOrMonitorForAnAtomic() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoQBoard", ALL_THREE);
+        CompilationResult result = compile("ArduinoOneQBoard", ALL_THREE);
 
         // When & Then
         assertThat(result.runtimeShim()).doesNotContain("juno_thread", "juno_monitor");
@@ -166,7 +166,7 @@ class AtomicsTest {
     @DisplayName("Atomic API outside the subset fails at link time")
     void shouldFailAtLinkTimeForAtomicApiOutsideTheSubset(String name, String body) throws Exception {
         // Given
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Counter", program("ArduinoUnoR4WiFiBoard", body));
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Counter", program("ArduinoOneR4WiFiBoard", body));
 
         // When & Then
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Counter"))
@@ -174,7 +174,7 @@ class AtomicsTest {
     }
 
     @ParameterizedTest(name = "{0} shim compiles as C++")
-    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
+    @ValueSource(strings = {"ArduinoOneR4WiFiBoard", "ArduinoOneQBoard"})
     @DisplayName("Both ports' runtime shims compile as C++")
     void shouldCompileBothPortsRuntimeShimsAsCpp(String board) throws Exception {
         // Given

@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
+import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.net.tcp.Tcp;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
@@ -11,7 +11,7 @@ import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** Joining a network, a UDP exchange, a TCP exchange and a plain-HTTP request through the retired Arduino WiFi Shield on a UNO R3. */
-@Board(ArduinoUnoR3Board.class)
+@Board(ArduinoOneR3Board.class)
 public final class WifiShieldApi {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);

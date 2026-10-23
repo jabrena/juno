@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.grove.sensors;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
@@ -15,7 +15,7 @@ import io.github.jabrena.juno.util.Delay;
  * Monitors the new Grove sensor batch: DHT11 on D4, temperature v1.2 on A0, sound v1.6 on A1,
  * and light v1.2 on A2.
  */
-@Board({ArduinoUnoR3WiFiRev2Board.class})
+@Board({ArduinoOneR3WiFiRev2Board.class})
 public final class GroveSensorBatchMonitor {
     private static final GroveBaseShield SHIELD = new GroveBaseShield();
     private static final int DHT11_PIN = SHIELD.getD4();

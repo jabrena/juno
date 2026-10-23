@@ -24,7 +24,7 @@ Then flash a game by its class name. Every game in this page lists its own comma
 `juno:upload` finds the board by itself, or takes `-Djuno.port=<PORT>`. To check that a game builds without touching any hardware, use `juno:verify` instead of `juno:upload`.
 
 Most games target one board, so that single command is all they need. A few, like Tempest, declare
-`@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})` because they use nothing board-specific — for
+`@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})` because they use nothing board-specific — for
 those, add `-Djuno.board=<id>` (`arduino-uno-q` or `arduino-uno-r4-wifi`) to say which one to build for; omitting it
 when more than one board is declared fails with the list of choices instead of guessing.
 

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.grove.sensors;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveAnalogGas;
@@ -14,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
  * Diagnoses a Grove compass on I2C, an analog gas sensor on A0, and a PIR on D3. A compass on D8
  * or an analog gas sensor on D7 cannot be read correctly; move those plugs before running.
  */
-@Board({ArduinoUnoR3WiFiRev2Board.class})
+@Board({ArduinoOneR3WiFiRev2Board.class})
 public final class GroveSensorWiringMonitor {
     private GroveSensorWiringMonitor() {
     }

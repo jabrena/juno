@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -47,7 +47,7 @@ import io.github.jabrena.juno.util.Random;
  * it, and {@link Hud} and {@link Interludes} show the header and the opening. This class runs the game
  * and is the one place that dispatches on the {@link Round}.
  */
-@Board(ArduinoUnoQBoard.class)
+@Board(ArduinoOneQBoard.class)
 public final class EmpireStrikesBack {
     private static final Clock CLOCK = Arduino.getClock();
     private static final int FRAME_MILLIS = 40;

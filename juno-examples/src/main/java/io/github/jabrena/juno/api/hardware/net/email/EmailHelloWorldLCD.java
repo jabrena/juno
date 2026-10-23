@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.email;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
@@ -23,7 +23,7 @@ import io.github.jabrena.juno.util.Delay;
  * #DELIVERY_POLL_ATTEMPTS} times — until it goes up. Every step is logged to Serial, including
  * whether delivery was actually confirmed or the poll gave up waiting.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class EmailHelloWorldLCD {
     private static final Wifi WIFI = Arduino.getWifi();
 
