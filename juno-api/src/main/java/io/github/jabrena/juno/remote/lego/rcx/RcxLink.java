@@ -3,13 +3,11 @@ package io.github.jabrena.juno.remote.lego.rcx;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.scout.RemoteScout;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * The RCX family's infrared framing, shared by {@link RemoteRcx} and {@link RemoteScout}: a message is
- * {@code 55 FF 00} followed by the opcode, its arguments and a checksum, each byte followed by its
- * complement. Plain Java on top of {@link Infrared}.
+ * The RCX infrared framing: a message is {@code 55 FF 00} followed by the opcode, its arguments and a checksum, each
+ * byte followed by its complement. Plain Java on top of {@link Infrared}.
  */
 public final class RcxLink {
     private final Clock clock;
@@ -27,7 +25,7 @@ public final class RcxLink {
     static final int BAUD = 2400;
     static final int OPCODE_REMOTE = 0xD2;
     static final int OPCODE_MESSAGE = 0xF7;
-    /** Bit 3 of an opcode toggles on each message, so a brick can tell a repeat from a new command. */
+    /** Bit 3 of a repeated opcode toggles, so a brick can tell a retry from a new command. */
     private static final int OPCODE_TOGGLE = 0x08;
     /** A frame's bytes follow each other within a few bit times; a longer silence ends it. */
     private static final int GAP_MICROS = 3000;
@@ -41,7 +39,7 @@ public final class RcxLink {
     int opcode;
     int argument0;
     int argument1;
-    private boolean toggle;
+    private int lastCommand = -1;
     private boolean receiveEnabled;
     /** The opcode, up to ten arguments and the checksum: the longest reply decoded, the brick's version report. */
     private static final int FRAME_VALUES = 12;
@@ -130,8 +128,11 @@ public final class RcxLink {
 
     /** Transmits {@code opcode} with {@code arguments} (0..3) arguments {@code first}, {@code second} and {@code third}. */
     void send(int opcode, int first, int second, int third, int arguments) {
-        toggle = !toggle;
-        int code = toggle ? opcode | OPCODE_TOGGLE : opcode;
+        int code = opcode;
+        if (code == lastCommand) {
+            code ^= OPCODE_TOGGLE;
+        }
+        lastCommand = code;
         sendFrame(code, first, second, third, arguments);
     }
 
