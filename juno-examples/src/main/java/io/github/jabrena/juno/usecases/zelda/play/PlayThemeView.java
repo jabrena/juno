@@ -17,21 +17,12 @@ public final class PlayThemeView implements KeyboardView, Task {
     private static final int DOWN = '.';
     private static final int HEADER_HEIGHT = 28;
     private static final int FOOTER_TOP = 107;
-    private static final int THEME_TEXT_SIZE = 3;
+    private static final int THEME_TEXT_SIZE = 2;
     private static final int TITLE_TOP = 35;
-    private static final int TITLE_LEFT = 4;
-    private static final int CHARACTER_WIDTH = 6 * THEME_TEXT_SIZE;
-    private static final int MARQUEE_FRAME_PERIOD = 5;
-    private static final int MARQUEE_STEP_PIXELS = 3;
-    private static final int MARQUEE_PAUSE_FRAMES = 10;
 
     private final Navigator navigator;
     private final Display display;
     private final ZeldaOcarinaModel model;
-    private int marqueeFrameCounter;
-    private int marqueeOffset;
-    private int marqueeDirection;
-    private int marqueePauseFrames;
 
     public PlayThemeView(Navigator navigator, Display display, ZeldaOcarinaModel model) {
         this.navigator = navigator;
@@ -42,40 +33,12 @@ public final class PlayThemeView implements KeyboardView, Task {
     @Override
     public void enter() {
         model.startTheme();
-        resetMarquee();
         draw();
     }
 
     @Override
     public void render() {
-        marqueeFrameCounter = marqueeFrameCounter + 1;
-        if (marqueeFrameCounter < MARQUEE_FRAME_PERIOD) {
-            return;
-        }
-        marqueeFrameCounter = 0;
-
-        String title = model.themeTitle();
-        int maximumOffset = title.length() * CHARACTER_WIDTH - (240 - TITLE_LEFT);
-        if (maximumOffset <= 0) {
-            return;
-        }
-        if (marqueePauseFrames > 0) {
-            marqueePauseFrames = marqueePauseFrames - 1;
-            return;
-        }
-
-        marqueeOffset = marqueeOffset + marqueeDirection * MARQUEE_STEP_PIXELS;
-        if (marqueeOffset >= maximumOffset) {
-            marqueeOffset = maximumOffset;
-            marqueeDirection = -1;
-            marqueePauseFrames = MARQUEE_PAUSE_FRAMES;
-        } else if (marqueeOffset <= 0) {
-            marqueeOffset = 0;
-            marqueeDirection = 1;
-            marqueePauseFrames = MARQUEE_PAUSE_FRAMES;
-        }
-        display.fillRect(0, TITLE_TOP, 240, THEME_TEXT_SIZE * 8, Display.BLACK);
-        drawThemeTitle();
+        // Playback advances in the background; redraw only when its visible state changes.
     }
 
     private void draw() {
@@ -98,16 +61,10 @@ public final class PlayThemeView implements KeyboardView, Task {
     }
 
     private void drawThemeTitle() {
-        String title = model.themeTitle();
         display.setTextSize(THEME_TEXT_SIZE);
         display.setTextColor(Display.YELLOW, Display.BLACK);
-        for (int index = 0; index < title.length(); index++) {
-            int x = TITLE_LEFT + index * CHARACTER_WIDTH - marqueeOffset;
-            if (x > -CHARACTER_WIDTH && x < 240) {
-                display.setCursor(x, TITLE_TOP);
-                display.print(title.charAt(index));
-            }
-        }
+        display.setCursor(0, TITLE_TOP);
+        display.println(model.themeTitle());
     }
 
     private void drawStatus() {
@@ -158,12 +115,5 @@ public final class PlayThemeView implements KeyboardView, Task {
 
     @Override
     public void touch(int x, int y) {
-    }
-
-    private void resetMarquee() {
-        marqueeFrameCounter = 0;
-        marqueeOffset = 0;
-        marqueeDirection = 1;
-        marqueePauseFrames = MARQUEE_PAUSE_FRAMES;
     }
 }
