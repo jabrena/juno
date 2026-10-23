@@ -16,8 +16,8 @@ public final class ThemeSelectorView implements KeyboardView {
     private static final int UP = ';';
     private static final int DOWN = '.';
     private static final int VISIBLE_ROWS = 6;
-    private static final int FIRST_ROW_Y = 9;
-    private static final int ROW_HEIGHT = 16;
+    private static final int FIRST_ROW_Y = 2;
+    private static final int ROW_HEIGHT = 17;
 
     private final Navigator navigator;
     private final Display display;
@@ -47,7 +47,7 @@ public final class ThemeSelectorView implements KeyboardView {
 
     private void draw() {
         display.fillScreen(Display.BLACK);
-        display.setTextSize(1);
+        display.setTextSize(2);
 
         int lastVisibleIndex = firstVisibleIndex + VISIBLE_ROWS;
         if (lastVisibleIndex > ZeldaSoundtrackThemes.COUNT) {
@@ -55,9 +55,10 @@ public final class ThemeSelectorView implements KeyboardView {
         }
         for (int index = firstVisibleIndex; index < lastVisibleIndex; index++) {
             display.setTextColor(themeSelected && index == selectedThemeIndex ? Display.YELLOW : Display.WHITE, Display.BLACK);
-            display.setCursor(12, FIRST_ROW_Y + (index - firstVisibleIndex) * ROW_HEIGHT);
+            display.setCursor(4, FIRST_ROW_Y + (index - firstVisibleIndex) * ROW_HEIGHT);
             display.println(ZeldaSoundtrackThemes.label(index));
         }
+        display.setTextSize(1);
         display.setTextColor(Display.CYAN, Display.BLACK);
         if (firstVisibleIndex > 0) {
             display.setCursor(224, 6);
