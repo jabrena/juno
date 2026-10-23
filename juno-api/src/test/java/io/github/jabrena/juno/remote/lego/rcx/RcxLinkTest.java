@@ -66,8 +66,8 @@ class RcxLinkTest {
     }
 
     @Test
-    @DisplayName("Send alternates the toggle between frames")
-    void shouldAlternateTheToggleBetweenFrames() {
+    @DisplayName("Send toggles repeated command opcodes")
+    void shouldToggleRepeatedCommandOpcodes() {
         // Given
         link.send(0x13, 0, 0, 0);
         int first = Infrared.written.get(3);
@@ -79,6 +79,38 @@ class RcxLinkTest {
 
         // Then
         assertThat(first ^ second).isEqualTo(0x08);
+    }
+
+    @Test
+    @DisplayName("Send leaves the toggle clear when the command changes")
+    void shouldLeaveTheToggleClearWhenTheCommandChanges() {
+        // Given
+        link.send(0x13, 0, 0, 0);
+        int first = Infrared.written.get(3);
+        Infrared.written.clear();
+
+        // When
+        link.send(0x21, 0, 0, 0);
+        int second = Infrared.written.get(3);
+
+        // Then
+        assertThat(first).isEqualTo(0x13);
+        assertThat(second).isEqualTo(0x21);
+    }
+
+    @Test
+    @DisplayName("Remote-control frames always use the fixed 0xD2 opcode")
+    void shouldNotToggleTheRemoteControlOpcode() {
+        // When
+        link.sendButtons(RemoteRcx.SOUND);
+        int first = Infrared.written.get(3);
+        Infrared.written.clear();
+        link.sendButtons(RemoteRcx.SOUND);
+        int second = Infrared.written.get(3);
+
+        // Then
+        assertThat(first).isEqualTo(0xD2);
+        assertThat(second).isEqualTo(0xD2);
     }
 
     @Test

@@ -2,10 +2,9 @@ package io.github.jabrena.juno.remote.lego.rcx;
 
 /**
  * The RCX's direct commands that answer back, the protocol under {@link RemoteRcx}'s motors, sensors, display, sound
- * and battery (as LeJOS builds {@code RemoteNXT} on {@code NXTCommand}); use {@link RemoteRcx} in a program, and this
- * class to share the commands with another brick of the family, as {@code ScoutRemote} does. Set up the link with
- * {@link RemoteRcx#begin} or {@link RcxLink#begin} first, with both the IR LED and the IR receiver module wired. Plain
- * Java on {@link io.github.jabrena.juno.hardware.device.ir.Infrared}.
+ * and battery (as LeJOS builds {@code RemoteNXT} on {@code NXTCommand}); use {@link RemoteRcx} in a program. Set up the
+ * link with {@link RemoteRcx#begin} or {@link RcxLink#begin} first, with both the IR LED and the IR receiver module
+ * wired. Plain Java on {@link io.github.jabrena.juno.hardware.device.ir.Infrared}.
  *
  * <p>Each call is a request and a reply, which takes 100 ms or more; they return {@code -1} when the
  * brick does not answer (out of range, off, or the IR LED not pointing at it). The opcode and argument encodings have
