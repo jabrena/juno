@@ -11,12 +11,12 @@ public final class ZeldaSoundtrackThemes {
     public static final int COUNT = 6;
 
     private static final String[] LABELS = {
-        "1 ZELDA",
-        "2 LOST WOODS",
-        "3 KAKARIKO",
-        "4 FAIRY",
-        "5 TEMPLE",
-        "6 GANONDORF"
+        "ZELDA",
+        "LOST WOODS",
+        "KAKARIKO",
+        "FAIRY",
+        "TEMPLE",
+        "GANONDORF"
     };
 
     private static final String[] TITLES = {
