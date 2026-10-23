@@ -16,6 +16,6 @@
   <extension>
     <groupId>com.github.seregamorph</groupId>
     <artifactId>maven-timeline-extension</artifactId>
-    <version>0.7</version>
+    <version>0.8</version>
   </extension>
 </extensions>
