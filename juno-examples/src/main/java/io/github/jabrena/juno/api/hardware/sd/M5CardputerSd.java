@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.m5stack;
+package io.github.jabrena.juno.api.hardware.sd;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5Cardputer;
