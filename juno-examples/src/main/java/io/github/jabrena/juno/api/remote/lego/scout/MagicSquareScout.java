@@ -5,7 +5,7 @@ import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
-import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
+import io.github.jabrena.juno.remote.lego.scout.RemoteScout;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -23,18 +23,18 @@ public class MagicSquareScout {
     private static final int STOP_MILLIS = 2000;
     private static final int REPEAT_MILLIS = 100;
 
-    private final ScoutRemote scout;
+    private final RemoteScout scout;
 
-    MagicSquareScout(ScoutRemote scout) {
+    MagicSquareScout(RemoteScout scout) {
         this.scout = scout;
     }
 
     public static void main(String[] args) {
-        ScoutRemote scout = new ScoutRemote();
+        RemoteScout scout = new RemoteScout();
         Serial.begin(BaudRate.BAUD_115200);
         MagicSquareScout app = new MagicSquareScout(scout);
         scout.begin(-1, TRANSMIT_PIN);
-        scout.setMode(ScoutRemote.MODE_POWER);
+        scout.setMode(RemoteScout.MODE_POWER);
 
         while (true) {
             Serial.println("Straight");

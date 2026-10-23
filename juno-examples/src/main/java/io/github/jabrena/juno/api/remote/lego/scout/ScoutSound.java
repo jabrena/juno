@@ -2,62 +2,49 @@ package io.github.jabrena.juno.api.remote.lego.scout;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
+import io.github.jabrena.juno.remote.lego.scout.RemoteScout;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Plays sound on a Scout brick's own speaker over infrared, after printing its battery voltage over Serial: first the six built-in sounds, then
- * "Ode to Joy" as a series of tones of chosen pitch and length, forever. Wire an IR LED with a series
- * resistor to pin 3 and an IR receiver module to pin 2 (the brick acknowledges tone and battery commands), both
- * pointed at the Scout. Pick the board with {@code -Djuno.board}.
+ * Selects each Scout sound group and activates the brick's SOUND remote-control command over infrared. Scout
+ * firmware does not execute the RCX arbitrary-tone opcode as a direct IR command, so remote control can trigger its
+ * predefined sound effects but cannot play a pitched melody. Wire an IR LED with a series resistor to pin 3 and an IR
+ * receiver module to pin 2, both pointed at the Scout. Pick the board with {@code -Djuno.board}.
  */
 public class ScoutSound {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
-    private static final int SOUNDS = 6;
-    private static final int NOTES = 15;
-    private static final int SOUND_PAUSE_MILLIS = 1500;
-    private static final int NOTE_CENTISECONDS = 30;
-    private static final int NOTE_GAP_MILLIS = 60;
-    private static final int TUNE_PAUSE_SECONDS = 3;
-
-    private static final int C4 = 262;
-    private static final int D4 = 294;
-    private static final int E4 = 330;
-    private static final int F4 = 349;
-    private static final int G4 = 392;
-
-    private final ScoutRemote scout;
-
-    ScoutSound(ScoutRemote scout) {
-        this.scout = scout;
-    }
+    private static final int SERIAL_STARTUP_MILLIS = 500;
+    private static final int REMOTE_REPEATS = 3;
+    private static final int REMOTE_REPEAT_MILLIS = 70;
+    private static final int SOUND_PAUSE_SECONDS = 3;
 
     public static void main(String[] args) {
-        ScoutRemote scout = new ScoutRemote();
+        RemoteScout scout = new RemoteScout();
         Serial.begin(BaudRate.BAUD_115200);
-        ScoutSound app = new ScoutSound(scout);
         scout.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        Serial.println("Scout battery: " + scout.batteryMillivolts() + " mV");
+        Delay.millis(SERIAL_STARTUP_MILLIS);
+        scout.setMode(RemoteScout.MODE_POWER);
+        Delay.millis(500);
+        scout.unmuteSound();
+        Delay.millis(200);
 
         while (true) {
-            for (int sound = 0; sound < SOUNDS; sound++) {
-                Serial.println("Built-in sound " + sound);
-                scout.playSound(sound);
-                Delay.millis(SOUND_PAUSE_MILLIS);
+            for (int soundSet = RemoteScout.SOUND_SET_BASIC;
+                    soundSet <= RemoteScout.SOUND_SET_SCIENCE;
+                    soundSet++) {
+                Serial.print("Scout sound group ");
+                Serial.println(soundSet);
+                scout.selectSoundSet(soundSet);
+                Delay.millis(200);
+                for (int repeat = 0; repeat < REMOTE_REPEATS; repeat++) {
+                    scout.sendButtons(RemoteRcx.SOUND);
+                    Delay.millis(REMOTE_REPEAT_MILLIS);
+                }
+                scout.sendButtons(0);
+                Delay.seconds(SOUND_PAUSE_SECONDS);
             }
-            Serial.println("Ode to Joy");
-            app.playTune();
-            Delay.seconds(TUNE_PAUSE_SECONDS);
-        }
-    }
-
-    /** Ode to Joy: E E F G, G F E D, C C D E, E D D. */
-    private void playTune() {
-        int[] notes = {E4, E4, F4, G4, G4, F4, E4, D4, C4, C4, D4, E4, E4, D4, D4};
-        for (int i = 0; i < NOTES; i++) {
-            scout.playTone(notes[i], NOTE_CENTISECONDS);
-            Delay.millis(NOTE_CENTISECONDS * 10 + NOTE_GAP_MILLIS);
         }
     }
 }

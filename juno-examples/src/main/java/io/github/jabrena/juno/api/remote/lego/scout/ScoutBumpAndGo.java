@@ -4,8 +4,9 @@ import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
-import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
+import io.github.jabrena.juno.remote.lego.rcx.RcxTouchSensor;
+import io.github.jabrena.juno.remote.lego.scout.RemoteScout;
+import io.github.jabrena.juno.remote.lego.scout.ScoutMotor;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -22,26 +23,34 @@ public class ScoutBumpAndGo {
     private static final Clock CLOCK = Arduino.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
-    private static final int LEFT_BUMPER = ScoutRemote.INPUT_1;
-    private static final int RIGHT_BUMPER = ScoutRemote.INPUT_2;
-    private static final int BUMP_SOUND = 1;
+    private static final int BUMP_SOUND = RemoteScout.SOUND_TOUCH_1_PRESSED;
     private static final int BACK_MILLIS = 1000;
     private static final int TURN_MILLIS = 700;
     private static final int STOP_MILLIS = 500;
 
-    private final ScoutRemote scout;
+    private final RemoteScout scout;
+    private final ScoutMotor leftMotor;
+    private final ScoutMotor rightMotor;
+    private final RcxTouchSensor leftBumper;
+    private final RcxTouchSensor rightBumper;
+    private int lastLeft = 2;
+    private int lastRight = 2;
 
-    ScoutBumpAndGo(ScoutRemote scout) {
+    ScoutBumpAndGo(RemoteScout scout) {
         this.scout = scout;
+        this.leftMotor = scout.getMotorA();
+        this.rightMotor = scout.getMotorB();
+        this.leftBumper = new RcxTouchSensor(scout.getSensor1());
+        this.rightBumper = new RcxTouchSensor(scout.getSensor2());
     }
 
     public static void main(String[] args) {
-        ScoutRemote scout = new ScoutRemote();
+        RemoteScout scout = new RemoteScout();
         Serial.begin(BaudRate.BAUD_115200);
         ScoutBumpAndGo app = new ScoutBumpAndGo(scout);
         scout.begin(RECEIVE_PIN, TRANSMIT_PIN);
-        scout.setMode(ScoutRemote.MODE_POWER);
-        if (!scout.setTouchSensor(LEFT_BUMPER) || !scout.setTouchSensor(RIGHT_BUMPER)) {
+        scout.setMode(RemoteScout.MODE_POWER);
+        if (!app.leftBumper.begin() || !app.rightBumper.begin()) {
             Serial.println("The Scout did not answer: is it in range, with the IR receiver wired?");
             return;
         }
@@ -59,10 +68,10 @@ public class ScoutBumpAndGo {
     /** Which bumper is pressed: 0 none, 1 left, 2 right, 3 both. */
     private int bumped() {
         int pressed = 0;
-        if (scout.isPressed(LEFT_BUMPER)) {
+        if (leftBumper.isPressed()) {
             pressed += 1;
         }
-        if (scout.isPressed(RIGHT_BUMPER)) {
+        if (rightBumper.isPressed()) {
             pressed += 2;
         }
         return pressed;
@@ -90,19 +99,15 @@ public class ScoutBumpAndGo {
         }
     }
 
-    /** Drives each side {@code -1} (backwards), {@code 0} (stopped) or {@code 1} (forwards) with a remote command. */
+    /** Drives each side {@code -1} (backwards), {@code 0} (stopped) or {@code 1} (forwards). */
     private void move(int left, int right) {
-        int buttons = 0;
-        if (left > 0) {
-            buttons |= RemoteRcx.A_FORWARD;
-        } else if (left < 0) {
-            buttons |= RemoteRcx.A_BACKWARD;
+        if (left != lastLeft) {
+            leftMotor.drive(left);
+            lastLeft = left;
         }
-        if (right > 0) {
-            buttons |= RemoteRcx.B_FORWARD;
-        } else if (right < 0) {
-            buttons |= RemoteRcx.B_BACKWARD;
+        if (right != lastRight) {
+            rightMotor.drive(right);
+            lastRight = right;
         }
-        scout.sendButtons(buttons);
     }
 }
