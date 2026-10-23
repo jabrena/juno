@@ -7,10 +7,13 @@ import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.usecases.zelda.common.KeyboardViewRouter;
+import io.github.jabrena.juno.usecases.zelda.common.mvc.KeyboardViewRouter;
+import io.github.jabrena.juno.usecases.zelda.common.ux.Footer;
+import io.github.jabrena.juno.usecases.zelda.common.ux.OptionList;
 import io.github.jabrena.juno.usecases.zelda.cover.CoverView;
 import io.github.jabrena.juno.usecases.zelda.play.PlayThemeView;
 import io.github.jabrena.juno.usecases.zelda.selector.ThemeSelectorView;
+import io.github.jabrena.juno.usecases.zelda.theme.ZeldaThemeOptions;
 import io.github.jabrena.juno.util.Delay;
 
 /** Zelda fan app for the Cardputer: cover, theme selection, and ocarina playback screens. */
@@ -37,9 +40,11 @@ public final class ZeldaOcarinaCardputer {
 
         ZeldaOcarinaModel model = new ZeldaOcarinaModel(M5StackCardputer.getAudio());
         KeyboardViewRouter controller = new KeyboardViewRouter(FRAME_MILLIS, keyboard);
-        PlayThemeView play = new PlayThemeView(controller, display, model);
+        Footer footer = new Footer(display);
+        OptionList themeOptions = new OptionList(display, new ZeldaThemeOptions());
+        PlayThemeView play = new PlayThemeView(controller, display, model, footer);
         controller.register(COVER, new CoverView(controller, display));
-        controller.register(SELECTOR, new ThemeSelectorView(controller, display, model));
+        controller.register(SELECTOR, new ThemeSelectorView(controller, model, themeOptions, footer));
         controller.register(PLAY, play);
         controller.background(play);
         controller.start(COVER);

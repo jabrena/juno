@@ -3,7 +3,8 @@ package io.github.jabrena.juno.usecases.zelda.play;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.usecases.zelda.ZeldaOcarinaModel;
-import io.github.jabrena.juno.usecases.zelda.common.KeyboardView;
+import io.github.jabrena.juno.usecases.zelda.common.mvc.KeyboardView;
+import io.github.jabrena.juno.usecases.zelda.common.ux.Footer;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.Task;
 
@@ -16,18 +17,20 @@ public final class PlayThemeView implements KeyboardView, Task {
     private static final int UP = ';';
     private static final int DOWN = '.';
     private static final int HEADER_HEIGHT = 28;
-    private static final int FOOTER_TOP = 107;
     private static final int THEME_TEXT_SIZE = 2;
     private static final int TITLE_TOP = 35;
+    private static final String FOOTER_LEGEND = "Back: Esc | Volume: ^v | Stop: Enter";
 
     private final Navigator navigator;
     private final Display display;
     private final ZeldaOcarinaModel model;
+    private final Footer footer;
 
-    public PlayThemeView(Navigator navigator, Display display, ZeldaOcarinaModel model) {
+    public PlayThemeView(Navigator navigator, Display display, ZeldaOcarinaModel model, Footer footer) {
         this.navigator = navigator;
         this.display = display;
         this.model = model;
+        this.footer = footer;
     }
 
     @Override
@@ -46,7 +49,7 @@ public final class PlayThemeView implements KeyboardView, Task {
         drawHeader();
         drawThemeTitle();
         drawStatus();
-        drawFooter();
+        footer.draw(FOOTER_LEGEND);
     }
 
     private void drawHeader() {
@@ -72,15 +75,6 @@ public final class PlayThemeView implements KeyboardView, Task {
         display.setTextColor(Display.GREEN, Display.BLACK);
         display.setCursor(4, 72);
         display.println(model.isPlaying() ? "PLAYING" : "STOPPED");
-    }
-
-    private void drawFooter() {
-        display.setTextSize(1);
-        display.fillRect(0, FOOTER_TOP, 240, 28, Display.BLUE);
-        display.fillRect(0, FOOTER_TOP, 240, 2, Display.YELLOW);
-        display.setTextColor(Display.WHITE, Display.BLUE);
-        display.setCursor(4, 117);
-        display.println("Back: Esc | Volume: ^v | Stop: Enter");
     }
 
     @Override

@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.usecases.zelda.common;
+package io.github.jabrena.juno.usecases.zelda.common.mvc;
 
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
