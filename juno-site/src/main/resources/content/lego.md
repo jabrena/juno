@@ -201,7 +201,7 @@ ramps a train motor on port A up to cruising speed, brakes, and repeats in rever
 LED to show the direction:
 
 ```java
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class LegoTrain {
     private static final int MOTOR = PoweredUpHubRemote.PORT_A;
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();

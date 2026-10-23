@@ -143,7 +143,7 @@ class StructuredTaskScopeTest {
     }
 
     @ParameterizedTest(name = "cancelling nested scopes compiles as C++ for {0}")
-    @ValueSource(strings = {"ArduinoUnoR4WiFi", "ArduinoUnoQ"})
+    @ValueSource(strings = {"ArduinoOneR4WiFiBoard", "ArduinoOneQBoard"})
     @DisplayName("Cancelling a task cancels its inner scopes and releases its monitors")
     void shouldCancelATaskAndItsInnerScopesAndReleaseItsMonitors(String board) throws Exception {
         // Given
@@ -164,7 +164,7 @@ class StructuredTaskScopeTest {
     }
 
     @ParameterizedTest(name = "generated runtime compiles as C++ for {0}")
-    @ValueSource(strings = {"ArduinoUnoR4WiFi", "ArduinoUnoQ"})
+    @ValueSource(strings = {"ArduinoOneR4WiFiBoard", "ArduinoOneQBoard"})
     @DisplayName("The generated structured-task runtime compiles for both board ports")
     void shouldCompileTheGeneratedStructuredTaskRuntimeForBothBoardPorts(String board) throws Exception {
         // Given

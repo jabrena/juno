@@ -30,6 +30,12 @@ public enum Capability {
             return board.displayName() + " has no M5Stack Cardputer keyboard";
         }
     },
+    M5_AUDIO("M5StackCardputer.getAudio") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no M5Stack Cardputer speaker";
+        }
+    },
     WIFI("Wifi") {
         @Override
         public String unsupportedReason(Board board) {

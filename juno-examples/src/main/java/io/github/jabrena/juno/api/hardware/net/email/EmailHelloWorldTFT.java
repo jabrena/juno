@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.email;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -18,7 +18,7 @@ import io.github.jabrena.juno.util.Delay;
  * Progress and the final result are shown on the ELEGOO 2.8" TFT touch shield and logged to
  * Serial. On UNO Q, Linux must already be connected to Wi-Fi.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class EmailHelloWorldTFT {
     private static final Wifi WIFI = Arduino.getWifi();
 

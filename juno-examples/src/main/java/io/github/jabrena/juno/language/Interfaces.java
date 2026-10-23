@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.language.Interfaces.Scale;
 import io.github.jabrena.juno.util.Delay;
 
 /** Demonstrates closed-world interface dispatch with two reachable implementations. */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class Interfaces {
 
     public static void main(String[] args) {

@@ -1,8 +1,8 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.Wifi;
 
 /** Joining a network, then a UDP exchange and a TCP exchange. */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class, ArduinoOneR3WiFiRev2Board.class})
 public final class WifiUdpApi {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);

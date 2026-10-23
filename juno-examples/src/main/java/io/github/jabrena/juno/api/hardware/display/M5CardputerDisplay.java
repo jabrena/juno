@@ -1,11 +1,12 @@
 package io.github.jabrena.juno.api.hardware.display;
 
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.hardware.M5StackCardputer;
 import io.github.jabrena.juno.hardware.display.Display;
 
 /** Draws colored shapes and text on the Cardputer's built-in display. */
-@Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
+@Board(M5StackCardputerBoard.class)
 public final class M5CardputerDisplay {
     private M5CardputerDisplay() {
     }

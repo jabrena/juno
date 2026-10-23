@@ -1,13 +1,14 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.hardware.M5StackCardputer;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /** Starts a Wi-Fi access point on the Cardputer and reports its status over USB serial. */
-@Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
+@Board(M5StackCardputerBoard.class)
 public final class M5CardputerWifi {
     private M5CardputerWifi() {
     }

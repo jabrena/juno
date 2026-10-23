@@ -22,10 +22,10 @@ caller-owned buffers) this guide relies on. This is the end-user reference for u
 Wi-Fi, HTTP, and HTTPS require an UNO R4 WiFi entry point:
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoOneR4WiFiBoard.class)
 public final class InternetExample {
     // ...
 }
@@ -379,7 +379,7 @@ This example connects with build-time credentials, requests Madrid's current tem
 the JSON type, and prints an integer temperature over USB serial once a minute:
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -389,7 +389,7 @@ import io.github.jabrena.juno.hardware.net.http.Json;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.net.Wifi;
 
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoOneR4WiFiBoard.class)
 public final class InternetExample {
     private static final Wifi WIFI = Arduino.getWifi();
 

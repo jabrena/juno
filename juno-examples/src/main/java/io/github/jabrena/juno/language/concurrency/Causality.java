@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.language.concurrency;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -11,7 +11,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * JLS 17.4.8: circular reasoning cannot create values out of thin air. Neither conditional write can occur unless a
  * read first observes the value that only the other conditional write could produce.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class, ArduinoUnoR3WiFiRev2.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class, ArduinoOneR3WiFiRev2Board.class})
 public final class Causality {
     private int x;
     private int y;

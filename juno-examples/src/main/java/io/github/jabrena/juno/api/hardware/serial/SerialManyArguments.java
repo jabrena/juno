@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.serial;
 
-import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -16,7 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * <p>Every helper calls itself once, so none is inlined and each call really passes its words. The board's USB port
  * re-enumerates when the program starts, so it waits two seconds before the first line.
  */
-@Board(ArduinoNanoEsp32.class)
+@Board(ArduinoNanoEsp32Board.class)
 public final class SerialManyArguments {
     /** An operation over eight words: the receiver, six {@code int}s and one more on the stack. */
     interface Weigher {

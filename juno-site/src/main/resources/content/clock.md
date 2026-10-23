@@ -42,13 +42,13 @@ the classic single-LED blink.
 ## Example: non-blocking periodic action
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoOneR4WiFiBoard.class)
 public final class ClockBlink {
     private static final int LED_PIN = 13;
     private static final int BUTTON_PIN = 2;

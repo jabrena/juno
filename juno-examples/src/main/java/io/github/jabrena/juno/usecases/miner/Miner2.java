@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -35,7 +35,7 @@ import java.util.UUID;
  * BLOCKS shows that board. Everything runs on the main thread, so the program needs no thread stack
  * and no lock, and the UNO R4 WiFi builds without {@code -Djuno.Xss}.
  */
-@Board({ArduinoUnoQ.class, ArduinoUnoR4WiFi.class})
+@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
 public final class Miner2 {
     private static final int INITIAL_BITS = 12;
     private static final int RETARGET_INTERVAL = 8;

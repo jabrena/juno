@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.led;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
@@ -15,7 +15,7 @@ import io.github.jabrena.juno.util.Delay;
  * "wholeDigit.fractionDigit" fits as a single 9-column group, centered with 1 column to spare on
  * each side.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class LedMatrixDecimalCountUp {
     public static void main(String[] args) {
         LedMatrix matrix = Arduino.getLedMatrix();

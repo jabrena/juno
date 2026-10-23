@@ -43,13 +43,13 @@ arguments within that range — a larger value wraps around instead of clamping.
 ## Example: moving the pointer in a square
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoOneR4WiFiBoard.class)
 public final class MouseSquare {
     private static final int STEP = 50;
     private static final int STEPS_PER_SIDE = 5;

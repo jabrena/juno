@@ -564,6 +564,12 @@ public final class IntrinsicLowering {
                 ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
         shim(Intrinsic.M5_KEYBOARD_IS_OPTION_PRESSED, "juno_m5_keyboard_is_option_pressed", Result.WORD, List.of(),
                 ShimFeature.M5_DEVICE, ShimFeature.M5_KEYBOARD);
+        shim(Intrinsic.M5_AUDIO_TONE, "juno_m5_audio_tone", Result.NONE, List.of(arg(0), arg(1)),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_AUDIO);
+        shim(Intrinsic.M5_AUDIO_SET_VOLUME, "juno_m5_audio_set_volume", Result.NONE, List.of(arg(0)),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_AUDIO);
+        shim(Intrinsic.M5_AUDIO_STOP, "juno_m5_audio_stop", Result.NONE, List.of(),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_AUDIO);
         shim(Intrinsic.MOUSE_BEGIN, "juno_mouse_begin", Result.NONE, List.of(), ShimFeature.MOUSE);
         shim(Intrinsic.MOUSE_MOVE, "juno_mouse_move", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.MOUSE);
         shim(Intrinsic.SERVO_OF, "juno_servo_attach", Result.FIRST_ARGUMENT, List.of(arg(0)), ShimFeature.SERVO);

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.hid;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
@@ -21,7 +21,7 @@ import io.github.jabrena.juno.util.Delay;
  * computer connected to the board's USB port and continues moving it indefinitely. Disconnect the
  * board or replace the sketch to stop it.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoOneR4WiFiBoard.class)
 public final class RatonLoco {
     private static final int LED = 13;
     private static final int MOVE_DELAY = 1000;

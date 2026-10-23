@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.hardware.keyboard;
 
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.hardware.M5StackCardputer;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
@@ -9,7 +10,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /** Shows keyboard transitions on the Cardputer display and reports keys and modifiers over USB serial. */
-@Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
+@Board(M5StackCardputerBoard.class)
 public final class M5CardputerKeyboard {
     private static final int TEXT_CAPACITY = 72;
 

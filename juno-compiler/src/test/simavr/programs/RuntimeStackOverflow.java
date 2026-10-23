@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.Arduino;
@@ -15,7 +15,7 @@ import java.util.concurrent.StructuredTaskScope;
  * stack would push further into other memory; the runtime must still stop with its overflow message instead of
  * resetting the board. RuntimeStackOverflow.expected holds the output by hand.
  */
-@Board(ArduinoUnoR3WiFiRev2.class)
+@Board(ArduinoOneR3WiFiRev2Board.class)
 public final class RuntimeStackOverflow {
     static final int BODY = 32;
     static final int HEADERS = 32;

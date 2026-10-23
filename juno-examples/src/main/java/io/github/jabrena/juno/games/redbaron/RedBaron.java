@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.redbaron;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -20,7 +20,7 @@ import io.github.jabrena.juno.util.Random;
  * {@link SceneRenderer} and {@link DisplayList} draw the vector scene. This class runs the game and
  * is the one place that dispatches on {@link Round}.
  */
-@Board(ArduinoUnoQ.class)
+@Board(ArduinoOneQBoard.class)
 public final class RedBaron {
     private static final Clock CLOCK = Arduino.getClock();
     private static final int FRAME_MILLIS = 40;

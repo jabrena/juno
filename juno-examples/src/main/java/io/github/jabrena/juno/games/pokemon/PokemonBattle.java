@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.pokemon;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -27,7 +27,7 @@ import io.github.jabrena.juno.util.Delay;
  * alternating sequence number and resend timeout so a lost or duplicated UDP datagram does not
  * apply an attack twice or permanently stall the match.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class PokemonBattle {
     private static final Wifi WIFI = Arduino.getWifi();
 

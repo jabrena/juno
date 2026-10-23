@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.serial;
 
-import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -16,7 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * re-enumerates when the program starts, so it waits two seconds before the first line, giving a serial monitor time
  * to reattach.
  */
-@Board(ArduinoNanoEsp32.class)
+@Board(ArduinoNanoEsp32Board.class)
 public final class SerialLambdas {
     @FunctionalInterface
     interface IntOperation {

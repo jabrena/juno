@@ -37,11 +37,11 @@ class AvrAsmBackendTest {
         String simpleName = className.substring(className.lastIndexOf('.') + 1);
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2;
+                import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.Arduino;
                 %s
-                @Board(ArduinoUnoR3WiFiRev2.class)
+                @Board(ArduinoOneR3WiFiRev2Board.class)
                 public final class %s {
                     public static void main(String[] args) {
                 %s
@@ -56,11 +56,11 @@ class AvrAsmBackendTest {
         String simpleName = className.substring(className.lastIndexOf('.') + 1);
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+                import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.Arduino;
                 %s
-                @Board(ArduinoUnoR3.class)
+                @Board(ArduinoOneR3Board.class)
                 public final class %s {
                     public static void main(String[] args) {
                 %s
@@ -123,8 +123,8 @@ class AvrAsmBackendTest {
         Board board = Board.fromId(R3WIFIREV2);
 
         // When & Then
-        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2")).isEqualTo(board);
-        assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3WiFiRev2.class");
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoOneR3WiFiRev2Board")).isEqualTo(board);
+        assertThat(board.annotationArgument()).isEqualTo("ArduinoOneR3WiFiRev2Board.class");
     }
 
     @Test
@@ -155,8 +155,8 @@ class AvrAsmBackendTest {
         Board board = Board.fromId(R3);
 
         // When & Then
-        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3")).isEqualTo(board);
-        assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3.class");
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoOneR3Board")).isEqualTo(board);
+        assertThat(board.annotationArgument()).isEqualTo("ArduinoOneR3Board.class");
     }
 
     @Test
@@ -229,10 +229,10 @@ class AvrAsmBackendTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3;
+                import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                @Board(ArduinoUnoR3.class)
+                @Board(ArduinoOneR3Board.class)
                 public final class R3Length {
                     static int length(byte[] values) {
                         return values.length + values[0];
@@ -481,7 +481,7 @@ class AvrAsmBackendTest {
     @DisplayName("Enables and refreshes the classic UNO R3 watchdog in the assembly")
     void shouldEnableAndRefreshTheClassicUnoR3WatchdogInTheAssembly() throws Exception {
         // Given
-        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoUnoR3", R3, 3000);
+        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoOneR3Board", R3, 3000);
 
         // When & Then
         assertThat(result.assembly())
@@ -493,7 +493,7 @@ class AvrAsmBackendTest {
     @DisplayName("The classic UNO R3 watchdog shim uses the AVR wdt API")
     void shouldUseTheAvrWdtApiForTheClassicUnoR3WatchdogShim() throws Exception {
         // Given
-        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoUnoR3", R3, 3000);
+        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoOneR3Board", R3, 3000);
 
         // When & Then
         assertThat(result.runtimeShim()).contains(
@@ -507,7 +507,7 @@ class AvrAsmBackendTest {
     @DisplayName("Enables and refreshes the UNO WiFi Rev2 watchdog in the assembly")
     void shouldEnableAndRefreshTheUnoWifiRev2WatchdogInTheAssembly() throws Exception {
         // Given
-        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 3000);
+        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoOneR3WiFiRev2Board", R3WIFIREV2, 3000);
 
         // When & Then
         assertThat(result.assembly())
@@ -519,7 +519,7 @@ class AvrAsmBackendTest {
     @DisplayName("The UNO WiFi Rev2 watchdog shim uses the megaAVR WDT registers")
     void shouldUseTheMegaAvrWdtRegistersForTheUnoWifiRev2WatchdogShim() throws Exception {
         // Given
-        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 3000);
+        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoOneR3WiFiRev2Board", R3WIFIREV2, 3000);
 
         // When & Then
         assertThat(result.runtimeShim()).contains(
@@ -533,7 +533,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects a classic UNO R3 watchdog timeout outside its chip range")
     void shouldRejectAClassicUnoR3WatchdogTimeoutOutsideItsChipRange() {
         // When & Then
-        assertThatThrownBy(() -> compileWatchdog("demo.R3WatchdogTooLong", "ArduinoUnoR3", R3, 8001))
+        assertThatThrownBy(() -> compileWatchdog("demo.R3WatchdogTooLong", "ArduinoOneR3Board", R3, 8001))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("timeoutMillis must be between 1 and 8000 on UNO R3");
     }
@@ -542,7 +542,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects a UNO WiFi Rev2 watchdog timeout outside its chip range")
     void shouldRejectAUnoWifiRev2WatchdogTimeoutOutsideItsChipRange() {
         // When & Then
-        assertThatThrownBy(() -> compileWatchdog("demo.Rev2WatchdogTooLong", "ArduinoUnoR3WiFiRev2", R3WIFIREV2, 8201))
+        assertThatThrownBy(() -> compileWatchdog("demo.Rev2WatchdogTooLong", "ArduinoOneR3WiFiRev2Board", R3WIFIREV2, 8201))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("timeoutMillis must be between 1 and 8200 on UNO WiFi Rev2");
     }
@@ -948,7 +948,7 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
                 """))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Smtp.send (STARTTLS) requires @Board(ArduinoUnoR4WiFi.class or ArduinoNanoEsp32.class)")
+                .hasMessageContaining("Smtp.send (STARTTLS) requires @Board(ArduinoOneR4WiFiBoard.class or ArduinoNanoEsp32Board.class)")
                 .hasMessageContaining("use Smtp.sendTls with implicit TLS, usually port 465");
     }
 

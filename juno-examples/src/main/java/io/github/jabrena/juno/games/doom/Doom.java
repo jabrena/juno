@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -32,7 +32,7 @@ import io.github.jabrena.juno.util.Random;
  * {@link Player} walks and opens doors, {@link Renderer} builds each frame and {@link DisplayList} draws
  * only what changed. {@link FrameStats} reports what each frame costs over the serial port.
  */
-@Board(ArduinoUnoQ.class)
+@Board(ArduinoOneQBoard.class)
 public final class Doom {
     private static final Clock CLOCK = Arduino.getClock();
     private static final int FRAME_MILLIS = 40;

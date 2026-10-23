@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.device.kasa;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * <p>Set {@code JUNO_WIFI_SSID} and {@code JUNO_WIFI_PASSWORD} in the build environment. The display stays live
  * while the board joins Wi-Fi or reopens discovery, and its three fixed buttons toggle the first three plugs found.
  */
-@Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
 public final class KasaSmartPlugDiscovery {
     private static final Wifi WIFI = Arduino.getWifi();
 

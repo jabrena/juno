@@ -84,7 +84,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.Board;
                                         import io.github.jabrena.juno.hardware.M5StackCardputer;
                     import io.github.jabrena.juno.hardware.net.Wifi;
-                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
                     public final class CardputerWifi {
                         public static void main(String[] args) {
                             Wifi wifi = M5StackCardputer.getWifi();
@@ -113,7 +113,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.Board;
                                         import io.github.jabrena.juno.hardware.M5StackCardputer;
                     import io.github.jabrena.juno.hardware.display.Display;
-                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
                     public final class CardputerDisplay {
                         public static void main(String[] args) {
                             Display display = M5StackCardputer.getDisplay();
@@ -159,15 +159,44 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles Cardputer speaker tone playback through the M5StackCardputer facade")
+        void shouldCompileCardputerSpeakerToneThroughM5StackCardputer() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.M5StackCardputer;
+                    import io.github.jabrena.juno.hardware.audio.Audio;
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
+                    public final class CardputerAudio {
+                        public static void main(String[] args) {
+                            Audio audio = M5StackCardputer.getAudio();
+                            audio.setVolume(220);
+                            audio.tone(440, 250);
+                            audio.stop();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerAudio", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerAudio");
+
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.assembly()).contains("call8 juno_m5_audio_set_volume", "call8 juno_m5_audio_tone",
+                    "call8 juno_m5_audio_stop");
+            assertThat(result.runtimeShim()).contains("#include <M5Cardputer.h>", "M5Cardputer.Speaker.setVolume",
+                    "M5Cardputer.Speaker.tone", "M5Cardputer.Speaker.stop");
+        }
+
+        @Test
         @DisplayName("Rejects the Cardputer display on another ESP32 board")
         void shouldRejectCardputerDisplayOnAnotherEsp32Board() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.M5StackCardputer;
-                    @Board(ArduinoNanoEsp32.class)
+                    @Board(ArduinoNanoEsp32Board.class)
                     public final class NanoDisplay {
                         public static void main(String[] args) {
                             M5StackCardputer.getDisplay().begin();
@@ -179,7 +208,7 @@ class JunoCompilerTest {
             // When & Then
             assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoDisplay"))
                     .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("M5StackCardputer.getDisplay requires @Board(M5StackCardputer.class)");
+                    .hasMessageContaining("M5StackCardputer.getDisplay requires @Board(M5StackCardputerBoard.class)");
         }
 
         @Test
@@ -191,7 +220,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.Board;
                                         import io.github.jabrena.juno.hardware.M5StackCardputer;
                     import io.github.jabrena.juno.hardware.keyboard.Keyboard;
-                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
                     public final class CardputerKeyboard {
                         public static void main(String[] args) {
                             M5StackCardputer.getDisplay().begin();
@@ -245,10 +274,10 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.M5StackCardputer;
-                    @Board(ArduinoNanoEsp32.class)
+                    @Board(ArduinoNanoEsp32Board.class)
                     public final class NanoKeyboard {
                         public static void main(String[] args) {
                             M5StackCardputer.getKeyboard().begin();
@@ -260,7 +289,7 @@ class JunoCompilerTest {
             // When & Then
             assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoKeyboard"))
                     .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("M5StackCardputer.getKeyboard requires @Board(M5StackCardputer.class)");
+                    .hasMessageContaining("M5StackCardputer.getKeyboard requires @Board(M5StackCardputerBoard.class)");
         }
 
         @Test
@@ -476,11 +505,11 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                    import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.annotations.Watchdog;
                     import io.github.jabrena.juno.util.Delay;
-                    @Board(ArduinoUnoR4WiFi.class)
+                    @Board(ArduinoOneR4WiFiBoard.class)
                     @Watchdog(timeoutMillis = 3000)
                     public final class WatchdogExplicit {
                         public static void main(String[] args) {
@@ -516,11 +545,11 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                    import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.annotations.Watchdog;
                     import io.github.jabrena.juno.util.Delay;
-                    @Board(ArduinoUnoR4WiFi.class)
+                    @Board(ArduinoOneR4WiFiBoard.class)
                     @Watchdog
                     public final class WatchdogDefault {
                         public static void main(String[] args) {
@@ -573,7 +602,7 @@ class JunoCompilerTest {
         }
 
         @ParameterizedTest
-        @CsvSource({"ArduinoUnoR4WiFi, 0", "ArduinoUnoQ, 1"})
+        @CsvSource({"ArduinoOneR4WiFiBoard, 0", "ArduinoOneQBoard, 1"})
         @DisplayName("Folds a BoardModel query through Arduino to the target board's constant")
         void shouldFoldABoardModelQueryThroughMcuToAConstant(String board, int isQ) throws Exception {
             // Given
@@ -1071,7 +1100,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.Board;
                                         import io.github.jabrena.juno.hardware.serial.BaudRate;
                     import io.github.jabrena.juno.hardware.serial.Serial;
-                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
                     public final class M5HelloWorld {
                         public static void main(String[] args) {
                             Serial.begin(BaudRate.BAUD_115200);
@@ -1492,11 +1521,11 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                    import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+                    import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.net.udp.Udp;
-                    @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+                    @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
                     public final class PortableUdp {
                         public static void main(String[] args) {
                             byte[] payload = new byte[16];
@@ -1538,11 +1567,11 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQ;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                    import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+                    import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
-                    @Board({ArduinoUnoR4WiFi.class, ArduinoUnoQ.class})
+                    @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
                     public final class KasaPlug {
                         public static void main(String[] args) {
                             int[] address = new int[4];
@@ -1627,7 +1656,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.Board;
                                         import io.github.jabrena.juno.hardware.M5StackCardputer;
                     import io.github.jabrena.juno.hardware.device.sd.SdCard;
-                    @Board(io.github.jabrena.juno.annotations.M5StackCardputer.class)
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
                     public final class CardputerSd {
                         private static final SdCard SD = M5StackCardputer.getSd();
                         public static void main(String[] args) {
@@ -2382,12 +2411,12 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                    import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.Arduino;
                     import io.github.jabrena.juno.hardware.net.Wifi;
                     import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    @Board(ArduinoUnoQ.class)
+                    @Board(ArduinoOneQBoard.class)
                     public final class UnoQHttps {
                         public static void main(String[] args) {
                             Arduino.getWifi().begin("ignored-on-q", "ignored-on-q");
@@ -2451,10 +2480,10 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                    import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    @Board(ArduinoUnoQ.class)
+                    @Board(ArduinoOneQBoard.class)
                     public final class UnoQPlainHttp {
                         public static void main(String[] args) {
                             byte[] response = new byte[64];
@@ -2578,11 +2607,11 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                    import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.net.email.Pop3Client;
                     import io.github.jabrena.juno.hardware.net.email.Smtp;
-                    @Board(ArduinoUnoQ.class)
+                    @Board(ArduinoOneQBoard.class)
                     public final class UnoQEmail {
                         public static void main(String[] args) {
                             int sent = Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
@@ -2887,10 +2916,10 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+                    import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
-                    @Board(ArduinoUnoR4WiFi.class)
+                    @Board(ArduinoOneR4WiFiBoard.class)
                     public final class Train {
                         public static void main(String[] args) {
                             PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -2985,10 +3014,10 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQ;
+                    import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.Arduino;
-                    @Board(ArduinoUnoQ.class)
+                    @Board(ArduinoOneQBoard.class)
                     public final class UnoQMouse {
                         public static void main(String[] args) {
                             Arduino.getMouse().begin();

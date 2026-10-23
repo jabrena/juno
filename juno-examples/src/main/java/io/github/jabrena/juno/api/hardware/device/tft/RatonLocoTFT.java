@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.tft;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
+import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.hid.MouseIcon;
 import io.github.jabrena.juno.hardware.Arduino;
@@ -18,7 +18,7 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>UNO Q only: the Arduino {@code Mouse} library needs {@code HID.h}, which the UNO Q's Zephyr
  * Arduino core does not provide, so this example cannot build for {@link
- * io.github.jabrena.juno.annotations.ArduinoUnoQ} — confirmed with a real {@code arduino-cli
+ * io.github.jabrena.juno.annotations.ArduinoOneQBoard} — confirmed with a real {@code arduino-cli
  * compile --fqbn arduino:zephyr:unoq}, which fails with {@code HID.h: No such file or directory}
  * from {@code Mouse.h}. USB HID mouse control stays UNO R4 WiFi-only until the UNO Q core gains
  * that header.
@@ -30,7 +30,7 @@ import io.github.jabrena.juno.util.Delay;
  * on the computer connected to the board's USB port. Tap the screen to turn it Off, disconnect the
  * board, or replace the sketch to stop it.
  */
-@Board(ArduinoUnoR4WiFi.class)
+@Board(ArduinoOneR4WiFiBoard.class)
 public final class RatonLocoTFT {
     private static final int LED = 13;
     private static final int MOVE_DELAY = 1000;
