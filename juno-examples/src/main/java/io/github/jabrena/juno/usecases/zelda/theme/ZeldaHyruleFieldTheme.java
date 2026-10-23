@@ -1,22 +1,22 @@
 package io.github.jabrena.juno.usecases.zelda.theme;
 
-/** A monophonic Cardputer arrangement of the Hyrule Field Main Theme. */
+/** Monophonic Cardputer arrangement of the Hyrule Field lead phrase and its alternate ending. */
 final class ZeldaHyruleFieldTheme {
     private static final int REPEAT_COUNT = 2;
     private static final int[] FREQUENCIES_HZ = {
-        392, 587, 659, 698, 784, 587, 659, 698,
-        784, 880, 784, 698, 659, 587, 523, 587,
-        659, 698, 784, 587, 523, 494, 440, 392
+        196, 147, 196, 392, 349, 330, 294, 262,
+        247, 262, 294, 196, 147, 196, 392, 349,
+        330, 294, 262, 262, 294, 247
     };
     private static final int[] TONE_MILLIS = {
-        220, 220, 220, 220, 420, 220, 220, 220,
-        420, 220, 220, 220, 420, 220, 220, 220,
-        420, 220, 220, 220, 420, 220, 220, 520
+        150, 300, 150, 300, 800, 300, 300, 200,
+        100, 100, 2900, 150, 300, 150, 300, 800,
+        300, 300, 200, 100, 100, 2900
     };
     private static final int[] STEP_MILLIS = {
-        270, 270, 270, 270, 470, 270, 270, 270,
-        470, 270, 270, 270, 470, 270, 270, 270,
-        470, 270, 270, 270, 470, 270, 270, 570
+        400, 400, 400, 400, 800, 300, 300, 200,
+        100, 100, 3000, 400, 400, 400, 400, 800,
+        300, 300, 200, 100, 100, 3000
     };
 
     private ZeldaHyruleFieldTheme() {

@@ -1,19 +1,28 @@
 package io.github.jabrena.juno.usecases.zelda.theme;
 
-/** A monophonic Cardputer arrangement of the Lost Woods theme. */
+/** Monophonic Cardputer arrangement of the complete Lost Woods lead phrase. */
 final class ZeldaLostWoodsTheme {
     private static final int REPEAT_COUNT = 2;
     private static final int[] FREQUENCIES_HZ = {
-        523, 440, 494, 392, 440, 349, 392, 330,
-        523, 440, 494, 392, 440, 349, 392, 330
+        698, 880, 988, 698, 880, 988, 698, 880,
+        988, 1319, 1175, 988, 1047, 988, 784, 659,
+        587, 659, 784, 659, 698, 880, 988, 698,
+        880, 988, 698, 880, 988, 1319, 1175, 988,
+        1047, 1319, 988, 784, 988, 784, 587, 659
     };
     private static final int[] TONE_MILLIS = {
-        180, 180, 180, 180, 280, 180, 180, 180,
-        180, 180, 180, 180, 280, 180, 180, 420
+        210, 90, 357, 210, 90, 357, 210, 90,
+        210, 90, 357, 210, 90, 210, 90, 1068,
+        210, 210, 90, 1068, 210, 90, 357, 210,
+        90, 357, 210, 90, 210, 90, 357, 210,
+        90, 210, 90, 1068, 210, 210, 90, 1068
     };
     private static final int[] STEP_MILLIS = {
-        230, 230, 230, 230, 330, 230, 230, 230,
-        230, 230, 230, 230, 330, 230, 230, 470
+        214, 214, 429, 214, 214, 429, 214, 214,
+        214, 214, 429, 214, 214, 214, 214, 1072,
+        214, 214, 214, 1287, 214, 214, 429, 214,
+        214, 429, 214, 214, 214, 214, 429, 214,
+        214, 214, 214, 1072, 214, 214, 214, 1287
     };
 
     private ZeldaLostWoodsTheme() {
