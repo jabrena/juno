@@ -308,6 +308,8 @@ public final class Linker {
                 Intrinsic.M5_KEYBOARD_IS_SHIFT_PRESSED, Intrinsic.M5_KEYBOARD_IS_CONTROL_PRESSED,
                 Intrinsic.M5_KEYBOARD_IS_ALT_PRESSED, Intrinsic.M5_KEYBOARD_IS_FN_PRESSED,
                 Intrinsic.M5_KEYBOARD_IS_OPTION_PRESSED);
+        require(required, Capability.M5_AUDIO, Intrinsic.M5_AUDIO_SET_VOLUME, Intrinsic.M5_AUDIO_STOP,
+                Intrinsic.M5_AUDIO_TONE);
         require(required, Capability.WIFI_ACCESS_POINT, Intrinsic.WIFI_BEGIN_AP);
         // LocalDateTime.now() synchronizes over SNTP, a UDP exchange every Wi-Fi board can make.
         require(required, Capability.WIFI, Intrinsic.LOCAL_DATE_TIME_NOW);

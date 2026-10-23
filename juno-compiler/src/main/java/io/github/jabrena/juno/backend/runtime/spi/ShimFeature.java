@@ -14,6 +14,8 @@ public enum ShimFeature {
     M5_DISPLAY,
     /** The M5Stack Cardputer's built-in keyboard. */
     M5_KEYBOARD,
+    /** The M5Stack Cardputer's built-in speaker. */
+    M5_AUDIO,
     MOUSE,
     SERVO,
     /** {@code PoweredUpHubRemote}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */

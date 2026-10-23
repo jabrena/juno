@@ -159,15 +159,44 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles Cardputer speaker tone playback through the M5StackCardputer facade")
+        void shouldCompileCardputerSpeakerToneThroughM5StackCardputer() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.M5StackCardputer;
+                    import io.github.jabrena.juno.hardware.audio.Audio;
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
+                    public final class CardputerAudio {
+                        public static void main(String[] args) {
+                            Audio audio = M5StackCardputer.getAudio();
+                            audio.setVolume(220);
+                            audio.tone(440, 250);
+                            audio.stop();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerAudio", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerAudio");
+
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.assembly()).contains("call8 juno_m5_audio_set_volume", "call8 juno_m5_audio_tone",
+                    "call8 juno_m5_audio_stop");
+            assertThat(result.runtimeShim()).contains("#include <M5Cardputer.h>", "M5Cardputer.Speaker.setVolume",
+                    "M5Cardputer.Speaker.tone", "M5Cardputer.Speaker.stop");
+        }
+
+        @Test
         @DisplayName("Rejects the Cardputer display on another ESP32 board")
         void shouldRejectCardputerDisplayOnAnotherEsp32Board() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.M5StackCardputer;
-                    @Board(ArduinoNanoEsp32.class)
+                    @Board(ArduinoNanoEsp32Board.class)
                     public final class NanoDisplay {
                         public static void main(String[] args) {
                             M5StackCardputer.getDisplay().begin();
