@@ -18,16 +18,21 @@ RUN case "$(dpkg --print-architecture)" in \
     && curl -fsSL "https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_${asset}.tar.gz" \
         | tar -xz -C /usr/local/bin arduino-cli
 
-# The platforms of every @Board target (UNO R3, UNO R4 WiFi, UNO Q, UNO WiFi Rev2 and Nano ESP32); pin any with
+# The platforms of every @Board target (UNO R3, UNO R4 WiFi, UNO Q, UNO WiFi Rev2, Nano ESP32 and M5Stack
+# Cardputer); pin any with
 # --build-arg CORE=arduino:renesas_uno@<version> / ZEPHYR_CORE=arduino:zephyr@<version> /
-# MEGAAVR_CORE=arduino:megaavr@<version> / AVR_CORE=arduino:avr@<version> / ESP32_CORE=arduino:esp32@<version>.
+# MEGAAVR_CORE=arduino:megaavr@<version> / AVR_CORE=arduino:avr@<version> / ESP32_CORE=arduino:esp32@<version> /
+# M5STACK_ESP32_CORE=m5stack:esp32@<version>.
 ARG CORE=arduino:renesas_uno
 ARG ZEPHYR_CORE=arduino:zephyr
 ARG MEGAAVR_CORE=arduino:megaavr
 ARG AVR_CORE=arduino:avr
 ARG ESP32_CORE=arduino:esp32
-RUN arduino-cli core update-index \
-    && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${MEGAAVR_CORE}" "${AVR_CORE}" "${ESP32_CORE}"
+ARG M5STACK_ESP32_CORE=m5stack:esp32
+ARG M5STACK_PACKAGE_INDEX_URL=https://static-cdn.m5stack.com/resource/arduino/package_m5stack_index.json
+RUN arduino-cli core update-index --additional-urls "${M5STACK_PACKAGE_INDEX_URL}" \
+    && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${MEGAAVR_CORE}" "${AVR_CORE}" "${ESP32_CORE}" \
+    && arduino-cli core install "${M5STACK_ESP32_CORE}" --additional-urls "${M5STACK_PACKAGE_INDEX_URL}"
 
 # Optional library some TFT programs (e.g. RatonLocoTFT) need; not bundled with either core above,
 # see juno-site/src/main/resources/content/hid.md.
@@ -40,6 +45,12 @@ RUN arduino-cli lib install Arduino_RouterBridge
 
 # Libraries the generated shims include for the Servo and SdCard APIs.
 RUN arduino-cli lib install Servo SdFat
+
+# The Cardputer facade uses its official library for the built-in display and keyboard. Pin M5GFX after resolving
+# dependencies because 0.2.34 does not compile with the current M5Stack ESP32 core, while 0.2.31 satisfies
+# M5Unified's declared >=0.2.31 requirement.
+RUN arduino-cli lib install M5Cardputer@1.1.1 \
+    && arduino-cli lib install M5GFX@0.2.31
 
 # The UNO WiFi Rev2 reaches its NINA-W102 Wi-Fi module (Wi-Fi, UDP, HTTP, HTTPS, TLS mail) through WiFiNINA,
 # which the megaavr core does not bundle.

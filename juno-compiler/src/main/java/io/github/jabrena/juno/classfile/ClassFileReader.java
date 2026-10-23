@@ -231,7 +231,7 @@ public final class ClassFileReader {
             String elementName = pool.utf8(input.readUnsignedShort());
             ElementValue value = readElementValue(input, pool);
             if (isBoard) {
-                // @Board's value() is Class<? extends ArduinoBoard>[]; javac always wraps even a bare
+                // @Board's value() is Class<? extends BoardSupported>[]; javac always wraps even a bare
                 // `@Board(X.class)` shorthand as a one-element array in the class file, but a single
                 // 'c' tag is accepted too for class files compiled against an older, non-array Board.
                 if (value.classInternalName() != null) {

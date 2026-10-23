@@ -24,7 +24,8 @@ final class BoardListJsonParser {
         for (String object : new ArrayScanner(json, arrayStart).topLevelObjects()) {
             firstField(object, "address").ifPresent(address -> ports.add(new DetectedPort(address,
                     firstField(object, "protocol").orElse(""),
-                    distinct(fields(object, "name")), distinct(fields(object, "fqbn")))));
+                    distinct(fields(object, "name")), distinct(fields(object, "fqbn")),
+                    firstField(object, "vid").orElse(""))));
         }
         return List.copyOf(ports);
     }

@@ -7,7 +7,7 @@ import java.util.List;
  *
  * @param protocol the port protocol, such as {@code serial}; blank when not reported
  */
-record DetectedPort(String address, String protocol, List<String> boardNames, List<String> fqbns) {
+record DetectedPort(String address, String protocol, List<String> boardNames, List<String> fqbns, String vendorId) {
     DetectedPort {
         boardNames = List.copyOf(boardNames);
         fqbns = List.copyOf(fqbns);
@@ -15,7 +15,10 @@ record DetectedPort(String address, String protocol, List<String> boardNames, Li
 
     /** Whether a board with {@code fqbn} is connected on this port. */
     boolean hosts(String fqbn) {
-        return fqbns.contains(fqbn);
+        return fqbns.contains(fqbn)
+                || (fqbn.equals("m5stack:esp32:m5stack_cardputer")
+                        && protocol.equals("serial")
+                        && vendorId.equalsIgnoreCase("0x303A"));
     }
 
     /** One line of {@code juno:boards} output. */

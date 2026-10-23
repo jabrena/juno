@@ -39,7 +39,7 @@ This is a multi-module Maven build:
   (`io.github.jabrena.juno`: `util.Delay`, `hardware.time.Clock`, `util.Random`, `hardware.led.LedMatrix`, `hardware.gpio.Gpio`,
   `hardware.gpio.DigitalOutput`, `hardware.device.lcd.LcdKeypadShield`, `hardware.device.tft.TftTouchShield`, `hardware.hid.Mouse`, `hardware.serial.Serial`, …) and the
   `io.github.jabrena.juno.annotations` package
-  (`Board`, `ArduinoBoard`, `ArduinoUnoR4WiFi`, `ArduinoUnoQ`) that entry-point classes use to select a
+  (`Board`, `BoardSupported`, `ArduinoUnoR4WiFi`, `ArduinoUnoQ`) that entry-point classes use to select a
   compilation target. This is the only artifact programs compile against.
 - [`juno-compiler/`](https://github.com/jabrena/juno/tree/main/juno-compiler) — the Juno compiler itself (`classfile`, `bytecode`,
   `linker`, `backend`, …), which depends on `juno-api`. Builds `juno-compiler/target/juno-compiler-<version>.jar`, an

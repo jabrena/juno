@@ -17,7 +17,7 @@ class DetectedPortTest {
     void shouldDescribeARecognizedBoardAndHostItsFqbn() {
         // Given
         DetectedPort port = new DetectedPort("/dev/cu.usbmodem1", "serial", List.of("Arduino UNO R4 WiFi"),
-                List.of(UNO_R4_WIFI));
+                List.of(UNO_R4_WIFI), "0x2341");
 
         // When
         String description = port.describe();
@@ -32,13 +32,24 @@ class DetectedPortTest {
     @DisplayName("Describes an unknown board without a protocol and hosts no FQBN")
     void shouldDescribeAnUnknownBoardWithoutProtocolAndHostNoFqbn() {
         // Given
-        DetectedPort port = new DetectedPort("/dev/cu.Bluetooth", "", List.of(), List.of());
+        DetectedPort port = new DetectedPort("/dev/cu.Bluetooth", "", List.of(), List.of(), "");
 
         // When
         String description = port.describe();
 
         // Then
         assertThat(description).isEqualTo("  /dev/cu.Bluetooth - unknown board");
+        assertThat(port.hosts(UNO_R4_WIFI)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Recognizes an Espressif USB serial port as a Cardputer port")
+    void shouldRecognizeAnEspressifUsbSerialPortAsACardputerPort() {
+        // Given
+        DetectedPort port = new DetectedPort("/dev/cu.usbmodem1201", "serial", List.of(), List.of(), "0x303A");
+
+        // When & Then
+        assertThat(port.hosts("m5stack:esp32:m5stack_cardputer")).isTrue();
         assertThat(port.hosts(UNO_R4_WIFI)).isFalse();
     }
 }

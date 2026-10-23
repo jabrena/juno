@@ -10,7 +10,7 @@ package io.github.jabrena.juno.annotations;
  * with a 512-byte stack per forked task. It has no LED matrix, and the double-precision transcendental {@code Math}
  * functions are not available.
  */
-public final class ArduinoUnoR3WiFiRev2 implements ArduinoBoard {
+public final class ArduinoUnoR3WiFiRev2 implements BoardSupported {
     private ArduinoUnoR3WiFiRev2() {
     }
 }

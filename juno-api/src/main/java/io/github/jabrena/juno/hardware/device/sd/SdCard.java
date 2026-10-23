@@ -10,7 +10,8 @@ import java.io.InputStream;
  * {@link DataLoggerShield#getSdCard()}, {@link io.github.jabrena.juno.hardware.device.tft.TftTouchShield#getSdCard()},
  * {@link io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield#getSdCard()},
  * {@link io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield#getSdCard()} or
- * {@link io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier#getSdCard()}. A unit test passes
+ * {@link io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier#getSdCard()}, or from
+ * {@link io.github.jabrena.juno.hardware.M5StackCardputer#getSd()} for the Cardputer's built-in socket. A unit test passes
  * {@code mock(SdCard.class)} instead.
  *
  * <p>Call {@link #begin()} for the chip-select pin of the socket the card came from, or {@link #begin(int)} for
@@ -38,7 +39,8 @@ public interface SdCard {
 
     /**
      * Initializes the card on the chip-select pin of the socket it came from (D10 on the data logger and TFT shields,
-     * D4 on the Arduino WiFi Shield and the Nano Connector Carrier) and returns whether it was detected successfully.
+     * D4 on the Arduino WiFi Shield and the Nano Connector Carrier, or GPIO12 on the Cardputer) and returns whether it
+     * was detected successfully.
      */
     boolean begin();
 

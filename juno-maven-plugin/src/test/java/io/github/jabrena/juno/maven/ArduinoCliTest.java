@@ -91,19 +91,25 @@ class ArduinoCliTest {
         @DisplayName("Installs a core and a library with the expected arguments")
         void shouldInstallACoreAndALibraryWithTheExpectedArguments() {
             // Given
-            FakeExecutor executor = new FakeExecutor().respond(0, "core installed").respond(0, "lib installed");
+            FakeExecutor executor = new FakeExecutor()
+                    .respond(0, "core installed")
+                    .respond(0, "core installed")
+                    .respond(0, "lib installed");
             List<String> output = new ArrayList<>();
             ArduinoCli cli = new ArduinoCli("arduino-cli", executor, output::add);
 
             // When
             cli.installCore("arduino:renesas_uno");
+            cli.installCore("m5stack:esp32", "https://example.test/package_m5stack_index.json");
             cli.installLibrary("ESP_SSLClient");
 
             // Then
             assertThat(executor.invocations()).containsExactly(
                     captured(List.of("arduino-cli", "core", "install", "arduino:renesas_uno")),
+                    captured(List.of("arduino-cli", "core", "install", "m5stack:esp32", "--additional-urls",
+                            "https://example.test/package_m5stack_index.json")),
                     captured(List.of("arduino-cli", "lib", "install", "ESP_SSLClient")));
-            assertThat(output).containsExactly("core installed", "lib installed");
+            assertThat(output).containsExactly("core installed", "core installed", "lib installed");
         }
     }
 
@@ -126,6 +132,23 @@ class ArduinoCliTest {
             assertThat(port).isEqualTo("/dev/cu.usbmodem123");
             assertThat(executor.invocations()).containsExactly(
                     captured(List.of("arduino-cli", "board", "list", "--json")));
+        }
+
+        @Test
+        @DisplayName("Discovers the Cardputer from its Espressif USB serial vendor ID")
+        void shouldDiscoverTheCardputerFromItsEspressifUsbSerialVendorId() {
+            // Given
+            String m5Cardputer = "m5stack:esp32:m5stack_cardputer";
+            FakeExecutor executor = new FakeExecutor().respond(0, boardList(
+                    detected("/dev/cu.Bluetooth", ""),
+                    detectedUsbSerial("/dev/cu.usbmodem1201", "0x303A")));
+            ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
+
+            // When
+            String port = cli.resolvePort(m5Cardputer, Optional.empty());
+
+            // Then
+            assertThat(port).isEqualTo("/dev/cu.usbmodem1201");
         }
 
         @Test
@@ -259,6 +282,11 @@ class ArduinoCliTest {
     private static String detected(String address, String protocol, String fqbn) {
         return "{\"matching_boards\":[{\"name\":\"Board\",\"fqbn\":\"" + fqbn + "\"}],"
                 + "\"port\":{\"address\":\"" + address + "\",\"protocol\":\"" + protocol + "\"}}";
+    }
+
+    private static String detectedUsbSerial(String address, String vendorId) {
+        return "{\"port\":{\"address\":\"" + address + "\",\"protocol\":\"serial\","
+                + "\"properties\":{\"vid\":\"" + vendorId + "\"}}}";
     }
 
     private static Command captured(List<String> arguments) {

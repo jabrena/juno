@@ -39,7 +39,7 @@ class BoardListJsonParserTest {
     }
 
     @Test
-    @DisplayName("Parses the address, protocol and matching boards of each port")
+    @DisplayName("Parses address, protocol, matching boards and USB vendor IDs")
     void shouldParseAddressProtocolAndMatchingBoardsOfEachPort() {
         // Given
         String json = """
@@ -49,7 +49,8 @@ class BoardListJsonParserTest {
                       "matching_boards": [
                         {"name": "Arduino UNO R4 WiFi", "fqbn": "arduino:renesas_uno:unor4wifi"}
                       ],
-                      "port": {"address": "/dev/cu.usbmodem1", "protocol": "serial"}
+                      "port": {"address": "/dev/cu.usbmodem1", "protocol": "serial",
+                               "properties": {"vid": "0x2341"}}
                     },
                     {
                       "port": {"address": "/dev/cu.Bluetooth", "protocol": "serial"}
@@ -64,8 +65,9 @@ class BoardListJsonParserTest {
         // Then
         assertThat(ports).containsExactly(
                 new DetectedPort("/dev/cu.usbmodem1", "serial",
-                        List.of("Arduino " + Board.UNO_R4_WIFI.displayName()), List.of(Board.UNO_R4_WIFI.fqbn())),
-                new DetectedPort("/dev/cu.Bluetooth", "serial", List.of(), List.of()));
+                        List.of("Arduino " + Board.UNO_R4_WIFI.displayName()), List.of(Board.UNO_R4_WIFI.fqbn()),
+                        "0x2341"),
+                new DetectedPort("/dev/cu.Bluetooth", "serial", List.of(), List.of(), ""));
     }
 
     @Test

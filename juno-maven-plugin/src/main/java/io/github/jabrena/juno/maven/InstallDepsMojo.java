@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Installs the Arduino core and every optional library any current Juno example needs, so a fresh
+ * Installs the Arduino cores and every optional library any current Juno example needs, so a fresh
  * checkout can build every example without hunting down "arduino-cli lib install X" instructions
  * one at a time. Run this once per machine (or again after a new example starts needing a new
  * optional library) — ordinary {@code compile}/{@code verify}/{@code upload} builds never run
@@ -22,14 +22,19 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
      * current Juno example needs: {@code Mouse} for {@code RatonLoco}, {@code ArduinoBLE} for
      * {@code PoweredUpHubRemote} (e.g. {@code LegoTrain}), {@code ESP_SSLClient} for
      * {@code Smtp}'s {@code STARTTLS} upgrade, {@code Servo} for {@code Servo}-driven examples,
-     * and {@code SdFat} for long-file-name-capable removable-storage examples.
+     * {@code SdFat} for long-file-name-capable removable-storage examples, and {@code M5Cardputer} plus its compatible
+     * {@code M5GFX} release for the built-in display and keyboard.
      * Update this list whenever a new example starts needing another one.
      */
     private static final List<String> OPTIONAL_LIBRARIES = List.of(
-            "Mouse", "ArduinoBLE", "ESP_SSLClient", "Servo", "SdFat");
+            "Mouse", "ArduinoBLE", "ESP_SSLClient", "Servo", "SdFat", "M5Cardputer@1.1.1", "M5GFX@0.2.31");
 
-    /** The arduino-cli platform (board family) backing every {@code @Board} target Juno supports today. */
+    /** The arduino-cli platform backing the Renesas UNO targets. */
     private static final String CORE_PLATFORM = "arduino:renesas_uno";
+
+    /** Official Boards Manager index required to resolve M5Stack's ESP32 platform. */
+    private static final String M5STACK_PACKAGE_INDEX_URL =
+            "https://static-cdn.m5stack.com/resource/arduino/package_m5stack_index.json";
 
     @Override
     void run() {
@@ -50,6 +55,7 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
     private List<InstallStep> installSteps(ArduinoCli cli) {
         List<InstallStep> steps = new ArrayList<>();
         steps.add(new InstallStep("Arduino core " + CORE_PLATFORM, () -> cli.installCore(CORE_PLATFORM)));
+        steps.add(new InstallStep("M5Stack ESP32 core", () -> cli.installCore("m5stack:esp32", M5STACK_PACKAGE_INDEX_URL)));
         OPTIONAL_LIBRARIES.forEach(library ->
                 steps.add(new InstallStep("Arduino library " + library, () -> cli.installLibrary(library))));
         return steps;
