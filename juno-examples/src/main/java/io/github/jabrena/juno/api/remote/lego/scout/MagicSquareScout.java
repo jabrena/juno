@@ -4,8 +4,8 @@ import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.remote.lego.scout.RemoteScout;
+import io.github.jabrena.juno.remote.lego.scout.ScoutMotor;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -21,12 +21,15 @@ public class MagicSquareScout {
     private static final int STRAIGHT_MILLIS = 3000;
     private static final int TURN_MILLIS = 700;
     private static final int STOP_MILLIS = 2000;
-    private static final int REPEAT_MILLIS = 100;
 
-    private final RemoteScout scout;
+    private final ScoutMotor leftMotor;
+    private final ScoutMotor rightMotor;
+    private int lastLeft = 2;
+    private int lastRight = 2;
 
     MagicSquareScout(RemoteScout scout) {
-        this.scout = scout;
+        this.leftMotor = scout.getMotorA();
+        this.rightMotor = scout.getMotorB();
     }
 
     public static void main(String[] args) {
@@ -38,26 +41,35 @@ public class MagicSquareScout {
 
         while (true) {
             Serial.println("Straight");
-            app.drive(RemoteRcx.A_FORWARD | RemoteRcx.B_FORWARD, STRAIGHT_MILLIS);
+            app.moveFor(1, 1, STRAIGHT_MILLIS);
             app.stop();
             Serial.println("Turn left");
-            app.drive(RemoteRcx.A_BACKWARD | RemoteRcx.B_FORWARD, TURN_MILLIS);
+            app.moveFor(-1, 1, TURN_MILLIS);
             app.stop();
         }
     }
 
-    /** Holds buttons on the virtual remote the way a real one does: a command every 100 ms. */
-    private void drive(int buttons, int millis) {
+    private void moveFor(int left, int right, int millis) {
         int started = CLOCK.millis();
         while (CLOCK.millis() - started < millis) {
-            scout.sendButtons(buttons);
-            Delay.millis(REPEAT_MILLIS);
+            move(left, right);
         }
     }
 
     private void stop() {
-        scout.sendButtons(0);
-        scout.stopAll();
+        move(0, 0);
         Delay.millis(STOP_MILLIS);
+    }
+
+    /** Drives each side {@code -1} (backwards), {@code 0} (stopped) or {@code 1} (forwards). */
+    private void move(int left, int right) {
+        if (left != lastLeft) {
+            leftMotor.drive(left);
+            lastLeft = left;
+        }
+        if (right != lastRight) {
+            rightMotor.drive(right);
+            lastRight = right;
+        }
     }
 }
